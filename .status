@@ -1,0 +1,46 @@
+# Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+# for details. All rights reserved. Use of this source code is governed by a
+# BSD-style license that can be found in the LICENSE file.
+
+# Skip non-test files ending with "_test".
+*/packages/*: Skip
+
+# Only run tests from the build directory, since we don't care about the
+# difference between transformed an untransformed code.
+test/*: Skip
+
+[ $runtime == jsshell ]
+*/missing_tick_test: Fail # Timer interface not supported: dartbug.com/7728
+*/nested_groups_setup_teardown_test: RuntimeError # http://dartbug.com/10109
+
+[ $compiler == none && ( $runtime == dartium || $runtime == drt || $runtime == ContentShellOnAndroid) ]
+# Skip serialization test that explicitly has no library declaration in the
+# test on Dartium, which requires all tests to have a library.
+*/async_exception_test: RuntimeError # 13921
+*/async_exception_with_future_test: RuntimeError # 13921
+*/async_setup_teardown_test: RuntimeError # 13921
+*/completion_test: RuntimeError # 13921
+*/correct_callback_test: RuntimeError # 13921
+*/exception_test: RuntimeError # 13921
+*/excess_callback_test: RuntimeError # 13921
+*/expect_async_args_test: RuntimeError # 13921
+*/expect_async_test: RuntimeError # 13921
+*/group_name_test: RuntimeError # 13921
+*/invalid_ops_test: RuntimeError # 13921
+*/late_exception_test: RuntimeError # 13921
+*/middle_exception_test: RuntimeError # 13921
+*/nested_groups_setup_teardown_test: RuntimeError # 13921
+*/protect_async_test: RuntimeError # 13921
+*/returning_future_test: RuntimeError # 13921
+*/returning_future_using_runasync_test: RuntimeError # 13921
+*/runtests_without_tests_test: RuntimeError # 13921
+*/setup_and_teardown_test: RuntimeError # 13921
+*/setup_test: RuntimeError # 13921
+*/single_correct_test: RuntimeError # 13921
+*/single_failing_test: RuntimeError # 13921
+*/skipped_soloed_nested_test: RuntimeError # 13921
+*/teardown_test: RuntimeError # 13921
+*/testcases_immutable_test: RuntimeError # 13921
+
+[ $compiler == none && $browser ]
+*/missing_tick_test: RuntimeError # Expected to fail, due to timeout.
