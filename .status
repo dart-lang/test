@@ -15,37 +15,37 @@ packages/*: Skip
 test/*: Skip
 
 [ $runtime == jsshell ]
-*/missing_tick_test: Fail # Timer interface not supported: dartbug.com/7728
-*/nested_groups_setup_teardown_test: RuntimeError # http://dartbug.com/10109
+build/test/missing_tick_test: Fail # Timer interface not supported: dartbug.com/7728
+build/test/nested_groups_setup_teardown_test: RuntimeError # http://dartbug.com/10109
 
 [ $compiler == none && ( $runtime == dartium || $runtime == drt || $runtime == ContentShellOnAndroid) ]
 # Skip serialization test that explicitly has no library declaration in the
 # test on Dartium, which requires all tests to have a library.
-*/async_exception_test: RuntimeError # 13921
-*/async_exception_with_future_test: RuntimeError # 13921
-*/async_setup_teardown_test: RuntimeError # 13921
-*/completion_test: RuntimeError # 13921
-*/correct_callback_test: RuntimeError # 13921
-*/exception_test: RuntimeError # 13921
-*/excess_callback_test: RuntimeError # 13921
-*/expect_async_args_test: RuntimeError # 13921
-*/expect_async_test: RuntimeError # 13921
-*/group_name_test: RuntimeError # 13921
-*/invalid_ops_test: RuntimeError # 13921
-*/late_exception_test: RuntimeError # 13921
-*/middle_exception_test: RuntimeError # 13921
-*/nested_groups_setup_teardown_test: RuntimeError # 13921
-*/protect_async_test: RuntimeError # 13921
-*/returning_future_test: RuntimeError # 13921
-*/returning_future_using_runasync_test: RuntimeError # 13921
-*/runtests_without_tests_test: RuntimeError # 13921
-*/setup_and_teardown_test: RuntimeError # 13921
-*/setup_test: RuntimeError # 13921
-*/single_correct_test: RuntimeError # 13921
-*/single_failing_test: RuntimeError # 13921
-*/skipped_soloed_nested_test: RuntimeError # 13921
-*/teardown_test: RuntimeError # 13921
-*/testcases_immutable_test: RuntimeError # 13921
+build/test/async_exception_test: RuntimeError # 13921
+build/test/async_exception_with_future_test: RuntimeError # 13921
+build/test/async_setup_teardown_test: RuntimeError # 13921
+build/test/completion_test: RuntimeError # 13921
+build/test/correct_callback_test: RuntimeError # 13921
+build/test/exception_test: RuntimeError # 13921
+build/test/excess_callback_test: RuntimeError # 13921
+build/test/expect_async_args_test: RuntimeError # 13921
+build/test/expect_async_test: RuntimeError # 13921
+build/test/group_name_test: RuntimeError # 13921
+build/test/invalid_ops_test: RuntimeError # 13921
+build/test/late_exception_test: RuntimeError # 13921
+build/test/middle_exception_test: RuntimeError # 13921
+build/test/nested_groups_setup_teardown_test: RuntimeError # 13921
+build/test/protect_async_test: RuntimeError # 13921
+build/test/returning_future_test: RuntimeError # 13921
+build/test/returning_future_using_runasync_test: RuntimeError # 13921
+build/test/runtests_without_tests_test: RuntimeError # 13921
+build/test/setup_and_teardown_test: RuntimeError # 13921
+build/test/setup_test: RuntimeError # 13921
+build/test/single_correct_test: RuntimeError # 13921
+build/test/single_failing_test: RuntimeError # 13921
+build/test/skipped_soloed_nested_test: RuntimeError # 13921
+build/test/teardown_test: RuntimeError # 13921
+build/test/testcases_immutable_test: RuntimeError # 13921
 
 [ $compiler == none && $browser ]
-*/missing_tick_test: RuntimeError # Expected to fail, due to timeout.
+build/test/missing_tick_test: RuntimeError # Expected to fail, due to timeout.
