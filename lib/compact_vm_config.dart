@@ -84,10 +84,8 @@ class CompactVMConfiguration extends VMConfiguration {
   void onDone(bool success) {
     // Override and don't call the superclass onDone() to avoid printing the
     // "unittest-suite-..." boilerplate.
-    Future.wait([stdout.close(), stderr.close()]).then((_) {
-      _receivePort.close();
-      exit(success ? 0 : 1);
-    });
+    exitCode = success ? 0 : 1;
+    _receivePort.close();
   }
 
   void onSummary(int passed, int failed, int errors, List<TestCase> results,

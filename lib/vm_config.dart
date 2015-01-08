@@ -43,18 +43,14 @@ class VMConfiguration extends SimpleConfiguration {
   }
 
   void onDone(bool success) {
-    int status;
     try {
       super.onDone(success);
-      status = 0;
+      exitCode = 0;
     } catch (ex) {
       // A non-zero exit code is used by the test infrastructure to detect
       // failure.
-      status = 1;
+      exitCode = 1;
     }
-    Future.wait([stdout.close(), stderr.close()]).then((_) {
-      exit(status);
-    });
   }
 }
 
