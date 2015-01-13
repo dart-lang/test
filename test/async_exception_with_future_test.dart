@@ -35,13 +35,8 @@ void _test(message) {
     test('follow up', () {
       expect(tearDownHappened, isTrue);
     });
-
-  }, [{
-    'description': 'test',
-    'message': 'Caught error!',
-    'result': 'fail',
-  }, {
-    'description': 'follow up',
-    'result': 'pass',
-  }]);
+  }, [
+    {'description': 'test', 'message': 'Caught error!', 'result': 'fail',},
+    {'description': 'follow up', 'result': 'pass',}
+  ]);
 }

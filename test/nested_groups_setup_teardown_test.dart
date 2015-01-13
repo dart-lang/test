@@ -43,7 +43,6 @@ void _test(message) {
   });
 }
 
-
 Function makeDelayedSetup(int index, StringBuffer s) => () {
   return new Future.delayed(new Duration(milliseconds: 1), () {
     s.write('l$index U ');

@@ -66,4 +66,3 @@ abstract class Configuration {
   void onSummary(int passed, int failed, int errors, List<TestCase> results,
       String uncaughtError) {}
 }
-

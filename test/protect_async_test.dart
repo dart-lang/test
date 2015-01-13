@@ -40,17 +40,19 @@ void _test(message) {
     test('throw away 1', () {
       return new Future(() {});
     });
-  }, [{
-    'result': 'error',
-    'message': 'Caught Bad state: error during protectAsync0'
-  }, {
-    'result': 'error',
-    'message': 'Caught Bad state: error during protectAsync1: one arg'
-  }, {
-    'result': 'error',
-    'message': 'Caught Bad state: error during protectAsync2: arg1, arg2'
-  }, {
-    'result': 'pass',
-    'message': ''
-  }]);
+  }, [
+    {
+      'result': 'error',
+      'message': 'Caught Bad state: error during protectAsync0'
+    },
+    {
+      'result': 'error',
+      'message': 'Caught Bad state: error during protectAsync1: one arg'
+    },
+    {
+      'result': 'error',
+      'message': 'Caught Bad state: error during protectAsync2: arg1, arg2'
+    },
+    {'result': 'pass', 'message': ''}
+  ]);
 }

@@ -28,11 +28,5 @@ void _test(message) {
         done();
       });
     });
-  }, [{
-    'result': 'pass'
-  }, {
-    'result': 'fail',
-  }, {
-    'result': 'pass'
-  }]);
+  }, [{'result': 'pass'}, {'result': 'fail',}, {'result': 'pass'}]);
 }

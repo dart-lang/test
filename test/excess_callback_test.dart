@@ -31,12 +31,12 @@ void _test(message) {
     test('verify count', () {
       expect(count, 1);
     });
-  }, [{
-    'description': 'test',
-    'message': 'Callback called more times than expected (1).',
-    'result': 'fail'
-  }, {
-    'description': 'verify count',
-    'result': 'pass',
-  }]);
+  }, [
+    {
+      'description': 'test',
+      'message': 'Callback called more times than expected (1).',
+      'result': 'fail'
+    },
+    {'description': 'verify count', 'result': 'pass',}
+  ]);
 }

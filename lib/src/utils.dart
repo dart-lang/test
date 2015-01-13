@@ -8,7 +8,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 /// Indent each line in [str] by two spaces.
 String indent(String str) =>
-  str.replaceAll(new RegExp("^", multiLine: true), "  ");
+    str.replaceAll(new RegExp("^", multiLine: true), "  ");
 
 /// A pair of values.
 class Pair<E, F> {

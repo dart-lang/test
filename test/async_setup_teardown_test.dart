@@ -32,10 +32,12 @@ void _test(message) {
       return new Future.error("Failed to complete tearDown");
     });
     test('foo2', () {});
-  }, [{
-    'result': 'error',
-    'message': 'Teardown failed: Caught Failed to complete tearDown'
-  }]);
+  }, [
+    {
+      'result': 'error',
+      'message': 'Teardown failed: Caught Failed to complete tearDown'
+    }
+  ]);
 
   expectTestResults('bad setup/good teardown', () {
     setUp(() {
@@ -45,10 +47,12 @@ void _test(message) {
       return new Future.value(0);
     });
     test('foo3', () {});
-  }, [{
-    'result': 'error',
-    'message': 'Setup failed: Caught Failed to complete setUp'
-  }]);
+  }, [
+    {
+      'result': 'error',
+      'message': 'Setup failed: Caught Failed to complete setUp'
+    }
+  ]);
 
   expectTestResults('bad setup/bad teardown', () {
     setUp(() {
@@ -58,8 +62,10 @@ void _test(message) {
       return new Future.error("Failed to complete tearDown");
     });
     test('foo4', () {});
-  }, [{
-    'result': 'error',
-    'message': 'Setup failed: Caught Failed to complete setUp'
-  }]);
+  }, [
+    {
+      'result': 'error',
+      'message': 'Setup failed: Caught Failed to complete setUp'
+    }
+  ]);
 }

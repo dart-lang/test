@@ -104,7 +104,8 @@ class TestCase {
       // would a callback, so if a failure occurs while waiting, we can abort.
       if (testReturn is Future) {
         ++_callbackFunctionsOutstanding;
-        testReturn.catchError(_errorHandler('Test'))
+        testReturn
+            .catchError(_errorHandler('Test'))
             .whenComplete(_markCallbackComplete);
       }
     }).catchError(_errorHandler('Test')).then((_) {
@@ -142,8 +143,8 @@ class TestCase {
     }
   }
 
-  void _complete(String testResult, [String messageText = '',
-      StackTrace stack]) {
+  void _complete(String testResult,
+      [String messageText = '', StackTrace stack]) {
     if (runningTime == null) {
       // The startTime can be `null` if an error happened during setup. In this
       // case we simply report a running time of 0.

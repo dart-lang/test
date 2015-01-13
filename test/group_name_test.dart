@@ -20,9 +20,5 @@ void _test(message) {
         test('b', () {});
       });
     });
-  }, [{
-    'description': 'a a'
-  }, {
-    'description': 'a b b'
-  }]);
+  }, [{'description': 'a a'}, {'description': 'a b b'}]);
 }

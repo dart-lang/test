@@ -25,13 +25,13 @@ void _test(message) {
         f();
       }));
     });
-  }, [{
-    'description': 'testOne',
-    'message': 'Callback called (2) after test case testOne has already been '
-        'marked as pass.',
-    'result': 'error',
-  }, {
-    'description': 'testTwo',
-    'result': 'pass',
-  }]);
+  }, [
+    {
+      'description': 'testOne',
+      'message': 'Callback called (2) after test case testOne has already been '
+          'marked as pass.',
+      'result': 'error',
+    },
+    {'description': 'testTwo', 'result': 'pass',}
+  ]);
 }

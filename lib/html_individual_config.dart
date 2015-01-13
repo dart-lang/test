@@ -17,12 +17,14 @@ import 'unittest.dart' as unittest;
 import 'html_config.dart' as htmlconfig;
 
 class HtmlIndividualConfiguration extends htmlconfig.HtmlConfiguration {
-  HtmlIndividualConfiguration(bool isLayoutTest): super(isLayoutTest);
+  HtmlIndividualConfiguration(bool isLayoutTest) : super(isLayoutTest);
 
   void onStart() {
     var search = window.location.search;
     if (search != '') {
-      var groups = search.substring(1).split('&')
+      var groups = search
+          .substring(1)
+          .split('&')
           .where((p) => p.startsWith('group='))
           .toList();
 
@@ -33,8 +35,8 @@ class HtmlIndividualConfiguration extends htmlconfig.HtmlConfiguration {
 
         var testGroupName = groups.single.split('=')[1];
         var startsWith = "$testGroupName${unittest.groupSep}";
-        unittest.filterTests((unittest.TestCase tc) =>
-            tc.description.startsWith(startsWith));
+        unittest.filterTests(
+            (unittest.TestCase tc) => tc.description.startsWith(startsWith));
       }
     }
     super.onStart();
@@ -42,7 +44,8 @@ class HtmlIndividualConfiguration extends htmlconfig.HtmlConfiguration {
 }
 
 void useHtmlIndividualConfiguration([bool isLayoutTest = false]) {
-  unittest.unittestConfiguration = isLayoutTest ? _singletonLayout : _singletonNotLayout;
+  unittest.unittestConfiguration =
+      isLayoutTest ? _singletonLayout : _singletonNotLayout;
 }
 
 final _singletonLayout = new HtmlIndividualConfiguration(true);

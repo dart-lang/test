@@ -138,8 +138,12 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:isolate';
 
-import 'package:matcher/matcher.dart' show DefaultFailureHandler,
-    configureExpectFailureHandler, TestFailure, wrapAsync;
+import 'package:matcher/matcher.dart'
+    show
+        DefaultFailureHandler,
+        configureExpectFailureHandler,
+        TestFailure,
+        wrapAsync;
 export 'package:matcher/matcher.dart';
 
 import 'src/utils.dart';
@@ -219,11 +223,10 @@ List<TestCase> get testCases =>
 const int BREATH_INTERVAL = 200;
 
 /// [TestCase] currently being executed.
-TestCase get currentTestCase =>
-    (_environment.currentTestCaseIndex >= 0 &&
-     _environment.currentTestCaseIndex < testCases.length)
-        ? testCases[_environment.currentTestCaseIndex]
-        : null;
+TestCase get currentTestCase => (_environment.currentTestCaseIndex >= 0 &&
+        _environment.currentTestCaseIndex < testCases.length)
+    ? testCases[_environment.currentTestCaseIndex]
+    : null;
 
 /* Test case result strings. */
 // TODO(gram) we should change these constants to use a different string
@@ -244,8 +247,8 @@ void test(String spec, TestFunction body) {
   _requireNotRunning();
   ensureInitialized();
   if (!_environment.soloTestSeen || _environment.soloNestingLevel > 0) {
-    var testcase = new TestCase._internal(testCases.length + 1, _fullSpec(spec),
-        body);
+    var testcase =
+        new TestCase._internal(testCases.length + 1, _fullSpec(spec), body);
     _testCases.add(testcase);
   }
 }
@@ -306,7 +309,7 @@ void solo_test(String spec, TestFunction body) {
 /// generated reason.
 Function expectAsync(Function callback,
     {int count: 1, int max: 0, String id, String reason}) =>
-  new _SpreadArgsHelper(callback, count, max, id, reason).func;
+        new _SpreadArgsHelper(callback, count, max, id, reason).func;
 
 /// Indicate that [callback] is expected to be called until [isDone] returns
 /// true.
@@ -324,7 +327,7 @@ Function expectAsync(Function callback,
 /// generated reason.
 Function expectAsyncUntil(Function callback, bool isDone(),
     {String id, String reason}) =>
-  new _SpreadArgsHelper(callback, 0, -1, id, reason, isDone: isDone).func;
+        new _SpreadArgsHelper(callback, 0, -1, id, reason, isDone: isDone).func;
 
 /// Creates a new named group of tests.
 ///
@@ -500,14 +503,22 @@ void _completeTests() {
 
   for (TestCase t in testCases) {
     switch (t.result) {
-      case PASS:  passed++; break;
-      case FAIL:  failed++; break;
-      case ERROR: errors++; break;
+      case PASS:
+        passed++;
+        break;
+      case FAIL:
+        failed++;
+        break;
+      case ERROR:
+        errors++;
+        break;
     }
   }
-  _config.onSummary(passed, failed, errors, testCases,
-      _environment.uncaughtErrorMessage);
-  _config.onDone(passed > 0 && failed == 0 && errors == 0 &&
+  _config.onSummary(
+      passed, failed, errors, testCases, _environment.uncaughtErrorMessage);
+  _config.onDone(passed > 0 &&
+      failed == 0 &&
+      errors == 0 &&
       _environment.uncaughtErrorMessage == null);
   _environment.initialized = false;
   _environment.currentTestCaseIndex = -1;

@@ -39,17 +39,10 @@ void _test(message) {
     test('verify count', () {
       expect(count, 3);
     });
-  }, [{
-    'description': 'expect async args',
-    'result': 'pass',
-  }, {
-    'description': 'invoked with too many args',
-    'result': 'error',
-  }, {
-    'description': 'created with too many args',
-    'result': 'error',
-  }, {
-    'description': 'verify count',
-    'result': 'pass',
-  }]);
+  }, [
+    {'description': 'expect async args', 'result': 'pass',},
+    {'description': 'invoked with too many args', 'result': 'error',},
+    {'description': 'created with too many args', 'result': 'error',},
+    {'description': 'verify count', 'result': 'pass',}
+  ]);
 }

@@ -134,7 +134,8 @@ class CompactVMConfiguration extends VMConfiguration {
     // Ensure the line fits under MAX_LINE. [buffer] includes the color escape
     // sequences too. Because these sequences are not visible characters, we
     // make sure they are not counted towards the limit.
-    int nonVisible = _nonVisiblePrefix + color.length  +
+    int nonVisible = _nonVisiblePrefix +
+        color.length +
         (_fail != 0 ? (_RED.length + _NONE.length) : 0);
     int len = buffer.length - nonVisible;
     var mx = MAX_LINE - len;
@@ -155,7 +156,7 @@ class CompactVMConfiguration extends VMConfiguration {
   }
 
   String _padTime(int time) =>
-    (time == 0) ? '00' : ((time < 10) ? '0$time' : '$time');
+      (time == 0) ? '00' : ((time < 10) ? '0$time' : '$time');
 
   String _timeString(Duration duration) {
     var min = duration.inMinutes;
@@ -181,7 +182,7 @@ class CompactVMConfiguration extends VMConfiguration {
         var buffer = new StringBuffer();
         buffer.write(words.first);
         buffer.write(' ...');
-        for (; i < words.length; i++) {
+        for ( ; i < words.length; i++) {
           buffer.write(' ');
           buffer.write(words[i]);
         }

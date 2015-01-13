@@ -52,23 +52,19 @@ void _test(message) {
         fail('failure');
       });
     });
-    test('foo5', () {
-    });
-  }, [{
-    'result': 'pass'
-  }, {
-    'result': 'fail',
-    'message': 'Callback called more times than expected (1).'
-  }, {
-    'result': 'fail',
-    'message': 'Expected: <false>\n  Actual: <true>\n'
-  }, {
-    'result': 'fail',
-    'message': 'Callback called more times than expected (1).'
-  }, {
-    'result': 'fail',
-    'message': 'failure'
-  }, {
-    'result': 'pass'
-  }]);
+    test('foo5', () {});
+  }, [
+    {'result': 'pass'},
+    {
+      'result': 'fail',
+      'message': 'Callback called more times than expected (1).'
+    },
+    {'result': 'fail', 'message': 'Expected: <false>\n  Actual: <true>\n'},
+    {
+      'result': 'fail',
+      'message': 'Callback called more times than expected (1).'
+    },
+    {'result': 'fail', 'message': 'failure'},
+    {'result': 'pass'}
+  ]);
 }

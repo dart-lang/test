@@ -65,25 +65,23 @@ void _test(message) {
     solo_test('final', () {
       expect(s.toString(), "EGHIHJHKHL");
     });
-  }, [{
-    'description': 'non-solo group solo_test in non-solo group',
-    'result': 'pass',
-  }, {
-    'description': 'solo group solo group non-solo test',
-    'result': 'pass',
-  }, {
-    'description': 'solo group solo group solo test',
-    'result': 'pass',
-  }, {
-    'description': 'solo group nested non-solo group in solo group '
-        'nested non-solo group non-solo test',
-    'result': 'pass',
-  }, {
-    'description': 'solo group nested non-solo group in solo group '
-        'nested non-solo group solo test',
-    'result': 'pass',
-  }, {
-    'description': 'final',
-    'result': 'pass',
-  }]);
+  }, [
+    {
+      'description': 'non-solo group solo_test in non-solo group',
+      'result': 'pass',
+    },
+    {'description': 'solo group solo group non-solo test', 'result': 'pass',},
+    {'description': 'solo group solo group solo test', 'result': 'pass',},
+    {
+      'description': 'solo group nested non-solo group in solo group '
+          'nested non-solo group non-solo test',
+      'result': 'pass',
+    },
+    {
+      'description': 'solo group nested non-solo group in solo group '
+          'nested non-solo group solo test',
+      'result': 'pass',
+    },
+    {'description': 'final', 'result': 'pass',}
+  ]);
 }

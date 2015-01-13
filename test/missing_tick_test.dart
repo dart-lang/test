@@ -14,13 +14,14 @@ void _test(message) {
   initMetatest(message, timeout: const Duration(seconds: 1));
 
   expectTestResults('missing tick', () {
-
     test('test that should time out', () {
       expectAsync(() {});
     });
-  }, [{
-    'description': 'test that should time out',
-    'message': 'Test timed out after 1 seconds.',
-    'result': 'error',
-  }]);
+  }, [
+    {
+      'description': 'test that should time out',
+      'message': 'Test timed out after 1 seconds.',
+      'result': 'error',
+    }
+  ]);
 }

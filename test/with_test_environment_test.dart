@@ -14,7 +14,7 @@ class TestConfiguration extends SimpleConfiguration {
   TestConfiguration();
 
   void onSummary(int passed, int failed, int errors, List<TestCase> results,
-                 String uncaughtError) {
+      String uncaughtError) {
     super.onSummary(passed, failed, errors, results, uncaughtError);
     _results = results;
   }

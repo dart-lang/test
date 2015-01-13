@@ -46,7 +46,7 @@ class SimpleConfiguration extends Configuration {
 
   /// The constructor sets up a failure handler for [expect] that redirects
   /// [expect] failures to [onExpectFailure].
-  SimpleConfiguration(): super.blank() {
+  SimpleConfiguration() : super.blank() {
     configureExpectFailureHandler(new _ExpectFailureHandler(this));
   }
 
@@ -75,8 +75,8 @@ class SimpleConfiguration extends Configuration {
     if (!stopTestOnExpectFailure && _testLogBuffer.length > 0) {
       // Write the message/stack pairs up to the last pairs.
       var reason = new StringBuffer();
-      for (var reasonAndTrace in
-             _testLogBuffer.take(_testLogBuffer.length - 1)) {
+      for (var reasonAndTrace
+          in _testLogBuffer.take(_testLogBuffer.length - 1)) {
         reason.write(reasonAndTrace.first);
         reason.write('\n');
         reason.write(reasonAndTrace.last);

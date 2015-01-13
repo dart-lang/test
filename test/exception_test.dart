@@ -17,8 +17,5 @@ void _test(message) {
     test('test', () {
       throw new Exception('Fail.');
     });
-  }, [{
-    'result': 'error',
-    'message': 'Test failed: Caught Exception: Fail.'
-  }]);
+  }, [{'result': 'error', 'message': 'Test failed: Caught Exception: Fail.'}]);
 }

@@ -98,17 +98,16 @@ class HtmlConfiguration extends SimpleConfiguration {
 
   void _installHandlers() {
     if (_onErrorSubscription == null) {
-      _onErrorSubscription = window.onError.listen(
-        (e) {
-          // Some tests may expect this and have no way to suppress the error.
-          if (js.context['testExpectsGlobalError'] != true) {
-            handleExternalError(e, '(DOM callback has errors)');
-          }
-        });
+      _onErrorSubscription = window.onError.listen((e) {
+        // Some tests may expect this and have no way to suppress the error.
+        if (js.context['testExpectsGlobalError'] != true) {
+          handleExternalError(e, '(DOM callback has errors)');
+        }
+      });
     }
     if (_onMessageSubscription == null) {
-      _onMessageSubscription = window.onMessage.listen(
-        (e) => processMessage(e));
+      _onMessageSubscription =
+          window.onMessage.listen((e) => processMessage(e));
     }
   }
 
@@ -133,8 +132,8 @@ class HtmlConfiguration extends SimpleConfiguration {
     // For Dart internal tests, we want to turn off stack frame
     // filtering, which we do with this meta-header.
     var meta = querySelector('meta[name="dart.unittest"]');
-    filterStacks = meta == null ? true :
-        !meta.content.contains('full-stack-traces');
+    filterStacks =
+        meta == null ? true : !meta.content.contains('full-stack-traces');
     _installHandlers();
     window.postMessage('unittest-suite-wait-for-done', '*');
   }
@@ -158,8 +157,8 @@ class HtmlConfiguration extends SimpleConfiguration {
 
   void onSummary(int passed, int failed, int errors, List<TestCase> results,
       String uncaughtError) {
-    _showResultsInPage(passed, failed, errors, results, _isLayoutTest,
-        uncaughtError);
+    _showResultsInPage(
+        passed, failed, errors, results, _isLayoutTest, uncaughtError);
   }
 
   void onDone(bool success) {

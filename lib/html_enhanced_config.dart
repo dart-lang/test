@@ -24,16 +24,16 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
   void _installOnErrorHandler() {
     if (_onErrorSubscription == null) {
       // Listen for uncaught errors.
-      _onErrorSubscription = window.onError.listen(
-          (e) => handleExternalError(e, '(DOM callback has errors)'));
+      _onErrorSubscription = window.onError
+          .listen((e) => handleExternalError(e, '(DOM callback has errors)'));
     }
   }
 
   void _installOnMessageHandler() {
     if (_onMessageSubscription == null) {
       // Listen for errors from JS.
-      _onMessageSubscription = window.onMessage.listen(
-          (e) => processMessage(e));
+      _onMessageSubscription =
+          window.onMessage.listen((e) => processMessage(e));
     }
   }
 
@@ -82,8 +82,8 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
 
   void onSummary(int passed, int failed, int errors, List<TestCase> results,
       String uncaughtError) {
-    _showInteractiveResultsInPage(passed, failed, errors, results,
-        _isLayoutTest, uncaughtError);
+    _showInteractiveResultsInPage(
+        passed, failed, errors, results, _isLayoutTest, uncaughtError);
   }
 
   void onDone(bool success) {
@@ -109,7 +109,6 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
         te.children.add(new Element.html("""
           <div class='unittest-pass'>All ${passed} tests passed</div>"""));
       } else {
-
         if (uncaughtError != null) {
           te.children.add(new Element.html("""
             <div class='unittest-summary'>
@@ -131,11 +130,11 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
        """));
 
       // handle the click event for the collapse all button
-      te.querySelector('#btnCollapseAll').onClick.listen((_){
+      te.querySelector('#btnCollapseAll').onClick.listen((_) {
         document
-          .querySelectorAll('.unittest-row')
-          .forEach((el) => el.attributes['class'] = el.attributes['class']
-              .replaceAll('unittest-row ', 'unittest-row-hidden '));
+            .querySelectorAll('.unittest-row')
+            .forEach((el) => el.attributes['class'] = el.attributes['class']
+                .replaceAll('unittest-row ', 'unittest-row-hidden '));
       });
 
       var previousGroup = '';
@@ -156,13 +155,10 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
       // flatten the list again with tests ordered
       List<TestCase> flattened = new List<TestCase>();
 
-      groupedBy
-        .values
-        .forEach((tList){
-          tList.sort((tcA, tcB) => tcA.id - tcB.id);
-          flattened.addAll(tList);
-          }
-        );
+      groupedBy.values.forEach((tList) {
+        tList.sort((tcA, tcB) => tcA.id - tcB.id);
+        flattened.addAll(tList);
+      });
 
       var nonAlphanumeric = new RegExp('[^a-z0-9A-Z]');
 
@@ -174,15 +170,14 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
         var safeGroup = test_.currentGroup.replaceAll(nonAlphanumeric, '_');
 
         if (test_.currentGroup != previousGroup) {
-
           previousGroup = test_.currentGroup;
 
           var testsInGroup = results
               .where((TestCase t) => t.currentGroup == previousGroup)
               .toList();
           var groupTotalTestCount = testsInGroup.length;
-          var groupTestPassedCount = testsInGroup.where(
-              (TestCase t) => t.result == 'pass').length;
+          var groupTestPassedCount =
+              testsInGroup.where((TestCase t) => t.result == 'pass').length;
           groupPassFail = groupTotalTestCount == groupTestPassedCount;
           var passFailClass = "unittest-group-status unittest-group-"
               "status-${groupPassFail ? 'pass' : 'fail'}";
@@ -204,16 +199,16 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
             </div>"""));
 
           // 'safeGroup' could be empty
-          var grp = (safeGroup == '') ?
-              null : te.querySelector('#${safeGroup}');
+          var grp =
+              (safeGroup == '') ? null : te.querySelector('#${safeGroup}');
           if (grp != null) {
             grp.onClick.listen((_) {
               var row = document.querySelector('.unittest-row-${safeGroup}');
-              if (row.attributes['class'].contains('unittest-row ')){
+              if (row.attributes['class'].contains('unittest-row ')) {
                 document.querySelectorAll('.unittest-row-${safeGroup}').forEach(
-                    (e) => e.attributes['class'] =  e.attributes['class']
+                    (e) => e.attributes['class'] = e.attributes['class']
                         .replaceAll('unittest-row ', 'unittest-row-hidden '));
-              }else{
+              } else {
                 document.querySelectorAll('.unittest-row-${safeGroup}').forEach(
                     (e) => e.attributes['class'] = e.attributes['class']
                         .replaceAll('unittest-row-hidden', 'unittest-row'));
@@ -234,10 +229,8 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
     var background = 'unittest-row-${test_.id % 2 == 0 ? "even" : "odd"}';
     var display = '${isVisible ? "unittest-row" : "unittest-row-hidden"}';
 
-    addRowElement(id, status, description){
-      te.children.add(
-        new Element.html(
-          ''' <div>
+    addRowElement(id, status, description) {
+      te.children.add(new Element.html(''' <div>
                 <div class='$display unittest-row-${groupID} $background'>
                   <div ${_isIE ? "style='display:inline-block' ": ""}
                        class='unittest-row-id'>$id</div>
@@ -247,9 +240,7 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
                   <div ${_isIE ? "style='display:inline-block' ": ""}
                        class='unittest-row-description'>$description</div>
                 </div>
-              </div>'''
-        )
-      );
+              </div>'''));
     }
 
     if (!test_.isComplete) {
@@ -266,15 +257,13 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
     }
   }
 
-
   static bool get _isIE => window.navigator.userAgent.contains('MSIE');
 
-  String get _htmlTestCSS =>
-  '''
+  String get _htmlTestCSS => '''
   body{
     font-size: 14px;
     font-family: 'Open Sans', 'Lucida Sans Unicode', 'Lucida Grande','''
-  ''' sans-serif;
+      ''' sans-serif;
     background: WhiteSmoke;
   }
 
@@ -292,13 +281,13 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
     ${_isIE ? "border-top:solid #777777 1px;": ""}
 
     background-image: -webkit-linear-gradient(bottom, rgb(50,50,50) 0%, '''
-    '''rgb(100,100,100) 100%);
+      '''rgb(100,100,100) 100%);
     background-image: -moz-linear-gradient(bottom, rgb(50,50,50) 0%, '''
-    '''rgb(100,100,100) 100%);
+      '''rgb(100,100,100) 100%);
     background-image: -ms-linear-gradient(bottom, rgb(50,50,50) 0%, '''
-    '''rgb(100,100,100) 100%);
+      '''rgb(100,100,100) 100%);
     background-image: linear-gradient(bottom, rgb(50,50,50) 0%, '''
-    '''rgb(100,100,100) 100%);
+      '''rgb(100,100,100) 100%);
 
     display: -webkit-box;
     display: -moz-box;
@@ -327,23 +316,23 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
   .unittest-group-status-pass{
     background: Green;
     background: '''
-    '''-webkit-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
+      '''-webkit-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
     background: '''
-    '''-moz-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
+      '''-moz-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
     background: '''
-    '''-ms-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
+      '''-ms-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
     background: '''
-    '''radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
+      '''radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
   }
 
   .unittest-group-status-fail{
     background: Red;
     background: '''
-    '''-webkit-radial-gradient(center, ellipse cover, #FFAAAA 0%,Red 100%);
+      '''-webkit-radial-gradient(center, ellipse cover, #FFAAAA 0%,Red 100%);
     background: '''
-    '''-moz-radial-gradient(center, ellipse cover, #FFAAAA 0%,Red 100%);
+      '''-moz-radial-gradient(center, ellipse cover, #FFAAAA 0%,Red 100%);
     background: '''
-    '''-ms-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
+      '''-ms-radial-gradient(center, ellipse cover, #AAFFAA 0%,Green 100%);
     background: radial-gradient(center, ellipse cover, #FFAAAA 0%,Red 100%);
   }
 

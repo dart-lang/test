@@ -63,29 +63,25 @@ void _test(message) {
         });
       });
     });
-    test('foo6', () {
-    });
-  }, [{
-    'description': 'successful',
-    'result': 'pass',
-  }, {
-    'description': 'fail1',
-    'message': 'Expected: <false>\n' '  Actual: <true>\n' '',
-    'result': 'fail',
-  }, {
-    'description': 'error1',
-    'message': 'Callback called more times than expected (1).',
-    'result': 'fail',
-  }, {
-    'description': 'fail2',
-    'message': 'failure',
-    'result': 'fail',
-  }, {
-    'description': 'error2',
-    'message': 'Callback called more times than expected (1).',
-    'result': 'fail',
-  }, {
-    'description': 'foo6',
-    'result': 'pass',
-  }]);
+    test('foo6', () {});
+  }, [
+    {'description': 'successful', 'result': 'pass',},
+    {
+      'description': 'fail1',
+      'message': 'Expected: <false>\n' '  Actual: <true>\n' '',
+      'result': 'fail',
+    },
+    {
+      'description': 'error1',
+      'message': 'Callback called more times than expected (1).',
+      'result': 'fail',
+    },
+    {'description': 'fail2', 'message': 'failure', 'result': 'fail',},
+    {
+      'description': 'error2',
+      'message': 'Callback called more times than expected (1).',
+      'result': 'fail',
+    },
+    {'description': 'foo6', 'result': 'pass',}
+  ]);
 }
