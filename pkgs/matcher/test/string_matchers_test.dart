@@ -19,15 +19,24 @@ void main() {
 
   test('isEmpty', () {
     shouldPass('', isEmpty);
-    shouldFail(null, isEmpty, "Expected: empty Actual: <null>");
-    shouldFail(0, isEmpty, "Expected: empty Actual: <0>");
-    shouldFail('a', isEmpty, "Expected: empty Actual: 'a'");
+    shouldFail(null, isEmpty, startsWith("Expected: empty  Actual: <null>"));
+    shouldFail(0, isEmpty, startsWith("Expected: empty  Actual: <0>"));
+    shouldFail('a', isEmpty, startsWith("Expected: empty  Actual: 'a'"));
+  });
+
+  // Regression test for: https://code.google.com/p/dart/issues/detail?id=21562
+  test('isNot(isEmpty)', () {
+    shouldPass('a', isNot(isEmpty));
+    shouldFail('', isNot(isEmpty), 'Expected: not empty Actual: \'\'');
+    shouldFail(null, isNot(isEmpty),
+      startsWith('Expected: not empty  Actual: <null>'));
   });
 
   test('isNotEmpty', () {
-    shouldFail('', isNotEmpty, "Expected: non-empty Actual: ''");
-    shouldFail(null, isNotEmpty, "Expected: non-empty Actual: <null>");
-    shouldFail(0, isNotEmpty, "Expected: non-empty Actual: <0>");
+    shouldFail('', isNotEmpty, startsWith("Expected: non-empty  Actual: ''"));
+    shouldFail(null, isNotEmpty,
+        startsWith("Expected: non-empty  Actual: <null>"));
+    shouldFail(0, isNotEmpty, startsWith("Expected: non-empty  Actual: <0>"));
     shouldPass('a', isNotEmpty);
   });
 

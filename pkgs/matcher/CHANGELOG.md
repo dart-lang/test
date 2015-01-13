@@ -1,3 +1,11 @@
+## 0.11.4
+
+* Remove the type checks in the `isEmpty` and `isNotEmpty` matchers and simply
+  access the `isEmpty` respectively `isNotEmpty` fields. This allows them to
+  work with custom collections. See [Issue
+  21792](https://code.google.com/p/dart/issues/detail?id=21792) and [Issue
+  21562](https://code.google.com/p/dart/issues/detail?id=21562)
+
 ## 0.11.3+1
 
 * Fix the `prints` matcher test on dart2js.

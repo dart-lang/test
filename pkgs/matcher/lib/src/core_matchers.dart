@@ -8,29 +8,24 @@ import 'description.dart';
 import 'interfaces.dart';
 import 'util.dart';
 
-/// Returns a matcher that matches empty strings, maps or iterables
-/// (including collections) using the isEmpty property.
+/// Returns a matcher that matches the isEmpty property.
 const Matcher isEmpty = const _Empty();
 
 class _Empty extends Matcher {
   const _Empty();
-  bool matches(item, Map matchState) {
-    return (item is Map || item is Iterable || item is String) && item.isEmpty;
-  }
+
+  bool matches(item, Map matchState) => item.isEmpty;
+
   Description describe(Description description) => description.add('empty');
 }
 
-/// Returns a matcher that matches non-empty strings, maps or iterables
-/// (including collections) using the isNotEmpty property.
+/// Returns a matcher that matches the isNotEmpty property.
 const Matcher isNotEmpty = const _NotEmpty();
 
 class _NotEmpty extends Matcher {
   const _NotEmpty();
 
-  bool matches(item, Map matchState) {
-    return (item is Map || item is Iterable || item is String) &&
-      item.isNotEmpty;
-  }
+  bool matches(item, Map matchState) => item.isNotEmpty;
 
   Description describe(Description description) => description.add('non-empty');
 }
