@@ -1,3 +1,7 @@
+##0.11.5
+
+* Bumped the version constraint for `matcher`.
+
 ##0.11.4
 
 * Bump the version constraint for `matcher`.

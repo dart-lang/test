@@ -92,13 +92,11 @@ class CompactVMConfiguration extends VMConfiguration {
 
   void onSummary(int passed, int failed, int errors, List<TestCase> results,
       String uncaughtError) {
-    var success = false;
     if (passed == 0 && failed == 0 && errors == 0 && uncaughtError == null) {
       _print('\nNo tests ran.');
     } else if (failed == 0 && errors == 0 && uncaughtError == null) {
       _progressLine('All tests passed!', _NONE);
       _print();
-      success = true;
     } else {
       _progressLine('Some tests failed.', _RED);
       _print();
@@ -138,7 +136,6 @@ class CompactVMConfiguration extends VMConfiguration {
         color.length +
         (_fail != 0 ? (_RED.length + _NONE.length) : 0);
     int len = buffer.length - nonVisible;
-    var mx = MAX_LINE - len;
     buffer.write(_snippet(message, MAX_LINE - len));
     buffer.write(_NONE);
 

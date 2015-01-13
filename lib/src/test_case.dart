@@ -55,8 +55,6 @@ class TestCase {
 
   bool get enabled => _enabled;
 
-  bool _doneTeardown = false;
-
   Completer _testComplete;
 
   TestCase._internal(this.id, this.description, this._testFunction)

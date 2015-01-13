@@ -139,7 +139,6 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
 
       var previousGroup = '';
       var groupPassFail = true;
-      final indentAmount = 50;
 
       // order by group and sort numerically within each group
       var groupedBy = new LinkedHashMap<String, List<TestCase>>();
