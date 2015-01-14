@@ -42,8 +42,8 @@ void main() {
     });
 
     test('with a custom [toString] and a private name', () {
-      expect(prettyPrint(new _PrivateName()),
-          equals('?:<string representation>'));
+      expect(
+          prettyPrint(new _PrivateName()), equals('?:<string representation>'));
     });
   });
 
@@ -54,8 +54,7 @@ void main() {
     });
 
     test("that's not a list and has a private name", () {
-      expect(prettyPrint(new _PrivateNameIterable()),
-          equals("?:[1, 2, 3]"));
+      expect(prettyPrint(new _PrivateNameIterable()), equals("?:[1, 2, 3]"));
     });
   });
 }

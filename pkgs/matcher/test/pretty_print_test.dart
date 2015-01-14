@@ -14,8 +14,7 @@ void main() {
     expect(prettyPrint(12.13), equals('<12.13>'));
     expect(prettyPrint(true), equals('<true>'));
     expect(prettyPrint(null), equals('<null>'));
-    expect(prettyPrint(() => 12),
-        matches(r'<Closure(: \(\) => dynamic)?>'));
+    expect(prettyPrint(() => 12), matches(r'<Closure(: \(\) => dynamic)?>'));
   });
 
   group('with a string', () {
@@ -24,15 +23,14 @@ void main() {
     });
 
     test('containing newlines', () {
-      expect(prettyPrint('foo\nbar\nbaz'), equals(
-          "'foo\\n'\n"
+      expect(prettyPrint('foo\nbar\nbaz'), equals("'foo\\n'\n"
           "  'bar\\n'\n"
           "  'baz'"));
     });
 
     test('containing escapable characters', () {
-      expect(prettyPrint("foo\rbar\tbaz'qux"),
-          equals("'foo\\rbar\\tbaz\\'qux'"));
+      expect(
+          prettyPrint("foo\rbar\tbaz'qux"), equals("'foo\\rbar\\tbaz\\'qux'"));
     });
   });
 
@@ -78,10 +76,8 @@ void main() {
     });
 
     test("factors indentation into maxLineLength", () {
-      expect(prettyPrint([
-        "foo\nbar",
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-      ], maxLineLength: 30), equals("[\n"
+      expect(prettyPrint(["foo\nbar", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],],
+          maxLineLength: 30), equals("[\n"
           "  'foo\\n'\n"
           "    'bar',\n"
           "  [\n"
@@ -173,17 +169,16 @@ void main() {
 
     test("factors indentation into maxLineLength", () {
       expect(prettyPrint(["foo\nbar", {'0': 1, '2': 3, '4': 5, '6': 7}],
-              maxLineLength: 32),
-          equals("[\n"
-              "  'foo\\n'\n"
-              "    'bar',\n"
-              "  {\n"
-              "    '0': 1,\n"
-              "    '2': 3,\n"
-              "    '4': 5,\n"
-              "    '6': 7\n"
-              "  }\n"
-              "]"));
+          maxLineLength: 32), equals("[\n"
+          "  'foo\\n'\n"
+          "    'bar',\n"
+          "  {\n"
+          "    '0': 1,\n"
+          "    '2': 3,\n"
+          "    '4': 5,\n"
+          "    '6': 7\n"
+          "  }\n"
+          "]"));
     });
 
     test("that's under maxItems", () {

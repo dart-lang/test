@@ -14,7 +14,7 @@ import 'matcher.dart';
 /// with name [name], and optionally, if that property in turn satisfies
 /// a [matcher].
 Matcher hasProperty(String name, [matcher]) =>
-  new _HasProperty(name, matcher == null ? null : wrapMatcher(matcher));
+    new _HasProperty(name, matcher == null ? null : wrapMatcher(matcher));
 
 class _HasProperty extends Matcher {
   final String _name;
@@ -35,8 +35,10 @@ class _HasProperty extends Matcher {
     bool isInstanceGetter =
         candidate is MethodMirror && candidate.isGetter && !candidate.isStatic;
     if (!(isInstanceField || isInstanceGetter)) {
-      addStateInfo(matchState, {'reason':
-          'has a member named "$_name", but it is not an instance property'});
+      addStateInfo(matchState, {
+        'reason':
+            'has a member named "$_name", but it is not an instance property'
+      });
       return false;
     }
     if (_matcher == null) return true;
@@ -56,17 +58,18 @@ class _HasProperty extends Matcher {
     return description;
   }
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     var reason = matchState == null ? null : matchState['reason'];
     if (reason != null) {
       mismatchDescription.add(reason);
     } else {
-      mismatchDescription.add('has property "$_name" with value ').
-        addDescriptionOf(matchState['value']);
+      mismatchDescription
+          .add('has property "$_name" with value ')
+          .addDescriptionOf(matchState['value']);
       var innerDescription = new StringDescription();
-      _matcher.describeMismatch(matchState['value'], innerDescription,
-          matchState['state'], verbose);
+      _matcher.describeMismatch(
+          matchState['value'], innerDescription, matchState['state'], verbose);
       if (innerDescription.length > 0) {
         mismatchDescription.add(' which ').add(innerDescription.toString());
       }

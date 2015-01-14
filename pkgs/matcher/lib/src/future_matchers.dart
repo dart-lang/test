@@ -46,11 +46,13 @@ class _Completes extends Matcher {
     var done = wrapAsync((fn) => fn(), _id);
 
     item.then((value) {
-      done(() { if (_matcher != null) expect(value, _matcher); });
+      done(() {
+        if (_matcher != null) expect(value, _matcher);
+      });
     }, onError: (error, trace) {
       var id = _id == '' ? '' : '${_id} ';
       var reason = 'Expected future ${id}to complete successfully, '
-                   'but it failed with ${error}';
+          'but it failed with ${error}';
       if (trace != null) {
         var stackTrace = trace.toString();
         stackTrace = '  ${stackTrace.replaceAll('\n', '\n  ')}';

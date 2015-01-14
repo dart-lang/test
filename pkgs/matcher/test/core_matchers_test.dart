@@ -65,12 +65,32 @@ void main() {
 
     shouldPass(set2, equals(set1));
     shouldPass(numbers, equals(set1));
-    shouldFail([1, 2, 3, 4, 5, 6, 7, 8, 9], equals(set1), matches(
-        r"Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]"
+    shouldFail([
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ], equals(set1), matches(r"Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]"
         r"  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9\]"
         r"   Which: does not contain 10"));
-    shouldFail([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], equals(set1), matches(
-        r"Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]"
+    shouldFail([
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ], equals(set1), matches(r"Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]"
         r"  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11\]"
         r"   Which: larger than expected"));
   });
@@ -85,12 +105,10 @@ void main() {
 
   test('returnsNormally', () {
     shouldPass(doesNotThrow, returnsNormally);
-    shouldFail(doesThrow, returnsNormally,
-        matches(
-            r"Expected: return normally"
-            r"  Actual: <Closure(: \(\) => dynamic "
-            r"from Function 'doesThrow': static\.)?>"
-            r"   Which: threw 'X'"));
+    shouldFail(doesThrow, returnsNormally, matches(r"Expected: return normally"
+        r"  Actual: <Closure(: \(\) => dynamic "
+        r"from Function 'doesThrow': static\.)?>"
+        r"   Which: threw 'X'"));
   });
 
   test('hasLength', () {
@@ -106,35 +124,30 @@ void main() {
 
     b.add(0);
     shouldPass(b, hasLength(1));
-    shouldFail(b, hasLength(2),
-        "Expected: an object with length of <2> "
+    shouldFail(b, hasLength(2), "Expected: an object with length of <2> "
         "Actual: [0] "
         "Which: has length of <1>");
 
     b.add(0);
-    shouldFail(b, hasLength(1),
-        "Expected: an object with length of <1> "
+    shouldFail(b, hasLength(1), "Expected: an object with length of <1> "
         "Actual: [0, 0] "
         "Which: has length of <2>");
     shouldPass(b, hasLength(2));
   });
 
   test('scalar type mismatch', () {
-    shouldFail('error', equals(5.1),
-        "Expected: <5.1> "
+    shouldFail('error', equals(5.1), "Expected: <5.1> "
         "Actual: 'error'");
   });
 
   test('nested type mismatch', () {
-    shouldFail(['error'], equals([5.1]),
-        "Expected: [5.1] "
+    shouldFail(['error'], equals([5.1]), "Expected: [5.1] "
         "Actual: ['error'] "
         "Which: was 'error' instead of <5.1> at location [0]");
   });
 
   test('doubly-nested type mismatch', () {
-    shouldFail([['error']], equals([[5.1]]),
-        "Expected: [[5.1]] "
+    shouldFail([['error']], equals([[5.1]]), "Expected: [[5.1]] "
         "Actual: [['error']] "
         "Which: was 'error' instead of <5.1> at location [0][0]");
   });
@@ -152,8 +165,8 @@ void main() {
         "Actual: [['foo', 'barry'], ['foo'], 4, []] "
         "Which: was 'barry' instead of 'bar' at location [0][1]";
 
-    var actual3 = [['foo', 'bar'], ['foo'], 4, {'foo':'bar'}];
-    var expected3 = [['foo', 'bar'], ['foo'], 4, {'foo':'barry'}];
+    var actual3 = [['foo', 'bar'], ['foo'], 4, {'foo': 'bar'}];
+    var expected3 = [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}];
     var reason3 = "Expected: [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}] "
         "Actual: [['foo', 'bar'], ['foo'], 4, {'foo': 'bar'}] "
         "Which: was 'bar' instead of 'barry' at location [3]['foo']";

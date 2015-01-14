@@ -32,8 +32,8 @@ abstract class FailureHandler {
   /// some cases how much [matchState] information is used. It will use
   /// these to create a detailed error message (typically by calling
   /// an [ErrorFormatter]) and then call [fail] with this message.
-  void failMatch(actual, Matcher matcher, String reason,
-                 Map matchState, bool verbose);
+  void failMatch(
+      actual, Matcher matcher, String reason, Map matchState, bool verbose);
 }
 
 /// The ErrorFormatter type is used for functions that
@@ -42,8 +42,8 @@ abstract class FailureHandler {
 /// which is used by the default failure handler. If the failure handler
 /// is replaced it may be desirable to replace the [stringDescription]
 /// error formatter with another.
-typedef String ErrorFormatter(actual, Matcher matcher, String reason,
-  Map matchState, bool verbose);
+typedef String ErrorFormatter(
+    actual, Matcher matcher, String reason, Map matchState, bool verbose);
 
 /// This Function is used by certain Matchers to catch certain exceptions.
 ///
@@ -75,8 +75,8 @@ Function wrapAsync = (Function f, [id]) => f;
 /// In some cases extra diagnostic info can be produced on failure (for
 /// example, stack traces on mismatched exceptions). To enable these,
 /// [verbose] should be specified as true;
-void expect(actual, matcher, {String reason, FailureHandler failureHandler,
-            bool verbose : false}) {
+void expect(actual, matcher,
+    {String reason, FailureHandler failureHandler, bool verbose: false}) {
   matcher = wrapMatcher(matcher);
   bool doesMatch;
   var matchState = {};
@@ -116,8 +116,8 @@ class DefaultFailureHandler implements FailureHandler {
   void fail(String reason) {
     throw new TestFailure(reason);
   }
-  void failMatch(actual, Matcher matcher, String reason,
-      Map matchState, bool verbose) {
+  void failMatch(
+      actual, Matcher matcher, String reason, Map matchState, bool verbose) {
     fail(_assertErrorFormatter(actual, matcher, reason, matchState, verbose));
   }
 }
@@ -145,8 +145,8 @@ FailureHandler getOrCreateExpectFailureHandler() {
 ErrorFormatter _assertErrorFormatter = null;
 
 // The default error formatter implementation.
-String _defaultErrorFormatter(actual, Matcher matcher, String reason,
-    Map matchState, bool verbose) {
+String _defaultErrorFormatter(
+    actual, Matcher matcher, String reason, Map matchState, bool verbose) {
   var description = new StringDescription();
   description.add('Expected: ').addDescriptionOf(matcher).add('\n');
   description.add('  Actual: ').addDescriptionOf(actual).add('\n');

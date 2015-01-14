@@ -22,81 +22,82 @@ void main() {
 
   group('Core matchers', () {
     test('throwsFormatException', () {
-      shouldPass(() { throw new FormatException(''); },
-          throwsFormatException);
-      shouldFail(() { throw new Exception(); },
-          throwsFormatException,
-          matches(
-              r"Expected: throws FormatException +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
+      shouldPass(() {
+        throw new FormatException('');
+      }, throwsFormatException);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsFormatException, matches(r"Expected: throws FormatException +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
 
     test('throwsArgumentError', () {
-      shouldPass(() { throw new ArgumentError(''); },
-          throwsArgumentError);
-      shouldFail(() { throw new Exception(); },
-          throwsArgumentError,
-          matches(
-              r"Expected: throws ArgumentError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
+      shouldPass(() {
+        throw new ArgumentError('');
+      }, throwsArgumentError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsArgumentError, matches(r"Expected: throws ArgumentError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
 
     test('throwsRangeError', () {
-      shouldPass(() { throw new RangeError(0); },
-          throwsRangeError);
-      shouldFail(() { throw new Exception(); },
-          throwsRangeError,
-          matches(
-              r"Expected: throws RangeError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
+      shouldPass(() {
+        throw new RangeError(0);
+      }, throwsRangeError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsRangeError, matches(r"Expected: throws RangeError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
 
     test('throwsNoSuchMethodError', () {
       shouldPass(() {
         throw new NoSuchMethodError(null, const Symbol(''), null, null);
       }, throwsNoSuchMethodError);
-      shouldFail(() { throw new Exception(); },
-          throwsNoSuchMethodError,
-          matches(
-              r"Expected: throws NoSuchMethodError +"
+      shouldFail(() {
+        throw new Exception();
+      }, throwsNoSuchMethodError, matches(
+          r"Expected: throws NoSuchMethodError +"
               r"Actual: <Closure(: \(\) => dynamic)?> +"
               r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
 
     test('throwsUnimplementedError', () {
-      shouldPass(() { throw new UnimplementedError(''); },
-          throwsUnimplementedError);
-      shouldFail(() { throw new Exception(); },
-          throwsUnimplementedError,
-          matches(
-              r"Expected: throws UnimplementedError +"
+      shouldPass(() {
+        throw new UnimplementedError('');
+      }, throwsUnimplementedError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsUnimplementedError, matches(
+          r"Expected: throws UnimplementedError +"
               r"Actual: <Closure(: \(\) => dynamic)?> +"
               r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
 
     test('throwsUnsupportedError', () {
-      shouldPass(() { throw new UnsupportedError(''); },
-          throwsUnsupportedError);
-      shouldFail(() { throw new Exception(); },
-          throwsUnsupportedError,
-          matches(
-              r"Expected: throws UnsupportedError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
+      shouldPass(() {
+        throw new UnsupportedError('');
+      }, throwsUnsupportedError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsUnsupportedError, matches(r"Expected: throws UnsupportedError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
 
     test('throwsStateError', () {
-      shouldPass(() { throw new StateError(''); },
-          throwsStateError);
-      shouldFail(() { throw new Exception(); },
-          throwsStateError,
-          matches(
-              r"Expected: throws StateError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
+      shouldPass(() {
+        throw new StateError('');
+      }, throwsStateError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsStateError, matches(r"Expected: throws StateError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw " + _MINIFIED_NAME + r":<Exception>"));
     });
   });
 
@@ -113,17 +114,15 @@ void main() {
       var d = new SimpleIterable(0);
       var e = new SimpleIterable(1);
       shouldPass(e, isNotEmpty);
-      shouldFail(d, isNotEmpty,
-          matches(r"Expected: non-empty +Actual: " + _MINIFIED_NAME + r":\[\]"));
+      shouldFail(d, isNotEmpty, matches(
+          r"Expected: non-empty +Actual: " + _MINIFIED_NAME + r":\[\]"));
     });
 
     test('contains', () {
       var d = new SimpleIterable(3);
       shouldPass(d, contains(2));
-      shouldFail(d, contains(5),
-          matches(
-              r"Expected: contains <5> +"
-              r"Actual: " + _MINIFIED_NAME + r":\[3, 2, 1\]"));
+      shouldFail(d, contains(5), matches(r"Expected: contains <5> +"
+          r"Actual: " + _MINIFIED_NAME + r":\[3, 2, 1\]"));
     });
   });
 
@@ -133,10 +132,9 @@ void main() {
       w.price = 10;
       shouldPass(w, new HasPrice(10));
       shouldPass(w, new HasPrice(greaterThan(0)));
-      shouldFail(w, new HasPrice(greaterThan(10)),
-          matches(
-              r"Expected: Widget with a price that is a value greater than "
-                  r"<10> +"
+      shouldFail(w, new HasPrice(greaterThan(10)), matches(
+          r"Expected: Widget with a price that is a value greater than "
+              r"<10> +"
               r"Actual: <Instance of '" + _MINIFIED_NAME + r"'> +"
               r"Which: has price with value <10> which is not "
               r"a value greater than <10>"));

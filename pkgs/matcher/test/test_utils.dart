@@ -65,7 +65,9 @@ void shouldPass(value, Matcher matcher, {bool isAsync: false}) {
 }
 
 doesNotThrow() {}
-doesThrow() { throw 'X'; }
+doesThrow() {
+  throw 'X';
+}
 
 class PrefixMatcher extends Matcher {
   final String _prefix;
@@ -75,8 +77,8 @@ class PrefixMatcher extends Matcher {
         (collapseWhitespace(item)).startsWith(collapseWhitespace(_prefix));
   }
 
-  Description describe(Description description) =>
-    description.add('a string starting with ').
-        addDescriptionOf(collapseWhitespace(_prefix)).
-        add(' ignoring whitespace');
+  Description describe(Description description) => description
+      .add('a string starting with ')
+      .addDescriptionOf(collapseWhitespace(_prefix))
+      .add(' ignoring whitespace');
 }

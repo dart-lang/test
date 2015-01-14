@@ -51,8 +51,8 @@ class StringDescription implements Description {
   /// Append an [Iterable] [list] of objects to the description, using the
   /// specified [separator] and framing the list with [start]
   /// and [end].
-  Description addAll(String start, String separator, String end,
-                       Iterable list) {
+  Description addAll(
+      String start, String separator, String end, Iterable list) {
     var separate = false;
     add(start);
     for (var item in list) {

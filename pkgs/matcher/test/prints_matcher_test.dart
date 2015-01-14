@@ -79,29 +79,24 @@ void main() {
 
     test("describes a failure nicely", () {
       shouldFail(() => new Future(() => print("Hello, world!")),
-          prints("Goodbye, world!\n"),
-          "Expected: 'Goodbye, world!\\n' ''"
+          prints("Goodbye, world!\n"), "Expected: 'Goodbye, world!\\n' ''"
           "  Actual: 'Hello, world!\\n' ''"
           "   Which: is different. "
           "Expected: Goodbye, w ... "
           "  Actual: Hello, wor ... "
-          "          ^ Differ at offset 0",
-          isAsync: true);
+          "          ^ Differ at offset 0", isAsync: true);
     });
 
     test("describes a failure with a non-descriptive Matcher nicely", () {
       shouldFail(() => new Future(() => print("Hello, world!")),
-          prints(contains("Goodbye")),
-          "Expected: contains 'Goodbye'"
-          "  Actual: 'Hello, world!\\n' ''",
-          isAsync: true);
+          prints(contains("Goodbye")), "Expected: contains 'Goodbye'"
+          "  Actual: 'Hello, world!\\n' ''", isAsync: true);
     });
 
     test("describes a failure with no text nicely", () {
       shouldFail(() => new Future.value(), prints(contains("Goodbye")),
           "Expected: contains 'Goodbye'"
-          "  Actual: ''",
-          isAsync: true);
+          "  Actual: ''", isAsync: true);
     });
   });
 }

@@ -17,7 +17,6 @@ class C {
 }
 
 void main() {
-
   initUtils();
 
   test('hasProperty', () {

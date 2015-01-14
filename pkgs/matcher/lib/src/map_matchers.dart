@@ -32,24 +32,29 @@ class _ContainsMapping extends Matcher {
   const _ContainsMapping(this._key, Matcher this._valueMatcher);
 
   bool matches(item, Map matchState) =>
-      item.containsKey(_key) &&
-      _valueMatcher.matches(item[_key], matchState);
+      item.containsKey(_key) && _valueMatcher.matches(item[_key], matchState);
 
   Description describe(Description description) {
-    return description.add('contains pair ').addDescriptionOf(_key).
-          add(' => ').addDescriptionOf(_valueMatcher);
+    return description
+        .add('contains pair ')
+        .addDescriptionOf(_key)
+        .add(' => ')
+        .addDescriptionOf(_valueMatcher);
   }
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (!item.containsKey(_key)) {
-      return mismatchDescription.add(" doesn't contain key ")
+      return mismatchDescription
+          .add(" doesn't contain key ")
           .addDescriptionOf(_key);
     } else {
-      mismatchDescription.add(' contains key ').addDescriptionOf(_key).
-          add(' but with value ');
-      _valueMatcher.describeMismatch(item[_key], mismatchDescription,
-          matchState, verbose);
+      mismatchDescription
+          .add(' contains key ')
+          .addDescriptionOf(_key)
+          .add(' but with value ');
+      _valueMatcher.describeMismatch(
+          item[_key], mismatchDescription, matchState, verbose);
       return mismatchDescription;
     }
   }

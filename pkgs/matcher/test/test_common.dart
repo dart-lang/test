@@ -56,4 +56,3 @@ class _SimpleIterator implements Iterator<int> {
 
   int get current => _current;
 }
-

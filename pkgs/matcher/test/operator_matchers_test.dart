@@ -14,13 +14,13 @@ void main() {
 
   test('anyOf', () {
     // with a list
-    shouldFail(0, anyOf([equals(1), equals(2)]),
-        "Expected: (<1> or <2>) Actual: <0>");
+    shouldFail(
+        0, anyOf([equals(1), equals(2)]), "Expected: (<1> or <2>) Actual: <0>");
     shouldPass(1, anyOf([equals(1), equals(2)]));
 
     // with individual items
-    shouldFail(0, anyOf(equals(1), equals(2)),
-        "Expected: (<1> or <2>) Actual: <0>");
+    shouldFail(
+        0, anyOf(equals(1), equals(2)), "Expected: (<1> or <2>) Actual: <0>");
     shouldPass(1, anyOf(equals(1), equals(2)));
   });
 
@@ -40,10 +40,10 @@ void main() {
         "Which: is not a value greater than <0>");
 
     // with maximum items
-    shouldPass(1, allOf(lessThan(10), lessThan(9), lessThan(8), lessThan(7),
-                        lessThan(6), lessThan(5), lessThan(4)));
+    shouldPass(1, allOf(lessThan(10), lessThan(9), lessThan(8),
+        lessThan(7), lessThan(6), lessThan(5), lessThan(4)));
     shouldFail(4, allOf(lessThan(10), lessThan(9), lessThan(8), lessThan(7),
-        lessThan(6), lessThan(5), lessThan(4)),
+            lessThan(6), lessThan(5), lessThan(4)),
         "Expected: (a value less than <10> and a value less than <9> and a "
         "value less than <8> and a value less than <7> and a value less than "
         "<6> and a value less than <5> and a value less than <4>) "
@@ -53,7 +53,7 @@ void main() {
 
   test('If the first argument is a List, the rest must be null', () {
     expect(() => allOf([], 5), throwsArgumentError);
-    expect(() => anyOf([], null, null, null, null, null, 42),
-        throwsArgumentError);
+    expect(
+        () => anyOf([], null, null, null, null, null, 42), throwsArgumentError);
   });
 }

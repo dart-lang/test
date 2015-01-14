@@ -54,6 +54,7 @@ abstract class Matcher {
   /// A few matchers make use of the [verbose] flag to provide detailed
   /// information that is not typically included but can be of help in
   /// diagnosing failures, such as stack traces.
-  Description describeMismatch(item, Description mismatchDescription,
-      Map matchState, bool verbose) => mismatchDescription;
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) =>
+      mismatchDescription;
 }

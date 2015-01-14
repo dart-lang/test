@@ -106,10 +106,9 @@ class _IsSameAs extends Matcher {
 /// For [Iterable]s and [Map]s, this will recursively match the elements. To
 /// handle cyclic structures a recursion depth [limit] can be provided. The
 /// default limit is 100. [Set]s will be compared order-independently.
-Matcher equals(expected, [int limit=100]) =>
-    expected is String
-        ? new _StringEqualsMatcher(expected)
-        : new _DeepMatcher(expected, limit);
+Matcher equals(expected, [int limit = 100]) => expected is String
+    ? new _StringEqualsMatcher(expected)
+    : new _DeepMatcher(expected, limit);
 
 class _DeepMatcher extends Matcher {
   final _expected;
@@ -138,8 +137,8 @@ class _DeepMatcher extends Matcher {
       if (!actualNext) return ['shorter than expected', newLocation];
 
       // Match the elements.
-      var rp = matcher(expectedIterator.current, actualIterator.current,
-          newLocation, depth);
+      var rp = matcher(
+          expectedIterator.current, actualIterator.current, newLocation, depth);
       if (rp != null) return rp;
     }
   }
@@ -177,7 +176,7 @@ class _DeepMatcher extends Matcher {
       // Otherwise, test for equality.
       try {
         if (expected == actual) return null;
-      } catch (e, s) {
+      } catch (e) {
         // TODO(gram): Add a test for this case.
         return ['== threw "$e"', location];
       }
@@ -188,16 +187,17 @@ class _DeepMatcher extends Matcher {
     // If _limit is 1 we can only recurse one level into object.
     if (depth == 0 || _limit > 1) {
       if (expected is Set) {
-        return _compareSets(expected, actual, _recursiveMatch, depth + 1,
-            location);
+        return _compareSets(
+            expected, actual, _recursiveMatch, depth + 1, location);
       } else if (expected is Iterable) {
-        return _compareIterables(expected, actual, _recursiveMatch, depth + 1,
-            location);
+        return _compareIterables(
+            expected, actual, _recursiveMatch, depth + 1, location);
       } else if (expected is Map) {
         if (actual is! Map) return ['expected a map', location];
 
-        var err = (expected.length == actual.length) ? '' :
-                  'has different length and ';
+        var err = (expected.length == actual.length)
+            ? ''
+            : 'has different length and ';
         for (var key in expected.keys) {
           if (!actual.containsKey(key)) {
             return ["${err}is missing map key '$key'", location];
@@ -211,8 +211,8 @@ class _DeepMatcher extends Matcher {
         }
 
         for (var key in expected.keys) {
-          var rp = _recursiveMatch(expected[key], actual[key],
-              "${location}['${key}']", depth + 1);
+          var rp = _recursiveMatch(
+              expected[key], actual[key], "${location}['${key}']", depth + 1);
           if (rp != null) return rp;
         }
 
@@ -225,10 +225,11 @@ class _DeepMatcher extends Matcher {
     // If we have recursed, show the expected value too; if not, expect() will
     // show it for us.
     if (depth > 0) {
-      description.add('was ').
-          addDescriptionOf(actual).
-          add(' instead of ').
-          addDescriptionOf(expected);
+      description
+          .add('was ')
+          .addDescriptionOf(actual)
+          .add(' instead of ')
+          .addDescriptionOf(expected);
       return [description.toString(), location];
     }
 
@@ -258,10 +259,10 @@ class _DeepMatcher extends Matcher {
       _match(_expected, item, matchState) == null;
 
   Description describe(Description description) =>
-    description.addDescriptionOf(_expected);
+      description.addDescriptionOf(_expected);
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     var reason = matchState['reason'];
     // If we didn't get a good reason, that would normally be a
     // simple 'is <value>' message. We only add that if the mismatch
@@ -289,8 +290,8 @@ class _StringEqualsMatcher extends Matcher {
   Description describe(Description description) =>
       description.addDescriptionOf(_value);
 
-  Description describeMismatch(item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is! String) {
       return mismatchDescription.addDescriptionOf(item).add('is not a string');
     } else {
@@ -298,8 +299,9 @@ class _StringEqualsMatcher extends Matcher {
       buff.write('is different.');
       var escapedItem = _escape(item);
       var escapedValue = _escape(_value);
-      int minLength = escapedItem.length < escapedValue.length ?
-          escapedItem.length : escapedValue.length;
+      int minLength = escapedItem.length < escapedValue.length
+          ? escapedItem.length
+          : escapedValue.length;
       int start;
       for (start = 0; start < minLength; start++) {
         if (escapedValue.codeUnitAt(start) != escapedItem.codeUnitAt(start)) {
@@ -416,9 +418,8 @@ class _ReturnsNormally extends Matcher {
   Description describe(Description description) =>
       description.add("return normally");
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState,
-                               bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     mismatchDescription.add('threw ').addDescriptionOf(matchState['exception']);
     if (verbose) {
       mismatchDescription.add(' at ').add(matchState['stack'].toString());
@@ -490,17 +491,17 @@ class _HasLength extends Matcher {
   }
 
   Description describe(Description description) =>
-    description.add('an object with length of ').
-        addDescriptionOf(_matcher);
+      description.add('an object with length of ').addDescriptionOf(_matcher);
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     try {
       // We want to generate a different description if there is no length
       // property; we use the same trick as in matches().
       if (item.length * item.length >= 0) {
-        return mismatchDescription.add('has length of ').
-            addDescriptionOf(item.length);
+        return mismatchDescription
+            .add('has length of ')
+            .addDescriptionOf(item.length);
       }
     } catch (e) {}
     return mismatchDescription.add('has no length property');
@@ -539,11 +540,11 @@ class _Contains extends Matcher {
   Description describe(Description description) =>
       description.add('contains ').addDescriptionOf(_expected);
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is String || item is Iterable || item is Map) {
-      return super.describeMismatch(item, mismatchDescription, matchState,
-          verbose);
+      return super.describeMismatch(
+          item, mismatchDescription, matchState, verbose);
     } else {
       return mismatchDescription.add('is not a string, map or iterable');
     }
@@ -637,13 +638,16 @@ class CustomMatcher extends Matcher {
   Description describe(Description description) =>
       description.add(_featureDescription).add(' ').addDescriptionOf(_matcher);
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
-    mismatchDescription.add('has ').add(_featureName).add(' with value ').
-        addDescriptionOf(matchState['feature']);
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
+    mismatchDescription
+        .add('has ')
+        .add(_featureName)
+        .add(' with value ')
+        .addDescriptionOf(matchState['feature']);
     var innerDescription = new StringDescription();
-    _matcher.describeMismatch(matchState['feature'], innerDescription,
-        matchState['state'], verbose);
+    _matcher.describeMismatch(
+        matchState['feature'], innerDescription, matchState['state'], verbose);
     if (innerDescription.length > 0) {
       mismatchDescription.add(' which ').add(innerDescription.toString());
     }

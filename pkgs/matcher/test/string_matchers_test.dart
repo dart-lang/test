@@ -29,13 +29,13 @@ void main() {
     shouldPass('a', isNot(isEmpty));
     shouldFail('', isNot(isEmpty), 'Expected: not empty Actual: \'\'');
     shouldFail(null, isNot(isEmpty),
-      startsWith('Expected: not empty  Actual: <null>'));
+        startsWith('Expected: not empty  Actual: <null>'));
   });
 
   test('isNotEmpty', () {
     shouldFail('', isNotEmpty, startsWith("Expected: non-empty  Actual: ''"));
-    shouldFail(null, isNotEmpty,
-        startsWith("Expected: non-empty  Actual: <null>"));
+    shouldFail(
+        null, isNotEmpty, startsWith("Expected: non-empty  Actual: <null>"));
     shouldFail(0, isNotEmpty, startsWith("Expected: non-empty  Actual: <0>"));
     shouldPass('a', isNotEmpty);
   });
@@ -78,8 +78,8 @@ void main() {
     shouldPass('hello', contains('o'));
     shouldPass('hello', contains('hell'));
     shouldPass('hello', contains('hello'));
-    shouldFail('hello', contains(' '),
-        "Expected: contains ' ' Actual: 'hello'");
+    shouldFail(
+        'hello', contains(' '), "Expected: contains ' ' Actual: 'hello'");
   });
 
   test('stringContainsInOrder', () {
@@ -87,18 +87,18 @@ void main() {
     shouldPass('goodbye cruel world', stringContainsInOrder(['goodbye']));
     shouldPass('goodbye cruel world', stringContainsInOrder(['cruel']));
     shouldPass('goodbye cruel world', stringContainsInOrder(['world']));
+    shouldPass(
+        'goodbye cruel world', stringContainsInOrder(['good', 'bye', 'world']));
+    shouldPass(
+        'goodbye cruel world', stringContainsInOrder(['goodbye', 'cruel']));
+    shouldPass(
+        'goodbye cruel world', stringContainsInOrder(['cruel', 'world']));
     shouldPass('goodbye cruel world',
-               stringContainsInOrder(['good', 'bye', 'world']));
-    shouldPass('goodbye cruel world',
-               stringContainsInOrder(['goodbye', 'cruel']));
-    shouldPass('goodbye cruel world',
-               stringContainsInOrder(['cruel', 'world']));
-    shouldPass('goodbye cruel world',
-      stringContainsInOrder(['goodbye', 'cruel', 'world']));
+        stringContainsInOrder(['goodbye', 'cruel', 'world']));
     shouldFail('goodbye cruel world',
-      stringContainsInOrder(['goo', 'cruel', 'bye']),
-      "Expected: a string containing 'goo', 'cruel', 'bye' in order "
-      "Actual: 'goodbye cruel world'");
+        stringContainsInOrder(['goo', 'cruel', 'bye']),
+        "Expected: a string containing 'goo', 'cruel', 'bye' in order "
+        "Actual: 'goodbye cruel world'");
   });
 
   test('matches', () {

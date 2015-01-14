@@ -31,8 +31,8 @@ class _Prints extends Matcher {
     if (item is! Function) return false;
 
     var buffer = new StringBuffer();
-    var result = runZoned(item, zoneSpecification:
-        new ZoneSpecification(print: (_, __, ____, line) {
+    var result = runZoned(item,
+        zoneSpecification: new ZoneSpecification(print: (_, __, ____, line) {
       buffer.writeln(line);
     }));
 
@@ -50,8 +50,8 @@ class _Prints extends Matcher {
   Description describe(Description description) =>
       description.add('prints ').addDescriptionOf(_matcher);
 
-  Description describeMismatch(item, Description description, Map matchState,
-      bool verbose) {
+  Description describeMismatch(
+      item, Description description, Map matchState, bool verbose) {
     var actual = matchState.remove('prints.actual');
     if (actual == null) return description;
     if (actual.isEmpty) return description.add("printed nothing.");
@@ -60,8 +60,9 @@ class _Prints extends Matcher {
 
     // Create a new description for the matcher because at least
     // [_StringEqualsMatcher] replaces the previous contents of the description.
-    var innerMismatch = _matcher.describeMismatch(
-        actual, new StringDescription(), matchState, verbose).toString();
+    var innerMismatch = _matcher
+        .describeMismatch(actual, new StringDescription(), matchState, verbose)
+        .toString();
 
     if (innerMismatch.isNotEmpty) {
       description.add('\n   Which: ').add(innerMismatch.toString());

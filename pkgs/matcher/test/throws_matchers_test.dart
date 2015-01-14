@@ -12,39 +12,31 @@ import 'test_utils.dart';
 void main() {
   initUtils();
 
-
   test('throws', () {
-    shouldFail(doesNotThrow, throws,
-        matches(
-            r"Expected: throws"
-            r"  Actual: <Closure(: \(\) => dynamic "
-            r"from Function 'doesNotThrow': static\.)?>"
-            r"   Which: did not throw"));
+    shouldFail(doesNotThrow, throws, matches(r"Expected: throws"
+        r"  Actual: <Closure(: \(\) => dynamic "
+        r"from Function 'doesNotThrow': static\.)?>"
+        r"   Which: did not throw"));
     shouldPass(doesThrow, throws);
-    shouldFail(true, throws,
-        "Expected: throws"
+    shouldFail(true, throws, "Expected: throws"
         "  Actual: <true>"
         "   Which: is not a Function or Future");
   });
 
   test('throwsA', () {
     shouldPass(doesThrow, throwsA(equals('X')));
-    shouldFail(doesThrow, throwsA(equals('Y')),
-        matches(
-            r"Expected: throws 'Y'"
-            r"  Actual: <Closure(: \(\) => dynamic "
-            r"from Function 'doesThrow': static\.)?>"
-            r"   Which: threw 'X'"));
+    shouldFail(doesThrow, throwsA(equals('Y')), matches(r"Expected: throws 'Y'"
+        r"  Actual: <Closure(: \(\) => dynamic "
+        r"from Function 'doesThrow': static\.)?>"
+        r"   Which: threw 'X'"));
   });
 
   test('throwsA', () {
     shouldPass(doesThrow, throwsA(equals('X')));
-    shouldFail(doesThrow, throwsA(equals('Y')),
-        matches("Expected: throws 'Y'.*"
+    shouldFail(doesThrow, throwsA(equals('Y')), matches("Expected: throws 'Y'.*"
         "Actual: <Closure.*"
         "Which: threw 'X'"));
   });
-
 
   group('exception/error matchers', () {
     test('throwsCyclicInitializationError', () {
@@ -53,7 +45,7 @@ void main() {
 
     test('throwsConcurrentModificationError', () {
       expect(() {
-        var a = { 'foo': 'bar' };
+        var a = {'foo': 'bar'};
         for (var k in a.keys) {
           a.remove(k);
         }
@@ -73,4 +65,3 @@ class _Bicycle {
     return foo + 1;
   }
 }
-

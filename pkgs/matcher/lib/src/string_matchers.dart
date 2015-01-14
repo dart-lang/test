@@ -57,17 +57,18 @@ class _IsEqualIgnoringWhitespace extends _StringMatcher {
       item is String && _matchValue == collapseWhitespace(item);
 
   Description describe(Description description) =>
-    description.addDescriptionOf(_matchValue).add(' ignoring whitespace');
+      description.addDescriptionOf(_matchValue).add(' ignoring whitespace');
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is String) {
-      return mismatchDescription.add('is ').
-          addDescriptionOf(collapseWhitespace(item)).
-          add(' with whitespace compressed');
+      return mismatchDescription
+          .add('is ')
+          .addDescriptionOf(collapseWhitespace(item))
+          .add(' with whitespace compressed');
     } else {
-      return super.describeMismatch(item, mismatchDescription,
-          matchState, verbose);
+      return super.describeMismatch(
+          item, mismatchDescription, matchState, verbose);
     }
   }
 }
@@ -130,9 +131,8 @@ class _StringContainsInOrder extends _StringMatcher {
     return true;
   }
 
-  Description describe(Description description) =>
-      description.addAll('a string containing ', ', ', ' in order',
-                                                  _substrings);
+  Description describe(Description description) => description.addAll(
+      'a string containing ', ', ', ' in order', _substrings);
 }
 
 /// Returns a matcher that matches if the match argument is a string and
@@ -156,7 +156,7 @@ class _MatchesRegExp extends _StringMatcher {
   }
 
   bool matches(item, Map matchState) =>
-    item is String ? _regexp.hasMatch(item) : false;
+      item is String ? _regexp.hasMatch(item) : false;
 
   Description describe(Description description) =>
       description.add("match '${_regexp.pattern}'");
@@ -166,15 +166,13 @@ class _MatchesRegExp extends _StringMatcher {
 // class to give better mismatch error messages than the base Matcher class.
 abstract class _StringMatcher extends Matcher {
   const _StringMatcher();
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (!(item is String)) {
-      return mismatchDescription.
-          addDescriptionOf(item).
-          add(' not a string');
+      return mismatchDescription.addDescriptionOf(item).add(' not a string');
     } else {
-      return super.describeMismatch(item, mismatchDescription,
-          matchState, verbose);
+      return super.describeMismatch(
+          item, mismatchDescription, matchState, verbose);
     }
   }
 }

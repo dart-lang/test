@@ -18,7 +18,7 @@ class _IsNot extends Matcher {
   bool matches(item, Map matchState) => !_matcher.matches(item, matchState);
 
   Description describe(Description description) =>
-    description.add('not ').addDescriptionOf(_matcher);
+      description.add('not ').addDescriptionOf(_matcher);
 }
 
 /// This returns a matcher that matches if all of the matchers passed as
@@ -27,13 +27,7 @@ class _IsNot extends Matcher {
 /// Instead of passing the matchers separately they can be passed as a single
 /// List argument. Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
-Matcher allOf(arg0,
-             [arg1 = null,
-              arg2 = null,
-              arg3 = null,
-              arg4 = null,
-              arg5 = null,
-              arg6 = null]) {
+Matcher allOf(arg0, [arg1, arg2, arg3, arg4, arg5, arg6]) {
   return new _AllOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
@@ -43,20 +37,20 @@ class _AllOf extends Matcher {
   const _AllOf(this._matchers);
 
   bool matches(item, Map matchState) {
-     for (var matcher in _matchers) {
-       if (!matcher.matches(item, matchState)) {
+    for (var matcher in _matchers) {
+      if (!matcher.matches(item, matchState)) {
         addStateInfo(matchState, {'matcher': matcher});
-         return false;
-       }
-     }
-     return true;
+        return false;
+      }
+    }
+    return true;
   }
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     var matcher = matchState['matcher'];
-    matcher.describeMismatch(item, mismatchDescription,
-        matchState['state'], verbose);
+    matcher.describeMismatch(
+        item, mismatchDescription, matchState['state'], verbose);
     return mismatchDescription;
   }
 
@@ -74,13 +68,7 @@ class _AllOf extends Matcher {
 ///
 /// Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
-Matcher anyOf(arg0,
-               [arg1 = null,
-                arg2 = null,
-                arg3 = null,
-                arg4 = null,
-                arg5 = null,
-                arg6 = null]) {
+Matcher anyOf(arg0, [arg1, arg2, arg3, arg4, arg5, arg6]) {
   return new _AnyOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
@@ -99,25 +87,27 @@ class _AnyOf extends Matcher {
   }
 
   Description describe(Description description) =>
-    description.addAll('(', ' or ', ')', _matchers);
+      description.addAll('(', ' or ', ')', _matchers);
 }
 
 List<Matcher> _wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
   Iterable<Matcher> matchers;
   if (arg0 is List) {
-    if (arg1 != null || arg2 != null || arg3 != null || arg4 != null ||
-        arg5 != null || arg6 != null) {
+    if (arg1 != null ||
+        arg2 != null ||
+        arg3 != null ||
+        arg4 != null ||
+        arg5 != null ||
+        arg6 != null) {
       throw new ArgumentError('If arg0 is a List, all other arguments must be'
           ' null.');
     }
 
     matchers = arg0;
   } else {
-    matchers = [arg0, arg1, arg2, arg3, arg4, arg5, arg6]
-        .where((e) => e != null);
+    matchers =
+        [arg0, arg1, arg2, arg3, arg4, arg5, arg6].where((e) => e != null);
   }
 
-  return matchers
-      .map((e) => wrapMatcher(e))
-      .toList();
+  return matchers.map((e) => wrapMatcher(e)).toList();
 }

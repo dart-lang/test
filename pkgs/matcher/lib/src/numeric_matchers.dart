@@ -9,51 +9,46 @@ import 'interfaces.dart';
 /// Returns a matcher which matches if the match argument is greater
 /// than the given [value].
 Matcher greaterThan(value) =>
-  new _OrderingComparison(value, false, false, true, 'a value greater than');
+    new _OrderingComparison(value, false, false, true, 'a value greater than');
 
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to the given [value].
-Matcher greaterThanOrEqualTo(value) =>
-  new _OrderingComparison(value, true, false, true,
-      'a value greater than or equal to');
+Matcher greaterThanOrEqualTo(value) => new _OrderingComparison(
+    value, true, false, true, 'a value greater than or equal to');
 
 /// Returns a matcher which matches if the match argument is less
 /// than the given [value].
 Matcher lessThan(value) =>
-  new _OrderingComparison(value, false, true, false, 'a value less than');
+    new _OrderingComparison(value, false, true, false, 'a value less than');
 
 /// Returns a matcher which matches if the match argument is less
 /// than or equal to the given [value].
-Matcher lessThanOrEqualTo(value) =>
-  new _OrderingComparison(value, true, true, false,
-      'a value less than or equal to');
+Matcher lessThanOrEqualTo(value) => new _OrderingComparison(
+    value, true, true, false, 'a value less than or equal to');
 
 /// A matcher which matches if the match argument is zero.
 const Matcher isZero =
-  const _OrderingComparison(0, true, false, false, 'a value equal to');
-
+    const _OrderingComparison(0, true, false, false, 'a value equal to');
 
 /// A matcher which matches if the match argument is non-zero.
 const Matcher isNonZero =
-  const _OrderingComparison(0, false, true, true, 'a value not equal to');
+    const _OrderingComparison(0, false, true, true, 'a value not equal to');
 
 /// A matcher which matches if the match argument is positive.
 const Matcher isPositive =
-  const _OrderingComparison(0, false, false, true, 'a positive value', false);
+    const _OrderingComparison(0, false, false, true, 'a positive value', false);
 
 /// A matcher which matches if the match argument is zero or negative.
-const Matcher isNonPositive =
-  const _OrderingComparison(0, true, true, false,
-      'a non-positive value', false);
+const Matcher isNonPositive = const _OrderingComparison(
+    0, true, true, false, 'a non-positive value', false);
 
 /// A matcher which matches if the match argument is negative.
 const Matcher isNegative =
-  const _OrderingComparison(0, false, true, false, 'a negative value', false);
+    const _OrderingComparison(0, false, true, false, 'a negative value', false);
 
 /// A matcher which matches if the match argument is zero or positive.
-const Matcher isNonNegative =
-  const _OrderingComparison(0, true, false, true,
-      'a non-negative value', false);
+const Matcher isNonNegative = const _OrderingComparison(
+    0, true, false, true, 'a non-negative value', false);
 
 bool _isNumeric(value) {
   return value is num;
@@ -75,14 +70,10 @@ class _OrderingComparison extends Matcher {
   /// Whether to include the expected value in the description
   final bool _valueInDescription;
 
-  const _OrderingComparison(
-    this._value,
-    this._equalValue,
-    this._lessThanValue,
-    this._greaterThanValue,
-    this._comparisonDescription,
-    [bool valueInDescription = true]) :
-      this._valueInDescription = valueInDescription;
+  const _OrderingComparison(this._value, this._equalValue, this._lessThanValue,
+      this._greaterThanValue, this._comparisonDescription,
+      [bool valueInDescription = true])
+      : this._valueInDescription = valueInDescription;
 
   bool matches(item, Map matchState) {
     if (item == _value) {
@@ -96,15 +87,17 @@ class _OrderingComparison extends Matcher {
 
   Description describe(Description description) {
     if (_valueInDescription) {
-      return description.add(_comparisonDescription).add(' ').
-          addDescriptionOf(_value);
+      return description
+          .add(_comparisonDescription)
+          .add(' ')
+          .addDescriptionOf(_value);
     } else {
       return description.add(_comparisonDescription);
     }
   }
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     mismatchDescription.add('is not ');
     return describe(mismatchDescription);
   }
@@ -131,22 +124,20 @@ class _IsCloseTo extends Matcher {
     return (diff <= _delta);
   }
 
-  Description describe(Description description) =>
-    description.add('a numeric value within ').
-        addDescriptionOf(_delta).
-        add(' of ').
-        addDescriptionOf(_value);
+  Description describe(Description description) => description
+      .add('a numeric value within ')
+      .addDescriptionOf(_delta)
+      .add(' of ')
+      .addDescriptionOf(_value);
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
-    if (item is !num) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
+    if (item is! num) {
       return mismatchDescription.add(' not numeric');
     } else {
       var diff = item - _value;
       if (diff < 0) diff = -diff;
-      return mismatchDescription.
-          add(' differs by ').
-          addDescriptionOf(diff);
+      return mismatchDescription.add(' differs by ').addDescriptionOf(diff);
     }
   }
 }
@@ -175,8 +166,8 @@ class _InRange extends Matcher {
   final num _low, _high;
   final bool _lowMatchValue, _highMatchValue;
 
-  const _InRange(this._low, this._high,
-    this._lowMatchValue, this._highMatchValue);
+  const _InRange(
+      this._low, this._high, this._lowMatchValue, this._highMatchValue);
 
   bool matches(value, Map matchState) {
     if (value is! num) {
@@ -194,20 +185,18 @@ class _InRange extends Matcher {
     return true;
   }
 
-  Description describe(Description description) =>
-      description.add("be in range from "
-        "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
-        "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})");
+  Description describe(Description description) => description.add(
+      "be in range from "
+      "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
+      "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})");
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState, bool verbose) {
-    if (item is !num) {
-      return mismatchDescription.
-          addDescriptionOf(item).
-          add(' not numeric');
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
+    if (item is! num) {
+      return mismatchDescription.addDescriptionOf(item).add(' not numeric');
     } else {
-      return super.describeMismatch(item, mismatchDescription,
-          matchState, verbose);
+      return super.describeMismatch(
+          item, mismatchDescription, matchState, verbose);
     }
   }
 }

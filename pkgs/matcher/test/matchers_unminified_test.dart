@@ -20,82 +20,82 @@ void main() {
 
   group('Core matchers', () {
     test('throwsFormatException', () {
-      shouldPass(() { throw new FormatException(''); },
-          throwsFormatException);
-      shouldFail(() { throw new Exception(); },
-          throwsFormatException,
-          matches(
-              r"Expected: throws FormatException +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
-
+      shouldPass(() {
+        throw new FormatException('');
+      }, throwsFormatException);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsFormatException, matches(r"Expected: throws FormatException +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
 
     test('throwsArgumentError', () {
-      shouldPass(() { throw new ArgumentError(''); },
-          throwsArgumentError);
-      shouldFail(() { throw new Exception(); },
-          throwsArgumentError,
-          matches(
-              r"Expected: throws ArgumentError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
+      shouldPass(() {
+        throw new ArgumentError('');
+      }, throwsArgumentError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsArgumentError, matches(r"Expected: throws ArgumentError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
 
     test('throwsRangeError', () {
-      shouldPass(() { throw new RangeError(0); },
-          throwsRangeError);
-      shouldFail(() { throw new Exception(); },
-          throwsRangeError,
-          matches(
-              r"Expected: throws RangeError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
+      shouldPass(() {
+        throw new RangeError(0);
+      }, throwsRangeError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsRangeError, matches(r"Expected: throws RangeError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
 
     test('throwsNoSuchMethodError', () {
       shouldPass(() {
-          throw new NoSuchMethodError(null, const Symbol(''), null, null);
+        throw new NoSuchMethodError(null, const Symbol(''), null, null);
       }, throwsNoSuchMethodError);
-      shouldFail(() { throw new Exception(); },
-          throwsNoSuchMethodError,
-          matches(
-              r"Expected: throws NoSuchMethodError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
+      shouldFail(() {
+        throw new Exception();
+      }, throwsNoSuchMethodError, matches(
+          r"Expected: throws NoSuchMethodError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
 
     test('throwsUnimplementedError', () {
-      shouldPass(() { throw new UnimplementedError(''); },
-          throwsUnimplementedError);
-      shouldFail(() { throw new Exception(); },
-          throwsUnimplementedError,
-          matches(
-              r"Expected: throws UnimplementedError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
+      shouldPass(() {
+        throw new UnimplementedError('');
+      }, throwsUnimplementedError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsUnimplementedError, matches(
+          r"Expected: throws UnimplementedError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
 
     test('throwsUnsupportedError', () {
-      shouldPass(() { throw new UnsupportedError(''); },
-          throwsUnsupportedError);
-      shouldFail(() { throw new Exception(); },
-          throwsUnsupportedError,
-          matches(
-              r"Expected: throws UnsupportedError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
+      shouldPass(() {
+        throw new UnsupportedError('');
+      }, throwsUnsupportedError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsUnsupportedError, matches(r"Expected: throws UnsupportedError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
 
     test('throwsStateError', () {
-      shouldPass(() { throw new StateError(''); },
-          throwsStateError);
-      shouldFail(() { throw new Exception(); },
-          throwsStateError,
-          matches(
-              r"Expected: throws StateError +"
-              r"Actual: <Closure(: \(\) => dynamic)?> +"
-              r"Which: threw \?:<Exception>"));
+      shouldPass(() {
+        throw new StateError('');
+      }, throwsStateError);
+      shouldFail(() {
+        throw new Exception();
+      }, throwsStateError, matches(r"Expected: throws StateError +"
+          r"Actual: <Closure(: \(\) => dynamic)?> +"
+          r"Which: threw \?:<Exception>"));
     });
   });
 
@@ -116,12 +116,10 @@ void main() {
           "Actual: SimpleIterable:[]");
     });
 
-
     test('contains', () {
       var d = new SimpleIterable(3);
       shouldPass(d, contains(2));
-      shouldFail(d, contains(5),
-          "Expected: contains <5> "
+      shouldFail(d, contains(5), "Expected: contains <5> "
           "Actual: SimpleIterable:[3, 2, 1]");
     });
   });

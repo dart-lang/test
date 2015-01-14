@@ -93,16 +93,16 @@ class Throws extends Matcher {
     }
   }
 
-  Description describeMismatch(item, Description mismatchDescription,
-                               Map matchState,
-                               bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is! Function && item is! Future) {
       return mismatchDescription.add('is not a Function or Future');
     } else if (_matcher == null || matchState['exception'] == null) {
       return mismatchDescription.add('did not throw');
     } else {
-      mismatchDescription. add('threw ').
-          addDescriptionOf(matchState['exception']);
+      mismatchDescription
+          .add('threw ')
+          .addDescriptionOf(matchState['exception']);
       if (verbose) {
         mismatchDescription.add(' at ').add(matchState['stack'].toString());
       }
@@ -110,4 +110,3 @@ class Throws extends Matcher {
     }
   }
 }
-

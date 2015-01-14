@@ -4,19 +4,9 @@
 
 # Skip non-test files ending with "_test".
 packages/*: Skip
-packages/*: Skip
 */packages/*: Skip
 */*/packages/*: Skip
 */*/*/packages/*: Skip
-*/*/*/*packages/*: Skip
-*/*/*/*/*packages/*: Skip
-*/*/packages/*: Skip
-*/*/packages/*: Skip
-*/packages/*: Skip
-*/*/packages/*: Skip
-*/*/*/packages/*: Skip
-*/*/*/*packages/*: Skip
-*/*/*/*/*packages/*: Skip
 */*/*/*packages/*: Skip
 */*/*/*/*packages/*: Skip
 
@@ -34,4 +24,4 @@ test/*: Skip
 # The minified matcher tests test that the minified names of Dart types are
 # printed. Unminified versions of these tests exist that test the behavior when
 # not minified.
-matcher/test/*_minified_test: Skip # DO NOT COPY THIS UNLESS YOU WORK ON DART2JS
+*_minified_test: Skip # DO NOT COPY THIS UNLESS YOU WORK ON DART2JS

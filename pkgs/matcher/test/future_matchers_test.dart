@@ -17,10 +17,9 @@ void main() {
   test('completes - unexpected error', () {
     var completer = new Completer();
     completer.completeError('X');
-    shouldFail(completer.future, completes,
-        contains('Expected future to complete successfully, '
-                 'but it failed with X'),
-        isAsync: true);
+    shouldFail(completer.future, completes, contains(
+        'Expected future to complete successfully, '
+        'but it failed with X'), isAsync: true);
   });
 
   test('completes - successfully', () {
@@ -33,8 +32,8 @@ void main() {
     var completer = new Completer();
     completer.complete('1');
     shouldFail(completer.future, throws,
-      contains("Expected future to fail, but succeeded with '1'"),
-      isAsync: true);
+        contains("Expected future to fail, but succeeded with '1'"),
+        isAsync: true);
   });
 
   test('throws - expected to see exception', () {
@@ -45,7 +44,9 @@ void main() {
 
   test('throws - expected to see exception thrown later on', () {
     var completer = new Completer();
-    var chained = completer.future.then((_) { throw 'X'; });
+    var chained = completer.future.then((_) {
+      throw 'X';
+    });
     shouldPass(chained, throws, isAsync: true);
     completer.complete('1');
   });
@@ -54,8 +55,8 @@ void main() {
     var completer = new Completer();
     completer.complete('1');
     shouldFail(completer.future, throwsA(equals('X')),
-      contains("Expected future to fail, but succeeded with '1'"),
-      isAsync: true);
+        contains("Expected future to fail, but succeeded with '1'"),
+        isAsync: true);
   });
 
   test('throwsA - correct error', () {
@@ -70,7 +71,6 @@ void main() {
     shouldFail(completer.future, throwsA(equals('Y')),
         "Expected: 'Y' Actual: 'X' "
         "Which: is different. "
-        "Expected: Y Actual: X ^ Differ at offset 0",
-        isAsync: true);
+        "Expected: Y Actual: X ^ Differ at offset 0", isAsync: true);
   });
 }
