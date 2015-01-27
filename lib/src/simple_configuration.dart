@@ -2,19 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of unittest;
+library unittest.simple_configuration;
 
-// A custom failure handler for [expect] that routes expect failures
-// to the config.
-class _ExpectFailureHandler extends DefaultFailureHandler {
-  final SimpleConfiguration _config;
+import 'dart:isolate';
 
-  _ExpectFailureHandler(this._config);
-
-  void fail(String reason) {
-    _config.onExpectFailure(reason);
-  }
-}
+import '../unittest.dart';
+import 'configuration.dart';
+import 'utils.dart';
 
 /// Hooks to configure the unittest library for different platforms. This class
 /// implements the API in a platform-independent way. Tests that want to take
@@ -25,30 +19,12 @@ class SimpleConfiguration extends Configuration {
   // we correctly wait for asynchronous tests.
   ReceivePort _receivePort;
 
-  /// Subclasses can override this with something useful for diagnostics.
-  /// Particularly useful in cases where we have parent/child configurations
-  /// such as layout tests.
-  String get name => 'Configuration';
-
-  bool get autoStart => true;
-
   /// If true (the default), throw an exception at the end if any tests failed.
   bool throwOnTestFailures = true;
 
-  /// If true (the default), then tests will stop after the first failed
-  /// [expect]. If false, failed [expect]s will not cause the test
-  /// to stop (other exceptions will still terminate the test).
-  bool stopTestOnExpectFailure = true;
-
-  // If stopTestOnExpectFailure is false, we need to capture failures, which
-  // we do with this List.
-  final _testLogBuffer = <Pair<String, StackTrace>>[];
-
   /// The constructor sets up a failure handler for [expect] that redirects
   /// [expect] failures to [onExpectFailure].
-  SimpleConfiguration() : super.blank() {
-    configureExpectFailureHandler(new _ExpectFailureHandler(this));
-  }
+  SimpleConfiguration() : super.blank();
 
   void onInit() {
     // For Dart internal tests, we don't want stack frame filtering.
@@ -64,42 +40,6 @@ class SimpleConfiguration extends Configuration {
   /// override code.
   void onTestStart(TestCase testCase) {
     assert(testCase != null);
-    _testLogBuffer.clear();
-  }
-
-  /// Called when each test is first completed. Useful to show intermediate
-  /// progress on a test suite. Derived classes should call this first
-  /// before their own override code.
-  void onTestResult(TestCase testCase) {
-    assert(testCase != null);
-    if (!stopTestOnExpectFailure && _testLogBuffer.length > 0) {
-      // Write the message/stack pairs up to the last pairs.
-      var reason = new StringBuffer();
-      for (var reasonAndTrace
-          in _testLogBuffer.take(_testLogBuffer.length - 1)) {
-        reason.write(reasonAndTrace.first);
-        reason.write('\n');
-        reason.write(reasonAndTrace.last);
-        reason.write('\n');
-      }
-      var lastReasonAndTrace = _testLogBuffer.last;
-      // Write the last message.
-      reason.write(lastReasonAndTrace.first);
-      if (testCase.result == PASS) {
-        testCase._result = FAIL;
-        testCase._message = reason.toString();
-        // Use the last stack as the overall failure stack.
-        testCase._stackTrace = lastReasonAndTrace.last;
-      } else {
-        // Add the last stack to the message; we have a further stack
-        // caused by some other failure.
-        reason.write(lastReasonAndTrace.last);
-        reason.write('\n');
-        // Add the existing reason to the end of the expect log to
-        // create the final message.
-        testCase._message = '${reason.toString()}\n${testCase._message}';
-      }
-    }
   }
 
   void onTestResultChanged(TestCase testCase) {
@@ -110,22 +50,6 @@ class SimpleConfiguration extends Configuration {
   /// this base configuration is to call print();
   void onLogMessage(TestCase testCase, String message) {
     print(message);
-  }
-
-  /// Handles failures from expect(). The default in
-  /// this base configuration is to throw an exception;
-  void onExpectFailure(String reason) {
-    if (stopTestOnExpectFailure) {
-      throw new TestFailure(reason);
-    } else {
-      try {
-        throw '';
-      } catch (_, stack) {
-        var trace = getTrace(stack, formatStacks, filterStacks);
-        if (trace == null) trace = stack;
-        _testLogBuffer.add(new Pair<String, StackTrace>(reason, trace));
-      }
-    }
   }
 
   /// Format a test result.

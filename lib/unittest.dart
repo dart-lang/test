@@ -6,22 +6,47 @@ library unittest;
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:isolate';
-
-import 'package:matcher/matcher.dart'
-    show
-        DefaultFailureHandler,
-        configureExpectFailureHandler,
-        TestFailure,
-        wrapAsync;
-export 'package:matcher/matcher.dart';
-
-import 'src/utils.dart';
 
 import 'src/configuration.dart';
-export 'src/configuration.dart';
+import 'src/expect.dart';
+import 'src/utils.dart';
 
-part 'src/simple_configuration.dart';
+export 'package:matcher/matcher.dart'
+    hide
+        completes,
+        completion,
+        configureExpectFailureHandler,
+        DefaultFailureHandler,
+        ErrorFormatter,
+        expect,
+        fail,
+        FailureHandler,
+        getOrCreateExpectFailureHandler,
+        prints,
+        TestFailure,
+        Throws,
+        throws,
+        throwsA,
+        throwsArgumentError,
+        throwsConcurrentModificationError,
+        throwsCyclicInitializationError,
+        throwsException,
+        throwsFormatException,
+        throwsNoSuchMethodError,
+        throwsNullThrownError,
+        throwsRangeError,
+        throwsStateError,
+        throwsUnimplementedError,
+        throwsUnsupportedError;
+
+export 'src/configuration.dart';
+export 'src/expect.dart';
+export 'src/simple_configuration.dart';
+export 'src/future_matchers.dart';
+export 'src/prints_matcher.dart';
+export 'src/throws_matcher.dart';
+export 'src/throws_matchers.dart';
+
 part 'src/group_context.dart';
 part 'src/spread_args_helper.dart';
 part 'src/test_case.dart';
@@ -410,8 +435,6 @@ void _ensureInitialized(bool configAutoStart) {
     return;
   }
   _environment.initialized = true;
-  // Hook our async guard into the matcher library.
-  wrapAsync = (f, [id]) => expectAsync(f, id: id);
 
   _environment.uncaughtErrorMessage = null;
 

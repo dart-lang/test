@@ -1,3 +1,24 @@
+##0.12.0
+
+* Removed `FailureHandler`, `DefaultFailureHandler`,
+  `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler` which
+  are exported from the `matcher` package and will be removed. They existed
+  to enable integration between `unittest` and `matcher` that is being
+  streamlined.
+
+* Moved a number of APIs from `matcher` into `unittest`, including:
+  `completes`, `completion`, `ErrorFormatter`, `expect`,`fail`, `prints`,
+  `TestFailure`, `Throws`, and all of the `throws` methods.
+
+    * `expect` no longer has a named `failureHandler` argument.
+
+    * `expect` added an optional `formatter` argument.
+
+    * `completion` argument `id` renamed to `description`.
+
+* Removed several members from `SimpleConfiguration` that relied on removed
+  functionality: `onExpectFailure`, `stopTestOnExpectFailure`, and 'name'.
+
 ##0.11.5
 
 * Bumped the version constraint for `matcher`.
