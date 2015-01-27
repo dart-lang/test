@@ -49,3 +49,15 @@ build/test/testcases_immutable_test: RuntimeError # 13921
 
 [ $compiler == none && $browser ]
 build/test/missing_tick_test: RuntimeError # Expected to fail, due to timeout.
+
+[ $compiler == dart2js && $minified ]
+# The unminified matcher tests test that the real names of Dart types are
+# printed. Minified versions of these tests exist that test the behavior when
+# minified.
+build/test/*_unminified_test: Skip # DO NOT COPY THIS UNLESS YOU WORK ON DART2JS
+
+[ $minified == false ]
+# The minified matcher tests test that the minified names of Dart types are
+# printed. Unminified versions of these tests exist that test the behavior when
+# not minified.
+build/test/*_minified_test: Skip # DO NOT COPY THIS UNLESS YOU WORK ON DART2JS
