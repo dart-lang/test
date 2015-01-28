@@ -4,12 +4,12 @@
 
 library unittest.configuration;
 
-import 'package:unittest/unittest.dart' show TestCase, SimpleConfiguration;
+import 'simple_configuration.dart';
+import 'test_case.dart';
 
 /// Describes the interface used by the unit test system for communicating the
 /// results of a test run.
 abstract class Configuration {
-
   /// Creates an instance of [SimpleConfiguration].
   factory Configuration() => new SimpleConfiguration();
 
@@ -18,9 +18,10 @@ abstract class Configuration {
   /// For use by subclasses which wish to implement only a subset of features.
   Configuration.blank();
 
-  /// If [:true:], tests are started automatically. Otherwise [runTests]
-  /// must be called explicitly after tests are set up.
-  bool get autoStart => true;
+  /// If `true`, tests are started automatically once they're finished being defined.
+  ///
+  /// Otherwise, [runTests] must be called explicitly after tests are set up.
+  final autoStart = true;
 
   /// How long a [TestCase] can run before it is considered an error.
   /// A [timeout] value of [:null:] means that the limit is infinite.

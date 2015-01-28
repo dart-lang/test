@@ -1,65 +1,75 @@
-part of unittest;
+// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+library unittest.group_context;
+
+import 'dart:async';
+
+import '../unittest.dart';
 
 /// Setup and teardown functions for a group and its parents, the latter
 /// for chaining.
-class _GroupContext {
-  final _GroupContext parent;
+class GroupContext {
+  /// The parent context, or `null`.
+  final GroupContext parent;
+
+  /// Whether this is the root context.
+  bool get isRoot => parent == null;
 
   /// Description text of the current test group.
   final String _name;
 
-  /// Setup function called before each test in a group.
-  Function _testSetup;
+  /// The set-up function called before each test in a group.
+  Function get testSetUp => _testSetUp;
+  Function _testSetUp;
 
-  get testSetup => _testSetup;
-
-  get parentSetup => (parent == null) ? null : parent.testSetup;
-
-  set testSetup(Function setup) {
-    var preSetup = parentSetup;
-    if (preSetup == null) {
-      _testSetup = setup;
-    } else {
-      _testSetup = () {
-        var f = preSetup();
-        if (f is Future) {
-          return f.then((_) => setup());
-        } else {
-          return setup();
-        }
-      };
+  set testSetUp(Function setUp) {
+    if (parent == null || parent.testSetUp == null) {
+      _testSetUp = setUp;
+      return;
     }
+
+    _testSetUp = () {
+      var f = parent.testSetUp();
+      if (f is Future) {
+        return f.then((_) => setUp());
+      } else {
+        return setUp();
+      }
+    };
   }
 
-  /// Teardown function called after each test in a group.
-  Function _testTeardown;
+  /// The tear-down function called after each test in a group.
+  Function get testTearDown => _testTearDown;
+  Function _testTearDown;
 
-  get testTeardown => _testTeardown;
-
-  get parentTeardown => (parent == null) ? null : parent.testTeardown;
-
-  set testTeardown(Function teardown) {
-    var postTeardown = parentTeardown;
-    if (postTeardown == null) {
-      _testTeardown = teardown;
-    } else {
-      _testTeardown = () {
-        var f = teardown();
-        if (f is Future) {
-          return f.then((_) => postTeardown());
-        } else {
-          return postTeardown();
-        }
-      };
+  set testTearDown(Function tearDown) {
+    if (parent == null || parent.testTearDown == null) {
+      _testTearDown = tearDown;
+      return;
     }
+
+    _testTearDown = () {
+      var f = tearDown();
+      if (f is Future) {
+        return f.then((_) => parent.testTearDown());
+      } else {
+        return parent.testTearDown();
+      }
+    };
   }
 
-  String get fullName => (parent == null || parent == _environment.rootContext)
-      ? _name
-      : "${parent.fullName}$groupSep$_name";
+  /// Returns the fully-qualified name of this context.
+  String get fullName =>
+      (isRoot || parent.isRoot) ? _name : "${parent.fullName}$groupSep$_name";
 
-  _GroupContext([this.parent, this._name = '']) {
-    _testSetup = parentSetup;
-    _testTeardown = parentTeardown;
+  GroupContext.root()
+      : parent = null,
+        _name = '';
+
+  GroupContext(this.parent, this._name) {
+    _testSetUp = parent.testSetUp;
+    _testTearDown = parent.testTearDown;
   }
 }

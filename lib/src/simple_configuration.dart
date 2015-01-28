@@ -2,10 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of unittest;
+library unittest.simple_configuration;
 
-// A custom failure handler for [expect] that routes expect failures
-// to the config.
+import 'dart:isolate';
+
+import 'package:matcher/matcher.dart'
+    show DefaultFailureHandler, configureExpectFailureHandler, TestFailure;
+
+import '../unittest.dart';
+import 'internal_test_case.dart';
+import 'utils.dart';
+
+// A custom failure handler for [expect] that routes failures to the
+// [SimpleConfiguration].
 class _ExpectFailureHandler extends DefaultFailureHandler {
   final SimpleConfiguration _config;
 
@@ -16,32 +25,36 @@ class _ExpectFailureHandler extends DefaultFailureHandler {
   }
 }
 
-/// Hooks to configure the unittest library for different platforms. This class
-/// implements the API in a platform-independent way. Tests that want to take
-/// advantage of the platform can create a subclass and override methods from
-/// this class.
+/// A configuration that provides hooks to configure the unittest library for
+/// different platforms.
+///
+/// This class implements the [Configuration] API in a platform-independent way.
+/// Tests that want to take advantage of the platform can create a subclass and
+/// override methods from this class.
 class SimpleConfiguration extends Configuration {
-  // The VM won't shut down if a receive port is open. Use this to make sure
-  // we correctly wait for asynchronous tests.
+  /// A port that keeps the VM alive while we wait for asynchronous tests to
+  /// finish.
+  ///
+  /// The VM won't shut down as long as there's an open receive port.
   ReceivePort _receivePort;
 
-  /// Subclasses can override this with something useful for diagnostics.
-  /// Particularly useful in cases where we have parent/child configurations
-  /// such as layout tests.
-  String get name => 'Configuration';
+  /// The name of the configuration.
+  ///
+  /// Subclasses can override this with something useful for diagnostics. It's
+  /// particularly useful for parent/child configurations such as layout tests.
+  final name = 'Configuration';
 
-  bool get autoStart => true;
-
-  /// If true (the default), throw an exception at the end if any tests failed.
+  /// If true (the default), throw an exception once all tests have run if any failed.
   bool throwOnTestFailures = true;
 
   /// If true (the default), then tests will stop after the first failed
-  /// [expect]. If false, failed [expect]s will not cause the test
-  /// to stop (other exceptions will still terminate the test).
+  /// [expect].
+  ///
+  /// If false, failed [expect]s will not cause the test to stop. Other
+  /// exceptions will still terminate the test.
   bool stopTestOnExpectFailure = true;
 
-  // If stopTestOnExpectFailure is false, we need to capture failures, which
-  // we do with this List.
+  // If [stopTestOnExpectFailure] is false, the list of failed [expect]s.
   final _testLogBuffer = <Pair<String, StackTrace>>[];
 
   /// The constructor sets up a failure handler for [expect] that redirects
@@ -59,76 +72,71 @@ class SimpleConfiguration extends Configuration {
     _postMessage('unittest-suite-wait-for-done');
   }
 
-  /// Called when each test starts. Useful to show intermediate progress on
-  /// a test suite. Derived classes should call this first before their own
-  /// override code.
-  void onTestStart(TestCase testCase) {
-    assert(testCase != null);
-    _testLogBuffer.clear();
-  }
+  /// Called when a test starts.
+  ///
+  /// Derived classes should call this first before their own override code.
+  void onTestStart(TestCase testCase) => _testLogBuffer.clear();
 
-  /// Called when each test is first completed. Useful to show intermediate
-  /// progress on a test suite. Derived classes should call this first
-  /// before their own override code.
-  void onTestResult(TestCase testCase) {
-    assert(testCase != null);
-    if (!stopTestOnExpectFailure && _testLogBuffer.length > 0) {
-      // Write the message/stack pairs up to the last pairs.
-      var reason = new StringBuffer();
-      for (var reasonAndTrace
-          in _testLogBuffer.take(_testLogBuffer.length - 1)) {
-        reason.write(reasonAndTrace.first);
-        reason.write('\n');
-        reason.write(reasonAndTrace.last);
-        reason.write('\n');
-      }
-      var lastReasonAndTrace = _testLogBuffer.last;
-      // Write the last message.
-      reason.write(lastReasonAndTrace.first);
-      if (testCase.result == PASS) {
-        testCase._result = FAIL;
-        testCase._message = reason.toString();
-        // Use the last stack as the overall failure stack.
-        testCase._stackTrace = lastReasonAndTrace.last;
-      } else {
-        // Add the last stack to the message; we have a further stack
-        // caused by some other failure.
-        reason.write(lastReasonAndTrace.last);
-        reason.write('\n');
-        // Add the existing reason to the end of the expect log to
-        // create the final message.
-        testCase._message = '${reason.toString()}\n${testCase._message}';
-      }
+  /// Called when a test completes.
+  ///
+  /// Derived classes should call this first before their own override code.
+  void onTestResult(TestCase externalTestCase) {
+    if (stopTestOnExpectFailure || _testLogBuffer.isEmpty) return;
+
+    var testCase = externalTestCase as InternalTestCase;
+
+    // Write the message/stack pairs up to the last pairs.
+    var reason = new StringBuffer();
+    for (var reasonAndTrace in _testLogBuffer.take(_testLogBuffer.length - 1)) {
+      reason.write(reasonAndTrace.first);
+      reason.write('\n');
+      reason.write(reasonAndTrace.last);
+      reason.write('\n');
+    }
+
+    var lastReasonAndTrace = _testLogBuffer.last;
+    // Write the last message.
+    reason.write(lastReasonAndTrace.first);
+    if (testCase.result == PASS) {
+      testCase.result = FAIL;
+      testCase.message = reason.toString();
+      // Use the last stack as the overall failure stack.
+      testCase.stackTrace = lastReasonAndTrace.last;
+    } else {
+      // Add the last stack to the message; we have a further stack
+      // caused by some other failure.
+      reason.write(lastReasonAndTrace.last);
+      reason.write('\n');
+      // Add the existing reason to the end of the expect log to
+      // create the final message.
+      testCase.message = '${reason.toString()}\n${testCase.message}';
     }
   }
 
-  void onTestResultChanged(TestCase testCase) {
-    assert(testCase != null);
-  }
-
-  /// Handles the logging of messages by a test case. The default in
-  /// this base configuration is to call print();
+  /// Handles the logging of messages by a test case.
+  ///
+  /// The default in this base configuration is to call [print].
   void onLogMessage(TestCase testCase, String message) {
     print(message);
   }
 
-  /// Handles failures from expect(). The default in
-  /// this base configuration is to throw an exception;
+  /// Handles failures from [expect].
+  ///
+  /// If [stopTestOnExpectFailure] is true, this throws a [TestFailure].
+  /// Otherwise, this stores the error.
   void onExpectFailure(String reason) {
-    if (stopTestOnExpectFailure) {
-      throw new TestFailure(reason);
-    } else {
-      try {
-        throw '';
-      } catch (_, stack) {
-        var trace = getTrace(stack, formatStacks, filterStacks);
-        if (trace == null) trace = stack;
-        _testLogBuffer.add(new Pair<String, StackTrace>(reason, trace));
-      }
+    if (stopTestOnExpectFailure) throw new TestFailure(reason);
+
+    try {
+      throw '';
+    } catch (_, stack) {
+      var trace = getTrace(stack, formatStacks, filterStacks);
+      if (trace == null) trace = stack;
+      _testLogBuffer.add(new Pair<String, StackTrace>(reason, trace));
     }
   }
 
-  /// Format a test result.
+  /// Returns a formatted string description of a test result.
   String formatResult(TestCase testCase) {
     var result = new StringBuffer();
     result.write(testCase.result.toUpperCase());
@@ -150,17 +158,17 @@ class SimpleConfiguration extends Configuration {
 
   /// Called with the result of all test cases.
   ///
-  /// The default implementation prints the result summary using the built-in
-  /// [print] command. Browser tests commonly override this to reformat the
-  /// output.
+  /// The default implementation prints the result summary using [print],
+  /// formatted with [formatResult]. Browser tests commonly override this to
+  /// reformat the output.
   ///
   /// When [uncaughtError] is not null, it contains an error that occured
   /// outside of tests (e.g. setting up the test).
   void onSummary(int passed, int failed, int errors, List<TestCase> results,
       String uncaughtError) {
     // Print each test's result.
-    for (final t in results) {
-      print(formatResult(t).trim());
+    for (var test in results) {
+      print(formatResult(test).trim());
     }
 
     // Show the summary.
