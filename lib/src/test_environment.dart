@@ -2,21 +2,44 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of unittest;
+library unittest.test_environment;
 
-/// Class for encapsulating test environment state.
+import 'dart:async';
+
+import 'configuration.dart';
+import 'group_context.dart';
+import 'internal_test_case.dart';
+
+/// The default unittest environment.
+final _defaultEnvironment = new TestEnvironment();
+
+/// The current unittest environment.
+TestEnvironment get environment {
+  var environment = Zone.current[#unittest.environment];
+  return environment == null ? _defaultEnvironment : environment;
+}
+
+// The current environment's configuration.
+Configuration get config => environment.config;
+
+/// Encapsulates the state of the test environment.
 ///
 /// This is used by the [withTestEnvironment] method to support multiple
 /// invocations of the unittest library within the same application
 /// instance.
-class _TestEnvironment {
+class TestEnvironment {
+  /// The environment's configuration.
   Configuration config;
 
-  // We use a 'dummy' context for the top level to eliminate null
-  // checks when querying the context. This allows us to easily
-  //  support top-level [setUp]/[tearDown] functions as well.
-  final rootContext = new _GroupContext();
-  _GroupContext currentContext;
+  /// The top-level group context.
+  ///
+  /// We use a 'dummy' context for the top level to eliminate null checks when
+  /// querying the context. This allows us to easily support top-level
+  /// [setUp]/[tearDown] functions as well.
+  final rootContext = new GroupContext.root();
+
+  /// The current group context.
+  GroupContext currentContext;
 
   /// The [currentTestCaseIndex] represents the index of the currently running
   /// test case.
@@ -33,22 +56,19 @@ class _TestEnvironment {
   /// The time since we last gave asynchronous code a chance to be scheduled.
   int lastBreath = new DateTime.now().millisecondsSinceEpoch;
 
-  /// The set of tests to run can be restricted by using [solo_test] and
-  /// [solo_group].
-  ///
-  /// As groups can be nested we use a counter to keep track of the nesting
-  /// level of soloing, and a flag to tell if we have seen any solo tests.
+  /// The number of [solo_group]s deep we are currently.
   int soloNestingLevel = 0;
+
+  /// Whether we've seen a [solo_test].
   bool soloTestSeen = false;
 
   /// The list of test cases to run.
-  final List<TestCase> testCases = new List<TestCase>();
+  final testCases = new List<InternalTestCase>();
 
-  /// The [uncaughtErrorMessage] holds the error messages that are printed
-  /// in the test summary.
+  /// The error message that is printed in the test summary.
   String uncaughtErrorMessage;
 
-  _TestEnvironment() {
+  TestEnvironment() {
     currentContext = rootContext;
   }
 }

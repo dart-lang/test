@@ -19,6 +19,10 @@
 * Removed several members from `SimpleConfiguration` that relied on removed
   functionality: `onExpectFailure`, `stopTestOnExpectFailure`, and 'name'.
 
+##0.11.5+1
+
+* Internal code cleanups and documentation improvements.
+
 ##0.11.5
 
 * Bumped the version constraint for `matcher`.
