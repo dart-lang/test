@@ -1,3 +1,7 @@
+##0.11.5+2
+
+* Properly detect when tests are finished being run on content shell.
+
 ##0.11.5+1
 
 * Internal code cleanups and documentation improvements.
