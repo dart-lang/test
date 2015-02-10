@@ -14,6 +14,9 @@ packages/*: Skip
 # difference between transformed an untransformed code.
 test/*: Skip
 
+# Skip test-looking files in the lib directory
+lib/*: Skip
+
 [ $runtime == jsshell ]
 build/test/missing_tick_test: Fail # Timer interface not supported: dartbug.com/7728
 build/test/nested_groups_setup_teardown_test: RuntimeError # http://dartbug.com/10109
