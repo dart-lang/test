@@ -30,7 +30,7 @@ void main() {
 
     test('containing escapable characters', () {
       expect(
-          prettyPrint("foo\rbar\tbaz'qux"), equals("'foo\\rbar\\tbaz\\'qux'"));
+          prettyPrint("foo\rbar\tbaz'qux\v"), equals(r"'foo\rbar\tbaz\'qux\v'"));
     });
   });
 

@@ -6,6 +6,7 @@ library matcher.pretty_print;
 
 import 'description.dart';
 import 'interfaces.dart';
+import 'util.dart';
 
 /// Returns a pretty-printed representation of [object].
 ///
@@ -132,21 +133,4 @@ String _typeName(x) {
 ///
 /// This doesn't add quotes to the string, but it does escape single quote
 /// characters so that single quotes can be applied externally.
-String _escapeString(String source) =>
-    source.split("").map(_escapeChar).join("");
-
-/// Return the escaped form of a character [ch].
-String _escapeChar(String ch) {
-  switch (ch) {
-    case "'":
-      return "\\'";
-    case '\n':
-      return '\\n';
-    case '\r':
-      return '\\r';
-    case '\t':
-      return '\\t';
-    default:
-      return ch;
-  }
-}
+String _escapeString(String source) => escape(source).replaceAll("'", r"\'");

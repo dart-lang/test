@@ -1,3 +1,8 @@
+## 0.11.4+1
+
+* Correctly match and print `String`s containing characters that must be
+  represented as escape sequences.
+
 ## 0.11.4
 
 * Remove the type checks in the `isEmpty` and `isNotEmpty` matchers and simply

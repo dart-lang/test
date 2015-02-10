@@ -297,8 +297,8 @@ class _StringEqualsMatcher extends Matcher {
     } else {
       var buff = new StringBuffer();
       buff.write('is different.');
-      var escapedItem = _escape(item);
-      var escapedValue = _escape(_value);
+      var escapedItem = escape(item);
+      var escapedValue = escape(_value);
       int minLength = escapedItem.length < escapedValue.length
           ? escapedItem.length
           : escapedValue.length;
@@ -333,9 +333,6 @@ class _StringEqualsMatcher extends Matcher {
       return mismatchDescription.replace(buff.toString());
     }
   }
-
-  static String _escape(String s) =>
-      s.replaceAll('\n', '\\n').replaceAll('\r', '\\r').replaceAll('\t', '\\t');
 
   static void _writeLeading(StringBuffer buff, String s, int start) {
     if (start > 10) {

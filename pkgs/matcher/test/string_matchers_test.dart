@@ -12,6 +12,11 @@ import 'test_utils.dart';
 void main() {
   initUtils();
 
+  test('Reports mismatches in whitespace and escape sequences', () {
+    shouldFail('before\nafter', equals('before\\nafter'),
+        contains('Differ at offset 7'));
+  });
+
   test('collapseWhitespace', () {
     var source = '\t\r\n hello\t\r\n world\r\t \n';
     expect(collapseWhitespace(source), 'hello world');
