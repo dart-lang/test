@@ -4,7 +4,14 @@
 
 library unittest.utils;
 
+import 'dart:async';
+
 import 'package:stack_trace/stack_trace.dart';
+
+/// A typedef for a possibly-asynchronous function.
+///
+/// The return type should only ever by [Future] or void.
+typedef AsyncFunction();
 
 /// Indent each line in [str] by two spaces.
 String indent(String str) =>

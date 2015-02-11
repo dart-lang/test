@@ -13,6 +13,7 @@ dependencies:
   # features it provides.
   matcher: '>=0.11.4 <0.11.5'
 dev_dependencies:
+  fake_async: '>=0.1.2 <0.2.0'
   metatest:
     git:
       ref: b6348d7e7f3c5b00a48aa579694457d1abd36b69
