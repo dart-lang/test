@@ -56,3 +56,20 @@ Trace getTrace(stack, bool formatStacks, bool filterStacks) {
     return frame.package != 'unittest' || frame.member != 'TestCase._runTest';
   })).terse.foldFrames((frame) => frame.package == 'unittest' || frame.isCore);
 }
+
+/// Flattens nested [Iterable]s inside an [Iterable] into a single [List]
+/// containing only non-[Iterable] elements.
+List flatten(Iterable nested) {
+  var result = [];
+  helper(iter) {
+    for (var element in iter) {
+      if (element is Iterable) {
+        helper(element);
+      } else {
+        result.add(element);
+      }
+    }
+  }
+  helper(nested);
+  return result;
+}
