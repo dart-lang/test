@@ -14,7 +14,7 @@ packages/*: Skip
 # difference between transformed an untransformed code.
 test/*: Skip
 
-unittest/lib/src/live_test: Skip # Don't run library files as tests
+lib/src/live_test: Skip # Don't run library files as tests
 
 [ $runtime == jsshell ]
 build/test/missing_tick_test: Fail # Timer interface not supported: dartbug.com/7728
