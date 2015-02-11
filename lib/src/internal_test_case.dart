@@ -194,7 +194,7 @@ class InternalTestCase implements TestCase {
     if (result == null) {
       fail(message, stackTrace);
     } else {
-      error(message, stackTrace);
+      this.error(message, stackTrace);
     }
   }
 
