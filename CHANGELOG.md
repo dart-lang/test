@@ -1,3 +1,7 @@
+##0.11.5+3
+
+* Fixed issue with handling exceptions.
+
 ##0.11.5+2
 
 * Properly detect when tests are finished being run on content shell.
