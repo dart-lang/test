@@ -101,4 +101,17 @@ abstract class LiveTest {
   /// This returns the same [Future] as [onComplete]. It may not be called more
   /// than once.
   Future run();
+
+  /// Signals that this test should stop emitting events and release any
+  /// resources it may have allocated.
+  ///
+  /// Once [close] is called, [onComplete] will complete if it hasn't already
+  /// and [onStateChange] and [onError] will close immediately. This means that,
+  /// if the test was running at the time [close] is called, it will never emit
+  /// a [Status.complete] state-change event.
+  ///
+  /// This doesn't automatically happen after the test completes because there
+  /// may be more asynchronous work going on in the background that could
+  /// produce new errors.
+  Future close();
 }

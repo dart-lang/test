@@ -13,6 +13,7 @@ import 'live_test.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
+import 'utils.dart';
 
 /// An implementation of [LiveTest] that's controlled by a [LiveTestController].
 class _LiveTest extends LiveTest {
@@ -34,6 +35,8 @@ class _LiveTest extends LiveTest {
   Future get onComplete => _controller.completer.future;
 
   Future run() => _controller._run();
+
+  Future close() => _controller._close();
 
   _LiveTest(this._controller);
 }
@@ -61,6 +64,11 @@ class LiveTestController {
   /// The function that will actually start the test running.
   final Function _onRun;
 
+  /// A function to run when the test is closed.
+  ///
+  /// This may be `null`.
+  final AsyncFunction _onClose;
+
   /// The list of errors caught by the test.
   final _errors = new List<AsyncError>();
 
@@ -79,6 +87,9 @@ class LiveTestController {
   /// Whether [run] has been called.
   var _runCalled = false;
 
+  /// Whether [close] has been called.
+  bool get _isClosed => _onErrorController.isClosed;
+
   /// Creates a new controller for a [LiveTest].
   ///
   /// [test] is the test being run; [suite] is the suite that contains it.
@@ -87,8 +98,13 @@ class LiveTestController {
   /// start the test running. The controller takes care of ensuring that
   /// [LiveTest.run] isn't called more than once and that [LiveTest.onComplete]
   /// is returned.
-  LiveTestController(this._suite, this._test, void onRun())
-      : _onRun = onRun {
+  ///
+  /// If [onClose] is passed, it's called the first [LiveTest.close] is called.
+  /// It should clean up any resources that have been allocated for the test. It
+  /// may return a [Future].
+  LiveTestController(this._suite, this._test, void onRun(), {onClose()})
+      : _onRun = onRun,
+        _onClose = onClose {
     _liveTest = new _LiveTest(this);
   }
 
@@ -124,5 +140,16 @@ class LiveTestController {
 
     _onRun();
     return liveTest.onComplete;
+  }
+
+  /// A wrapper for [_onClose] that ensures that all controllers are closed.
+  Future _close() {
+    if (_isClosed) return new Future.value();
+    _onStateChangeController.close();
+    _onErrorController.close();
+    if (!completer.isCompleted) completer.complete();
+
+    if (_onClose != null) return new Future.sync(_onClose);
+    return new Future.value();
   }
 }

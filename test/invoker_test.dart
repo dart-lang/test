@@ -3,24 +3,19 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:unittest/src/invoker.dart';
-import 'package:unittest/src/live_test.dart';
 import 'package:unittest/src/state.dart';
 import 'package:unittest/src/suite.dart';
 import 'package:unittest/unittest.dart';
 
 import 'utils.dart';
 
-// The last state change detected via [_expectStates].
-State _lastState;
-
 void main() {
   var suite;
   setUp(() {
-    _lastState = null;
+    lastState = null;
     suite = new Suite("suite", []);
   });
 
@@ -170,7 +165,7 @@ void main() {
         throw new TestFailure('oh no');
       }).load(suite);
 
-      _expectSingleFailure(liveTest);
+      expectSingleFailure(liveTest);
       return liveTest.run();
     });
 
@@ -179,7 +174,7 @@ void main() {
         Invoker.current.handleError(new TestFailure("oh no"));
       }).load(suite);
 
-      _expectSingleFailure(liveTest);
+      expectSingleFailure(liveTest);
       return liveTest.run();
     });
 
@@ -190,7 +185,7 @@ void main() {
         new Future(() => Invoker.current.handleError(new TestFailure("oh no")));
       }).load(suite);
 
-      _expectSingleFailure(liveTest);
+      expectSingleFailure(liveTest);
       return liveTest.run();
     });
 
@@ -201,7 +196,7 @@ void main() {
         new Future(() => throw new TestFailure("oh no"));
       }).load(suite);
 
-      _expectSingleFailure(liveTest);
+      expectSingleFailure(liveTest);
       return liveTest.run();
     });
 
@@ -211,18 +206,18 @@ void main() {
         new Future(() => Invoker.current.handleError(new TestFailure("oh no")));
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.success),
         const State(Status.complete, Result.failure),
         const State(Status.complete, Result.error)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState, equals(const State(Status.complete, Result.failure)));
+      expectErrors(liveTest, [(error) {
+        expect(lastState, equals(const State(Status.complete, Result.failure)));
         expect(error, isTestFailure("oh no"));
       }, (error) {
-        expect(_lastState, equals(const State(Status.complete, Result.error)));
+        expect(lastState, equals(const State(Status.complete, Result.error)));
         expect(error, equals(
              "This test failed after it had already completed. Make sure to "
                  "use [expectAsync]\n"
@@ -241,13 +236,13 @@ void main() {
         new Future(() => throw new TestFailure("four"));
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.failure)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState.status, equals(Status.complete));
+      expectErrors(liveTest, [(error) {
+        expect(lastState.status, equals(Status.complete));
         expect(error, isTestFailure("one"));
       }, (error) {
         expect(error, isTestFailure("two"));
@@ -266,13 +261,13 @@ void main() {
         throw "error";
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.error)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState, equals(const State(Status.complete, Result.error)));
+      expectErrors(liveTest, [(error) {
+        expect(lastState, equals(const State(Status.complete, Result.error)));
         expect(error, equals("error"));
       }, (error) {
         expect(error, isTestFailure("fail"));
@@ -291,7 +286,7 @@ void main() {
         stateDuringTearDown = liveTest.state;
       }).load(suite);
 
-      _expectSingleFailure(liveTest);
+      expectSingleFailure(liveTest);
       return liveTest.run().then((_) {
         expect(stateDuringTearDown,
             equals(const State(Status.complete, Result.failure)));
@@ -305,7 +300,7 @@ void main() {
         throw 'oh no';
       }).load(suite);
 
-      _expectSingleError(liveTest);
+      expectSingleError(liveTest);
       return liveTest.run();
     });
 
@@ -314,7 +309,7 @@ void main() {
         Invoker.current.handleError("oh no");
       }).load(suite);
 
-      _expectSingleError(liveTest);
+      expectSingleError(liveTest);
       return liveTest.run();
     });
 
@@ -325,7 +320,7 @@ void main() {
         new Future(() => Invoker.current.handleError("oh no"));
       }).load(suite);
 
-      _expectSingleError(liveTest);
+      expectSingleError(liveTest);
       return liveTest.run();
     });
 
@@ -336,7 +331,7 @@ void main() {
         new Future(() => throw "oh no");
       }).load(suite);
 
-      _expectSingleError(liveTest);
+      expectSingleError(liveTest);
       return liveTest.run();
     });
 
@@ -346,14 +341,14 @@ void main() {
         new Future(() => Invoker.current.handleError("oh no"));
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.success),
         const State(Status.complete, Result.error)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState, equals(const State(Status.complete, Result.error)));
+      expectErrors(liveTest, [(error) {
+        expect(lastState, equals(const State(Status.complete, Result.error)));
         expect(error, equals("oh no"));
       }, (error) {
         expect(error, equals(
@@ -374,13 +369,13 @@ void main() {
         new Future(() => throw "four");
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.error)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState.status, equals(Status.complete));
+      expectErrors(liveTest, [(error) {
+        expect(lastState.status, equals(Status.complete));
         expect(error, equals("one"));
       }, (error) {
         expect(error, equals("two"));
@@ -399,17 +394,17 @@ void main() {
         throw new TestFailure("fail");
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.failure),
         const State(Status.complete, Result.error)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState, equals(const State(Status.complete, Result.failure)));
+      expectErrors(liveTest, [(error) {
+        expect(lastState, equals(const State(Status.complete, Result.failure)));
         expect(error, isTestFailure("fail"));
       }, (error) {
-        expect(_lastState, equals(const State(Status.complete, Result.error)));
+        expect(lastState, equals(const State(Status.complete, Result.error)));
         expect(error, equals("error"));
       }]);
 
@@ -426,7 +421,7 @@ void main() {
         stateDuringTearDown = liveTest.state;
       }).load(suite);
 
-      _expectSingleError(liveTest);
+      expectSingleError(liveTest);
       return liveTest.run().then((_) {
         expect(stateDuringTearDown,
             equals(const State(Status.complete, Result.error)));
@@ -482,13 +477,13 @@ void main() {
         Invoker.current.addOutstandingCallback();
       }).load(suite);
 
-      _expectStates(liveTest, [
+      expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.error)
       ]);
 
-      _expectErrors(liveTest, [(error) {
-        expect(_lastState.status, equals(Status.complete));
+      expectErrors(liveTest, [(error) {
+        expect(lastState.status, equals(Status.complete));
         expect(error, new isInstanceOf<TimeoutException>());
       }]);
 
@@ -496,50 +491,4 @@ void main() {
       async.elapse(new Duration(seconds: 30));
     });
   });
-}
-
-/// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
-///
-/// The most recent emitted state is stored in [_lastState].
-void _expectStates(LiveTest liveTest, Iterable<State> statesIter) {
-  var states = new Queue.from(statesIter);
-  liveTest.onStateChange.listen(expectAsync((state) {
-    _lastState = state;
-    expect(state, equals(states.removeFirst()));
-  }, count: states.length, max: states.length));
-}
-
-/// Asserts that errors will be emitted via [liveTest.onError] that match
-/// [validators], in order.
-void _expectErrors(LiveTest liveTest, Iterable<Function> validatorsIter) {
-  var validators = new Queue.from(validatorsIter);
-  liveTest.onError.listen(expectAsync((error) {
-    validators.removeFirst()(error.error);
-  }, count: validators.length, max: validators.length));
-}
-
-/// Asserts that [liveTest] will have a single failure with message `"oh no"`.
-void _expectSingleFailure(LiveTest liveTest) {
-  _expectStates(liveTest, [
-    const State(Status.running, Result.success),
-    const State(Status.complete, Result.failure)
-  ]);
-
-  _expectErrors(liveTest, [(error) {
-    expect(_lastState.status, equals(Status.complete));
-    expect(error, isTestFailure("oh no"));
-  }]);
-}
-
-/// Asserts that [liveTest] will have a single error, the string `"oh no"`.
-void _expectSingleError(LiveTest liveTest) {
-  _expectStates(liveTest, [
-    const State(Status.running, Result.success),
-    const State(Status.complete, Result.error)
-  ]);
-
-  _expectErrors(liveTest, [(error) {
-    expect(_lastState.status, equals(Status.complete));
-    expect(error, equals("oh no"));
-  }]);
 }
