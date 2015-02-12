@@ -4,6 +4,7 @@
 
 library unittest.io;
 
+import 'dart:async';
 import 'dart:io';
 
 /// Whether "special" strings such as Unicode characters or color escapes are
@@ -21,3 +22,21 @@ bool get canUseSpecialChars =>
 /// those aren't supported.
 String getSpecial(String special, [String onWindows = '']) =>
     canUseSpecialChars ? special : onWindows;
+
+/// Creates a temporary directory and passes its path to [fn].
+///
+/// Once the [Future] returned by [fn] completes, the temporary directory and
+/// all its contents are deleted. [fn] can also return `null`, in which case
+/// the temporary directory is deleted immediately afterwards.
+///
+/// Returns a future that completes to the value that the future returned from
+/// [fn] completes to.
+Future withTempDir(Future fn(String path)) {
+  return new Future.sync(() {
+    // TODO(nweiz): Empirically test whether sync or async functions perform
+    // better here when starting a bunch of isolates.
+    var tempDir = Directory.systemTemp.createTempSync('unittest_');
+    return new Future.sync(() => fn(tempDir.path))
+        .whenComplete(() => tempDir.deleteSync(recursive: true));
+  });
+}
