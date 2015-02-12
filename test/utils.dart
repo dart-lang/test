@@ -6,10 +6,6 @@ library unittest.test.utils;
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
-import 'package:stack_trace/stack_trace.dart';
 
 import 'package:unittest/src/live_test.dart';
 import 'package:unittest/src/remote_exception.dart';
@@ -18,13 +14,6 @@ import 'package:unittest/unittest.dart';
 
 // The last state change detected via [expectStates].
 State lastState;
-
-final String packageDir = _computePackageDir();
-
-String _computePackageDir() {
-  var trace = new Trace.current();
-  return p.dirname(p.dirname(p.fromUri(trace.frames.first.uri)));
-}
 
 /// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
 ///
@@ -81,12 +70,6 @@ Matcher isTestFailure(String message) => predicate(
 Matcher isRemoteException(String message) => predicate(
     (error) => error is RemoteException && error.message == message,
     'is a RemoteException with message "$message"');
-
-/// Returns a matcher that matches a [FileSystemException] with the given
-/// [message].
-Matcher isFileSystemException(String message) => predicate(
-    (error) => error is FileSystemException && error.message == message,
-    'is a FileSystemException with message "$message"');
 
 /// Returns a [Future] that completes after pumping the event queue [times]
 /// times.

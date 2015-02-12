@@ -69,7 +69,10 @@ class Invoker {
   /// The current invoker, or `null` if none is defined.
   ///
   /// An invoker is only set within the zone scope of a running test.
-  static Invoker get current => Zone.current[#unittest._invoker];
+  static Invoker get current {
+    // TODO(nweiz): Use a private symbol when dart2js supports it (issue 17526).
+    return Zone.current[#unittest.invoker];
+  }
 
   Invoker._(Suite suite, LocalTest test) {
     _controller = new LiveTestController(suite, test, _onRun);
@@ -171,7 +174,7 @@ class Invoker {
               new State(Status.complete, liveTest.state.result));
           _controller.completer.complete();
         });
-      }, zoneValues: {#unittest._invoker: this}, onError: handleError);
+      }, zoneValues: {#unittest.invoker: this}, onError: handleError);
     });
   }
 }

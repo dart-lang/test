@@ -11,6 +11,7 @@ import 'package:unittest/src/loader.dart';
 import 'package:unittest/src/state.dart';
 import 'package:unittest/unittest.dart';
 
+import 'io.dart';
 import 'utils.dart';
 
 Loader _loader;
