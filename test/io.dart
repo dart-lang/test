@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
+import 'package:unittest/unittest.dart';
 
 /// The root directory of the `unittest` package.
 final String packageDir = _computePackageDir();
