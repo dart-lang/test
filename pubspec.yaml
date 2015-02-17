@@ -8,10 +8,11 @@ environment:
 dependencies:
   stack_trace: '>=0.9.0 <2.0.0'
 
-  # Because unittest exports matcher, it needs to keep its version constraint
-  # tight to ensure that a constraint on unittest properly constraints all
-  # features it provides.
-  matcher: '>=0.11.4 <0.11.5'
+  # Using the pre-release version of matcher. When published we will go back
+  # using a tight version constraint to ensure that a constraint on unittest
+  # properly constraints all features it provides.
+  matcher:
+    git: https://github.com/dart-lang/matcher.git
 dev_dependencies:
   fake_async: '>=0.1.2 <0.2.0'
   metatest:
