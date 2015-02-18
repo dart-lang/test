@@ -6,7 +6,7 @@ library unittest.prints_matcher;
 
 import 'dart:async';
 
-import 'package:matcher/matcher.dart' hide completes, wrapAsync, expect;
+import 'package:matcher/matcher.dart' hide completes, expect;
 
 import '../unittest.dart';
 
@@ -40,9 +40,9 @@ class _Prints extends Matcher {
       return _matcher.matches(actual, matchState);
     }
 
-    return completes.matches(result.then(wrapAsync((_) {
+    return completes.matches(result.then((_) {
       expect(buffer.toString(), _matcher);
-    }, 'prints')), matchState);
+    }), matchState);
   }
 
   Description describe(Description description) =>
