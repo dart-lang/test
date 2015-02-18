@@ -6,7 +6,7 @@ library matcher.pretty_print_test;
 
 import 'package:matcher/matcher.dart';
 import 'package:matcher/src/pretty_print.dart';
-import 'package:unittest/unittest.dart' show group, test;
+import 'package:unittest/unittest.dart' show group, test, expect;
 
 void main() {
   test('with primitive objects', () {

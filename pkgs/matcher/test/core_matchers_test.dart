@@ -10,8 +10,6 @@ import 'package:unittest/unittest.dart' show test, group;
 import 'test_utils.dart';
 
 void main() {
-  initUtils();
-
   test('isTrue', () {
     shouldPass(true, isTrue);
     shouldFail(false, isTrue, "Expected: true Actual: <false>");
@@ -117,10 +115,10 @@ void main() {
     shouldPass(a, hasLength(0));
     shouldPass(b, hasLength(0));
     shouldPass('a', hasLength(1));
-    shouldFail(0, hasLength(0), new PrefixMatcher(
+    shouldFail(0, hasLength(0),
         "Expected: an object with length of <0> "
         "Actual: <0> "
-        "Which: has no length property"));
+        "Which: has no length property");
 
     b.add(0);
     shouldPass(b, hasLength(1));

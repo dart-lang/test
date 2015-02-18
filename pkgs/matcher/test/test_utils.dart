@@ -4,36 +4,17 @@
 
 library matcher.test_utils;
 
-import 'dart:async';
+import 'package:unittest/unittest.dart';
 
-import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart' show test, expectAsync;
+void shouldFail(value, Matcher matcher, expected) {
+  var failed = false;
+  try {
+    expect(value, matcher);
+  } on TestFailure catch (err) {
+    failed = true;
 
-int _errorCount;
-String _errorString;
-FailureHandler _testHandler = null;
+    var _errorString = err.message;
 
-class MyFailureHandler extends DefaultFailureHandler {
-  void fail(String reason) {
-    ++_errorCount;
-    _errorString = reason;
-  }
-}
-
-void initUtils() {
-  if (_testHandler == null) {
-    _testHandler = new MyFailureHandler();
-  }
-}
-
-void shouldFail(value, Matcher matcher, expected, {bool isAsync: false}) {
-  configureExpectFailureHandler(_testHandler);
-  _errorCount = 0;
-  _errorString = '';
-  expect(value, matcher);
-  afterTest() {
-    configureExpectFailureHandler(null);
-    expect(_errorCount, equals(1));
     if (expected is String) {
       expect(_errorString, equalsIgnoringWhitespace(expected));
     } else {
@@ -41,44 +22,14 @@ void shouldFail(value, Matcher matcher, expected, {bool isAsync: false}) {
     }
   }
 
-  if (isAsync) {
-    Timer.run(expectAsync(afterTest));
-  } else {
-    afterTest();
-  }
+  expect(failed, isTrue, reason: 'Expected to fail.');
 }
 
-void shouldPass(value, Matcher matcher, {bool isAsync: false}) {
-  configureExpectFailureHandler(_testHandler);
-  _errorCount = 0;
-  _errorString = '';
+void shouldPass(value, Matcher matcher) {
   expect(value, matcher);
-  afterTest() {
-    configureExpectFailureHandler(null);
-    expect(_errorCount, equals(0));
-  }
-  if (isAsync) {
-    Timer.run(expectAsync(afterTest));
-  } else {
-    afterTest();
-  }
 }
 
 doesNotThrow() {}
 doesThrow() {
   throw 'X';
-}
-
-class PrefixMatcher extends Matcher {
-  final String _prefix;
-  const PrefixMatcher(this._prefix);
-  bool matches(item, Map matchState) {
-    return item is String &&
-        (collapseWhitespace(item)).startsWith(collapseWhitespace(_prefix));
-  }
-
-  Description describe(Description description) => description
-      .add('a string starting with ')
-      .addDescriptionOf(collapseWhitespace(_prefix))
-      .add(' ignoring whitespace');
 }

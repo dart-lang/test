@@ -17,8 +17,6 @@ class C {
 }
 
 void main() {
-  initUtils();
-
   test('hasProperty', () {
     var foo = [3];
     shouldPass(foo, hasProperty('length', 1));

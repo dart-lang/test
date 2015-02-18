@@ -5,13 +5,11 @@
 library matcher.string_matchers_test;
 
 import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart' show test, group;
+import 'package:unittest/unittest.dart' show test, group, expect;
 
 import 'test_utils.dart';
 
 void main() {
-  initUtils();
-
   test('Reports mismatches in whitespace and escape sequences', () {
     shouldFail('before\nafter', equals('before\\nafter'),
         contains('Differ at offset 7'));

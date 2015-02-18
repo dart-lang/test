@@ -1,9 +1,14 @@
 name: matcher
-version: 0.11.4+1
+version: 0.12.0-dev
 author: Dart Team <misc@dartlang.org>
 description: Support for specifying test expectations
 homepage: https://github.com/dart-lang/matcher
 environment:
   sdk: '>=1.0.0 <2.0.0'
 dev_dependencies:
-  unittest: '>=0.10.0 <0.12.0'
+  # Using a git dependency to align with the unreleased version of unittest
+  # that is compatible with matcher 0.12.0
+  unittest:
+    git:
+      ref: master
+      url: https://github.com/dart-lang/unittest

@@ -5,13 +5,12 @@
 library matcher.operator_matchers_test;
 
 import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart' show test, group;
+import 'package:unittest/unittest.dart'
+    show test, group, expect, throwsArgumentError;
 
 import 'test_utils.dart';
 
 void main() {
-  initUtils();
-
   test('anyOf', () {
     // with a list
     shouldFail(

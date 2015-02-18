@@ -10,8 +10,6 @@ import 'package:unittest/unittest.dart' show test, group;
 import 'test_utils.dart';
 
 void main() {
-  initUtils();
-
   test('isEmpty', () {
     shouldPass([], isEmpty);
     shouldFail([1], isEmpty, "Expected: empty Actual: [1]");

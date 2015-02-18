@@ -10,8 +10,6 @@ import 'package:unittest/unittest.dart' show test, group;
 import 'test_utils.dart';
 
 void main() {
-  initUtils();
-
   test('greaterThan', () {
     shouldPass(10, greaterThan(9));
     shouldFail(9, greaterThan(10), "Expected: a value greater than <10> "

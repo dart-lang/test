@@ -1,3 +1,16 @@
+## 0.12.0
+
+* Moved a number of members to the
+  [`unittest`](https://pub.dartlang.org/packages/unittest) package.
+  * `TestFailure`, `ErrorFormatter`, `expect`, `fail`, and 'wrapAsync'.
+  * `completes`, `completion`, `throws`, and `throwsA` Matchers.
+  * The `Throws` class.
+  * All of the `throws...Error` Matchers.
+
+* Removed `FailureHandler`, `DefaultFailureHandler`,
+  `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler`.
+  Now that `expect` is in the `unittest` package, these are no longer needed.
+
 ## 0.11.4+1
 
 * Correctly match and print `String`s containing characters that must be
