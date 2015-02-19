@@ -7,10 +7,12 @@ library unittest.test.utils;
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:unittest/src/invoker.dart';
 import 'package:unittest/src/live_test.dart';
 import 'package:unittest/src/load_exception.dart';
 import 'package:unittest/src/remote_exception.dart';
 import 'package:unittest/src/state.dart';
+import 'package:unittest/src/suite.dart';
 import 'package:unittest/unittest.dart';
 
 // The last state change detected via [expectStates].
@@ -63,19 +65,102 @@ void expectSingleError(LiveTest liveTest) {
 }
 
 /// Returns a matcher that matches a [TestFailure] with the given [message].
-Matcher isTestFailure(String message) => predicate(
-    (error) => error is TestFailure && error.message == message,
-    'is a TestFailure with message "$message"');
+///
+/// [message] can be a string or a [Matcher].
+Matcher isTestFailure(message) => new _IsTestFailure(wrapMatcher(message));
+
+class _IsTestFailure extends Matcher {
+  final Matcher _message;
+
+  _IsTestFailure(this._message);
+
+  bool matches(item, Map matchState) =>
+      item is TestFailure && _message.matches(item.message, matchState);
+
+  Description describe(Description description) =>
+      description.add('a TestFailure with message ').addDescriptionOf(_message);
+
+  Description describeMismatch(item, Description mismatchDescription,
+                               Map matchState, bool verbose) {
+    if (item is! TestFailure) {
+      return mismatchDescription.addDescriptionOf(item)
+          .add('is not a TestFailure');
+    } else {
+      return mismatchDescription
+          .add('message ')
+          .addDescriptionOf(item.message)
+          .add(' is not ')
+          .addDescriptionOf(_message);
+    }
+  }
+}
 
 /// Returns a matcher that matches a [RemoteException] with the given [message].
-Matcher isRemoteException(String message) => predicate(
-    (error) => error is RemoteException && error.message == message,
-    'is a RemoteException with message "$message"');
+///
+/// [message] can be a string or a [Matcher].
+Matcher isRemoteException(message) =>
+    new _IsRemoteException(wrapMatcher(message));
 
-/// Returns a matcher that matches a [LoadException] with the given [message].
-Matcher isLoadException(String message) => predicate(
-    (error) => error is LoadException && error.innerError == message,
-    'is a LoadException with message "$message"');
+class _IsRemoteException extends Matcher {
+  final Matcher _message;
+
+  _IsRemoteException(this._message);
+
+  bool matches(item, Map matchState) =>
+      item is RemoteException && _message.matches(item.message, matchState);
+
+  Description describe(Description description) =>
+      description.add('a RemoteException with message ')
+          .addDescriptionOf(_message);
+
+  Description describeMismatch(item, Description mismatchDescription,
+                               Map matchState, bool verbose) {
+    if (item is! RemoteException) {
+      return mismatchDescription.addDescriptionOf(item)
+          .add('is not a RemoteException');
+    } else {
+      return mismatchDescription
+          .add('message ')
+          .addDescriptionOf(item)
+          .add(' is not ')
+          .addDescriptionOf(_message);
+    }
+  }
+}
+
+/// Returns a matcher that matches a [LoadException] with the given
+/// [innerError].
+///
+/// [innerError] can be a string or a [Matcher].
+Matcher isLoadException(innerError) =>
+    new _IsLoadException(wrapMatcher(innerError));
+
+class _IsLoadException extends Matcher {
+  final Matcher _innerError;
+
+  _IsLoadException(this._innerError);
+
+  bool matches(item, Map matchState) =>
+      item is LoadException && _innerError.matches(item.innerError, matchState);
+
+  Description describe(Description description) =>
+      description.add('a LoadException with message ')
+          .addDescriptionOf(_innerError);
+
+  Description describeMismatch(item, Description mismatchDescription,
+                               Map matchState, bool verbose) {
+    if (item is! LoadException) {
+      return mismatchDescription.addDescriptionOf(item)
+          .add('is not a LoadException');
+    } else {
+      return mismatchDescription
+          .add('inner error ')
+          .addDescriptionOf(item)
+          .add(' is not ')
+          .addDescriptionOf(_innerError);
+    }
+  }
+}
 
 /// Returns a [Future] that completes after pumping the event queue [times]
 /// times.
@@ -89,4 +174,68 @@ Future pumpEventQueue([int times=20]) {
   // not wait for microtask callbacks that are scheduled after invoking this
   // method.
   return new Future(() => pumpEventQueue(times - 1));
+}
+
+/// Returns a local [LiveTest] that runs [body].
+LiveTest createTest(body()) {
+  var test = new LocalTest("test", body);
+  var suite = new Suite("suite", [test]);
+  return test.load(suite);
+}
+
+/// Runs [body] as a test.
+///
+/// Once it completes, returns the [LiveTest] used to run it.
+Future<LiveTest> runTest(body()) {
+  var liveTest = createTest(body);
+  return liveTest.run().then((_) => liveTest);
+}
+
+/// Asserts that [liveTest] has completed and passed.
+///
+/// If the test had any errors, they're surfaced nicely into the outer test.
+void expectTestPassed(LiveTest liveTest) {
+  // Since the test is expected to pass, we forward any current or future errors
+  // to the outer test, because they're definitely unexpected.
+  for (var error in liveTest.errors) {
+    registerException(error.error, error.stackTrace);
+  }
+  liveTest.onError.listen((error) {
+    registerException(error.error, error.stackTrace);
+  });
+
+  expect(liveTest.state.status, equals(Status.complete));
+  expect(liveTest.state.result, equals(Result.success));
+}
+
+/// Asserts that [liveTest] failed with a single [TestFailure] whose message
+/// matches [message].
+void expectTestFailed(LiveTest liveTest, message) {
+  expect(liveTest.state.status, equals(Status.complete));
+  expect(liveTest.state.result, equals(Result.failure));
+  expect(liveTest.errors, hasLength(1));
+  expect(liveTest.errors.first.error, isTestFailure(message));
+}
+
+/// Assert that the [test] callback causes a test to block until [stopBlocking]
+/// is called at some later time.
+///
+/// [stopBlocking] is passed the return value of [test].
+Future expectTestBlocks(test(), stopBlocking(value)) {
+  var liveTest;
+  var future;
+  liveTest = createTest(() {
+    var value = test();
+    future = pumpEventQueue().then((_) {
+      expect(liveTest.state.status, equals(Status.running));
+      stopBlocking(value);
+    });
+  });
+
+  return liveTest.run().then((_) {
+    expectTestPassed(liveTest);
+    // Ensure that the outer test doesn't complete until the inner future
+    // completes.
+    return future;
+  });
 }

@@ -8,7 +8,8 @@ import 'dart:async';
 
 import 'package:matcher/matcher.dart' hide completes, expect;
 
-import '../unittest.dart';
+import 'future_matchers.dart';
+import 'expect.dart';
 
 /// Matches a [Function] that prints text that matches [matcher].
 ///
@@ -41,7 +42,16 @@ class _Prints extends Matcher {
     }
 
     return completes.matches(result.then((_) {
-      expect(buffer.toString(), _matcher);
+      // Re-run expect() so we get the same formatting as we would without being
+      // asynchronous.
+      expect(() {
+        var actual = buffer.toString();
+        if (actual.isEmpty) return;
+
+        // Strip off the final newline because [print] will re-add it.
+        actual = actual.substring(0, actual.length - 1);
+        print(actual);
+      }, this);
     }), matchState);
   }
 

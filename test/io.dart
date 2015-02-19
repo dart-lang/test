@@ -17,10 +17,18 @@ String _computePackageDir() =>
 
 /// Runs the unittest executable with the package root set properly.
 ProcessResult runUnittest(List<String> args, {String workingDirectory}) {
-  var allArgs = Platform.executableArguments.toList()
-     ..add(p.join(packageDir, 'bin/unittest.dart'))
-     ..add("--package-root=${p.join(packageDir, 'packages')}")
-     ..addAll(args);
+  var allArgs = [
+    p.join(packageDir, 'bin/unittest.dart'),
+    "--package-root=${p.join(packageDir, 'packages')}"
+  ]..addAll(args);
+
+  // TODO(nweiz): Use ScheduledProcess once it's compatible.
+  return runDart(allArgs, workingDirectory: workingDirectory);
+}
+
+/// Runs Dart.
+ProcessResult runDart(List<String> args, {String workingDirectory}) {
+  var allArgs = Platform.executableArguments.toList()..addAll(args);
 
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
   return Process.runSync(Platform.executable, allArgs,

@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:unittest/src/declarer.dart';
 import 'package:unittest/src/invoker.dart';
 import 'package:unittest/src/isolate_test.dart';
 import 'package:unittest/src/live_test.dart';
@@ -16,9 +15,6 @@ import 'package:unittest/src/vm_listener.dart';
 import 'package:unittest/unittest.dart';
 
 import 'utils.dart';
-
-/// The current declarer.
-Declarer get _declarer => Zone.current[#unittest.declarer];
 
 /// An isolate that's been spun up for the current test.
 ///
@@ -312,23 +308,23 @@ void _wrongArity(SendPort sendPort) =>
 /// An isolate entrypoint that defines three tests that succeed.
 void _successfulTests(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("successful 1", () {});
-    _declarer.test("successful 2", () {});
-    _declarer.test("successful 3", () {});
+    test("successful 1", () {});
+    test("successful 2", () {});
+    test("successful 3", () {});
   });
 }
 
 /// An isolate entrypoint that defines a test that fails.
 void _failingTest(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("failure", () => throw new TestFailure('oh no'));
+    test("failure", () => throw new TestFailure('oh no'));
   });
 }
 
 /// An isolate entrypoint that defines a test that fails after succeeding.
 void _failAfterSucceedTest(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("fail after succeed", () {
+    test("fail after succeed", () {
       pumpEventQueue().then((_) {
         throw new TestFailure('oh no');
       });
@@ -339,7 +335,7 @@ void _failAfterSucceedTest(SendPort sendPort) {
 /// An isolate entrypoint that defines a test that fails multiple times.
 void _multiFailTest(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("multiple failures", () {
+    test("multiple failures", () {
       Invoker.current.addOutstandingCallback();
       new Future(() => throw new TestFailure("one"));
       new Future(() => throw new TestFailure("two"));
@@ -352,14 +348,14 @@ void _multiFailTest(SendPort sendPort) {
 /// An isolate entrypoint that defines a test that errors.
 void _errorTest(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("error", () => throw 'oh no');
+    test("error", () => throw 'oh no');
   });
 }
 
 /// An isolate entrypoint that defines a test that errors after succeeding.
 void _errorAfterSucceedTest(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("error after succeed", () {
+    test("error after succeed", () {
       pumpEventQueue().then((_) => throw 'oh no');
     });
   });
@@ -368,7 +364,7 @@ void _errorAfterSucceedTest(SendPort sendPort) {
 /// An isolate entrypoint that defines a test that errors multiple times.
 void _multiErrorTest(SendPort sendPort) {
   VmListener.start(sendPort, () => () {
-    _declarer.test("multiple errors", () {
+    test("multiple errors", () {
       Invoker.current.addOutstandingCallback();
       new Future(() => throw "one");
       new Future(() => throw "two");

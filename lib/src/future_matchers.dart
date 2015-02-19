@@ -8,7 +8,9 @@ import 'dart:async';
 
 import 'package:matcher/matcher.dart' hide throws, throwsA, expect, fail;
 
-import '../unittest.dart';
+import 'expect.dart';
+import 'invoker.dart';
+import 'utils.dart';
 
 /// Matches a [Future] that completes successfully with a value.
 ///
@@ -43,22 +45,26 @@ class _Completes extends Matcher {
 
   bool matches(item, Map matchState) {
     if (item is! Future) return false;
-    var done = expectAsync((fn) => fn(), id: _id);
+    Invoker.current.addOutstandingCallback();
 
     item.then((value) {
-      done(() {
-        if (_matcher != null) expect(value, _matcher);
-      });
+      if (_matcher != null) expect(value, _matcher);
+      Invoker.current.removeOutstandingCallback();
     }, onError: (error, trace) {
+      if (error is TestFailure) {
+        Invoker.current.handleError(error, trace);
+        return;
+      }
+
       var id = _id == '' ? '' : '${_id} ';
       var reason = 'Expected future ${id}to complete successfully, '
           'but it failed with ${error}';
       if (trace != null) {
-        var stackTrace = trace.toString();
+        var stackTrace = terseChain(trace).toString();
         stackTrace = '  ${stackTrace.replaceAll('\n', '\n  ')}';
         reason = '$reason\nStack trace:\n$stackTrace';
       }
-      done(() => fail(reason));
+      fail(reason);
     });
 
     return true;

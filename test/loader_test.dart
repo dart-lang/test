@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.loader;
-
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -23,10 +21,9 @@ import 'dart:async';
 import 'package:unittest/unittest.dart';
 
 void main() {
-  var declarer = Zone.current[#unittest.declarer];
-  declarer.test("success", () {});
-  declarer.test("failure", () => throw new TestFailure('oh no'));
-  declarer.test("error", () => throw 'oh no');
+  test("success", () {});
+  test("failure", () => throw new TestFailure('oh no'));
+  test("error", () => throw 'oh no');
 }
 """;
 

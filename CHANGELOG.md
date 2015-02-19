@@ -1,10 +1,24 @@
-##0.12.0
+##0.12.0-alpha.0
+
+* Added support for a test runner, which can be run via `pub run
+  unittest:unittest`. By default it runs all files recursively in the `test/`
+  directory that end in `_test.dart` and aren't in a `packages/` directory.
+
+* As part of moving to a runner-based model, most test configuration is moving
+  out of the test file and into the runner. As such, many ancillary APIs are
+  stubbed out and marked as deprecated. They still exist to make adoption
+  easier, but they're now no-ops and will be removed before the stable 0.12.0
+  release. These APIs include `skip_` and `solo_` functions, `Configuration` and
+  all its subclasses, `TestCase`, `TestFunction`, `unittestConfiguration`,
+  `formatStacks`, `filterStacks`, `groupSep`, `logMessage`, `testCases`,
+  `BREATH_INTERVAL`, `currentTestCase`, `PASS`, `FAIL`, `ERROR`, `filterTests`,
+  `runTests`, `ensureInitialized`, `setSoloTest`, `enableTest`, `disableTest`,
+  and `withTestEnvironment`.
 
 * Removed `FailureHandler`, `DefaultFailureHandler`,
   `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler` which
-  are exported from the `matcher` package and will be removed. They existed
-  to enable integration between `unittest` and `matcher` that is being
-  streamlined.
+  used to be exported from the `matcher` package. They existed to enable
+  integration between `unittest` and `matcher` that has been streamlined.
 
 * Moved a number of APIs from `matcher` into `unittest`, including:
   `completes`, `completion`, `ErrorFormatter`, `expect`,`fail`, `prints`,

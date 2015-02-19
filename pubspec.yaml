@@ -16,7 +16,3 @@ dependencies:
     git: https://github.com/dart-lang/matcher.git
 dev_dependencies:
   fake_async: '>=0.1.2 <0.2.0'
-  metatest:
-    git:
-      ref: b6348d7e7f3c5b00a48aa579694457d1abd36b69
-      url: https://github.com/dart-lang/metatest

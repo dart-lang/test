@@ -15,9 +15,10 @@ String _sandbox;
 final _success = """
 import 'dart:async';
 
+import 'package:unittest/unittest.dart';
+
 void main() {
-  var declarer = Zone.current[#unittest.declarer];
-  declarer.test("success", () {});
+  test("success", () {});
 }
 """;
 
@@ -27,8 +28,7 @@ import 'dart:async';
 import 'package:unittest/unittest.dart';
 
 void main() {
-  var declarer = Zone.current[#unittest.declarer];
-  declarer.test("failure", () => throw new TestFailure("oh no"));
+  test("failure", () => throw new TestFailure("oh no"));
 }
 """;
 
@@ -167,6 +167,15 @@ Usage: pub run unittest:unittest [files or directories...]
       var result = _runUnittest([]);
       expect(result.exitCode, equals(0));
     });
+
+    test("directly", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+      var result = _runDart([
+        "--package-root=${p.join(packageDir, 'packages')}",
+        "test.dart"
+      ]);
+      expect(result.stdout, contains("All tests passed!"));
+    });
   });
 
   group("runs failing tests", () {
@@ -196,8 +205,20 @@ Usage: pub run unittest:unittest [files or directories...]
       var result = _runUnittest([]);
       expect(result.exitCode, equals(1));
     });
+
+    test("directly", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+      var result = _runDart([
+        "--package-root=${p.join(packageDir, 'packages')}",
+        "test.dart"
+      ]);
+      expect(result.stdout, contains("Some tests failed."));
+    });
   });
 }
 
 ProcessResult _runUnittest(List<String> args) =>
     runUnittest(args, workingDirectory: _sandbox);
+
+ProcessResult _runDart(List<String> args) =>
+    runDart(args, workingDirectory: _sandbox);

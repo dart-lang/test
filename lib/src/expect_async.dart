@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.expected_function;
+library unittest.expect_async;
 
-import '../unittest.dart';
-
-import 'internal_test_case.dart';
+import 'expect.dart';
+import 'invoker.dart';
+import 'state.dart';
 
 /// An object used to detect unpassed arguments.
 const _PLACEHOLDER = const Object();
@@ -30,7 +30,7 @@ typedef bool _IsDoneCallback();
 ///
 /// The wrapper function is accessible via [func]. It supports up to six
 /// optional and/or required positional arguments, but no named arguments.
-class ExpectedFunction {
+class _ExpectedFunction {
   /// The wrapped callback.
   final Function _callback;
 
@@ -65,8 +65,8 @@ class ExpectedFunction {
   /// The number of times the function has been called.
   int _actualCalls = 0;
 
-  /// The test case in which this function was wrapped.
-  final InternalTestCase _testCase;
+  /// The test invoker in which this function was wrapped.
+  final Invoker _invoker;
 
   /// Whether this function has been called the requisite number of times.
   bool _complete;
@@ -77,7 +77,7 @@ class ExpectedFunction {
   /// If passed, [id] is used as a descriptive name fo the function and [reason]
   /// as a reason it's expected to be called. If [isDone] is passed, the test
   /// won't be allowed to complete until it returns `true`.
-  ExpectedFunction(Function callback, int minExpected, int maxExpected,
+  _ExpectedFunction(Function callback, int minExpected, int maxExpected,
       {String id, String reason, bool isDone()})
       : this._callback = callback,
         _minExpectedCalls = minExpected,
@@ -86,16 +86,17 @@ class ExpectedFunction {
             : maxExpected,
         this._isDone = isDone,
         this._reason = reason == null ? '' : '\n$reason',
-        this._testCase = currentTestCase as InternalTestCase,
+        this._invoker = Invoker.current,
         this._id = _makeCallbackId(id, callback) {
-    ensureInitialized();
-    if (_testCase == null) {
-      throw new StateError("No valid test. Did you forget to run your test "
-          "inside a call to test()?");
+    if (_invoker == null) {
+      throw new StateError("[expectAsync] was called outside of a test.");
+    } else if (maxExpected > 0 && minExpected > maxExpected) {
+      throw new ArgumentError("max ($maxExpected) may not be less than count "
+          "($minExpected).");
     }
 
     if (isDone != null || minExpected > 0) {
-      _testCase.callbackFunctionsOutstanding++;
+      _invoker.addOutstandingCallback();
       _complete = false;
     } else {
       _complete = true;
@@ -133,6 +134,7 @@ class ExpectedFunction {
     if (_callback is _Func1) return _max1;
     if (_callback is _Func0) return _max0;
 
+    _invoker.removeOutstandingCallback();
     throw new ArgumentError(
         'The wrapped function has more than 6 required arguments');
   }
@@ -159,22 +161,16 @@ class ExpectedFunction {
       _run([a0, a1, a2, a3, a4, a5].where((a) => a != _PLACEHOLDER));
 
   /// Runs the wrapped function with [args] and returns its return value.
-  ///
-  /// This will pass any errors on to [_testCase] and return `null`.
   _run(Iterable args) {
+    // Note that in the old unittest, this returned `null` if it encountered an
+    // error, where now it just re-throws that error because Zone machinery will
+    // pass it to the invoker anyway.
     try {
       _actualCalls++;
-      if (_testCase.isComplete) {
-        // Don't run the callback if the test is done. We don't throw here as
-        // this is not the current test, but we do mark the old test as having
-        // an error if it previously passed.
-        if (_testCase.result == PASS) {
-          _testCase.error(
-              'Callback ${_id}called ($_actualCalls) after test case '
-              '${_testCase.description} had already been marked as '
-              '${_testCase.result}.$_reason');
-        }
-        return null;
+      if (_invoker.liveTest.isComplete &&
+          _invoker.liveTest.state.result == Result.success) {
+        throw 'Callback ${_id}called ($_actualCalls) after test case '
+              '${_invoker.liveTest.test.name} had already completed.$_reason';
       } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {
         throw new TestFailure('Callback ${_id}called more times than expected '
                               '($_maxExpectedCalls).$_reason');
@@ -182,7 +178,7 @@ class ExpectedFunction {
 
       return Function.apply(_callback, args.toList());
     } catch (error, stackTrace) {
-      _testCase.registerException(error, stackTrace);
+      _invoker.handleError(error, stackTrace);
       return null;
     } finally {
       _afterRun();
@@ -198,6 +194,41 @@ class ExpectedFunction {
     // Mark this callback as complete and remove it from the test case's
     // oustanding callback count; if that hits zero the test is done.
     _complete = true;
-    _testCase.markCallbackComplete();
+    _invoker.removeOutstandingCallback();
   }
 }
+
+/// Indicate that [callback] is expected to be called [count] number of times
+/// (by default 1).
+///
+/// The unittest framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete. [callback] may take up
+/// to six optional or required positional arguments; named arguments are not
+/// supported.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+Function expectAsync(Function callback,
+        {int count: 1, int max: 0, String id, String reason}) =>
+    new _ExpectedFunction(callback, count, max, id: id, reason: reason).func;
+
+/// Indicate that [callback] is expected to be called until [isDone] returns
+/// true.
+///
+/// [isDone] is called after each time the function is run. Only when it returns
+/// true will the callback be considered complete. [callback] may take up to six
+/// optional or required positional arguments; named arguments are not
+/// supported.
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+Function expectAsyncUntil(Function callback, bool isDone(),
+    {String id, String reason}) => new _ExpectedFunction(callback, 0, -1,
+        id: id, reason: reason, isDone: isDone).func;

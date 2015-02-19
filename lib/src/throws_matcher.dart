@@ -8,7 +8,9 @@ import 'dart:async';
 
 import 'package:matcher/matcher.dart' hide fail, expect;
 
-import '../unittest.dart';
+import 'expect.dart';
+import 'invoker.dart';
+import 'utils.dart';
 
 /// This can be used to match two kinds of objects:
 ///
@@ -48,26 +50,24 @@ class Throws extends Matcher {
   bool matches(item, Map matchState) {
     if (item is! Function && item is! Future) return false;
     if (item is Future) {
-      var done = expectAsync((fn) => fn());
-
+      Invoker.current.addOutstandingCallback();
       // Queue up an asynchronous expectation that validates when the future
       // completes.
       item.then((value) {
-        done(() {
-          fail("Expected future to fail, but succeeded with '$value'.");
-        });
+        fail("Expected future to fail, but succeeded with '$value'.");
       }, onError: (error, trace) {
-        done(() {
-          if (_matcher == null) return;
-          var reason;
-          if (trace != null) {
-            var stackTrace = trace.toString();
-            stackTrace = "  ${stackTrace.replaceAll("\n", "\n  ")}";
-            reason = "Actual exception trace:\n$stackTrace";
-          }
-          expect(error, _matcher, reason: reason);
-        });
-      });
+        if (_matcher == null) return;
+
+        var reason;
+        if (trace != null) {
+          var stackTrace = terseChain(trace).toString();
+          stackTrace = "  ${stackTrace.replaceAll("\n", "\n  ")}";
+          reason = "Actual exception trace:\n$stackTrace";
+        }
+
+        // Re-run [expect] to get the proper formatting.
+        expect(() => throw error, this, reason: reason);
+      }).then((_) => Invoker.current.removeOutstandingCallback());
       // It hasn't failed yet.
       return true;
     }

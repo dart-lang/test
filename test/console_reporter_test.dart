@@ -23,9 +23,9 @@ void main() {
 
   test("runs several successful tests and reports when each completes", () {
     _expectReport("""
-        declarer.test('success 1', () {});
-        declarer.test('success 2', () {});
-        declarer.test('success 3', () {});""",
+        test('success 1', () {});
+        test('success 2', () {});
+        test('success 3', () {});""",
         """
         +0: success 1
         +1: success 1
@@ -38,28 +38,28 @@ void main() {
 
   test("runs several failing tests and reports when each fails", () {
     _expectReport("""
-        declarer.test('failure 1', () => throw new TestFailure('oh no'));
-        declarer.test('failure 2', () => throw new TestFailure('oh no'));
-        declarer.test('failure 3', () => throw new TestFailure('oh no'));""",
+        test('failure 1', () => throw new TestFailure('oh no'));
+        test('failure 2', () => throw new TestFailure('oh no'));
+        test('failure 3', () => throw new TestFailure('oh no'));""",
         """
         +0: failure 1
         +0 -1: failure 1
           oh no
-          test.dart 7:42  main.<fn>
+          test.dart 6:33  main.<fn>
           dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +0 -1: failure 2
         +0 -2: failure 2
           oh no
-          test.dart 8:42  main.<fn>
+          test.dart 7:33  main.<fn>
           dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +0 -2: failure 3
         +0 -3: failure 3
           oh no
-          test.dart 9:42  main.<fn>
+          test.dart 8:33  main.<fn>
           dart:isolate    _RawReceivePortImpl._handleMessage
 
 
@@ -68,15 +68,15 @@ void main() {
 
   test("runs failing tests along with successful tests", () {
     _expectReport("""
-        declarer.test('failure 1', () => throw new TestFailure('oh no'));
-        declarer.test('success 1', () {});
-        declarer.test('failure 2', () => throw new TestFailure('oh no'));
-        declarer.test('success 2', () {});""",
+        test('failure 1', () => throw new TestFailure('oh no'));
+        test('success 1', () {});
+        test('failure 2', () => throw new TestFailure('oh no'));
+        test('success 2', () {});""",
         """
         +0: failure 1
         +0 -1: failure 1
           oh no
-          test.dart 7:42  main.<fn>
+          test.dart 6:33  main.<fn>
           dart:isolate    _RawReceivePortImpl._handleMessage
 
 
@@ -85,7 +85,7 @@ void main() {
         +1 -1: failure 2
         +1 -2: failure 2
           oh no
-          test.dart 9:42  main.<fn>
+          test.dart 8:33  main.<fn>
           dart:isolate    _RawReceivePortImpl._handleMessage
 
 
@@ -99,17 +99,26 @@ void main() {
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = new Completer();
-        declarer.test('failures', () {
+        test('failures', () {
           new Future.microtask(() => throw 'first error');
           new Future.microtask(() => throw 'second error');
           new Future.microtask(() => throw 'third error');
           new Future.microtask(completer.complete);
         });
-        declarer.test('wait', () => completer.future);""",
+        test('wait', () => completer.future);""",
         """
         +0: failures
         +0 -1: failures
           first error
+          test.dart 10:38  main.<fn>.<fn>
+          dart:isolate     _RawReceivePortImpl._handleMessage
+          ===== asynchronous gap ===========================
+          dart:async       Future.Future.microtask
+          test.dart 10:15  main.<fn>
+          dart:isolate     _RawReceivePortImpl._handleMessage
+
+
+          second error
           test.dart 11:38  main.<fn>.<fn>
           dart:isolate     _RawReceivePortImpl._handleMessage
           ===== asynchronous gap ===========================
@@ -118,21 +127,12 @@ void main() {
           dart:isolate     _RawReceivePortImpl._handleMessage
 
 
-          second error
+          third error
           test.dart 12:38  main.<fn>.<fn>
           dart:isolate     _RawReceivePortImpl._handleMessage
           ===== asynchronous gap ===========================
           dart:async       Future.Future.microtask
           test.dart 12:15  main.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
-
-
-          third error
-          test.dart 13:38  main.<fn>.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
-          ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
-          test.dart 13:15  main.<fn>
           dart:isolate     _RawReceivePortImpl._handleMessage
 
 
@@ -151,7 +151,6 @@ import 'dart:async';
 import 'package:unittest/unittest.dart';
 
 void main() {
-  var declarer = Zone.current[#unittest.declarer];
 $tests
 }
 """;
