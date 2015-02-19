@@ -161,4 +161,27 @@ void main() {
         "Actual: [1, 2, 3] "
         "Which: has <1> which is not double <1> at index 0");
   });
+
+  test('isEmpty', () {
+    var d = new SimpleIterable(0);
+    var e = new SimpleIterable(1);
+    shouldPass(d, isEmpty);
+    shouldFail(e, isEmpty, "Expected: empty "
+        "Actual: SimpleIterable:[1]");
+  });
+
+  test('isNotEmpty', () {
+    var d = new SimpleIterable(0);
+    var e = new SimpleIterable(1);
+    shouldPass(e, isNotEmpty);
+    shouldFail(d, isNotEmpty, "Expected: non-empty "
+        "Actual: SimpleIterable:[]");
+  });
+
+  test('contains', () {
+    var d = new SimpleIterable(3);
+    shouldPass(d, contains(2));
+    shouldFail(d, contains(5), "Expected: contains <5> "
+        "Actual: SimpleIterable:[3, 2, 1]");
+  });
 }

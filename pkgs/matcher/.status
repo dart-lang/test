@@ -13,15 +13,3 @@ packages/*: Skip
 # Only run tests from the build directory, since we don't care about the
 # difference between transformed an untransformed code.
 test/*: Skip
-
-[ $compiler == dart2js && $minified ]
-# The unminified matcher tests test that the real names of Dart types are
-# printed. Minified versions of these tests exist that test the behavior when
-# minified.
-build/test/unminified_test: Skip # DO NOT COPY THIS UNLESS YOU WORK ON DART2JS
-
-[ $minified == false ]
-# The minified matcher tests test that the minified names of Dart types are
-# printed. Unminified versions of these tests exist that test the behavior when
-# not minified.
-build/test/minified_test: Skip # DO NOT COPY THIS UNLESS YOU WORK ON DART2JS
