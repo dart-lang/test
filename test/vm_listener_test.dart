@@ -9,6 +9,7 @@ import 'package:unittest/src/declarer.dart';
 import 'package:unittest/src/invoker.dart';
 import 'package:unittest/src/isolate_test.dart';
 import 'package:unittest/src/live_test.dart';
+import 'package:unittest/src/remote_exception.dart';
 import 'package:unittest/src/state.dart';
 import 'package:unittest/src/suite.dart';
 import 'package:unittest/src/vm_listener.dart';
@@ -41,11 +42,61 @@ void main() {
   test("sends a list of available tests on startup", () {
     return _spawnIsolate(_successfulTests).then((receivePort) {
       return receivePort.first;
-    }).then((tests) {
+    }).then((response) {
+      expect(response, containsPair("type", "success"));
+      expect(response, contains("tests"));
+
+      var tests = response["tests"];
       expect(tests, hasLength(3));
       expect(tests[0], containsPair("name", "successful 1"));
       expect(tests[1], containsPair("name", "successful 2"));
       expect(tests[2], containsPair("name", "successful 3"));
+    });
+  });
+
+  test("sends an error response if loading fails", () {
+    return _spawnIsolate(_loadError).then((receivePort) {
+      return receivePort.first;
+    }).then((response) {
+      expect(response, containsPair("type", "error"));
+      expect(response, contains("error"));
+
+      var error = RemoteException.deserialize(response["error"]).error;
+      expect(error.message, equals("oh no"));
+      expect(error.type, equals("String"));
+    });
+  });
+
+  test("sends an error response on a NoSuchMethodError", () {
+    return _spawnIsolate(_noSuchMethodError).then((receivePort) {
+      return receivePort.first;
+    }).then((response) {
+      expect(response, containsPair("type", "loadException"));
+      expect(response,
+          containsPair("message", "No top-level main() function defined."));
+    });
+  });
+
+  test("sends an error response on non-function main", () {
+    return _spawnIsolate(_nonFunction).then((receivePort) {
+      return receivePort.first;
+    }).then((response) {
+      expect(response, containsPair("type", "loadException"));
+      expect(response,
+          containsPair("message", "Top-level main getter is not a function."));
+    });
+  });
+
+  test("sends an error response on wrong-arity main", () {
+    return _spawnIsolate(_wrongArity).then((receivePort) {
+      return receivePort.first;
+    }).then((response) {
+      expect(response, containsPair("type", "loadException"));
+      expect(
+          response,
+          containsPair(
+              "message",
+              "Top-level main() function takes arguments."));
     });
   });
 
@@ -218,7 +269,9 @@ Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) {
   return _spawnIsolate(entryPoint).then((receivePort) {
     return receivePort.first;
   }).then((response) {
-    var testMap = response.first;
+    expect(response, containsPair("type", "success"));
+
+    var testMap = response["tests"].first;
     var test = new IsolateTest(testMap["name"], testMap["sendPort"]);
     var suite = new Suite("suite", [test]);
     _liveTest = test.load(suite);
@@ -238,9 +291,27 @@ Future<ReceivePort> _spawnIsolate(void entryPoint(SendPort sendPort)) {
   });
 }
 
+/// An isolate entrypoint that throws immediately.
+void _loadError(SendPort sendPort) =>
+    VmListener.start(sendPort, () => () => throw 'oh no');
+
+/// An isolate entrypoint that throws a NoSuchMethodError.
+void _noSuchMethodError(SendPort sendPort) {
+  return VmListener.start(sendPort, () =>
+      throw new NoSuchMethodError(null, #main, [], {}));
+}
+
+/// An isolate entrypoint that returns a non-function.
+void _nonFunction(SendPort sendPort) =>
+    VmListener.start(sendPort, () => null);
+
+/// An isolate entrypoint that returns a function with the wrong arity.
+void _wrongArity(SendPort sendPort) =>
+    VmListener.start(sendPort, () => (_) {});
+
 /// An isolate entrypoint that defines three tests that succeed.
 void _successfulTests(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("successful 1", () {});
     _declarer.test("successful 2", () {});
     _declarer.test("successful 3", () {});
@@ -249,14 +320,14 @@ void _successfulTests(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that fails.
 void _failingTest(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("failure", () => throw new TestFailure('oh no'));
   });
 }
 
 /// An isolate entrypoint that defines a test that fails after succeeding.
 void _failAfterSucceedTest(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("fail after succeed", () {
       pumpEventQueue().then((_) {
         throw new TestFailure('oh no');
@@ -267,7 +338,7 @@ void _failAfterSucceedTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that fails multiple times.
 void _multiFailTest(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("multiple failures", () {
       Invoker.current.addOutstandingCallback();
       new Future(() => throw new TestFailure("one"));
@@ -280,14 +351,14 @@ void _multiFailTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that errors.
 void _errorTest(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("error", () => throw 'oh no');
   });
 }
 
 /// An isolate entrypoint that defines a test that errors after succeeding.
 void _errorAfterSucceedTest(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("error after succeed", () {
       pumpEventQueue().then((_) => throw 'oh no');
     });
@@ -296,7 +367,7 @@ void _errorAfterSucceedTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that errors multiple times.
 void _multiErrorTest(SendPort sendPort) {
-  VmListener.start(sendPort, () {
+  VmListener.start(sendPort, () => () {
     _declarer.test("multiple errors", () {
       Invoker.current.addOutstandingCallback();
       new Future(() => throw "one");

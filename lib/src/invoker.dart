@@ -172,7 +172,10 @@ class Invoker {
           timer.cancel();
           _controller.setState(
               new State(Status.complete, liveTest.state.result));
-          _controller.completer.complete();
+
+          // Use [Timer.run] here to avoid starving the DOM or other
+          // non-microtask events.
+          Timer.run(_controller.completer.complete);
         });
       }, zoneValues: {#unittest.invoker: this}, onError: handleError);
     });

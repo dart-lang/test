@@ -49,6 +49,15 @@ class ConsoleReporter {
   /// The set of tests that have completed and been marked as failing or error.
   final _failed = new Set<LiveTest>();
 
+  /// The size of [_passed] last time a progress notification was printed.
+  int _lastProgressPassed;
+
+  /// The size of [_failed] last time a progress notification was printed.
+  int _lastProgressFailed;
+
+  /// The message printed for the last progress notification.
+  String _lastProgressMessage;
+
   /// Creates a [ConsoleReporter] that will run all tests in [suites].
   ConsoleReporter(Iterable<Suite> suites)
       : _multipleSuites = suites.length > 1,
@@ -70,11 +79,10 @@ class ConsoleReporter {
       liveTest.onError.listen((error) {
         if (liveTest.state.status != Status.complete) return;
 
-        // TODO(nweiz): don't re-print the progress line if a test has multiple
-        // errors in a row.
         _progressLine(_description(liveTest));
         print('');
-        print(indent("${error.error}\n${error.stackTrace}"));
+        print(indent(error.error.toString()));
+        print(indent(terseChain(error.stackTrace).toString()));
       });
     });
   }
@@ -89,11 +97,14 @@ class ConsoleReporter {
           "once.");
     }
 
+    if (_engine.liveTests.isEmpty) {
+      print("No tests ran.");
+      return new Future.value(true);
+    }
+
     _stopwatch.start();
     return _engine.run().then((success) {
-      if (_engine.liveTests.isEmpty) {
-        print("\nNo tests ran.");
-      } else if (success) {
+      if (success) {
         _progressLine("All tests passed!");
         print('');
       } else {
@@ -105,12 +116,27 @@ class ConsoleReporter {
     });
   }
 
+  /// Signals that the caller is done with any test output and the reporter
+  /// should release any resources it has allocated.
+  Future close() => _engine.close();
+
   /// Prints a line representing the current state of the tests.
   ///
   /// [message] goes after the progress report, and may be truncated to fit the
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
   /// color for [message].
   void _progressLine(String message, {String color}) {
+    // Print nothing if nothing has changed since the last progress line.
+    if (_passed.length == _lastProgressPassed &&
+        _failed.length == _lastProgressFailed &&
+        message == _lastProgressMessage) {
+      return;
+    }
+
+    _lastProgressPassed = _passed.length;
+    _lastProgressFailed = _failed.length;
+    _lastProgressMessage = message;
+
     if (color == null) color = '';
     var duration = _stopwatch.elapsed;
     var buffer = new StringBuffer();

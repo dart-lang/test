@@ -12,6 +12,8 @@ import 'package:path/path.dart' as p;
 
 import 'dart.dart';
 import 'isolate_test.dart';
+import 'load_exception.dart';
+import 'remote_exception.dart';
 import 'suite.dart';
 
 /// A class for finding test files and loading them into a runnable form.
@@ -49,9 +51,7 @@ class Loader {
 
   /// Loads a test suite from the file at [path].
   ///
-  /// This wil throw a [FileSystemException] if there's no `packages/` directory
-  /// available for [path]. Any other load error will cause an
-  /// [IsolateSpawnException] or a [RemoteException].
+  /// This will throw a [LoadException] if the file fails to load.
   Future<Suite> loadFile(String path) {
     // TODO(nweiz): Support browser tests.
     var packageRoot = _packageRoot == null
@@ -59,7 +59,7 @@ class Loader {
         : _packageRoot;
 
     if (!new Directory(packageRoot).existsSync()) {
-      throw new FileSystemException("Directory $packageRoot does not exist.");
+      throw new LoadException(path, "Directory $packageRoot does not exist.");
     }
 
     var receivePort = new ReceivePort();
@@ -70,15 +70,27 @@ import "${p.toUri(p.absolute(path))}" as test;
 
 void main(_, Map message) {
   var sendPort = message['reply'];
-  VmListener.start(sendPort, test.main);
+  VmListener.start(sendPort, () => test.main);
 }
 ''', {
       'reply': receivePort.sendPort
-    }, packageRoot: packageRoot).then((isolate) {
+    }, packageRoot: packageRoot).catchError((error, stackTrace) {
+      receivePort.close();
+      return new Future.error(new LoadException(path, error), stackTrace);
+    }).then((isolate) {
       _isolates.add(isolate);
       return receivePort.first;
-    }).then((tests) {
-      return new Suite(path, tests.map((test) {
+    }).then((response) {
+      if (response["type"] == "loadException") {
+        return new Future.error(new LoadException(path, response["message"]));
+      } else if (response["type"] == "error") {
+        var asyncError = RemoteException.deserialize(response["error"]);
+        return new Future.error(
+            new LoadException(path, asyncError.error),
+            asyncError.stackTrace);
+      }
+
+      return new Suite(path, response["tests"].map((test) {
         return new IsolateTest(test['name'], test['sendPort']);
       }));
     });

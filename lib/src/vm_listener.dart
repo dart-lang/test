@@ -11,6 +11,7 @@ import 'declarer.dart';
 import 'remote_exception.dart';
 import 'suite.dart';
 import 'test.dart';
+import 'utils.dart';
 
 /// A class that runs tests in a separate isolate and communicates the results
 /// back to the main isolate.
@@ -18,16 +19,52 @@ class VmListener {
   /// The test suite to run.
   final Suite _suite;
 
-  /// Extracts metadata about all the tests in [main] and sends information
-  /// about them over [sendPort].
+  /// Extracts metadata about all the tests in the function returned by
+  /// [getMain] and sends information about them over [sendPort].
+  ///
+  /// The main function is wrapped in a closure so that we can handle it being
+  /// undefined here rather than in the generated code.
   ///
   /// Once that's done, this starts listening for commands about which tests to
   /// run.
-  static void start(SendPort sendPort, main()) {
+  static void start(SendPort sendPort, Function getMain()) {
+    var main;
+    try {
+      main = getMain();
+    } on NoSuchMethodError catch (_) {
+      _sendLoadException(sendPort, "No top-level main() function defined.");
+      return;
+    }
+
+    if (main is! Function) {
+      _sendLoadException(sendPort, "Top-level main getter is not a function.");
+      return;
+    } else if (main is! AsyncFunction) {
+      _sendLoadException(
+          sendPort, "Top-level main() function takes arguments.");
+      return;
+    }
+
     var declarer = new Declarer();
-    runZoned(main, zoneValues: {#unittest.declarer: declarer});
+    try {
+      runZoned(main, zoneValues: {#unittest.declarer: declarer});
+    } catch (error, stackTrace) {
+      sendPort.send({
+        "type": "error",
+        "error": RemoteException.serialize(error, stackTrace)
+      });
+      return;
+    }
+
     new VmListener._(new Suite("VmListener", declarer.tests))
         ._listen(sendPort);
+  }
+
+  /// Sends a message over [sendPort] indicating that the tests failed to load.
+  ///
+  /// [message] should describe the failure.
+  static void _sendLoadException(SendPort sendPort, String message) {
+    sendPort.send({"type": "loadException", "message": message});
   }
 
   VmListener._(this._suite);
@@ -47,7 +84,10 @@ class VmListener {
       });
     }
 
-    sendPort.send(tests);
+    sendPort.send({
+      "type": "success",
+      "tests": tests
+    });
   }
 
   /// Runs [test] and send the results across [sendPort].

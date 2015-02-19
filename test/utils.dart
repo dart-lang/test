@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:unittest/src/live_test.dart';
+import 'package:unittest/src/load_exception.dart';
 import 'package:unittest/src/remote_exception.dart';
 import 'package:unittest/src/state.dart';
 import 'package:unittest/unittest.dart';
@@ -70,6 +71,11 @@ Matcher isTestFailure(String message) => predicate(
 Matcher isRemoteException(String message) => predicate(
     (error) => error is RemoteException && error.message == message,
     'is a RemoteException with message "$message"');
+
+/// Returns a matcher that matches a [LoadException] with the given [message].
+Matcher isLoadException(String message) => predicate(
+    (error) => error is LoadException && error.innerError == message,
+    'is a LoadException with message "$message"');
 
 /// Returns a [Future] that completes after pumping the event queue [times]
 /// times.

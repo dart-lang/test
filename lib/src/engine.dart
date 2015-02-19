@@ -64,4 +64,9 @@ class Engine {
     }).then((_) =>
         liveTests.every((liveTest) => liveTest.state.result == Result.success));
   }
+
+  /// Signals that the caller is done paying attention to test results and the
+  /// engine should release any resources it has allocated.
+  Future close() =>
+      Future.wait(liveTests.map((liveTest) => liveTest.close()));
 }

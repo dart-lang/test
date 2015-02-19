@@ -26,6 +26,7 @@ lib/*/*/*/*: SkipByDesign
 # dart:io-specific tests.
 [ $browser ]
 test/loader_test: SkipByDesign
+test/runner_test: SkipByDesign
 test/vm_listener_test: SkipByDesign
 
 [ $runtime == safari ]

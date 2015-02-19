@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
-import 'package:unittest/unittest.dart';
 
 /// The root directory of the `unittest` package.
 final String packageDir = _computePackageDir();
@@ -17,9 +16,14 @@ String _computePackageDir() {
   return p.dirname(p.dirname(p.fromUri(trace.frames.first.uri)));
 }
 
-/// Returns a matcher that matches a [FileSystemException] with the given
-/// [message].
-Matcher isFileSystemException(String message) => predicate(
-    (error) => error is FileSystemException && error.message == message,
-    'is a FileSystemException with message "$message"');
+/// Runs the unittest executable with the package root set properly.
+ProcessResult runUnittest(List<String> args, {String workingDirectory}) {
+  var allArgs = Platform.executableArguments.toList()
+     ..add(p.join(packageDir, 'bin/unittest.dart'))
+     ..add("--package-root=${p.join(packageDir, 'packages')}")
+     ..addAll(args);
 
+  // TODO(nweiz): Use ScheduledProcess once it's compatible.
+  return Process.runSync(Platform.executable, allArgs,
+      workingDirectory: workingDirectory);
+}

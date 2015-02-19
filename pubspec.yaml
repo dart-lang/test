@@ -6,7 +6,8 @@ homepage: https://github.com/dart-lang/unittest
 environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:
-  stack_trace: '>=0.9.0 <2.0.0'
+  args: '>=0.12.1 <0.13.0'
+  stack_trace: '>=1.2.0 <2.0.0'
 
   # Using the pre-release version of matcher. When published we will go back
   # using a tight version constraint to ensure that a constraint on unittest

@@ -5,6 +5,7 @@
 library unittest.remote_exception;
 
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:stack_trace/stack_trace.dart';
 
@@ -43,10 +44,20 @@ class RemoteException implements Exception {
       }
     }
 
+    // It's possible (although unlikely) for a user-defined class to have
+    // multiple of these supertypes. That's fine, though, since we only care
+    // about core-library-raised IsolateSpawnExceptions anyway.
+    var supertype;
+    if (error is TestFailure) {
+      supertype = 'TestFailure';
+    } else if (error is IsolateSpawnException) {
+      supertype = 'IsolateSpawnException';
+    }
+
     return {
       'message': message,
       'type': error.runtimeType.toString(),
-      'isTestFailure': error is TestFailure,
+      'supertype': supertype,
       'toString': error.toString(),
       'stackChain': new Chain.forTrace(stackTrace).toString()
     };
@@ -57,20 +68,25 @@ class RemoteException implements Exception {
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
   static AsyncError deserialize(serialized) {
-    var exception;
-    if (serialized['isTestFailure']) {
-      exception = new RemoteTestFailure._(
-          serialized['message'],
-          serialized['type'],
-          serialized['toString']);
-    } else {
-      exception = new RemoteException._(
-          serialized['message'],
-          serialized['type'],
-          serialized['toString']);
-    }
+    return new AsyncError(
+        _deserializeException(serialized),
+        new Chain.parse(serialized['stackChain']));
+  }
 
-    return new AsyncError(exception, new Chain.parse(serialized['stackChain']));
+  /// Deserializes the exception portion of [serialized].
+  static RemoteException _deserializeException(serialized) {
+    var message = serialized['message'];
+    var type = serialized['type'];
+    var toString = serialized['toString'];
+
+    switch (serialized['supertype']) {
+      case 'TestFailure':
+        return new _RemoteTestFailure(message, type, toString);
+      case 'IsolateSpawnException':
+        return new _RemoteIsolateSpawnException(message, type, toString);
+      default:
+        return new RemoteException._(message, type, toString);
+    }
   }
 
   RemoteException._(this.message, this.type, this._toString);
@@ -82,7 +98,14 @@ class RemoteException implements Exception {
 ///
 /// It's important to preserve [TestFailure]-ness, because tests have different
 /// results depending on whether an exception was a failure or an error.
-class RemoteTestFailure extends RemoteException implements TestFailure {
-  RemoteTestFailure._(String message, String type, String toString)
+class _RemoteTestFailure extends RemoteException implements TestFailure {
+  _RemoteTestFailure(String message, String type, String toString)
+      : super._(message, type, toString);
+}
+
+/// A subclass of [RemoteException] that implements [IsolateSpawnException].
+class _RemoteIsolateSpawnException extends RemoteException
+    implements IsolateSpawnException {
+  _RemoteIsolateSpawnException(String message, String type, String toString)
       : super._(message, type, toString);
 }
