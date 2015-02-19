@@ -1,3 +1,7 @@
+##0.11.5+4
+
+* Improved the output of `TestCase` failures in `HtmlConfig`.
+
 ##0.11.5+3
 
 * Fixed issue with handling exceptions.

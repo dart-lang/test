@@ -62,11 +62,11 @@ void _showResultsInPage(int passed, int failed, int errors,
   }
 }
 
-String _toHtml(TestCase test_) {
-  if (!test_.isComplete) {
+String _toHtml(TestCase testCase) {
+  if (!testCase.isComplete) {
     return '''
         <tr>
-          <td>${test_.id}</td>
+          <td>${testCase.id}</td>
           <td class="unittest-error">NO STATUS</td>
           <td>Test did not complete</td>
         </tr>''';
@@ -74,14 +74,23 @@ String _toHtml(TestCase test_) {
 
   var html = '''
       <tr>
-        <td>${test_.id}</td>
-        <td class="unittest-${test_.result}">${test_.result.toUpperCase()}</td>
-        <td>Expectation: <a href="#testFilter=${test_.description}">${test_.description}</a>. ${HTML_ESCAPE.convert(test_.message)}</td>
+        <td>${testCase.id}</td>
+        <td class="unittest-${testCase.result}">
+          ${testCase.result.toUpperCase()}
+        </td>
+        <td>
+          <p>Expectation: 
+            <a href="#testFilter=${testCase.description}">
+              ${testCase.description}
+            </a>.
+          </p>
+          <pre>${HTML_ESCAPE.convert(testCase.message)}</pre>
+        </td>
       </tr>''';
 
-  if (test_.stackTrace != null) {
+  if (testCase.stackTrace != null) {
     html = '$html<tr><td></td><td colspan="2"><pre>' +
-        HTML_ESCAPE.convert(test_.stackTrace.toString()) +
+        HTML_ESCAPE.convert(testCase.stackTrace.toString()) +
         '</pre></td></tr>';
   }
 
