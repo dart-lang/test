@@ -5,16 +5,15 @@
 library unittest.test.io;
 
 import 'dart:io';
+import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
 /// The root directory of the `unittest` package.
 final String packageDir = _computePackageDir();
-String _computePackageDir() {
-  var trace = new Trace.current();
-  return p.dirname(p.dirname(p.fromUri(trace.frames.first.uri)));
-}
+String _computePackageDir() =>
+    p.dirname(p.dirname(_libraryPath(#unittest.test.io)));
 
 /// Runs the unittest executable with the package root set properly.
 ProcessResult runUnittest(List<String> args, {String workingDirectory}) {
@@ -27,3 +26,14 @@ ProcessResult runUnittest(List<String> args, {String workingDirectory}) {
   return Process.runSync(Platform.executable, allArgs,
       workingDirectory: workingDirectory);
 }
+
+/// Returns the path to the library named [libraryName].
+///
+/// The library name must be globally unique, or the wrong library path may be
+/// returned.
+String _libraryPath(Symbol libraryName) {
+  var lib = currentMirrorSystem().findLibrary(libraryName);
+  return p.fromUri(lib.uri);
+}
+
+
