@@ -20,8 +20,9 @@ void main() {
   });
 
   group("Invoker.current", () {
+    var invoker = Invoker.current;
     test("returns null outside of a test body", () {
-      expect(Invoker.current, isNull);
+      expect(invoker, isNull);
     });
 
     test("returns the current invoker in a test body", () {

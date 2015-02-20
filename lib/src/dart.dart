@@ -11,6 +11,7 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 
 import 'io.dart';
+import 'isolate_wrapper.dart';
 import 'remote_exception.dart';
 
 /// Runs [code] in an isolate.
@@ -24,23 +25,28 @@ import 'remote_exception.dart';
 /// [String] or a [Uri].
 Future<Isolate> runInIsolate(String code, message, {packageRoot}) {
   // TODO(nweiz): load code from a local server rather than from a file.
-  return withTempDir((dir) {
-    var dartPath = p.join(dir, 'runInIsolate.dart');
-    new File(dartPath).writeAsStringSync(code);
-    var port = new ReceivePort();
-    return Isolate.spawn(_isolateBuffer, {
-      'replyTo': port.sendPort,
-      'uri': p.toUri(dartPath).toString(),
-      'packageRoot': packageRoot == null ? null : packageRoot.toString(),
-      'message': message
-    }).then((isolate) {
-      return port.first.then((response) {
-        if (response['type'] != 'error') return isolate;
-        isolate.kill();
-        var asyncError = RemoteException.deserialize(response['error']);
-        return new Future.error(asyncError.error, asyncError.stackTrace);
-      });
+  var dir = Directory.systemTemp.createTempSync().path;
+  var dartPath = p.join(dir, 'runInIsolate.dart');
+  new File(dartPath).writeAsStringSync(code);
+  var port = new ReceivePort();
+  return Isolate.spawn(_isolateBuffer, {
+    'replyTo': port.sendPort,
+    'uri': p.toUri(dartPath).toString(),
+    'packageRoot': packageRoot == null ? null : packageRoot.toString(),
+    'message': message
+  }).then((isolate) {
+    return port.first.then((response) {
+      if (response['type'] != 'error') return isolate;
+      isolate.kill();
+      var asyncError = RemoteException.deserialize(response['error']);
+      return new Future.error(asyncError.error, asyncError.stackTrace);
     });
+  }).catchError((error) {
+    new Directory(dir).deleteSync(recursive: true);
+    throw error;
+  }).then((isolate) {
+    return new IsolateWrapper(isolate,
+        () => new Directory(dir).deleteSync(recursive: true));
   });
 }
 
