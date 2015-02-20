@@ -7,6 +7,7 @@ library unittest.io;
 import 'dart:async';
 import 'dart:io';
 
+// TODO(nweiz): Make this check [stdioType] once that works within "pub run".
 /// Whether "special" strings such as Unicode characters or color escapes are
 /// safe to use.
 ///
@@ -14,7 +15,7 @@ import 'dart:io';
 /// characters should be used.
 bool get canUseSpecialChars =>
     Platform.operatingSystem != 'windows' &&
-    stdioType(stdout) == StdioType.TERMINAL;
+    Platform.environment["_UNITTEST_USE_COLOR"] != "false";
 
 /// Gets a "special" string (ANSI escape or Unicode).
 ///

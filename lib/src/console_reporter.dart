@@ -29,7 +29,7 @@ final _noColor = getSpecial('\u001b[0m');
 /// The maximum console line length.
 ///
 /// Lines longer than this will be cropped.
-const _lineLength = 80;
+const _lineLength = 100;
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
