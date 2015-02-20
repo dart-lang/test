@@ -8,7 +8,6 @@ import 'dart:io';
 import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
-import 'package:stack_trace/stack_trace.dart';
 
 /// The root directory of the `unittest` package.
 final String packageDir = _computePackageDir();

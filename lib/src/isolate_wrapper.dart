@@ -4,6 +4,7 @@
 
 library unittest.isolate_wrapper;
 
+import 'dart:async';
 import 'dart:isolate';
 
 // TODO(nweiz): Get rid of this when issue 6610 is fixed.
@@ -18,6 +19,7 @@ class IsolateWrapper implements Isolate {
 
   final Function _onExit;
 
+  Capability get pauseCapability => _inner.pauseCapability;
   SendPort get controlPort => _inner.controlPort;
   Stream get errors => _inner.errors;
   Capability get terminateCapability => _inner.terminateCapability;
