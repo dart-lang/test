@@ -8,50 +8,24 @@ import 'dart:async';
 
 import 'package:path/path.dart' as p;
 
-import 'src/configuration.dart';
-import 'src/declarer.dart';
-import 'src/console_reporter.dart';
-import 'src/invoker.dart';
-import 'src/suite.dart';
-import 'src/test_case.dart';
+import 'src/backend/declarer.dart';
+import 'src/backend/invoker.dart';
+import 'src/backend/suite.dart';
+import 'src/deprecated/configuration.dart';
+import 'src/deprecated/test_case.dart';
+import 'src/runner/console_reporter.dart';
 
-export 'package:matcher/matcher.dart'
-    hide
-        completes,
-        completion,
-        configureExpectFailureHandler,
-        DefaultFailureHandler,
-        ErrorFormatter,
-        expect,
-        fail,
-        FailureHandler,
-        getOrCreateExpectFailureHandler,
-        prints,
-        TestFailure,
-        Throws,
-        throws,
-        throwsA,
-        throwsArgumentError,
-        throwsConcurrentModificationError,
-        throwsCyclicInitializationError,
-        throwsException,
-        throwsFormatException,
-        throwsNoSuchMethodError,
-        throwsNullThrownError,
-        throwsRangeError,
-        throwsStateError,
-        throwsUnimplementedError,
-        throwsUnsupportedError;
+export 'package:matcher/matcher.dart';
 
-export 'src/configuration.dart';
-export 'src/expect.dart';
-export 'src/expect_async.dart';
-export 'src/future_matchers.dart';
-export 'src/prints_matcher.dart';
-export 'src/simple_configuration.dart';
-export 'src/test_case.dart';
-export 'src/throws_matcher.dart';
-export 'src/throws_matchers.dart';
+export 'src/deprecated/configuration.dart';
+export 'src/deprecated/simple_configuration.dart';
+export 'src/deprecated/test_case.dart';
+export 'src/frontend/expect.dart';
+export 'src/frontend/expect_async.dart';
+export 'src/frontend/future_matchers.dart';
+export 'src/frontend/prints_matcher.dart';
+export 'src/frontend/throws_matcher.dart';
+export 'src/frontend/throws_matchers.dart';
 
 /// The global declarer.
 ///

@@ -5,9 +5,9 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
-import 'package:unittest/src/invoker.dart';
-import 'package:unittest/src/state.dart';
-import 'package:unittest/src/suite.dart';
+import 'package:unittest/src/backend/invoker.dart';
+import 'package:unittest/src/backend/state.dart';
+import 'package:unittest/src/backend/suite.dart';
 import 'package:unittest/unittest.dart';
 
 import 'utils.dart';

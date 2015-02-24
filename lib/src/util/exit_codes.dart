@@ -7,7 +7,7 @@
 /// From [the BSD sysexits manpage][manpage]. Not every constant here is used.
 ///
 /// [manpage]: http://www.freebsd.org/cgi/man.cgi?query=sysexits
-library unittest.exit_codes;
+library unittest.util.exit_codes;
 
 /// The command completely successfully.
 const success = 0;

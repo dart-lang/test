@@ -2,15 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.engine;
+library unittest.runner.engine;
 
 import 'dart:async';
 import 'dart:collection';
 
-import 'live_test.dart';
-import 'state.dart';
-import 'suite.dart';
-import 'utils.dart';
+import '../backend/live_test.dart';
+import '../backend/state.dart';
+import '../backend/suite.dart';
+import '../utils.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///

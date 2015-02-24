@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import 'package:unittest/src/declarer.dart';
-import 'package:unittest/src/suite.dart';
+import 'package:unittest/src/backend/declarer.dart';
+import 'package:unittest/src/backend/suite.dart';
 import 'package:unittest/unittest.dart';
 
 Declarer _declarer;

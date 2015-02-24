@@ -5,7 +5,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/exit_codes.dart' as exit_codes;
+import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
 import 'package:unittest/unittest.dart';
 
 import 'io.dart';

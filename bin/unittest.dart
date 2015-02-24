@@ -11,11 +11,11 @@ import 'dart:isolate';
 import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import 'package:unittest/src/console_reporter.dart';
-import 'package:unittest/src/exit_codes.dart' as exit_codes;
-import 'package:unittest/src/io.dart';
-import 'package:unittest/src/load_exception.dart';
-import 'package:unittest/src/loader.dart';
+import 'package:unittest/src/runner/console_reporter.dart';
+import 'package:unittest/src/runner/load_exception.dart';
+import 'package:unittest/src/runner/loader.dart';
+import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
+import 'package:unittest/src/util/io.dart';
 import 'package:unittest/src/utils.dart';
 
 /// The argument parser used to parse the executable arguments.

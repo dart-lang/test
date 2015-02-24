@@ -2,18 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.live_test_controller;
+library unittest.backend.live_test_controller;
 
 import 'dart:async';
 import 'dart:collection';
 
 import 'package:stack_trace/stack_trace.dart';
 
+import '../utils.dart';
 import 'live_test.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
-import 'utils.dart';
 
 /// An implementation of [LiveTest] that's controlled by a [LiveTestController].
 class _LiveTest extends LiveTest {

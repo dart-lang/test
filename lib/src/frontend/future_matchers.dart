@@ -2,15 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.future_matchers;
+library unittest.frontend.future_matchers;
 
 import 'dart:async';
 
 import 'package:matcher/matcher.dart' hide throws, throwsA, expect, fail;
 
+import '../backend/invoker.dart';
+import '../utils.dart';
 import 'expect.dart';
-import 'invoker.dart';
-import 'utils.dart';
 
 /// Matches a [Future] that completes successfully with a value.
 ///

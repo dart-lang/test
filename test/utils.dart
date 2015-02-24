@@ -7,12 +7,12 @@ library unittest.test.utils;
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:unittest/src/invoker.dart';
-import 'package:unittest/src/live_test.dart';
-import 'package:unittest/src/load_exception.dart';
-import 'package:unittest/src/remote_exception.dart';
-import 'package:unittest/src/state.dart';
-import 'package:unittest/src/suite.dart';
+import 'package:unittest/src/backend/invoker.dart';
+import 'package:unittest/src/backend/live_test.dart';
+import 'package:unittest/src/backend/state.dart';
+import 'package:unittest/src/backend/suite.dart';
+import 'package:unittest/src/runner/load_exception.dart';
+import 'package:unittest/src/util/remote_exception.dart';
 import 'package:unittest/unittest.dart';
 
 // The last state change detected via [expectStates].

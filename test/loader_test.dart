@@ -5,8 +5,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/loader.dart';
-import 'package:unittest/src/state.dart';
+import 'package:unittest/src/backend/state.dart';
+import 'package:unittest/src/runner/loader.dart';
 import 'package:unittest/unittest.dart';
 
 import 'io.dart';

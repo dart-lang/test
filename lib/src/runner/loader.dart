@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.loader;
+library unittest.runner.loader;
 
 import 'dart:async';
 import 'dart:io';
@@ -10,12 +10,12 @@ import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 
-import 'dart.dart';
-import 'io.dart';
+import '../backend/suite.dart';
+import '../util/dart.dart';
+import '../util/io.dart';
+import '../util/remote_exception.dart';
 import 'isolate_test.dart';
 import 'load_exception.dart';
-import 'remote_exception.dart';
-import 'suite.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
@@ -65,7 +65,7 @@ class Loader {
 
     var receivePort = new ReceivePort();
     return runInIsolate('''
-import "package:unittest/src/vm_listener.dart";
+import "package:unittest/src/runner/vm_listener.dart";
 
 import "${p.toUri(p.absolute(path))}" as test;
 

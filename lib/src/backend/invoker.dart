@@ -2,19 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.invoker;
+library unittest.backend.invoker;
 
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import 'expect.dart';
+import '../frontend/expect.dart';
+import '../utils.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
-import 'utils.dart';
 
 /// A test in this isolate.
 class LocalTest implements Test {
