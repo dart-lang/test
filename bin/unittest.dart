@@ -13,6 +13,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import 'package:unittest/src/console_reporter.dart';
 import 'package:unittest/src/exit_codes.dart' as exit_codes;
+import 'package:unittest/src/io.dart';
 import 'package:unittest/src/load_exception.dart';
 import 'package:unittest/src/loader.dart';
 import 'package:unittest/src/utils.dart';
@@ -85,7 +86,13 @@ void main(List<String> args) {
           "with the stack trace and instructions for reproducing the error.");
       exitCode = exit_codes.software;
     }
-  }).whenComplete(() => loader.close());
+  }).whenComplete(() {
+    return loader.close().then((_) {
+      // If we're on a Dart version that doesn't support Isolate.kill(), we have
+      // to manually exit so that dangling isolates don't prevent it.
+      if (!supportsIsolateKill) exit(exitCode);
+    });
+  });
 }
 
 /// Print usage information for this command.

@@ -36,7 +36,7 @@ Future<Isolate> runInIsolate(String code, message, {packageRoot}) {
   }).then((isolate) {
     return port.first.then((response) {
       if (response['type'] != 'error') return isolate;
-      isolate.kill();
+      if (supportsIsolateKill) isolate.kill();
       var asyncError = RemoteException.deserialize(response['error']);
       return new Future.error(asyncError.error, asyncError.stackTrace);
     });

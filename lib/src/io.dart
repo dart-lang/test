@@ -7,6 +7,18 @@ library unittest.io;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
+
+/// Returns whether the current Dart version supports [Isolate.kill].
+final bool supportsIsolateKill = _supportsIsolateKill;
+bool get _supportsIsolateKill {
+  // This isn't 100% accurate, since early 1.9 dev releases didn't support
+  // Isolate.kill(), but it's very unlikely anyone will be using them.
+  // TODO(nweiz): remove this when we no longer support older Dart versions.
+  var path = p.join(p.dirname(p.dirname(Platform.executable)), 'version');
+  return new File(path).readAsStringSync().startsWith('1.9');
+}
+
 // TODO(nweiz): Make this check [stdioType] once that works within "pub run".
 /// Whether "special" strings such as Unicode characters or color escapes are
 /// safe to use.

@@ -11,6 +11,7 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 
 import 'dart.dart';
+import 'io.dart';
 import 'isolate_test.dart';
 import 'load_exception.dart';
 import 'remote_exception.dart';

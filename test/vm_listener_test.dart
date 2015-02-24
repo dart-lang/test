@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:unittest/src/invoker.dart';
+import 'package:unittest/src/io.dart';
 import 'package:unittest/src/isolate_test.dart';
 import 'package:unittest/src/live_test.dart';
 import 'package:unittest/src/remote_exception.dart';
@@ -28,7 +29,9 @@ LiveTest _liveTest;
 
 void main() {
   tearDown(() {
-    if (_isolate != null) _isolate.kill(Isolate.IMMEDIATE);
+    if (_isolate != null && supportsIsolateKill) {
+      _isolate.kill(Isolate.IMMEDIATE);
+    }
     _isolate = null;
 
     if (_liveTest != null) _liveTest.close();
