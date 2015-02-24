@@ -13,3 +13,6 @@ packages/*: Skip
 # Only run tests from the build directory, since we don't care about the
 # difference between transformed an untransformed code.
 test/*: Skip
+
+[ $browser ]
+*: RuntimeError # new unittest package does not support browser tests
