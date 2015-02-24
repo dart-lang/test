@@ -32,3 +32,6 @@ test/vm_listener_test: SkipByDesign
 
 [ $runtime == safari ]
 test/matcher/prints_test: Fail # Issue 4
+
+[ $browser ]
+*: RuntimeError # new unittest package does not support browser tests
