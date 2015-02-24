@@ -120,8 +120,8 @@ class _UnorderedEquals extends _UnorderedMatches {
   final List _expectedValues;
 
   _UnorderedEquals(Iterable expected)
-      : super(expected.map(equals)),
-        _expectedValues = expected.toList();
+      : _expectedValues = expected.toList(),
+        super(expected.map(equals));
 
   Description describe(Description description) => description
       .add('equals ')

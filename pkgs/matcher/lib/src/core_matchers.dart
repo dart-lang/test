@@ -302,8 +302,8 @@ class _StringEqualsMatcher extends Matcher {
       int minLength = escapedItem.length < escapedValue.length
           ? escapedItem.length
           : escapedValue.length;
-      int start;
-      for (start = 0; start < minLength; start++) {
+      var start = 0;
+      for (; start < minLength; start++) {
         if (escapedValue.codeUnitAt(start) != escapedItem.codeUnitAt(start)) {
           break;
         }
