@@ -9,6 +9,10 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+/// The root directory of the Dart SDK.
+final String sdkDir = _computeSdkDir();
+String _computeSdkDir() => p.dirname(p.dirname(Platform.executable));
+
 /// Returns whether the current Dart version supports [Isolate.kill].
 final bool supportsIsolateKill = _supportsIsolateKill;
 bool get _supportsIsolateKill {

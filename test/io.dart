@@ -48,5 +48,3 @@ String _libraryPath(Symbol libraryName) {
   var lib = currentMirrorSystem().findLibrary(libraryName);
   return p.fromUri(lib.uri);
 }
-
-
