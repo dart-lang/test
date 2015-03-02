@@ -6,6 +6,8 @@ library unittest.multi_channel;
 
 import 'dart:async';
 
+import 'stream_channel.dart';
+
 /// A class that multiplexes multiple virtual channels across a single
 /// underlying transport layer.
 ///
@@ -39,7 +41,7 @@ import 'dart:async';
 ///
 /// Each virtual channel may be closed individually. When all of them are
 /// closed, the underlying [StreamSink] is closed automatically.
-abstract class MultiChannel {
+abstract class MultiChannel implements StreamChannel {
   /// The default input stream.
   ///
   /// This connects to the remote [sink].
@@ -77,7 +79,7 @@ abstract class MultiChannel {
 ///
 /// This is private so that [VirtualChannel] can inherit from [MultiChannel]
 /// without having to implement all the private members.
-class _MultiChannel implements MultiChannel {
+class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// The inner stream over which all communication is received.
   ///
   /// This will be `null` if the underlying communication channel is closed.
@@ -223,7 +225,7 @@ class _MultiChannel implements MultiChannel {
 /// This implements [MultiChannel] for convenience.
 /// [VirtualChannel.virtualChannel] is semantically identical to the parent's
 /// [MultiChannel.virtualChannel].
-class VirtualChannel implements MultiChannel {
+class VirtualChannel extends StreamChannelMixin implements MultiChannel {
   /// The [MultiChannel] that created this.
   final MultiChannel _parent;
 
