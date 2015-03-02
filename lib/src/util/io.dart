@@ -57,3 +57,20 @@ Future withTempDir(Future fn(String path)) {
         .whenComplete(() => tempDir.deleteSync(recursive: true));
   });
 }
+
+/// Creates a URL string for [address]:[port].
+///
+/// Handles properly formatting IPv6 addresses.
+Uri baseUrlForAddress(InternetAddress address, int port) {
+  if (address.isLoopback) {
+    return new Uri(scheme: "http", host: "localhost", port: port);
+  }
+
+  // IPv6 addresses in URLs need to be enclosed in square brackets to avoid
+  // URL ambiguity with the ":" in the address.
+  if (address.type == InternetAddressType.IP_V6) {
+    return new Uri(scheme: "http", host: "[${address.address}]", port: port);
+  }
+
+  return new Uri(scheme: "http", host: address.address, port: port);
+}
