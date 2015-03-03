@@ -2,16 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.console_reporter;
+library unittest.runner.reporter.compact;
 
 import 'dart:async';
 import 'dart:io';
 
-import '../backend/live_test.dart';
-import '../backend/state.dart';
-import '../backend/suite.dart';
-import '../utils.dart';
-import 'engine.dart';
+import '../../backend/live_test.dart';
+import '../../backend/state.dart';
+import '../../backend/suite.dart';
+import '../../utils.dart';
+import '../engine.dart';
 
 /// The maximum console line length.
 ///
@@ -20,7 +20,7 @@ const _lineLength = 100;
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
-class ConsoleReporter {
+class CompactReporter {
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
   final String _green;
@@ -61,7 +61,7 @@ class ConsoleReporter {
   ///
   /// If [color] is `true`, this will use terminal colors; if it's `false`, it
   /// won't.
-  ConsoleReporter(Iterable<Suite> suites, {bool color: true})
+  CompactReporter(Iterable<Suite> suites, {bool color: true})
       : _multipleSuites = suites.length > 1,
         _engine = new Engine(suites),
         _green = color ? '\u001b[32m' : '',
@@ -97,7 +97,7 @@ class ConsoleReporter {
   /// only return once all tests have finished running.
   Future<bool> run() {
     if (_stopwatch.isRunning) {
-      throw new StateError("ConsoleReporter.run() may not be called more than "
+      throw new StateError("CompactReporter.run() may not be called more than "
           "once.");
     }
 
@@ -168,7 +168,7 @@ class ConsoleReporter {
     var nonVisible = 1 + _green.length + _noColor.length + color.length +
         (_failed.isEmpty ? 0 : _red.length + _noColor.length);
     var length = buffer.length - nonVisible;
-    buffer.write(_truncate(message, _lineLength - length));
+    buffer.write(truncate(message, _lineLength - length));
     buffer.write(_noColor);
 
     // Pad the rest of the line so that it looks erased.
@@ -181,47 +181,6 @@ class ConsoleReporter {
   String _timeString(Duration duration) {
     return "${duration.inMinutes.toString().padLeft(2, '0')}:"
         "${(duration.inSeconds % 60).toString().padLeft(2, '0')}";
-  }
-
-  /// Truncates [text] to fit within [maxLength].
-  ///
-  /// This will try to truncate along word boundaries and preserve words both at
-  /// the beginning and the end of [text].
-  String _truncate(String text, int maxLength) {
-    // Return the full message if it fits.
-    if (text.length <= maxLength) return text;
-
-    // If we can fit the first and last three words, do so.
-    var words = text.split(' ');
-    if (words.length > 1) {
-      var i = words.length;
-      var length = words.first.length + 4;
-      do {
-        i--;
-        length += 1 + words[i].length;
-      } while (length <= maxLength && i > 0);
-      if (length > maxLength || i == 0) i++;
-      if (i < words.length - 4) {
-        // Require at least 3 words at the end.
-        var buffer = new StringBuffer();
-        buffer.write(words.first);
-        buffer.write(' ...');
-        for ( ; i < words.length; i++) {
-          buffer.write(' ');
-          buffer.write(words[i]);
-        }
-        return buffer.toString();
-      }
-    }
-
-    // Otherwise truncate to return the trailing text, but attempt to start at
-    // the beginning of a word.
-    var result = text.substring(text.length - maxLength + 4);
-    var firstSpace = result.indexOf(' ');
-    if (firstSpace > 0) {
-      result = result.substring(firstSpace);
-    }
-    return '...$result';
   }
 
   /// Returns a description of [liveTest].

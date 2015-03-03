@@ -11,7 +11,7 @@ import 'dart:isolate';
 import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import 'package:unittest/src/runner/console_reporter.dart';
+import 'package:unittest/src/runner/reporter/compact.dart';
 import 'package:unittest/src/runner/load_exception.dart';
 import 'package:unittest/src/runner/loader.dart';
 import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
@@ -62,7 +62,7 @@ void main(List<String> args) {
   }).then((suites) {
     var color = options["color"];
     if (color == null) color = canUseSpecialChars;
-    var reporter = new ConsoleReporter(flatten(suites), color: color);
+    var reporter = new CompactReporter(flatten(suites), color: color);
     return reporter.run().then((success) {
       exitCode = success ? 0 : 1;
     }).whenComplete(() => reporter.close());

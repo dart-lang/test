@@ -13,7 +13,7 @@ import 'src/backend/invoker.dart';
 import 'src/backend/suite.dart';
 import 'src/deprecated/configuration.dart';
 import 'src/deprecated/test_case.dart';
-import 'src/runner/console_reporter.dart';
+import 'src/runner/reporter/no_io_compact.dart';
 
 export 'package:matcher/matcher.dart';
 
@@ -49,9 +49,8 @@ Declarer get _declarer {
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() {
     var suite = new Suite(p.prettyUri(Uri.base), _globalDeclarer.tests);
-    // TODO(nweiz): Use a reporter that doesn't import dart:io here.
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
-    new ConsoleReporter([suite]).run();
+    new NoIoCompactReporter([suite], color: true).run();
   });
   return _globalDeclarer;
 }

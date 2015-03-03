@@ -63,3 +63,44 @@ List flatten(Iterable nested) {
   helper(nested);
   return result;
 }
+
+/// Truncates [text] to fit within [maxLength].
+///
+/// This will try to truncate along word boundaries and preserve words both at
+/// the beginning and the end of [text].
+String truncate(String text, int maxLength) {
+  // Return the full message if it fits.
+  if (text.length <= maxLength) return text;
+
+  // If we can fit the first and last three words, do so.
+  var words = text.split(' ');
+  if (words.length > 1) {
+    var i = words.length;
+    var length = words.first.length + 4;
+    do {
+      i--;
+      length += 1 + words[i].length;
+    } while (length <= maxLength && i > 0);
+    if (length > maxLength || i == 0) i++;
+    if (i < words.length - 4) {
+      // Require at least 3 words at the end.
+      var buffer = new StringBuffer();
+      buffer.write(words.first);
+      buffer.write(' ...');
+      for ( ; i < words.length; i++) {
+        buffer.write(' ');
+        buffer.write(words[i]);
+      }
+      return buffer.toString();
+    }
+  }
+
+  // Otherwise truncate to return the trailing text, but attempt to start at
+  // the beginning of a word.
+  var result = text.substring(text.length - maxLength + 4);
+  var firstSpace = result.indexOf(' ');
+  if (firstSpace > 0) {
+    result = result.substring(firstSpace);
+  }
+  return '...$result';
+}
