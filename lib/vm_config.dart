@@ -5,7 +5,7 @@
 @deprecated
 library unittest.vm_config;
 
-import 'src/simple_configuration.dart';
+import 'src/deprecated/simple_configuration.dart';
 
 /// This is a stub class used to preserve compatibility with unittest 0.11.*.
 ///
