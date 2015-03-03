@@ -28,10 +28,10 @@ lib/*/*/*/*: SkipByDesign
 
 # dart:io-specific tests.
 [ $browser ]
-test/console_reporter_test: SkipByDesign
-test/loader_test: SkipByDesign
-test/runner_test: SkipByDesign
-test/vm_listener_test: SkipByDesign
+test/runner/console_reporter_test: SkipByDesign
+test/runner/loader_test: SkipByDesign
+test/runner/runner_test: SkipByDesign
+test/runner/isolate_listener_test: SkipByDesign
 
 [ $runtime == safari ]
 test/matcher/prints_test: Fail # Issue 4

@@ -9,8 +9,8 @@ import 'package:unittest/src/backend/state.dart';
 import 'package:unittest/src/runner/loader.dart';
 import 'package:unittest/unittest.dart';
 
-import 'io.dart';
-import 'utils.dart';
+import '../io.dart';
+import '../utils.dart';
 
 Loader _loader;
 String _sandbox;

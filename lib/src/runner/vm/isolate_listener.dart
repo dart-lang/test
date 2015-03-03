@@ -2,20 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.vm_listener;
+library unittest.runner.vm.isolate_listener;
 
 import 'dart:isolate';
 import 'dart:async';
 
-import '../backend/declarer.dart';
-import '../backend/suite.dart';
-import '../backend/test.dart';
-import '../util/remote_exception.dart';
-import '../utils.dart';
+import '../../backend/declarer.dart';
+import '../../backend/suite.dart';
+import '../../backend/test.dart';
+import '../../util/remote_exception.dart';
+import '../../utils.dart';
 
 /// A class that runs tests in a separate isolate and communicates the results
 /// back to the main isolate.
-class VmListener {
+class IsolateListener {
   /// The test suite to run.
   final Suite _suite;
 
@@ -56,7 +56,7 @@ class VmListener {
       return;
     }
 
-    new VmListener._(new Suite("VmListener", declarer.tests))
+    new IsolateListener._(new Suite("IsolateListener", declarer.tests))
         ._listen(sendPort);
   }
 
@@ -67,7 +67,7 @@ class VmListener {
     sendPort.send({"type": "loadException", "message": message});
   }
 
-  VmListener._(this._suite);
+  IsolateListener._(this._suite);
 
   /// Send information about [_suite] across [sendPort] and start listening for
   /// commands to run the tests.

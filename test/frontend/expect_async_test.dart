@@ -5,7 +5,7 @@
 import 'package:unittest/src/backend/state.dart';
 import 'package:unittest/unittest.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 void main() {
   group("supports a function with this many arguments:", () {

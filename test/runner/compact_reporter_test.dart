@@ -8,7 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:unittest/src/util/io.dart';
 import 'package:unittest/unittest.dart';
 
-import 'io.dart';
+import '../io.dart';
 
 String _sandbox;
 

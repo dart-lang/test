@@ -10,7 +10,7 @@ import 'package:unittest/src/backend/state.dart';
 import 'package:unittest/src/backend/suite.dart';
 import 'package:unittest/unittest.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 void main() {
   var suite;

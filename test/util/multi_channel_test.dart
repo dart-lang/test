@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:unittest/src/util/multi_channel.dart';
 import 'package:unittest/unittest.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 void main() {
   var oneToTwo;

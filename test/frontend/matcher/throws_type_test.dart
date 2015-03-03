@@ -4,7 +4,7 @@
 
 import 'package:unittest/unittest.dart';
 
-import '../utils.dart';
+import '../../utils.dart';
 
 void main() {
   group('[throwsArgumentError]', () {

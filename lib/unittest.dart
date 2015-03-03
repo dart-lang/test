@@ -35,8 +35,8 @@ Declarer _globalDeclarer;
 /// Gets the declarer for the current scope.
 ///
 /// When using the runner, this returns the [Zone]-scoped declarer that's set by
-/// [VmListener]. If the test file is run directly, this returns
-/// [_globalDeclarer] (and sets it up on the first call).
+/// [IsolateListener] or [IframeListener]. If the test file is run directly,
+/// this returns [_globalDeclarer] (and sets it up on the first call).
 Declarer get _declarer {
   var declarer = Zone.current[#unittest.declarer];
   if (declarer != null) return declarer;
