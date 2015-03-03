@@ -8,6 +8,7 @@ environment:
 dependencies:
   args: '^0.12.1'
   matcher: '^0.12.0-alpha.0'
+  pool: '^1.0.0'
   shelf: '^0.5.3'
   shelf_web_socket: '^0.0.1'
   stack_trace: '^1.2.0'
