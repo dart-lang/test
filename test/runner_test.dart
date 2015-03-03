@@ -32,6 +32,14 @@ void main() {
 }
 """;
 
+final _usage = """
+Usage: pub run unittest:unittest [files or directories...]
+
+-h, --help          Shows this usage information.
+    --[no-]color    Whether to use terminal colors.
+                    (auto-detected by default)
+""";
+
 void main() {
   setUp(() {
     _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
@@ -46,10 +54,7 @@ void main() {
     expect(result.stdout, equals("""
 Runs tests in this package.
 
-Usage: pub run unittest:unittest [files or directories...]
-
--h, --help    Shows this usage information.
-"""));
+$_usage"""));
     expect(result.exitCode, equals(exit_codes.success));
   });
 
@@ -59,10 +64,7 @@ Usage: pub run unittest:unittest [files or directories...]
       expect(result.stderr, equals("""
 Could not find an option named "asdf".
 
-Usage: pub run unittest:unittest [files or directories...]
-
--h, --help    Shows this usage information.
-"""));
+$_usage"""));
       expect(result.exitCode, equals(exit_codes.usage));
     });
 
@@ -213,6 +215,15 @@ Usage: pub run unittest:unittest [files or directories...]
         "test.dart"
       ]);
       expect(result.stdout, contains("Some tests failed."));
+    });
+  });
+
+  group("flags", () {
+    test("with the --color flag, uses colors", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+      var result = _runUnittest(["--color", "test.dart"]);
+      // This is the color code for red.
+      expect(result.stdout, contains("\u001b[31m"));
     });
   });
 }

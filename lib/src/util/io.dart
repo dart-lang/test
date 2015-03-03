@@ -33,13 +33,6 @@ bool get canUseSpecialChars =>
     Platform.operatingSystem != 'windows' &&
     Platform.environment["_UNITTEST_USE_COLOR"] != "false";
 
-/// Gets a "special" string (ANSI escape or Unicode).
-///
-/// On Windows or when not printing to a terminal, returns something else since
-/// those aren't supported.
-String getSpecial(String special, [String onWindows = '']) =>
-    canUseSpecialChars ? special : onWindows;
-
 /// Creates a temporary directory and passes its path to [fn].
 ///
 /// Once the [Future] returned by [fn] completes, the temporary directory and

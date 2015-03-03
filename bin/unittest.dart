@@ -25,6 +25,8 @@ void main(List<String> args) {
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
   _parser.addOption("package-root", hide: true);
+  _parser.addFlag("color", defaultsTo: null,
+      help: 'Whether to use terminal colors.\n(auto-detected by default)');
 
   var options;
   try {
@@ -58,7 +60,9 @@ void main(List<String> args) {
       throw new LoadException(path, 'Does not exist.');
     }));
   }).then((suites) {
-    var reporter = new ConsoleReporter(flatten(suites));
+    var color = options["color"];
+    if (color == null) color = canUseSpecialChars;
+    var reporter = new ConsoleReporter(flatten(suites), color: color);
     return reporter.run().then((success) {
       exitCode = success ? 0 : 1;
     }).whenComplete(() => reporter.close());

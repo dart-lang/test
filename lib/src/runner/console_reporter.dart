@@ -10,21 +10,8 @@ import 'dart:io';
 import '../backend/live_test.dart';
 import '../backend/state.dart';
 import '../backend/suite.dart';
-import '../util/io.dart';
 import '../utils.dart';
 import 'engine.dart';
-
-/// The terminal escape for green text, or the empty string if this is Windows
-/// or not outputting to a terminal.
-final _green = getSpecial('\u001b[32m');
-
-/// The terminal escape for red text, or the empty string if this is Windows or
-/// not outputting to a terminal.
-final _red = getSpecial('\u001b[31m');
-
-/// The terminal escape for removing test coloring, or the empty string if this
-/// is Windows or not outputting to a terminal.
-final _noColor = getSpecial('\u001b[0m');
 
 /// The maximum console line length.
 ///
@@ -34,6 +21,18 @@ const _lineLength = 100;
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
 class ConsoleReporter {
+  /// The terminal escape for green text, or the empty string if this is Windows
+  /// or not outputting to a terminal.
+  final String _green;
+
+  /// The terminal escape for red text, or the empty string if this is Windows
+  /// or not outputting to a terminal.
+  final String _red;
+
+  /// The terminal escape for removing test coloring, or the empty string if
+  /// this is Windows or not outputting to a terminal.
+  final String _noColor;
+
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -59,10 +58,15 @@ class ConsoleReporter {
   String _lastProgressMessage;
 
   /// Creates a [ConsoleReporter] that will run all tests in [suites].
-  ConsoleReporter(Iterable<Suite> suites)
+  ///
+  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
+  /// won't.
+  ConsoleReporter(Iterable<Suite> suites, {bool color: true})
       : _multipleSuites = suites.length > 1,
-        _engine = new Engine(suites) {
-
+        _engine = new Engine(suites),
+        _green = color ? '\u001b[32m' : '',
+        _red = color ? '\u001b[31m' : '',
+        _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen((liveTest) {
       _progressLine(_description(liveTest));
       liveTest.onStateChange.listen((state) {
