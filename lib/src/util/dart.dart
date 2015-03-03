@@ -10,6 +10,7 @@ import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 
+import 'io.dart';
 import 'isolate_wrapper.dart';
 import 'remote_exception.dart';
 
