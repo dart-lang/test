@@ -64,6 +64,16 @@ List flatten(Iterable nested) {
   return result;
 }
 
+/// Returns a sink that maps events sent to [original] using [fn].
+StreamSink mapSink(StreamSink original, fn(event)) {
+  var controller = new StreamController(sync: true);
+  controller.stream.listen(
+      (event) => original.add(fn(event)),
+      onError: (error, stackTrace) => original.addError(error, stackTrace),
+      onDone: () => original.close());
+  return controller.sink;
+}
+
 /// Truncates [text] to fit within [maxLength].
 ///
 /// This will try to truncate along word boundaries and preserve words both at
