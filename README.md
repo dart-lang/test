@@ -1,5 +1,7 @@
 `test` provides a standard way of writing and running tests in Dart.
 
+[![Build Status](https://travis-ci.org/dart-lang/test.svg?branch=master)](https://travis-ci.org/dart-lang/test)
+
 ## Writing Tests
 
 Tests are specified using the top-level [`test()`][test] function, and test
