@@ -11,6 +11,8 @@
   `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler`.
   Now that `expect` is in the `unittest` package, these are no longer needed.
 
+## 0.11.4+2
+
 * Improve the formatting of strings that contain unprintable ASCII characters.
 
 ## 0.11.4+1
