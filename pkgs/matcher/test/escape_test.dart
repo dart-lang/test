@@ -16,12 +16,17 @@ void main() {
     _testEscaping('backspace', '\b', r'\b');
     _testEscaping('tab', '\t', r'\t');
     _testEscaping('vertical tab', '\v', r'\v');
+    _testEscaping('null byte', '\x00', r'\x00');
+    _testEscaping('ASCII control character', '\x11', r'\x11');
+    _testEscaping('delete', '\x7F', r'\x7F');
     _testEscaping('escape combos', r'\n', r'\\n');
     _testEscaping('All characters',
         'A new line\nA charriage return\rA form feed\fA backspace\b'
-        'A tab\tA vertical tab\vA slash\\',
+        'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
+        'A delete\x7F',
         r'A new line\nA charriage return\rA form feed\fA backspace\b'
-        r'A tab\tA vertical tab\vA slash\\');
+        r'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
+        r'A delete\x7F');
   });
 
   group('unequal strings remain unequal when escaped', () {
