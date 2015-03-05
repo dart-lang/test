@@ -84,10 +84,7 @@ MultiChannel _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
   var currentUrl = Uri.parse(window.location.href);
-  var webSocketUrl = currentUrl
-      .resolve(currentUrl.queryParameters['managerUrl'])
-      .replace(scheme: 'ws');
-  var webSocket = new WebSocket(webSocketUrl.toString());
+  var webSocket = new WebSocket(currentUrl.queryParameters['managerUrl']);
 
   var inputController = new StreamController(sync: true);
   webSocket.onMessage.listen(

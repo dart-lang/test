@@ -6,12 +6,21 @@ library unittest.util.io;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 
+import '../runner/load_exception.dart';
+
 /// The root directory of the Dart SDK.
-final String sdkDir = _computeSdkDir();
-String _computeSdkDir() => p.dirname(p.dirname(Platform.executable));
+final String sdkDir =
+    p.dirname(p.dirname(Platform.executable));
+
+/// The path to the `lib` directory of the `unittest` package.
+String libDir({String packageRoot}) {
+  var pathToIo = libraryPath(#unittest.util.io, packageRoot: packageRoot);
+  return p.dirname(p.dirname(p.dirname(pathToIo)));
+}
 
 /// Returns whether the current Dart version supports [Isolate.kill].
 final bool supportsIsolateKill = _supportsIsolateKill;
@@ -66,4 +75,32 @@ Uri baseUrlForAddress(InternetAddress address, int port) {
   }
 
   return new Uri(scheme: "http", host: address.address, port: port);
+}
+
+/// Returns the package root for a Dart entrypoint at [path].
+///
+/// If [override] is passed, that's used. If the package root doesn't exist, a
+/// [LoadException] is thrown.
+String packageRootFor(String path, [String override]) {
+  var packageRoot = override == null
+      ? p.join(p.dirname(path), 'packages')
+      : override;
+
+  if (!new Directory(packageRoot).existsSync()) {
+    throw new LoadException(path, "Directory $packageRoot does not exist.");
+  }
+
+  return packageRoot;
+}
+
+/// The library name must be globally unique, or the wrong library path may be
+/// returned.
+String libraryPath(Symbol libraryName, {String packageRoot}) {
+  var lib = currentMirrorSystem().findLibrary(libraryName);
+  if (lib.uri.scheme != 'package') return p.fromUri(lib.uri);
+
+  // TODO(nweiz): is there a way to avoid assuming this is being run next to a
+  // packages directory?.
+  if (packageRoot == null) packageRoot = p.absolute('packages');
+  return p.join(packageRoot, p.fromUri(lib.uri.path));
 }

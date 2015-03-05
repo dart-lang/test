@@ -55,14 +55,7 @@ class Loader {
   /// This will throw a [LoadException] if the file fails to load.
   Future<Suite> loadFile(String path) {
     // TODO(nweiz): Support browser tests.
-    var packageRoot = _packageRoot == null
-        ? p.join(p.dirname(path), 'packages')
-        : _packageRoot;
-
-    if (!new Directory(packageRoot).existsSync()) {
-      throw new LoadException(path, "Directory $packageRoot does not exist.");
-    }
-
+    var packageRoot = packageRootFor(path, _packageRoot);
     var receivePort = new ReceivePort();
     return runInIsolate('''
 import "package:unittest/src/runner/vm/isolate_listener.dart";
@@ -75,7 +68,8 @@ void main(_, Map message) {
 }
 ''', {
       'reply': receivePort.sendPort
-    }, packageRoot: packageRoot).catchError((error, stackTrace) {
+    }, packageRoot: packageRoot)
+        .catchError((error, stackTrace) {
       receivePort.close();
       return new Future.error(new LoadException(path, error), stackTrace);
     }).then((isolate) {

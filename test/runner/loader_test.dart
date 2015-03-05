@@ -79,9 +79,14 @@ void main() {
 
     test("throws a nice error if the package root doesn't exist", () {
       var loader = new Loader();
-      expect(() => loader.loadFile(p.join(_sandbox, 'a_test.dart')),
-          throwsA(isLoadException(
-              "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
+      expect(() {
+        try {
+          loader.loadFile(p.join(_sandbox, 'a_test.dart'));
+        } finally {
+          loader.close();
+        }
+      }, throwsA(isLoadException(
+          "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
     });
   });
 
