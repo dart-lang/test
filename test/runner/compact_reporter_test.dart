@@ -46,21 +46,18 @@ void main() {
         +0 -1: failure 1
           oh no
           test.dart 6:33  main.<fn>
-          dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +0 -1: failure 2
         +0 -2: failure 2
           oh no
           test.dart 7:33  main.<fn>
-          dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +0 -2: failure 3
         +0 -3: failure 3
           oh no
           test.dart 8:33  main.<fn>
-          dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +0 -3: Some tests failed.""");
@@ -77,7 +74,6 @@ void main() {
         +0 -1: failure 1
           oh no
           test.dart 6:33  main.<fn>
-          dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +0 -1: success 1
@@ -86,7 +82,6 @@ void main() {
         +1 -2: failure 2
           oh no
           test.dart 8:33  main.<fn>
-          dart:isolate    _RawReceivePortImpl._handleMessage
 
 
         +1 -2: success 2
@@ -111,29 +106,23 @@ void main() {
         +0 -1: failures
           first error
           test.dart 10:38  main.<fn>.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
           ===== asynchronous gap ===========================
           dart:async       Future.Future.microtask
           test.dart 10:15  main.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
 
 
           second error
           test.dart 11:38  main.<fn>.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
           ===== asynchronous gap ===========================
           dart:async       Future.Future.microtask
           test.dart 11:15  main.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
 
 
           third error
           test.dart 12:38  main.<fn>.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
           ===== asynchronous gap ===========================
           dart:async       Future.Future.microtask
           test.dart 12:15  main.<fn>
-          dart:isolate     _RawReceivePortImpl._handleMessage
 
 
         +0 -1: wait
