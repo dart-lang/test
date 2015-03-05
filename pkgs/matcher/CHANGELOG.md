@@ -1,3 +1,7 @@
+## 0.11.4+2
+
+* Improve the formatting of strings that contain unprintable ASCII characters.
+
 ## 0.11.4+1
 
 * Correctly match and print `String`s containing characters that must be

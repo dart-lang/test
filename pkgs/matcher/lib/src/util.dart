@@ -15,11 +15,12 @@ const _escapeMap = const {
   '\b': r'\b',
   '\t': r'\t',
   '\v': r'\v',
+  '\x7F': r'\x7F', // delete
 };
 
 /// A [RegExp] that matches whitespace characters that should be escaped.
-final _escapeRegExp =
-    new RegExp("[${_escapeMap.keys.map(_getHexLiteral).join()}]");
+final _escapeRegExp = new RegExp(
+    "[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_getHexLiteral).join()}]");
 
 /// Useful utility for nesting match states.
 void addStateInfo(Map matchState, Map values) {
@@ -51,12 +52,14 @@ Matcher wrapMatcher(x) {
 String escape(String str) {
   str = str.replaceAll('\\', r'\\');
   return str.replaceAllMapped(_escapeRegExp, (match) {
-    return _escapeMap[match[0]];
+    var mapped = _escapeMap[match[0]];
+    if (mapped != null) return mapped;
+    return _getHexLiteral(match[0]);
   });
 }
 
 /// Given single-character string, return the hex-escaped equivalent.
 String _getHexLiteral(String input) {
   int rune = input.runes.single;
-  return r'\x' + rune.toRadixString(16).padLeft(2, '0');
+  return r'\x' + rune.toRadixString(16).toUpperCase().padLeft(2, '0');
 }
