@@ -6,7 +6,7 @@ homepage: https://github.com/dart-lang/unittest
 environment:
   sdk: '>=1.8.0 <2.0.0'
 dependencies:
-  args: '^0.12.1'
+  args: '>=0.12.1 <0.14.0'
   http_parser: '^0.0.2'
   pool: '^1.0.0'
   shelf: '^0.5.3'
