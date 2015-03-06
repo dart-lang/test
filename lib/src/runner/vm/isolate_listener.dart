@@ -56,8 +56,7 @@ class IsolateListener {
       return;
     }
 
-    new IsolateListener._(new Suite("IsolateListener", declarer.tests))
-        ._listen(sendPort);
+    new IsolateListener._(new Suite(declarer.tests))._listen(sendPort);
   }
 
   /// Sends a message over [sendPort] indicating that the tests failed to load.

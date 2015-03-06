@@ -59,10 +59,10 @@ class BrowserManager {
             asyncError.stackTrace);
       }
 
-      return new Suite(path, response["tests"].map((test) {
+      return new Suite(response["tests"].map((test) {
         var testChannel = suiteChannel.virtualChannel(test['channel']);
         return new IframeTest(test['name'], testChannel);
-      }));
+      }), path: path, platform: "Chrome");
     });
   }
 }

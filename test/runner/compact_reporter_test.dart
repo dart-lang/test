@@ -10,8 +10,6 @@ import 'package:unittest/unittest.dart';
 
 import '../io.dart';
 
-String _sandbox;
-
 void main() {
   test("reports when no tests are run", () {
     return withTempDir((path) {
@@ -131,9 +129,7 @@ void main() {
   });
 }
 
-final _prefixLength = "XX:XX ".length;
-
-void _expectReport(String tests, String expected) {
+void _expectReport(String tests, String expected, {List<String> args}) {
   var dart = """
 import 'dart:async';
 
@@ -146,13 +142,15 @@ $tests
 
   expect(withTempDir((path) {
     new File(p.join(path, "test.dart")).writeAsStringSync(dart);
-    var result = runUnittest(["test.dart"], workingDirectory: path);
+    if (args == null) args = [];
+    args = args.toList()..add("test.dart");
+    var result = runUnittest(args, workingDirectory: path);
 
     // Convert CRs into newlines, remove excess trailing whitespace, and trim
     // off timestamps.
     var actual = result.stdout.trim().split(new RegExp(r"[\r\n]")).map((line) {
       if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
-      return line.trim().substring(_prefixLength);
+      return line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
     }).join("\n");
 
     // Un-indent the expected string.

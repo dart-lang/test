@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:unittest/src/backend/state.dart';
+import 'package:unittest/src/runner/test_platform.dart';
 import 'package:unittest/src/runner/loader.dart';
 import 'package:unittest/unittest.dart';
 
@@ -29,7 +30,8 @@ void main() {
 
 void main() {
   setUp(() {
-    _loader = new Loader(packageRoot: p.join(packageDir, 'packages'));
+    _loader = new Loader([TestPlatform.vm],
+        packageRoot: p.join(packageDir, 'packages'));
     _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
   });
 
@@ -44,15 +46,18 @@ void main() {
       /// TODO(nweiz): Use scheduled_test for this once it's compatible with
       /// this version of unittest.
       new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
-      return _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
-          .then((suite_) => suite = suite_);
+      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).then((suites) {
+        expect(suites, hasLength(1));
+        suite = suites.first;
+      });
     });
 
-    test("returns a suite with a name matching the file path", () {
-      expect(suite.name, equals(p.join(_sandbox, 'a_test.dart')));
+    test("returns a suite with the file path and platform", () {
+      expect(suite.path, equals(p.join(_sandbox, 'a_test.dart')));
+      expect(suite.platform, equals('VM'));
     });
 
-    test("returns tests with the correct names", () {
+    test("returns tests with the correct names and platforms", () {
       expect(suite.tests, hasLength(3));
       expect(suite.tests[0].name, equals("success"));
       expect(suite.tests[1].name, equals("failure"));
@@ -78,7 +83,7 @@ void main() {
     });
 
     test("throws a nice error if the package root doesn't exist", () {
-      var loader = new Loader();
+      var loader = new Loader([TestPlatform.vm]);
       expect(() {
         try {
           loader.loadFile(p.join(_sandbox, 'a_test.dart'));
@@ -123,8 +128,8 @@ void main() {
         return _loader.loadDir(_sandbox).then((suites_) => suites = suites_);
       });
 
-      test("names those suites after their files", () {
-        expect(suites.map((suite) => suite.name), unorderedEquals([
+      test("gives those suites the correct paths", () {
+        expect(suites.map((suite) => suite.path), unorderedEquals([
           p.join(_sandbox, 'a_test.dart'),
           p.join(_sandbox, 'another_test.dart'),
           p.join(_sandbox, 'dir/sub_test.dart')
@@ -132,7 +137,7 @@ void main() {
       });
 
       test("can run tests in those suites", () {
-        var suite = suites.firstWhere((suite) => suite.name.contains("a_test"));
+        var suite = suites.firstWhere((suite) => suite.path.contains("a_test"));
         var liveTest = suite.tests[1].load(suite);
         expectSingleFailure(liveTest);
         return liveTest.run().whenComplete(() => liveTest.close());

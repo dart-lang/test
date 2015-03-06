@@ -16,7 +16,7 @@ void main() {
   var suite;
   setUp(() {
     lastState = null;
-    suite = new Suite("suite", []);
+    suite = new Suite([]);
   });
 
   group("Invoker.current", () {

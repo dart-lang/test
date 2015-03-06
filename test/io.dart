@@ -5,7 +5,6 @@
 library unittest.test.io;
 
 import 'dart:io';
-import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 import 'package:unittest/src/util/io.dart';
@@ -17,7 +16,7 @@ final String packageDir = p.dirname(p.dirname(libraryPath(#unittest.test.io)));
 ProcessResult runUnittest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
   var allArgs = [
-    p.join(packageDir, 'bin/unittest.dart'),
+    p.absolute(p.join(packageDir, 'bin/unittest.dart')),
     "--package-root=${p.join(packageDir, 'packages')}"
   ]..addAll(args);
 

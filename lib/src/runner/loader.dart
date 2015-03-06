@@ -11,14 +11,23 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 
 import '../backend/suite.dart';
+import '../runner/test_platform.dart';
 import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/remote_exception.dart';
-import 'vm/isolate_test.dart';
+import '../utils.dart';
+import 'browser/server.dart';
 import 'load_exception.dart';
+import 'vm/isolate_test.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
+  /// All platforms for which tests should be loaded.
+  final List<TestPlatform> _platforms;
+
+  /// Whether to enable colors for Dart compilation.
+  final bool _color;
+
   /// The package root to use for loading tests, or `null` to use the automatic
   /// root.
   final String _packageRoot;
@@ -26,35 +35,66 @@ class Loader {
   /// All isolates that have been spun up by the loader.
   final _isolates = new Set<Isolate>();
 
+  /// The server that serves browser test pages.
+  ///
+  /// This is lazily initialized the first time it's accessed.
+  Future<BrowserServer> get _browserServer {
+    if (_browserServerCompleter == null) {
+      _browserServerCompleter = new Completer();
+      BrowserServer.start(packageRoot: _packageRoot, color: _color)
+          .then(_browserServerCompleter.complete)
+          .catchError(_browserServerCompleter.completeError);
+    }
+    return _browserServerCompleter.future;
+  }
+  Completer<BrowserServer> _browserServerCompleter;
+
   /// Creates a new loader.
   ///
   /// If [packageRoot] is passed, it's used as the package root for all loaded
   /// tests. Otherwise, the `packages/` directories next to the test entrypoints
   /// will be used.
-  Loader({String packageRoot})
-      : _packageRoot = packageRoot;
+  ///
+  /// If [color] is true, console colors will be used when compiling Dart.
+  Loader(Iterable<TestPlatform> platforms, {String packageRoot,
+        bool color: false})
+      : _platforms = platforms.toList(),
+        _packageRoot = packageRoot,
+        _color = color;
 
   /// Loads all test suites in [dir].
   ///
   /// This will load tests from files that end in "_test.dart".
-  Future<Set<Suite>> loadDir(String dir) {
+  Future<List<Suite>> loadDir(String dir) {
     return Future.wait(new Directory(dir).listSync(recursive: true)
         .map((entry) {
-      if (entry is! File) return new Future.value();
-      if (!entry.path.endsWith("_test.dart")) return new Future.value();
-      if (p.split(entry.path).contains('packages')) return new Future.value();
+      if (entry is! File) return new Future.value([]);
+      if (!entry.path.endsWith("_test.dart")) return new Future.value([]);
+      if (p.split(entry.path).contains('packages')) return new Future.value([]);
 
       // TODO(nweiz): Provide a way for the caller to gracefully handle some
-      // isolates failing to load without stopping the rest.
+      // suites failing to load without stopping the rest.
       return loadFile(entry.path);
-    })).then((suites) => suites.toSet()..remove(null));
+    })).then((suites) => flatten(suites));
   }
 
   /// Loads a test suite from the file at [path].
   ///
   /// This will throw a [LoadException] if the file fails to load.
-  Future<Suite> loadFile(String path) {
-    // TODO(nweiz): Support browser tests.
+  Future<List<Suite>> loadFile(String path) {
+    return Future.wait(_platforms.map((platform) {
+      if (platform == TestPlatform.chrome) return _loadBrowserFile(path);
+      assert(platform == TestPlatform.vm);
+      return _loadVmFile(path);
+    }));
+  }
+
+  /// Load the test suite at [path] in a browser.
+  Future<Suite> _loadBrowserFile(String path) =>
+      _browserServer.then((browserServer) => browserServer.loadSuite(path));
+
+  /// Load the test suite at [path] in VM isolate.
+  Future<Suite> _loadVmFile(String path) {
     var packageRoot = packageRootFor(path, _packageRoot);
     var receivePort = new ReceivePort();
     return runInIsolate('''
@@ -85,9 +125,9 @@ void main(_, Map message) {
             asyncError.stackTrace);
       }
 
-      return new Suite(path, response["tests"].map((test) {
+      return new Suite(response["tests"].map((test) {
         return new IsolateTest(test['name'], test['sendPort']);
-      }));
+      }), path: path, platform: "VM");
     });
   }
 
@@ -97,6 +137,8 @@ void main(_, Map message) {
       isolate.kill();
     }
     _isolates.clear();
-    return new Future.value();
+
+    if (_browserServerCompleter == null) return new Future.value();
+    return _browserServer.then((browserServer) => browserServer.close());
   }
 }

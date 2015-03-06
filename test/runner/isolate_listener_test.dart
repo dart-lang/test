@@ -272,7 +272,7 @@ Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) {
 
     var testMap = response["tests"].first;
     var test = new IsolateTest(testMap["name"], testMap["sendPort"]);
-    var suite = new Suite("suite", [test]);
+    var suite = new Suite([test]);
     _liveTest = test.load(suite);
     return _liveTest;
   });

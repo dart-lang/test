@@ -24,6 +24,9 @@ class CompilerPool {
   /// The internal pool that controls the number of process running at once.
   final Pool _pool;
 
+  /// Whether to enable colors on dart2js.
+  final bool _color;
+
   /// The currently-active compilers.
   ///
   /// The first one is the only visible the compiler; the rest will become
@@ -36,8 +39,11 @@ class CompilerPool {
   /// at once.
   ///
   /// If [parallel] isn't provided, it defaults to 4.
-  CompilerPool({int parallel})
-      : _pool = new Pool(parallel == null ? 4 : parallel);
+  ///
+  /// If [color] is true, `dart2js` will be run with colors enabled.
+  CompilerPool({int parallel, bool color: false})
+      : _pool = new Pool(parallel == null ? 4 : parallel),
+        _color = color;
 
   /// Compile the Dart code at [dartPath] to [jsPath].
   ///
@@ -70,9 +76,7 @@ void main(_) {
           args.add("--package-root=${p.absolute(packageRoot)}");
         }
 
-        if (canUseSpecialChars) {
-          args.add("--enable-diagnostic-colors");
-        }
+        if (_color) args.add("--enable-diagnostic-colors");
 
         return Process.start(dart2jsPath, args).then((process) {
           var compiler = new _Compiler(dartPath, process);

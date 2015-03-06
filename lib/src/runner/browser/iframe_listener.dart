@@ -63,15 +63,14 @@ class IframeListener {
       return;
     }
 
-    new IframeListener._(new Suite("IframeListener", declarer.tests))
-        ._listen(channel);
+    new IframeListener._(new Suite(declarer.tests))._listen(channel);
   }
 
   /// Constructs a [MultiChannel] wrapping the `postMessage` communication with
   /// the host page.
   ///
   /// This [MultiChannel] corresponds to a [MultiChannel] in the server's
-  /// [BrowserTest] class.
+  /// [IframeTest] class.
   static MultiChannel _postMessageChannel() {
     var inputController = new StreamController(sync: true);
     var outputController = new StreamController(sync: true);

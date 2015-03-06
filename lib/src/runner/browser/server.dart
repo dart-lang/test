@@ -30,8 +30,10 @@ class BrowserServer {
   /// If [packageRoot] is passed, it's used for all package imports when
   /// compiling tests to JS. Otherwise, the package root is inferred from the
   /// location of the source file.
-  static Future<BrowserServer> start({String packageRoot}) {
-    var server = new BrowserServer._(packageRoot);
+  ///
+  /// If [color] is true, console colors will be used when compiling Dart.
+  static Future<BrowserServer> start({String packageRoot, bool color: false}) {
+    var server = new BrowserServer._(packageRoot, color);
     return server._load().then((_) => server);
   }
 
@@ -49,7 +51,7 @@ class BrowserServer {
   final _webSocketHandler = new OneOffHandler();
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = new CompilerPool();
+  final CompilerPool _compilers;
 
   /// The temporary directory in which compiled JS is emitted.
   final String _compiledDir;
@@ -89,8 +91,9 @@ class BrowserServer {
   }
   Completer<BrowserManager> _browserManagerCompleter;
 
-  BrowserServer._(this._packageRoot)
-      : _compiledDir = Directory.systemTemp.createTempSync('unittest_').path;
+  BrowserServer._(this._packageRoot, bool color)
+      : _compiledDir = Directory.systemTemp.createTempSync('unittest_').path,
+        _compilers = new CompilerPool(color: color);
 
   /// Starts the underlying server.
   Future _load() {

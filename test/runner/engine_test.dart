@@ -22,8 +22,8 @@ void main() {
     }
 
     var engine = new Engine([
-      new Suite("suite 1", declarer.tests.take(2)),
-      new Suite("suite 2", declarer.tests.skip(2))
+      new Suite(declarer.tests.take(2)),
+      new Suite(declarer.tests.skip(2))
     ]);
 
     return engine.run().then((_) => expect(testsRun, equals(4)));
@@ -36,7 +36,7 @@ void main() {
       declarer.test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
     }
 
-    var engine = new Engine([new Suite("suite", declarer.tests)]);
+    var engine = new Engine([new Suite(declarer.tests)]);
     engine.onTestStarted.listen(expectAsync((liveTest) {
       // [testsRun] should be one less than the test currently running.
       expect(liveTest.test.name, equals("test ${testsRun + 1}"));
@@ -55,7 +55,7 @@ void main() {
       declarer.test("test ${i + 1}", () {});
     }
 
-    var engine = new Engine([new Suite("suite", declarer.tests)]);
+    var engine = new Engine([new Suite(declarer.tests)]);
     expect(engine.run(), completion(isTrue));
   });
 
@@ -65,7 +65,7 @@ void main() {
     }
     declarer.test("failure", () => throw new TestFailure("oh no"));
 
-    var engine = new Engine([new Suite("suite", declarer.tests)]);
+    var engine = new Engine([new Suite(declarer.tests)]);
     expect(engine.run(), completion(isFalse));
   });
 
@@ -75,7 +75,7 @@ void main() {
     }
     declarer.test("failure", () => throw "oh no");
 
-    var engine = new Engine([new Suite("suite", declarer.tests)]);
+    var engine = new Engine([new Suite(declarer.tests)]);
     expect(engine.run(), completion(isFalse));
   });
 

@@ -36,6 +36,9 @@ final _usage = """
 Usage: pub run unittest:unittest [files or directories...]
 
 -h, --help          Shows this usage information.
+-p, --platform      The platform(s) on which to run the tests.
+                    [vm (default), chrome]
+
     --[no-]color    Whether to use terminal colors.
                     (auto-detected by default)
 """;

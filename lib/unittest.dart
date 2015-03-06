@@ -48,7 +48,9 @@ Declarer get _declarer {
   // finished being defined.
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() {
-    var suite = new Suite(p.prettyUri(Uri.base), _globalDeclarer.tests);
+    var suite = new Suite(_globalDeclarer.tests,
+        path: p.prettyUri(Uri.base),
+        platform: "VM");
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     new NoIoCompactReporter([suite], color: true).run();
   });

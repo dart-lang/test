@@ -13,12 +13,18 @@ import 'test.dart';
 /// A test suite is a set of tests that are intended to be run together and that
 /// share default configuration.
 class Suite {
-  /// The name of the test suite.
-  final String name;
+  /// A description of the platform on which the suite is running, or `null` if
+  /// that platform is unknown.
+  final String platform;
+
+  /// The path to the Dart test suite, or `null` if that path is unknown.
+  final String path;
 
   /// The tests in the test suite.
   final List<Test> tests;
 
-  Suite(this.name, Iterable<Test> tests)
-      : tests = new UnmodifiableListView<Test>(tests.toList());
+  Suite(Iterable<Test> tests, {String path, String platform})
+      : path = path,
+        platform = platform,
+        tests = new UnmodifiableListView<Test>(tests.toList());
 }

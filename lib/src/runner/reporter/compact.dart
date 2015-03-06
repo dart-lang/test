@@ -36,8 +36,11 @@ class CompactReporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  /// Whether multiple test suites are being run.
-  final bool _multipleSuites;
+  /// Whether multiple test files are being run.
+  final bool _multiplePaths;
+
+  /// Whether tests are being run on multiple platforms.
+  final bool _multiplePlatforms;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
@@ -62,7 +65,9 @@ class CompactReporter {
   /// If [color] is `true`, this will use terminal colors; if it's `false`, it
   /// won't.
   CompactReporter(Iterable<Suite> suites, {bool color: true})
-      : _multipleSuites = suites.length > 1,
+      : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
+        _multiplePlatforms =
+            suites.map((suite) => suite.platform).toSet().length > 1,
         _engine = new Engine(suites),
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
@@ -188,7 +193,16 @@ class CompactReporter {
   /// This differs from the test's own description in that it may also include
   /// the suite's name.
   String _description(LiveTest liveTest) {
-    if (_multipleSuites) return "${liveTest.suite.name}: ${liveTest.test.name}";
-    return liveTest.test.name;
+    var name = liveTest.test.name;
+
+    if (_multiplePaths && liveTest.suite.path != null) {
+      name = "${liveTest.suite.path}: $name";
+    }
+
+    if (_multiplePlatforms && liveTest.suite.platform != null) {
+      name = "[${liveTest.suite.platform}] $name";
+    }
+
+    return name;
   }
 }

@@ -14,7 +14,7 @@ Suite _suite;
 void main() {
   setUp(() {
     _declarer = new Declarer();
-    _suite = new Suite("suite", []);
+    _suite = new Suite([]);
   });
 
   group(".test()", () {

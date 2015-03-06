@@ -12,6 +12,7 @@ import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import 'package:unittest/src/runner/reporter/compact.dart';
+import 'package:unittest/src/runner/test_platform.dart';
 import 'package:unittest/src/runner/load_exception.dart';
 import 'package:unittest/src/runner/loader.dart';
 import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
@@ -19,12 +20,18 @@ import 'package:unittest/src/util/io.dart';
 import 'package:unittest/src/utils.dart';
 
 /// The argument parser used to parse the executable arguments.
-final _parser = new ArgParser();
+final _parser = new ArgParser(allowTrailingOptions: true);
 
 void main(List<String> args) {
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
   _parser.addOption("package-root", hide: true);
+  _parser.addOption("platform",
+      abbr: 'p',
+      help: 'The platform(s) on which to run the tests.',
+      allowed: TestPlatform.all.map((platform) => platform.identifier).toList(),
+      defaultsTo: 'vm',
+      allowMultiple: true);
   _parser.addFlag("color", defaultsTo: null,
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
 
@@ -42,7 +49,12 @@ void main(List<String> args) {
     return;
   }
 
-  var loader = new Loader(packageRoot: options["package-root"]);
+  var color = options["color"];
+  if (color == null) color = canUseSpecialChars;
+
+  var platforms = options["platform"].map(TestPlatform.find);
+  var loader = new Loader(platforms,
+      packageRoot: options["package-root"], color: color);
   new Future.sync(() {
     var paths = options.rest;
     if (paths.isEmpty) {
@@ -60,8 +72,6 @@ void main(List<String> args) {
       throw new LoadException(path, 'Does not exist.');
     }));
   }).then((suites) {
-    var color = options["color"];
-    if (color == null) color = canUseSpecialChars;
     var reporter = new CompactReporter(flatten(suites), color: color);
     return reporter.run().then((success) {
       exitCode = success ? 0 : 1;

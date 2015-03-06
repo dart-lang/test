@@ -179,7 +179,7 @@ Future pumpEventQueue([int times=20]) {
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
   var test = new LocalTest("test", body);
-  var suite = new Suite("suite", [test]);
+  var suite = new Suite([test]);
   return test.load(suite);
 }
 
