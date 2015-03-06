@@ -7,6 +7,8 @@ library unittest.runner.browser.chrome;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
+
 import '../../util/io.dart';
 
 // TODO(nweiz): move this into its own package?
@@ -45,9 +47,9 @@ class Chrome {
   /// [Uri] or a [String].
   ///
   /// If [executable] is passed, it's used as the Chrome executable. Otherwise
-  /// `"google-chrome"` will be looked up on the system PATH.
+  /// the default executable name for the current OS will be used.
   Chrome(url, {String executable}) {
-    if (executable == null) executable = "google-chrome";
+    if (executable == null) executable = _defaultExecutable();
 
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
@@ -60,7 +62,10 @@ class Chrome {
         "--disable-extensions",
         "--disable-popup-blocking",
         "--bwsi",
-        "--no-first-run"
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-default-apps",
+        "--disable-translate"
       ]).then((process) {
         _process = process;
         _onProcessStartedCompleter.complete();
@@ -84,5 +89,33 @@ class Chrome {
 
     // Swallow exceptions. The user should explicitly use [onExit] for these.
     return onExit.catchError((_) {});
+  }
+
+  /// Return the default executable for the current operating system.
+  String _defaultExecutable() {
+    if (Platform.isMacOS) {
+      return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    }
+    if (!Platform.isWindows) return 'google-chrome';
+
+    // Chrome could be installed in several places on Windows. The only way to
+    // find it is to check.
+    var prefixes = [
+      Platform.environment['LOCALAPPDATA'],
+      Platform.environment['PROGRAMFILES'],
+      Platform.environment['PROGRAMFILES(X86)']
+    ];
+    var suffix = r'Google\Chrome\Application\chrome.exe';
+
+    for (var prefix in prefixes) {
+      if (prefix == null) continue;
+
+      var path = p.join(prefix, suffix);
+      if (new File(p.join(prefix, suffix)).existsSync()) return path;
+    }
+
+    // Fall back on looking it up on the path. This probably won't work, but at
+    // least it will fail with a useful error message.
+    return "chrome.exe";
   }
 }
