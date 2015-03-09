@@ -1,3 +1,7 @@
+## 0.11.4+3
+
+* Fix the examples for `equalsIgnoringWhitespace`.
+
 ## 0.11.4+2
 
 * Improve the formatting of strings that contain unprintable ASCII characters.

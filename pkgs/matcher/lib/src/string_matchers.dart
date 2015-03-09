@@ -34,14 +34,14 @@ class _IsEqualIgnoringCase extends _StringMatcher {
 ///
 /// For example, the following will all match successfully:
 ///
-///     expect("hello   world", equalsIgnoringCase("hello world"));
-///     expect("  hello world", equalsIgnoringCase("hello world"));
-///     expect("hello world  ", equalsIgnoringCase("hello world"));
+///     expect("hello   world", equalsIgnoringWhitespace("hello world"));
+///     expect("  hello world", equalsIgnoringWhitespace("hello world"));
+///     expect("hello world  ", equalsIgnoringWhitespace("hello world"));
 ///
 /// The following will not match:
 ///
-///     expect("helloworld", equalsIgnoringCase("hello world"));
-///     expect("he llo world", equalsIgnoringCase("hello world"));
+///     expect("helloworld", equalsIgnoringWhitespace("hello world"));
+///     expect("he llo world", equalsIgnoringWhitespace("hello world"));
 Matcher equalsIgnoringWhitespace(String value) =>
     new _IsEqualIgnoringWhitespace(value);
 
