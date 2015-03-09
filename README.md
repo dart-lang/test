@@ -1,141 +1,176 @@
-Support for writing unit tests in Dart.
+`unittest` provides a standard way of writing and running tests in Dart.
 
-**See also:**
-[Unit Testing with Dart]
-(http://www.dartlang.org/articles/dart-unit-tests/)
+## Writing Tests
 
-##Concepts
+Tests are specified using the top-level [`test()`][test] function, and test
+assertions are made using [`expect()`][expect]:
 
- * __Tests__: Tests are specified via the top-level function [test], they can be
-   organized together using [group].
-
- * __Checks__: Test expectations can be specified via [expect]
-
- * __Matchers__: [expect] assertions are written declaratively using the
-   [Matcher] class.
-
- * __Configuration__: The framework can be adapted by setting
-   [unittestConfiguration] with a [Configuration]. See the other libraries
-   in the `unittest` package for alternative implementations of
-   [Configuration] including `compact_vm_config.dart`, `html_config.dart`
-   and `html_enhanced_config.dart`.
-
-##Examples
-
-A trivial test:
+[test]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_test
+[expect]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_expect
 
 ```dart
-import 'package:unittest/unittest.dart';
+import "package:unittest/unittest.dart";
 
 void main() {
-  test('this is a test', () {
-    int x = 2 + 3;
-    expect(x, equals(5));
+  test("String.split() splits the string on the delimiter", () {
+    var string = "foo,bar,baz";
+    expect(string.split(","), equals(["foo", "bar", "baz"]));
+  });
+
+  test("String.trim() removes surrounding whitespace", () {
+    var string = "  foo ";
+    expect(string.trim(), equals("foo"));
   });
 }
 ```
 
-Multiple tests:
+Tests can be grouped together using the [`group()`] function. Each group's
+description is added to the beginning of its test's descriptions.
 
 ```dart
-import 'package:unittest/unittest.dart';
+import "package:unittest/unittest.dart";
 
 void main() {
-  test('this is a test', () {
-    int x = 2 + 3;
-    expect(x, equals(5));
-  });
-  test('this is another test', () {
-    int x = 2 + 3;
-    expect(x, equals(5));
-  });
-}
-```
-
-Multiple tests, grouped by category:
-
-```dart
-import 'package:unittest/unittest.dart';
-
-void main() {
-  group('group A', () {
-    test('test A.1', () {
-      int x = 2 + 3;
-      expect(x, equals(5));
+  group("String", () {
+    test(".split() splits the string on the delimiter", () {
+      var string = "foo,bar,baz";
+      expect(string.split(","), equals(["foo", "bar", "baz"]));
     });
-    test('test A.2', () {
-      int x = 2 + 3;
-      expect(x, equals(5));
+
+    test(".trim() removes surrounding whitespace", () {
+      var string = "  foo ";
+      expect(string.trim(), equals("foo"));
     });
   });
-  group('group B', () {
-    test('this B.1', () {
-      int x = 2 + 3;
-      expect(x, equals(5));
+
+  group("int", () {
+    test(".remainder() returns the remainder of division", () {
+      expect(11.remainder(3), equals(2));
+    });
+
+    test(".toRadixString() returns a hex string", () {
+      expect(11.toRadixString(16), equals("b"));
     });
   });
 }
 ```
 
-Asynchronous tests: if callbacks expect between 0 and 6 positional
-arguments, [expectAsync] will wrap a function into a new callback and will
-not consider the test complete until that callback is run. A count argument
-can be provided to specify the number of times the callback should be called
-(the default is 1).
+Any matchers from the [`matcher`][matcher] package can be used with `expect()`
+to do complex validations:
+
+[matcher]: http://www.dartdocs.org/documentation/matcher/latest/index.html#matcher/matcher
 
 ```dart
-import 'dart:async';
-import 'package:unittest/unittest.dart';
+import "package:unittest/unittest.dart";
 
 void main() {
-  test('callback is executed once', () {
-    // wrap the callback of an asynchronous call with [expectAsync] if
-    // the callback takes 0 arguments...
-    Timer.run(expectAsync(() {
-      int x = 2 + 3;
-      expect(x, equals(5));
-    }));
-  });
-
-  test('callback is executed twice', () {
-    var callback = expectAsync(() {
-      int x = 2 + 3;
-      expect(x, equals(5));
-    }, count: 2); // <-- we can indicate multiplicity to [expectAsync]
-    Timer.run(callback);
-    Timer.run(callback);
+  test(".split() splits the string on the delimiter", () {
+    expect("foo,bar,baz", allOf([
+      contains("foo"),
+      isNot(startsWith("bar")),
+      endsWith("baz")
+    ]));
   });
 }
 ```
 
-There may be times when the number of times a callback should be called is
-non-deterministic. In this case a dummy callback can be created with
-expectAsync((){}) and this can be called from the real callback when it is
-finally complete.
+## Running Tests
 
-A variation on this is [expectAsyncUntil], which takes a callback as the
-first parameter and a predicate function as the second parameter. After each
-time the callback is called, the predicate function will be called. If it
-returns `false` the test will still be considered incomplete.
+A single test file can be run just using `dart path/to/test.dart`.
 
-Test functions can return [Future]s, which provide another way of doing
-asynchronous tests. The test framework will handle exceptions thrown by
-the Future, and will advance to the next test when the Future is complete.
+![Tests being run via "dart path/to/test.dart".](https://raw.githubusercontent.com/dart-lang/unittest/master/image/test1.gif)
+
+Many tests can be run at a time using `pub run unittest:unittest path/to/dir`.
+
+![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/unittest/master/image/test2.gif)
+
+`unittest` considers any file that ends with `_test.dart` to be a test file. If
+you don't pass any paths, it will run all the test files in your `test/`
+directory, making it easy to test your entire application at once.
+
+By default, tests are run in the Dart VM, but you can run them in the browser as
+well by passing `pub run unittest:unittest -p chrome path/to/test.dart`.
+`unittest` will take care of starting the browser and loading the tests, and all
+the results will be reported on the command line just like for VM tests. In
+fact, you can even run tests on both platforms with a single command: `pub run
+unittest:unittest -p chrome -p vm path/to/test.dart`.
+
+## Asynchronous Tests
+
+Tests written with `async`/`await` will work automatically. The test runner
+won't consider the test finished until the returned `Future` completes.
 
 ```dart
-import 'dart:async';
-import 'package:unittest/unittest.dart';
+import "dart:async";
+
+import "package:unittest/unittest.dart";
 
 void main() {
-  test('test that time has passed', () {
-    var duration = const Duration(milliseconds: 200);
-    var time = new DateTime.now();
-
-    return new Future.delayed(duration).then((_) {
-      var delta = new DateTime.now().difference(time);
-
-      expect(delta, greaterThanOrEqualTo(duration));
-    });
+  test("new Future.value() returns the value", () async {
+    var value = await new Future.value(10);
+    expect(value, equals(10));
   });
 }
 ```
+
+There are also a number of useful functions and matchers for more advanced
+asynchrony. The [`completion()`][completion] matcher can be used to test
+`Futures`; it ensures that the test doesn't finish until the `Future` completes,
+and runs a matcher against that `Future`'s value.
+
+[completion]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_completion
+
+```dart
+import "dart:async";
+
+import "package:unittest/unittest.dart";
+
+void main() {
+  test("new Future.value() returns the value", () {
+    expect(new Future.value(10), completion(equals(10)));
+  });
+}
+```
+
+The [`throwsA()`][throwsA] matcher and the various `throwsExceptionType`
+matchers work with both synchronous callbacks and asynchronous `Future`s. They
+ensure that a particular type of exception is thrown:
+
+[completion]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_throwsA
+
+```dart
+import "dart:async";
+
+import "package:unittest/unittest.dart";
+
+void main() {
+  test("new Future.error() throws the error", () {
+    expect(new Future.error("oh no"), throwsA(equals("oh no")));
+    expect(new Future.error(new StateError("bad state")), throwsStateError);
+  });
+}
+```
+
+The [`expectAsync()`][expectAsync] function wraps another function and has two
+jobs. First, it asserts that the wrapped function is called a certain number of
+times, and will cause the test to fail if it's called too often; second, it
+keeps the test from finishing until the function is called the requisite number
+of times.
+
+```dart
+import "dart:async";
+
+import "package:unittest/unittest.dart";
+
+void main() {
+  test("Stream.fromIterable() emits the values in the iterable", () {
+    var stream = new Stream.fromIterable([1, 2, 3]);
+
+    stream.listen(expectAsync((number) {
+      expect(number, inInclusiveRange(1, 3));
+    }, count: 3));
+  });
+}
+```
+
+[expectAsync]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_expectAsync
