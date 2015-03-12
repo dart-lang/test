@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:analyzer/analyzer.dart';
 import 'package:path/path.dart' as p;
 
 import 'io.dart';
@@ -69,4 +70,14 @@ void _isolateBuffer(message) {
       'error': RemoteException.serialize(error, stackTrace)
     });
   });
+}
+
+/// Parse all the annotations at the beginning of a Dart file.
+///
+/// This will parse annotations until the first non-annotation production is
+/// reached.
+List<Annotation> parseAnnotations(String path) {
+  var contents = new File(path).readAsStringSync();
+  var directives = parseDirectives(contents, name: path).directives;
+  return directives.isEmpty ? [] : directives.first.metadata;
 }
