@@ -23,15 +23,15 @@ lib/*/*: SkipByDesign
 lib/*/*/*: SkipByDesign
 lib/*/*/*/*: SkipByDesign
 
-[ $browser ]
-*: RuntimeError # new unittest package does not support browser tests
+test/runner/browser/loader_test: Slow
 
 # dart:io-specific tests.
 [ $browser ]
 test/runner/console_reporter_test: SkipByDesign
+test/runner/isolate_listener_test: SkipByDesign
 test/runner/loader_test: SkipByDesign
 test/runner/runner_test: SkipByDesign
-test/runner/isolate_listener_test: SkipByDesign
+test/util/parse_annotations_test: SkipByDesign
 
 [ $runtime == safari ]
 test/matcher/prints_test: Fail # Issue 4

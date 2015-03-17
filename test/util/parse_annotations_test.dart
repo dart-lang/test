@@ -96,7 +96,7 @@ void main() {
     expect(args[0], new isInstanceOf<NamedExpression>());
     expect(args[0].expression, new isInstanceOf<StringLiteral>());
     expect(args[0].expression.stringValue, equals('foo'));
-    expect(args[1], new isInstanceOf<IntegerLiteral>());
+    expect(args[1], new isInstanceOf<NamedExpression>());
     expect(args[1].expression, new isInstanceOf<IntegerLiteral>());
     expect(args[1].expression.value, equals(12));
   });
