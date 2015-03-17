@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:analyzer/src/generated/ast.dart';
 import 'package:path/path.dart' as p;
 import 'package:unittest/unittest.dart';
 import 'package:unittest/src/util/dart.dart';
