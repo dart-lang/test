@@ -23,6 +23,8 @@ lib/*/*: SkipByDesign
 lib/*/*/*: SkipByDesign
 lib/*/*/*/*: SkipByDesign
 
+test/runner/browser/loader_test: Pass, Slow
+
 # dart:io-specific tests.
 [ $browser ]
 test/runner/*: SkipByDesign
