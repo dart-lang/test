@@ -383,12 +383,11 @@ class _IsAnything extends Matcher {
 /// fail. This is because dart2js currently ignores template type
 /// parameters.
 class isInstanceOf<T> extends Matcher {
-  final String _name;
-  const isInstanceOf([name = 'specified type']) : this._name = name;
+  const isInstanceOf([name]);
   bool matches(obj, Map matchState) => obj is T;
   // The description here is lame :-(
   Description describe(Description description) =>
-      description.add('an instance of ${_name}');
+      description.add('an instance of ${T}');
 }
 
 /// A matcher that matches a function call against no exception.
