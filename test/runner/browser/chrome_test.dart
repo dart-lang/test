@@ -117,7 +117,7 @@ webSocket.addEventListener("open", function() {
   });
 
   test("a process can be killed synchronously after it's started", () {
-    return shelf_io.serve(expectAsync((_) {}, count: 0), 'localhost', 8080)
+    return shelf_io.serve(expectAsync((_) {}, count: 0), 'localhost', 0)
         .then((server) {
       var chrome = new Chrome(baseUrlForAddress(server.address, server.port));
       return chrome.close().whenComplete(server.close);
