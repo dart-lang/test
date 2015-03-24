@@ -372,22 +372,15 @@ class _IsAnything extends Matcher {
 /// 'Foo', we would write:
 ///
 ///     expect(bar, new isInstanceOf<Foo>());
-///
-/// To get better error message, supply a name when creating the
-/// Type wrapper; e.g.:
-///
-///     expect(bar, new isInstanceOf<Foo>('Foo'));
-///
-/// Note that this does not currently work in dart2js; it will
-/// match any type, and isNot(new isInstanceof<T>()) will always
-/// fail. This is because dart2js currently ignores template type
-/// parameters.
 class isInstanceOf<T> extends Matcher {
-  const isInstanceOf([name]);
+  /// The [name] parameter does nothing; it's deprecated and will be removed in
+  /// future version of [matcher].
+  const isInstanceOf([@deprecated String name]);
+
   bool matches(obj, Map matchState) => obj is T;
-  // The description here is lame :-(
+
   Description describe(Description description) =>
-      description.add('an instance of ${T}');
+      description.add('an instance of $T');
 }
 
 /// A matcher that matches a function call against no exception.
