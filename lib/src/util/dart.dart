@@ -71,13 +71,3 @@ void _isolateBuffer(message) {
     });
   });
 }
-
-/// Parse all the annotations at the beginning of a Dart file.
-///
-/// This will parse annotations until the first non-annotation production is
-/// reached.
-List<Annotation> parseAnnotations(String path) {
-  var contents = new File(path).readAsStringSync();
-  var directives = parseDirectives(contents, name: path).directives;
-  return directives.isEmpty ? [] : directives.first.metadata;
-}
