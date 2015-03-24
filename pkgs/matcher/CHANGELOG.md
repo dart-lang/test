@@ -1,3 +1,8 @@
+## 0.11.4+4
+
+* Deprecate the name parameter to `isInstanceOf`. All language implementations
+  now support converting the type parameter to a string directly.
+
 ## 0.11.4+3
 
 * Fix the examples for `equalsIgnoringWhitespace`.
