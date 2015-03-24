@@ -11,6 +11,15 @@
   `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler`.
   Now that `expect` is in the `unittest` package, these are no longer needed.
 
+## 0.11.4+4
+
+* Deprecate the name parameter to `isInstanceOf`. All language implementations
+  now support converting the type parameter to a string directly.
+
+## 0.11.4+3
+
+* Fix the examples for `equalsIgnoringWhitespace`.
+
 ## 0.11.4+2
 
 * Improve the formatting of strings that contain unprintable ASCII characters.

@@ -175,9 +175,9 @@ void main() {
   });
 
   test('isInstanceOf', () {
-    shouldFail(0, new isInstanceOf<String>('String'),
+    shouldFail(0, new isInstanceOf<String>(),
         "Expected: an instance of String Actual: <0>");
-    shouldPass('cow', new isInstanceOf<String>('String'));
+    shouldPass('cow', new isInstanceOf<String>());
   });
 
   group('Predicate Matchers', () {
