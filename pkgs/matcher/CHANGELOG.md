@@ -11,6 +11,10 @@
   `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler`.
   Now that `expect` is in the `unittest` package, these are no longer needed.
 
+* Removed the `name` parameter for `isInstanceOf`. This was previously
+  deprecated, and is no longer necessary since all language implementations now
+  support converting the type parameter to a string directly.
+
 ## 0.11.4+4
 
 * Deprecate the name parameter to `isInstanceOf`. All language implementations
