@@ -23,25 +23,57 @@ final _validVariables =
 /// and browsers.
 ///
 /// The syntax is mostly Dart's expression syntax restricted to boolean
-/// operations. See the README for full details.
-class PlatformSelector {
-  /// The parsed AST.
-  final Node _selector;
+/// operations. See [the README][] for full details.
+///
+/// [the README]: https://github.com/dart-lang/unittest/#platform-selector-syntax
+abstract class PlatformSelector {
+  /// A selector that declares that a test can be run on all platforms.
+  ///
+  /// This isn't representable in the platform selector syntax but it is the
+  /// default selector.
+  static const all = const _AllPlatforms();
 
   /// Parses [selector].
   ///
   /// This will throw a [SourceSpanFormatException] if the selector is
   /// malformed or if it uses an undefined variable.
-  PlatformSelector.parse(String selector)
-      : _selector = new Parser(selector).parse() {
-    _selector.accept(const _VariableValidator());
-  }
+  factory PlatformSelector.parse(String selector) =>
+      new _PlatformSelector.parse(selector);
 
   /// Returns whether the selector matches the given [platform] and [os].
   ///
   /// [os] defaults to [OperatingSystem.none].
+  bool evaluate(TestPlatform platform, {OperatingSystem os});
+}
+
+/// The concrete implementation of a [PlatformSelector] parsed from a string.
+///
+/// This is separate from [PlatformSelector] so that [_AllPlatforms] can
+/// implement [PlatformSelector] without having to implement private members.
+class _PlatformSelector implements PlatformSelector{
+  /// The parsed AST.
+  final Node _selector;
+
+  _PlatformSelector.parse(String selector)
+      : _selector = new Parser(selector).parse() {
+    _selector.accept(const _VariableValidator());
+  }
+
+  _PlatformSelector(this._selector);
+
   bool evaluate(TestPlatform platform, {OperatingSystem os}) =>
       _selector.accept(new Evaluator(platform, os: os));
+
+  String toString() => _selector.toString();
+}
+
+/// A selector that matches all platforms.
+class _AllPlatforms implements PlatformSelector {
+  const _AllPlatforms();
+
+  bool evaluate(TestPlatform platform, {OperatingSystem os}) => true;
+
+  String toString() => "*";
 }
 
 /// An AST visitor that ensures that all variables are valid.

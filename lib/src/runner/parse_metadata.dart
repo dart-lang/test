@@ -99,7 +99,7 @@ Metadata parseMetadata(String path) {
     testOn = args.first.stringValue;
   }
 
-  return new Metadata(testOn);
+  return new Metadata.parse(testOn: testOn);
 }
 
 /// Creates a [SourceSpan] for [node].

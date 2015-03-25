@@ -4,11 +4,11 @@
 
 library unittest.frontend.test_on;
 
-/// An annotation indicating which platforms a test or test suite supports.
+/// An annotation indicating which platforms a test suite supports.
 ///
-/// For the full syntax of [expression], see [the README][readme].
+/// For the full syntax of [expression], see [the README][].
 ///
-/// [readme]: https://github.com/dart-lang/unittest/#readme
+/// [the README]: https://github.com/dart-lang/unittest/#platform-selector-syntax
 class TestOn {
   /// The expression specifying the platform.
   final String expression;

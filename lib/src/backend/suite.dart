@@ -6,6 +6,7 @@ library unittest.backend.suite;
 
 import 'dart:collection';
 
+import 'metadata.dart';
 import 'test.dart';
 
 /// A test suite.
@@ -20,11 +21,23 @@ class Suite {
   /// The path to the Dart test suite, or `null` if that path is unknown.
   final String path;
 
+  /// The metadata associated with this test suite.
+  final Metadata metadata;
+
   /// The tests in the test suite.
   final List<Test> tests;
 
-  Suite(Iterable<Test> tests, {String path, String platform})
-      : path = path,
-        platform = platform,
+  Suite(Iterable<Test> tests, {this.path, this.platform, Metadata metadata})
+      : metadata = metadata == null ? new Metadata() : metadata,
         tests = new UnmodifiableListView<Test>(tests.toList());
+
+  /// Returns a new suite with the given fields updated.
+  Suite change({String path, String platform, Metadata metadata,
+      Iterable<Test> tests}) {
+    if (path == null) path = this.path;
+    if (platform == null) platform = this.platform;
+    if (metadata == null) metadata = this.metadata;
+    if (tests == null) tests = this.tests;
+    return new Suite(tests, path: path, platform: platform, metadata: metadata);
+  }
 }

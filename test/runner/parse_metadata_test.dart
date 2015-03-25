@@ -2,10 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn("vm")
+
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:unittest/unittest.dart';
+import 'package:unittest/src/backend/platform_selector.dart';
+import 'package:unittest/src/backend/test_platform.dart';
 import 'package:unittest/src/runner/parse_metadata.dart';
 
 String _sandbox;
@@ -24,33 +28,35 @@ void main() {
   test("returns empty metadata for an empty file", () {
     new File(_path).writeAsStringSync("");
     var metadata = parseMetadata(_path);
-    expect(metadata.testOn, isNull);
+    expect(metadata.testOn, equals(PlatformSelector.all));
   });
 
   test("ignores irrelevant annotations", () {
     new File(_path).writeAsStringSync("@Fblthp\n@Fblthp.foo\nlibrary foo;");
     var metadata = parseMetadata(_path);
-    expect(metadata.testOn, isNull);
+    expect(metadata.testOn, equals(PlatformSelector.all));
   });
 
   test("parses a valid annotation", () {
-    new File(_path).writeAsStringSync("@TestOn('foo')\nlibrary foo;");
+    new File(_path).writeAsStringSync("@TestOn('vm')\nlibrary foo;");
     var metadata = parseMetadata(_path);
-    expect(metadata.testOn, equals("foo"));
+    expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
+    expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
   });
 
   test("parses a prefixed annotation", () {
     new File(_path).writeAsStringSync(
-        "@foo.TestOn('foo')\n"
+        "@foo.TestOn('vm')\n"
         "import 'package:unittest/unittest.dart' as foo;");
     var metadata = parseMetadata(_path);
-    expect(metadata.testOn, equals("foo"));
+    expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
+    expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
   });
 
   test("ignores a constructor named TestOn", () {
     new File(_path).writeAsStringSync("@foo.TestOn('foo')\nlibrary foo;");
     var metadata = parseMetadata(_path);
-    expect(metadata.testOn, isNull);
+    expect(metadata.testOn, equals(PlatformSelector.all));
   });
 
   group("throws an error for", () {

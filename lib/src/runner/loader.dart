@@ -8,8 +8,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:analyzer/analyzer.dart';
 import 'package:path/path.dart' as p;
 
+import '../backend/metadata.dart';
 import '../backend/suite.dart';
 import '../backend/test_platform.dart';
 import '../util/dart.dart';
@@ -18,6 +20,7 @@ import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'browser/server.dart';
 import 'load_exception.dart';
+import 'parse_metadata.dart';
 import 'vm/isolate_test.dart';
 
 /// A class for finding test files and loading them into a runnable form.
@@ -82,11 +85,27 @@ class Loader {
   ///
   /// This will throw a [LoadException] if the file fails to load.
   Future<List<Suite>> loadFile(String path) {
+    var metadata;
+    try {
+      metadata = parseMetadata(path);
+    } on AnalyzerErrorGroup catch (_) {
+      // Ignore the analyzer's error, since its formatting is much worse than
+      // the VM's or dart2js's.
+      metadata = new Metadata();
+    } on FormatException catch (error) {
+      throw new LoadException(path, error);
+    }
+
     return Future.wait(_platforms.map((platform) {
-      if (platform == TestPlatform.chrome) return _loadBrowserFile(path);
-      assert(platform == TestPlatform.vm);
-      return _loadVmFile(path);
-    }));
+      return new Future.sync(() {
+        if (!metadata.testOn.evaluate(platform, os: currentOS)) return null;
+
+        if (platform == TestPlatform.chrome) return _loadBrowserFile(path);
+        assert(platform == TestPlatform.vm);
+        return _loadVmFile(path);
+      }).then((suite) =>
+          suite == null ? null : suite.change(metadata: metadata));
+    })).then((suites) => suites.where((suite) => suite != null).toList());
   }
 
   /// Load the test suite at [path] in a browser.

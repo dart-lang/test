@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn("vm")
+
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -84,14 +86,11 @@ void main() {
 
     test("throws a nice error if the package root doesn't exist", () {
       var loader = new Loader([TestPlatform.vm]);
-      expect(() {
-        try {
-          loader.loadFile(p.join(_sandbox, 'a_test.dart'));
-        } finally {
-          loader.close();
-        }
-      }, throwsA(isLoadException(
-          "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
+      expect(
+          loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+              .whenComplete(loader.close),
+          throwsA(isLoadException(
+              "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
     });
   });
 

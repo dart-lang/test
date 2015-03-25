@@ -10,11 +10,21 @@ import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 
+import '../backend/operating_system.dart';
 import '../runner/load_exception.dart';
 
 /// The root directory of the Dart SDK.
 final String sdkDir =
     p.dirname(p.dirname(Platform.executable));
+
+/// Returns the current operating system.
+final OperatingSystem currentOS = (() {
+  var name = Platform.operatingSystem;
+  var os = OperatingSystem.findByIoName(name);
+  if (os != null) return os;
+
+  throw new UnsupportedError('Unsupported operating system "$name".');
+})();
 
 /// The path to the `lib` directory of the `unittest` package.
 String libDir({String packageRoot}) {

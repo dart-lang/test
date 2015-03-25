@@ -78,12 +78,12 @@ void main(List<String> args) {
     }).whenComplete(() => reporter.close());
   }).catchError((error, stackTrace) {
     if (error is LoadException) {
-      // TODO(nweiz): color this message?
-      stderr.writeln(getErrorMessage(error));
+      stderr.writeln(error.toString(color: color));
 
       // Only print stack traces for load errors that come from the user's 
       if (error.innerError is! IOException &&
           error.innerError is! IsolateSpawnException &&
+          error.innerError is! FormatException &&
           error.innerError is! String) {
         stderr.write(terseChain(stackTrace));
       }

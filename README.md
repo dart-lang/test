@@ -95,6 +95,77 @@ the results will be reported on the command line just like for VM tests. In
 fact, you can even run tests on both platforms with a single command: `pub run
 unittest:unittest -p chrome -p vm path/to/test.dart`.
 
+### Restricting Tests to Certain Platforms
+
+Some test files only make sense to run on particular platforms. They may use
+`dart:html` or `dart:io`, they might test Windows' particular filesystem
+behavior, or they might use a feature that's only available in Chrome. The
+[`@TestOn`][TestOn] annotation makes it easy to declare exactly which platforms
+a test file should run on. Just put it at the top of your file, before any
+`library` or `import` declarations:
+
+```dart
+@TestOn("vm")
+
+import "dart:io";
+
+import "package:unittest/unittest.dart";
+
+void main() {
+  // ...
+}
+```
+
+[TestOn]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest.TestOn
+
+The string you pass to `@TestOn` is what's called a "platform selector", and it
+specifies exactly which platforms a test can run on. It can be as simple as the
+name of a platform, or a more complex Dart-like boolean expression involving
+these platform names.
+
+### Platform Selector Syntax
+
+Platform selectors can contain identifiers, parentheses, and operators. When
+loading a test, each identifier is set to `true` or `false` based on the current
+platform, and the test is only loaded if the platform selector returns `true`.
+The operators `||`, `&&`, `!`, and `? :` all work just like they do in Dart. The
+valid identifiers are:
+
+* `vm`: Whether the test is running on the command-line Dart VM.
+
+* `chrome`: Whether the test is running on Google Chrome.
+
+* `dart-vm`: Whether the test is running on the Dart VM in any context. For now
+  this is identical to `vm`, but it will also be true for Dartium in the future.
+  It's identical to `!js`.
+
+* `browser`: Whether the test is running in any browser.
+
+* `js`: Whether the test has been compiled to JS. This is identical to
+  `!dart-vm`.
+
+* `blink`: Whether the test is running in a browser that uses the Blink
+  rendering engine.
+
+* `windows`: Whether the test is running on Windows. If `vm` is false, this will
+  be `false` as well.
+
+* `mac-os`: Whether the test is running on Mac OS. If `vm` is false, this will
+  be `false` as well.
+
+* `linux`: Whether the test is running on Linux. If `vm` is false, this will be
+  `false` as well.
+
+* `android`: Whether the test is running on Android. If `vm` is false, this will
+  be `false` as well, which means that this *won't* be true if the test is
+  running on an Android browser.
+
+* `posix`: Whether the test is running on a POSIX operating system. This is
+  equivalent to `!windows`.
+
+For example, if you wanted to run a test on every browser but Chrome, you would
+write `@TestOn("browser && !chrome")`.
+
 ## Asynchronous Tests
 
 Tests written with `async`/`await` will work automatically. The test runner

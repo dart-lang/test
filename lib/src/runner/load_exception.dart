@@ -7,6 +7,7 @@ library unittest.runner.load_exception;
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
+import 'package:source_span/source_span.dart';
 
 import '../utils.dart';
 
@@ -17,8 +18,11 @@ class LoadException implements Exception {
 
   LoadException(this.path, this.innerError);
 
-  String toString() {
-    var buffer = new StringBuffer('Failed to load "$path":');
+  String toString({bool color: false}) {
+    var buffer = new StringBuffer();
+    if (color) buffer.write('\u001b[31m'); // red
+    buffer.write('Failed to load "$path":');
+    if (color) buffer.write('\u001b[0m'); // no color
 
     var innerString = getErrorMessage(innerError);
     if (innerError is IsolateSpawnException) {
@@ -33,6 +37,9 @@ class LoadException implements Exception {
           "Uncaught Error: Load Error: FileSystemException: ",
           "");
       innerString = innerString.split("Stack Trace:\n").first.trim();
+    } if (innerError is SourceSpanException) {
+      innerString = innerError.toString(color: color)
+          .replaceFirst(" of $path", "");
     }
 
     buffer.write(innerString.contains("\n") ? "\n" : " ");

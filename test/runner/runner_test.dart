@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn("vm")
+
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -95,6 +97,34 @@ $_usage"""));
           "line 1 pos 1: unexpected token 'invalid'\n"
           "invalid Dart file\n"
           "^\n"));
+      expect(result.exitCode, equals(exit_codes.data));
+    });
+
+    // This is slightly different from the above test because it's an error
+    // that's caught first by the analyzer when it's used to parse the file.
+    test("a test file fails to parse", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("@TestOn)");
+      var result = _runUnittest(["test.dart"]);
+
+      expect(result.stderr, equals(
+          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "line 1 pos 8: unexpected token ')'\n"
+          "@TestOn)\n"
+          "       ^\n"));
+      expect(result.exitCode, equals(exit_codes.data));
+    });
+
+    test("an annotation's structure is invalid", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("@TestOn()\nlibrary foo;");
+      var result = _runUnittest(["test.dart"]);
+
+      expect(result.stderr, equals(
+          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "Error on line 1, column 8: TestOn takes one argument.\n"
+          "@TestOn()\n"
+          "       ^^\n"));
       expect(result.exitCode, equals(exit_codes.data));
     });
 
