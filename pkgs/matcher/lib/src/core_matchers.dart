@@ -373,9 +373,7 @@ class _IsAnything extends Matcher {
 ///
 ///     expect(bar, new isInstanceOf<Foo>());
 class isInstanceOf<T> extends Matcher {
-  /// The [name] parameter does nothing; it's deprecated and will be removed in
-  /// future version of [matcher].
-  const isInstanceOf([@deprecated String name]);
+  const isInstanceOf();
 
   bool matches(obj, Map matchState) => obj is T;
 
