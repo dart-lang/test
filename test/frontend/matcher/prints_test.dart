@@ -32,7 +32,7 @@ void main() {
         expectTestFailed(liveTest,
             "Expected: prints 'Goodbye, world!\\n'\n"
             "  ''\n"
-            "  Actual: <Closure: () => dynamic>\n"
+            "  Actual: <$closureString>\n"
             "   Which: printed 'Hello, world!\\n'\n"
             "  ''\n"
             "   Which: is different.\n"
@@ -49,7 +49,7 @@ void main() {
       }).then((liveTest) {
         expectTestFailed(liveTest,
             "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <Closure: () => dynamic>\n"
+            "  Actual: <$closureString>\n"
             "   Which: printed 'Hello, world!\\n'\n"
             "  ''\n");
       });
@@ -61,7 +61,7 @@ void main() {
       }).then((liveTest) {
         expectTestFailed(liveTest,
             "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <Closure: () => dynamic>\n"
+            "  Actual: <$closureString>\n"
             "   Which: printed nothing.\n");
       });
     });
@@ -103,7 +103,7 @@ void main() {
         expectTestFailed(liveTest, startsWith(
             "Expected: prints 'Goodbye, world!\\n'\n"
             "  ''\n"
-            "  Actual: <Closure: () => dynamic>\n"
+            "  Actual: <$closureString>\n"
             "   Which: printed 'Hello, world!\\n'\n"
             "  ''\n"
             "   Which: is different.\n"
@@ -121,7 +121,7 @@ void main() {
       }).then((liveTest) {
         expectTestFailed(liveTest, startsWith(
             "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <Closure: () => dynamic>\n"
+            "  Actual: <$closureString>\n"
             "   Which: printed 'Hello, world!\\n'\n"
             "  ''"));
       });
@@ -133,7 +133,7 @@ void main() {
       }).then((liveTest) {
         expectTestFailed(liveTest, startsWith(
             "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <Closure: () => dynamic>\n"
+            "  Actual: <$closureString>\n"
             "   Which: printed nothing."));
       });
     });

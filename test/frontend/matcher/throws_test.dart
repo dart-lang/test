@@ -21,7 +21,7 @@ void main() {
         }).then((liveTest) {
           expectTestFailed(liveTest,
               "Expected: throws\n"
-              "  Actual: <Closure: () => dynamic>\n"
+              "  Actual: <$closureString>\n"
               "   Which: did not throw\n");
         });
       });
@@ -54,7 +54,7 @@ void main() {
         }).then((liveTest) {
           expectTestFailed(liveTest,
               "Expected: throws 'oh no'\n"
-              "  Actual: <Closure: () => dynamic>\n"
+              "  Actual: <$closureString>\n"
               "   Which: did not throw\n");
         });
       });
@@ -76,7 +76,7 @@ void main() {
         }).then((liveTest) {
           expectTestFailed(liveTest,
               "Expected: throws 'oh no'\n"
-              "  Actual: <Closure: () => dynamic>\n"
+              "  Actual: <$closureString>\n"
               "   Which: threw 'aw dang'\n");
         });
       });
@@ -132,7 +132,7 @@ void main() {
         }).then((liveTest) {
           expectTestFailed(liveTest, startsWith(
               "Expected: throws 'oh no'\n"
-              "  Actual: <Closure: () => dynamic>\n"
+              "  Actual: <$closureString>\n"
               "   Which: threw 'aw dang'\n"));
         });
       });

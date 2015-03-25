@@ -15,6 +15,11 @@ import 'package:unittest/src/runner/load_exception.dart';
 import 'package:unittest/src/util/remote_exception.dart';
 import 'package:unittest/unittest.dart';
 
+/// The string representation of an untyped closure with no arguments.
+///
+/// This differs between dart2js and the VM.
+final String closureString = (() {}).toString();
+
 // The last state change detected via [expectStates].
 State lastState;
 
