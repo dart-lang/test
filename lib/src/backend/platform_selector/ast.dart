@@ -6,6 +6,8 @@ library unittest.backend.platform_selector.ast;
 
 import 'package:source_span/source_span.dart';
 
+import 'visitor.dart';
+
 /// The superclass of nodes in the platform selector abstract syntax tree.
 abstract class Node {
   /// The span indicating where this node came from.
@@ -16,6 +18,9 @@ abstract class Node {
   ///
   /// This may be `null` for nodes without source information.
   FileSpan get span;
+
+  /// Calls the appropriate [Visitor] method on [this] and returns the result.
+  accept(Visitor visitor);
 }
 
 /// A single variable.
@@ -26,6 +31,8 @@ class VariableNode implements Node {
   final String name;
 
   VariableNode(this.name, [this.span]);
+
+  accept(Visitor visitor) => visitor.visitVariable(this);
 
   String toString() => name;
 }
@@ -38,6 +45,8 @@ class NotNode implements Node {
   final Node child;
 
   NotNode(this.child, [this.span]);
+
+  accept(Visitor visitor) => visitor.visitNot(this);
 
   String toString() => child is VariableNode || child is NotNode
       ? "!$child"
@@ -55,6 +64,8 @@ class OrNode implements Node {
   final Node right;
 
   OrNode(this.left, this.right);
+
+  accept(Visitor visitor) => visitor.visitOr(this);
 
   String toString() {
     var string1 = left is AndNode || left is ConditionalNode
@@ -79,6 +90,8 @@ class AndNode implements Node {
   final Node right;
 
   AndNode(this.left, this.right);
+
+  accept(Visitor visitor) => visitor.visitAnd(this);
 
   String toString() {
     var string1 = left is OrNode || left is ConditionalNode
@@ -106,6 +119,8 @@ class ConditionalNode implements Node {
   final Node whenFalse;
 
   ConditionalNode(this.condition, this.whenTrue, this.whenFalse);
+
+  accept(Visitor visitor) => visitor.visitConditional(this);
 
   String toString() {
     var conditionString =

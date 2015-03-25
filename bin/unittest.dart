@@ -11,8 +11,8 @@ import 'dart:isolate';
 import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
 
+import 'package:unittest/src/backend/test_platform.dart';
 import 'package:unittest/src/runner/reporter/compact.dart';
-import 'package:unittest/src/runner/test_platform.dart';
 import 'package:unittest/src/runner/load_exception.dart';
 import 'package:unittest/src/runner/loader.dart';
 import 'package:unittest/src/util/exit_codes.dart' as exit_codes;

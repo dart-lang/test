@@ -11,7 +11,7 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 
 import '../backend/suite.dart';
-import '../runner/test_platform.dart';
+import '../backend/test_platform.dart';
 import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/remote_exception.dart';
