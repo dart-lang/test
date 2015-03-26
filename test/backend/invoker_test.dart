@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:unittest/src/backend/invoker.dart';
+import 'package:unittest/src/backend/metadata.dart';
 import 'package:unittest/src/backend/state.dart';
 import 'package:unittest/src/backend/suite.dart';
 import 'package:unittest/unittest.dart';
@@ -27,7 +28,7 @@ void main() {
 
     test("returns the current invoker in a test body", () {
       var invoker;
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         invoker = Invoker.current;
       }).load(suite);
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
@@ -41,7 +42,7 @@ void main() {
         () {
       var status;
       var completer = new Completer();
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         // Use [new Future] in particular to wait longer than a microtask for
         // the test to complete.
         new Future(() {
@@ -60,7 +61,7 @@ void main() {
 
     test("returns the current invoker in a tearDown body", () {
       var invoker;
-      var liveTest = new LocalTest("test", () {}, tearDown: () {
+      var liveTest = _localTest(() {}, tearDown: () {
         invoker = Invoker.current;
       }).load(suite);
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
@@ -74,7 +75,7 @@ void main() {
         "completes", () {
       var status;
       var completer = new Completer();
-      var liveTest = new LocalTest("test", () {}, tearDown: () {
+      var liveTest = _localTest(() {}, tearDown: () {
         // Use [new Future] in particular to wait longer than a microtask for
         // the test to complete.
         new Future(() {
@@ -97,7 +98,7 @@ void main() {
       var stateInTest;
       var stateInTearDown;
       var liveTest;
-      liveTest = new LocalTest("test", () {
+      liveTest = _localTest(() {
         stateInTest = liveTest.state;
       }, tearDown: () {
         stateInTearDown = liveTest.state;
@@ -125,7 +126,7 @@ void main() {
     });
 
     test("onStateChange fires for each state change", () {
-      var liveTest = new LocalTest("test", () {}).load(suite);
+      var liveTest = _localTest(() {}).load(suite);
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
       var first = true;
@@ -145,7 +146,7 @@ void main() {
     test("onComplete completes once the test body and tearDown are done", () {
       var testRun = false;
       var tearDownRun = false;
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         testRun = true;
       }, tearDown: () {
         tearDownRun = true;
@@ -162,7 +163,7 @@ void main() {
 
   group("in a test with failures,", () {
     test("a synchronous throw is reported and causes the test to fail", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         throw new TestFailure('oh no');
       }).load(suite);
 
@@ -171,7 +172,7 @@ void main() {
     });
 
     test("a synchronous reported failure causes the test to fail", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.handleError(new TestFailure("oh no"));
       }).load(suite);
 
@@ -181,7 +182,7 @@ void main() {
 
     test("a failure reported asynchronously during the test causes it to fail",
         () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => Invoker.current.handleError(new TestFailure("oh no")));
       }).load(suite);
@@ -192,7 +193,7 @@ void main() {
 
     test("a failure thrown asynchronously during the test causes it to fail",
         () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => throw new TestFailure("oh no"));
       }).load(suite);
@@ -203,7 +204,7 @@ void main() {
 
     test("a failure reported asynchronously after the test causes it to error",
         () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         new Future(() => Invoker.current.handleError(new TestFailure("oh no")));
       }).load(suite);
 
@@ -229,7 +230,7 @@ void main() {
     });
 
     test("multiple asynchronous failures are reported", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => throw new TestFailure("one"));
         new Future(() => throw new TestFailure("two"));
@@ -257,7 +258,7 @@ void main() {
     });
 
     test("a failure after an error doesn't change the state of the test", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         new Future(() => throw new TestFailure("fail"));
         throw "error";
       }).load(suite);
@@ -280,7 +281,7 @@ void main() {
     test("tearDown is run after an asynchronous failure", () {
       var stateDuringTearDown;
       var liveTest;
-      liveTest = new LocalTest("test", () {
+      liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => throw new TestFailure("oh no"));
       }, tearDown: () {
@@ -297,7 +298,7 @@ void main() {
 
   group("in a test with errors,", () {
     test("a synchronous throw is reported and causes the test to error", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         throw 'oh no';
       }).load(suite);
 
@@ -306,7 +307,7 @@ void main() {
     });
 
     test("a synchronous reported error causes the test to error", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.handleError("oh no");
       }).load(suite);
 
@@ -316,7 +317,7 @@ void main() {
 
     test("an error reported asynchronously during the test causes it to error",
         () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => Invoker.current.handleError("oh no"));
       }).load(suite);
@@ -327,7 +328,7 @@ void main() {
 
     test("an error thrown asynchronously during the test causes it to error",
         () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => throw "oh no");
       }).load(suite);
@@ -338,7 +339,7 @@ void main() {
 
     test("an error reported asynchronously after the test causes it to error",
         () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         new Future(() => Invoker.current.handleError("oh no"));
       }).load(suite);
 
@@ -362,7 +363,7 @@ void main() {
     });
 
     test("multiple asynchronous errors are reported", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => throw "one");
         new Future(() => throw "two");
@@ -390,7 +391,7 @@ void main() {
     });
 
     test("an error after a failure changes the state of the test", () {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         new Future(() => throw "error");
         throw new TestFailure("fail");
       }).load(suite);
@@ -415,7 +416,7 @@ void main() {
     test("tearDown is run after an asynchronous error", () {
       var stateDuringTearDown;
       var liveTest;
-      liveTest = new LocalTest("test", () {
+      liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
         new Future(() => throw "oh no");
       }, tearDown: () {
@@ -433,7 +434,7 @@ void main() {
   test("a test doesn't complete until there are no outstanding callbacks",
       () {
     var outstandingCallbackRemoved = false;
-    var liveTest = new LocalTest("test", () {
+    var liveTest = _localTest(() {
       Invoker.current.addOutstandingCallback();
 
       // Pump the event queue to make sure the test isn't coincidentally
@@ -455,7 +456,7 @@ void main() {
       () {
     var outstandingCallbackRemoved = false;
     var outstandingCallbackRemovedBeforeTeardown = false;
-    var liveTest = new LocalTest("test", () {
+    var liveTest = _localTest(() {
       Invoker.current.addOutstandingCallback();
       pumpEventQueue().then((_) {
         outstandingCallbackRemoved = true;
@@ -474,7 +475,7 @@ void main() {
 
   test("a test times out after 30 seconds", () {
     new FakeAsync().run((async) {
-      var liveTest = new LocalTest("test", () {
+      var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
       }).load(suite);
 
@@ -493,3 +494,6 @@ void main() {
     });
   });
 }
+
+LocalTest _localTest(body(), {tearDown()}) =>
+    new LocalTest("test", new Metadata(), body, tearDown: tearDown);

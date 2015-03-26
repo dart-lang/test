@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
 
+import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
@@ -60,8 +61,9 @@ class BrowserManager {
       }
 
       return new Suite(response["tests"].map((test) {
+        var metadata = new Metadata.deserialize(test['metadata']);
         var testChannel = suiteChannel.virtualChannel(test['channel']);
-        return new IframeTest(test['name'], testChannel);
+        return new IframeTest(test['name'], metadata, testChannel);
       }), path: path, platform: "Chrome");
     });
   }

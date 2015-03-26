@@ -26,4 +26,20 @@ class Metadata {
   Metadata.parse({String testOn})
       : this(
           testOn: testOn == null ? null : new PlatformSelector.parse(testOn));
+
+  /// Dezerializes the result of [Metadata.serialize] into a new [Metadata].
+  Metadata.deserialize(serialized)
+      : this.parse(testOn: serialized['testOn']);
+
+  /// Return a new [Metadata] that merges [this] with [other].
+  ///
+  /// If the two [Metadata]s have conflicting properties, [other] wins.
+  Metadata merge(Metadata other) =>
+      new Metadata(testOn: testOn.intersect(other.testOn));
+
+  /// Serializes [this] into a JSON-safe object that can be deserialized using
+  /// [new Metadata.deserialize].
+  serialize() => {
+    'testOn': testOn == PlatformSelector.all ? null : testOn.toString()
+  };
 }

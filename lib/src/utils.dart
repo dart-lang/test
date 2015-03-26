@@ -6,7 +6,10 @@ library unittest.utils;
 
 import 'dart:async';
 
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
+
+import 'backend/operating_system.dart';
 
 /// A typedef for a possibly-asynchronous function.
 ///
@@ -16,6 +19,30 @@ typedef AsyncFunction();
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
 final _exceptionPrefix = new RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
+
+/// Directories that are specific to OS X.
+///
+/// This is used to try to distinguish OS X and Linux in [currentOsGuess].
+final _macOsDirectories = new Set<String>.from([
+  "/Applications",
+  "/Library",
+  "/Network",
+  "/System",
+  "/Users"
+]);
+
+/// Returns the best guess for the current operating system without using
+/// `dart:io`.
+///
+/// This is useful for running test files directly and skipping tests as
+/// appropriate. The only OS-specific information we have is the current path,
+/// which we try to use to figure out the OS.
+final OperatingSystem currentOsGuess = (() {
+  if (p.style == p.Style.url) return OperatingSystem.none;
+  if (p.style == p.Style.windows) return OperatingSystem.windows;
+  if (_macOsDirectories.any(p.current.startsWith)) return OperatingSystem.macOs;
+  return OperatingSystem.linux;
+})();
 
 /// Get a string description of an exception.
 ///

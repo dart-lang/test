@@ -6,6 +6,7 @@ library unittest.runner.browser.iframe_test;
 
 import '../../backend/live_test.dart';
 import '../../backend/live_test_controller.dart';
+import '../../backend/metadata.dart';
 import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
@@ -15,11 +16,12 @@ import '../../util/remote_exception.dart';
 /// A test in a running iframe.
 class IframeTest implements Test {
   final String name;
+  final Metadata metadata;
 
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
 
-  IframeTest(this.name, this._channel);
+  IframeTest(this.name, this.metadata, this._channel);
 
   LiveTest load(Suite suite) {
     var controller;

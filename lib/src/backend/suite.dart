@@ -7,7 +7,9 @@ library unittest.backend.suite;
 import 'dart:collection';
 
 import 'metadata.dart';
+import 'operating_system.dart';
 import 'test.dart';
+import 'test_platform.dart';
 
 /// A test suite.
 ///
@@ -30,6 +32,17 @@ class Suite {
   Suite(Iterable<Test> tests, {this.path, this.platform, Metadata metadata})
       : metadata = metadata == null ? new Metadata() : metadata,
         tests = new UnmodifiableListView<Test>(tests.toList());
+
+  /// Returns a new suite that only contains tests that are valid for the given
+  /// [platform] and [os].
+  ///
+  /// If the suite itself is invalid for [platform] and [os], returns `null`.
+  Suite filter(TestPlatform platform, {OperatingSystem os}) {
+    if (!metadata.testOn.evaluate(platform, os: os)) return null;
+    return change(tests: tests.where((test) {
+      return test.metadata.testOn.evaluate(platform, os: os);
+    }));
+  }
 
   /// Returns a new suite with the given fields updated.
   Suite change({String path, String platform, Metadata metadata,

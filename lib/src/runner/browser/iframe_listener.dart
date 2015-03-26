@@ -121,7 +121,11 @@ class IframeListener {
     for (var i = 0; i < _suite.tests.length; i++) {
       var test = _suite.tests[i];
       var testChannel = channel.virtualChannel();
-      tests.add({"name": test.name, "channel": testChannel.id});
+      tests.add({
+        "name": test.name,
+        "metadata": test.metadata.serialize(),
+        "channel": testChannel.id
+      });
 
       testChannel.stream.listen((message) {
         assert(message['command'] == 'run');

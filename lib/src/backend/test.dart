@@ -5,6 +5,7 @@
 library unittest.backend.test;
 
 import 'live_test.dart';
+import 'metadata.dart';
 import 'suite.dart';
 
 /// A single test.
@@ -15,6 +16,9 @@ import 'suite.dart';
 abstract class Test {
   /// The name of the test.
   String get name;
+
+  /// The metadata for the test.
+  Metadata get metadata;
 
   /// Loads a live version of this test, which can be used to run it a single
   /// time.

@@ -12,14 +12,15 @@ import '../frontend/expect.dart';
 import '../utils.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
+import 'metadata.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
 
 /// A test in this isolate.
 class LocalTest implements Test {
-  /// The name of the test.
   final String name;
+  final Metadata metadata;
 
   /// The test body.
   final AsyncFunction _body;
@@ -31,7 +32,7 @@ class LocalTest implements Test {
   /// completion of the main body of the test.
   final AsyncFunction _tearDown;
 
-  LocalTest(this.name, body(), {tearDown()})
+  LocalTest(this.name, this.metadata, body(), {tearDown()})
       : _body = body,
         _tearDown = tearDown;
 

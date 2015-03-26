@@ -75,7 +75,11 @@ class IsolateListener {
     for (var i = 0; i < _suite.tests.length; i++) {
       var test = _suite.tests[i];
       var receivePort = new ReceivePort();
-      tests.add({"name": test.name, "sendPort": receivePort.sendPort});
+      tests.add({
+        "name": test.name,
+        "metadata": test.metadata.serialize(),
+        "sendPort": receivePort.sendPort
+      });
 
       receivePort.listen((message) {
         assert(message['command'] == 'run');

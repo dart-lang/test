@@ -44,6 +44,10 @@ abstract class PlatformSelector {
   ///
   /// [os] defaults to [OperatingSystem.none].
   bool evaluate(TestPlatform platform, {OperatingSystem os});
+
+  /// Returns a new [PlatformSelector] that matches only platforms matched by
+  /// both [this] and [other].
+  PlatformSelector intersect(PlatformSelector other);
 }
 
 /// The concrete implementation of a [PlatformSelector] parsed from a string.
@@ -64,6 +68,12 @@ class _PlatformSelector implements PlatformSelector{
   bool evaluate(TestPlatform platform, {OperatingSystem os}) =>
       _selector.accept(new Evaluator(platform, os: os));
 
+  PlatformSelector intersect(PlatformSelector other) {
+    if (other == PlatformSelector.all) return this;
+    return new _PlatformSelector(new AndNode(
+        _selector, (other as _PlatformSelector)._selector));
+  }
+
   String toString() => _selector.toString();
 }
 
@@ -72,6 +82,8 @@ class _AllPlatforms implements PlatformSelector {
   const _AllPlatforms();
 
   bool evaluate(TestPlatform platform, {OperatingSystem os}) => true;
+
+  PlatformSelector intersect(PlatformSelector other) => other;
 
   String toString() => "*";
 }

@@ -11,9 +11,11 @@ import 'package:path/path.dart' as p;
 import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
 import 'src/backend/suite.dart';
+import 'src/backend/test_platform.dart';
 import 'src/deprecated/configuration.dart';
 import 'src/deprecated/test_case.dart';
 import 'src/runner/reporter/no_io_compact.dart';
+import 'src/utils.dart';
 
 export 'package:matcher/matcher.dart';
 
@@ -49,9 +51,11 @@ Declarer get _declarer {
   // finished being defined.
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() {
-    var suite = new Suite(_globalDeclarer.tests,
-        path: p.prettyUri(Uri.base),
-        platform: "VM");
+    var suite =
+      new Suite(_globalDeclarer.tests,
+            path: p.prettyUri(Uri.base),
+            platform: "VM")
+      .filter(TestPlatform.vm, os: currentOsGuess);
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     new NoIoCompactReporter([suite], color: true).run();
   });
@@ -60,13 +64,47 @@ Declarer get _declarer {
 
 // TODO(nweiz): This and other top-level functions should throw exceptions if
 // they're called after the declarer has finished declaring.
-void test(String description, body()) => _declarer.test(description, body);
+/// Creates a new test case with the given description and body.
+///
+/// The description will be added to the descriptions of any surrounding
+/// [group]s. If [testOn] is passed, it's parsed as a [platform selector][]; the
+/// test will only be run on matching platforms.
+///
+/// [platform selector]: https://github.com/dart-lang/unittest/#platform-selector-syntax
+void test(String description, body(), {String testOn}) =>
+    _declarer.test(description, body, testOn: testOn);
 
-void group(String description, void body()) =>
-    _declarer.group(description, body);
+/// Creates a group of tests.
+///
+/// A group's description is included in the descriptions of any tests or
+/// sub-groups it contains. [setUp] and [tearDown] are also scoped to the
+/// containing group.
+///
+/// If [testOn] is passed, it's parsed as a [platform selector][]; the test will
+/// only be run on matching platforms.
+///
+/// [platform selector]: https://github.com/dart-lang/unittest/#platform-selector-syntax
+void group(String description, void body(), {String testOn}) =>
+    _declarer.group(description, body, testOn: testOn);
 
+/// Registers a function to be run before tests.
+///
+/// This function will be called before each test is run. [callback] may be
+/// asynchronous; if so, it must return a [Future].
+///
+/// If this is called within a test group, it applies only to tests in that
+/// group. [callback] will be run after any set-up callbacks in parent groups or
+/// at the top level.
 void setUp(callback()) => _declarer.setUp(callback);
 
+/// Registers a function to be run after tests.
+///
+/// This function will be called after each test is run. [callback] may be
+/// asynchronous; if so, it must return a [Future].
+///
+/// If this is called within a test group, it applies only to tests in that
+/// group. [callback] will be run before any tear-down callbacks in parent
+/// groups or at the top level.
 void tearDown(callback()) => _declarer.tearDown(callback);
 
 /// Handle an error that occurs outside of any test.

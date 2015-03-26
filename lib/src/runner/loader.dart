@@ -103,8 +103,10 @@ class Loader {
         if (platform == TestPlatform.chrome) return _loadBrowserFile(path);
         assert(platform == TestPlatform.vm);
         return _loadVmFile(path);
-      }).then((suite) =>
-          suite == null ? null : suite.change(metadata: metadata));
+      }).then((suite) {
+        if (suite == null) return null;
+        return suite.change(metadata: metadata).filter(platform, os: currentOS);
+      });
     })).then((suites) => suites.where((suite) => suite != null).toList());
   }
 
@@ -145,7 +147,8 @@ void main(_, Map message) {
       }
 
       return new Suite(response["tests"].map((test) {
-        return new IsolateTest(test['name'], test['sendPort']);
+        var metadata = new Metadata.deserialize(test['metadata']);
+        return new IsolateTest(test['name'], metadata, test['sendPort']);
       }), path: path, platform: "VM");
     });
   }

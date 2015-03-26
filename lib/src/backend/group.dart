@@ -7,6 +7,7 @@ library unittest.backend.group;
 import 'dart:async';
 
 import '../utils.dart';
+import 'metadata.dart';
 
 /// A group contains multiple tests and subgroups.
 ///
@@ -20,6 +21,13 @@ class Group {
   /// The description of the current test group, or `null` if this is the root
   /// group.
   final String _description;
+
+  /// The metadata for this group, including the metadata of any parent groups.
+  Metadata get metadata {
+    if (parent == null) return _metadata;
+    return parent.metadata.merge(_metadata);
+  }
+  final Metadata _metadata;
 
   /// The set-up function for this group, or `null`.
   AsyncFunction setUp;
@@ -40,9 +48,9 @@ class Group {
   ///
   /// This is the implicit group that exists outside of any calls to `group()`.
   Group.root()
-      : this(null, null);
+      : this(null, null, new Metadata());
 
-  Group(this.parent, this._description);
+  Group(this.parent, this._description, this._metadata);
 
   /// Run the set-up functions for this and any parent groups.
   ///

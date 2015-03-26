@@ -9,6 +9,7 @@ import 'dart:collection';
 
 import 'package:unittest/src/backend/invoker.dart';
 import 'package:unittest/src/backend/live_test.dart';
+import 'package:unittest/src/backend/metadata.dart';
 import 'package:unittest/src/backend/state.dart';
 import 'package:unittest/src/backend/suite.dart';
 import 'package:unittest/src/runner/load_exception.dart';
@@ -183,7 +184,7 @@ Future pumpEventQueue([int times=20]) {
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
-  var test = new LocalTest("test", body);
+  var test = new LocalTest("test", new Metadata(), body);
   var suite = new Suite([test]);
   return test.load(suite);
 }

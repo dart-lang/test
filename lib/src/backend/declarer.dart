@@ -8,6 +8,7 @@ import 'dart:collection';
 
 import 'group.dart';
 import 'invoker.dart';
+import 'metadata.dart';
 import 'test.dart';
 
 /// A class that manages the state of tests as they're declared.
@@ -28,14 +29,18 @@ class Declarer {
   ///
   /// The description will be added to the descriptions of any surrounding
   /// [group]s.
-  void test(String description, body()) {
+  ///
+  /// If [testOn] is passed, it's parsed as a [PlatformSelector], and the test
+  /// will only be run on matching platforms.
+  void test(String description, body(), {String testOn}) {
     // TODO(nweiz): Once tests have begun running, throw an error if [test] is
     // called.
     var prefix = _group.description;
     if (prefix != null) description = "$prefix $description";
 
+    var metadata = _group.metadata.merge(new Metadata.parse(testOn: testOn));
     var group = _group;
-    _tests.add(new LocalTest(description, () {
+    _tests.add(new LocalTest(description, metadata, () {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
       // running while other tests from the same declarer are also running,
       // since they might share closurized state.
@@ -48,9 +53,14 @@ class Declarer {
   /// A group's description is included in the descriptions of any tests or
   /// sub-groups it contains. [setUp] and [tearDown] are also scoped to the
   /// containing group.
-  void group(String description, void body()) {
+  ///
+  /// If [testOn] is passed, it's parsed as a [PlatformSelector], and any tests
+  /// in the group will only be run on matching platforms.
+  void group(String description, void body(), {String testOn}) {
     var oldGroup = _group;
-    _group = new Group(oldGroup, description);
+
+    _group = new Group(
+        oldGroup, description, new Metadata.parse(testOn: testOn));
     try {
       body();
     } finally {

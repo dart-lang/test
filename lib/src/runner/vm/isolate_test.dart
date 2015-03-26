@@ -8,6 +8,7 @@ import 'dart:isolate';
 
 import '../../backend/live_test.dart';
 import '../../backend/live_test_controller.dart';
+import '../../backend/metadata.dart';
 import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
@@ -16,11 +17,12 @@ import '../../util/remote_exception.dart';
 /// A test in another isolate.
 class IsolateTest implements Test {
   final String name;
+  final Metadata metadata;
 
   /// The port on which to communicate with the remote test.
   final SendPort _sendPort;
 
-  IsolateTest(this.name, this._sendPort);
+  IsolateTest(this.name, this.metadata, this._sendPort);
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite) {

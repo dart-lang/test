@@ -9,6 +9,7 @@ import 'dart:isolate';
 
 import 'package:unittest/src/backend/invoker.dart';
 import 'package:unittest/src/backend/live_test.dart';
+import 'package:unittest/src/backend/metadata.dart';
 import 'package:unittest/src/backend/state.dart';
 import 'package:unittest/src/backend/suite.dart';
 import 'package:unittest/src/runner/vm/isolate_listener.dart';
@@ -273,7 +274,8 @@ Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) {
     expect(response, containsPair("type", "success"));
 
     var testMap = response["tests"].first;
-    var test = new IsolateTest(testMap["name"], testMap["sendPort"]);
+    var metadata = new Metadata.deserialize(testMap["metadata"]);
+    var test = new IsolateTest(testMap["name"], metadata, testMap["sendPort"]);
     var suite = new Suite([test]);
     _liveTest = test.load(suite);
     return _liveTest;
