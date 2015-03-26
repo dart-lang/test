@@ -4,8 +4,6 @@
 
 library unittest.backend.platform_selector.evaluator;
 
-import 'package:source_span/source_span.dart';
-
 import '../operating_system.dart';
 import '../test_platform.dart';
 import 'ast.dart';

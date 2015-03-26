@@ -88,7 +88,7 @@ class StringLiteralIterator extends Iterator<int> {
     } else {
       assert(literal is AdjacentStrings);
 
-      for (var string in literal.strings) {
+      for (var string in (literal as AdjacentStrings).strings) {
         if (string is StringInterpolation) {
           throw new ArgumentError("Can't iterate over an interpolated string.");
         }
