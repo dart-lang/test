@@ -10,7 +10,9 @@ import 'dart:isolate';
 
 import 'package:analyzer/analyzer.dart';
 import 'package:path/path.dart' as p;
+import 'package:source_span/source_span.dart';
 
+import 'string_literal_iterator.dart';
 import 'io.dart';
 import 'isolate_wrapper.dart';
 import 'remote_exception.dart';
@@ -70,4 +72,48 @@ void _isolateBuffer(message) {
       'error': RemoteException.serialize(error, stackTrace)
     });
   });
+}
+
+// TODO(nweiz): Move this into the analyzer once it starts using SourceSpan
+// (issue 22977).
+/// Takes a span whose source is the value of a string that has been parsed from
+/// a Dart file and returns the corresponding span from within that Dart file.
+///
+/// For example, suppose a Dart file contains `@Eval("1 + a")`. The
+/// [StringLiteral] `"1 + a"` is extracted; this is [context]. Its contents are
+/// then parsed, producing an error pointing to [span]:
+///
+///     line 1, column 5:
+///     1 + a
+///         ^
+///
+/// This span isn't very useful, since it only shows the location within the
+/// [StringLiteral]'s value. So it's passed to [contextualizeSpan] along with
+/// [context] and [file] (which contains the source of the entire Dart file),
+/// which then returns:
+///
+///     line 4, column 12 of file.dart:
+///     @Eval("1 + a")
+///                ^
+///
+/// This properly handles multiline literals, adjacent literals, and literals
+/// containing escape sequences. It does not support interpolated literals.
+///
+/// This will return `null` if [context] contains an invalid string or does not
+/// contain [span].
+SourceSpan contextualizeSpan(SourceSpan span, StringLiteral context,
+    SourceFile file) {
+  var contextRunes = new StringLiteralIterator(context)..moveNext();
+
+  for (var i = 0; i < span.start.offset; i++) {
+    if (!contextRunes.moveNext()) return null;
+  }
+
+  var start = contextRunes.offset;
+  for (var spanRune in span.text.runes) {
+    if (spanRune != contextRunes.current) return null;
+    contextRunes.moveNext();
+  }
+
+  return file.span(start, contextRunes.offset);
 }

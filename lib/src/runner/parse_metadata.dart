@@ -96,10 +96,19 @@ Metadata parseMetadata(String path) {
           _spanFor(annotation, path));
     }
 
-    testOn = args.first.stringValue;
+    testOn = args.first;
   }
 
-  return new Metadata.parse(testOn: testOn);
+  try {
+    return new Metadata.parse(
+        testOn: testOn == null ? null : testOn.stringValue);
+  } on SourceSpanFormatException catch (error) {
+    var file = new SourceFile(new File(path).readAsStringSync(),
+        url: p.toUri(path));
+    var span = contextualizeSpan(error.span, testOn, file);
+    if (span == null) rethrow;
+    throw new SourceSpanFormatException(error.message, span);
+  }
 }
 
 /// Creates a [SourceSpan] for [node].

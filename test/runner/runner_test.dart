@@ -128,6 +128,19 @@ $_usage"""));
       expect(result.exitCode, equals(exit_codes.data));
     });
 
+    test("an annotation's contents are invalid", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("@TestOn('zim')\nlibrary foo;");
+      var result = _runUnittest(["test.dart"]);
+
+      expect(result.stderr, equals(
+          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "Error on line 1, column 10: Undefined variable.\n"
+          "@TestOn('zim')\n"
+          "         ^^^\n"));
+      expect(result.exitCode, equals(exit_codes.data));
+    });
+
     test("a test file throws", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
