@@ -22,8 +22,8 @@ final _exceptionPrefix = new RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
 
 /// Directories that are specific to OS X.
 ///
-/// This is used to try to distinguish OS X and Linux in [currentOsGuess].
-final _macOsDirectories = new Set<String>.from([
+/// This is used to try to distinguish OS X and Linux in [currentOSGuess].
+final _macOSDirectories = new Set<String>.from([
   "/Applications",
   "/Library",
   "/Network",
@@ -37,10 +37,10 @@ final _macOsDirectories = new Set<String>.from([
 /// This is useful for running test files directly and skipping tests as
 /// appropriate. The only OS-specific information we have is the current path,
 /// which we try to use to figure out the OS.
-final OperatingSystem currentOsGuess = (() {
+final OperatingSystem currentOSGuess = (() {
   if (p.style == p.Style.url) return OperatingSystem.none;
   if (p.style == p.Style.windows) return OperatingSystem.windows;
-  if (_macOsDirectories.any(p.current.startsWith)) return OperatingSystem.macOs;
+  if (_macOSDirectories.any(p.current.startsWith)) return OperatingSystem.macOS;
   return OperatingSystem.linux;
 })();
 

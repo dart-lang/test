@@ -55,7 +55,7 @@ Declarer get _declarer {
       new Suite(_globalDeclarer.tests,
             path: p.prettyUri(Uri.base),
             platform: "VM")
-      .filter(TestPlatform.vm, os: currentOsGuess);
+      .filter(TestPlatform.vm, os: currentOSGuess);
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     new NoIoCompactReporter([suite], color: true).run();
   });
