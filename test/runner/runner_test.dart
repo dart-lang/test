@@ -38,6 +38,10 @@ final _usage = """
 Usage: pub run unittest:unittest [files or directories...]
 
 -h, --help          Shows this usage information.
+-n, --name          A substring of the name of the test to run.
+                    Regular expression syntax is supported.
+
+-N, --plain-name    A plain-text substring of the name of the test to run.
 -p, --platform      The platform(s) on which to run the tests.
                     [vm (default), chrome]
 
@@ -264,12 +268,106 @@ $_usage"""));
     });
   });
 
-  group("flags", () {
+  group("flags:", () {
     test("with the --color flag, uses colors", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
       var result = _runUnittest(["--color", "test.dart"]);
       // This is the color code for red.
       expect(result.stdout, contains("\u001b[31m"));
+    });
+
+    group("with the --name flag,", () {
+      test("selects tests with matching names", () {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:unittest/unittest.dart';
+
+void main() {
+  test("selected 1", () {});
+  test("nope", () => throw new TestFailure("oh no"));
+  test("selected 2", () {});
+}
+""");
+
+        var result = _runUnittest(["--name", "selected", "test.dart"]);
+        expect(result.stdout, contains("+2: All tests passed!"));
+        expect(result.exitCode, equals(0));
+      });
+
+      test("supports RegExp syntax", () {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:unittest/unittest.dart';
+
+void main() {
+  test("test 1", () {});
+  test("test 2", () => throw new TestFailure("oh no"));
+  test("test 3", () {});
+}
+""");
+
+        var result = _runUnittest(["--name", "test [13]", "test.dart"]);
+        expect(result.stdout, contains("+2: All tests passed!"));
+        expect(result.exitCode, equals(0));
+      });
+
+      test("produces an error when no tests match", () {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+
+        var result = _runUnittest(["--name", "no match", "test.dart"]);
+        expect(result.stderr,
+            contains('No tests match regular expression "no match".'));
+        expect(result.exitCode, equals(exit_codes.data));
+      });
+    });
+
+    group("with the --plain-name flag,", () {
+      test("selects tests with matching names", () {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:unittest/unittest.dart';
+
+void main() {
+  test("selected 1", () {});
+  test("nope", () => throw new TestFailure("oh no"));
+  test("selected 2", () {});
+}
+""");
+
+        var result = _runUnittest(["--plain-name", "selected", "test.dart"]);
+        expect(result.stdout, contains("+2: All tests passed!"));
+        expect(result.exitCode, equals(0));
+      });
+
+      test("doesn't support RegExp syntax", () {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:unittest/unittest.dart';
+
+void main() {
+  test("test 1", () => throw new TestFailure("oh no"));
+  test("test 2", () => throw new TestFailure("oh no"));
+  test("test [12]", () {});
+}
+""");
+
+        var result = _runUnittest(["--plain-name", "test [12]", "test.dart"]);
+        expect(result.stdout, contains("+1: All tests passed!"));
+        expect(result.exitCode, equals(0));
+      });
+
+      test("produces an error when no tests match", () {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+
+        var result = _runUnittest(["--plain-name", "no match", "test.dart"]);
+        expect(result.stderr,
+            contains('No tests match "no match".'));
+        expect(result.exitCode, equals(exit_codes.data));
+      });
     });
   });
 }

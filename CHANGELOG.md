@@ -1,4 +1,7 @@
-## 0.12.0-beta.1
+### 0.12.0-beta.1
+
+* Add a `--name` (shorthand `-n`) flag to the test runner for selecting which
+  test to run.
 
 * Add a missing dependency on `string_scanner`.
 

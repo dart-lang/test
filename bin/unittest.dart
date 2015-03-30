@@ -26,6 +26,13 @@ void main(List<String> args) {
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
   _parser.addOption("package-root", hide: true);
+  _parser.addOption("name",
+      abbr: 'n',
+      help: 'A substring of the name of the test to run.\n'
+          'Regular expression syntax is supported.');
+  _parser.addOption("plain-name",
+      abbr: 'N',
+      help: 'A plain-text substring of the name of the test to run.');
   _parser.addOption("platform",
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.',
@@ -72,6 +79,39 @@ void main(List<String> args) {
       throw new LoadException(path, 'Does not exist.');
     }));
   }).then((suites) {
+    suites = flatten(suites);
+
+    var pattern;
+    if (options["name"] != null) {
+      if (options["plain-name"] != null) {
+        _printUsage("--name and --plain-name may not both be passed.");
+        exitCode = exit_codes.data;
+        return null;
+      }
+      pattern = new RegExp(options["name"]);
+    } else if (options["plain-name"] != null) {
+      pattern = options["plain-name"];
+    }
+
+    if (pattern != null) {
+      suites = suites.map((suite) {
+        return suite.change(
+            tests: suite.tests.where((test) => test.name.contains(pattern)));
+      }).toList();
+
+      if (suites.every((suite) => suite.tests.isEmpty)) {
+        stderr.write('No tests match ');
+
+        if (pattern is RegExp) {
+          stderr.write('regular expression "${pattern.pattern}".');
+        } else {
+          stderr.writeln('"$pattern".');
+        }
+        exitCode = exit_codes.data;
+        return null;
+      }
+    }
+
     var reporter = new CompactReporter(flatten(suites), color: color);
     return reporter.run().then((success) {
       exitCode = success ? 0 : 1;
