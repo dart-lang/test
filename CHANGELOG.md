@@ -1,4 +1,8 @@
-##0.12.0-alpha.0
+## 0.12.0-beta.1
+
+* Add a missing dependency on `string_scanner`.
+
+## 0.12.0-beta.0
 
 * Added support for a test runner, which can be run via `pub run
   unittest:unittest`. By default it runs all files recursively in the `test/`

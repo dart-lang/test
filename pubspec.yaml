@@ -1,5 +1,5 @@
 name: unittest
-version: 0.12.0-beta.0
+version: 0.12.0-dev
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/unittest
@@ -15,6 +15,7 @@ dependencies:
   shelf_web_socket: '^0.0.1'
   source_span: '^1.0.0'
   stack_trace: '^1.2.0'
+  string_scanner: '^0.1.1'
 
   # Use a tight version constraint to ensure that a constraint on unittest
   # properly constraints all features it provides.
