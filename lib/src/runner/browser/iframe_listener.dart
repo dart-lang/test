@@ -159,6 +159,11 @@ class IframeListener {
       });
     });
 
+    liveTest.onPrint.listen((line) {
+      print(line);
+      channel.sink.add({"type": "print", "line": line});
+    });
+
     liveTest.run().then((_) => channel.sink.add({"type": "complete"}));
   }
 }

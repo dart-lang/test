@@ -178,7 +178,11 @@ class Invoker {
           // non-microtask events.
           Timer.run(_controller.completer.complete);
         });
-      }, zoneValues: {#unittest.invoker: this}, onError: handleError);
+      },
+          zoneSpecification: new ZoneSpecification(
+              print: (self, parent, zone, line) => _controller.print(line)),
+          zoneValues: {#unittest.invoker: this},
+          onError: handleError);
     });
   }
 }

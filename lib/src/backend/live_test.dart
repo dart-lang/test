@@ -79,6 +79,9 @@ abstract class LiveTest {
   /// will be [Chain]s.
   Stream<AsyncError> get onError;
 
+  /// A stream that emits lines printed by the test.
+  Stream<String> onPrint;
+
   /// A [Future] that completes once the test is complete.
   ///
   /// This will complete after [onStateChange] has fired, and after [onError]

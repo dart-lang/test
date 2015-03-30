@@ -32,6 +32,8 @@ class _LiveTest extends LiveTest {
 
   Stream<AsyncError> get onError => _controller._onErrorController.stream;
 
+  Stream<String> get onPrint => _controller._onPrintController.stream;
+
   Future get onComplete => _controller.completer.future;
 
   Future run() => _controller._run();
@@ -76,10 +78,24 @@ class LiveTestController {
   var _state = const State(Status.pending, Result.success);
 
   /// The controller for [LiveTest.onStateChange].
-  final _onStateChangeController = new StreamController<State>.broadcast();
+  ///
+  /// This is synchronous to ensure that events are well-ordered across multiple
+  /// streams.
+  final _onStateChangeController = new StreamController<State>
+      .broadcast(sync: true);
 
   /// The controller for [LiveTest.onError].
-  final _onErrorController = new StreamController<AsyncError>.broadcast();
+  ///
+  /// This is synchronous to ensure that events are well-ordered across multiple
+  /// streams.
+  final _onErrorController = new StreamController<AsyncError>
+      .broadcast(sync: true);
+
+  /// The controller for [LiveTest.onPrint].
+  ///
+  /// This is synchronous to ensure that events are well-ordered across multiple
+  /// streams.
+  final _onPrintController = new StreamController<String>.broadcast(sync: true);
 
   /// The completer for [LiveTest.onComplete];
   final completer = new Completer();
@@ -129,6 +145,9 @@ class LiveTestController {
     _state = newState;
     _onStateChangeController.add(newState);
   }
+
+  /// Emits a line printed by the test over [LiveTest.onPrint].
+  void print(String line) => _onPrintController.add(line);
 
   /// A wrapper for [_onRun] that ensures that it follows the guarantees for
   /// [LiveTest.run].

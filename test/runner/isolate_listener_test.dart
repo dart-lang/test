@@ -262,6 +262,15 @@ void main() {
       });
     });
   });
+
+  test("forwards a test's prints", () {
+    return _isolateTest(_printTest).then((liveTest) {
+      expect(liveTest.onPrint.take(2).toList(),
+          completion(equals(["Hello,", "world!"])));
+
+      return liveTest.run();
+    });
+  });
 }
 
 /// Loads the first test defined in [entryPoint] in another isolate.
@@ -380,3 +389,14 @@ void _multiErrorTest(SendPort sendPort) {
     });
   });
 }
+
+/// An isolate entrypoint that defines a test that prints twice.
+void _printTest(SendPort sendPort) {
+  IsolateListener.start(sendPort, () => () {
+    test("prints", () {
+      print("Hello,");
+      return new Future(() => print("world!"));
+    });
+  });
+}
+

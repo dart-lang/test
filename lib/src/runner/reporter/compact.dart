@@ -72,6 +72,8 @@ class CompactReporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _noColor = color ? '\u001b[0m' : '' {
+    // Whether a newline has been printed since the last progress line.
+    var printedNewline = false;
     _engine.onTestStarted.listen((liveTest) {
       _progressLine(_description(liveTest));
       liveTest.onStateChange.listen((state) {
@@ -83,15 +85,26 @@ class CompactReporter {
           _failed.add(liveTest);
         }
         _progressLine(_description(liveTest));
+        printedNewline = false;
       });
 
       liveTest.onError.listen((error) {
         if (liveTest.state.status != Status.complete) return;
 
         _progressLine(_description(liveTest));
-        print('');
+        if (!printedNewline) print('');
+        printedNewline = true;
+
         print(indent(error.error.toString()));
         print(indent(terseChain(error.stackTrace).toString()));
+      });
+
+      liveTest.onPrint.listen((line) {
+        _progressLine(_description(liveTest));
+        if (!printedNewline) print('');
+        printedNewline = true;
+
+        print(line);
       });
     });
   }
@@ -134,12 +147,12 @@ class CompactReporter {
   /// [message] goes after the progress report, and may be truncated to fit the
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
   /// color for [message].
-  void _progressLine(String message, {String color}) {
+  bool _progressLine(String message, {String color}) {
     // Print nothing if nothing has changed since the last progress line.
     if (_passed.length == _lastProgressPassed &&
         _failed.length == _lastProgressFailed &&
         message == _lastProgressMessage) {
-      return;
+      return false;
     }
 
     _lastProgressPassed = _passed.length;
@@ -180,6 +193,7 @@ class CompactReporter {
     length = buffer.length - nonVisible - _noColor.length;
     buffer.write(' ' * (_lineLength - length));
     stdout.write(buffer.toString());
+    return true;
   }
 
   /// Returns a representation of [duration] as `MM:SS`.

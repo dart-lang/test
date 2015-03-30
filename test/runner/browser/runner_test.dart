@@ -157,6 +157,25 @@ void main() {
       expect(result.exitCode, equals(1));
     });
   });
+
+  test("forwards prints from the browser test", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:unittest/unittest.dart';
+
+void main() {
+  test("test", () {
+    print("Hello,");
+    return new Future(() => print("world!"));
+  });
+}
+""");
+
+    var result = _runUnittest(["-p", "chrome", "test.dart"]);
+    expect(result.stdout, contains("Hello,\nworld!\n"));
+    expect(result.exitCode, equals(0));
+  });
 }
 
 ProcessResult _runUnittest(List<String> args) =>

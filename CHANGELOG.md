@@ -3,6 +3,10 @@
 * Add a `--name` (shorthand `-n`) flag to the test runner for selecting which
   test to run.
 
+* Ensure that `print()` in tests always prints on its own line.
+
+* Forward `print()`s from browser tests to the command-line reporter.
+
 * Add a missing dependency on `string_scanner`.
 
 ## 0.12.0-beta.0

@@ -94,6 +94,11 @@ class NoIoCompactReporter {
         print(indent(error.error.toString()));
         print(indent(terseChain(error.stackTrace).toString()));
       });
+
+      liveTest.onPrint.listen((line) {
+        _progressLine(_description(liveTest));
+        print(line);
+      });
     });
   }
 

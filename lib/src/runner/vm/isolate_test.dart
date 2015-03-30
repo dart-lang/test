@@ -46,6 +46,8 @@ class IsolateTest implements Test {
               new State(
                   new Status.parse(message['status']),
                   new Result.parse(message['result'])));
+        } else if (message['type'] == 'print') {
+          controller.print(message['line']);
         } else {
           assert(message['type'] == 'complete');
           controller.completer.complete();

@@ -113,6 +113,9 @@ class IsolateListener {
       });
     });
 
+    liveTest.onPrint.listen((line) =>
+        sendPort.send({"type": "print", "line": line}));
+
     liveTest.run().then((_) => sendPort.send({"type": "complete"}));
   }
 }

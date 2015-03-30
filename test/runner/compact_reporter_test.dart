@@ -110,13 +110,11 @@ void main() {
           dart:async       Future.Future.microtask
           test.dart 10:15  main.<fn>
 
-
           second error
           test.dart 11:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
           dart:async       Future.Future.microtask
           test.dart 11:15  main.<fn>
-
 
           third error
           test.dart 12:38  main.<fn>.<fn>
@@ -128,6 +126,109 @@ void main() {
         +0 -1: wait
         +1 -1: wait
         +1 -1: Some tests failed.""");
+  });
+
+  group("print:", () {
+    test("handles multiple prints", () {
+      _expectReport("""
+        test('test', () {
+          print("one");
+          print("two");
+          print("three");
+          print("four");
+        });""",
+        """
+        +0: test
+        one
+        two
+        three
+        four
+
+        +1: test
+        +1: All tests passed!""");
+    });
+
+    test("handles a print after the test completes", () {
+      _expectReport("""
+        // This completer ensures that the test isolate isn't killed until all
+        // prints have happened.
+        var testDone = new Completer();
+        var waitStarted = new Completer();
+        test('test', () {
+          waitStarted.future.then((_) {
+            new Future(() => print("one"));
+            new Future(() => print("two"));
+            new Future(() => print("three"));
+            new Future(() => print("four"));
+            new Future(testDone.complete);
+          });
+        });
+
+        test('wait', () {
+          waitStarted.complete();
+          return testDone.future;
+        });""", """
+        +0: test
+        +1: test
+        +1: wait
+        +1: test
+        one
+        two
+        three
+        four
+
+        +2: wait
+        +2: All tests passed!""");
+    });
+
+    test("interleaves prints and errors", () {
+      _expectReport("""
+        // This completer ensures that the test isolate isn't killed until all
+        // prints have happened.
+        var completer = new Completer();
+        test('test', () {
+          scheduleMicrotask(() {
+            print("three");
+            print("four");
+            throw "second error";
+          });
+
+          scheduleMicrotask(() {
+            print("five");
+            print("six");
+            completer.complete();
+          });
+
+          print("one");
+          print("two");
+          throw "first error";
+        });
+
+        test('wait', () => completer.future);""",
+        """
+        +0: test
+        one
+        two
+
+        +0 -1: test
+          first error
+          test.dart 24:11  main.<fn>
+
+        three
+        four
+          second error
+          test.dart 13:13  main.<fn>.<fn>
+          ===== asynchronous gap ===========================
+          dart:async       scheduleMicrotask
+          test.dart 10:28  main.<fn>
+
+        five
+        six
+
+        +0 -1: wait
+        +1 -1: wait
+        +1 -1: Some tests failed.""");
+    });
   });
 }
 

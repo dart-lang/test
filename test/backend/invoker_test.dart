@@ -493,6 +493,20 @@ void main() {
       async.elapse(new Duration(seconds: 30));
     });
   });
+
+  test("a test's prints are captured and reported", () {
+    expect(() {
+      var liveTest = _localTest(() {
+        print("Hello,");
+        return new Future(() => print("world!"));
+      }).load(suite);
+
+      expect(liveTest.onPrint.take(2).toList(),
+          completion(equals(["Hello,", "world!"])));
+
+      return liveTest.run();
+    }, prints(isEmpty));
+  });
 }
 
 LocalTest _localTest(body(), {tearDown()}) =>
