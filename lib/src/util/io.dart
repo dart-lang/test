@@ -39,7 +39,7 @@ bool get _supportsIsolateKill {
   // Isolate.kill(), but it's very unlikely anyone will be using them.
   // TODO(nweiz): remove this when we no longer support older Dart versions.
   var path = p.join(p.dirname(p.dirname(Platform.executable)), 'version');
-  return new File(path).readAsStringSync().startsWith('1.9');
+  return !new File(path).readAsStringSync().startsWith('1.8');
 }
 
 // TODO(nweiz): Make this check [stdioType] once that works within "pub run".
