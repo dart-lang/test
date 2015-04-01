@@ -1,3 +1,7 @@
+### 0.12.0-beta.3
+
+* Add support for `shelf` `0.6.0`.
+
 ### 0.12.0-beta.2
 
 * Rename the package to `test`. The `unittest` package will continue to exist

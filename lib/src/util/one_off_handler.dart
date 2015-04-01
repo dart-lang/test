@@ -36,8 +36,14 @@ class OneOffHandler {
 
   /// Dispatches [request] to the appropriate handler.
   _onRequest(shelf.Request request) {
-    // Skip the first component because it's always "/".
-    var components = p.url.split(request.url.path).skip(1).toList();
+    var components = p.url.split(request.url.path);
+
+    // For shelf < 0.6.0, the first component of the path is always "/". We can
+    // safely skip it.
+    if (components.isNotEmpty && components.first == "/") {
+      components.removeAt(0);
+    }
+
     if (components.isEmpty) return new shelf.Response.notFound(null);
 
     var handler = _handlers.remove(components.removeAt(0));
