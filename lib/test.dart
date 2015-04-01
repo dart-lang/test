@@ -12,16 +12,11 @@ import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
 import 'src/backend/suite.dart';
 import 'src/backend/test_platform.dart';
-import 'src/deprecated/configuration.dart';
-import 'src/deprecated/test_case.dart';
 import 'src/runner/reporter/no_io_compact.dart';
 import 'src/utils.dart';
 
 export 'package:matcher/matcher.dart';
 
-export 'src/deprecated/configuration.dart';
-export 'src/deprecated/simple_configuration.dart';
-export 'src/deprecated/test_case.dart';
 export 'src/frontend/expect.dart';
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';
@@ -116,76 +111,3 @@ void handleExternalError(error, String message, [stackTrace]) {
 /// Registers an exception that was caught for the current test.
 void registerException(error, [StackTrace stackTrace]) =>
     Invoker.current.handleError(error, stackTrace);
-
-// What follows are stubs for various top-level names supported by unittest
-// 0.11.*. These are preserved for the time being for ease of migration, but
-// should be removed before this is released as stable.
-
-@deprecated
-typedef dynamic TestFunction();
-
-@deprecated
-Configuration testConfiguration = new Configuration();
-
-@deprecated
-bool formatStacks = true;
-
-@deprecated
-bool filterStacks = true;
-
-@deprecated
-String groupSep = ' ';
-
-@deprecated
-void logMessage(String message) => print(message);
-
-@deprecated
-final testCases = [];
-
-@deprecated
-const int BREATH_INTERVAL = 200;
-
-@deprecated
-TestCase get currentTestCase => null;
-
-@deprecated
-const PASS = 'pass';
-
-@deprecated
-const FAIL = 'fail';
-
-@deprecated
-const ERROR = 'error';
-
-@deprecated
-void skip_test(String spec, TestFunction body) {}
-
-@deprecated
-void solo_test(String spec, TestFunction body) => test(spec, body);
-
-@deprecated
-void skip_group(String description, void body()) {}
-
-@deprecated
-void solo_group(String description, void body()) => group(description, body);
-
-@deprecated
-void filterTests(testFilter) {}
-
-@deprecated
-void runTests() {}
-
-@deprecated
-void ensureInitialized() {}
-
-@deprecated
-void setSoloTest(int id) {}
-
-@deprecated
-void enableTest(int id) {}
-
-@deprecated
-void disableTest(int id) {}
-
-@deprecated
-withTestEnvironment(callback()) => callback();

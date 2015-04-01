@@ -4,6 +4,9 @@
   through the `0.12.0` cycle, but it's deprecated and will just export the
   `test` package.
 
+* Remove the deprecated members from `test`. These members will remain in
+  `unittest` for now.
+
 ### 0.12.0-beta.1
 
 * Add a `--name` (shorthand `-n`) flag to the test runner for selecting which
