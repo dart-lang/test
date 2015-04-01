@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.util.io;
+library test.util.io;
 
 import 'dart:async';
 import 'dart:io';
@@ -26,9 +26,9 @@ final OperatingSystem currentOS = (() {
   throw new UnsupportedError('Unsupported operating system "$name".');
 })();
 
-/// The path to the `lib` directory of the `unittest` package.
+/// The path to the `lib` directory of the `test` package.
 String libDir({String packageRoot}) {
-  var pathToIo = libraryPath(#unittest.util.io, packageRoot: packageRoot);
+  var pathToIo = libraryPath(#test.util.io, packageRoot: packageRoot);
   return p.dirname(p.dirname(p.dirname(pathToIo)));
 }
 
@@ -64,7 +64,7 @@ Future withTempDir(Future fn(String path)) {
   return new Future.sync(() {
     // TODO(nweiz): Empirically test whether sync or async functions perform
     // better here when starting a bunch of isolates.
-    var tempDir = Directory.systemTemp.createTempSync('unittest_');
+    var tempDir = Directory.systemTemp.createTempSync('test_');
     return new Future.sync(() => fn(tempDir.path))
         .whenComplete(() => tempDir.deleteSync(recursive: true));
   });

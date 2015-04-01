@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.backend.live_test;
+library test.backend.live_test;
 
 import 'dart:async';
 

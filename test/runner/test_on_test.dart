@@ -7,8 +7,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/util/io.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/util/io.dart';
+import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -18,7 +18,7 @@ final _otherOS = Platform.isWindows ? "mac-os" : "windows";
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
+    _sandbox = Directory.systemTemp.createTempSync('test_').path;
   });
 
   tearDown(() {
@@ -192,7 +192,7 @@ void _writeTestFile(String filename, {String suiteTestOn, String groupTestOn,
   if (!loadable) buffer.writeln("import 'dart:html';");
 
   buffer
-      ..writeln("import 'package:unittest/unittest.dart';")
+      ..writeln("import 'package:test/test.dart';")
       ..writeln("void main() {")
       ..writeln("  group('group', () {");
 

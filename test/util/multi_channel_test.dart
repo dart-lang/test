@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import 'package:unittest/src/util/multi_channel.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/util/multi_channel.dart';
+import 'package:test/test.dart';
 
 import '../utils.dart';
 

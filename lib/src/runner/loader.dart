@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.loader;
+library test.runner.loader;
 
 import 'dart:async';
 import 'dart:io';
@@ -119,7 +119,7 @@ class Loader {
     var packageRoot = packageRootFor(path, _packageRoot);
     var receivePort = new ReceivePort();
     return runInIsolate('''
-import "package:unittest/src/runner/vm/isolate_listener.dart";
+import "package:test/src/runner/vm/isolate_listener.dart";
 
 import "${p.toUri(p.absolute(path))}" as test;
 

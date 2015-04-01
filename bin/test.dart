@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.unittest;
+library test.test;
 
 import 'dart:async';
 import 'dart:io';
@@ -11,13 +11,13 @@ import 'dart:isolate';
 import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import 'package:unittest/src/backend/test_platform.dart';
-import 'package:unittest/src/runner/reporter/compact.dart';
-import 'package:unittest/src/runner/load_exception.dart';
-import 'package:unittest/src/runner/loader.dart';
-import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
-import 'package:unittest/src/util/io.dart';
-import 'package:unittest/src/utils.dart';
+import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/runner/reporter/compact.dart';
+import 'package:test/src/runner/load_exception.dart';
+import 'package:test/src/runner/loader.dart';
+import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/src/util/io.dart';
+import 'package:test/src/utils.dart';
 
 /// The argument parser used to parse the executable arguments.
 final _parser = new ArgParser(allowTrailingOptions: true);
@@ -136,7 +136,7 @@ void main(List<String> args) {
       stderr.writeln(new Trace.from(stackTrace).terse);
       stderr.writeln(
           "This is an unexpected error. Please file an issue at "
-              "http://github.com/dart-lang/unittest\n"
+              "http://github.com/dart-lang/test\n"
           "with the stack trace and instructions for reproducing the error.");
       exitCode = exit_codes.software;
     }
@@ -164,7 +164,7 @@ void _printUsage([String error]) {
 
   output.write("""$message
 
-Usage: pub run unittest:unittest [files or directories...]
+Usage: pub run test:test [files or directories...]
 
 ${_parser.usage}
 """);

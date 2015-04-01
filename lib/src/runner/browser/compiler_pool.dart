@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.util.compiler_pool;
+library test.util.compiler_pool;
 
 import 'dart:async';
 import 'dart:collection';
@@ -58,7 +58,7 @@ class CompilerPool {
       return withTempDir((dir) {
         var wrapperPath = p.join(dir, "runInBrowser.dart");
         new File(wrapperPath).writeAsStringSync('''
-import "package:unittest/src/runner/browser/iframe_listener.dart";
+import "package:test/src/runner/browser/iframe_listener.dart";
 
 import "${p.toUri(p.absolute(dartPath))}" as test;
 

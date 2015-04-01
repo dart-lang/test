@@ -2,21 +2,21 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.test.io;
+library test.test.io;
 
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/util/io.dart';
+import 'package:test/src/util/io.dart';
 
-/// The path to the root directory of the `unittest` package.
-final String packageDir = p.dirname(p.dirname(libraryPath(#unittest.test.io)));
+/// The path to the root directory of the `test` package.
+final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
 
-/// Runs the unittest executable with the package root set properly.
+/// Runs the test executable with the package root set properly.
 ProcessResult runUnittest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
   var allArgs = [
-    p.absolute(p.join(packageDir, 'bin/unittest.dart')),
+    p.absolute(p.join(packageDir, 'bin/test.dart')),
     "--package-root=${p.join(packageDir, 'packages')}"
   ]..addAll(args);
 

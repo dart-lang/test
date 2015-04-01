@@ -7,16 +7,16 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:unittest/src/backend/invoker.dart';
-import 'package:unittest/src/backend/live_test.dart';
-import 'package:unittest/src/backend/metadata.dart';
-import 'package:unittest/src/backend/state.dart';
-import 'package:unittest/src/backend/suite.dart';
-import 'package:unittest/src/runner/vm/isolate_listener.dart';
-import 'package:unittest/src/runner/vm/isolate_test.dart';
-import 'package:unittest/src/util/io.dart';
-import 'package:unittest/src/util/remote_exception.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/backend/invoker.dart';
+import 'package:test/src/backend/live_test.dart';
+import 'package:test/src/backend/metadata.dart';
+import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/suite.dart';
+import 'package:test/src/runner/vm/isolate_listener.dart';
+import 'package:test/src/runner/vm/isolate_test.dart';
+import 'package:test/src/util/io.dart';
+import 'package:test/src/util/remote_exception.dart';
+import 'package:test/test.dart';
 
 import '../utils.dart';
 

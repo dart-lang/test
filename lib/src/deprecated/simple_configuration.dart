@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.deprecated.simple_configuration;
+library test.deprecated.simple_configuration;
 
 import 'test_case.dart';
 import 'configuration.dart';

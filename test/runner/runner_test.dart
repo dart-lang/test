@@ -7,8 +7,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
-import 'package:unittest/unittest.dart';
+import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -17,7 +17,7 @@ String _sandbox;
 final _success = """
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
@@ -27,7 +27,7 @@ void main() {
 final _failure = """
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
@@ -35,7 +35,7 @@ void main() {
 """;
 
 final _usage = """
-Usage: pub run unittest:unittest [files or directories...]
+Usage: pub run test:test [files or directories...]
 
 -h, --help          Shows this usage information.
 -n, --name          A substring of the name of the test to run.
@@ -51,7 +51,7 @@ Usage: pub run unittest:unittest [files or directories...]
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
+    _sandbox = Directory.systemTemp.createTempSync('test_').path;
   });
 
   tearDown(() {
@@ -281,7 +281,7 @@ $_usage"""));
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("selected 1", () {});
@@ -299,7 +299,7 @@ void main() {
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("test 1", () {});
@@ -328,7 +328,7 @@ void main() {
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("selected 1", () {});
@@ -346,7 +346,7 @@ void main() {
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("test 1", () => throw new TestFailure("oh no"));

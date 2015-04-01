@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.reporter.no_io_compact;
+library test.runner.reporter.no_io_compact;
 
 import 'dart:async';
 
@@ -20,7 +20,7 @@ const _lineLength = 100;
 // TODO(nweiz): Get rid of this when issue 6943 is fixed.
 /// A reporter that doesn't import `dart:io`, even transitively.
 ///
-/// This is used in place of [CompactReporter] by `lib/unittest.dart`, which
+/// This is used in place of [CompactReporter] by `lib/test.dart`, which
 /// can't transitively import `dart:io` but still needs access to a runner so
 /// that test files can be run directly.
 class NoIoCompactReporter {

@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:unittest/unittest.dart';
-import 'package:unittest/src/backend/platform_selector/scanner.dart';
-import 'package:unittest/src/backend/platform_selector/token.dart';
+import 'package:test/test.dart';
+import 'package:test/src/backend/platform_selector/scanner.dart';
+import 'package:test/src/backend/platform_selector/token.dart';
 
 void main() {
   group("peek()", () {

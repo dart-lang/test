@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.browser.iframe_listener;
+library test.runner.browser.iframe_listener;
 
 import 'dart:async';
 import 'dart:html';
@@ -54,7 +54,7 @@ class IframeListener {
 
     var declarer = new Declarer();
     try {
-      runZoned(main, zoneValues: {#unittest.declarer: declarer});
+      runZoned(main, zoneValues: {#test.declarer: declarer});
     } catch (error, stackTrace) {
       channel.sink.add({
         "type": "error",
@@ -81,7 +81,7 @@ class IframeListener {
     window.onMessage.listen((message) {
       // A message on the Window can theoretically come from any website. It's
       // very unlikely that a malicious site would care about hacking someone's
-      // unit tests, let alone be able to find the unittest server while it's
+      // unit tests, let alone be able to find the test server while it's
       // running, but it's good practice to check the origin anyway.
       if (message.origin != window.location.origin) return;
       message.stopPropagation();

@@ -1,15 +1,15 @@
-`unittest` provides a standard way of writing and running tests in Dart.
+`test` provides a standard way of writing and running tests in Dart.
 
 ## Writing Tests
 
 Tests are specified using the top-level [`test()`][test] function, and test
 assertions are made using [`expect()`][expect]:
 
-[test]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_test
-[expect]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_expect
+[test]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_test
+[expect]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expect
 
 ```dart
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   test("String.split() splits the string on the delimiter", () {
@@ -28,7 +28,7 @@ Tests can be grouped together using the [`group()`] function. Each group's
 description is added to the beginning of its test's descriptions.
 
 ```dart
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   group("String", () {
@@ -61,7 +61,7 @@ to do complex validations:
 [matcher]: http://www.dartdocs.org/documentation/matcher/latest/index.html#matcher/matcher
 
 ```dart
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   test(".split() splits the string on the delimiter", () {
@@ -78,22 +78,22 @@ void main() {
 
 A single test file can be run just using `dart path/to/test.dart`.
 
-![Tests being run via "dart path/to/test.dart".](https://raw.githubusercontent.com/dart-lang/unittest/master/image/test1.gif)
+![Tests being run via "dart path/to/test.dart".](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
 
-Many tests can be run at a time using `pub run unittest:unittest path/to/dir`.
+Many tests can be run at a time using `pub run test:test path/to/dir`.
 
-![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/unittest/master/image/test2.gif)
+![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/image/test2.gif)
 
-`unittest` considers any file that ends with `_test.dart` to be a test file. If
+`test` considers any file that ends with `_test.dart` to be a test file. If
 you don't pass any paths, it will run all the test files in your `test/`
 directory, making it easy to test your entire application at once.
 
 By default, tests are run in the Dart VM, but you can run them in the browser as
-well by passing `pub run unittest:unittest -p chrome path/to/test.dart`.
-`unittest` will take care of starting the browser and loading the tests, and all
+well by passing `pub run test:test -p chrome path/to/test.dart`.
+`test` will take care of starting the browser and loading the tests, and all
 the results will be reported on the command line just like for VM tests. In
 fact, you can even run tests on both platforms with a single command: `pub run
-unittest:unittest -p chrome -p vm path/to/test.dart`.
+test:test -p chrome -p vm path/to/test.dart`.
 
 ### Restricting Tests to Certain Platforms
 
@@ -109,14 +109,14 @@ a test file should run on. Just put it at the top of your file, before any
 
 import "dart:io";
 
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   // ...
 }
 ```
 
-[TestOn]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest.TestOn
+[TestOn]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test.TestOn
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
@@ -174,7 +174,7 @@ won't consider the test finished until the returned `Future` completes.
 ```dart
 import "dart:async";
 
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   test("new Future.value() returns the value", () async {
@@ -189,12 +189,12 @@ asynchrony. The [`completion()`][completion] matcher can be used to test
 `Futures`; it ensures that the test doesn't finish until the `Future` completes,
 and runs a matcher against that `Future`'s value.
 
-[completion]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_completion
+[completion]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_completion
 
 ```dart
 import "dart:async";
 
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   test("new Future.value() returns the value", () {
@@ -207,12 +207,12 @@ The [`throwsA()`][throwsA] matcher and the various `throwsExceptionType`
 matchers work with both synchronous callbacks and asynchronous `Future`s. They
 ensure that a particular type of exception is thrown:
 
-[completion]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_throwsA
+[completion]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_throwsA
 
 ```dart
 import "dart:async";
 
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   test("new Future.error() throws the error", () {
@@ -231,7 +231,7 @@ of times.
 ```dart
 import "dart:async";
 
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 void main() {
   test("Stream.fromIterable() emits the values in the iterable", () {
@@ -244,4 +244,4 @@ void main() {
 }
 ```
 
-[expectAsync]: http://www.dartdocs.org/documentation/unittest/latest/index.html#unittest/unittest@id_expectAsync
+[expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync

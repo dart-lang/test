@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.browser.server;
+library test.runner.browser.server;
 
 import 'dart:async';
 import 'dart:convert';
@@ -92,7 +92,7 @@ class BrowserServer {
   Completer<BrowserManager> _browserManagerCompleter;
 
   BrowserServer._(this._packageRoot, bool color)
-      : _compiledDir = Directory.systemTemp.createTempSync('unittest_').path,
+      : _compiledDir = Directory.systemTemp.createTempSync('test_').path,
         _compilers = new CompilerPool(color: color);
 
   /// Starts the underlying server.

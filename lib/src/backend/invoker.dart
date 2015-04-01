@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.backend.invoker;
+library test.backend.invoker;
 
 import 'dart:async';
 
@@ -72,7 +72,7 @@ class Invoker {
   /// An invoker is only set within the zone scope of a running test.
   static Invoker get current {
     // TODO(nweiz): Use a private symbol when dart2js supports it (issue 17526).
-    return Zone.current[#unittest.invoker];
+    return Zone.current[#test.invoker];
   }
 
   Invoker._(Suite suite, LocalTest test) {
@@ -181,7 +181,7 @@ class Invoker {
       },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) => _controller.print(line)),
-          zoneValues: {#unittest.invoker: this},
+          zoneValues: {#test.invoker: this},
           onError: handleError);
     });
   }

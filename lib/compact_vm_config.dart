@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @deprecated
-library unittest.compact_vm_config;
+library test.compact_vm_config;
 
 import 'vm_config.dart';
 

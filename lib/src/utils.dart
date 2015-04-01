@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.utils;
+library test.utils;
 
 import 'dart:async';
 
@@ -60,13 +60,13 @@ String indent(String str) =>
 ///
 /// These paths aren't relevant and are removed from stack traces.
 final _isolatePath =
-    new RegExp(r"/unittest_[A-Za-z0-9]{6}/runInIsolate\.dart$");
+    new RegExp(r"/test_[A-Za-z0-9]{6}/runInIsolate\.dart$");
 
 /// Returns [stackTrace] converted to a [Chain] with all irrelevant frames
 /// folded together.
 Chain terseChain(StackTrace stackTrace) {
   return new Chain.forTrace(stackTrace).foldFrames((frame) {
-    if (frame.package == 'unittest') return true;
+    if (frame.package == 'test') return true;
 
     // Filter out frames from our isolate bootstrap as well.
     if (frame.uri.scheme != 'file') return false;

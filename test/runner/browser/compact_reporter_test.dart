@@ -7,7 +7,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import '../../io.dart';
 
@@ -15,7 +15,7 @@ String _sandbox;
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
+    _sandbox = Directory.systemTemp.createTempSync('test_').path;
   });
 
   tearDown(() {
@@ -27,7 +27,7 @@ void main() {
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("success", () {});

@@ -2,15 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.browser.host;
+library test.runner.browser.host;
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:unittest/src/util/multi_channel.dart';
-import 'package:unittest/src/util/stream_channel.dart';
+import 'package:test/src/util/multi_channel.dart';
+import 'package:test/src/util/stream_channel.dart';
 
 // TODO(nweiz): test this once we can run browser tests.
 /// Code that runs in the browser and loads test suites at the server's behest.
@@ -118,7 +118,7 @@ StreamChannel _connectToIframe(String url) {
     window.onMessage.listen((message) {
       // A message on the Window can theoretically come from any website. It's
       // very unlikely that a malicious site would care about hacking someone's
-      // unit tests, let alone be able to find the unittest server while it's
+      // unit tests, let alone be able to find the test server while it's
       // running, but it's good practice to check the origin anyway.
       if (message.origin != window.location.origin) return;
 

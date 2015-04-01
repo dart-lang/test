@@ -7,9 +7,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:unittest/unittest.dart';
-import 'package:unittest/src/runner/browser/chrome.dart';
-import 'package:unittest/src/util/io.dart';
+import 'package:test/test.dart';
+import 'package:test/src/runner/browser/chrome.dart';
+import 'package:test/src/util/io.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';

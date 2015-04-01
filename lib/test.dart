@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest;
+library test;
 
 import 'dart:async';
 
@@ -41,7 +41,7 @@ Declarer _globalDeclarer;
 /// [IsolateListener] or [IframeListener]. If the test file is run directly,
 /// this returns [_globalDeclarer] (and sets it up on the first call).
 Declarer get _declarer {
-  var declarer = Zone.current[#unittest.declarer];
+  var declarer = Zone.current[#test.declarer];
   if (declarer != null) return declarer;
   if (_globalDeclarer != null) return _globalDeclarer;
 
@@ -70,7 +70,7 @@ Declarer get _declarer {
 /// [group]s. If [testOn] is passed, it's parsed as a [platform selector][]; the
 /// test will only be run on matching platforms.
 ///
-/// [platform selector]: https://github.com/dart-lang/unittest/#platform-selector-syntax
+/// [platform selector]: https://github.com/dart-lang/test/#platform-selector-syntax
 void test(String description, body(), {String testOn}) =>
     _declarer.test(description, body, testOn: testOn);
 
@@ -83,7 +83,7 @@ void test(String description, body(), {String testOn}) =>
 /// If [testOn] is passed, it's parsed as a [platform selector][]; the test will
 /// only be run on matching platforms.
 ///
-/// [platform selector]: https://github.com/dart-lang/unittest/#platform-selector-syntax
+/// [platform selector]: https://github.com/dart-lang/test/#platform-selector-syntax
 void group(String description, void body(), {String testOn}) =>
     _declarer.group(description, body, testOn: testOn);
 
@@ -125,7 +125,7 @@ void registerException(error, [StackTrace stackTrace]) =>
 typedef dynamic TestFunction();
 
 @deprecated
-Configuration unittestConfiguration = new Configuration();
+Configuration testConfiguration = new Configuration();
 
 @deprecated
 bool formatStacks = true;

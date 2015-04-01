@@ -7,10 +7,10 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/backend/state.dart';
-import 'package:unittest/src/backend/test_platform.dart';
-import 'package:unittest/src/runner/loader.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/runner/loader.dart';
+import 'package:test/test.dart';
 
 import '../io.dart';
 import '../utils.dart';
@@ -21,7 +21,7 @@ String _sandbox;
 final _tests = """
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
@@ -34,7 +34,7 @@ void main() {
   setUp(() {
     _loader = new Loader([TestPlatform.vm],
         packageRoot: p.join(packageDir, 'packages'));
-    _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
+    _sandbox = Directory.systemTemp.createTempSync('test_').path;
   });
 
   tearDown(() {
@@ -46,7 +46,7 @@ void main() {
     var suite;
     setUp(() {
       /// TODO(nweiz): Use scheduled_test for this once it's compatible with
-      /// this version of unittest.
+      /// this version of test.
       new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
       return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).then((suites) {
         expect(suites, hasLength(1));
@@ -116,7 +116,7 @@ void main() {
       var suites;
       setUp(() {
         /// TODO(nweiz): Use scheduled_test for this once it's compatible with
-        /// this version of unittest.
+        /// this version of test.
         new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
         new File(p.join(_sandbox, 'another_test.dart'))
             .writeAsStringSync(_tests);

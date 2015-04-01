@@ -7,8 +7,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/util/io.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/util/io.dart';
+import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -220,7 +220,7 @@ void main() {
           test.dart 13:13  main.<fn>.<fn>
           ===== asynchronous gap ===========================
           dart:async       scheduleMicrotask
-          test.dart 10:28  main.<fn>
+          test.dart 10:11  main.<fn>
 
         five
         six
@@ -236,7 +236,7 @@ void _expectReport(String tests, String expected, {List<String> args}) {
   var dart = """
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
 $tests

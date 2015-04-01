@@ -6,10 +6,10 @@
 
 import 'dart:io';
 
-import 'package:unittest/unittest.dart';
-import 'package:unittest/src/backend/operating_system.dart';
-import 'package:unittest/src/backend/platform_selector.dart';
-import 'package:unittest/src/backend/test_platform.dart';
+import 'package:test/test.dart';
+import 'package:test/src/backend/operating_system.dart';
+import 'package:test/src/backend/platform_selector.dart';
+import 'package:test/src/backend/test_platform.dart';
 
 void main() {
   test("new PlatformSelector.parse() disallows invalid variables", () {

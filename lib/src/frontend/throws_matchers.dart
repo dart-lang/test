@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.frontend.throws_matchers;
+library test.frontend.throws_matchers;
 
 import 'package:matcher/matcher.dart' hide Throws;
 

@@ -5,11 +5,11 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
-import 'package:unittest/src/backend/invoker.dart';
-import 'package:unittest/src/backend/metadata.dart';
-import 'package:unittest/src/backend/state.dart';
-import 'package:unittest/src/backend/suite.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/backend/invoker.dart';
+import 'package:test/src/backend/metadata.dart';
+import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/suite.dart';
+import 'package:test/test.dart';
 
 import '../utils.dart';
 

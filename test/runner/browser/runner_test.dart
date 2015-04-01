@@ -7,8 +7,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/src/util/exit_codes.dart' as exit_codes;
-import 'package:unittest/unittest.dart';
+import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/test.dart';
 
 import '../../io.dart';
 
@@ -17,7 +17,7 @@ String _sandbox;
 final _success = """
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
@@ -26,7 +26,7 @@ void main() {
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
+    _sandbox = Directory.systemTemp.createTempSync('test_').path;
   });
 
   tearDown(() {
@@ -113,7 +113,7 @@ void main() {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
@@ -128,7 +128,7 @@ void main() {
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("test", () {
@@ -145,7 +145,7 @@ void main() {
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("test", () {
@@ -162,7 +162,7 @@ void main() {
     new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("test", () {

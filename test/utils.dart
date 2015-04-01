@@ -2,19 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.test.utils;
+library test.test.utils;
 
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:unittest/src/backend/invoker.dart';
-import 'package:unittest/src/backend/live_test.dart';
-import 'package:unittest/src/backend/metadata.dart';
-import 'package:unittest/src/backend/state.dart';
-import 'package:unittest/src/backend/suite.dart';
-import 'package:unittest/src/runner/load_exception.dart';
-import 'package:unittest/src/util/remote_exception.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/backend/invoker.dart';
+import 'package:test/src/backend/live_test.dart';
+import 'package:test/src/backend/metadata.dart';
+import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/suite.dart';
+import 'package:test/src/runner/load_exception.dart';
+import 'package:test/src/util/remote_exception.dart';
+import 'package:test/test.dart';
 
 /// The string representation of an untyped closure with no arguments.
 ///

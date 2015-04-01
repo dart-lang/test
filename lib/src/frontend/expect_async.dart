@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.frontend.expect_async;
+library test.frontend.expect_async;
 
 import '../backend/invoker.dart';
 import '../backend/state.dart';
@@ -162,7 +162,7 @@ class _ExpectedFunction {
 
   /// Runs the wrapped function with [args] and returns its return value.
   _run(Iterable args) {
-    // Note that in the old unittest, this returned `null` if it encountered an
+    // Note that in the old test, this returned `null` if it encountered an
     // error, where now it just re-throws that error because Zone machinery will
     // pass it to the invoker anyway.
     try {
@@ -201,7 +201,7 @@ class _ExpectedFunction {
 /// Indicate that [callback] is expected to be called [count] number of times
 /// (by default 1).
 ///
-/// The unittest framework will wait for the callback to run the [count] times
+/// The test framework will wait for the callback to run the [count] times
 /// before it considers the current test to be complete. [callback] may take up
 /// to six optional or required positional arguments; named arguments are not
 /// supported.

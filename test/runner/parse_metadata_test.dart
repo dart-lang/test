@@ -7,17 +7,17 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
-import 'package:unittest/src/backend/platform_selector.dart';
-import 'package:unittest/src/backend/test_platform.dart';
-import 'package:unittest/src/runner/parse_metadata.dart';
+import 'package:test/test.dart';
+import 'package:test/src/backend/platform_selector.dart';
+import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/runner/parse_metadata.dart';
 
 String _sandbox;
 String _path;
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('unittest_').path;
+    _sandbox = Directory.systemTemp.createTempSync('test_').path;
     _path = p.join(_sandbox, "test.dart");
   });
 
@@ -47,7 +47,7 @@ void main() {
   test("parses a prefixed annotation", () {
     new File(_path).writeAsStringSync(
         "@foo.TestOn('vm')\n"
-        "import 'package:unittest/unittest.dart' as foo;");
+        "import 'package:test/test.dart' as foo;");
     var metadata = parseMetadata(_path);
     expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
     expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);

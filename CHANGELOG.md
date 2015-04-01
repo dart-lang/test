@@ -1,3 +1,9 @@
+### 0.12.0-beta.2
+
+* Rename the package to `test`. The `unittest` package will continue to exist
+  through the `0.12.0` cycle, but it's deprecated and will just export the
+  `test` package.
+
 ### 0.12.0-beta.1
 
 * Add a `--name` (shorthand `-n`) flag to the test runner for selecting which
@@ -12,7 +18,7 @@
 ## 0.12.0-beta.0
 
 * Added support for a test runner, which can be run via `pub run
-  unittest:unittest`. By default it runs all files recursively in the `test/`
+  test:test`. By default it runs all files recursively in the `test/`
   directory that end in `_test.dart` and aren't in a `packages/` directory.
 
 * As part of moving to a runner-based model, most test configuration is moving
@@ -20,7 +26,7 @@
   stubbed out and marked as deprecated. They still exist to make adoption
   easier, but they're now no-ops and will be removed before the stable 0.12.0
   release. These APIs include `skip_` and `solo_` functions, `Configuration` and
-  all its subclasses, `TestCase`, `TestFunction`, `unittestConfiguration`,
+  all its subclasses, `TestCase`, `TestFunction`, `testConfiguration`,
   `formatStacks`, `filterStacks`, `groupSep`, `logMessage`, `testCases`,
   `BREATH_INTERVAL`, `currentTestCase`, `PASS`, `FAIL`, `ERROR`, `filterTests`,
   `runTests`, `ensureInitialized`, `setSoloTest`, `enableTest`, `disableTest`,
@@ -29,9 +35,9 @@
 * Removed `FailureHandler`, `DefaultFailureHandler`,
   `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler` which
   used to be exported from the `matcher` package. They existed to enable
-  integration between `unittest` and `matcher` that has been streamlined.
+  integration between `test` and `matcher` that has been streamlined.
 
-* Moved a number of APIs from `matcher` into `unittest`, including:
+* Moved a number of APIs from `matcher` into `test`, including:
   `completes`, `completion`, `ErrorFormatter`, `expect`,`fail`, `prints`,
   `TestFailure`, `Throws`, and all of the `throws` methods.
 

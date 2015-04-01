@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.runner.parse_metadata;
+library test.runner.parse_metadata;
 
 import 'dart:io';
 
@@ -25,7 +25,7 @@ Metadata parseMetadata(String path) {
   var directives = parseDirectives(contents, name: path).directives;
   var annotations = directives.isEmpty ? [] : directives.first.metadata;
 
-  // We explicitly *don't* just look for "package:unittest" imports here,
+  // We explicitly *don't* just look for "package:test" imports here,
   // because it could be re-exported from another library.
   var prefixes = directives.map((directive) {
     if (directive is! ImportDirective) return null;

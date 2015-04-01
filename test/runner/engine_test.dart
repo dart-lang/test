@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:unittest/src/backend/declarer.dart';
-import 'package:unittest/src/backend/state.dart';
-import 'package:unittest/src/backend/suite.dart';
-import 'package:unittest/src/runner/engine.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/src/backend/declarer.dart';
+import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/suite.dart';
+import 'package:test/src/runner/engine.dart';
+import 'package:test/test.dart';
 
 void main() {
   var declarer;

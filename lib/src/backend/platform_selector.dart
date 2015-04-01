@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library unittest.backend.platform_selector;
+library test.backend.platform_selector;
 
 import 'package:source_span/source_span.dart';
 
@@ -25,7 +25,7 @@ final _validVariables =
 /// The syntax is mostly Dart's expression syntax restricted to boolean
 /// operations. See [the README][] for full details.
 ///
-/// [the README]: https://github.com/dart-lang/unittest/#platform-selector-syntax
+/// [the README]: https://github.com/dart-lang/test/#platform-selector-syntax
 abstract class PlatformSelector {
   /// A selector that declares that a test can be run on all platforms.
   ///
