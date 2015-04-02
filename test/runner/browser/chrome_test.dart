@@ -21,7 +21,13 @@ void main() {
     var javaScript;
 
     var servePage = (request) {
-      if (request.url.path == "/") {
+      var path = request.url.path;
+
+      // We support both shelf 0.5.x and 0.6.x. The former has a leading "/"
+      // here, the latter does not.
+      if (path.startsWith("/")) path = path.substring(1);
+
+      if (path.isEmpty) {
         return new shelf.Response.ok("""
 <!doctype html>
 <html>
@@ -30,7 +36,7 @@ void main() {
 </head>
 </html>
 """, headers: {'content-type': 'text/html'});
-      } else if (request.url.path == "/index.js") {
+      } else if (path == "index.js") {
         return new shelf.Response.ok(javaScript,
             headers: {'content-type': 'application/javascript'});
       } else {
