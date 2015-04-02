@@ -2,6 +2,8 @@
 
 * Add support for `shelf` `0.6.0`.
 
+* Fix a "failed to load" bug on Windows.
+
 ### 0.12.0-beta.2
 
 * Rename the package to `test`. The `unittest` package will continue to exist

@@ -100,7 +100,7 @@ String packageRootFor(String path, [String override]) {
     throw new LoadException(path, "Directory $packageRoot does not exist.");
   }
 
-  return packageRoot;
+  return p.toUri(packageRoot).toString();
 }
 
 /// The library name must be globally unique, or the wrong library path may be
