@@ -1,3 +1,7 @@
+### 0.12.0-beta.4
+
+* Fix a package-root bug.
+
 ### 0.12.0-beta.3
 
 * Add support for `shelf` `0.6.0`.

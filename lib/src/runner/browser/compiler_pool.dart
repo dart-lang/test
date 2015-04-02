@@ -73,7 +73,7 @@ void main(_) {
         var args = ["--checked", wrapperPath, "--out=$jsPath"];
 
         if (packageRoot != null) {
-          args.add("--package-root=${p.absolute(packageRoot)}");
+          args.add("--package-root=${p.toUri(p.absolute(packageRoot))}");
         }
 
         if (_color) args.add("--enable-diagnostic-colors");
