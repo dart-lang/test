@@ -239,7 +239,8 @@ Matcher _isRune(String char) {
 /// Parses [dart], which should be a string literal, into a
 /// [StringLiteralIterator].
 StringLiteralIterator _parse(String dart) {
-  var literal = parseCompilationUnit("final str = $dart;")
-      .declarations.single.variables.variables.single.initializer;
+  var declaration =
+      parseCompilationUnit("final str = $dart;").declarations.single;
+  var literal = declaration.variables.variables.single.initializer;
   return new StringLiteralIterator(literal);
 }
