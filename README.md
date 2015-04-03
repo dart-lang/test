@@ -245,3 +245,43 @@ void main() {
 ```
 
 [expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync
+
+## Testing With `barback`
+
+Packages using the `barback` transformer system may need to test code that's
+created or modified using transformers. The test runner handles this using the
+`--pub-serve` option, which tells it to load the test code from a `pub serve`
+instance rather than from the filesystem. **This feature is only supported on
+Dart `1.9.2` and higher.**
+
+Before using the `--pub-serve` option, add the `test/pub_serve` transformer to
+your `pubspec.yaml`. This transformer adds the necessary bootstrapping code that
+allows the test runner to load your tests properly:
+
+```yaml
+transformers:
+- test/pub_serve:
+    $include: test/**_test.dart
+```
+
+Then, start up `pub serve`. Make sure to pay attention to which port it's using
+to serve your `test/` directory:
+
+```shell
+$ pub serve
+Loading source assets...
+Loading test/pub_serve transformers...
+Serving my_app web on http://localhost:8080
+Serving my_app test on http://localhost:8081
+Build completed successfully
+```
+
+In this case, the port is `8081`. In another terminal, pass this port to
+`--pub-serve` and otherwise invoke `pub run test` as normal:
+
+```shell
+$ pub run test --pub-serve=8081 -p chrome
+"pub serve" is compiling test/my_app_test.dart...
+"pub serve" is compiling test/utils_test.dart...
+00:00 +42: All tests passed!
+```

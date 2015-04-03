@@ -13,6 +13,11 @@ import 'package:test/src/util/io.dart';
 /// The path to the root directory of the `test` package.
 final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
 
+/// The path to the `pub` executable in the current Dart SDK.
+final _pubPath = p.join(
+    p.dirname(Platform.executable),
+    Platform.isWindows ? 'pub.bat' : 'pub');
+
 /// Runs the test executable with the package root set properly.
 ProcessResult runUnittest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
@@ -39,6 +44,14 @@ ProcessResult runDart(List<String> args, {String workingDirectory,
       workingDirectory: workingDirectory, environment: environment);
 }
 
+/// Runs Pub.
+ProcessResult runPub(List<String> args, {String workingDirectory,
+    Map<String, String> environment}) {
+  // TODO(nweiz): Use ScheduledProcess once it's compatible.
+  return Process.runSync(_pubPath, args,
+      workingDirectory: workingDirectory, environment: environment);
+}
+
 /// Starts the test executable with the package root set properly.
 Future<Process> startUnittest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
@@ -61,5 +74,13 @@ Future<Process> startDart(List<String> args, {String workingDirectory,
 
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
   return Process.start(Platform.executable, allArgs,
+      workingDirectory: workingDirectory, environment: environment);
+}
+
+/// Starts Pub.
+Future<Process> startPub(List<String> args, {String workingDirectory,
+    Map<String, String> environment}) {
+  // TODO(nweiz): Use ScheduledProcess once it's compatible.
+  return Process.start(_pubPath, args,
       workingDirectory: workingDirectory, environment: environment);
 }

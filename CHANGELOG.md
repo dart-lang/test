@@ -1,3 +1,8 @@
+### 0.12.0-beta.5
+
+* Add a `--pub-serve` flag that runs tests against a `pub serve` instance.
+  **This feature is only supported on Dart `1.9.2` and higher.**
+
 ### 0.12.0-beta.4
 
 * Fix a package-root bug.

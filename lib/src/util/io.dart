@@ -9,6 +9,7 @@ import 'dart:io';
 import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
 import '../runner/load_exception.dart';
@@ -16,6 +17,11 @@ import '../runner/load_exception.dart';
 /// The root directory of the Dart SDK.
 final String sdkDir =
     p.dirname(p.dirname(Platform.executable));
+
+/// The version of the Dart SDK currently in use.
+final Version _sdkVersion = new Version.parse(
+    new File(p.join(p.dirname(p.dirname(Platform.executable)), 'version'))
+        .readAsStringSync().trim());
 
 /// Returns the current operating system.
 final OperatingSystem currentOS = (() {
@@ -47,8 +53,16 @@ bool get _supportsIsolateKill {
   // This isn't 100% accurate, since early 1.9 dev releases didn't support
   // Isolate.kill(), but it's very unlikely anyone will be using them.
   // TODO(nweiz): remove this when we no longer support older Dart versions.
-  var path = p.join(p.dirname(p.dirname(Platform.executable)), 'version');
-  return !new File(path).readAsStringSync().startsWith('1.8');
+  return new VersionConstraint.parse('>=1.9.0-dev <2.0.0').allows(_sdkVersion);
+}
+
+/// Returns whether the current Dart version has a fix for issue 23084.
+final bool supportsPubServe = _supportsPubServe;
+bool get _supportsPubServe {
+  // This isn't 100% accurate, since issue 23084 wasn't fixed in early 1.10 dev
+  // releases, but it's unlikely anyone will be using them.
+  // TODO(nweiz): remove this when we no longer support older Dart versions.
+  return new VersionConstraint.parse('>=1.9.2 <2.0.0').allows(_sdkVersion);
 }
 
 // TODO(nweiz): Make this check [stdioType] once that works within "pub run".

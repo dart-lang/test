@@ -16,6 +16,7 @@ import '../backend/suite.dart';
 import '../backend/test_platform.dart';
 import '../util/dart.dart';
 import '../util/io.dart';
+import '../util/isolate_wrapper.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'browser/server.dart';
@@ -35,6 +36,11 @@ class Loader {
   /// root.
   final String _packageRoot;
 
+  /// The URL for the `pub serve` instance to use to load tests.
+  ///
+  /// This is `null` if tests should be loaded from the filesystem.
+  final Uri _pubServeUrl;
+
   /// All isolates that have been spun up by the loader.
   final _isolates = new Set<Isolate>();
 
@@ -44,7 +50,10 @@ class Loader {
   Future<BrowserServer> get _browserServer {
     if (_browserServerCompleter == null) {
       _browserServerCompleter = new Completer();
-      BrowserServer.start(packageRoot: _packageRoot, color: _color)
+      BrowserServer.start(
+              packageRoot: _packageRoot,
+              pubServeUrl: _pubServeUrl,
+              color: _color)
           .then(_browserServerCompleter.complete)
           .catchError(_browserServerCompleter.completeError);
     }
@@ -58,10 +67,14 @@ class Loader {
   /// tests. Otherwise, the `packages/` directories next to the test entrypoints
   /// will be used.
   ///
+  /// If [pubServeUrl] is passed, tests will be loaded from the `pub serve`
+  /// instance at that URL rather than from the filesystem.
+  ///
   /// If [color] is true, console colors will be used when compiling Dart.
   Loader(Iterable<TestPlatform> platforms, {String packageRoot,
-        bool color: false})
+        Uri pubServeUrl, bool color: false})
       : _platforms = platforms.toList(),
+        _pubServeUrl = pubServeUrl,
         _packageRoot = packageRoot,
         _color = color;
 
@@ -100,6 +113,11 @@ class Loader {
       return new Future.sync(() {
         if (!metadata.testOn.evaluate(platform, os: currentOS)) return null;
 
+        if (_pubServeUrl != null && !p.isWithin('test', path)) {
+          throw new LoadException(path,
+              'When using "pub serve", all test files must be in test/.');
+        }
+
         if (platform == TestPlatform.chrome) return _loadBrowserFile(path);
         assert(platform == TestPlatform.vm);
         return _loadVmFile(path);
@@ -118,7 +136,31 @@ class Loader {
   Future<Suite> _loadVmFile(String path) {
     var packageRoot = packageRootFor(path, _packageRoot);
     var receivePort = new ReceivePort();
-    return runInIsolate('''
+
+    return new Future.sync(() {
+      if (_pubServeUrl != null) {
+        var url = _pubServeUrl.resolve(
+            p.withoutExtension(p.relative(path, from: 'test')) +
+                '.vm_test.dart');
+        return Isolate.spawnUri(url, [], {'reply': receivePort.sendPort})
+            .then((isolate) => new IsolateWrapper(isolate, () {}))
+            .catchError((error, stackTrace) {
+          if (error is! IsolateSpawnException) throw error;
+
+          if (error.message.contains("OS Error: Connection refused")) {
+            throw new LoadException(path,
+                "Error getting $url: Connection refused\n"
+                'Make sure "pub serve" is running.');
+          } else if (error.message.contains("404 Not Found")) {
+            throw new LoadException(path,
+                "Error getting $url: 404 Not Found\n"
+                'Make sure "pub serve" is serving the test/ directory.');
+          }
+
+          throw new LoadException(path, error);
+        });
+      } else {
+        return runInIsolate('''
 import "package:test/src/runner/vm/isolate_listener.dart";
 
 import "${p.toUri(p.absolute(path))}" as test;
@@ -128,10 +170,12 @@ void main(_, Map message) {
   IsolateListener.start(sendPort, () => test.main);
 }
 ''', {
-      'reply': receivePort.sendPort
-    }, packageRoot: packageRoot)
-        .catchError((error, stackTrace) {
+          'reply': receivePort.sendPort
+        }, packageRoot: packageRoot);
+      }
+    }).catchError((error, stackTrace) {
       receivePort.close();
+      if (error is LoadException) throw error;
       return new Future.error(new LoadException(path, error), stackTrace);
     }).then((isolate) {
       _isolates.add(isolate);

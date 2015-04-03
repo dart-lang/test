@@ -13,6 +13,7 @@ import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
+import 'package:yaml/yaml.dart';
 
 import 'backend/test_platform.dart';
 import 'runner/reporter/compact.dart';
@@ -35,6 +36,33 @@ final _signals = mergeStreams([
   ProcessSignal.SIGTERM.watch(), ProcessSignal.SIGINT.watch()
 ]);
 
+/// Returns whether the current package has a pubspec which uses the
+/// `test/pub_serve` transformer.
+bool get _usesTransformer {
+  if (!new File('pubspec.yaml').existsSync()) return false;
+  var contents = new File('pubspec.yaml').readAsStringSync();
+
+  var yaml;
+  try {
+    yaml = loadYaml(contents);
+  } on FormatException {
+    return false;
+  }
+
+  if (yaml is! Map) return false;
+
+  var transformers = yaml['transformers'];
+  if (transformers == null) return false;
+  if (transformers is! List) return false;
+
+  return transformers.any((transformer) {
+    if (transformer is String) return transformer == 'test/pub_serve';
+    if (transformer is! Map) return false;
+    if (transformer.keys.length != 1) return false;
+    return transformer.keys.single == 'test/pub_serve';
+  });
+}
+
 void main(List<String> args) {
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
@@ -52,6 +80,10 @@ void main(List<String> args) {
       allowed: TestPlatform.all.map((platform) => platform.identifier).toList(),
       defaultsTo: 'vm',
       allowMultiple: true);
+  _parser.addOption("pub-serve",
+      help: 'The port of a pub serve instance serving "test/".',
+      hide: !supportsPubServe,
+      valueHelp: 'port');
   _parser.addFlag("color", defaultsTo: null,
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
 
@@ -72,9 +104,28 @@ void main(List<String> args) {
   var color = options["color"];
   if (color == null) color = canUseSpecialChars;
 
+  var pubServeUrl;
+  if (options["pub-serve"] != null) {
+    pubServeUrl = Uri.parse("http://localhost:${options['pub-serve']}");
+    if (!_usesTransformer) {
+      stderr.write('''
+When using --pub-serve, you must include the "test/pub_serve" transformer in
+your pubspec:
+
+transformers:
+- test/pub_serve:
+    \$include: test/**_test.dart
+''');
+      exitCode = exit_codes.data;
+      return;
+    }
+  }
+
   var platforms = options["platform"].map(TestPlatform.find);
   var loader = new Loader(platforms,
-      packageRoot: options["package-root"], color: color);
+      pubServeUrl: pubServeUrl,
+      packageRoot: options["package-root"],
+      color: color);
 
   var signalSubscription;
   var closed = false;

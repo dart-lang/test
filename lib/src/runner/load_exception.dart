@@ -34,8 +34,9 @@ class LoadException implements Exception {
       // useless stack trace.
       innerString = innerString.replaceFirst(
           "Unhandled exception:\n"
-          "Uncaught Error: Load Error: FileSystemException: ",
+          "Uncaught Error: Load Error: ",
           "");
+      innerString = innerString.replaceFirst("FileSystemException: ", "");
       innerString = innerString.split("Stack Trace:\n").first.trim();
     } if (innerError is SourceSpanException) {
       innerString = innerError.toString(color: color)

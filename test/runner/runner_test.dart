@@ -38,16 +38,17 @@ void main() {
 final _usage = """
 Usage: pub run test:test [files or directories...]
 
--h, --help          Shows this usage information.
--n, --name          A substring of the name of the test to run.
-                    Regular expression syntax is supported.
+-h, --help                Shows this usage information.
+-n, --name                A substring of the name of the test to run.
+                          Regular expression syntax is supported.
 
--N, --plain-name    A plain-text substring of the name of the test to run.
--p, --platform      The platform(s) on which to run the tests.
-                    [vm (default), chrome]
+-N, --plain-name          A plain-text substring of the name of the test to run.
+-p, --platform            The platform(s) on which to run the tests.
+                          [vm (default), chrome]
 
-    --[no-]color    Whether to use terminal colors.
-                    (auto-detected by default)
+    --pub-serve=<port>    The port of a pub serve instance serving "test/".
+    --[no-]color          Whether to use terminal colors.
+                          (auto-detected by default)
 """;
 
 void main() {
