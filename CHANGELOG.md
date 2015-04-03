@@ -3,6 +3,9 @@
 * Add a `--pub-serve` flag that runs tests against a `pub serve` instance.
   **This feature is only supported on Dart `1.9.2` and higher.**
 
+* When the test runner is killed prematurely, it will clean up its temporary
+  directories and give the current test a chance to run its `tearDown` logic.
+
 ### 0.12.0-beta.4
 
 * Fix a package-root bug.
