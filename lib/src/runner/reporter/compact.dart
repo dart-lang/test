@@ -51,6 +51,9 @@ class CompactReporter {
   /// The set of tests that have completed and been marked as failing or error.
   final _failed = new Set<LiveTest>();
 
+  /// Whether [close] has been called.
+  bool _closed = false;
+
   /// The size of [_passed] last time a progress notification was printed.
   int _lastProgressPassed;
 
@@ -59,6 +62,9 @@ class CompactReporter {
 
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
+
+  // Whether a newline has been printed since the last progress line.
+  var _printedNewline = true;
 
   /// Creates a [ConsoleReporter] that will run all tests in [suites].
   ///
@@ -72,10 +78,10 @@ class CompactReporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _noColor = color ? '\u001b[0m' : '' {
-    // Whether a newline has been printed since the last progress line.
-    var printedNewline = false;
     _engine.onTestStarted.listen((liveTest) {
       _progressLine(_description(liveTest));
+      _printedNewline = false;
+
       liveTest.onStateChange.listen((state) {
         if (state.status != Status.complete) return;
         if (state.result == Result.success) {
@@ -85,15 +91,15 @@ class CompactReporter {
           _failed.add(liveTest);
         }
         _progressLine(_description(liveTest));
-        printedNewline = false;
+        _printedNewline = false;
       });
 
       liveTest.onError.listen((error) {
         if (liveTest.state.status != Status.complete) return;
 
         _progressLine(_description(liveTest));
-        if (!printedNewline) print('');
-        printedNewline = true;
+        if (!_printedNewline) print('');
+        _printedNewline = true;
 
         print(indent(error.error.toString()));
         print(indent(terseChain(error.stackTrace).toString()));
@@ -101,8 +107,8 @@ class CompactReporter {
 
       liveTest.onPrint.listen((line) {
         _progressLine(_description(liveTest));
-        if (!printedNewline) print('');
-        printedNewline = true;
+        if (!_printedNewline) print('');
+        _printedNewline = true;
 
         print(line);
       });
@@ -126,6 +132,8 @@ class CompactReporter {
 
     _stopwatch.start();
     return _engine.run().then((success) {
+      if (_closed) return false;
+
       if (success) {
         _progressLine("All tests passed!");
         print('');
@@ -140,7 +148,12 @@ class CompactReporter {
 
   /// Signals that the caller is done with any test output and the reporter
   /// should release any resources it has allocated.
-  Future close() => _engine.close();
+  Future close() {
+    if (!_printedNewline) print("");
+    _printedNewline = true;
+    _closed = true;
+    return _engine.close();
+  }
 
   /// Prints a line representing the current state of the tests.
   ///

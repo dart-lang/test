@@ -143,6 +143,11 @@ class IframeListener {
   void _runTest(Test test, MultiChannel channel) {
     var liveTest = test.load(_suite);
 
+    channel.stream.listen((message) {
+      assert(message['command'] == 'close');
+      liveTest.close();
+    });
+
     liveTest.onStateChange.listen((state) {
       channel.sink.add({
         "type": "state-change",

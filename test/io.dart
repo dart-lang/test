@@ -4,6 +4,7 @@
 
 library test.test.io;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -35,5 +36,30 @@ ProcessResult runDart(List<String> args, {String workingDirectory,
 
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
   return Process.runSync(Platform.executable, allArgs,
+      workingDirectory: workingDirectory, environment: environment);
+}
+
+/// Starts the test executable with the package root set properly.
+Future<Process> startUnittest(List<String> args, {String workingDirectory,
+    Map<String, String> environment}) {
+  var allArgs = [
+    p.absolute(p.join(packageDir, 'bin/test.dart')),
+    "--package-root=${p.join(packageDir, 'packages')}"
+  ]..addAll(args);
+
+  if (environment == null) environment = {};
+  environment.putIfAbsent("_UNITTEST_USE_COLOR", () => "false");
+
+  return startDart(allArgs, workingDirectory: workingDirectory,
+      environment: environment);
+}
+
+/// Starts Dart.
+Future<Process> startDart(List<String> args, {String workingDirectory,
+    Map<String, String> environment}) {
+  var allArgs = Platform.executableArguments.toList()..addAll(args);
+
+  // TODO(nweiz): Use ScheduledProcess once it's compatible.
+  return Process.start(Platform.executable, allArgs,
       workingDirectory: workingDirectory, environment: environment);
 }

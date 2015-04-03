@@ -110,15 +110,16 @@ class LiveTestController {
   ///
   /// [test] is the test being run; [suite] is the suite that contains it.
   ///
-  /// [onRun] is a function that will be called from [LiveTest.run]. It should
-  /// start the test running. The controller takes care of ensuring that
+  /// [onRun] is a function that's called from [LiveTest.run]. It should start
+  /// the test running. The controller takes care of ensuring that
   /// [LiveTest.run] isn't called more than once and that [LiveTest.onComplete]
   /// is returned.
   ///
-  /// If [onClose] is passed, it's called the first [LiveTest.close] is called.
-  /// It should clean up any resources that have been allocated for the test. It
-  /// may return a [Future].
-  LiveTestController(this._suite, this._test, void onRun(), {onClose()})
+  /// [onClose] is a function that's called the first time [LiveTest.close] is
+  /// called. It should clean up any resources that have been allocated for the
+  /// test and ensure that the test finishes quickly if it's still running. It
+  /// will only be called if [onRun] has been called first.
+  LiveTestController(this._suite, this._test, void onRun(), void onClose())
       : _onRun = onRun,
         _onClose = onClose {
     _liveTest = new _LiveTest(this);
@@ -130,6 +131,8 @@ class LiveTestController {
   /// [LiveTest.onError]. [stackTrace] is automatically converted into a [Chain]
   /// if it's not one already.
   void addError(error, StackTrace stackTrace) {
+    if (_isClosed) return;
+
     var asyncError = new AsyncError(error, new Chain.forTrace(stackTrace));
     _errors.add(asyncError);
     _onErrorController.add(asyncError);
@@ -141,7 +144,9 @@ class LiveTestController {
   /// [LiveTest.state] and emits the new state via [LiveTest.onStateChanged]. If
   /// it's not different, this does nothing.
   void setState(State newState) {
+    if (_isClosed) return;
     if (_state == newState) return;
+
     _state = newState;
     _onStateChangeController.add(newState);
   }
@@ -163,12 +168,17 @@ class LiveTestController {
 
   /// A wrapper for [_onClose] that ensures that all controllers are closed.
   Future _close() {
-    if (_isClosed) return new Future.value();
+    if (_isClosed) return completer.future;
+
     _onStateChangeController.close();
     _onErrorController.close();
-    if (!completer.isCompleted) completer.complete();
 
-    if (_onClose != null) return new Future.sync(_onClose);
-    return new Future.value();
+    if (_runCalled) {
+      _onClose();
+    } else {
+      completer.complete();
+    }
+
+    return completer.future;
   }
 }

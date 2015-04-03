@@ -28,7 +28,7 @@ import 'remote_exception.dart';
 /// [String] or a [Uri].
 Future<Isolate> runInIsolate(String code, message, {packageRoot}) {
   // TODO(nweiz): load code from a local server rather than from a file.
-  var dir = Directory.systemTemp.createTempSync().path;
+  var dir = createTempDir();
   var dartPath = p.join(dir, 'runInIsolate.dart');
   new File(dartPath).writeAsStringSync(code);
   var port = new ReceivePort();

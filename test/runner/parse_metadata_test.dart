@@ -11,13 +11,14 @@ import 'package:test/test.dart';
 import 'package:test/src/backend/platform_selector.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/parse_metadata.dart';
+import 'package:test/src/util/io.dart';
 
 String _sandbox;
 String _path;
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('test_').path;
+    _sandbox = createTempDir();
     _path = p.join(_sandbox, "test.dart");
   });
 

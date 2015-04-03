@@ -26,6 +26,15 @@ final OperatingSystem currentOS = (() {
   throw new UnsupportedError('Unsupported operating system "$name".');
 })();
 
+/// The root directory below which to nest temporary directories created by the
+/// test runner.
+///
+/// This is configurable so that the test code can validate that the runner
+/// cleans up after itself fully.
+final _tempDir = Platform.environment.containsKey("_UNITTEST_TEMP_DIR")
+    ? Platform.environment["_UNITTEST_TEMP_DIR"]
+    : Directory.systemTemp.path;
+
 /// The path to the `lib` directory of the `test` package.
 String libDir({String packageRoot}) {
   var pathToIo = libraryPath(#test.util.io, packageRoot: packageRoot);
@@ -52,6 +61,10 @@ bool get canUseSpecialChars =>
     Platform.operatingSystem != 'windows' &&
     Platform.environment["_UNITTEST_USE_COLOR"] != "false";
 
+/// Creates a temporary directory and returns its path.
+String createTempDir() =>
+    new Directory(_tempDir).createTempSync('dart_test_').path;
+
 /// Creates a temporary directory and passes its path to [fn].
 ///
 /// Once the [Future] returned by [fn] completes, the temporary directory and
@@ -62,11 +75,9 @@ bool get canUseSpecialChars =>
 /// [fn] completes to.
 Future withTempDir(Future fn(String path)) {
   return new Future.sync(() {
-    // TODO(nweiz): Empirically test whether sync or async functions perform
-    // better here when starting a bunch of isolates.
-    var tempDir = Directory.systemTemp.createTempSync('test_');
-    return new Future.sync(() => fn(tempDir.path))
-        .whenComplete(() => tempDir.deleteSync(recursive: true));
+    var tempDir = createTempDir();
+    return new Future.sync(() => fn(tempDir))
+        .whenComplete(() => new Directory(tempDir).deleteSync(recursive: true));
   });
 }
 

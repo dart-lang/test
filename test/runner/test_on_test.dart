@@ -18,7 +18,7 @@ final _otherOS = Platform.isWindows ? "mac-os" : "windows";
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('test_').path;
+    _sandbox = createTempDir();
   });
 
   tearDown(() {

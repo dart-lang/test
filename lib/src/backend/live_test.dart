@@ -111,10 +111,16 @@ abstract class LiveTest {
   /// Once [close] is called, [onComplete] will complete if it hasn't already
   /// and [onStateChange] and [onError] will close immediately. This means that,
   /// if the test was running at the time [close] is called, it will never emit
-  /// a [Status.complete] state-change event.
+  /// a [Status.complete] state-change event. Once a test is closed, [expect]
+  /// and [expectAsync] will throw a [ClosedException] to help the test
+  /// terminate as quickly as possible.
   ///
   /// This doesn't automatically happen after the test completes because there
   /// may be more asynchronous work going on in the background that could
   /// produce new errors.
+  ///
+  /// Returns a [Future] that completes once all resources are released *and*
+  /// the test has completed. This allows the caller to wait until the test's
+  /// tear-down logic has run.
   Future close();
 }

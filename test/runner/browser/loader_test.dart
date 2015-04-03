@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/loader.dart';
+import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
 import '../../io.dart';
@@ -34,7 +35,7 @@ void main() {
   setUp(() {
     _loader = new Loader([TestPlatform.chrome],
         packageRoot: p.join(packageDir, 'packages'));
-    _sandbox = Directory.systemTemp.createTempSync('test_').path;
+    _sandbox = createTempDir();
     /// TODO(nweiz): Use scheduled_test for this once it's compatible with this
     /// version of test.
     new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);

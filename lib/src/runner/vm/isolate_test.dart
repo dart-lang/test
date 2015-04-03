@@ -4,6 +4,7 @@
 
 library test.runner.vm.isolate_test;
 
+import 'dart:async';
 import 'dart:isolate';
 
 import '../../backend/live_test.dart';
@@ -26,11 +27,18 @@ class IsolateTest implements Test {
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite) {
-    var receivePort;
     var controller;
+
+    // We get a new send port for communicating with the live test, since
+    // [_sendPort] is only for communicating with the non-live test. This will
+    // be non-null once the test starts running.
+    var sendPortCompleter;
+
+    var receivePort;
     controller = new LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
+      sendPortCompleter = new Completer();
       receivePort = new ReceivePort();
       _sendPort.send({
         'command': 'run',
@@ -38,7 +46,9 @@ class IsolateTest implements Test {
       });
 
       receivePort.listen((message) {
-        if (message['type'] == 'error') {
+        if (message['type'] == 'started') {
+          sendPortCompleter.complete(message['reply']);
+        } else if (message['type'] == 'error') {
           var asyncError = RemoteException.deserialize(message['error']);
           controller.addError(asyncError.error, asyncError.stackTrace);
         } else if (message['type'] == 'state-change') {
@@ -53,8 +63,21 @@ class IsolateTest implements Test {
           controller.completer.complete();
         }
       });
-    }, onClose: () {
-      if (receivePort != null) receivePort.close();
+    }, () {
+      // If the test has finished running, just disconnect the receive port. The
+      // Dart process won't terminate if there are any live receive ports open.
+      if (controller.completer.isCompleted) {
+        receivePort.close();
+        return;
+      }
+
+      // If the test is still running, send it a message telling it to shut down
+      // ASAP. This causes the [Invoker] to eagerly throw exceptions whenever
+      // the test touches it.
+      sendPortCompleter.future.then((sendPort) {
+        sendPort.send({'command': 'close'});
+        return controller.completer.future;
+      }).then((_) => receivePort.close());
     });
     return controller.liveTest;
   }

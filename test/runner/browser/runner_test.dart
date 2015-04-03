@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
 import '../../io.dart';
@@ -26,7 +27,7 @@ void main() {
 
 void main() {
   setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('test_').path;
+    _sandbox = createTempDir();
   });
 
   tearDown(() {

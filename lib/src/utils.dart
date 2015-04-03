@@ -16,6 +16,9 @@ import 'backend/operating_system.dart';
 /// The return type should only ever by [Future] or void.
 typedef AsyncFunction();
 
+/// A typedef for a zero-argument callback function.
+typedef void Callback();
+
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
 final _exceptionPrefix = new RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
@@ -140,4 +143,39 @@ String truncate(String text, int maxLength) {
     result = result.substring(firstSpace);
   }
   return '...$result';
+}
+
+/// Merges [streams] into a single stream that emits events from all sources.
+Stream mergeStreams(Iterable<Stream> streamIter) {
+  var streams = streamIter.toList();
+
+  var subscriptions = new Set();
+  var controller;
+  controller = new StreamController(sync: true, onListen: () {
+    for (var stream in streams) {
+      var subscription;
+      subscription = stream.listen(
+          controller.add,
+          onError: controller.addError,
+          onDone: () {
+        subscriptions.remove(subscription);
+        if (subscriptions.isEmpty) controller.close();
+      });
+      subscriptions.add(subscription);
+    }
+  }, onPause: () {
+    for (var subscription in subscriptions) {
+      subscription.pause();
+    }
+  }, onResume: () {
+    for (var subscription in subscriptions) {
+      subscription.resume();
+    }
+  }, onCancel: () {
+    for (var subscription in subscriptions) {
+      subscription.cancel();
+    }
+  });
+
+  return controller.stream;
 }

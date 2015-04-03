@@ -10,6 +10,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/expect.dart';
 import '../utils.dart';
+import 'closed_exception.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
 import 'metadata.dart';
@@ -55,6 +56,14 @@ class Invoker {
   LiveTest get liveTest => _controller.liveTest;
   LiveTestController _controller;
 
+  /// Whether the test has been closed.
+  ///
+  /// Once the test is closed, [expect] and [expectAsync] will throw
+  /// [ClosedException]s whenever accessed to help the test stop executing as
+  /// soon as possible.
+  bool get closed => _closed;
+  bool _closed = false;
+
   /// The test being run.
   LocalTest get _test => liveTest.test as LocalTest;
 
@@ -76,7 +85,9 @@ class Invoker {
   }
 
   Invoker._(Suite suite, LocalTest test) {
-    _controller = new LiveTestController(suite, test, _onRun);
+    _controller = new LiveTestController(suite, test, _onRun, () {
+      _closed = true;
+    });
   }
 
   /// Tells the invoker that there's a callback running that it should wait for
@@ -87,7 +98,10 @@ class Invoker {
   /// that only successful tests wait for outstanding callbacks; as soon as a
   /// test experiences an error, any further calls to [addOutstandingCallback]
   /// or [removeOutstandingCallback] will do nothing.
+  ///
+  /// Throws a [ClosedException] if this test has been closed.
   void addOutstandingCallback() {
+    if (closed) throw new ClosedException();
     _outstandingCallbacks++;
   }
 
@@ -162,10 +176,6 @@ class Invoker {
         new Future(_test._body)
             .then((_) => removeOutstandingCallback());
 
-        // Explicitly handle an error here so that we can return the [Future].
-        // If a [Future] returned from an error zone would throw an error
-        // through the zone boundary, it instead never completes, and we want to
-        // avoid that.
         _completer.future.then((_) {
           if (_test._tearDown == null) return null;
           return new Future.sync(_test._tearDown);

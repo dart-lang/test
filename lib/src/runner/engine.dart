@@ -23,6 +23,9 @@ class Engine {
   /// Whether [run] has been called yet.
   var _runCalled = false;
 
+  /// Whether [close] has been called.
+  var _closed = false;
+
   /// An unmodifiable list of tests to run.
   ///
   /// These are [LiveTest]s, representing the in-progress state of each test.
@@ -54,6 +57,7 @@ class Engine {
     _runCalled = true;
 
     return Future.forEach(liveTests, (liveTest) {
+      if (_closed) return new Future.value();
       _onTestStartedController.add(liveTest);
 
       // First, schedule a microtask to ensure that [onTestStarted] fires before
@@ -67,6 +71,12 @@ class Engine {
 
   /// Signals that the caller is done paying attention to test results and the
   /// engine should release any resources it has allocated.
-  Future close() =>
-      Future.wait(liveTests.map((liveTest) => liveTest.close()));
+  ///
+  /// Any actively-running tests are also closed. VM tests are allowed to finish
+  /// running so that any modifications they've made to the filesystem can be
+  /// cleaned up.
+  Future close() {
+    _closed = true;
+    return Future.wait(liveTests.map((liveTest) => liveTest.close()));
+  }
 }

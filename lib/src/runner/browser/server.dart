@@ -64,6 +64,12 @@ class BrowserServer {
   /// This is `null` until a suite is loaded.
   Chrome _browser;
 
+  /// Whether [close] has been called.
+  bool get _closed => _closeCompleter != null;
+
+  /// The completer for the [Future] returned by [close].
+  Completer _closeCompleter;
+
   /// A future that will complete to the [BrowserManager] for [_browser].
   ///
   /// The first time this is called, it will start both the browser and the
@@ -92,7 +98,7 @@ class BrowserServer {
   Completer<BrowserManager> _browserManagerCompleter;
 
   BrowserServer._(this._packageRoot, bool color)
-      : _compiledDir = Directory.systemTemp.createTempSync('test_').path,
+      : _compiledDir = createTempDir(),
         _compilers = new CompilerPool(color: color);
 
   /// Starts the underlying server.
@@ -114,8 +120,12 @@ class BrowserServer {
   /// This will start a browser to load the suite if one isn't already running.
   Future<Suite> loadSuite(String path) {
     return _compileSuite(path).then((dir) {
+      if (_closed) return null;
+
       // TODO(nweiz): Don't start the browser until all the suites are compiled.
       return _browserManager.then((browserManager) {
+        if (_closed) return null;
+
         // Add a trailing slash because at least on Chrome, the iframe's
         // window.location.href will do so automatically, and if that differs
         // from the original URL communication will fail.
@@ -135,6 +145,8 @@ class BrowserServer {
     return _compilers.compile(dartPath, jsPath,
             packageRoot: packageRootFor(dartPath, _packageRoot))
         .then((_) {
+      if (_closed) return null;
+
       // TODO(nweiz): support user-authored HTML files.
       new File(p.join(dir, "index.html")).writeAsStringSync('''
 <!DOCTYPE html>
@@ -154,10 +166,18 @@ class BrowserServer {
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   Future close() {
-    new Directory(_compiledDir).deleteSync(recursive: true);
-    return _server.close().then((_) {
+    if (_closeCompleter != null) return _closeCompleter.future;
+    _closeCompleter = new Completer();
+
+    return Future.wait([
+      _server.close(),
+      _compilers.close()
+    ]).then((_) {
       if (_browserManagerCompleter == null) return null;
       return _browserManager.then((_) => _browser.close());
-    });
+    }).then((_) {
+      new Directory(_compiledDir).deleteSync(recursive: true);
+      _closeCompleter.complete();
+    }).catchError(_closeCompleter.completeError);
   }
 }

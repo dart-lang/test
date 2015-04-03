@@ -35,6 +35,12 @@ class CompilerPool {
   /// emitted once they become visible.
   final _compilers = new Queue<_Compiler>();
 
+  /// Whether [close] has been called.
+  bool get _closed => _closeCompleter != null;
+
+  /// The completer for the [Future] returned by [close].
+  Completer _closeCompleter;
+
   /// Creates a compiler pool that runs up to [parallel] instances of `dart2js`
   /// at once.
   ///
@@ -55,6 +61,8 @@ class CompilerPool {
   /// *and* all its output has been printed to the command line.
   Future compile(String dartPath, String jsPath, {String packageRoot}) {
     return _pool.withResource(() {
+      if (_closed) return null;
+
       return withTempDir((dir) {
         var wrapperPath = p.join(dir, "runInBrowser.dart");
         new File(wrapperPath).writeAsStringSync('''
@@ -103,12 +111,18 @@ void main(_) {
       compiler.process.stdout.listen(stdout.add).asFuture(),
       compiler.process.stderr.listen(stderr.add).asFuture(),
       compiler.process.exitCode.then((exitCode) {
-        if (exitCode == 0) return;
+        if (exitCode == 0 || _closed) return;
         throw new LoadException(compiler.path, "dart2js failed.");
       })
-    ]).then(compiler.onDoneCompleter.complete)
-        .catchError(compiler.onDoneCompleter.completeError)
-        .then((_) {
+    ]).then((_) {
+      if (_closed) return;
+      compiler.onDoneCompleter.complete();
+    }).catchError((error, stackTrace) {
+      if (_closed) return;
+      compiler.onDoneCompleter.completeError(error, stackTrace);
+    }).then((_) {
+      if (_closed) return;
+
       _compilers.removeFirst();
       if (_compilers.isEmpty) return;
 
@@ -118,6 +132,24 @@ void main(_) {
       // threw an error that needs to be printed.
       Timer.run(() => _showProcess(next));
     });
+  }
+
+  /// Closes the compiler pool.
+  ///
+  /// This kills all currently-running compilers and ensures that no more will
+  /// be started. It returns a [Future] that completes once all the compilers
+  /// have been killed and all resources released.
+  Future close() {
+    if (_closed) return _closeCompleter.future;
+    _closeCompleter = new Completer();
+
+    return Future.wait(_compilers.map((compiler) {
+      compiler.process.kill();
+      return compiler.process.exitCode.then(compiler.onDoneCompleter.complete);
+    })).then((_) {
+      _compilers.clear();
+      _closeCompleter.complete();
+    }).catchError(_closeCompleter.completeError);
   }
 }
 

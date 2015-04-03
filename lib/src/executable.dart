@@ -25,6 +25,16 @@ import 'utils.dart';
 /// The argument parser used to parse the executable arguments.
 final _parser = new ArgParser(allowTrailingOptions: true);
 
+/// A merged stream of all signals that tell the test runner to shut down
+/// gracefully.
+///
+/// Signals will only be captured as long as this has an active subscription.
+/// Otherwise, they'll be handled by Dart's default signal handler, which
+/// terminates the program immediately.
+final _signals = mergeStreams([
+  ProcessSignal.SIGTERM.watch(), ProcessSignal.SIGINT.watch()
+]);
+
 void main(List<String> args) {
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
@@ -65,6 +75,15 @@ void main(List<String> args) {
   var platforms = options["platform"].map(TestPlatform.find);
   var loader = new Loader(platforms,
       packageRoot: options["package-root"], color: color);
+
+  var signalSubscription;
+  var closed = false;
+  signalSubscription = _signals.listen((_) {
+    signalSubscription.cancel();
+    closed = true;
+    loader.close();
+  });
+
   new Future.sync(() {
     var paths = options.rest;
     if (paths.isEmpty) {
@@ -82,6 +101,7 @@ void main(List<String> args) {
       throw new LoadException(path, 'Does not exist.');
     }));
   }).then((suites) {
+    if (closed) return null;
     suites = flatten(suites);
 
     var pattern;
@@ -116,10 +136,30 @@ void main(List<String> args) {
     }
 
     var reporter = new CompactReporter(flatten(suites), color: color);
+
+    // Override the signal handler to close [reporter]. [loader] will still be
+    // closed in the [whenComplete] below.
+    signalSubscription.onData((_) {
+      signalSubscription.cancel();
+      closed = true;
+
+      // Wait a bit to print this message, since printing it eagerly looks weird
+      // if the tests then finish immediately.
+      var timer = new Timer(new Duration(seconds: 1), () {
+        print("Waiting for current test to finish.");
+        print("Press Control-C again to terminate immediately.");
+      });
+
+      reporter.close().then((_) => timer.cancel());
+    });
+
     return reporter.run().then((success) {
       exitCode = success ? 0 : 1;
-    }).whenComplete(() => reporter.close());
-  }).catchError((error, stackTrace) {
+    }).whenComplete(() {
+      signalSubscription.cancel();
+      return reporter.close();
+    });
+  }).whenComplete(signalSubscription.cancel).catchError((error, stackTrace) {
     if (error is LoadException) {
       stderr.writeln(error.toString(color: color));
 

@@ -25,10 +25,11 @@ class IframeTest implements Test {
 
   LiveTest load(Suite suite) {
     var controller;
+    var testChannel;
     controller = new LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
-      var testChannel = _channel.virtualChannel();
+      testChannel = _channel.virtualChannel();
       _channel.sink.add({
         'command': 'run',
         'channel': testChannel.id
@@ -50,6 +51,12 @@ class IframeTest implements Test {
           controller.completer.complete();
         }
       });
+    }, () {
+      // Ignore all future messages from the test and complete it immediately.
+      // We don't need to tell it to run its tear-down because there's nothing a
+      // browser test needs to clean up on the file system anyway.
+      testChannel.sink.close();
+      if (!controller.completer.isCompleted) controller.completer.complete();
     });
     return controller.liveTest;
   }

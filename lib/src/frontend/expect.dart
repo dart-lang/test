@@ -6,6 +6,9 @@ library test.frontend.expect;
 
 import 'package:matcher/matcher.dart';
 
+import '../backend/closed_exception.dart';
+import '../backend/invoker.dart';
+
 /// An exception thrown when a test assertion fails.
 class TestFailure {
   final String message;
@@ -36,6 +39,8 @@ typedef String ErrorFormatter(
 /// [verbose] should be specified as `true`.
 void expect(actual, matcher,
     {String reason, bool verbose: false, ErrorFormatter formatter}) {
+  if (Invoker.current.closed) throw new ClosedException();
+
   matcher = wrapMatcher(matcher);
   var matchState = {};
   try {

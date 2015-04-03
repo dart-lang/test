@@ -97,6 +97,15 @@ class IsolateListener {
   void _runTest(Test test, SendPort sendPort) {
     var liveTest = test.load(_suite);
 
+    var receivePort = new ReceivePort();
+    sendPort.send({"type": "started", "reply": receivePort.sendPort});
+
+    receivePort.listen((message) {
+      assert(message['command'] == 'close');
+      receivePort.close();
+      liveTest.close();
+    });
+
     liveTest.onStateChange.listen((state) {
       sendPort.send({
         "type": "state-change",
