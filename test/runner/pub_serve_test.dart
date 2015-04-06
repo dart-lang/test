@@ -228,10 +228,10 @@ Make sure "pub serve" is running.
   test("gracefully handles pub serve not running for browser tests", () {
     var result = runUnittest(['--pub-serve=54321', '-p', 'chrome'],
         workingDirectory: _sandbox);
-    expect(result.stderr, equals('''
-Failed to load "test/my_test.dart":
-Error getting http://localhost:54321/my_test.browser_test.dart.js: Connection refused (errno 111)
-Make sure "pub serve" is running.
+    expect(result.stderr, matches(r'''
+Failed to load "test/my_test\.dart":
+Error getting http://localhost:54321/my_test\.browser_test.dart\.js: Connection refused \(errno \d+\)
+Make sure "pub serve" is running\.
 '''));
     expect(result.exitCode, equals(exit_codes.data));
   });
