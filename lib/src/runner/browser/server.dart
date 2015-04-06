@@ -165,6 +165,8 @@ class BrowserServer {
             .then((_) => _pubServeUrl.resolve('$suitePrefix.html'));
       } else {
         return _compileSuite(path).then((dir) {
+          if (_closed) return null;
+
           // Add a trailing slash because at least on Chrome, the iframe's
           // window.location.href will do so automatically, and if that differs
           // from the original URL communication will fail.
