@@ -25,10 +25,13 @@ lib/*/*/*/*: SkipByDesign
 
 test/runner/browser/loader_test: Pass, Slow
 
-# dart:io-specific tests.
+# The test harness for browser tests doesn't play nicely with the new way of
+# doing browser tests.
 [ $browser ]
-test/runner/*: SkipByDesign
-test/util/parse_annotations_test: SkipByDesign
+test/*: SkipByDesign
+test/*/*: SkipByDesign
+test/*/*/*: SkipByDesign
+test/*/*/*/*: SkipByDesign
 
 [ $runtime == safari ]
 test/matcher/prints_test: Fail # Issue 4
