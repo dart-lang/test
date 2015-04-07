@@ -1,3 +1,9 @@
+### 0.12.0-beta.6
+
+* Add the ability to run multiple test suites concurrently. By default a number
+  of concurrent test suites will be run equal to half the machine's processors;
+  this can be controlled with the `--concurrency` flag.
+
 ### 0.12.0-beta.5
 
 * Add a `--pub-serve` flag that runs tests against a `pub serve` instance.

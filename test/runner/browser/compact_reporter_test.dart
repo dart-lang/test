@@ -35,7 +35,8 @@ void main() {
 }
 """);
 
-    var result = _runUnittest(["-p", "chrome", "-p", "vm", "test.dart"]);
+    var result = _runUnittest(
+        ["-p", "chrome", "-p", "vm", "-j", "1", "test.dart"]);
     expect(result.stdout, contains("[VM]"));
     expect(result.stdout, contains("[Chrome]"));
     expect(result.exitCode, equals(0));

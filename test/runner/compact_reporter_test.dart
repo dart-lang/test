@@ -232,7 +232,10 @@ void main() {
   });
 }
 
-void _expectReport(String tests, String expected, {List<String> args}) {
+void _expectReport(String tests, String expected, {List<String> args,
+    int concurrency}) {
+  if (concurrency == null) concurrency = 1;
+
   var dart = """
 import 'dart:async';
 
@@ -247,6 +250,7 @@ $tests
     new File(p.join(path, "test.dart")).writeAsStringSync(dart);
     if (args == null) args = [];
     args = args.toList()..add("test.dart");
+    args.add("--concurrency=$concurrency");
     var result = runUnittest(args, workingDirectory: path);
 
     // Convert CRs into newlines, remove excess trailing whitespace, and trim

@@ -10,6 +10,7 @@ library test.executable;
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math' as math;
 
 import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -25,6 +26,12 @@ import 'utils.dart';
 
 /// The argument parser used to parse the executable arguments.
 final _parser = new ArgParser(allowTrailingOptions: true);
+
+/// The default number of test suites to run at once.
+///
+/// This defaults to half the available processors, since presumably some of
+/// them will be used for the OS and other processes.
+final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 /// A merged stream of all signals that tell the test runner to shut down
 /// gracefully.
@@ -80,6 +87,11 @@ void main(List<String> args) {
       allowed: TestPlatform.all.map((platform) => platform.identifier).toList(),
       defaultsTo: 'vm',
       allowMultiple: true);
+  _parser.addOption("concurrency",
+      abbr: 'j',
+      help: 'The number of concurrent test suites run.\n'
+          '(defaults to $_defaultConcurrency)',
+      valueHelp: 'threads');
   _parser.addOption("pub-serve",
       help: 'The port of a pub serve instance serving "test/".',
       hide: !supportsPubServe,
@@ -126,6 +138,18 @@ transformers:
       pubServeUrl: pubServeUrl,
       packageRoot: options["package-root"],
       color: color);
+
+  var concurrency = _defaultConcurrency;
+  if (options["concurrency"] != null) {
+    try {
+      concurrency = int.parse(options["concurrency"]);
+    } catch (error) {
+      _printUsage('Couldn\'t parse --concurrency "${options["concurrency"]}":'
+          ' ${error.message}');
+      exitCode = exit_codes.usage;
+      return;
+    }
+  }
 
   var signalSubscription;
   var closed = false;
@@ -186,7 +210,8 @@ transformers:
       }
     }
 
-    var reporter = new CompactReporter(flatten(suites), color: color);
+    var reporter = new CompactReporter(flatten(suites),
+        concurrency: concurrency, color: color);
 
     // Override the signal handler to close [reporter]. [loader] will still be
     // closed in the [whenComplete] below.
@@ -197,7 +222,10 @@ transformers:
       // Wait a bit to print this message, since printing it eagerly looks weird
       // if the tests then finish immediately.
       var timer = new Timer(new Duration(seconds: 1), () {
-        print("Waiting for current test to finish.");
+        // Print a blank line first to ensure that this doesn't interfere with
+        // the compact reporter's unfinished line.
+        print("");
+        print("Waiting for current test(s) to finish.");
         print("Press Control-C again to terminate immediately.");
       });
 

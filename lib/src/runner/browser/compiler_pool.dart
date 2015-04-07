@@ -41,14 +41,14 @@ class CompilerPool {
   /// The completer for the [Future] returned by [close].
   Completer _closeCompleter;
 
-  /// Creates a compiler pool that runs up to [parallel] instances of `dart2js`
-  /// at once.
+  /// Creates a compiler pool that runs up to [concurrency] instances of
+  /// `dart2js` at once.
   ///
-  /// If [parallel] isn't provided, it defaults to 4.
+  /// If [concurrency] isn't provided, it defaults to 4.
   ///
   /// If [color] is true, `dart2js` will be run with colors enabled.
-  CompilerPool({int parallel, bool color: false})
-      : _pool = new Pool(parallel == null ? 4 : parallel),
+  CompilerPool({int concurrency, bool color: false})
+      : _pool = new Pool(concurrency == null ? 4 : concurrency),
         _color = color;
 
   /// Compile the Dart code at [dartPath] to [jsPath].

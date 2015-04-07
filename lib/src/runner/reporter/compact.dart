@@ -51,6 +51,9 @@ class CompactReporter {
   /// The set of tests that have completed and been marked as failing or error.
   final _failed = new Set<LiveTest>();
 
+  /// The set of tests that are still running.
+  final _active = new List<LiveTest>();
+
   /// Whether [close] has been called.
   bool _closed = false;
 
@@ -70,27 +73,37 @@ class CompactReporter {
   ///
   /// If [color] is `true`, this will use terminal colors; if it's `false`, it
   /// won't.
-  CompactReporter(Iterable<Suite> suites, {bool color: true})
+  CompactReporter(Iterable<Suite> suites, {int concurrency, bool color: true})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
-        _engine = new Engine(suites),
+        _engine = new Engine(suites, concurrency: concurrency),
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen((liveTest) {
-      _progressLine(_description(liveTest));
+      if (_active.isEmpty) _progressLine(_description(liveTest));
+      _active.add(liveTest);
       _printedNewline = false;
 
       liveTest.onStateChange.listen((state) {
         if (state.status != Status.complete) return;
+        _active.remove(liveTest);
         if (state.result == Result.success) {
           _passed.add(liveTest);
         } else {
           _passed.remove(liveTest);
           _failed.add(liveTest);
         }
-        _progressLine(_description(liveTest));
+
+        // Always display the name of the oldest active test, unless testing is
+        // finished in which case display the last test to complete.
+        if (_active.isEmpty) {
+          _progressLine(_description(liveTest));
+        } else {
+          _progressLine(_description(_active.first));
+        }
+
         _printedNewline = false;
       });
 

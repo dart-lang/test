@@ -7,6 +7,8 @@ library test.runner.engine;
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:pool/pool.dart';
+
 import '../backend/live_test.dart';
 import '../backend/state.dart';
 import '../backend/suite.dart';
@@ -26,6 +28,9 @@ class Engine {
   /// Whether [close] has been called.
   var _closed = false;
 
+  /// A pool that limits the number of test suites running concurrently.
+  final Pool _pool;
+
   /// An unmodifiable list of tests to run.
   ///
   /// These are [LiveTest]s, representing the in-progress state of each test.
@@ -33,7 +38,10 @@ class Engine {
   /// that have finished are marked [Status.complete].
   ///
   /// [LiveTest.run] must not be called on these tests.
-  final List<LiveTest> liveTests;
+  List<LiveTest> get liveTests =>
+      new UnmodifiableListView(flatten(_liveTestsBySuite));
+
+  final List<List<LiveTest>> _liveTestsBySuite;
 
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
@@ -42,9 +50,10 @@ class Engine {
   final _onTestStartedController = new StreamController<LiveTest>.broadcast();
 
   /// Creates an [Engine] that will run all tests in [suites].
-  Engine(Iterable<Suite> suites)
-      : liveTests = new UnmodifiableListView(flatten(suites.map((suite) =>
-            suite.tests.map((test) => test.load(suite)))));
+  Engine(Iterable<Suite> suites, {int concurrency})
+      : _liveTestsBySuite = suites.map((suite) =>
+            suite.tests.map((test) => test.load(suite)).toList()).toList(),
+        _pool = new Pool(concurrency == null ? 1 : concurrency);
 
   /// Runs all tests in all suites defined by this engine.
   ///
@@ -56,16 +65,23 @@ class Engine {
     }
     _runCalled = true;
 
-    return Future.forEach(liveTests, (liveTest) {
-      if (_closed) return new Future.value();
-      _onTestStartedController.add(liveTest);
+    return Future.wait(_liveTestsBySuite.map((suite) {
+      return _pool.withResource(() {
+        if (_closed) return null;
 
-      // First, schedule a microtask to ensure that [onTestStarted] fires before
-      // the first [LiveTest.onStateChange] event. Once the test finishes, use
-      // [new Future] to do a coarse-grained event loop pump to avoid starving
-      // the DOM or other non-microtask events.
-      return new Future.microtask(liveTest.run).then((_) => new Future(() {}));
-    }).then((_) =>
+        return Future.forEach(suite, (liveTest) {
+          if (_closed) return new Future.value();
+          _onTestStartedController.add(liveTest);
+
+          // First, schedule a microtask to ensure that [onTestStarted] fires
+          // before the first [LiveTest.onStateChange] event. Once the test
+          // finishes, use [new Future] to do a coarse-grained event loop pump
+          // to avoid starving the DOM or other non-microtask events.
+          return new Future.microtask(liveTest.run)
+              .then((_) => new Future(() {}));
+        });
+      });
+    })).then((_) =>
         liveTests.every((liveTest) => liveTest.state.result == Result.success));
   }
 

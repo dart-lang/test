@@ -159,6 +159,9 @@ class LiveTestController {
   Future _run() {
     if (_runCalled) {
       throw new StateError("LiveTest.run() may not be called more than once.");
+    } else if (_isClosed) {
+      throw new StateError("LiveTest.run() may not be called for a closed "
+          "test.");
     }
     _runCalled = true;
 

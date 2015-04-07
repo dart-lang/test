@@ -5,6 +5,7 @@
 @TestOn("vm")
 
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:path/path.dart' as p;
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
@@ -35,20 +36,25 @@ void main() {
 }
 """;
 
+final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
+
 final _usage = """
 Usage: pub run test:test [files or directories...]
 
--h, --help                Shows this usage information.
--n, --name                A substring of the name of the test to run.
-                          Regular expression syntax is supported.
+-h, --help                     Shows this usage information.
+-n, --name                     A substring of the name of the test to run.
+                               Regular expression syntax is supported.
 
--N, --plain-name          A plain-text substring of the name of the test to run.
--p, --platform            The platform(s) on which to run the tests.
-                          [vm (default), chrome]
+-N, --plain-name               A plain-text substring of the name of the test to run.
+-p, --platform                 The platform(s) on which to run the tests.
+                               [vm (default), chrome]
 
-    --pub-serve=<port>    The port of a pub serve instance serving "test/".
-    --[no-]color          Whether to use terminal colors.
-                          (auto-detected by default)
+-j, --concurrency=<threads>    The number of concurrent test suites run.
+                               (defaults to $_defaultConcurrency)
+
+    --pub-serve=<port>         The port of a pub serve instance serving "test/".
+    --[no-]color               Whether to use terminal colors.
+                               (auto-detected by default)
 """;
 
 void main() {
