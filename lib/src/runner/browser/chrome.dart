@@ -93,6 +93,10 @@ class Chrome {
 
   /// Return the default executable for the current operating system.
   String _defaultExecutable() {
+    if (Platform.environment.containsKey('CHROME_BIN')) {
+      return Platform.environment['CHROME_BIN'];
+    }
+
     if (Platform.isMacOS) {
       return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
     }
