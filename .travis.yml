@@ -1,0 +1,9 @@
+language: dart
+sudo: false
+dart:
+  - dev
+before_install:
+  - /usr/bin/chromium-browser --version
+  - export CHROME_BIN=/usr/bin/chromium-browser
+  - sh -e /etc/init.d/xvfb start
+script: ./tool/travis.sh
