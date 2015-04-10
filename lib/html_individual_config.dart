@@ -34,6 +34,8 @@ class HtmlIndividualConfiguration extends htmlconfig.HtmlConfiguration {
         }
 
         var testGroupName = groups.single.split('=')[1];
+        testGroupName =
+            testGroupName.replaceAll('+', ' ').replaceAll('%20', ' ');
         var startsWith = "$testGroupName${unittest.groupSep}";
         unittest.filterTests(
             (unittest.TestCase tc) => tc.description.startsWith(startsWith));
