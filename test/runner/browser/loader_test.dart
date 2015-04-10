@@ -49,7 +49,8 @@ void main() {
   group(".loadFile()", () {
     var suite;
     setUp(() {
-      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).then((suites) {
+      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).toList()
+          .then((suites) {
         expect(suites, hasLength(1));
         suite = suites.first;
       });
@@ -89,7 +90,7 @@ void main() {
   test("throws a nice error if the package root doesn't exist", () {
     var loader = new Loader([TestPlatform.chrome]);
     expect(
-        loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+        loader.loadFile(p.join(_sandbox, 'a_test.dart')).first
             .whenComplete(loader.close),
         throwsA(isLoadException(
             "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
@@ -99,7 +100,7 @@ void main() {
     var loader = new Loader([TestPlatform.vm, TestPlatform.chrome],
         packageRoot: p.join(packageDir, 'packages'));
     var path = p.join(_sandbox, 'a_test.dart');
-    return loader.loadFile(path).then((suites) {
+    return loader.loadFile(path).toList().then((suites) {
       expect(suites[0].platform, equals('VM'));
       expect(suites[0].path, equals(path));
       expect(suites[1].platform, equals('Chrome'));

@@ -7,7 +7,6 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
@@ -33,7 +32,7 @@ void main() {
     new File(testPath2).writeAsStringSync("int main() => 'foo';\n");
 
     var result = _runUnittest(["-p", "chrome", "test1.dart", "test2.dart"]);
-    expect(result.stdout, equals("""
+    expect(result.stdout, startsWith("""
 Compiling test1.dart...
 test1.dart:1:18:
 Warning: 'int' is not assignable to 'String'.
@@ -45,7 +44,7 @@ Warning: 'String' is not assignable to 'int'.
 int main() => 'foo';
               ^^^^^
 """));
-    expect(result.exitCode, equals(exit_codes.data));
+    expect(result.exitCode, equals(1));
   });
 
   test("uses colors if the test runner uses colors", () {
@@ -54,7 +53,7 @@ int main() => 'foo';
 
     var result = _runUnittest(["--color", "-p", "chrome", "test.dart"]);
     expect(result.stdout, contains('\u001b[35m'));
-    expect(result.exitCode, equals(exit_codes.data));
+    expect(result.exitCode, equals(1));
   });
 }
 

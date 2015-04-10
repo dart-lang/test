@@ -9,7 +9,6 @@ library test.executable;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:args/args.dart';
@@ -19,6 +18,7 @@ import 'package:yaml/yaml.dart';
 import 'backend/test_platform.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/load_exception.dart';
+import 'runner/load_exception_suite.dart';
 import 'runner/loader.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
@@ -151,6 +151,17 @@ transformers:
     }
   }
 
+  var paths = options.rest;
+  if (paths.isEmpty) {
+    if (!new Directory("test").existsSync()) {
+      _printUsage('No test files were passed and the default "test/" '
+          "directory doesn't exist.");
+      exitCode = exit_codes.data;
+      return;
+    }
+    paths = ["test"];
+  }
+
   var signalSubscription;
   var closed = false;
   signalSubscription = _signals.listen((_) {
@@ -159,23 +170,20 @@ transformers:
     loader.close();
   });
 
-  new Future.sync(() {
-    var paths = options.rest;
-    if (paths.isEmpty) {
-      if (!new Directory("test").existsSync()) {
-        throw new LoadException("test",
-            "No test files were passed and the default directory doesn't "
-                "exist.");
-      }
-      paths = ["test"];
+  mergeStreams(paths.map((path) {
+    if (new Directory(path).existsSync()) return loader.loadDir(path);
+    if (new File(path).existsSync()) return loader.loadFile(path);
+    return new Stream.fromFuture(new Future.error(
+        new LoadException(path, 'Does not exist.'),
+        new Trace.current()));
+  })).transform(new StreamTransformer.fromHandlers(
+      handleError: (error, stackTrace, sink) {
+    if (error is! LoadException) {
+      sink.addError(error, stackTrace);
+    } else {
+      sink.add(new LoadExceptionSuite(error));
     }
-
-    return Future.wait(paths.map((path) {
-      if (new Directory(path).existsSync()) return loader.loadDir(path);
-      if (new File(path).existsSync()) return loader.loadFile(path);
-      throw new LoadException(path, 'Does not exist.');
-    }));
-  }).then((suites) {
+  })).toList().then((suites) {
     if (closed) return null;
     suites = flatten(suites);
 
@@ -193,6 +201,8 @@ transformers:
 
     if (pattern != null) {
       suites = suites.map((suite) {
+        // Don't ever filter out load errors.
+        if (suite is LoadExceptionSuite) return suite;
         return suite.change(
             tests: suite.tests.where((test) => test.name.contains(pattern)));
       }).toList();
@@ -201,7 +211,7 @@ transformers:
         stderr.write('No tests match ');
 
         if (pattern is RegExp) {
-          stderr.write('regular expression "${pattern.pattern}".');
+          stderr.writeln('regular expression "${pattern.pattern}".');
         } else {
           stderr.writeln('"$pattern".');
         }
@@ -239,29 +249,13 @@ transformers:
       return reporter.close();
     });
   }).whenComplete(signalSubscription.cancel).catchError((error, stackTrace) {
-    if (error is LoadException) {
-      stderr.writeln(error.toString(color: color));
-
-      // Only print stack traces for load errors that come from the user's 
-      if (error.innerError is! IOException &&
-          error.innerError is! IsolateSpawnException &&
-          error.innerError is! FormatException &&
-          error.innerError is! String) {
-        stderr.write(terseChain(stackTrace));
-      }
-
-      exitCode = error.innerError is IOException
-          ? exit_codes.io
-          : exit_codes.data;
-    } else {
-      stderr.writeln(getErrorMessage(error));
-      stderr.writeln(new Trace.from(stackTrace).terse);
-      stderr.writeln(
-          "This is an unexpected error. Please file an issue at "
-              "http://github.com/dart-lang/test\n"
-          "with the stack trace and instructions for reproducing the error.");
-      exitCode = exit_codes.software;
-    }
+    stderr.writeln(getErrorMessage(error));
+    stderr.writeln(new Trace.from(stackTrace).terse);
+    stderr.writeln(
+        "This is an unexpected error. Please file an issue at "
+            "http://github.com/dart-lang/test\n"
+        "with the stack trace and instructions for reproducing the error.");
+    exitCode = exit_codes.software;
   }).whenComplete(() {
     return loader.close().then((_) {
       // If we're on a Dart version that doesn't support Isolate.kill(), we have

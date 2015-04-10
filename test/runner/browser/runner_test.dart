@@ -42,10 +42,13 @@ void main() {
 
       expect(result.stdout,
           contains("Expected a declaration, but got 'invalid'"));
-      expect(result.stderr, equals(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": dart2js '
-            'failed.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": dart2js '
+                'failed.')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file throws", () {
@@ -53,9 +56,12 @@ void main() {
       new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
 
       var result = _runUnittest(["-p", "chrome", "test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": oh no\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": oh no')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file doesn't have a main defined", () {
@@ -63,10 +69,13 @@ void main() {
       new File(testPath).writeAsStringSync("void foo() {}");
 
       var result = _runUnittest(["-p", "chrome", "test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": No '
-              'top-level main() function defined.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": No '
+                'top-level main() function defined.')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file has a non-function main", () {
@@ -74,10 +83,13 @@ void main() {
       new File(testPath).writeAsStringSync("int main;");
 
       var result = _runUnittest(["-p", "chrome", "test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": Top-level '
-              'main getter is not a function.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Top-level main getter is not a function.\n')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file has a main with arguments", () {
@@ -85,10 +97,13 @@ void main() {
       new File(testPath).writeAsStringSync("void main(arg) {}");
 
       var result = _runUnittest(["-p", "chrome", "test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": Top-level '
-              'main() function takes arguments.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Top-level main() function takes arguments.\n')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     // TODO(nweiz): test what happens when a test file is unreadable once issue

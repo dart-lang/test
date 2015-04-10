@@ -49,7 +49,8 @@ void main() {
       /// TODO(nweiz): Use scheduled_test for this once it's compatible with
       /// this version of test.
       new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
-      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).then((suites) {
+      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).toList()
+          .then((suites) {
         expect(suites, hasLength(1));
         suite = suites.first;
       });
@@ -88,7 +89,7 @@ void main() {
     test("throws a nice error if the package root doesn't exist", () {
       var loader = new Loader([TestPlatform.vm]);
       expect(
-          loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+          loader.loadFile(p.join(_sandbox, 'a_test.dart')).first
               .whenComplete(loader.close),
           throwsA(isLoadException(
               "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
@@ -98,19 +99,19 @@ void main() {
   group(".loadDir()", () {
     test("ignores non-Dart files", () {
       new File(p.join(_sandbox, 'a_test.txt')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox), completion(isEmpty));
+      expect(_loader.loadDir(_sandbox).toList(), completion(isEmpty));
     });
 
     test("ignores files in packages/ directories", () {
       var dir = p.join(_sandbox, 'packages');
       new Directory(dir).createSync();
       new File(p.join(dir, 'a_test.dart')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox), completion(isEmpty));
+      expect(_loader.loadDir(_sandbox).toList(), completion(isEmpty));
     });
 
     test("ignores files that don't end in _test.dart", () {
       new File(p.join(_sandbox, 'test.dart')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox), completion(isEmpty));
+      expect(_loader.loadDir(_sandbox).toList(), completion(isEmpty));
     });
 
     group("with suites loaded from a directory", () {
@@ -125,7 +126,8 @@ void main() {
         new File(p.join(_sandbox, 'dir/sub_test.dart'))
             .writeAsStringSync(_tests);
 
-        return _loader.loadDir(_sandbox).then((suites_) => suites = suites_);
+        return _loader.loadDir(_sandbox).toList()
+            .then((suites_) => suites = suites_);
       });
 
       test("gives those suites the correct paths", () {

@@ -8,7 +8,6 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:path/path.dart' as p;
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
@@ -87,15 +86,19 @@ $_usage"""));
 
     test("a non-existent file is passed", () {
       var result = _runUnittest(["file"]);
-      expect(result.stderr, equals('Failed to load "file": Does not exist.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains('Failed to load "file": Does not exist.')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("the default directory doesn't exist", () {
       var result = _runUnittest([]);
-      expect(result.stderr, equals(
-          'Failed to load "test": No test files were passed and the default '
-              'directory doesn\'t exist.\n'));
+      expect(result.stderr, equals("""
+No test files were passed and the default "test/" directory doesn't exist.
+
+$_usage"""));
       expect(result.exitCode, equals(exit_codes.data));
     });
 
@@ -104,12 +107,15 @@ $_usage"""));
       new File(testPath).writeAsStringSync("invalid Dart file");
       var result = _runUnittest(["test.dart"]);
 
-      expect(result.stderr, equals(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
-          "line 1 pos 1: unexpected token 'invalid'\n"
-          "invalid Dart file\n"
-          "^\n"));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+          '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "  line 1 pos 1: unexpected token 'invalid'\n"
+          "  invalid Dart file\n"
+          "  ^\n")
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     // This is slightly different from the above test because it's an error
@@ -119,12 +125,15 @@ $_usage"""));
       new File(testPath).writeAsStringSync("@TestOn)");
       var result = _runUnittest(["test.dart"]);
 
-      expect(result.stderr, equals(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
-          "line 1 pos 8: unexpected token ')'\n"
-          "@TestOn)\n"
-          "       ^\n"));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+          '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "  line 1 pos 8: unexpected token ')'\n"
+          "  @TestOn)\n"
+          "         ^\n")
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("an annotation's structure is invalid", () {
@@ -132,12 +141,15 @@ $_usage"""));
       new File(testPath).writeAsStringSync("@TestOn()\nlibrary foo;");
       var result = _runUnittest(["test.dart"]);
 
-      expect(result.stderr, equals(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
-          "Error on line 1, column 8: TestOn takes one argument.\n"
-          "@TestOn()\n"
-          "       ^^\n"));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+          '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "  Error on line 1, column 8: TestOn takes one argument.\n"
+          "  @TestOn()\n"
+          "         ^^\n")
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("an annotation's contents are invalid", () {
@@ -145,12 +157,15 @@ $_usage"""));
       new File(testPath).writeAsStringSync("@TestOn('zim')\nlibrary foo;");
       var result = _runUnittest(["test.dart"]);
 
-      expect(result.stderr, equals(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
-          "Error on line 1, column 10: Undefined variable.\n"
-          "@TestOn('zim')\n"
-          "         ^^^\n"));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+          '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "  Error on line 1, column 10: Undefined variable.\n"
+          "  @TestOn('zim')\n"
+          "           ^^^\n")
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file throws", () {
@@ -158,9 +173,12 @@ $_usage"""));
       new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
 
       var result = _runUnittest(["test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": oh no\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": oh no')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file doesn't have a main defined", () {
@@ -168,10 +186,13 @@ $_usage"""));
       new File(testPath).writeAsStringSync("void foo() {}");
 
       var result = _runUnittest(["test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": No '
-              'top-level main() function defined.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": No '
+                'top-level main() function defined.')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file has a non-function main", () {
@@ -179,10 +200,13 @@ $_usage"""));
       new File(testPath).writeAsStringSync("int main;");
 
       var result = _runUnittest(["test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": Top-level '
-              'main getter is not a function.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Top-level main getter is not a function.')
+      ]));
+      expect(result.exitCode, equals(1));
     });
 
     test("a test file has a main with arguments", () {
@@ -190,10 +214,30 @@ $_usage"""));
       new File(testPath).writeAsStringSync("void main(arg) {}");
 
       var result = _runUnittest(["test.dart"]);
-      expect(result.stderr, startsWith(
-          'Failed to load "${p.relative(testPath, from: _sandbox)}": Top-level '
-              'main() function takes arguments.\n'));
-      expect(result.exitCode, equals(exit_codes.data));
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Top-level main() function takes arguments.')
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
+    test("multiple load errors occur", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("invalid Dart file");
+      var result = _runUnittest(["test.dart", "nonexistent.dart"]);
+
+      expect(result.stdout, allOf([
+        contains('test.dart: load error'),
+        contains(
+          '  Failed to load "test.dart":\n'
+          "  line 1 pos 1: unexpected token 'invalid'\n"
+          "  invalid Dart file\n"
+          "  ^\n"),
+        contains('nonexistent.dart: load error'),
+        contains('Failed to load "nonexistent.dart": Does not exist.')
+      ]));
     });
 
     // TODO(nweiz): test what happens when a test file is unreadable once issue
@@ -276,6 +320,13 @@ $_usage"""));
     });
   });
 
+  test("runs tests even when a file fails to load", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+    var result = _runUnittest(["test.dart", "nonexistent.dart"]);
+    expect(result.stdout, contains("+1 -1: Some tests failed."));
+    expect(result.exitCode, equals(1));
+  });
+
   group("flags:", () {
     test("with the --color flag, uses colors", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
@@ -328,6 +379,15 @@ void main() {
         expect(result.stderr,
             contains('No tests match regular expression "no match".'));
         expect(result.exitCode, equals(exit_codes.data));
+      });
+
+      test("doesn't filter out load exceptions", () {
+        var result = _runUnittest(["--name", "name", "file"]);
+        expect(result.stdout, allOf([
+          contains('-1: load error'),
+          contains('Failed to load "file": Does not exist.')
+        ]));
+        expect(result.exitCode, equals(1));
       });
     });
 

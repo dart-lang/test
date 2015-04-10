@@ -4,6 +4,9 @@
   of concurrent test suites will be run equal to half the machine's processors;
   this can be controlled with the `--concurrency` flag.
 
+* Expose load errors as test failures rather than having them kill the entire
+  process.
+
 * Add support for running tests on Firefox.
 
 ### 0.12.0-beta.5

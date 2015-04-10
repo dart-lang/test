@@ -80,24 +80,29 @@ class Loader {
 
   /// Loads all test suites in [dir].
   ///
-  /// This will load tests from files that end in "_test.dart".
-  Future<List<Suite>> loadDir(String dir) {
-    return Future.wait(new Directory(dir).listSync(recursive: true)
+  /// This will load tests from files that end in "_test.dart". Any tests that
+  /// fail to load will be emitted as [LoadException]s.
+  Stream<Suite> loadDir(String dir) {
+    return mergeStreams(new Directory(dir).listSync(recursive: true)
         .map((entry) {
-      if (entry is! File) return new Future.value([]);
-      if (!entry.path.endsWith("_test.dart")) return new Future.value([]);
-      if (p.split(entry.path).contains('packages')) return new Future.value([]);
+      if (entry is! File) return new Stream.fromIterable([]);
 
-      // TODO(nweiz): Provide a way for the caller to gracefully handle some
-      // suites failing to load without stopping the rest.
+      if (!entry.path.endsWith("_test.dart")) {
+        return new Stream.fromIterable([]);
+      }
+
+      if (p.split(entry.path).contains('packages')) {
+         return new Stream.fromIterable([]);
+      }
+
       return loadFile(entry.path);
-    })).then((suites) => flatten(suites));
+    }));
   }
 
   /// Loads a test suite from the file at [path].
   ///
-  /// This will throw a [LoadException] if the file fails to load.
-  Future<List<Suite>> loadFile(String path) {
+  /// This will emit a [LoadException] if the file fails to load.
+  Stream<Suite> loadFile(String path) {
     var metadata;
     try {
       metadata = parseMetadata(path);
@@ -105,14 +110,18 @@ class Loader {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
       metadata = new Metadata();
-    } on FormatException catch (error) {
-      throw new LoadException(path, error);
+    } on FormatException catch (error, stackTrace) {
+      return new Stream.fromFuture(
+          new Future.error(new LoadException(path, error), stackTrace));
     }
 
-    return Future.wait(_platforms.map((platform) {
-      return new Future.sync(() {
-        if (!metadata.testOn.evaluate(platform, os: currentOS)) return null;
+    var controller = new StreamController();
+    Future.forEach(_platforms, (platform) {
+      if (!metadata.testOn.evaluate(platform, os: currentOS)) {
+        return new Future.value();
+      }
 
+      return new Future.sync(() {
         if (_pubServeUrl != null && !p.isWithin('test', path)) {
           throw new LoadException(path,
               'When using "pub serve", all test files must be in test/.');
@@ -122,10 +131,14 @@ class Loader {
         assert(platform == TestPlatform.vm);
         return _loadVmFile(path);
       }).then((suite) {
-        if (suite == null) return null;
-        return suite.change(metadata: metadata).filter(platform, os: currentOS);
-      });
-    })).then((suites) => suites.where((suite) => suite != null).toList());
+        if (suite == null) return;
+
+        controller.add(suite
+            .change(metadata: metadata).filter(platform, os: currentOS));
+      }).catchError(controller.addError);
+    }).then((_) => controller.close());
+
+    return controller.stream;
   }
 
   /// Load the test suite at [path] in a browser.

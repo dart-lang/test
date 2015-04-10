@@ -136,12 +136,13 @@ class MyTransformer extends Transformer {
           try {
             var result = runUnittest(['--pub-serve=${match[1]}'],
                 workingDirectory: _sandbox);
-            expect(result.stderr, contains(
-                'Failed to load "test/my_test.dart":'));
-            expect(result.stderr, contains('404 Not Found'));
-            expect(result.stderr, contains(
-                'Make sure "pub serve" is serving the test/ directory.'));
-            expect(result.exitCode, equals(exit_codes.data));
+            expect(result.stdout, allOf([
+              contains('-1: load error'),
+              contains('Failed to load "test/my_test.dart":'),
+              contains('404 Not Found'),
+              contains('Make sure "pub serve" is serving the test/ directory.')
+            ]));
+            expect(result.exitCode, equals(1));
           } finally {
             process.kill();
           }
@@ -165,12 +166,13 @@ class MyTransformer extends Transformer {
             var result = runUnittest(
                 ['--pub-serve=${match[1]}', '-p', 'chrome'],
                 workingDirectory: _sandbox);
-            expect(result.stderr, contains(
-                'Failed to load "test/my_test.dart":'));
-            expect(result.stderr, contains('404 Not Found'));
-            expect(result.stderr, contains(
-                'Make sure "pub serve" is serving the test/ directory.'));
-            expect(result.exitCode, equals(exit_codes.data));
+            expect(result.stdout, allOf([
+              contains('-1: load error'),
+              contains('Failed to load "test/my_test.dart":'),
+              contains('404 Not Found'),
+              contains('Make sure "pub serve" is serving the test/ directory.')
+            ]));
+            expect(result.exitCode, equals(1));
           } finally {
             process.kill();
           }
@@ -217,23 +219,27 @@ transformers:
   test("gracefully handles pub serve not running for VM tests", () {
     var result = runUnittest(['--pub-serve=54321'],
         workingDirectory: _sandbox);
-    expect(result.stderr, equals('''
-Failed to load "test/my_test.dart":
-Error getting http://localhost:54321/my_test.vm_test.dart: Connection refused
-Make sure "pub serve" is running.
-'''));
-    expect(result.exitCode, equals(exit_codes.data));
+    expect(result.stdout, allOf([
+      contains('-1: load error'),
+      contains('''
+  Failed to load "test/my_test.dart":
+  Error getting http://localhost:54321/my_test.vm_test.dart: Connection refused
+  Make sure "pub serve" is running.''')
+    ]));
+    expect(result.exitCode, equals(1));
   });
 
   test("gracefully handles pub serve not running for browser tests", () {
     var result = runUnittest(['--pub-serve=54321', '-p', 'chrome'],
         workingDirectory: _sandbox);
-    expect(result.stderr, matches(r'''
-Failed to load "test/my_test\.dart":
-Error getting http://localhost:54321/my_test\.browser_test.dart\.js: Connection refused \(errno \d+\)
-Make sure "pub serve" is running\.
-'''));
-    expect(result.exitCode, equals(exit_codes.data));
+    expect(result.stdout, allOf([
+      contains('-1: load error'),
+      contains('Failed to load "test/my_test.dart":'),
+      contains('Error getting http://localhost:54321/my_test.browser_test.dart'
+          '.js: Connection refused (errno '),
+      contains('Make sure "pub serve" is running.')
+    ]));
+    expect(result.exitCode, equals(1));
   });
 
   test("gracefully handles a test file not being in test/", () {
@@ -242,8 +248,12 @@ Make sure "pub serve" is running\.
 
     var result = runUnittest(['--pub-serve=54321', 'my_test.dart'],
         workingDirectory: _sandbox);
-    expect(result.stderr, equals(
-        'Failed to load "my_test.dart": When using "pub serve", all test files '
-            'must be in test/.\n'));
+    expect(result.stdout, allOf([
+      contains('-1: load error'),
+      contains(
+          'Failed to load "my_test.dart": When using "pub serve", all test '
+              'files must be in test/.\n')
+    ]));
+    expect(result.exitCode, equals(1));
   });
 }

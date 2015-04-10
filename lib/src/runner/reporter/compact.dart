@@ -6,12 +6,14 @@ library test.runner.reporter.compact;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import '../../backend/live_test.dart';
 import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../utils.dart';
 import '../engine.dart';
+import '../load_exception.dart';
 
 /// The maximum console line length.
 ///
@@ -21,6 +23,9 @@ const _lineLength = 100;
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
 class CompactReporter {
+  /// Whether the reporter should emit terminal color escapes.
+  final bool _color;
+
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
   final String _green;
@@ -78,6 +83,7 @@ class CompactReporter {
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
         _engine = new Engine(suites, concurrency: concurrency),
+        _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _noColor = color ? '\u001b[0m' : '' {
@@ -114,8 +120,21 @@ class CompactReporter {
         if (!_printedNewline) print('');
         _printedNewline = true;
 
-        print(indent(error.error.toString()));
-        print(indent(terseChain(error.stackTrace).toString()));
+        if (error.error is! LoadException) {
+          print(indent(error.error.toString()));
+          print(indent(terseChain(error.stackTrace).toString()));
+          return;
+        }
+
+        print(indent(error.error.toString(color: _color)));
+
+        // Only print stack traces for load errors that come from the user's code.
+        if (error.error.innerError is! IOException &&
+            error.error.innerError is! IsolateSpawnException &&
+            error.error.innerError is! FormatException &&
+            error.error.innerError is! String) {
+          print(indent(terseChain(error.stackTrace).toString()));
+        }
       });
 
       liveTest.onPrint.listen((line) {
