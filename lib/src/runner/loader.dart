@@ -118,7 +118,7 @@ class Loader {
               'When using "pub serve", all test files must be in test/.');
         }
 
-        if (platform == TestPlatform.chrome) return _loadBrowserFile(path);
+        if (platform.isBrowser) return _loadBrowserFile(path, platform);
         assert(platform == TestPlatform.vm);
         return _loadVmFile(path);
       }).then((suite) {
@@ -129,8 +129,9 @@ class Loader {
   }
 
   /// Load the test suite at [path] in a browser.
-  Future<Suite> _loadBrowserFile(String path) =>
-      _browserServer.then((browserServer) => browserServer.loadSuite(path));
+  Future<Suite> _loadBrowserFile(String path, TestPlatform platform) =>
+      _browserServer.then((browserServer) =>
+          browserServer.loadSuite(path, platform));
 
   /// Load the test suite at [path] in VM isolate.
   Future<Suite> _loadVmFile(String path) {

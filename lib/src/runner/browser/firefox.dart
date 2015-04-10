@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.browser.chrome;
+library test.runner.browser.firefox;
 
 import 'dart:async';
 import 'dart:io';
@@ -12,16 +12,20 @@ import 'package:path/path.dart' as p;
 import '../../util/io.dart';
 import 'browser.dart';
 
-// TODO(nweiz): move this into its own package?
-// TODO(nweiz): support other browsers.
-/// A class for running an instance of Chrome.
+final _preferences = '''
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("dom.disable_open_during_load", false);
+user_pref("dom.max_script_run_time", 0);
+''';
+
+/// A class for running an instance of Firefox.
 ///
 /// Most of the communication with the browser is expected to happen via HTTP,
 /// so this exposes a bare-bones API. The browser starts as soon as the class is
 /// constructed, and is killed when [close] is called.
 ///
 /// Any errors starting or running the process are reported through [onExit].
-class Chrome implements Browser {
+class Firefox implements Browser {
   /// The underlying process.
   Process _process;
 
@@ -40,12 +44,12 @@ class Chrome implements Browser {
   Future get _onProcessStarted => _onProcessStartedCompleter.future;
   final _onProcessStartedCompleter = new Completer();
 
-  /// Starts a new instance of Chrome open to the given [url], which may be a
+  /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
   ///
-  /// If [executable] is passed, it's used as the Chrome executable. Otherwise
+  /// If [executable] is passed, it's used as the Firefox executable. Otherwise
   /// the default executable name for the current OS will be used.
-  Chrome(url, {String executable}) {
+  Firefox(url, {String executable}) {
     if (executable == null) executable = _defaultExecutable();
 
     // Don't return a Future here because there's no need for the caller to wait
@@ -53,16 +57,14 @@ class Chrome implements Browser {
     // request instead.
     withTempDir((dir) {
       _dir = dir;
+
+      new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
+
       return Process.start(executable, [
-        "--user-data-dir=$_dir",
+        "--profile",
+        "$_dir",
         url.toString(),
-        "--disable-extensions",
-        "--disable-popup-blocking",
-        "--bwsi",
-        "--no-first-run",
-        "--no-default-browser-check",
-        "--disable-default-apps",
-        "--disable-translate"
+        "--no-remote"
       ]).then((process) {
         _process = process;
         _onProcessStartedCompleter.complete();
@@ -72,7 +74,7 @@ class Chrome implements Browser {
         return _process.exitCode;
       });
     }).then((exitCode) {
-      if (exitCode != 0) throw "Chrome failed with exit code $exitCode.";
+      if (exitCode != 0) throw "Firefox failed with exit code $exitCode.";
     }).then(_onExitCompleter.complete)
         .catchError(_onExitCompleter.completeError);
   }
@@ -87,18 +89,17 @@ class Chrome implements Browser {
   /// Return the default executable for the current operating system.
   String _defaultExecutable() {
     if (Platform.isMacOS) {
-      return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+      return '/Applications/Firefox.app/Contents/MacOS/firefox-bin';
     }
-    if (!Platform.isWindows) return 'google-chrome';
+    if (!Platform.isWindows) return 'firefox';
 
-    // Chrome could be installed in several places on Windows. The only way to
+    // Firefox could be installed in several places on Windows. The only way to
     // find it is to check.
     var prefixes = [
-      Platform.environment['LOCALAPPDATA'],
       Platform.environment['PROGRAMFILES'],
       Platform.environment['PROGRAMFILES(X86)']
     ];
-    var suffix = r'Google\Chrome\Application\chrome.exe';
+    var suffix = r'Mozilla Firefox\firefox.exe';
 
     for (var prefix in prefixes) {
       if (prefix == null) continue;
@@ -109,6 +110,6 @@ class Chrome implements Browser {
 
     // Fall back on looking it up on the path. This probably won't work, but at
     // least it will fail with a useful error message.
-    return "chrome.exe";
+    return "firefox.exe";
   }
 }

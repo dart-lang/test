@@ -11,14 +11,19 @@ class TestPlatform {
   // variable tests in test/backend/platform_selector/evaluate_test.
 
   /// The command-line Dart VM.
-  static const vm = const TestPlatform._("VM", "vm", isDartVm: true);
+  static const TestPlatform vm =
+      const TestPlatform._("VM", "vm", isDartVm: true);
 
   /// Google Chrome.
-  static const chrome = const TestPlatform._("Chrome", "chrome",
+  static const TestPlatform chrome = const TestPlatform._("Chrome", "chrome",
       isBrowser: true, isJS: true, isBlink: true);
 
+  /// Mozilla Firefox.
+  static const TestPlatform firefox = const TestPlatform._("Firefox", "firefox",
+      isBrowser: true, isJS: true);
+
   /// A list of all instances of [TestPlatform].
-  static const all = const [vm, chrome];
+  static const List<TestPlatform> all = const [vm, chrome, firefox];
 
   /// Finds a platform by its identifier string.
   ///

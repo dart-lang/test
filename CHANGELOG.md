@@ -4,6 +4,8 @@
   of concurrent test suites will be run equal to half the machine's processors;
   this can be controlled with the `--concurrency` flag.
 
+* Add support for running tests on Firefox.
+
 ### 0.12.0-beta.5
 
 * Add a `--pub-serve` flag that runs tests against a `pub serve` instance.
