@@ -75,9 +75,6 @@ class IframeListener {
     var inputController = new StreamController(sync: true);
     var outputController = new StreamController(sync: true);
 
-    // Wait for the first message, which indicates the source [Window] to which
-    // we should send further communication.
-    var first = true;
     window.onMessage.listen((message) {
       // A message on the Window can theoretically come from any website. It's
       // very unlikely that a malicious site would care about hacking someone's
@@ -85,21 +82,16 @@ class IframeListener {
       // running, but it's good practice to check the origin anyway.
       if (message.origin != window.location.origin) return;
       message.stopPropagation();
+      inputController.add(message.data);
+    });
 
-      if (!first) {
-        inputController.add(message.data);
-        return;
-      }
-
-      outputController.stream.listen((data) {
-        // TODO(nweiz): Stop manually adding href here once issue 22554 is
-        // fixed.
-        message.source.postMessage({
-          "href": window.location.href,
-          "data": data
-        }, window.location.origin);
-      });
-      first = false;
+    outputController.stream.listen((data) {
+      // TODO(nweiz): Stop manually adding href here once issue 22554 is
+      // fixed.
+      window.parent.postMessage({
+        "href": window.location.href,
+        "data": data
+      }, window.location.origin);
     });
 
     return new MultiChannel(inputController.stream, outputController.sink);

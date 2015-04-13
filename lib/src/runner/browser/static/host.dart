@@ -106,31 +106,31 @@ StreamChannel _connectToIframe(String url) {
 
   var inputController = new StreamController(sync: true);
   var outputController = new StreamController(sync: true);
-  iframe.onLoad.first.then((_) {
-    // TODO(nweiz): use MessageChannel once Firefox supports it
-    // (http://caniuse.com/#search=MessageChannel).
 
-    // Send an initial command to give the iframe something to reply to.
-    iframe.contentWindow.postMessage(
-        {"command": "connect"},
-        window.location.origin);
+  // Use this to avoid sending a message to the iframe before it's sent a
+  // message to us. This ensures that no messages get dropped on the floor.
+  var readyCompleter = new Completer();
 
-    window.onMessage.listen((message) {
-      // A message on the Window can theoretically come from any website. It's
-      // very unlikely that a malicious site would care about hacking someone's
-      // unit tests, let alone be able to find the test server while it's
-      // running, but it's good practice to check the origin anyway.
-      if (message.origin != window.location.origin) return;
+  // TODO(nweiz): use MessageChannel once Firefox supports it
+  // (http://caniuse.com/#search=MessageChannel).
+  window.onMessage.listen((message) {
+    // A message on the Window can theoretically come from any website. It's
+    // very unlikely that a malicious site would care about hacking someone's
+    // unit tests, let alone be able to find the test server while it's
+    // running, but it's good practice to check the origin anyway.
+    if (message.origin != window.location.origin) return;
 
-      // TODO(nweiz): Stop manually checking href here once issue 22554 is
-      // fixed.
-      if (message.data["href"] != iframe.src) return;
+    // TODO(nweiz): Stop manually checking href here once issue 22554 is
+    // fixed.
+    if (message.data["href"] != iframe.src) return;
 
-      message.stopPropagation();
-      inputController.add(message.data["data"]);
-    });
+    message.stopPropagation();
+    inputController.add(message.data["data"]);
+    readyCompleter.complete();
+  });
 
-    outputController.stream.listen((message) =>
+  outputController.stream.listen((message) {
+    readyCompleter.future.then((_) =>
         iframe.contentWindow.postMessage(message, window.location.origin));
   });
 

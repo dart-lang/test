@@ -3,6 +3,8 @@
 * Browser tests can now load assets by making HTTP requests to the corresponding
   relative URLs.
 
+* Add support for running tests on Dartium.
+
 ### 0.12.0-beta.6
 
 * Add the ability to run multiple test suites concurrently. By default a number

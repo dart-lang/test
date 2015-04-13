@@ -134,13 +134,12 @@ valid identifiers are:
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
+* `dartium`: Whether the test is running on Dartium.
+
 * `chrome`: Whether the test is running on Google Chrome.
 
-* `firefox`: Whether the test is running on Mozilla Firefox.
-
-* `dart-vm`: Whether the test is running on the Dart VM in any context. For now
-  this is identical to `vm`, but it will also be true for Dartium in the future.
-  It's identical to `!js`.
+* `dart-vm`: Whether the test is running on the Dart VM in any context,
+  including Dartium. It's identical to `!js`.
 
 * `browser`: Whether the test is running in any browser.
 
@@ -168,6 +167,22 @@ valid identifiers are:
 
 For example, if you wanted to run a test on every browser but Chrome, you would
 write `@TestOn("browser && !chrome")`.
+
+### Running Tests on Dartium
+
+Tests can be run on [Dartium][] by passing the `-p dartium` flag. If you're
+using the Dart Editor, the test runner will be able to find Dartium
+automatically. However, since it usually isn't installed on a system-wide basis,
+the test runner may not otherwise be able to find the Dartium executable. To use
+it without the Editor, make sure there's an executable called `dartium` (on Mac
+OS or Linux) or `dartium.exe` (on Windows) on your system path.
+
+[Dartium]: https://www.dartlang.org/tools/dartium/
+
+[In the future][issue 63], there will be a more explicit way to configure the
+location of the executable.
+
+[issue 63]: https://github.com/dart-lang/test/issues/63
 
 ## Asynchronous Tests
 

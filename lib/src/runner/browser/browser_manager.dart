@@ -64,7 +64,7 @@ class BrowserManager {
         var metadata = new Metadata.deserialize(test['metadata']);
         var testChannel = suiteChannel.virtualChannel(test['channel']);
         return new IframeTest(test['name'], metadata, testChannel);
-      }), path: path, platform: "Chrome");
+      }), path: path);
     });
   }
 }

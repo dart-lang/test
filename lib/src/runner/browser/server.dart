@@ -26,6 +26,7 @@ import 'browser.dart';
 import 'browser_manager.dart';
 import 'compiler_pool.dart';
 import 'chrome.dart';
+import 'dartium.dart';
 import 'firefox.dart';
 
 /// A server that serves JS-compiled tests to browsers.
@@ -179,11 +180,23 @@ class BrowserServer {
     };
   }
 
-  /// A handler that serves wrapper HTML to bootstrap tests.
+  /// A handler that serves wrapper files used to bootstrap tests.
   shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(shelfUrl(request));
     var withoutExtensions = p.withoutExtension(p.withoutExtension(path));
     var base = p.basename(withoutExtensions);
+
+    if (path.endsWith(".browser_test.dart")) {
+      return new shelf.Response.ok('''
+import "package:test/src/runner/browser/iframe_listener.dart";
+
+import "$base" as test;
+
+void main() {
+  IframeListener.start(() => test.main);
+}
+''', headers: {'Content-Type': 'application/dart'});
+    }
 
     if (path.endsWith(".browser_test.html")) {
       // TODO(nweiz): support user-authored HTML files.
@@ -192,9 +205,10 @@ class BrowserServer {
 <html>
 <head>
   <title>${HTML_ESCAPE.convert(base)}.dart Test</title>
-  <script type="application/javascript"
-          src="${HTML_ESCAPE.convert(base)}.browser_test.dart.js">
+  <script type="application/dart"
+          src="${HTML_ESCAPE.convert(base)}.browser_test.dart">
   </script>
+  <script src="packages/browser/dart.js"></script>
 </head>
 </html>
 ''', headers: {'Content-Type': 'text/html'});
@@ -221,7 +235,8 @@ class BrowserServer {
             _pubServeUrl.resolve('$suitePrefix.html'));
       }
 
-      return _compileSuite(path).then((_) {
+      return new Future.sync(() => browser.isJS ? _compileSuite(path) : null)
+          .then((_) {
         if (_closed) return null;
         return url.resolveUri(
             p.toUri(p.relative(path, from: _root) + ".browser_test.html"));
@@ -233,7 +248,7 @@ class BrowserServer {
       return _browserManagerFor(browser).then((browserManager) {
         if (_closed) return null;
         return browserManager.loadSuite(path, suiteUrl);
-      });
+      }).then((suite) => suite.change(platform: browser.name));
     });
   }
 
@@ -333,6 +348,7 @@ class BrowserServer {
   /// Starts the browser identified by [browser] and has it load [url].
   Browser _newBrowser(Uri url, TestPlatform browser) {
     switch (browser) {
+      case TestPlatform.dartium: return new Dartium(url);
       case TestPlatform.chrome: return new Chrome(url);
       case TestPlatform.firefox: return new Firefox(url);
       default:
