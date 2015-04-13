@@ -80,7 +80,8 @@ A single test file can be run just using `dart path/to/test.dart`.
 
 ![Tests being run via "dart path/to/test.dart".](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
 
-Many tests can be run at a time using `pub run test:test path/to/dir`.
+Many tests can be run at a time using `pub run test:test path/to/dir` (on Dart
+1.10, this can be shortened to `pub run test path/to/dir`).
 
 ![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/image/test2.gif)
 
@@ -134,6 +135,8 @@ valid identifiers are:
 * `vm`: Whether the test is running on the command-line Dart VM.
 
 * `chrome`: Whether the test is running on Google Chrome.
+
+* `firefox`: Whether the test is running on Mozilla Firefox.
 
 * `dart-vm`: Whether the test is running on the Dart VM in any context. For now
   this is identical to `vm`, but it will also be true for Dartium in the future.
@@ -277,10 +280,10 @@ Build completed successfully
 ```
 
 In this case, the port is `8081`. In another terminal, pass this port to
-`--pub-serve` and otherwise invoke `pub run test` as normal:
+`--pub-serve` and otherwise invoke `pub run test:test` as normal:
 
 ```shell
-$ pub run test --pub-serve=8081 -p chrome
+$ pub run test:test --pub-serve=8081 -p chrome
 "pub serve" is compiling test/my_app_test.dart...
 "pub serve" is compiling test/utils_test.dart...
 00:00 +42: All tests passed!
