@@ -1,3 +1,8 @@
+### 0.12.0-beta.7
+
+* Browser tests can now load assets by making HTTP requests to the corresponding
+  relative URLs.
+
 ### 0.12.0-beta.6
 
 * Add the ability to run multiple test suites concurrently. By default a number

@@ -18,6 +18,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
+import '../../util/path_handler.dart';
 import '../../util/one_off_handler.dart';
 import '../../utils.dart';
 import '../load_exception.dart';
@@ -33,6 +34,9 @@ import 'firefox.dart';
 class BrowserServer {
   /// Starts the server.
   ///
+  /// [root] is the root directory that the server should serve. It defaults to
+  /// the working directory.
+  ///
   /// If [packageRoot] is passed, it's used for all package imports when
   /// compiling tests to JS. Otherwise, the package root is inferred from the
   /// location of the source file.
@@ -41,24 +45,34 @@ class BrowserServer {
   /// instance at that URL rather than from the filesystem.
   ///
   /// If [color] is true, console colors will be used when compiling Dart.
-  static Future<BrowserServer> start({String packageRoot, Uri pubServeUrl,
-      bool color: false}) {
-    var server = new BrowserServer._(packageRoot, pubServeUrl, color);
+  static Future<BrowserServer> start({String root, String packageRoot,
+      Uri pubServeUrl, bool color: false}) {
+    var server = new BrowserServer._(root, packageRoot, pubServeUrl, color);
     return server._load().then((_) => server);
   }
 
   /// The underlying HTTP server.
   HttpServer _server;
 
-  /// The URL for this server.
-  Uri get url => baseUrlForAddress(_server.address, _server.port);
+  /// A randomly-generated secret.
+  ///
+  /// This is used to ensure that other users on the same system can't snoop
+  /// on data being served through this server.
+  final _secret = randomBase64(24, urlSafe: true);
 
-  /// a [OneOffHandler] for servicing WebSocket connections for
+  /// The URL for this server.
+  Uri get url => baseUrlForAddress(_server.address, _server.port)
+      .resolve(_secret + "/");
+
+  /// A [OneOffHandler] for servicing WebSocket connections for
   /// [BrowserManager]s.
   ///
   /// This is one-off because each [BrowserManager] can only connect to a single
   /// WebSocket,
   final _webSocketHandler = new OneOffHandler();
+
+  /// A [PathHandler] used to serve compiled JS.
+  final _jsHandler = new PathHandler();
 
   /// The [CompilerPool] managing active instances of `dart2js`.
   ///
@@ -67,6 +81,9 @@ class BrowserServer {
 
   /// The temporary directory in which compiled JS is emitted.
   final String _compiledDir;
+
+  /// The root directory served statically by this server.
+  final String _root;
 
   /// The package root which is passed to `dart2js`.
   final String _packageRoot;
@@ -109,8 +126,9 @@ class BrowserServer {
   /// per run, rather than one per browser per run.
   final _compileFutures = new Map<String, Future>();
 
-  BrowserServer._(this._packageRoot, Uri pubServeUrl, bool color)
-      : _pubServeUrl = pubServeUrl,
+  BrowserServer._(String root, this._packageRoot, Uri pubServeUrl, bool color)
+      : _root = root == null ? p.current : root,
+        _pubServeUrl = pubServeUrl,
         _compiledDir = pubServeUrl == null ? createTempDir() : null,
         _http = pubServeUrl == null ? null : new HttpClient(),
         _compilers = new CompilerPool(color: color);
@@ -121,17 +139,68 @@ class BrowserServer {
         .add(_webSocketHandler.handler);
 
     if (_pubServeUrl == null) {
-      var staticPath = p.join(libDir(packageRoot: _packageRoot),
-          'src/runner/browser/static');
       cascade = cascade
-          .add(createStaticHandler(staticPath, defaultDocument: 'index.html'))
-          .add(createStaticHandler(_compiledDir,
-              defaultDocument: 'index.html'));
+          .add(_createPackagesHandler())
+          .add(_jsHandler.handler)
+          .add(_wrapperHandler)
+          .add(createStaticHandler(_root));
     }
 
-    return shelf_io.serve(cascade.handler, 'localhost', 0).then((server) {
+    var pipeline = new shelf.Pipeline()
+      .addMiddleware(nestingMiddleware(_secret))
+      .addHandler(cascade.handler);
+
+    return shelf_io.serve(pipeline, 'localhost', 0).then((server) {
       _server = server;
     });
+  }
+
+  /// Returns a handler that serves the contents of the "packages/" directory
+  /// for any URL that contains "packages/".
+  ///
+  /// This is a factory so it can wrap a static handler.
+  shelf.Handler _createPackagesHandler() {
+    var packageRoot = _packageRoot == null
+        ? p.join(_root, 'packages')
+        : _packageRoot;
+    var staticHandler =
+      createStaticHandler(packageRoot, serveFilesOutsidePath: true);
+
+    return (request) {
+      var segments = p.url.split(shelfUrl(request).path);
+
+      for (var i = 0; i < segments.length; i++) {
+        if (segments[i] != "packages") continue;
+        return staticHandler(
+            shelfChange(request, path: p.url.joinAll(segments.take(i + 1))));
+      }
+
+      return new shelf.Response.notFound("Not found.");
+    };
+  }
+
+  /// A handler that serves wrapper HTML to bootstrap tests.
+  shelf.Response _wrapperHandler(shelf.Request request) {
+    var path = p.fromUri(shelfUrl(request));
+    var withoutExtensions = p.withoutExtension(p.withoutExtension(path));
+    var base = p.basename(withoutExtensions);
+
+    if (path.endsWith(".browser_test.html")) {
+      // TODO(nweiz): support user-authored HTML files.
+      return new shelf.Response.ok('''
+<!DOCTYPE html>
+<html>
+<head>
+  <title>${HTML_ESCAPE.convert(base)}.dart Test</title>
+  <script type="application/javascript"
+          src="${HTML_ESCAPE.convert(base)}.browser_test.dart.js">
+  </script>
+</head>
+</html>
+''', headers: {'Content-Type': 'text/html'});
+    }
+
+    return new shelf.Response.notFound('Not found.');
   }
 
   /// Loads the test suite at [path] on the browser [browser].
@@ -145,22 +214,18 @@ class BrowserServer {
 
     return new Future.sync(() {
       if (_pubServeUrl != null) {
-        var suitePrefix = p.withoutExtension(p.relative(path, from: 'test')) +
+        var suitePrefix = p.relative(path, from: p.join(_root, 'test')) +
             '.browser_test';
         var jsUrl = _pubServeUrl.resolve('$suitePrefix.dart.js');
-        return _pubServeSuite(path, jsUrl)
-            .then((_) => _pubServeUrl.resolve('$suitePrefix.html'));
-      } else {
-        return _compileSuite(path).then((dir) {
-          if (_closed) return null;
-
-          // Add a trailing slash because at least on Chrome, the iframe's
-          // window.location.href will do so automatically, and if that differs
-          // from the original URL communication will fail.
-          return url.resolve(
-              "/" + p.toUri(p.relative(dir, from: _compiledDir)).path + "/");
-        });
+        return _pubServeSuite(path, jsUrl).then((_) =>
+            _pubServeUrl.resolve('$suitePrefix.html'));
       }
+
+      return _compileSuite(path).then((_) {
+        if (_closed) return null;
+        return url.resolveUri(
+            p.toUri(p.relative(path, from: _root) + ".browser_test.html"));
+      });
     }).then((suiteUrl) {
       if (_closed) return null;
 
@@ -210,27 +275,24 @@ class BrowserServer {
 
   /// Compile the test suite at [dartPath] to JavaScript.
   ///
-  /// Returns a [Future] that completes to the path to the JavaScript.
-  Future<String> _compileSuite(String dartPath) {
+  /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
+  /// served.
+  Future _compileSuite(String dartPath) {
     return _compileFutures.putIfAbsent(dartPath, () {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".js");
+
       return _compilers.compile(dartPath, jsPath,
               packageRoot: packageRootFor(dartPath, _packageRoot))
           .then((_) {
-        if (_closed) return null;
+        if (_closed) return;
 
-        // TODO(nweiz): support user-authored HTML files.
-        new File(p.join(dir, "index.html")).writeAsStringSync('''
-<!DOCTYPE html>
-<html>
-<head>
-  <title>${HTML_ESCAPE.convert(dartPath)} Test</title>
-  <script src="${HTML_ESCAPE.convert(p.basename(jsPath))}"></script>
-</head>
-</html>
-''');
-        return dir;
+        _jsHandler.add(
+            p.relative(dartPath, from: _root) + '.browser_test.dart.js',
+            (request) {
+          return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
+              headers: {'Content-Type': 'application/javascript'});
+        });
       });
     });
   }
@@ -248,13 +310,10 @@ class BrowserServer {
       completer.complete(new BrowserManager(webSocket));
     }));
 
-    var webSocketUrl = url.replace(scheme: 'ws', path: '/$path');
+    var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
 
-    var hostUrl = url;
-    if (_pubServeUrl != null) {
-      hostUrl = _pubServeUrl.resolve(
-          '/packages/test/src/runner/browser/static/');
-    }
+    var hostUrl = (_pubServeUrl == null ? url : _pubServeUrl)
+        .resolve('packages/test/src/runner/browser/static/index.html');
 
     var browser = _newBrowser(hostUrl.replace(queryParameters: {
       'managerUrl': webSocketUrl.toString()

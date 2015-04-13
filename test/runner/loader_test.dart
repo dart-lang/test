@@ -33,9 +33,10 @@ void main() {
 
 void main() {
   setUp(() {
-    _loader = new Loader([TestPlatform.vm],
-        packageRoot: p.join(packageDir, 'packages'));
     _sandbox = createTempDir();
+    _loader = new Loader([TestPlatform.vm],
+        root: _sandbox,
+        packageRoot: p.join(packageDir, 'packages'));
   });
 
   tearDown(() {
@@ -87,7 +88,7 @@ void main() {
     });
 
     test("throws a nice error if the package root doesn't exist", () {
-      var loader = new Loader([TestPlatform.vm]);
+      var loader = new Loader([TestPlatform.vm], root: _sandbox);
       expect(
           loader.loadFile(p.join(_sandbox, 'a_test.dart')).first
               .whenComplete(loader.close),

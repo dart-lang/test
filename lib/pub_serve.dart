@@ -19,16 +19,16 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
 
   void declareOutputs(DeclaringTransform transform) {
     var id = transform.primaryId;
-    transform.declareOutput(id.changeExtension('.vm_test.dart'));
-    transform.declareOutput(id.changeExtension('.browser_test.dart'));
-    transform.declareOutput(id.changeExtension('.browser_test.html'));
+    transform.declareOutput(id.addExtension('.vm_test.dart'));
+    transform.declareOutput(id.addExtension('.browser_test.dart'));
+    transform.declareOutput(id.addExtension('.browser_test.html'));
   }
 
   void apply(Transform transform) {
     var id = transform.primaryInput.id;
 
     transform.addOutput(
-        new Asset.fromString(id.changeExtension('.vm_test.dart'), '''
+        new Asset.fromString(id.addExtension('.vm_test.dart'), '''
 import "package:test/src/runner/vm/isolate_listener.dart";
 
 import "${p.url.basename(id.path)}" as test;
@@ -39,7 +39,7 @@ void main(_, Map message) {
 }
 '''));
 
-    var browserId = id.changeExtension('.browser_test.dart');
+    var browserId = id.addExtension('.browser_test.dart');
     transform.addOutput(new Asset.fromString(browserId, '''
 import "package:test/src/runner/browser/iframe_listener.dart";
 
@@ -51,7 +51,7 @@ void main(_) {
 '''));
 
     transform.addOutput(
-        new Asset.fromString(browserId.changeExtension('.html'), '''
+        new Asset.fromString(id.addExtension('.browser_test.html'), '''
 <!DOCTYPE html>
 <html>
 <head>

@@ -2,10 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.one_off_handler;
+library test.util.one_off_handler;
 
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
+
+import '../utils.dart';
 
 /// A Shelf handler that provides support for one-time handlers.
 ///
@@ -36,18 +38,12 @@ class OneOffHandler {
 
   /// Dispatches [request] to the appropriate handler.
   _onRequest(shelf.Request request) {
-    var components = p.url.split(request.url.path);
-
-    // For shelf < 0.6.0, the first component of the path is always "/". We can
-    // safely skip it.
-    if (components.isNotEmpty && components.first == "/") {
-      components.removeAt(0);
-    }
-
+    var components = p.url.split(shelfUrl(request).path);
     if (components.isEmpty) return new shelf.Response.notFound(null);
 
-    var handler = _handlers.remove(components.removeAt(0));
+    var path = components.removeAt(0);
+    var handler = _handlers.remove(path);
     if (handler == null) return new shelf.Response.notFound(null);
-    return handler(request);
+    return handler(shelfChange(request, path: path));
   }
 }

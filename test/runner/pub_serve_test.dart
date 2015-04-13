@@ -223,7 +223,7 @@ transformers:
       contains('-1: load error'),
       contains('''
   Failed to load "test/my_test.dart":
-  Error getting http://localhost:54321/my_test.vm_test.dart: Connection refused
+  Error getting http://localhost:54321/my_test.dart.vm_test.dart: Connection refused
   Make sure "pub serve" is running.''')
     ]));
     expect(result.exitCode, equals(1));
@@ -235,8 +235,8 @@ transformers:
     expect(result.stdout, allOf([
       contains('-1: load error'),
       contains('Failed to load "test/my_test.dart":'),
-      contains('Error getting http://localhost:54321/my_test.browser_test.dart'
-          '.js: Connection refused (errno '),
+      contains('Error getting http://localhost:54321/my_test.dart.browser_test'
+          '.dart.js: Connection refused (errno '),
       contains('Make sure "pub serve" is running.')
     ]));
     expect(result.exitCode, equals(1));

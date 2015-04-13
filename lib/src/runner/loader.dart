@@ -32,6 +32,9 @@ class Loader {
   /// Whether to enable colors for Dart compilation.
   final bool _color;
 
+  /// The root directory that will be served for browser tests.
+  final String _root;
+
   /// The package root to use for loading tests, or `null` to use the automatic
   /// root.
   final String _packageRoot;
@@ -51,6 +54,7 @@ class Loader {
     if (_browserServerCompleter == null) {
       _browserServerCompleter = new Completer();
       BrowserServer.start(
+              root: _root,
               packageRoot: _packageRoot,
               pubServeUrl: _pubServeUrl,
               color: _color)
@@ -63,6 +67,9 @@ class Loader {
 
   /// Creates a new loader.
   ///
+  /// [root] is the root directory that will be served for browser tests. It
+  /// defaults to the working directory.
+  ///
   /// If [packageRoot] is passed, it's used as the package root for all loaded
   /// tests. Otherwise, the `packages/` directories next to the test entrypoints
   /// will be used.
@@ -71,10 +78,11 @@ class Loader {
   /// instance at that URL rather than from the filesystem.
   ///
   /// If [color] is true, console colors will be used when compiling Dart.
-  Loader(Iterable<TestPlatform> platforms, {String packageRoot,
+  Loader(Iterable<TestPlatform> platforms, {String root, String packageRoot,
         Uri pubServeUrl, bool color: false})
       : _platforms = platforms.toList(),
         _pubServeUrl = pubServeUrl,
+        _root = root == null ? p.current : root,
         _packageRoot = packageRoot,
         _color = color;
 
@@ -154,8 +162,7 @@ class Loader {
     return new Future.sync(() {
       if (_pubServeUrl != null) {
         var url = _pubServeUrl.resolve(
-            p.withoutExtension(p.relative(path, from: 'test')) +
-                '.vm_test.dart');
+            p.relative(path, from: 'test') + '.vm_test.dart');
         return Isolate.spawnUri(url, [], {'reply': receivePort.sendPort})
             .then((isolate) => new IsolateWrapper(isolate, () {}))
             .catchError((error, stackTrace) {
