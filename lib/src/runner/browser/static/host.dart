@@ -126,7 +126,7 @@ StreamChannel _connectToIframe(String url) {
 
     message.stopPropagation();
     inputController.add(message.data["data"]);
-    readyCompleter.complete();
+    if (!readyCompleter.isCompleted) readyCompleter.complete();
   });
 
   outputController.stream.listen((message) {
