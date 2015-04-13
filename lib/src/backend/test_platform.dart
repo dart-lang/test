@@ -18,6 +18,11 @@ class TestPlatform {
   static const TestPlatform dartium = const TestPlatform._("Dartium", "dartium",
       isBrowser: true, isBlink: true);
 
+  /// Dartium content shell.
+  static const TestPlatform contentShell = const TestPlatform._(
+      "Dartium Content Shell", "content-shell",
+      isBrowser: true, isBlink: true);
+
   /// Google Chrome.
   static const TestPlatform chrome = const TestPlatform._("Chrome", "chrome",
       isBrowser: true, isJS: true, isBlink: true);
@@ -27,7 +32,8 @@ class TestPlatform {
       isBrowser: true, isJS: true);
 
   /// A list of all instances of [TestPlatform].
-  static const List<TestPlatform> all = const [vm, dartium, chrome, firefox];
+  static const List<TestPlatform> all =
+      const [vm, dartium, contentShell, chrome, firefox];
 
   /// Finds a platform by its identifier string.
   ///

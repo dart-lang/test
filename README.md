@@ -136,6 +136,9 @@ valid identifiers are:
 
 * `dartium`: Whether the test is running on Dartium.
 
+* `content-shell`: Whether the test is running on the headless Dartium content
+  shell.
+
 * `chrome`: Whether the test is running on Google Chrome.
 
 * `dart-vm`: Whether the test is running on the Dart VM in any context,
@@ -172,15 +175,23 @@ write `@TestOn("browser && !chrome")`.
 
 Tests can be run on [Dartium][] by passing the `-p dartium` flag. If you're
 using the Dart Editor, the test runner will be able to find Dartium
-automatically. However, since it usually isn't installed on a system-wide basis,
-the test runner may not otherwise be able to find the Dartium executable. To use
-it without the Editor, make sure there's an executable called `dartium` (on Mac
-OS or Linux) or `dartium.exe` (on Windows) on your system path.
+automatically. On Mac OS, you can also [install it using Homebrew][homebrew].
+Otherwise, make sure there's an executable called `dartium` (on Mac OS or Linux)
+or `dartium.exe` (on Windows) on your system path.
 
 [Dartium]: https://www.dartlang.org/tools/dartium/
+[homebrew]: https://github.com/dart-lang/homebrew-dart
+
+Similarly, tests can be run on the headless Dartium content shell by passing `-p
+content-shell`. The content shell is installed along with Dartium when using
+Homebrew. Otherwise, you can downloaded it manually [from this
+page][content_shell]; if you do, make sure the executable named `content_shell`
+(on Mac OS or Linux) or `content_shell.exe` (on Windows) is on your system path.
+
+[content_shell]: http://gsdview.appspot.com/dart-archive/channels/stable/release/latest/dartium/
 
 [In the future][issue 63], there will be a more explicit way to configure the
-location of the executable.
+location of both the Dartium and content shell executables.
 
 [issue 63]: https://github.com/dart-lang/test/issues/63
 

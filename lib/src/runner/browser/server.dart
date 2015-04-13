@@ -27,6 +27,7 @@ import 'browser_manager.dart';
 import 'compiler_pool.dart';
 import 'chrome.dart';
 import 'dartium.dart';
+import 'content_shell.dart';
 import 'firefox.dart';
 
 /// A server that serves JS-compiled tests to browsers.
@@ -349,6 +350,7 @@ void main() {
   Browser _newBrowser(Uri url, TestPlatform browser) {
     switch (browser) {
       case TestPlatform.dartium: return new Dartium(url);
+      case TestPlatform.contentShell: return new ContentShell(url);
       case TestPlatform.chrome: return new Chrome(url);
       case TestPlatform.firefox: return new Firefox(url);
       default:

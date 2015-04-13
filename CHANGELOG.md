@@ -3,7 +3,7 @@
 * Browser tests can now load assets by making HTTP requests to the corresponding
   relative URLs.
 
-* Add support for running tests on Dartium.
+* Add support for running tests on Dartium and the Dartium content shell.
 
 ### 0.12.0-beta.6
 

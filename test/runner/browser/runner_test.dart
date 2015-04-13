@@ -139,6 +139,13 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
+    test("on content shell", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+      var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+      expect(result.stdout, isNot(contains("Compiling")));
+      expect(result.exitCode, equals(0));
+    });
+
     test("on multiple browsers", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runUnittest(["-p", "firefox", "-p", "chrome", "test.dart"]);
@@ -148,7 +155,8 @@ void main() {
 
     test("on a JS and non-JS browser", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "dartium", "-p", "chrome", "test.dart"]);
+      var result = _runUnittest(
+          ["-p", "content-shell", "-p", "chrome", "test.dart"]);
       expect("Compiling".allMatches(result.stdout), hasLength(1));
       expect(result.exitCode, equals(0));
     });
@@ -176,6 +184,12 @@ void main() {
     test("on Dartium", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
       var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      expect(result.exitCode, equals(1));
+    });
+
+    test("on content-shell", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+      var result = _runUnittest(["-p", "content-shell", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 

@@ -7,6 +7,7 @@ library test.runner.browser.host;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
+import 'dart:js' as js;
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/src/util/multi_channel.dart';
@@ -65,6 +66,11 @@ import 'package:test/src/util/stream_channel.dart';
 /// does mean that the server needs to be sure to nest its [MultiChannel]s at
 /// the same place the client does.
 void main() {
+  // This tells content_shell not to close immediately after the page has
+  // rendered.
+  var testRunner = js.context['testRunner'];
+  if (testRunner != null) testRunner.callMethod('waitUntilDone', []);
+
   runZoned(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
