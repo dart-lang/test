@@ -202,7 +202,7 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// outgoing messages have [outputId].
   void _closeChannel(int inputId, int outputId) {
     if (_closed) return;
-    _closed = true;
+    _closed = inputId == 0;
 
     // A message without data indicates that the virtual channel has been
     // closed.
