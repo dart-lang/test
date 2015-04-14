@@ -9,13 +9,18 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../../util/exit_codes.dart' as exit_codes;
 import '../../util/io.dart';
+import '../application_exception.dart';
 import 'browser.dart';
 
 /// The PhantomJS script that opens the host page.
 final _script = """
 var system = require('system');
 var page = require('webpage').create();
+
+// PhantomJS versions older than 2.0.0 don't support the latest WebSocket spec.
+if (phantom.version.major < 2) phantom.exit(${exit_codes.protocol});
 
 // Pipe browser messages to the process's stdout. This isn't used by default,
 // but it can be useful for debugging.
@@ -73,6 +78,10 @@ class PhantomJS implements Browser {
         return _process.exitCode;
       });
     }).then((exitCode) {
+      if (exitCode == exit_codes.protocol) {
+        throw new ApplicationException(
+            "Only PhantomJS version 2.0.0 or greater is supported.");
+      }
       if (exitCode != 0) throw "PhantomJS failed with exit code $exitCode.";
     }).then(_onExitCompleter.complete)
         .catchError(_onExitCompleter.completeError);

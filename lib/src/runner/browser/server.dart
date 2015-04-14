@@ -329,7 +329,10 @@ void main() {
     if (manager != null) return manager;
 
     var completer = new Completer();
-    _browserManagers[platform] = completer.future;
+
+    // Swallow errors, since they're already being surfaced through the return
+    // value and [browser.onError].
+    _browserManagers[platform] = completer.future.catchError((_) {});
     var path = _webSocketHandler.create(webSocketHandler((webSocket) {
       completer.complete(new BrowserManager(webSocket));
     }));
