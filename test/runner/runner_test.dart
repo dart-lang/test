@@ -47,7 +47,7 @@ Usage: pub run test:test [files or directories...]
 
 -N, --plain-name               A plain-text substring of the name of the test to run.
 -p, --platform                 The platform(s) on which to run the tests.
-                               [vm (default), dartium, content-shell, chrome, firefox]
+                               [vm (default), dartium, content-shell, chrome, phantomjs, firefox]
 
 -j, --concurrency=<threads>    The number of concurrent test suites run.
                                (defaults to $_defaultConcurrency)

@@ -29,6 +29,7 @@ import 'chrome.dart';
 import 'dartium.dart';
 import 'content_shell.dart';
 import 'firefox.dart';
+import 'phantom_js.dart';
 
 /// A server that serves JS-compiled tests to browsers.
 ///
@@ -352,6 +353,7 @@ void main() {
       case TestPlatform.dartium: return new Dartium(url);
       case TestPlatform.contentShell: return new ContentShell(url);
       case TestPlatform.chrome: return new Chrome(url);
+      case TestPlatform.phantomJS: return new PhantomJS(url);
       case TestPlatform.firefox: return new Firefox(url);
       default:
         throw new ArgumentError("$browser is not a browser.");

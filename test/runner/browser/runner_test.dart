@@ -126,6 +126,12 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
+    test("on PhantomJS", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+      var result = _runUnittest(["-p", "phantomjs", "test.dart"]);
+      expect(result.exitCode, equals(0));
+    });
+
     test("on Firefox", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runUnittest(["-p", "firefox", "test.dart"]);
@@ -172,6 +178,12 @@ void main() {
     test("on Chrome", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
       var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      expect(result.exitCode, equals(1));
+    });
+
+    test("on PhantomJS", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+      var result = _runUnittest(["-p", "phantomjs", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 

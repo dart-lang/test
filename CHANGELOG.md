@@ -5,6 +5,8 @@
 
 * Add support for running tests on Dartium and the Dartium content shell.
 
+* Add support for running tests on [PhantomJS](http://phantomjs.org/).
+
 ### 0.12.0-beta.6
 
 * Add the ability to run multiple test suites concurrently. By default a number

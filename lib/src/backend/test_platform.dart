@@ -27,13 +27,18 @@ class TestPlatform {
   static const TestPlatform chrome = const TestPlatform._("Chrome", "chrome",
       isBrowser: true, isJS: true, isBlink: true);
 
+  /// PhantomJS.
+  static const TestPlatform phantomJS = const TestPlatform._(
+      "PhantomJS", "phantomjs",
+      isBrowser: true, isJS: true, isBlink: true);
+
   /// Mozilla Firefox.
   static const TestPlatform firefox = const TestPlatform._("Firefox", "firefox",
       isBrowser: true, isJS: true);
 
   /// A list of all instances of [TestPlatform].
   static const List<TestPlatform> all =
-      const [vm, dartium, contentShell, chrome, firefox];
+      const [vm, dartium, contentShell, chrome, phantomJS, firefox];
 
   /// Finds a platform by its identifier string.
   ///

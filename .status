@@ -23,6 +23,10 @@ lib/*/*: SkipByDesign
 lib/*/*/*: SkipByDesign
 lib/*/*/*/*: SkipByDesign
 
+# PhantomJS isn't supported on the bots (issue 23195).
+test/runner/browser/phantom_js: Skip
+test/runner/browser/runner_test: Skip
+
 test/runner/browser/loader_test: Pass, Slow
 
 # The test harness for browser tests doesn't play nicely with the new way of
