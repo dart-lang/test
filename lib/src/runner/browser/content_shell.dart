@@ -7,9 +7,6 @@ library test.runner.browser.content_shell;
 import 'dart:async';
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-
-import '../../util/io.dart';
 import 'browser.dart';
 
 /// A class for running an instance of the Dartium content shell.
