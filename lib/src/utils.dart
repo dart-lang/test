@@ -184,6 +184,25 @@ Stream mergeStreams(Iterable<Stream> streamIter) {
   return controller.stream;
 }
 
+/// Returns the first value [stream] emits, or `null` if [stream] closes before
+/// emitting a value.
+Future maybeFirst(Stream stream) {
+  var completer = new Completer();
+
+  var subscription;
+  subscription = stream.listen((data) {
+    completer.complete(data);
+    subscription.cancel();
+  }, onError: (error, stackTrace) {
+    completer.completeError(error, stackTrace);
+    subscription.cancel();
+  }, onDone: () {
+    completer.complete();
+  });
+
+  return completer.future;
+}
+
 /// Returns a random base64 string containing [bytes] bytes of data.
 ///
 /// [seed] is passed to [math.Random]; [urlSafe] and [addLineSeparator] are

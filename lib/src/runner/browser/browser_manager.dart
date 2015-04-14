@@ -50,7 +50,12 @@ class BrowserManager {
     // Create a nested MultiChannel because the iframe will be using a channel
     // wrapped within the host's channel.
     suiteChannel = new MultiChannel(suiteChannel.stream, suiteChannel.sink);
-    return suiteChannel.stream.first.then((response) {
+
+    // The stream may close before emitting a value if the browser is killed
+    // prematurely (e.g. via Control-C).
+    return maybeFirst(suiteChannel.stream).then((response) {
+      if (response == null) return null;
+
       if (response["type"] == "loadException") {
         return new Future.error(new LoadException(path, response["message"]));
       } else if (response["type"] == "error") {

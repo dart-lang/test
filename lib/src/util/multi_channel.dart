@@ -93,9 +93,6 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// The subscription to [_innerStream].
   StreamSubscription _innerStreamSubscription;
 
-  /// Whether this channel has been closed.
-  bool _closed = false;
-
   Stream get stream => _streamController.stream;
   final _streamController = new StreamController(sync: true);
 
@@ -201,9 +198,6 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// Closes the virtual channel for which incoming messages have [inputId] and
   /// outgoing messages have [outputId].
   void _closeChannel(int inputId, int outputId) {
-    if (_closed) return;
-    _closed = inputId == 0;
-
     // A message without data indicates that the virtual channel has been
     // closed.
     _streamControllers.remove(inputId).close();
