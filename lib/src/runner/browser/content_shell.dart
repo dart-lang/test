@@ -5,9 +5,14 @@
 library test.runner.browser.content_shell;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import '../application_exception.dart';
 import 'browser.dart';
+
+/// A converter that transforms a byte stream into a stream of lines.
+final _lines = UTF8.decoder.fuse(const LineSplitter());
 
 /// A class for running an instance of the Dartium content shell.
 ///
@@ -37,15 +42,35 @@ class ContentShell implements Browser {
   ContentShell(url, {String executable}) {
     if (executable == null) executable = _defaultExecutable();
 
+    // Whether we killed content shell because it used an expired Dart version.
+    var expired = false;
+
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
     Process.start(executable, ["--dump-render-tree", url.toString()],
         environment: {"DART_FLAGS": "--checked"}).then((process) {
+      _lines.bind(process.stderr).listen((line) {
+        if (line != "[dartToStderr]: Dartium build has expired") return;
+        expired = true;
+        process.kill();
+      });
+
       _process = process;
       _onProcessStartedCompleter.complete();
       return _process.exitCode;
     }).then((exitCode) {
+      if (expired) {
+        // TODO(nweiz): link to dartlang.org once it has download links for
+        // content shell
+        // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
+        throw new ApplicationException(
+            "You're using an expired content_shell. Upgrade to the latest "
+                "version:\n"
+            "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
+                "latest/dartium/");
+      }
+
       if (exitCode != 0) throw "Content shell failed with exit code $exitCode.";
     }).then(_onExitCompleter.complete)
         .catchError(_onExitCompleter.completeError);

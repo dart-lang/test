@@ -250,7 +250,15 @@ void main() {
       return _browserManagerFor(browser).then((browserManager) {
         if (_closed) return null;
         return browserManager.loadSuite(path, suiteUrl);
-      }).then((suite) => suite.change(platform: browser.name));
+      }).then((suite) {
+        if (_closed) return null;
+        if (suite != null) return suite.change(platform: browser.name);
+
+        // If the browser manager fails to load a suite and the server isn't
+        // closed, it's probably because the browser failed. We emit the failure
+        // here to ensure that it gets surfaced.
+        return _browsers[browser].onExit;
+      });
     });
   }
 
