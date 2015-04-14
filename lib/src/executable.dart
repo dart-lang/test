@@ -17,6 +17,7 @@ import 'package:yaml/yaml.dart';
 
 import 'backend/test_platform.dart';
 import 'runner/reporter/compact.dart';
+import 'runner/application_exception.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_exception_suite.dart';
 import 'runner/loader.dart';
@@ -249,6 +250,12 @@ transformers:
       return reporter.close();
     });
   }).whenComplete(signalSubscription.cancel).catchError((error, stackTrace) {
+    if (error is ApplicationException) {
+      stderr.writeln(error.message);
+      exitCode = exit_codes.data;
+      return;
+    }
+
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(new Trace.from(stackTrace).terse);
     stderr.writeln(

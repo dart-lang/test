@@ -88,11 +88,8 @@ void main() {
     });
 
     test("throws a nice error if the package root doesn't exist", () {
-      var loader = new Loader([TestPlatform.vm], root: _sandbox);
-      expect(
-          loader.loadFile(p.join(_sandbox, 'a_test.dart')).first
-              .whenComplete(loader.close),
-          throwsA(isLoadException(
+      expect(() => new Loader([TestPlatform.chrome], root: _sandbox),
+          throwsA(isApplicationException(
               "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
     });
   });

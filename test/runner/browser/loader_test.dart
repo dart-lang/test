@@ -88,15 +88,6 @@ void main() {
     });
   });
 
-  test("throws a nice error if the package root doesn't exist", () {
-    var loader = new Loader([TestPlatform.chrome], root: _sandbox);
-    expect(
-        loader.loadFile(p.join(_sandbox, 'a_test.dart')).first
-            .whenComplete(loader.close),
-        throwsA(isLoadException(
-            "Directory ${p.join(_sandbox, 'packages')} does not exist.")));
-  });
-
   test("loads a suite both in the browser and the VM", () {
     var loader = new Loader([TestPlatform.vm, TestPlatform.chrome],
         root: _sandbox,

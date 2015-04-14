@@ -12,6 +12,7 @@ import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
+import 'package:test/src/runner/application_exception.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/util/remote_exception.dart';
 import 'package:test/test.dart';
@@ -164,6 +165,40 @@ class _IsLoadException extends Matcher {
           .addDescriptionOf(item)
           .add(' is not ')
           .addDescriptionOf(_innerError);
+    }
+  }
+}
+
+/// Returns a matcher that matches a [ApplicationException] with the given
+/// [message].
+///
+/// [message] can be a string or a [Matcher].
+Matcher isApplicationException(message) =>
+    new _IsApplicationException(wrapMatcher(message));
+
+class _IsApplicationException extends Matcher {
+  final Matcher _message;
+
+  _IsApplicationException(this._message);
+
+  bool matches(item, Map matchState) =>
+      item is ApplicationException && _message.matches(item.message, matchState);
+
+  Description describe(Description description) =>
+      description.add('a ApplicationException with message ')
+          .addDescriptionOf(_message);
+
+  Description describeMismatch(item, Description mismatchDescription,
+                               Map matchState, bool verbose) {
+    if (item is! ApplicationException) {
+      return mismatchDescription.addDescriptionOf(item)
+          .add('is not a ApplicationException');
+    } else {
+      return mismatchDescription
+          .add('message ')
+          .addDescriptionOf(item)
+          .add(' is not ')
+          .addDescriptionOf(_message);
     }
   }
 }

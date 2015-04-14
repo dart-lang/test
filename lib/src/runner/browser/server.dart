@@ -41,13 +41,15 @@ class BrowserServer {
   /// the working directory.
   ///
   /// If [packageRoot] is passed, it's used for all package imports when
-  /// compiling tests to JS. Otherwise, the package root is inferred from the
-  /// location of the source file.
+  /// compiling tests to JS. Otherwise, the package root is inferred from
+  /// [root].
   ///
   /// If [pubServeUrl] is passed, tests will be loaded from the `pub serve`
   /// instance at that URL rather than from the filesystem.
   ///
   /// If [color] is true, console colors will be used when compiling Dart.
+  ///
+  /// If the package root doesn't exist, throws an [ApplicationException].
   static Future<BrowserServer> start({String root, String packageRoot,
       Uri pubServeUrl, bool color: false}) {
     var server = new BrowserServer._(root, packageRoot, pubServeUrl, color);
@@ -88,7 +90,7 @@ class BrowserServer {
   /// The root directory served statically by this server.
   final String _root;
 
-  /// The package root which is passed to `dart2js`.
+  /// The package root.
   final String _packageRoot;
 
   /// The URL for the `pub serve` instance to use to load tests.
@@ -129,8 +131,9 @@ class BrowserServer {
   /// per run, rather than one per browser per run.
   final _compileFutures = new Map<String, Future>();
 
-  BrowserServer._(String root, this._packageRoot, Uri pubServeUrl, bool color)
+  BrowserServer._(String root, String packageRoot, Uri pubServeUrl, bool color)
       : _root = root == null ? p.current : root,
+        _packageRoot = packageRootFor(root, packageRoot),
         _pubServeUrl = pubServeUrl,
         _compiledDir = pubServeUrl == null ? createTempDir() : null,
         _http = pubServeUrl == null ? null : new HttpClient(),
@@ -163,11 +166,8 @@ class BrowserServer {
   ///
   /// This is a factory so it can wrap a static handler.
   shelf.Handler _createPackagesHandler() {
-    var packageRoot = _packageRoot == null
-        ? p.join(_root, 'packages')
-        : _packageRoot;
     var staticHandler =
-      createStaticHandler(packageRoot, serveFilesOutsidePath: true);
+      createStaticHandler(_packageRoot, serveFilesOutsidePath: true);
 
     return (request) {
       var segments = p.url.split(shelfUrl(request).path);
@@ -299,8 +299,7 @@ void main() {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".js");
 
-      return _compilers.compile(dartPath, jsPath,
-              packageRoot: packageRootFor(dartPath, _packageRoot))
+      return _compilers.compile(dartPath, jsPath, packageRoot: _packageRoot)
           .then((_) {
         if (_closed) return;
 

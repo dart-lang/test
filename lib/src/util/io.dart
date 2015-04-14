@@ -12,7 +12,7 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
-import '../runner/load_exception.dart';
+import '../runner/application_exception.dart';
 
 /// The root directory of the Dart SDK.
 final String sdkDir =
@@ -112,17 +112,17 @@ Uri baseUrlForAddress(InternetAddress address, int port) {
   return new Uri(scheme: "http", host: address.address, port: port);
 }
 
-/// Returns the package root for a Dart entrypoint at [path].
+/// Returns the package root at [root].
 ///
-/// If [override] is passed, that's used. If the package root doesn't exist, a
-/// [LoadException] is thrown.
-String packageRootFor(String path, [String override]) {
-  var packageRoot = override == null
-      ? p.join(p.dirname(path), 'packages')
-      : override;
+/// If [override] is passed, that's used. If the package root doesn't exist, an
+/// [ApplicationException] is thrown.
+String packageRootFor(String root, [String override]) {
+  if (root == null) root = p.current;
+  var packageRoot = override == null ? p.join(root, 'packages') : override;
 
   if (!new Directory(packageRoot).existsSync()) {
-    throw new LoadException(path, "Directory $packageRoot does not exist.");
+    throw new ApplicationException(
+        "Directory ${p.prettyUri(p.toUri(packageRoot))} does not exist.");
   }
 
   return packageRoot;

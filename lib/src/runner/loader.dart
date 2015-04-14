@@ -35,8 +35,7 @@ class Loader {
   /// The root directory that will be served for browser tests.
   final String _root;
 
-  /// The package root to use for loading tests, or `null` to use the automatic
-  /// root.
+  /// The package root to use for loading tests.
   final String _packageRoot;
 
   /// The URL for the `pub serve` instance to use to load tests.
@@ -71,19 +70,20 @@ class Loader {
   /// defaults to the working directory.
   ///
   /// If [packageRoot] is passed, it's used as the package root for all loaded
-  /// tests. Otherwise, the `packages/` directories next to the test entrypoints
-  /// will be used.
+  /// tests. Otherwise, it's inferred from [root].
   ///
   /// If [pubServeUrl] is passed, tests will be loaded from the `pub serve`
   /// instance at that URL rather than from the filesystem.
   ///
   /// If [color] is true, console colors will be used when compiling Dart.
+  ///
+  /// If the package root doesn't exist, throws an [ApplicationException].
   Loader(Iterable<TestPlatform> platforms, {String root, String packageRoot,
         Uri pubServeUrl, bool color: false})
       : _platforms = platforms.toList(),
         _pubServeUrl = pubServeUrl,
         _root = root == null ? p.current : root,
-        _packageRoot = packageRoot,
+        _packageRoot = packageRootFor(root, packageRoot),
         _color = color;
 
   /// Loads all test suites in [dir].
@@ -156,7 +156,6 @@ class Loader {
 
   /// Load the test suite at [path] in VM isolate.
   Future<Suite> _loadVmFile(String path) {
-    var packageRoot = packageRootFor(path, _packageRoot);
     var receivePort = new ReceivePort();
 
     return new Future.sync(() {
@@ -192,7 +191,7 @@ void main(_, Map message) {
 }
 ''', {
           'reply': receivePort.sendPort
-        }, packageRoot: packageRoot);
+        }, packageRoot: _packageRoot);
       }
     }).catchError((error, stackTrace) {
       receivePort.close();
