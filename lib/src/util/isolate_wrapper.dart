@@ -16,7 +16,10 @@ import 'io.dart';
 /// This is necessary to delete the source directory of the isolate only once
 /// the Isolate completes. Note that the callback won't necessarily fire before
 /// the Isolate is killed, but it comes close enough for our purposes.
-class IsolateWrapper implements Isolate {
+///
+/// This avoids implementing Isolate because there's no interface that's
+/// compatible with both Dart before 1.11 and Dart after 1.11.
+class IsolateWrapper {
   final Isolate _inner;
 
   final Function _onExit;
@@ -32,8 +35,7 @@ class IsolateWrapper implements Isolate {
   void addOnExitListener(SendPort port) => _inner.addOnExitListener(port);
   Capability pause([Capability resumeCapability]) =>
       _inner.pause(resumeCapability);
-  void ping(SendPort responsePort, [int pingType=Isolate.IMMEDIATE]) =>
-      _inner.ping(responsePort, pingType);
+  void ping(SendPort responsePort) => _inner.ping(responsePort);
   void removeErrorListener(SendPort port) => _inner.removeErrorListener(port);
   void removeOnExitListener(SendPort port) => _inner.removeOnExitListener(port);
   void resume(Capability resumeCapability) => _inner.resume(resumeCapability);
@@ -41,8 +43,8 @@ class IsolateWrapper implements Isolate {
       _inner.setErrorsFatal(errorsAreFatal);
   String toString() => _inner.toString();
 
-  void kill([int priority=Isolate.BEFORE_NEXT_EVENT]) {
-    if (supportsIsolateKill) _inner.kill(priority);
+  void kill() {
+    if (supportsIsolateKill) _inner.kill();
     _onExit();
   }
 }

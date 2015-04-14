@@ -26,7 +26,7 @@ import 'remote_exception.dart';
 ///
 /// [packageRoot] controls the package root of the isolate. It may be either a
 /// [String] or a [Uri].
-Future<Isolate> runInIsolate(String code, message, {packageRoot}) {
+Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) {
   // TODO(nweiz): load code from a local server rather than from a file.
   var dir = createTempDir();
   var dartPath = p.join(dir, 'runInIsolate.dart');

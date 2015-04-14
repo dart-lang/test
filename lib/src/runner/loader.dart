@@ -45,7 +45,7 @@ class Loader {
   final Uri _pubServeUrl;
 
   /// All isolates that have been spun up by the loader.
-  final _isolates = new Set<Isolate>();
+  final _isolates = new Set<IsolateWrapper>();
 
   /// The server that serves browser test pages.
   ///

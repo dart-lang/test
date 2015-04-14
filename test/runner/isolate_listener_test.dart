@@ -33,7 +33,7 @@ LiveTest _liveTest;
 void main() {
   tearDown(() {
     if (_isolate != null && supportsIsolateKill) {
-      _isolate.kill(Isolate.IMMEDIATE);
+      _isolate.kill();
     }
     _isolate = null;
 
