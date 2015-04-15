@@ -67,6 +67,9 @@ class Invoker {
   /// The test being run.
   LocalTest get _test => liveTest.test as LocalTest;
 
+  /// The test metadata merged with the suite metadata.
+  final Metadata metadata;
+
   /// Note that this is meaningless once [_onCompleteCompleter] is complete.
   var _outstandingCallbacks = 0;
 
@@ -84,7 +87,8 @@ class Invoker {
     return Zone.current[#test.invoker];
   }
 
-  Invoker._(Suite suite, LocalTest test) {
+  Invoker._(Suite suite, LocalTest test)
+      : metadata = suite.metadata.merge(test.metadata) {
     _controller = new LiveTestController(suite, test, _onRun, () {
       _closed = true;
     });
@@ -158,7 +162,7 @@ class Invoker {
         // TODO(nweiz): Make the timeout configurable.
         // TODO(nweiz): Reset this timer whenever the user's code interacts with
         // the library.
-        var timeout = _test.metadata.timeout.apply(new Duration(seconds: 30));
+        var timeout = metadata.timeout.apply(new Duration(seconds: 30));
         var timer = new Timer(timeout, () {
           if (liveTest.isComplete) return;
           handleError(

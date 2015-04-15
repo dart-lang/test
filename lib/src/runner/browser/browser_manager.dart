@@ -38,8 +38,11 @@ class BrowserManager {
   ///
   /// [url] should be an HTML page with a reference to the JS-compiled test
   /// suite. [path] is the path of the original test suite file, which is used
-  /// for reporting.
-  Future<Suite> loadSuite(String path, Uri url) {
+  /// for reporting. [metadata] is the parsed metadata for the test suite.
+  Future<Suite> loadSuite(String path, Uri url, Metadata metadata) {
+    url = url.replace(
+        fragment: Uri.encodeFull(JSON.encode(metadata.serialize())));
+
     var suiteChannel = _channel.virtualChannel();
     _channel.sink.add({
       "command": "loadSuite",
@@ -66,10 +69,10 @@ class BrowserManager {
       }
 
       return new Suite(response["tests"].map((test) {
-        var metadata = new Metadata.deserialize(test['metadata']);
+        var testMetadata = new Metadata.deserialize(test['metadata']);
         var testChannel = suiteChannel.virtualChannel(test['channel']);
-        return new IframeTest(test['name'], metadata, testChannel);
-      }), path: path);
+        return new IframeTest(test['name'], testMetadata, testChannel);
+      }), metadata: metadata, path: path);
     });
   }
 }

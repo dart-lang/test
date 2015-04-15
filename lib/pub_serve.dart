@@ -35,7 +35,8 @@ import "${p.url.basename(id.path)}" as test;
 
 void main(_, Map message) {
   var sendPort = message['reply'];
-  IsolateListener.start(sendPort, () => test.main);
+  var metadata = new Metadata.deserialize(message['metadata']);
+  IsolateListener.start(sendPort, metadata, () => test.main);
 }
 '''));
 

@@ -135,35 +135,41 @@ class Loader {
               'When using "pub serve", all test files must be in test/.');
         }
 
-        if (platform.isBrowser) return _loadBrowserFile(path, platform);
-        assert(platform == TestPlatform.vm);
-        return _loadVmFile(path);
+        if (platform == TestPlatform.vm) return _loadVmFile(path, metadata);
+        assert(platform.isBrowser);
+        return _loadBrowserFile(path, platform, metadata);
       }).then((suite) {
         if (suite == null) return;
 
-        controller.add(suite
-            .change(metadata: metadata).filter(platform, os: currentOS));
+        controller.add(suite.filter(platform, os: currentOS));
       }).catchError(controller.addError);
     }).then((_) => controller.close());
 
     return controller.stream;
   }
 
-  /// Load the test suite at [path] in a browser.
-  Future<Suite> _loadBrowserFile(String path, TestPlatform platform) =>
+  /// Load the test suite at [path] in [platform].
+  ///
+  /// [metadata] is the suite-level metadata for the test.
+  Future<Suite> _loadBrowserFile(String path, TestPlatform platform,
+        Metadata metadata) =>
       _browserServer.then((browserServer) =>
-          browserServer.loadSuite(path, platform));
+          browserServer.loadSuite(path, platform, metadata));
 
   /// Load the test suite at [path] in VM isolate.
-  Future<Suite> _loadVmFile(String path) {
+  ///
+  /// [metadata] is the suite-level metadata for the test.
+  Future<Suite> _loadVmFile(String path, Metadata metadata) {
     var receivePort = new ReceivePort();
 
     return new Future.sync(() {
       if (_pubServeUrl != null) {
         var url = _pubServeUrl.resolve(
             p.relative(path, from: 'test') + '.vm_test.dart');
-        return Isolate.spawnUri(url, [], {'reply': receivePort.sendPort})
-            .then((isolate) => new IsolateWrapper(isolate, () {}))
+        return Isolate.spawnUri(url, [], {
+          'reply': receivePort.sendPort,
+          'metadata': metadata.serialize()
+        }).then((isolate) => new IsolateWrapper(isolate, () {}))
             .catchError((error, stackTrace) {
           if (error is! IsolateSpawnException) throw error;
 
@@ -181,16 +187,19 @@ class Loader {
         });
       } else {
         return runInIsolate('''
+import "package:test/src/backend/metadata.dart";
 import "package:test/src/runner/vm/isolate_listener.dart";
 
 import "${p.toUri(p.absolute(path))}" as test;
 
 void main(_, Map message) {
   var sendPort = message['reply'];
-  IsolateListener.start(sendPort, () => test.main);
+  var metadata = new Metadata.deserialize(message['metadata']);
+  IsolateListener.start(sendPort, metadata, () => test.main);
 }
 ''', {
-          'reply': receivePort.sendPort
+          'reply': receivePort.sendPort,
+          'metadata': metadata.serialize()
         }, packageRoot: _packageRoot);
       }
     }).catchError((error, stackTrace) {
@@ -211,9 +220,9 @@ void main(_, Map message) {
       }
 
       return new Suite(response["tests"].map((test) {
-        var metadata = new Metadata.deserialize(test['metadata']);
-        return new IsolateTest(test['name'], metadata, test['sendPort']);
-      }), path: path, platform: "VM");
+        var testMetadata = new Metadata.deserialize(test['metadata']);
+        return new IsolateTest(test['name'], testMetadata, test['sendPort']);
+      }), metadata: metadata, path: path, platform: "VM");
     });
   }
 

@@ -30,6 +30,7 @@ void main() {
     new File(_path).writeAsStringSync("");
     var metadata = parseMetadata(_path);
     expect(metadata.testOn, equals(PlatformSelector.all));
+    expect(metadata.timeout.scaleFactor, equals(1));
   });
 
   test("ignores irrelevant annotations", () {
@@ -37,14 +38,7 @@ void main() {
     var metadata = parseMetadata(_path);
     expect(metadata.testOn, equals(PlatformSelector.all));
   });
-
-  test("parses a valid annotation", () {
-    new File(_path).writeAsStringSync("@TestOn('vm')\nlibrary foo;");
-    var metadata = parseMetadata(_path);
-    expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
-    expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
-  });
-
+  
   test("parses a prefixed annotation", () {
     new File(_path).writeAsStringSync(
         "@foo.TestOn('vm')\n"
@@ -54,48 +48,184 @@ void main() {
     expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
   });
 
-  test("ignores a constructor named TestOn", () {
-    new File(_path).writeAsStringSync("@foo.TestOn('foo')\nlibrary foo;");
-    var metadata = parseMetadata(_path);
-    expect(metadata.testOn, equals(PlatformSelector.all));
+  group("@TestOn:", () {
+    test("parses a valid annotation", () {
+      new File(_path).writeAsStringSync("@TestOn('vm')\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
+      expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
+    });
+
+    test("ignores a constructor named TestOn", () {
+      new File(_path).writeAsStringSync("@foo.TestOn('foo')\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.testOn, equals(PlatformSelector.all));
+    });
+
+    group("throws an error for", () {
+      test("a named constructor", () {
+        new File(_path).writeAsStringSync("@TestOn.name('foo')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("no argument list", () {
+        new File(_path).writeAsStringSync("@TestOn\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("an empty argument list", () {
+        new File(_path).writeAsStringSync("@TestOn()\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a named argument", () {
+        new File(_path).writeAsStringSync(
+            "@TestOn(expression: 'foo')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple arguments", () {
+        new File(_path).writeAsStringSync("@TestOn('foo', 'bar')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-string argument", () {
+        new File(_path).writeAsStringSync("@TestOn(123)\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple @TestOns", () {
+        new File(_path).writeAsStringSync(
+            "@TestOn('foo')\n@TestOn('bar')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+    });
   });
 
-  group("throws an error for", () {
-    test("a named constructor", () {
-      new File(_path).writeAsStringSync("@TestOn.name('foo')\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
+  group("@Timeout:", () {
+    test("parses a valid duration annotation", () {
+      new File(_path).writeAsStringSync("""
+@Timeout(const Duration(
+    hours: 1,
+    minutes: 2,
+    seconds: 3,
+    milliseconds: 4,
+    microseconds: 5))
+
+library foo;
+""");
+      var metadata = parseMetadata(_path);
+      expect(metadata.timeout.duration,
+          equals(new Duration(
+              hours: 1,
+              minutes: 2,
+              seconds: 3,
+              milliseconds: 4,
+              microseconds: 5)));
     });
 
-    test("no argument list", () {
-      new File(_path).writeAsStringSync("@TestOn\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
+    test("parses a valid int factor annotation", () {
+      new File(_path).writeAsStringSync("""
+@Timeout.factor(1)
+
+library foo;
+""");
+      var metadata = parseMetadata(_path);
+      expect(metadata.timeout.scaleFactor, equals(1));
     });
 
-    test("an empty argument list", () {
-      new File(_path).writeAsStringSync("@TestOn()\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
+    test("parses a valid double factor annotation", () {
+      new File(_path).writeAsStringSync("""
+@Timeout.factor(0.5)
+
+library foo;
+""");
+      var metadata = parseMetadata(_path);
+      expect(metadata.timeout.scaleFactor, equals(0.5));
     });
 
-    test("a named argument", () {
-      new File(_path).writeAsStringSync(
-          "@TestOn(expression: 'foo')\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
+    test("ignores a constructor named Timeout", () {
+      new File(_path).writeAsStringSync("@foo.Timeout('foo')\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.timeout.scaleFactor, equals(1));
     });
 
-    test("multiple arguments", () {
-      new File(_path).writeAsStringSync("@TestOn('foo', 'bar')\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
-    });
+    group("throws an error for", () {
+      test("an unknown named constructor", () {
+        new File(_path).writeAsStringSync("@Timeout.name('foo')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
 
-    test("a non-string argument", () {
-      new File(_path).writeAsStringSync("@TestOn(123)\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
-    });
+      test("no argument list", () {
+        new File(_path).writeAsStringSync("@Timeout\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
 
-    test("multiple @TestOns", () {
-      new File(_path).writeAsStringSync(
-          "@TestOn('foo')\n@TestOn('bar')\nlibrary foo;");
-      expect(() => parseMetadata(_path), throwsFormatException);
+      test("an empty argument list", () {
+        new File(_path).writeAsStringSync("@Timeout()\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a named argument", () {
+        new File(_path).writeAsStringSync(
+            "@Timeout(duration: const Duration(seconds: 1))\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple arguments", () {
+        new File(_path).writeAsStringSync(
+            "@Timeout.factor(1, 2)\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-Duration argument", () {
+        new File(_path).writeAsStringSync("@Timeout(10)\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-num argument", () {
+        new File(_path).writeAsStringSync(
+            "@Timeout.factor('foo')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple @Timeouts", () {
+        new File(_path).writeAsStringSync(
+            "@Timeout.factor(1)\n@Timeout.factor(2)\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      group("a Duration with", () {
+        test("a non-const constructor", () {
+          new File(_path).writeAsStringSync(
+              "@Timeout(new Duration(1))\nlibrary foo;");
+          expect(() => parseMetadata(_path), throwsFormatException);
+        });
+ 
+        test("a named constructor", () {
+          new File(_path).writeAsStringSync(
+              "@Timeout(const Duration.name(seconds: 1))\nlibrary foo;");
+          expect(() => parseMetadata(_path), throwsFormatException);
+        });
+
+        test("a positional argument", () {
+          new File(_path).writeAsStringSync(
+              "@Timeout(const Duration(1))\nlibrary foo;");
+          expect(() => parseMetadata(_path), throwsFormatException);
+        });
+
+        test("an unknown named argument", () {
+          new File(_path).writeAsStringSync(
+              "@Timeout(const Duration(name: 1))\nlibrary foo;");
+          expect(() => parseMetadata(_path), throwsFormatException);
+        });
+
+        test("a duplicate named argument", () {
+          new File(_path).writeAsStringSync(
+              "@Timeout(const Duration(seconds: 1, seconds: 1))\nlibrary foo;");
+          expect(() => parseMetadata(_path), throwsFormatException);
+        });
+      });
     });
   });
 }

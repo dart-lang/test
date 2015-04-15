@@ -1,5 +1,12 @@
 ### 0.12.0-beta.8
 
+* Add support for configuring timeouts on a test, group, and suite basis. Test
+  and group timeouts are configured with the `timeout` named argument; suites
+  are configured using the `@Timeout` annotation. See [the README][timeout] for
+  more information.
+
+[timeout]: https://github.com/dart-lang/test/blob/master/README.md#timeouts
+
 * Add a `--version` flag.
 
 ### 0.12.0-beta.7

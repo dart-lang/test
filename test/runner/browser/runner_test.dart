@@ -258,6 +258,24 @@ void main() {
     expect(result.stdout, contains("Hello,\nworld!\n"));
     expect(result.exitCode, equals(0));
   });
+
+  test("respects top-level @Timeout declarations", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@Timeout(const Duration(seconds: 0))
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("timeout", () {});
+}
+''');
+
+    var result = _runUnittest(["-p", "chrome", "test.dart"]);
+    expect(result.stdout, contains("Test timed out after 0 seconds."));
+    expect(result.stdout, contains("-1: Some tests failed."));
+  });
 }
 
 ProcessResult _runUnittest(List<String> args) =>

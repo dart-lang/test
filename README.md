@@ -278,6 +278,49 @@ void main() {
 
 [expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync
 
+## Configuring Tests
+
+### Timeouts
+
+By default, tests will time out after 30 seconds of inactivity. However, this
+can be configured on a per-test, -group, or -suite basis. To change the timeout
+for a test suite, put a `@Timeout` annotation at the top of the file:
+
+```dart
+@Timeout(new Duration(seconds: 45))
+
+import "package:test/test.dart";
+
+void main() {
+  // ...
+}
+```
+
+In addition to setting an absolute timeout, you can set the timeout relative to
+the default using `@Timeout.factor`. For example, `@Timeout.factor(1.5)` will
+set the timeout to one and a half times as long as the default—45 seconds.
+
+Timeouts can be set for tests and groups using the `timeout` parameter. This
+parameter takes a `Timeout` object just like the annotation. For example:
+
+```dart
+import "package:test/test.dart";
+
+void main() {
+  group("slow tests", () {
+    // ...
+
+    test("even slower test", () {
+      // ...
+    }, timeout: new Timeout.factor(2))
+  }, timeout: new Timeout(new Duration(minutes: 1)));
+}
+```
+
+Nested timeouts apply in order from outermost to innermost. That means that
+"even slower test" will take two minutes to time out, since it multiplies the
+group's timeout by 2.
+
 ## Testing With `barback`
 
 Packages using the `barback` transformer system may need to test code that's

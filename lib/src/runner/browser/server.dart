@@ -15,6 +15,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 
+import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
@@ -223,7 +224,8 @@ void main() {
   ///
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<Suite> loadSuite(String path, TestPlatform browser) {
+  Future<Suite> loadSuite(String path, TestPlatform browser,
+      Metadata metadata) {
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
     }
@@ -249,7 +251,7 @@ void main() {
       // TODO(nweiz): Don't start the browser until all the suites are compiled.
       return _browserManagerFor(browser).then((browserManager) {
         if (_closed) return null;
-        return browserManager.loadSuite(path, suiteUrl);
+        return browserManager.loadSuite(path, suiteUrl, metadata);
       }).then((suite) {
         if (_closed) return null;
         if (suite != null) return suite.change(platform: browser.name);

@@ -23,7 +23,7 @@ class Metadata {
   /// [testOn] defaults to [PlatformSelector.all].
   Metadata({PlatformSelector testOn, Timeout timeout})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
-        timeout = timeout == null ? new Timeout.factor(1) : timeout;
+        timeout = timeout == null ? const Timeout.factor(1) : timeout;
 
   /// Creates a new Metadata, but with fields parsed from strings where
   /// applicable.

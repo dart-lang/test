@@ -5,9 +5,11 @@
 library test.runner.browser.iframe_listener;
 
 import 'dart:async';
-import 'dart:html';
+import 'dart:convert';
+import 'dart:html' hide Metadata;
 
 import '../../backend/declarer.dart';
+import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../util/multi_channel.dart';
@@ -63,7 +65,13 @@ class IframeListener {
       return;
     }
 
-    new IframeListener._(new Suite(declarer.tests))._listen(channel);
+    var url = Uri.parse(window.location.href);
+    var metadata = url.hasFragment
+        ? new Metadata.deserialize(JSON.decode(Uri.decodeFull(url.fragment)))
+        : new Metadata();
+
+    new IframeListener._(new Suite(declarer.tests, metadata: metadata))
+        ._listen(channel);
   }
 
   /// Constructs a [MultiChannel] wrapping the `postMessage` communication with

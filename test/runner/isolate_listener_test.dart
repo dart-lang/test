@@ -305,25 +305,25 @@ Future<ReceivePort> _spawnIsolate(void entryPoint(SendPort sendPort)) {
 
 /// An isolate entrypoint that throws immediately.
 void _loadError(SendPort sendPort) =>
-    IsolateListener.start(sendPort, () => () => throw 'oh no');
+    IsolateListener.start(sendPort, new Metadata(), () => () => throw 'oh no');
 
 /// An isolate entrypoint that throws a NoSuchMethodError.
 void _noSuchMethodError(SendPort sendPort) {
-  return IsolateListener.start(sendPort, () =>
+  return IsolateListener.start(sendPort, new Metadata(), () =>
       throw new NoSuchMethodError(null, #main, [], {}));
 }
 
 /// An isolate entrypoint that returns a non-function.
 void _nonFunction(SendPort sendPort) =>
-    IsolateListener.start(sendPort, () => null);
+    IsolateListener.start(sendPort, new Metadata(), () => null);
 
 /// An isolate entrypoint that returns a function with the wrong arity.
 void _wrongArity(SendPort sendPort) =>
-    IsolateListener.start(sendPort, () => (_) {});
+    IsolateListener.start(sendPort, new Metadata(), () => (_) {});
 
 /// An isolate entrypoint that defines three tests that succeed.
 void _successfulTests(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("successful 1", () {});
     test("successful 2", () {});
     test("successful 3", () {});
@@ -332,14 +332,14 @@ void _successfulTests(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that fails.
 void _failingTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("failure", () => throw new TestFailure('oh no'));
   });
 }
 
 /// An isolate entrypoint that defines a test that fails after succeeding.
 void _failAfterSucceedTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("fail after succeed", () {
       pumpEventQueue().then((_) {
         throw new TestFailure('oh no');
@@ -350,7 +350,7 @@ void _failAfterSucceedTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that fails multiple times.
 void _multiFailTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("multiple failures", () {
       Invoker.current.addOutstandingCallback();
       new Future(() => throw new TestFailure("one"));
@@ -363,14 +363,14 @@ void _multiFailTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that errors.
 void _errorTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("error", () => throw 'oh no');
   });
 }
 
 /// An isolate entrypoint that defines a test that errors after succeeding.
 void _errorAfterSucceedTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("error after succeed", () {
       pumpEventQueue().then((_) => throw 'oh no');
     });
@@ -379,7 +379,7 @@ void _errorAfterSucceedTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that errors multiple times.
 void _multiErrorTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("multiple errors", () {
       Invoker.current.addOutstandingCallback();
       new Future(() => throw "one");
@@ -392,7 +392,7 @@ void _multiErrorTest(SendPort sendPort) {
 
 /// An isolate entrypoint that defines a test that prints twice.
 void _printTest(SendPort sendPort) {
-  IsolateListener.start(sendPort, () => () {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
     test("prints", () {
       print("Hello,");
       return new Future(() => print("world!"));

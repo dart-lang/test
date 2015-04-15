@@ -8,6 +8,7 @@ import 'dart:isolate';
 import 'dart:async';
 
 import '../../backend/declarer.dart';
+import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../util/remote_exception.dart';
@@ -27,7 +28,9 @@ class IsolateListener {
   ///
   /// Once that's done, this starts listening for commands about which tests to
   /// run.
-  static void start(SendPort sendPort, Function getMain()) {
+  ///
+  /// [metadata] is the suite-level metadata defined at the top of the file.
+  static void start(SendPort sendPort, Metadata metadata, Function getMain()) {
     var main;
     try {
       main = getMain();
@@ -56,7 +59,8 @@ class IsolateListener {
       return;
     }
 
-    new IsolateListener._(new Suite(declarer.tests))._listen(sendPort);
+    new IsolateListener._(new Suite(declarer.tests, metadata: metadata))
+        ._listen(sendPort);
   }
 
   /// Sends a message over [sendPort] indicating that the tests failed to load.

@@ -329,6 +329,24 @@ $_usage"""));
     expect(result.exitCode, equals(1));
   });
 
+  test("respects top-level @Timeout declarations", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@Timeout(const Duration(seconds: 0))
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("timeout", () {});
+}
+''');
+
+    var result = _runUnittest(["test.dart"]);
+    expect(result.stdout, contains("Test timed out after 0 seconds."));
+    expect(result.stdout, contains("-1: Some tests failed."));
+  });
+
   group("flags:", () {
     test("with the --color flag, uses colors", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
