@@ -6,6 +6,7 @@ library test.backend.declarer;
 
 import 'dart:collection';
 
+import '../frontend/timeout.dart';
 import 'group.dart';
 import 'invoker.dart';
 import 'metadata.dart';
@@ -32,13 +33,19 @@ class Declarer {
   ///
   /// If [testOn] is passed, it's parsed as a [PlatformSelector], and the test
   /// will only be run on matching platforms.
-  void test(String description, body(), {String testOn}) {
+  ///
+  /// If [timeout] is passed, it's used to modify or replace the default timeout
+  /// of 30 seconds. Timeout modifications take precedence in suite-group-test
+  /// order, so [timeout] will also modify any timeouts set on the group or
+  /// suite.
+  void test(String description, body(), {String testOn, Timeout timeout}) {
     // TODO(nweiz): Once tests have begun running, throw an error if [test] is
     // called.
     var prefix = _group.description;
     if (prefix != null) description = "$prefix $description";
 
-    var metadata = _group.metadata.merge(new Metadata.parse(testOn: testOn));
+    var metadata = _group.metadata.merge(
+        new Metadata.parse(testOn: testOn, timeout: timeout));
     var group = _group;
     _tests.add(new LocalTest(description, metadata, () {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
@@ -56,11 +63,17 @@ class Declarer {
   ///
   /// If [testOn] is passed, it's parsed as a [PlatformSelector], and any tests
   /// in the group will only be run on matching platforms.
-  void group(String description, void body(), {String testOn}) {
+  ///
+  /// If [timeout] is passed, it's used to modify or replace the default timeout
+  /// of 30 seconds. Timeout modifications take precedence in suite-group-test
+  /// order, so [timeout] will also modify any timeouts set on the group or
+  /// suite.
+  void group(String description, void body(), {String testOn,
+      Timeout timeout}) {
     var oldGroup = _group;
 
-    _group = new Group(
-        oldGroup, description, new Metadata.parse(testOn: testOn));
+    var metadata = new Metadata.parse(testOn: testOn, timeout: timeout);
+    _group = new Group(oldGroup, description, metadata);
     try {
       body();
     } finally {

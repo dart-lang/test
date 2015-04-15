@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:test/src/backend/declarer.dart';
 import 'package:test/src/backend/suite.dart';
+import 'package:test/src/frontend/timeout.dart';
 import 'package:test/test.dart';
 
 Declarer _declarer;
@@ -128,6 +129,38 @@ void main() {
 
       expect(_declarer.tests, hasLength(1));
       expect(_declarer.tests.single.name, "group description");
+    });
+
+    test("a test's timeout factor is applied to the group's", () {
+      _declarer.group("group", () {
+        _declarer.test("test", () {},
+            timeout: new Timeout.factor(3));
+      }, timeout: new Timeout.factor(2));
+
+      expect(_declarer.tests, hasLength(1));
+      expect(_declarer.tests.single.metadata.timeout.scaleFactor, equals(6));
+    });
+
+    test("a test's timeout factor is applied to the group's duration", () {
+      _declarer.group("group", () {
+        _declarer.test("test", () {},
+            timeout: new Timeout.factor(2));
+      }, timeout: new Timeout(new Duration(seconds: 10)));
+
+      expect(_declarer.tests, hasLength(1));
+      expect(_declarer.tests.single.metadata.timeout.duration,
+          equals(new Duration(seconds: 20)));
+    });
+
+    test("a test's timeout duration is applied over the group's", () {
+      _declarer.group("group", () {
+        _declarer.test("test", () {},
+            timeout: new Timeout(new Duration(seconds: 15)));
+      }, timeout: new Timeout(new Duration(seconds: 10)));
+
+      expect(_declarer.tests, hasLength(1));
+      expect(_declarer.tests.single.metadata.timeout.duration,
+          equals(new Duration(seconds: 15)));
     });
 
     group(".setUp()", () {

@@ -149,6 +149,25 @@ String truncate(String text, int maxLength) {
   return '...$result';
 }
 
+/// Returns a human-friendly representation of [duration].
+String niceDuration(Duration duration) {
+  var minutes = duration.inMinutes;
+  var seconds = duration.inSeconds % 59;
+  var decaseconds = (duration.inMilliseconds % 1000) ~/ 100;
+
+  var buffer = new StringBuffer();
+  if (minutes != 0) buffer.write("$minutes minutes");
+
+  if (minutes == 0 || seconds != 0) {
+    if (minutes != 0) buffer.write(", ");
+    buffer.write(seconds);
+    if (decaseconds != 0) buffer.write(".$decaseconds");
+    buffer.write(" seconds");
+  }
+
+  return buffer.toString();
+}
+
 /// Merges [streams] into a single stream that emits events from all sources.
 Stream mergeStreams(Iterable<Stream> streamIter) {
   var streams = streamIter.toList();

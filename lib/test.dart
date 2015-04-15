@@ -12,6 +12,7 @@ import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
 import 'src/backend/suite.dart';
 import 'src/backend/test_platform.dart';
+import 'src/frontend/timeout.dart';
 import 'src/runner/reporter/no_io_compact.dart';
 import 'src/utils.dart';
 
@@ -24,6 +25,7 @@ export 'src/frontend/prints_matcher.dart';
 export 'src/frontend/test_on.dart';
 export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';
+export 'src/frontend/timeout.dart';
 
 /// The global declarer.
 ///
@@ -66,8 +68,12 @@ Declarer get _declarer {
 /// test will only be run on matching platforms.
 ///
 /// [platform selector]: https://github.com/dart-lang/test/#platform-selector-syntax
-void test(String description, body(), {String testOn}) =>
-    _declarer.test(description, body, testOn: testOn);
+///
+/// If [timeout] is passed, it's used to modify or replace the default timeout
+/// of 30 seconds. Timeout modifications take precedence in suite-group-test
+/// order, so [timeout] will also modify any timeouts set on the group or suite.
+void test(String description, body(), {String testOn, Timeout timeout}) =>
+    _declarer.test(description, body, testOn: testOn, timeout: timeout);
 
 /// Creates a group of tests.
 ///
@@ -79,8 +85,13 @@ void test(String description, body(), {String testOn}) =>
 /// only be run on matching platforms.
 ///
 /// [platform selector]: https://github.com/dart-lang/test/#platform-selector-syntax
-void group(String description, void body(), {String testOn}) =>
-    _declarer.group(description, body, testOn: testOn);
+///
+/// If [timeout] is passed, it's used to modify or replace the default timeout
+/// of 30 seconds. Timeout modifications take precedence in suite-group-test
+/// order, so [timeout] will also modify any timeouts set on the suite, and will
+/// be modified by any timeouts set on individual tests.
+void group(String description, void body(), {String testOn, Timeout timeout}) =>
+    _declarer.group(description, body, testOn: testOn, timeout: timeout);
 
 /// Registers a function to be run before tests.
 ///

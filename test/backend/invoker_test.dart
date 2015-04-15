@@ -473,27 +473,6 @@ void main() {
     });
   });
 
-  test("a test times out after 30 seconds", () {
-    new FakeAsync().run((async) {
-      var liveTest = _localTest(() {
-        Invoker.current.addOutstandingCallback();
-      }).load(suite);
-
-      expectStates(liveTest, [
-        const State(Status.running, Result.success),
-        const State(Status.complete, Result.error)
-      ]);
-
-      expectErrors(liveTest, [(error) {
-        expect(lastState.status, equals(Status.complete));
-        expect(error, new isInstanceOf<TimeoutException>());
-      }]);
-
-      liveTest.run();
-      async.elapse(new Duration(seconds: 30));
-    });
-  });
-
   test("a test's prints are captured and reported", () {
     expect(() {
       var liveTest = _localTest(() {
@@ -507,7 +486,76 @@ void main() {
       return liveTest.run();
     }, prints(isEmpty));
   });
+
+  group("timeout:", () {
+    test("a test times out after 30 seconds by default", () {
+      new FakeAsync().run((async) {
+        var liveTest = _localTest(() {
+          Invoker.current.addOutstandingCallback();
+        }).load(suite);
+
+        expectStates(liveTest, [
+          const State(Status.running, Result.success),
+          const State(Status.complete, Result.error)
+        ]);
+
+        expectErrors(liveTest, [(error) {
+          expect(lastState.status, equals(Status.complete));
+          expect(error, new isInstanceOf<TimeoutException>());
+        }]);
+
+        liveTest.run();
+        async.elapse(new Duration(seconds: 30));
+      });
+    });
+
+    test("a test's custom timeout takes precedence", () {
+      new FakeAsync().run((async) {
+        var liveTest = _localTest(() {
+          Invoker.current.addOutstandingCallback();
+        }, metadata: new Metadata(
+            timeout: new Timeout(new Duration(seconds: 15)))).load(suite);
+
+        expectStates(liveTest, [
+          const State(Status.running, Result.success),
+          const State(Status.complete, Result.error)
+        ]);
+
+        expectErrors(liveTest, [(error) {
+          expect(lastState.status, equals(Status.complete));
+          expect(error, new isInstanceOf<TimeoutException>());
+        }]);
+
+        liveTest.run();
+        async.elapse(new Duration(seconds: 15));
+      });
+    });
+
+    test("a timeout factor is applied on top of the 30s default", () {
+      new FakeAsync().run((async) {
+        var liveTest = _localTest(() {
+          Invoker.current.addOutstandingCallback();
+        }, metadata: new Metadata(timeout: new Timeout.factor(0.5)))
+            .load(suite);
+
+        expectStates(liveTest, [
+          const State(Status.running, Result.success),
+          const State(Status.complete, Result.error)
+        ]);
+
+        expectErrors(liveTest, [(error) {
+          expect(lastState.status, equals(Status.complete));
+          expect(error, new isInstanceOf<TimeoutException>());
+        }]);
+
+        liveTest.run();
+        async.elapse(new Duration(seconds: 15));
+      });
+    });
+  });
 }
 
-LocalTest _localTest(body(), {tearDown()}) =>
-    new LocalTest("test", new Metadata(), body, tearDown: tearDown);
+LocalTest _localTest(body(), {tearDown(), Metadata metadata}) {
+  if (metadata == null) metadata = new Metadata();
+  return new LocalTest("test", metadata, body, tearDown: tearDown);
+}

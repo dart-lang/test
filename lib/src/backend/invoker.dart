@@ -158,12 +158,12 @@ class Invoker {
         // TODO(nweiz): Make the timeout configurable.
         // TODO(nweiz): Reset this timer whenever the user's code interacts with
         // the library.
-        var timer = new Timer(new Duration(seconds: 30), () {
+        var timeout = _test.metadata.timeout.apply(new Duration(seconds: 30));
+        var timer = new Timer(timeout, () {
           if (liveTest.isComplete) return;
           handleError(
               new TimeoutException(
-                  "Test timed out after 30 seconds.",
-                  new Duration(seconds: 30)));
+                  "Test timed out after ${niceDuration(timeout)}.", timeout));
         });
 
         addOutstandingCallback();
