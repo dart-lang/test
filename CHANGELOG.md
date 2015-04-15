@@ -1,3 +1,7 @@
+### 0.12.0-beta.8
+
+* Add a `--version` flag.
+
 ### 0.12.0-beta.7
 
 * Browser tests can now load assets by making HTTP requests to the corresponding

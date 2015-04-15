@@ -74,6 +74,8 @@ bool get _usesTransformer {
 void main(List<String> args) {
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
+  _parser.addFlag("version", negatable: false,
+      help: "Shows the package's version.");
   _parser.addOption("package-root", hide: true);
   _parser.addOption("name",
       abbr: 'n',
@@ -111,6 +113,14 @@ void main(List<String> args) {
 
   if (options["help"]) {
     _printUsage();
+    return;
+  }
+
+  if (options["version"]) {
+    if (!_printVersion()) {
+      stderr.writeln("Couldn't find version number.");
+      exitCode = exit_codes.data;
+    }
     return;
   }
 
@@ -291,4 +301,62 @@ Usage: pub run test:test [files or directories...]
 
 ${_parser.usage}
 """);
+}
+
+/// Prints the version number of the test package.
+///
+/// This loads the version number from the current package's lockfile. It
+/// returns true if it successfully printed the version number and false if it
+/// couldn't be loaded.
+bool _printVersion() {
+  var lockfile;
+  try {
+    lockfile = loadYaml(new File("pubspec.lock").readAsStringSync());
+  } on FormatException catch (_) {
+    return false;
+  } on IOException catch (_) {
+    return false;
+  }
+
+  if (lockfile is! Map) return false;
+  var packages = lockfile["packages"];
+  if (packages is! Map) return false;
+  var package = packages["test"];
+  if (package is! Map) return false;
+
+  var source = package["source"];
+  if (source is! String) return false;
+
+  switch (source) {
+    case "hosted":
+      var version = package["version"];
+      if (version is! String) return false;
+
+      print(version);
+      return true;
+
+    case "git":
+      var version = package["version"];
+      if (version is! String) return false;
+      var description = package["description"];
+      if (description is! Map) return false;
+      var ref = description["resolved-ref"];
+      if (ref is! String) return false;
+
+      print("$version (${ref.substring(0, 7)})");
+      return true;
+
+    case "path":
+      var version = package["version"];
+      if (version is! String) return false;
+      var description = package["description"];
+      if (description is! Map) return false;
+      var path = description["path"];
+      if (path is! String) return false;
+
+      print("$version (from $path)");
+      return true;
+
+    default: return false;
+  }
 }

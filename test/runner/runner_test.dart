@@ -42,6 +42,7 @@ final _usage = """
 Usage: pub run test:test [files or directories...]
 
 -h, --help                     Shows this usage information.
+    --version                  Shows the package's version.
 -n, --name                     A substring of the name of the test to run.
                                Regular expression syntax is supported.
 
