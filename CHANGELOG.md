@@ -1,3 +1,7 @@
+### 0.12.0-beta.9
+
+* Fix running VM tests against `pub serve`.
+
 ### 0.12.0-beta.8
 
 * Add support for configuring timeouts on a test, group, and suite basis. Test
