@@ -7,6 +7,8 @@
 
 [timeout]: https://github.com/dart-lang/test/blob/master/README.md#timeouts
 
+* Support running tests on Safari.
+
 * Add a `--version` flag.
 
 ### 0.12.0-beta.7

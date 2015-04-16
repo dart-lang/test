@@ -36,9 +36,13 @@ class TestPlatform {
   static const TestPlatform firefox = const TestPlatform._("Firefox", "firefox",
       isBrowser: true, isJS: true);
 
+  /// Apple Safari.
+  static const TestPlatform safari = const TestPlatform._("Safari", "safari",
+      isBrowser: true, isJS: true);
+
   /// A list of all instances of [TestPlatform].
   static const List<TestPlatform> all =
-      const [vm, dartium, contentShell, chrome, phantomJS, firefox];
+      const [vm, dartium, contentShell, chrome, phantomJS, firefox, safari];
 
   /// Finds a platform by its identifier string.
   ///

@@ -72,6 +72,9 @@ bool get _usesTransformer {
 }
 
 void main(List<String> args) {
+  var allPlatforms = TestPlatform.all.toList();
+  if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
+
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");
   _parser.addFlag("version", negatable: false,
@@ -87,7 +90,7 @@ void main(List<String> args) {
   _parser.addOption("platform",
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.',
-      allowed: TestPlatform.all.map((platform) => platform.identifier).toList(),
+      allowed: allPlatforms.map((platform) => platform.identifier).toList(),
       defaultsTo: 'vm',
       allowMultiple: true);
   _parser.addOption("concurrency",

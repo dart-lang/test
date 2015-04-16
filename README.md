@@ -144,6 +144,10 @@ valid identifiers are:
 * `phantomjs`: Whether the test is running on
   [PhantomJS](http://phantomjs.org/).
 
+* `firefox`: Whether the test is running on Mozilla Firefox.
+
+* `safari`: Whether the test is running on Apple Safari.
+
 * `dart-vm`: Whether the test is running on the Dart VM in any context,
   including Dartium. It's identical to `!js`.
 

@@ -138,6 +138,12 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
+    test("on Safari", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
+      var result = _runUnittest(["-p", "safari", "test.dart"]);
+      expect(result.exitCode, equals(0));
+    }, testOn: "mac-os");
+
     test("on Dartium", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runUnittest(["-p", "dartium", "test.dart"]);
@@ -192,6 +198,12 @@ void main() {
       var result = _runUnittest(["-p", "firefox", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
+
+    test("on Safari", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+      var result = _runUnittest(["-p", "safari", "test.dart"]);
+      expect(result.exitCode, equals(1));
+    }, testOn: "mac-os");
 
     test("on Dartium", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
