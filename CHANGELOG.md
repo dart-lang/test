@@ -2,6 +2,8 @@
 
 * Fix running VM tests against `pub serve`.
 
+* Properly load Dartium from the Dart Editor when possible.
+
 ### 0.12.0-beta.8
 
 * Add support for configuring timeouts on a test, group, and suite basis. Test

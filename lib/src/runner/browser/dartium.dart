@@ -96,7 +96,7 @@ class Dartium implements Browser {
       if (!new File(p.join(dir, "DartEditor.exe")).existsSync()) return null;
 
       var dartium = p.join(dir, "chromium\\chrome.exe");
-      return new File(dartium).existsSync() ? null : dartium;
+      return new File(dartium).existsSync() ? dartium : null;
     }
 
     if (Platform.isMacOS) {
@@ -106,14 +106,14 @@ class Dartium implements Browser {
       }
 
       var dartium = p.join(
-          dir, "chromium/Chromium.app/Contents/MacOs/Chromium");
-      return new File(dartium).existsSync() ? null : dartium;
+          dir, "chromium/Chromium.app/Contents/MacOS/Chromium");
+      return new File(dartium).existsSync() ? dartium : null;
     }
 
     assert(Platform.isLinux);
     if (!new File(p.join(dir, "DartEditor")).existsSync()) return null;
 
     var dartium = p.join(dir, "chromium", "chrome");
-    return new File(dartium).existsSync() ? null : dartium;
+    return new File(dartium).existsSync() ? dartium : null;
   }
 }
