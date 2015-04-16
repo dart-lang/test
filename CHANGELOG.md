@@ -11,6 +11,8 @@
 
 * Add a `--version` flag.
 
+* Add an animation to run in the browser while testing.
+
 ### 0.12.0-beta.7
 
 * Browser tests can now load assets by making HTTP requests to the corresponding
