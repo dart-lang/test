@@ -65,7 +65,9 @@ class Firefox implements Browser {
         "$_dir",
         url.toString(),
         "--no-remote"
-      ]).then((process) {
+      ], environment: {
+        "MOZ_CRASHREPORTER_DISABLE": "1"
+      }).then((process) {
         _process = process;
         _onProcessStartedCompleter.complete();
 
