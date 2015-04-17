@@ -5,11 +5,15 @@
 library test.runner.browser.firefox;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 
 import '../../util/io.dart';
+import '../../utils.dart';
+import '../application_exception.dart';
 import 'browser.dart';
 
 final _preferences = '''
@@ -28,12 +32,6 @@ user_pref("dom.max_script_run_time", 0);
 class Firefox implements Browser {
   /// The underlying process.
   Process _process;
-
-  /// The temporary directory used as the browser's user data dir.
-  ///
-  /// A new data dir is created for each run to ensure that they're
-  /// well-isolated.
-  String _dir;
 
   Future get onExit => _onExitCompleter.future;
   final _onExitCompleter = new Completer();
@@ -56,13 +54,11 @@ class Firefox implements Browser {
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
     withTempDir((dir) {
-      _dir = dir;
-
       new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
       return Process.start(executable, [
         "--profile",
-        "$_dir",
+        "$dir",
         url.toString(),
         "--no-remote"
       ], environment: {
@@ -76,9 +72,19 @@ class Firefox implements Browser {
         return _process.exitCode;
       });
     }).then((exitCode) {
-      if (exitCode != 0) throw "Firefox failed with exit code $exitCode.";
-    }).then(_onExitCompleter.complete)
-        .catchError(_onExitCompleter.completeError);
+      if (exitCode == 0) return null;
+
+      return UTF8.decodeStream(_process.stderr).then((error) {
+        throw new ApplicationException(
+            "Firefox failed with exit code $exitCode:\n$error");
+      });
+    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
+      if (stackTrace == null) stackTrace = new Trace.current();
+      _onExitCompleter.completeError(
+          new ApplicationException(
+              "Failed to start Firefox: ${getErrorMessage(error)}."),
+          stackTrace);
+    });
   }
 
   Future close() {

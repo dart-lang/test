@@ -9,8 +9,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 
 import '../../util/io.dart';
+import '../../utils.dart';
+import '../application_exception.dart';
 import 'browser.dart';
 
 /// A class for running an instance of Safari.
@@ -59,9 +62,19 @@ class Safari implements Browser {
         return _process.exitCode;
       });
     }).then((exitCode) {
-      if (exitCode != 0) throw "Safari failed with exit code $exitCode.";
-    }).then(_onExitCompleter.complete)
-        .catchError(_onExitCompleter.completeError);
+      if (exitCode == 0) return null;
+
+      return UTF8.decodeStream(_process.stderr).then((error) {
+        throw new ApplicationException(
+            "Safari failed with exit code $exitCode:\n$error");
+      });
+    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
+      if (stackTrace == null) stackTrace = new Trace.current();
+      _onExitCompleter.completeError(
+          new ApplicationException(
+              "Failed to start Safari: ${getErrorMessage(error)}."),
+          stackTrace);
+    });
   }
 
   Future close() {

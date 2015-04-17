@@ -8,6 +8,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:stack_trace/stack_trace.dart';
+
+import '../../utils.dart';
 import '../application_exception.dart';
 import 'browser.dart';
 
@@ -71,9 +74,20 @@ class ContentShell implements Browser {
                 "latest/dartium/");
       }
 
-      if (exitCode != 0) throw "Content shell failed with exit code $exitCode.";
-    }).then(_onExitCompleter.complete)
-        .catchError(_onExitCompleter.completeError);
+      if (exitCode == 0) return null;
+
+
+      return UTF8.decodeStream(_process.stderr).then((error) {
+        throw new ApplicationException(
+            "Content shell failed with exit code $exitCode:\n$error");
+      });
+    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
+      if (stackTrace == null) stackTrace = new Trace.current();
+      _onExitCompleter.completeError(
+          new ApplicationException(
+              "Failed to start content shell: ${getErrorMessage(error)}."),
+          stackTrace);
+    });
   }
 
   Future close() {

@@ -266,7 +266,7 @@ void main() {
 
       // TODO(nweiz): Don't start the browser until all the suites are compiled.
       return _browserManagerFor(browser).then((browserManager) {
-        if (_closed) return null;
+        if (_closed || browserManager == null) return null;
         return browserManager.loadSuite(path, suiteUrl, metadata);
       }).then((suite) {
         if (_closed) return null;

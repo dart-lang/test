@@ -5,11 +5,15 @@
 library test.runner.browser.dartium;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 
 import '../../util/io.dart';
+import '../../utils.dart';
+import '../application_exception.dart';
 import 'browser.dart';
 
 /// A class for running an instance of Dartium.
@@ -22,12 +26,6 @@ import 'browser.dart';
 class Dartium implements Browser {
   /// The underlying process.
   Process _process;
-
-  /// The temporary directory used as the browser's user data dir.
-  ///
-  /// A new data dir is created for each run to ensure that they're
-  /// well-isolated.
-  String _dir;
 
   Future get onExit => _onExitCompleter.future;
   final _onExitCompleter = new Completer();
@@ -50,9 +48,8 @@ class Dartium implements Browser {
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
     withTempDir((dir) {
-      _dir = dir;
       return Process.start(executable, [
-        "--user-data-dir=$_dir",
+        "--user-data-dir=$dir",
         url.toString(),
         "--disable-extensions",
         "--disable-popup-blocking",
@@ -70,9 +67,19 @@ class Dartium implements Browser {
         return _process.exitCode;
       });
     }).then((exitCode) {
-      if (exitCode != 0) throw "Dartium failed with exit code $exitCode.";
-    }).then(_onExitCompleter.complete)
-        .catchError(_onExitCompleter.completeError);
+      if (exitCode == 0) return null;
+
+      return UTF8.decodeStream(_process.stderr).then((error) {
+        throw new ApplicationException(
+            "Dartium failed with exit code $exitCode:\n$error");
+      });
+    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
+      if (stackTrace == null) stackTrace = new Trace.current();
+      _onExitCompleter.completeError(
+          new ApplicationException(
+              "Failed to start Dartium: ${getErrorMessage(error)}."),
+          stackTrace);
+    });
   }
 
   Future close() {

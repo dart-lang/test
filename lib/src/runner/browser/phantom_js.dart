@@ -5,12 +5,15 @@
 library test.runner.browser.phantom_js;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 
 import '../../util/exit_codes.dart' as exit_codes;
 import '../../util/io.dart';
+import '../../utils.dart';
 import '../application_exception.dart';
 import 'browser.dart';
 
@@ -82,9 +85,20 @@ class PhantomJS implements Browser {
         throw new ApplicationException(
             "Only PhantomJS version 2.0.0 or greater is supported.");
       }
-      if (exitCode != 0) throw "PhantomJS failed with exit code $exitCode.";
-    }).then(_onExitCompleter.complete)
-        .catchError(_onExitCompleter.completeError);
+
+      if (exitCode == 0) return null;
+
+      return UTF8.decodeStream(_process.stderr).then((error) {
+        throw new ApplicationException(
+            "PhantomJS failed with exit code $exitCode:\n$error");
+      });
+    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
+      if (stackTrace == null) stackTrace = new Trace.current();
+      _onExitCompleter.completeError(
+          new ApplicationException(
+              "Failed to start PhantomJS: ${getErrorMessage(error)}."),
+          stackTrace);
+    });
   }
 
   Future close() {
