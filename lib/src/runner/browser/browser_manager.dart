@@ -56,7 +56,11 @@ class BrowserManager {
 
     // The stream may close before emitting a value if the browser is killed
     // prematurely (e.g. via Control-C).
-    return maybeFirst(suiteChannel.stream).then((response) {
+    return maybeFirst(suiteChannel.stream)
+        .timeout(new Duration(seconds: 7), onTimeout: () {
+      throw new LoadException(
+          path, "Timed out waiting for the test suite to connect.");
+    }).then((response) {
       if (response == null) return null;
 
       if (response["type"] == "loadException") {

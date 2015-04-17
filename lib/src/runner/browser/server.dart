@@ -22,6 +22,7 @@ import '../../util/io.dart';
 import '../../util/path_handler.dart';
 import '../../util/one_off_handler.dart';
 import '../../utils.dart';
+import '../application_exception.dart';
 import '../load_exception.dart';
 import 'browser.dart';
 import 'browser_manager.dart';
@@ -357,7 +358,10 @@ void main() {
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future;
+    return completer.future.timeout(new Duration(seconds: 7), onTimeout: () {
+      throw new ApplicationException(
+          "Timed out waiting for ${platform.name} to connect.");
+    });
   }
 
   /// Starts the browser identified by [browser] and has it load [url].
