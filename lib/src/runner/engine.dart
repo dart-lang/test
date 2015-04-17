@@ -10,8 +10,10 @@ import 'dart:collection';
 import 'package:pool/pool.dart';
 
 import '../backend/live_test.dart';
+import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
 import '../backend/suite.dart';
+import '../backend/test.dart';
 import '../utils.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
@@ -41,6 +43,10 @@ class Engine {
   List<LiveTest> get liveTests =>
       new UnmodifiableListView(flatten(_liveTestsBySuite));
 
+  /// The tests in [liveTests], organized by their original test suite.
+  ///
+  /// This allows test suites to be run in parallel without running multiple
+  /// tests in the same suite at once.
   final List<List<LiveTest>> _liveTestsBySuite;
 
   /// A stream that emits each [LiveTest] as it's about to start running.
@@ -49,10 +55,33 @@ class Engine {
   Stream<LiveTest> get onTestStarted => _onTestStartedController.stream;
   final _onTestStartedController = new StreamController<LiveTest>.broadcast();
 
+  /// Returns the tests in [suites] grouped by suite.
+  ///
+  /// Also replaces tests marked as "skip" with dummy [LiveTest]s.
+  static List<List<LiveTest>> _computeLiveTestsBySuite(Iterable<Suite> suites) {
+    return suites.map((suite) {
+      return suite.tests.map((test) {
+        return test.metadata.skip
+            ? _skippedTest(suite, test)
+            : test.load(suite);
+      }).toList();
+    }).toList();
+  }
+
+  /// Returns a dummy [LiveTest] for a test marked as "skip".
+  static LiveTest _skippedTest(Suite suite, Test test) {
+    var controller;
+    controller = new LiveTestController(suite, test, () {
+      controller.setState(const State(Status.running, Result.success));
+      controller.setState(const State(Status.complete, Result.success));
+      controller.completer.complete();
+    }, () {});
+    return controller.liveTest;
+  }
+
   /// Creates an [Engine] that will run all tests in [suites].
   Engine(Iterable<Suite> suites, {int concurrency})
-      : _liveTestsBySuite = suites.map((suite) =>
-            suite.tests.map((test) => test.load(suite)).toList()).toList(),
+      : _liveTestsBySuite = _computeLiveTestsBySuite(suites),
         _pool = new Pool(concurrency == null ? 1 : concurrency);
 
   /// Runs all tests in all suites defined by this engine.

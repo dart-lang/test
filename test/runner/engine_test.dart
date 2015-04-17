@@ -84,4 +84,36 @@ void main() {
     expect(engine.run(), completes);
     expect(() => engine.run(), throwsStateError);
   });
+
+  group("for a skipped test", () {
+    test("doesn't run the test's body", () {
+      var bodyRun = false;
+      declarer.test("test", () => bodyRun = true, skip: true);
+
+      var engine = new Engine([new Suite(declarer.tests)]);
+      return engine.run().then((_) {
+        expect(bodyRun, isFalse);
+      });
+    });
+
+    test("exposes a LiveTest that emits the correct states", () {
+      declarer.test("test", () {}, skip: true);
+
+      var engine = new Engine([new Suite(declarer.tests)]);
+      var liveTest = engine.liveTests.single;
+      expect(liveTest.test, equals(declarer.tests.single));
+
+      var first = true;
+      liveTest.onStateChange.listen(expectAsync((state) {
+        expect(state, equals(first
+            ? const State(Status.running, Result.success)
+            : const State(Status.complete, Result.success)));
+        first = false;
+      }, count: 2));
+
+      expect(liveTest.onComplete, completes);
+
+      return engine.run();
+    });
+  });
 }

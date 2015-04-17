@@ -38,14 +38,19 @@ class Declarer {
   /// of 30 seconds. Timeout modifications take precedence in suite-group-test
   /// order, so [timeout] will also modify any timeouts set on the group or
   /// suite.
-  void test(String description, body(), {String testOn, Timeout timeout}) {
+  ///
+  /// If [skip] is a String or `true`, the test is skipped. If it's a String, it
+  /// should explain why the test is skipped; this reason will be printed
+  /// instead of running the test.
+  void test(String description, body(), {String testOn, Timeout timeout,
+      skip}) {
     // TODO(nweiz): Once tests have begun running, throw an error if [test] is
     // called.
     var prefix = _group.description;
     if (prefix != null) description = "$prefix $description";
 
     var metadata = _group.metadata.merge(
-        new Metadata.parse(testOn: testOn, timeout: timeout));
+        new Metadata.parse(testOn: testOn, timeout: timeout, skip: skip));
     var group = _group;
     _tests.add(new LocalTest(description, metadata, () {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
@@ -68,11 +73,23 @@ class Declarer {
   /// of 30 seconds. Timeout modifications take precedence in suite-group-test
   /// order, so [timeout] will also modify any timeouts set on the group or
   /// suite.
+  ///
+  /// If [skip] is a String or `true`, the group is skipped. If it's a String,
+  /// it should explain why the group is skipped; this reason will be printed
+  /// instead of running the group's tests.
   void group(String description, void body(), {String testOn,
-      Timeout timeout}) {
+      Timeout timeout, skip}) {
     var oldGroup = _group;
 
-    var metadata = new Metadata.parse(testOn: testOn, timeout: timeout);
+    var metadata = new Metadata.parse(
+        testOn: testOn, timeout: timeout, skip: skip);
+
+    // Don' load the tests for a skipped group.
+    if (metadata.skip) {
+      _tests.add(new LocalTest(description, metadata, () {}));
+      return;
+    }
+
     _group = new Group(oldGroup, description, metadata);
     try {
       body();

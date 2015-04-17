@@ -230,6 +230,89 @@ void main() {
         +1 -1: Some tests failed.""");
     });
   });
+
+  group("skip:", () {
+    test("displays skipped tests separately", () {
+      _expectReport("""
+          test('skip 1', () {}, skip: true);
+          test('skip 2', () {}, skip: true);
+          test('skip 3', () {}, skip: true);""",
+          """
+          +0: skip 1
+          +0 ~1: skip 1
+          +0 ~1: skip 2
+          +0 ~2: skip 2
+          +0 ~2: skip 3
+          +0 ~3: skip 3
+          +0 ~3: All tests skipped.""");
+    });
+
+    test("runs skipped tests along with successful tests", () {
+      _expectReport("""
+          test('skip 1', () {}, skip: true);
+          test('success 1', () {});
+          test('skip 2', () {}, skip: true);
+          test('success 2', () {});""",
+          """
+          +0: skip 1
+          +0 ~1: skip 1
+          +0 ~1: success 1
+          +1 ~1: success 1
+          +1 ~1: skip 2
+          +1 ~2: skip 2
+          +1 ~2: success 2
+          +2 ~2: success 2
+          +2 ~2: All tests passed!""");
+    });
+
+    test("runs skipped tests along with successful and failing tests", () {
+      _expectReport("""
+          test('failure 1', () => throw new TestFailure('oh no'));
+          test('skip 1', () {}, skip: true);
+          test('success 1', () {});
+          test('failure 2', () => throw new TestFailure('oh no'));
+          test('skip 2', () {}, skip: true);
+          test('success 2', () {});""",
+          """
+          +0: failure 1
+          +0 -1: failure 1
+            oh no
+            test.dart 6:35  main.<fn>
+
+
+          +0 -1: skip 1
+          +0 ~1 -1: skip 1
+          +0 ~1 -1: success 1
+          +1 ~1 -1: success 1
+          +1 ~1 -1: failure 2
+          +1 ~1 -2: failure 2
+            oh no
+            test.dart 9:35  main.<fn>
+
+
+          +1 ~1 -2: skip 2
+          +1 ~2 -2: skip 2
+          +1 ~2 -2: success 2
+          +2 ~2 -2: success 2
+          +2 ~2 -2: Some tests failed.""");
+    });
+
+    test("displays the skip reason if available", () {
+      _expectReport("""
+          test('skip 1', () {}, skip: 'some reason');
+          test('skip 2', () {}, skip: 'or another');""",
+          """
+          +0: skip 1
+          +0 ~1: skip 1
+            Skip: some reason
+
+          +0 ~1: skip 2
+          +0 ~2: skip 2
+            Skip: or another
+
+          +0 ~2: All tests skipped.""");
+    });
+  });
 }
 
 void _expectReport(String tests, String expected, {List<String> args,

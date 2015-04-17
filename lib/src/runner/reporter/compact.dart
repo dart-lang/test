@@ -34,6 +34,10 @@ class CompactReporter {
   /// or not outputting to a terminal.
   final String _red;
 
+  /// The terminal escape for yellow text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _yellow;
+
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
   final String _noColor;
@@ -53,6 +57,9 @@ class CompactReporter {
   /// The set of tests that have completed and been marked as passing.
   final _passed = new Set<LiveTest>();
 
+  /// The set of tests that have completed and been marked as skipped.
+  final _skipped = new Set<LiveTest>();
+
   /// The set of tests that have completed and been marked as failing or error.
   final _failed = new Set<LiveTest>();
 
@@ -64,6 +71,9 @@ class CompactReporter {
 
   /// The size of [_passed] last time a progress notification was printed.
   int _lastProgressPassed;
+
+  /// The size of [_skipped] last time a progress notification was printed.
+  int _lastProgressSkipped;
 
   /// The size of [_failed] last time a progress notification was printed.
   int _lastProgressFailed;
@@ -86,6 +96,7 @@ class CompactReporter {
         _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
+        _yellow = color ? '\u001b[33m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen((liveTest) {
       if (_active.isEmpty) _progressLine(_description(liveTest));
@@ -95,11 +106,14 @@ class CompactReporter {
       liveTest.onStateChange.listen((state) {
         if (state.status != Status.complete) return;
         _active.remove(liveTest);
-        if (state.result == Result.success) {
-          _passed.add(liveTest);
-        } else {
+
+        if (state.result != Result.success) {
           _passed.remove(liveTest);
           _failed.add(liveTest);
+        } else if (liveTest.test.metadata.skip) {
+          _skipped.add(liveTest);
+        } else {
+          _passed.add(liveTest);
         }
 
         // Always display the name of the oldest active test, unless testing is
@@ -110,7 +124,14 @@ class CompactReporter {
           _progressLine(_description(_active.first));
         }
 
-        _printedNewline = false;
+        if (liveTest.test.metadata.skip &&
+            liveTest.test.metadata.skipReason != null) {
+          print('');
+          print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
+              '$_noColor'));
+        } else {
+          _printedNewline = false;
+        }
       });
 
       liveTest.onError.listen((error) {
@@ -166,11 +187,14 @@ class CompactReporter {
     return _engine.run().then((success) {
       if (_closed) return false;
 
-      if (success) {
-        _progressLine("All tests passed!");
+      if (!success) {
+        _progressLine('Some tests failed.', color: _red);
+        print('');
+      } else if (_passed.isEmpty) {
+        _progressLine("All tests skipped.");
         print('');
       } else {
-        _progressLine('Some tests failed.', color: _red);
+        _progressLine("All tests passed!");
         print('');
       }
 
@@ -195,12 +219,14 @@ class CompactReporter {
   bool _progressLine(String message, {String color}) {
     // Print nothing if nothing has changed since the last progress line.
     if (_passed.length == _lastProgressPassed &&
+        _skipped.length == _lastProgressSkipped &&
         _failed.length == _lastProgressFailed &&
         message == _lastProgressMessage) {
       return false;
     }
 
     _lastProgressPassed = _passed.length;
+    _lastProgressSkipped = _skipped.length;
     _lastProgressFailed = _failed.length;
     _lastProgressMessage = message;
 
@@ -214,6 +240,13 @@ class CompactReporter {
     buffer.write('+');
     buffer.write(_passed.length);
     buffer.write(_noColor);
+
+    if (_skipped.isNotEmpty) {
+      buffer.write(_yellow);
+      buffer.write(' ~');
+      buffer.write(_skipped.length);
+      buffer.write(_noColor);
+    }
 
     if (_failed.isNotEmpty) {
       buffer.write(_red);

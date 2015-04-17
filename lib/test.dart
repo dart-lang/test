@@ -72,8 +72,14 @@ Declarer get _declarer {
 /// If [timeout] is passed, it's used to modify or replace the default timeout
 /// of 30 seconds. Timeout modifications take precedence in suite-group-test
 /// order, so [timeout] will also modify any timeouts set on the group or suite.
-void test(String description, body(), {String testOn, Timeout timeout}) =>
-    _declarer.test(description, body, testOn: testOn, timeout: timeout);
+///
+/// If [skip] is a String or `true`, the test is skipped. If it's a String, it
+/// should explain why the test is skipped; this reason will be printed instead
+/// of running the test.
+void test(String description, body(), {String testOn, Timeout timeout,
+        skip}) =>
+    _declarer.test(description, body,
+        testOn: testOn, timeout: timeout, skip: skip);
 
 /// Creates a group of tests.
 ///
@@ -90,8 +96,14 @@ void test(String description, body(), {String testOn, Timeout timeout}) =>
 /// of 30 seconds. Timeout modifications take precedence in suite-group-test
 /// order, so [timeout] will also modify any timeouts set on the suite, and will
 /// be modified by any timeouts set on individual tests.
-void group(String description, void body(), {String testOn, Timeout timeout}) =>
-    _declarer.group(description, body, testOn: testOn, timeout: timeout);
+///
+/// If [skip] is a String or `true`, the group is skipped. If it's a String, it
+/// should explain why the group is skipped; this reason will be printed instead
+/// of running the group's tests.
+void group(String description, void body(), {String testOn, Timeout timeout,
+        skip}) =>
+    _declarer.group(description, body,
+        testOn: testOn, timeout: timeout, skip: skip);
 
 /// Registers a function to be run before tests.
 ///

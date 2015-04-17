@@ -11,6 +11,7 @@ import 'dart:isolate';
 import 'package:analyzer/analyzer.dart';
 import 'package:path/path.dart' as p;
 
+import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/suite.dart';
 import '../backend/test_platform.dart';
@@ -127,6 +128,13 @@ class Loader {
     Future.forEach(_platforms, (platform) {
       if (!metadata.testOn.evaluate(platform, os: currentOS)) {
         return new Future.value();
+      }
+
+      // Don't load a skipped suite.
+      if (metadata.skip) {
+        return new Future.value(new Suite([
+          new LocalTest(path, metadata, () {})
+        ], path: path, platform: platform.name, metadata: metadata));
       }
 
       return new Future.sync(() {
