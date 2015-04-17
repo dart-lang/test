@@ -282,6 +282,37 @@ void main() {
 
 [expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync
 
+## Running Tests with Custom HTML
+
+By default, the test runner will generate its own empty HTML file for browser
+tests. However, tests that need custom HTML can create their own files. These
+files have three requirements:
+
+* They must have the same name as the test, with `.dart` replaced by `.html`.
+
+* They must contain a `link` tag with `rel="x-dart-test"` and an `href`
+  attribute pointing to the test script.
+
+* They must contain `<script src="packages/test/dart.js"></script>`.
+
+For example, if you had a test called `custom_html_test.dart`, you might write
+the following HTML file:
+
+```html
+<!doctype html>
+<!-- custom_html_test.html -->
+<html>
+  <head>
+    <title>Custom HTML Test</title>
+    <link rel="x-dart-test" href="custom_html_test.dart">
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    // ...
+  </body>
+</html>
+```
+
 ## Configuring Tests
 
 ### Timeouts

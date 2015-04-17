@@ -151,8 +151,8 @@ class BrowserServer {
       cascade = cascade
           .add(_createPackagesHandler())
           .add(_jsHandler.handler)
-          .add(_wrapperHandler)
-          .add(createStaticHandler(_root));
+          .add(createStaticHandler(_root))
+          .add(_wrapperHandler);
     }
 
     var pipeline = new shelf.Pipeline()
@@ -188,14 +188,12 @@ class BrowserServer {
   /// A handler that serves wrapper files used to bootstrap tests.
   shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(shelfUrl(request));
-    var withoutExtensions = p.withoutExtension(p.withoutExtension(path));
-    var base = p.basename(withoutExtensions);
 
     if (path.endsWith(".browser_test.dart")) {
       return new shelf.Response.ok('''
 import "package:test/src/runner/browser/iframe_listener.dart";
 
-import "$base" as test;
+import "${p.basename(p.withoutExtension(p.withoutExtension(path)))}" as test;
 
 void main() {
   IframeListener.start(() => test.main);
@@ -203,17 +201,22 @@ void main() {
 ''', headers: {'Content-Type': 'application/dart'});
     }
 
-    if (path.endsWith(".browser_test.html")) {
-      // TODO(nweiz): support user-authored HTML files.
+    if (path.endsWith(".html")) {
+      var test = p.withoutExtension(path) + ".dart";
+
+      // Link to the Dart wrapper on Dartium and the compiled JS version
+      // elsewhere.
+      var script = request.headers['user-agent'].contains('(Dart)')
+          ? 'type="application/dart" '
+              'src="${HTML_ESCAPE.convert(test)}.browser_test.dart"'
+          : 'src="${HTML_ESCAPE.convert(test)}.browser_test.dart.js"';
+
       return new shelf.Response.ok('''
 <!DOCTYPE html>
 <html>
 <head>
-  <title>${HTML_ESCAPE.convert(base)}.dart Test</title>
-  <script type="application/dart"
-          src="${HTML_ESCAPE.convert(base)}.browser_test.dart">
-  </script>
-  <script src="packages/browser/dart.js"></script>
+  <title>${HTML_ESCAPE.convert(test)} Test</title>
+  <script $script></script>
 </head>
 </html>
 ''', headers: {'Content-Type': 'text/html'});
@@ -232,20 +235,31 @@ void main() {
       throw new ArgumentError("$browser is not a browser.");
     }
 
+    var htmlPath = p.withoutExtension(path) + '.html';
+    if (new File(htmlPath).existsSync() &&
+        !new File(htmlPath).readAsStringSync()
+            .contains('packages/test/dart.js')) {
+      throw new LoadException(
+          path,
+          '"${htmlPath}" must contain <script src="packages/test/dart.js">'
+              '</script>.');
+    }
+
     return new Future.sync(() {
       if (_pubServeUrl != null) {
-        var suitePrefix = p.relative(path, from: p.join(_root, 'test')) +
-            '.browser_test';
-        var jsUrl = _pubServeUrl.resolve('$suitePrefix.dart.js');
-        return _pubServeSuite(path, jsUrl).then((_) =>
-            _pubServeUrl.resolve('$suitePrefix.html'));
+        var suitePrefix = p.withoutExtension(
+            p.relative(path, from: p.join(_root, 'test')));
+        var jsUrl = _pubServeUrl.resolve(
+            '$suitePrefix.dart.browser_test.dart.js');
+        return _pubServeSuite(path, jsUrl)
+            .then((_) => _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html')));
       }
 
       return new Future.sync(() => browser.isJS ? _compileSuite(path) : null)
           .then((_) {
         if (_closed) return null;
-        return url.resolveUri(
-            p.toUri(p.relative(path, from: _root) + ".browser_test.html"));
+        return url.resolveUri(p.toUri(
+            p.withoutExtension(p.relative(path, from: _root)) + ".html"));
       });
     }).then((suiteUrl) {
       if (_closed) return null;

@@ -45,17 +45,10 @@ void main() {
   test("test", () => expect(true, isTrue));
 }
 """);
-  });
 
-  tearDown(() {
-    new Directory(_sandbox).deleteSync(recursive: true);
-  });
+    new Directory(p.join(_sandbox, "lib")).createSync();
 
-  group("with transformed tests", () {
-    setUp(() {
-      new Directory(p.join(_sandbox, "lib")).createSync();
-
-      new File(p.join(_sandbox, "lib", "myapp.dart")).writeAsStringSync("""
+    new File(p.join(_sandbox, "lib", "myapp.dart")).writeAsStringSync("""
 import 'package:barback/barback.dart';
 
 class MyTransformer extends Transformer {
@@ -75,10 +68,15 @@ class MyTransformer extends Transformer {
 }
 """);
 
-      var pubGetResult = runPub(['get'], workingDirectory: _sandbox);
-      expect(pubGetResult.exitCode, equals(0));
-    });
+    var pubGetResult = runPub(['get'], workingDirectory: _sandbox);
+    expect(pubGetResult.exitCode, equals(0));
+  });
 
+  tearDown(() {
+    new Directory(_sandbox).deleteSync(recursive: true);
+  });
+
+  group("with transformed tests", () {
     test("runs those tests in the VM", () {
       return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
           .then((process) {
@@ -99,7 +97,7 @@ class MyTransformer extends Transformer {
       });
     });
 
-    test("runs those tests in the browser", () {
+    test("runs those tests on Chrome", () {
       return startPub(['serve', '--port', '0'],
               workingDirectory: _sandbox)
           .then((process) {
@@ -111,6 +109,28 @@ class MyTransformer extends Transformer {
           try {
             var result = runUnittest(
                 ['--pub-serve=${match[1]}', '-p', 'chrome'],
+                workingDirectory: _sandbox);
+            expect(result.exitCode, equals(0));
+            expect(result.stdout, contains('+1: All tests passed!'));
+          } finally {
+            process.kill();
+          }
+        });
+      });
+    });
+
+    test("runs those tests on content shell", () {
+      return startPub(['serve', '--port', '0'],
+              workingDirectory: _sandbox)
+          .then((process) {
+        return _lines.bind(process.stdout)
+            .firstWhere(_servingRegExp.hasMatch)
+            .then((line) {
+          var match = _servingRegExp.firstMatch(line);
+
+          try {
+            var result = runUnittest(
+                ['--pub-serve=${match[1]}', '-p', 'content-shell'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
             expect(result.stdout, contains('+1: All tests passed!'));
@@ -208,6 +228,77 @@ transformers:
 - test/pub_serve:
     \$include: test/**_test.dart
 '''));
+          } finally {
+            process.kill();
+          }
+        });
+      });
+    });
+  });
+
+  group("uses a custom HTML file", () {
+    setUp(() {
+      new File(p.join(_sandbox, "test", "test.dart")).writeAsStringSync("""
+import 'dart:html';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () {
+    expect(document.query('#foo'), isNull);
+  });
+}
+""");
+
+      new File(p.join(_sandbox, "test", "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test' href='test.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+""");
+    });
+
+    test("on Chrome", () {
+      return startPub(['serve', '--port', '0'],
+              workingDirectory: _sandbox)
+          .then((process) {
+        return _lines.bind(process.stdout)
+            .firstWhere(_servingRegExp.hasMatch)
+            .then((line) {
+          var match = _servingRegExp.firstMatch(line);
+
+          try {
+            var result = runUnittest(
+                ['--pub-serve=${match[1]}', '-p', 'chrome'],
+                workingDirectory: _sandbox);
+            expect(result.exitCode, equals(0));
+            expect(result.stdout, contains('+1: All tests passed!'));
+          } finally {
+            process.kill();
+          }
+        });
+      });
+    });
+
+    test("on content shell", () {
+      return startPub(['serve', '--port', '0'],
+              workingDirectory: _sandbox)
+          .then((process) {
+        return _lines.bind(process.stdout)
+            .firstWhere(_servingRegExp.hasMatch)
+            .then((line) {
+          var match = _servingRegExp.firstMatch(line);
+
+          try {
+            var result = runUnittest(
+                ['--pub-serve=${match[1]}', '-p', 'content-shell'],
+                workingDirectory: _sandbox);
+            expect(result.exitCode, equals(0));
+            expect(result.stdout, contains('+1: All tests passed!'));
           } finally {
             process.kill();
           }

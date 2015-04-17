@@ -115,6 +115,125 @@ void main() {
       expect(result.exitCode, equals(1));
     });
 
+    test("a custom HTML file has no script tag", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("void main(arg) {}");
+
+      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel="x-dart-test" href="test.dart">
+</head>
+</html>
+""");
+
+      var relativePath = p.relative(testPath, from: _sandbox);
+      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "$relativePath": '
+                '"${p.withoutExtension(relativePath)}.html" must contain '
+                '<script src="packages/test/dart.js"></script>.\n')
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
+    test("a custom HTML file has no link", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("void main(arg) {}");
+
+      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+""");
+
+      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Expected exactly 1 <link rel="x-dart-test"> in test.html, '
+                'found 0.\n')
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
+    test("a custom HTML file has too many links", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("void main(arg) {}");
+
+      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test' href='test.dart'>
+  <link rel='x-dart-test' href='test.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+""");
+
+      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Expected exactly 1 <link rel="x-dart-test"> in test.html, '
+                'found 2.\n')
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
+    test("a custom HTML file has no href in the link", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("void main(arg) {}");
+
+      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test'>
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+""");
+
+      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Expected <link rel="x-dart-test"> in test.html to have an '
+                '"href" attribute.\n')
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
+    test("a custom HTML file has an invalid test URL", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("void main(arg) {}");
+
+      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test' href='wrong.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+""");
+
+      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+                'Failed to load script at ')
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
     // TODO(nweiz): test what happens when a test file is unreadable once issue
     // 15078 is fixed.
   });
@@ -177,6 +296,44 @@ void main() {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runUnittest(["-p", "chrome", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(0));
+    });
+
+    group("with a custom HTML file", () {
+      setUp(() {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:html';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {
+    expect(document.query('#foo'), isNotNull);
+  });
+}
+""");
+
+        new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test' href='test.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+""");
+      });
+
+      test("on content shell", () {
+        var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+        expect(result.exitCode, equals(0));
+      });
+
+      test("on Chrome", () {
+        var result = _runUnittest(["-p", "chrome", "test.dart"]);
+        expect(result.exitCode, equals(0));
+      });
     });
   });
 
@@ -249,6 +406,45 @@ void main() {
 """);
       var result = _runUnittest(["-p", "chrome", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(1));
+    });
+
+
+    group("with a custom HTML file", () {
+      setUp(() {
+        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'dart:html';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () {
+    expect(document.query('#foo'), isNull);
+  });
+}
+""");
+
+        new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test' href='test.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+""");
+      });
+
+      test("on content shell", () {
+        var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+        expect(result.exitCode, equals(1));
+      });
+
+      test("on Chrome", () {
+        var result = _runUnittest(["-p", "chrome", "test.dart"]);
+        expect(result.exitCode, equals(1));
+      });
     });
   });
 

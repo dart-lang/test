@@ -1,5 +1,10 @@
 ### 0.12.0-beta.9
 
+* A browser test may use a custom HTML file. See [the README][custom html] for
+  more information.
+
+[custom html]: https://github.com/dart-lang/test/blob/master/README.md#running-tests-with-custom-html
+
 * Fix running VM tests against `pub serve`.
 
 * Properly load Dartium from the Dart Editor when possible.

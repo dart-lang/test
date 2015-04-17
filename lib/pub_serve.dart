@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:barback/barback.dart';
@@ -21,10 +22,10 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     var id = transform.primaryId;
     transform.declareOutput(id.addExtension('.vm_test.dart'));
     transform.declareOutput(id.addExtension('.browser_test.dart'));
-    transform.declareOutput(id.addExtension('.browser_test.html'));
+    transform.declareOutput(id.changeExtension('.html'));
   }
 
-  void apply(Transform transform) {
+  Future apply(Transform transform) {
     var id = transform.primaryInput.id;
 
     transform.addOutput(
@@ -41,27 +42,33 @@ void main(_, Map message) {
 }
 '''));
 
-    var browserId = id.addExtension('.browser_test.dart');
-    transform.addOutput(new Asset.fromString(browserId, '''
+    transform.addOutput(
+        new Asset.fromString(id.addExtension('.browser_test.dart'), '''
 import "package:test/src/runner/browser/iframe_listener.dart";
 
 import "${p.url.basename(id.path)}" as test;
 
-void main(_) {
+void main() {
   IframeListener.start(() => test.main);
 }
 '''));
 
-    transform.addOutput(
-        new Asset.fromString(id.addExtension('.browser_test.html'), '''
+    // If the user has their own HTML file for the test, let that take
+    // precedence. Otherwise, create our own basic file.
+    var htmlId = id.changeExtension('.html');
+    return transform.hasInput(htmlId).then((hasInput) {
+      if (hasInput) return;
+      transform.addOutput(
+          new Asset.fromString(htmlId, '''
 <!DOCTYPE html>
 <html>
 <head>
   <title>${HTML_ESCAPE.convert(id.path)} Test</title>
-  <script src="${HTML_ESCAPE.convert(p.url.basename(browserId.path))}.js">
-  </script>
+  <link rel="x-dart-test" href="${HTML_ESCAPE.convert(p.url.basename(id.path))}">
+  <script src="packages/test/dart.js"></script>
 </head>
 </html>
 '''));
+    });
   }
 }
