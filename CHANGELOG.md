@@ -5,6 +5,12 @@
 
 [custom html]: https://github.com/dart-lang/test/blob/master/README.md#running-tests-with-custom-html
 
+* Tests, groups, and suites may be declared as skipped. Tests and groups are
+  skipped using the `skip` named argument; suites are skipped using the `@Skip`
+  annotation. See [the README][skip] for more information.
+
+[skip]: https://github.com/dart-lang/test/blob/master/README.md#skipping-tests
+
 * Fix running VM tests against `pub serve`.
 
 * More gracefully handle browser errors.

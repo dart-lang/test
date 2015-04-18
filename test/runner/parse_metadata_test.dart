@@ -228,4 +228,60 @@ library foo;
       });
     });
   });
+
+  group("@Skip:", () {
+    test("parses a valid annotation", () {
+      new File(_path).writeAsStringSync("@Skip()\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.skip, isTrue);
+      expect(metadata.skipReason, isNull);
+    });
+
+    test("parses a valid annotation with a reason", () {
+      new File(_path).writeAsStringSync("@Skip('reason')\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.skip, isTrue);
+      expect(metadata.skipReason, equals('reason'));
+    });
+
+    test("ignores a constructor named Skip", () {
+      new File(_path).writeAsStringSync("@foo.Skip('foo')\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.skip, isFalse);
+    });
+
+    group("throws an error for", () {
+      test("a named constructor", () {
+        new File(_path).writeAsStringSync("@Skip.name('foo')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("no argument list", () {
+        new File(_path).writeAsStringSync("@Skip\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a named argument", () {
+        new File(_path).writeAsStringSync(
+            "@Skip(reason: 'foo')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple arguments", () {
+        new File(_path).writeAsStringSync("@Skip('foo', 'bar')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-string argument", () {
+        new File(_path).writeAsStringSync("@Skip(123)\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple @Skips", () {
+        new File(_path).writeAsStringSync(
+            "@Skip('foo')\n@Skip('bar')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+    });
+  });
 }

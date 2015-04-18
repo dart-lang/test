@@ -32,6 +32,7 @@ const _durationArgs = const [
 Metadata parseMetadata(String path) {
   var timeout;
   var testOn;
+  var skip;
 
   var contents = new File(path).readAsStringSync();
   var directives = parseDirectives(contents, name: path).directives;
@@ -82,13 +83,21 @@ Metadata parseMetadata(String path) {
             _spanFor(annotation, path));
       }
       timeout = _parseTimeout(annotation, constructorName, path);
+    } else if (name == 'Skip') {
+      if (skip != null) {
+        throw new SourceSpanFormatException(
+            "Only a single Skip annotation may be used for a given test file.",
+            _spanFor(annotation, path));
+      }
+      skip = _parseSkip(annotation, constructorName, path);
     }
   }
 
   try {
     return new Metadata.parse(
         testOn: testOn == null ? null : testOn.stringValue,
-        timeout: timeout);
+        timeout: timeout,
+        skip: skip);
   } on SourceSpanFormatException catch (error) {
     var file = new SourceFile(new File(path).readAsStringSync(),
         url: p.toUri(path));
@@ -186,6 +195,47 @@ Timeout _parseTimeout(Annotation annotation, String constructorName,
   } else {
     return new Timeout.factor(_parseNum(args.first, path));
   }
+}
+
+/// Parses a `@Skip` annotation.
+///
+/// [annotation] is the annotation. [constructorName] is the name of the named
+/// constructor for the annotation, if any. [path] is the path to the file from
+/// which the annotation was parsed.
+///
+/// Returns either `true` or a reason string.
+_parseSkip(Annotation annotation, String constructorName, String path) {
+  if (constructorName != null) {
+    throw new SourceSpanFormatException(
+        'Skip doesn\'t have a constructor named "$constructorName".',
+        _spanFor(annotation, path));
+  }
+
+  if (annotation.arguments == null) {
+    throw new SourceSpanFormatException(
+        'Skip must have parentheses.', _spanFor(annotation, path));
+  }
+
+  var args = annotation.arguments.arguments;
+  if (args.length > 1) {
+    throw new SourceSpanFormatException(
+        'Skip takes zero arguments or one argument.',
+        _spanFor(annotation.arguments, path));
+  }
+
+  if (args.isEmpty) return true;
+
+  if (args.first is NamedExpression) {
+    throw new SourceSpanFormatException(
+        "Skip doesn't take named parameters.", _spanFor(args.first, path));
+  }
+
+  if (args.first is! StringLiteral) {
+    throw new SourceSpanFormatException(
+        "Skip takes a String.", _spanFor(args.first, path));
+  }
+
+  return args.first.stringValue;
 }
 
 /// Parses a `const Duration` expression.

@@ -22,6 +22,7 @@ export 'src/frontend/expect.dart';
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';
 export 'src/frontend/prints_matcher.dart';
+export 'src/frontend/skip.dart';
 export 'src/frontend/test_on.dart';
 export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';

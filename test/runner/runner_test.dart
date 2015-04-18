@@ -351,6 +351,23 @@ void main() {
     expect(result.stdout, contains("-1: Some tests failed."));
   });
 
+  test("respects top-level @Skip declarations", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@Skip()
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("fail", () => throw 'oh no');
+}
+''');
+
+    var result = _runUnittest(["test.dart"]);
+    expect(result.stdout, contains("+0 ~1: All tests skipped."));
+  });
+
   group("flags:", () {
     test("with the --color flag, uses colors", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);

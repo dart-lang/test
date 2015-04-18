@@ -315,6 +315,49 @@ the following HTML file:
 
 ## Configuring Tests
 
+### Skipping Tests
+
+If a test, group, or entire suite isn't working yet and you just want it to stop
+complaining, you can mark it as "skipped". The test or tests won't be run, and,
+if you supply a reason why, that reason will be printed. In general, skipping
+tests indicates that they should run but is temporarily not working. If they're
+is fundamentally incompatible with a platform, [`@TestOn`/`testOn`][TestOn]
+should be used instead.
+
+[TestOn]: #restricting-tests-to-certain-platforms
+
+To skip a test suite, put a `@Skip` annotation at the top of the file:
+
+```dart
+@Skip("currently failing (see issue 1234)")
+
+import "package:test/test.dart";
+
+void main() {
+  // ...
+}
+```
+
+The string you pass should describe why the test is skipped. You don't have to
+include it, but it's a good idea to document why the test isn't running.
+
+Groups and individual tests can be skipped by passing the `skip` parameter. This
+can be either `true` or a String describing why the test is skipped. For example:
+
+```dart
+import "package:test/test.dart";
+
+void main() {
+  group("complicated algorithm tests", () {
+    // ...
+  }, skip: "the algorithm isn't quite right");
+  
+  test("error-checking test", () {
+    // ...
+  }, skip: "TODO: add error-checking.");
+}
+```
+
 ### Timeouts
 
 By default, tests will time out after 30 seconds of inactivity. However, this
