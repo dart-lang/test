@@ -286,6 +286,15 @@ $_usage"""));
       ]);
       expect(result.stdout, contains("All tests passed!"));
     });
+
+    // Regression test; this broke in 0.12.0-beta.9.
+    test("on a file in a subdirectory", () {
+      new Directory(p.join(_sandbox, "dir")).createSync();
+      new File(p.join(_sandbox, "dir", "test.dart"))
+          .writeAsStringSync(_success);
+      var result = _runUnittest(["dir/test.dart"]);
+      expect(result.exitCode, equals(0));
+    });
   });
 
   group("runs failing tests", () {

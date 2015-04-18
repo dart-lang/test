@@ -1,3 +1,7 @@
+### 0.12.0-beta.10
+
+* Fix running browser tests in subdirectories.
+
 ### 0.12.0-beta.9
 
 * A browser test may use a custom HTML file. See [the README][custom html] for

@@ -206,10 +206,11 @@ void main() {
 
       // Link to the Dart wrapper on Dartium and the compiled JS version
       // elsewhere.
+      var scriptBase =
+          "${HTML_ESCAPE.convert(p.basename(test))}.browser_test.dart";
       var script = request.headers['user-agent'].contains('(Dart)')
-          ? 'type="application/dart" '
-              'src="${HTML_ESCAPE.convert(test)}.browser_test.dart"'
-          : 'src="${HTML_ESCAPE.convert(test)}.browser_test.dart.js"';
+          ? 'type="application/dart" src="$scriptBase"'
+          : 'src="$scriptBase.js"';
 
       return new shelf.Response.ok('''
 <!DOCTYPE html>

@@ -298,6 +298,15 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
+    // Regression test; this broke in 0.12.0-beta.9.
+    test("on a file in a subdirectory", () {
+      new Directory(p.join(_sandbox, "dir")).createSync();
+      new File(p.join(_sandbox, "dir", "test.dart"))
+          .writeAsStringSync(_success);
+      var result = _runUnittest(["-p", "chrome", "dir/test.dart"]);
+      expect(result.exitCode, equals(0));
+    });
+
     group("with a custom HTML file", () {
       setUp(() {
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
