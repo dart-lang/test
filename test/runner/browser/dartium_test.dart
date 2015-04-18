@@ -15,6 +15,8 @@ import 'package:test/src/util/io.dart';
 import 'package:test/src/utils.dart';
 import 'package:test/test.dart';
 
+import '../../utils.dart';
+
 void main() {
   group("running Dart", () {
     // The Dart to serve in the server.
@@ -135,6 +137,7 @@ webSocket.onOpen.first.then((_) =>
   test("reports an error in onExit", () {
     var dartium = new Dartium("http://dart-lang.org",
         executable: "_does_not_exist");
-    expect(dartium.onExit, throwsA(new isInstanceOf<ProcessException>()));
+    expect(dartium.onExit, throwsA(isApplicationException(startsWith(
+        "Failed to start Dartium: No such file or directory"))));
   });
 }

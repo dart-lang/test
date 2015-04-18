@@ -127,7 +127,7 @@ class Loader {
     var controller = new StreamController();
     Future.forEach(_platforms, (platform) {
       if (!metadata.testOn.evaluate(platform, os: currentOS)) {
-        return;
+        return null;
       }
 
       // Don't load a skipped suite.
@@ -135,7 +135,7 @@ class Loader {
         controller.add(new Suite([
           new LocalTest(path, metadata, () {})
         ], path: path, platform: platform.name, metadata: metadata));
-        return;
+        return null;
       }
 
       return new Future.sync(() {

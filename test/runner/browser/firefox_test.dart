@@ -14,6 +14,8 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 
+import '../../utils.dart';
+
 void main() {
   group("running JavaScript", () {
     // The JavaScript to serve in the server. We use actual JavaScript here to
@@ -135,6 +137,7 @@ webSocket.addEventListener("open", function() {
   test("reports an error in onExit", () {
     var firefox = new Firefox("http://dart-lang.org",
         executable: "_does_not_exist");
-    expect(firefox.onExit, throwsA(new isInstanceOf<ProcessException>()));
+    expect(firefox.onExit, throwsA(isApplicationException(startsWith(
+        "Failed to start Firefox: No such file or directory"))));
   });
 }

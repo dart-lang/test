@@ -14,6 +14,8 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 
+import '../../utils.dart';
+
 void main() {
   group("running JavaScript", () {
     // The JavaScript to serve in the server. We use actual JavaScript here to
@@ -80,7 +82,10 @@ webSocket.addEventListener("open", function() {
         return webSocket.first.then(
             (message) => expect(message, equals("loaded!")));
       }).whenComplete(chrome.close);
-    });
+    },
+        // It's not clear why, but this test in particular seems to time out
+        // when run in parallel with many other tests.
+        timeout: new Timeout.factor(2));
 
     test("doesn't preserve state across runs", () {
       javaScript = '''
@@ -135,6 +140,7 @@ webSocket.addEventListener("open", function() {
   test("reports an error in onExit", () {
     var chrome = new Chrome("http://dart-lang.org",
         executable: "_does_not_exist");
-    expect(chrome.onExit, throwsA(new isInstanceOf<ProcessException>()));
+    expect(chrome.onExit, throwsA(isApplicationException(startsWith(
+        "Failed to start Chrome: No such file or directory"))));
   });
 }
