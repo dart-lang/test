@@ -365,7 +365,7 @@ can be configured on a per-test, -group, or -suite basis. To change the timeout
 for a test suite, put a `@Timeout` annotation at the top of the file:
 
 ```dart
-@Timeout(new Duration(seconds: 45))
+@Timeout(const Duration(seconds: 45))
 
 import "package:test/test.dart";
 
@@ -391,7 +391,7 @@ void main() {
     test("even slower test", () {
       // ...
     }, timeout: new Timeout.factor(2))
-  }, timeout: new Timeout(new Duration(minutes: 1)));
+  }, timeout: new Timeout(const Duration(minutes: 1)));
 }
 ```
 
