@@ -343,6 +343,26 @@ void main() {
         var result = _runUnittest(["-p", "chrome", "test.dart"]);
         expect(result.exitCode, equals(0));
       });
+
+      // Regression test for https://github.com/dart-lang/test/issues/82.
+      test("ignores irrelevant link tags", () {
+        new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+<html>
+<head>
+  <link rel='x-dart-test-not'>
+  <link rel='other' href='test.dart'>
+  <link rel='x-dart-test' href='test.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+""");
+
+        var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+        expect(result.exitCode, equals(0));
+      });
     });
   });
 

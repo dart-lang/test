@@ -1,5 +1,7 @@
 ### 0.12.0-beta.11
 
+* Properly ignore unrelated `link` tags in custom HTML.
+
 * Preserve the stack traces for load errors in isolates and iframes.
 
 ### 0.12.0-beta.10
