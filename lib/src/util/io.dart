@@ -20,7 +20,7 @@ final String sdkDir =
 
 /// The version of the Dart SDK currently in use.
 final Version _sdkVersion = new Version.parse(
-    new File(p.join(p.dirname(p.dirname(Platform.executable)), 'version'))
+    new File(p.join(sdkDir, 'version'))
         .readAsStringSync().trim());
 
 /// Returns the current operating system.
