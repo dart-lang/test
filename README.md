@@ -391,7 +391,7 @@ void main() {
     test("even slower test", () {
       // ...
     }, timeout: new Timeout.factor(2))
-  }, timeout: new Timeout(const Duration(minutes: 1)));
+  }, timeout: new Timeout(new Duration(minutes: 1)));
 }
 ```
 
