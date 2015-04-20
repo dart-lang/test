@@ -195,7 +195,7 @@ transformers:
     if (error is! LoadException) {
       sink.addError(error, stackTrace);
     } else {
-      sink.add(new LoadExceptionSuite(error));
+      sink.add(new LoadExceptionSuite(error, stackTrace));
     }
   })).toList().then((suites) {
     if (closed) return null;

@@ -1,3 +1,7 @@
+### 0.12.0-beta.11
+
+* Preserve the stack traces for load errors in isolates and iframes.
+
 ### 0.12.0-beta.10
 
 * Fix running browser tests in subdirectories.

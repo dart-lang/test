@@ -4,6 +4,8 @@
 
 library test.runner.load_exception_suite;
 
+import 'dart:async';
+
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/suite.dart';
@@ -16,10 +18,13 @@ import 'load_exception.dart';
 class LoadExceptionSuite extends Suite {
   /// The exception that this suite exposes.
   final LoadException exception;
+  final StackTrace stackTrace;
 
-  LoadExceptionSuite(LoadException exception)
+  LoadExceptionSuite(LoadException exception, stackTrace)
       : exception = exception,
+        stackTrace = stackTrace,
         super([
-          new LocalTest("load error", new Metadata(), () => throw exception)
+          new LocalTest("load error", new Metadata(),
+              () => new Future.error(exception, stackTrace))
         ], path: exception.path);
 }
