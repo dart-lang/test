@@ -5,7 +5,6 @@
 @TestOn("vm")
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:test/src/runner/browser/firefox.dart';

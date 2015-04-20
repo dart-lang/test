@@ -5,7 +5,6 @@
 @TestOn("vm && mac-os")
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:test/src/runner/browser/safari.dart';
