@@ -76,18 +76,22 @@ void main() {
 
 ## Running Tests
 
-A single test file can be run just using `dart path/to/test.dart`.
+A single test file can be run just using `pub run test:test path/to/test.dart`
+(on Dart 1.10, this can be shortened to `pub run test path/to/test.dart`).
 
-![Tests being run via "dart path/to/test.dart".](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
+![Single file being run via pub run"](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
 
-Many tests can be run at a time using `pub run test:test path/to/dir` (on Dart
-1.10, this can be shortened to `pub run test path/to/dir`).
+Many tests can be run at a time using `pub run test:test path/to/dir`.
 
 ![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/image/test2.gif)
 
-`test` considers any file that ends with `_test.dart` to be a test file. If
-you don't pass any paths, it will run all the test files in your `test/`
-directory, making it easy to test your entire application at once.
+It's also possible to run a test on the Dart VM only by invoking it using `dart
+path/to/test.dart`, but this doesn't load the full test runner and will be
+missing some features.
+
+The test runner considers any file that ends with `_test.dart` to be a test
+file. If you don't pass any paths, it will run all the test files in your
+`test/` directory, making it easy to test your entire application at once.
 
 By default, tests are run in the Dart VM, but you can run them in the browser as
 well by passing `pub run test:test -p chrome path/to/test.dart`.
