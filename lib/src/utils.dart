@@ -98,6 +98,20 @@ List flatten(Iterable nested) {
   return result;
 }
 
+/// Returns a new map with all values in both [map1] and [map2].
+///
+/// If there are conflicting keys, [map2]'s value wins.
+Map mergeMaps(Map map1, Map map2) {
+  var result = {};
+  map1.forEach((key, value) {
+    result[key] = value;
+  });
+  map2.forEach((key, value) {
+    result[key] = value;
+  });
+  return result;
+}
+
 /// Returns a sink that maps events sent to [original] using [fn].
 StreamSink mapSink(StreamSink original, fn(event)) {
   var controller = new StreamController(sync: true);

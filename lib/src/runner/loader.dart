@@ -148,9 +148,7 @@ class Loader {
         assert(platform.isBrowser);
         return _loadBrowserFile(path, platform, metadata);
       }).then((suite) {
-        if (suite == null) return;
-
-        controller.add(suite.filter(platform, os: currentOS));
+        if (suite != null) controller.add(suite);
       }).catchError(controller.addError);
     }).then((_) => controller.close());
 

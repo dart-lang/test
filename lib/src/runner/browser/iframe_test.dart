@@ -60,4 +60,10 @@ class IframeTest implements Test {
     });
     return controller.liveTest;
   }
+
+  Test change({String name, Metadata metadata}) {
+    if (name == null) name = this.name;
+    if (metadata == null) metadata = this.metadata;
+    return new IframeTest(name, metadata, _channel);
+  }
 }

@@ -25,4 +25,8 @@ abstract class Test {
   ///
   /// [suite] is the suite within which this test is being run.
   LiveTest load(Suite suite);
+
+  /// Returns a new copy of this Test with the given [name] and [metadata], if
+  /// passed.
+  Test change({String name, Metadata metadata});
 }

@@ -12,6 +12,7 @@ import '../../backend/declarer.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
+import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
@@ -66,12 +67,13 @@ class IframeListener {
     }
 
     var url = Uri.parse(window.location.href);
-    var metadata = url.hasFragment
-        ? new Metadata.deserialize(JSON.decode(Uri.decodeFull(url.fragment)))
-        : new Metadata();
+    var message = JSON.decode(Uri.decodeFull(url.fragment));
+    var metadata = new Metadata.deserialize(message['metadata']);
+    var browser = TestPlatform.find(message['browser']);
 
-    new IframeListener._(new Suite(declarer.tests, metadata: metadata))
-        ._listen(channel);
+    var suite = new Suite(declarer.tests, metadata: metadata)
+        .forPlatform(browser);
+    new IframeListener._(suite)._listen(channel);
   }
 
   /// Constructs a [MultiChannel] wrapping the `postMessage` communication with

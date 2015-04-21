@@ -353,7 +353,7 @@ void main() {
     // value and [browser.onError].
     _browserManagers[platform] = completer.future.catchError((_) {});
     var path = _webSocketHandler.create(webSocketHandler((webSocket) {
-      completer.complete(new BrowserManager(webSocket));
+      completer.complete(new BrowserManager(platform, webSocket));
     }));
 
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);

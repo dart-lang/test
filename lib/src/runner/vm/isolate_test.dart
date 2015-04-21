@@ -16,7 +16,7 @@ import '../../backend/test.dart';
 import '../../util/remote_exception.dart';
 
 /// A test in another isolate.
-class IsolateTest implements Test {
+class IsolateTest extends Test {
   final String name;
   final Metadata metadata;
 
@@ -80,5 +80,11 @@ class IsolateTest implements Test {
       }).then((_) => receivePort.close());
     });
     return controller.liveTest;
+  }
+
+  Test change({String name, Metadata metadata}) {
+    if (name == null) name = this.name;
+    if (metadata == null) metadata = this.metadata;
+    return new IsolateTest(name, metadata, _sendPort);
   }
 }

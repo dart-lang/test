@@ -27,30 +27,16 @@ class Declarer {
   Declarer();
 
   /// Defines a test case with the given description and body.
-  ///
-  /// The description will be added to the descriptions of any surrounding
-  /// [group]s.
-  ///
-  /// If [testOn] is passed, it's parsed as a [PlatformSelector], and the test
-  /// will only be run on matching platforms.
-  ///
-  /// If [timeout] is passed, it's used to modify or replace the default timeout
-  /// of 30 seconds. Timeout modifications take precedence in suite-group-test
-  /// order, so [timeout] will also modify any timeouts set on the group or
-  /// suite.
-  ///
-  /// If [skip] is a String or `true`, the test is skipped. If it's a String, it
-  /// should explain why the test is skipped; this reason will be printed
-  /// instead of running the test.
   void test(String description, body(), {String testOn, Timeout timeout,
-      skip}) {
+      skip, Map<String, dynamic> onPlatform}) {
     // TODO(nweiz): Once tests have begun running, throw an error if [test] is
     // called.
     var prefix = _group.description;
     if (prefix != null) description = "$prefix $description";
 
-    var metadata = _group.metadata.merge(
-        new Metadata.parse(testOn: testOn, timeout: timeout, skip: skip));
+    var metadata = _group.metadata.merge(new Metadata.parse(
+        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform));
+
     var group = _group;
     _tests.add(new LocalTest(description, metadata, () {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
@@ -61,28 +47,12 @@ class Declarer {
   }
 
   /// Creates a group of tests.
-  ///
-  /// A group's description is included in the descriptions of any tests or
-  /// sub-groups it contains. [setUp] and [tearDown] are also scoped to the
-  /// containing group.
-  ///
-  /// If [testOn] is passed, it's parsed as a [PlatformSelector], and any tests
-  /// in the group will only be run on matching platforms.
-  ///
-  /// If [timeout] is passed, it's used to modify or replace the default timeout
-  /// of 30 seconds. Timeout modifications take precedence in suite-group-test
-  /// order, so [timeout] will also modify any timeouts set on the group or
-  /// suite.
-  ///
-  /// If [skip] is a String or `true`, the group is skipped. If it's a String,
-  /// it should explain why the group is skipped; this reason will be printed
-  /// instead of running the group's tests.
   void group(String description, void body(), {String testOn,
-      Timeout timeout, skip}) {
+      Timeout timeout, skip, Map<String, dynamic> onPlatform}) {
     var oldGroup = _group;
 
     var metadata = new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip);
+        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform);
 
     // Don' load the tests for a skipped group.
     if (metadata.skip) {
@@ -99,13 +69,6 @@ class Declarer {
   }
 
   /// Registers a function to be run before tests.
-  ///
-  /// This function will be called before each test is run. [callback] may be
-  /// asynchronous; if so, it must return a [Future].
-  ///
-  /// If this is called within a [group], it applies only to tests in that
-  /// group. [callback] will be run after any set-up callbacks in parent groups
-  /// or at the top level.
   void setUp(callback()) {
     if (_group.setUp != null) {
       throw new StateError("setUp() may not be called multiple times for the "
@@ -116,13 +79,6 @@ class Declarer {
   }
 
   /// Registers a function to be run after tests.
-  ///
-  /// This function will be called after each test is run. [callback] may be
-  /// asynchronous; if so, it must return a [Future].
-  ///
-  /// If this is called within a [group], it applies only to tests in that
-  /// group. [callback] will be run before any tear-down callbacks in parent
-  /// groups or at the top level.
   void tearDown(callback()) {
     if (_group.tearDown != null) {
       throw new StateError("tearDown() may not be called multiple times for "

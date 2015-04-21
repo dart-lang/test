@@ -11,6 +11,7 @@ import 'package:http_parser/http_parser.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
+import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
@@ -22,14 +23,17 @@ import 'iframe_test.dart';
 /// This is in charge of telling the browser which test suites to load and
 /// converting its responses into [Suite] objects.
 class BrowserManager {
+  /// The browser that this is managing.
+  final TestPlatform browser;
+
   /// The channel used to communicate with the browser.
   ///
   /// This is connected to a page running `static/host.dart`.
   final MultiChannel _channel;
 
-  /// Creates a new BrowserManager that communicates with a browser over
+  /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
-  BrowserManager(CompatibleWebSocket webSocket)
+  BrowserManager(this.browser, CompatibleWebSocket webSocket)
       : _channel = new MultiChannel(
           webSocket.map(JSON.decode),
           mapSink(webSocket, JSON.encode));
@@ -40,8 +44,10 @@ class BrowserManager {
   /// suite. [path] is the path of the original test suite file, which is used
   /// for reporting. [metadata] is the parsed metadata for the test suite.
   Future<Suite> loadSuite(String path, Uri url, Metadata metadata) {
-    url = url.replace(
-        fragment: Uri.encodeFull(JSON.encode(metadata.serialize())));
+    url = url.replace(fragment: Uri.encodeFull(JSON.encode({
+      "metadata": metadata.serialize(),
+      "browser": browser.identifier
+    })));
 
     var suiteChannel = _channel.virtualChannel();
     _channel.sink.add({
@@ -59,7 +65,9 @@ class BrowserManager {
     return maybeFirst(suiteChannel.stream)
         .timeout(new Duration(seconds: 7), onTimeout: () {
       throw new LoadException(
-          path, "Timed out waiting for the test suite to connect.");
+          path,
+          "Timed out waiting for the test suite to connect on "
+              "${browser.name}.");
     }).then((response) {
       if (response == null) return null;
 

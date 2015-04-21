@@ -42,6 +42,12 @@ class LocalTest implements Test {
     var invoker = new Invoker._(suite, this);
     return invoker.liveTest;
   }
+
+  Test change({String name, Metadata metadata}) {
+    if (name == null) name = this.name;
+    if (metadata == null) metadata = this.metadata;
+    return new LocalTest(name, metadata, _body, tearDown: _tearDown);
+  }
 }
 
 /// The class responsible for managing the lifecycle of a single local test.

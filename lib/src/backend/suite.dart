@@ -33,14 +33,17 @@ class Suite {
       : metadata = metadata == null ? new Metadata() : metadata,
         tests = new UnmodifiableListView<Test>(tests.toList());
 
-  /// Returns a new suite that only contains tests that are valid for the given
-  /// [platform] and [os].
+  /// Returns a view of this suite for the given [platform] and [os].
   ///
-  /// If the suite itself is invalid for [platform] and [os], returns `null`.
-  Suite filter(TestPlatform platform, {OperatingSystem os}) {
+  /// This filters out tests that are invalid for [platform] and [os] and
+  /// resolves platform-specific metadata. If the suite itself is invalid for
+  /// [platform] and [os], returns `null`.
+  Suite forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
     return change(tests: tests.where((test) {
       return test.metadata.testOn.evaluate(platform, os: os);
+    }).map((test) {
+      return test.change(metadata: test.metadata.forPlatform(platform, os: os));
     }));
   }
 

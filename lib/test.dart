@@ -50,10 +50,10 @@ Declarer get _declarer {
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() {
     var suite =
-      new Suite(_globalDeclarer.tests,
-            path: p.prettyUri(Uri.base),
-            platform: "VM")
-      .filter(TestPlatform.vm, os: currentOSGuess);
+        new Suite(_globalDeclarer.tests,
+              path: p.prettyUri(Uri.base),
+              platform: "VM")
+        .forPlatform(TestPlatform.vm, os: currentOSGuess);
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     new NoIoCompactReporter([suite], color: true).run();
   });
@@ -77,10 +77,30 @@ Declarer get _declarer {
 /// If [skip] is a String or `true`, the test is skipped. If it's a String, it
 /// should explain why the test is skipped; this reason will be printed instead
 /// of running the test.
+///
+/// [onPlatform] allows tests to be configured on a platform-by-platform
+/// basis. It's a map from strings that are parsed as [PlatformSelector]s to
+/// annotation classes: [Timeout], [Skip], or lists of those. These
+/// annotations apply only on the given platforms. For example:
+///
+///     test("potentially slow test", () {
+///       // ...
+///     }, onPlatform: {
+///       // This test is especially slow on Windows.
+///       "windows": new Timeout.factor(2),
+///       "browser": [
+///         new Skip("TODO: add browser support"),
+///         // This will be slow on browsers once it works on them.
+///         new Timeout.factor(2)
+///       ]
+///     });
+///
+/// If multiple platforms match, the annotations apply in order as through
+/// they were in nested groups.
 void test(String description, body(), {String testOn, Timeout timeout,
-        skip}) =>
+        skip, Map<String, dynamic> onPlatform}) =>
     _declarer.test(description, body,
-        testOn: testOn, timeout: timeout, skip: skip);
+        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform);
 
 /// Creates a group of tests.
 ///
@@ -101,8 +121,28 @@ void test(String description, body(), {String testOn, Timeout timeout,
 /// If [skip] is a String or `true`, the group is skipped. If it's a String, it
 /// should explain why the group is skipped; this reason will be printed instead
 /// of running the group's tests.
+///
+/// [onPlatform] allows groups to be configured on a platform-by-platform
+/// basis. It's a map from strings that are parsed as [PlatformSelector]s to
+/// annotation classes: [Timeout], [Skip], or lists of those. These
+/// annotations apply only on the given platforms. For example:
+///
+///     group("potentially slow tests", () {
+///       // ...
+///     }, onPlatform: {
+///       // These tests are especially slow on Windows.
+///       "windows": new Timeout.factor(2),
+///       "browser": [
+///         new Skip("TODO: add browser support"),
+///         // They'll be slow on browsers once it works on them.
+///         new Timeout.factor(2)
+///       ]
+///     });
+///
+/// If multiple platforms match, the annotations apply in order as through
+/// they were in nested groups.
 void group(String description, void body(), {String testOn, Timeout timeout,
-        skip}) =>
+        skip, Map<String, dynamic> onPlatform}) =>
     _declarer.group(description, body,
         testOn: testOn, timeout: timeout, skip: skip);
 

@@ -11,6 +11,8 @@ import '../../backend/declarer.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
+import '../../backend/test_platform.dart';
+import '../../util/io.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
 
@@ -59,8 +61,9 @@ class IsolateListener {
       return;
     }
 
-    new IsolateListener._(new Suite(declarer.tests, metadata: metadata))
-        ._listen(sendPort);
+    var suite = new Suite(declarer.tests, metadata: metadata)
+        .forPlatform(TestPlatform.vm, os: currentOS);
+    new IsolateListener._(suite)._listen(sendPort);
   }
 
   /// Sends a message over [sendPort] indicating that the tests failed to load.

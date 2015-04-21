@@ -513,6 +513,100 @@ void main() {
     expect(result.stdout, contains("Test timed out after 0 seconds."));
     expect(result.stdout, contains("-1: Some tests failed."));
   });
+
+  group("in onPlatform", () {
+    test("respects matching Skips", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("fail", () => throw 'oh no', onPlatform: {"chrome": new Skip()});
+}
+''');
+
+      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      expect(result.stdout, contains("+0 ~1: All tests skipped."));
+    });
+
+    test("ignores non-matching Skips", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {}, onPlatform: {"vm": new Skip()});
+}
+''');
+
+      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      expect(result.stdout, contains("+1: All tests passed!"));
+    });
+
+    test("respects matching Timeouts", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("fail", () => throw 'oh no', onPlatform: {
+    "chrome": new Timeout(new Duration(seconds: 0))
+  });
+}
+''');
+
+      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      expect(result.stdout, contains("Test timed out after 0 seconds."));
+      expect(result.stdout, contains("-1: Some tests failed."));
+    });
+
+    test("ignores non-matching Timeouts", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {}, onPlatform: {
+    "vm": new Timeout(new Duration(seconds: 0))
+  });
+}
+''');
+
+      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      expect(result.stdout, contains("+1: All tests passed!"));
+    });
+
+    test("applies matching platforms in order", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {}, onPlatform: {
+    "chrome": new Skip("first"),
+    "chrome || windows": new Skip("second"),
+    "chrome || linux": new Skip("third"),
+    "chrome || mac-os": new Skip("fourth"),
+    "chrome || android": new Skip("fifth")
+  });
+}
+''');
+
+      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      expect(result.stdout, contains("Skip: fifth"));
+      expect(result.stdout, isNot(anyOf([
+        contains("Skip: first"),
+        contains("Skip: second"),
+        contains("Skip: third"),
+        contains("Skip: fourth")
+      ])));
+    });
+  });
 }
 
 ProcessResult _runUnittest(List<String> args) =>
