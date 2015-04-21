@@ -44,7 +44,7 @@ class Suite {
       return test.metadata.testOn.evaluate(platform, os: os);
     }).map((test) {
       return test.change(metadata: test.metadata.forPlatform(platform, os: os));
-    }));
+    }), metadata: metadata.forPlatform(platform, os: os));
   }
 
   /// Returns a new suite with the given fields updated.

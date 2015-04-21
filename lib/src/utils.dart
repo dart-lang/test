@@ -51,6 +51,23 @@ final OperatingSystem currentOSGuess = (() {
   return OperatingSystem.linux;
 })();
 
+/// A pair of values.
+class Pair<E, F> {
+  E first;
+  F last;
+
+  Pair(this.first, this.last);
+
+  String toString() => '($first, $last)';
+
+  bool operator==(other) {
+    if (other is! Pair) return false;
+    return other.first == first && other.last == last;
+  }
+
+  int get hashCode => first.hashCode ^ last.hashCode;
+}
+
 /// Get a string description of an exception.
 ///
 /// Many exceptions include the exception class name at the beginning of their

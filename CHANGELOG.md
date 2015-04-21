@@ -1,5 +1,12 @@
 ### 0.12.0-beta.11
 
+* Tests, groups, and suites can now be configured on a platform-by-platform
+  basis. Tests and groups are configured using the `onPlatform` named argument;
+  suites are configured using the `@OnPlatform` annotation. See [the
+  README][onPlatform] for more information.
+
+[onPlatform]: https://github.com/dart-lang/test/blob/master/README.md#platform-specific-configuration
+
 * Properly ignore unrelated `link` tags in custom HTML.
 
 * Preserve the stack traces for load errors in isolates and iframes.

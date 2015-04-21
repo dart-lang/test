@@ -284,4 +284,106 @@ library foo;
       });
     });
   });
+
+  group("@OnPlatform:", () {
+    test("parses a valid annotation", () {
+      new File(_path).writeAsStringSync("""
+@OnPlatform(const {
+  'chrome': const Timeout.factor(2),
+  'vm': const [const Skip(), const Timeout.factor(3)]
+})
+library foo;""");
+      var metadata = parseMetadata(_path);
+
+      var key = metadata.onPlatform.keys.first;
+      expect(key.evaluate(TestPlatform.chrome), isTrue);
+      expect(key.evaluate(TestPlatform.vm), isFalse);
+      var value = metadata.onPlatform.values.first;
+      expect(value.timeout.scaleFactor, equals(2));
+
+      key = metadata.onPlatform.keys.last;
+      expect(key.evaluate(TestPlatform.vm), isTrue);
+      expect(key.evaluate(TestPlatform.chrome), isFalse);
+      value = metadata.onPlatform.values.last;
+      expect(value.skip, isTrue);
+      expect(value.timeout.scaleFactor, equals(3));
+    });
+
+    test("ignores a constructor named OnPlatform", () {
+      new File(_path).writeAsStringSync("@foo.OnPlatform('foo')\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.testOn, equals(PlatformSelector.all));
+    });
+
+    group("throws an error for", () {
+      test("a named constructor", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform.name(const {})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("no argument list", () {
+        new File(_path).writeAsStringSync("@OnPlatform\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("an empty argument list", () {
+        new File(_path).writeAsStringSync("@OnPlatform()\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a named argument", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(map: const {})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple arguments", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const {}, const {})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-map argument", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const Skip())\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-const map", () {
+        new File(_path).writeAsStringSync("@OnPlatform({})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a map with a non-String key", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const {1: const Skip()})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a map with a unparseable key", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const {'invalid': const Skip()})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a map with an invalid value", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const {'vm': const TestOn('vm')})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a map with an invalid value in a list", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const {'vm': [const TestOn('vm')]})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple @OnPlatforms", () {
+        new File(_path).writeAsStringSync(
+            "@OnPlatform(const {})\n@OnPlatform(const {})\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+    });
+  });
 }

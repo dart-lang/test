@@ -403,6 +403,41 @@ Nested timeouts apply in order from outermost to innermost. That means that
 "even slower test" will take two minutes to time out, since it multiplies the
 group's timeout by 2.
 
+### Platform-Specific Configuration
+
+Sometimes a test may need to be configured differently for different platforms.
+Windows might run your code slower than other platforms, or your DOM
+manipulation might not work right on Safari yet. For these cases, you can use
+the `@OnPlatform` annotation and the `onPlatform` named parameter to `test()`
+and `group()`. For example:
+
+```dart
+@OnPlatform(const {
+  // Give Windows some extra wiggle-room before timing out.
+  "windows": const Timeout.factor(2)
+})
+
+import "package:test/test.dart";
+
+void main() {
+  test("do a thing", () {
+    // ...
+  }, onPlatform: {
+    "safari": new Skip("Safari is currently broken (see #1234)")
+  });
+}
+```
+
+Both the annotation and the parameter take a map. The map's keys are [platform
+selectors](#platform-selector-syntax) which describe the platforms for which the
+specialized configuration applies. Its values are instances of some of the same
+annotation classes that can be used for a suite: `Skip` and `Timeout`. A value
+can also be a list of these values.
+
+If multiple platforms match, the configuration is applied in order from first to
+last, just as they would in nested groups. This means that for configuration
+like duration-based timeouts, the last matching value wins.
+
 ## Testing With `barback`
 
 Packages using the `barback` transformer system may need to test code that's

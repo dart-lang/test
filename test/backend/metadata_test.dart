@@ -22,7 +22,6 @@ void main() {
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
-
       key = metadata.onPlatform.keys.last;
       expect(key.evaluate(TestPlatform.vm), isTrue);
       expect(key.evaluate(TestPlatform.chrome), isFalse);

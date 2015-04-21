@@ -377,7 +377,7 @@ void main() {
     expect(result.stdout, contains("+0 ~1: All tests skipped."));
   });
 
-  group("in onPlatform", () {
+  group("with onPlatform", () {
     test("respects matching Skips", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
 import 'dart:async';
@@ -468,6 +468,81 @@ void main() {
         contains("Skip: third"),
         contains("Skip: fourth")
       ])));
+    });
+  });
+
+  group("with an @OnPlatform annotation", () {
+    test("respects matching Skips", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@OnPlatform(const {"vm": const Skip()})
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("fail", () => throw 'oh no');
+}
+''');
+
+      var result = _runUnittest(["test.dart"]);
+      expect(result.stdout, contains("+0 ~1: All tests skipped."));
+    });
+
+    test("ignores non-matching Skips", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@OnPlatform(const {"chrome": const Skip()})
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''');
+
+      var result = _runUnittest(["test.dart"]);
+      expect(result.stdout, contains("+1: All tests passed!"));
+    });
+
+    test("respects matching Timeouts", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@OnPlatform(const {
+  "vm": const Timeout(const Duration(seconds: 0))
+})
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("fail", () => throw 'oh no');
+}
+''');
+
+      var result = _runUnittest(["test.dart"]);
+      expect(result.stdout, contains("Test timed out after 0 seconds."));
+      expect(result.stdout, contains("-1: Some tests failed."));
+    });
+
+    test("ignores non-matching Timeouts", () {
+      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+@OnPlatform(const {
+  "chrome": const Timeout(const Duration(seconds: 0))
+})
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''');
+
+      var result = _runUnittest(["test.dart"]);
+      expect(result.stdout, contains("+1: All tests passed!"));
     });
   });
 

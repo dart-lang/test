@@ -112,13 +112,13 @@ class Loader {
   ///
   /// This will emit a [LoadException] if the file fails to load.
   Stream<Suite> loadFile(String path) {
-    var metadata;
+    var suiteMetadata;
     try {
-      metadata = parseMetadata(path);
+      suiteMetadata = parseMetadata(path);
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
-      metadata = new Metadata();
+      suiteMetadata = new Metadata();
     } on FormatException catch (error, stackTrace) {
       return new Stream.fromFuture(
           new Future.error(new LoadException(path, error), stackTrace));
@@ -126,9 +126,11 @@ class Loader {
 
     var controller = new StreamController();
     Future.forEach(_platforms, (platform) {
-      if (!metadata.testOn.evaluate(platform, os: currentOS)) {
+      if (!suiteMetadata.testOn.evaluate(platform, os: currentOS)) {
         return null;
       }
+
+      var metadata = suiteMetadata.forPlatform(platform, os: currentOS);
 
       // Don't load a skipped suite.
       if (metadata.skip) {
