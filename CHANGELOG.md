@@ -4,6 +4,9 @@
 
 * Preserve the stack traces for load errors in isolates and iframes.
 
+* Stop `pub serve` from emitting a duplicate-asset error for tests with custom
+  HTML files.
+
 ### 0.12.0-beta.10
 
 * Fix running browser tests in subdirectories.

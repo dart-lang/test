@@ -22,7 +22,6 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     var id = transform.primaryId;
     transform.declareOutput(id.addExtension('.vm_test.dart'));
     transform.declareOutput(id.addExtension('.browser_test.dart'));
-    transform.declareOutput(id.changeExtension('.html'));
   }
 
   Future apply(Transform transform) {
