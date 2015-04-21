@@ -14,6 +14,9 @@
 * Stop `pub serve` from emitting a duplicate-asset error for tests with custom
   HTML files.
 
+* When running a test suite via `dart path/to/test.dart`, throw an exception if
+  the suite fails so that the exit code is set properly.
+
 ### 0.12.0-beta.10
 
 * Fix running browser tests in subdirectories.

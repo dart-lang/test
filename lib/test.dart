@@ -55,8 +55,13 @@ Declarer get _declarer {
               path: p.prettyUri(Uri.base),
               platform: "VM")
         .forPlatform(TestPlatform.vm, os: currentOSGuess);
-    // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
-    new NoIoCompactReporter([suite], color: true).run();
+
+    new NoIoCompactReporter([suite], color: true).run().then((success) {
+      // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
+      if (success) return;
+      print('');
+      new Future.error("Dummy exception to set exit code.");
+    });
   });
   return _globalDeclarer;
 }

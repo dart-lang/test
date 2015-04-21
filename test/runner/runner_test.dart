@@ -285,6 +285,7 @@ $_usage"""));
         "test.dart"
       ]);
       expect(result.stdout, contains("All tests passed!"));
+      expect(result.exitCode, equals(0));
     });
 
     // Regression test; this broke in 0.12.0-beta.9.
@@ -332,6 +333,7 @@ $_usage"""));
         "test.dart"
       ]);
       expect(result.stdout, contains("Some tests failed."));
+      expect(result.exitCode, isNot(equals(0)));
     });
   });
 
