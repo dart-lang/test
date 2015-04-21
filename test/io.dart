@@ -14,9 +14,9 @@ import 'package:test/src/util/io.dart';
 final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
 
 /// The path to the `pub` executable in the current Dart SDK.
-final _pubPath = p.join(
+final _pubPath = p.absolute(p.join(
     p.dirname(Platform.executable),
-    Platform.isWindows ? 'pub.bat' : 'pub');
+    Platform.isWindows ? 'pub.bat' : 'pub'));
 
 /// Runs the test executable with the package root set properly.
 ProcessResult runUnittest(List<String> args, {String workingDirectory,
@@ -37,10 +37,16 @@ ProcessResult runUnittest(List<String> args, {String workingDirectory,
 /// Runs Dart.
 ProcessResult runDart(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
-  var allArgs = Platform.executableArguments.toList()..addAll(args);
+  var allArgs = Platform.executableArguments.map((arg) {
+    // The package root might be relative, so we need to make it absolute if
+    // we're going to run in a different working directory.
+    if (!arg.startsWith("--package-root=")) return arg;
+    return "--package-root=" +
+        p.absolute(arg.substring("--package-root=".length));
+  }).toList()..addAll(args);
 
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return Process.runSync(Platform.executable, allArgs,
+  return Process.runSync(p.absolute(Platform.executable), allArgs,
       workingDirectory: workingDirectory, environment: environment);
 }
 
