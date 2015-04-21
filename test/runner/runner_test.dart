@@ -151,7 +151,7 @@ $_usage"""));
         contains('-1: load error'),
         contains(
           '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
-          "  Error on line 1, column 8: TestOn takes one argument.\n"
+          "  Error on line 1, column 8: TestOn takes 1 argument.\n"
           "  @TestOn()\n"
           "         ^^\n")
       ]));
