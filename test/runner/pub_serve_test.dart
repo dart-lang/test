@@ -86,7 +86,7 @@ class MyTransformer extends Transformer {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(['--pub-serve=${match[1]}'],
+            var result = runTest(['--pub-serve=${match[1]}'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
             expect(result.stdout, contains('+1: All tests passed!'));
@@ -107,7 +107,7 @@ class MyTransformer extends Transformer {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(
+            var result = runTest(
                 ['--pub-serve=${match[1]}', '-p', 'chrome'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
@@ -129,7 +129,7 @@ class MyTransformer extends Transformer {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(
+            var result = runTest(
                 ['--pub-serve=${match[1]}', '-p', 'content-shell'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
@@ -154,7 +154,7 @@ class MyTransformer extends Transformer {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(['--pub-serve=${match[1]}'],
+            var result = runTest(['--pub-serve=${match[1]}'],
                 workingDirectory: _sandbox);
             expect(result.stdout, allOf([
               contains('-1: load error'),
@@ -183,7 +183,7 @@ class MyTransformer extends Transformer {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(
+            var result = runTest(
                 ['--pub-serve=${match[1]}', '-p', 'chrome'],
                 workingDirectory: _sandbox);
             expect(result.stdout, allOf([
@@ -217,7 +217,7 @@ dependencies:
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(['--pub-serve=${match[1]}'],
+            var result = runTest(['--pub-serve=${match[1]}'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(exit_codes.data));
             expect(result.stderr, equals('''
@@ -272,7 +272,7 @@ void main() {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(
+            var result = runTest(
                 ['--pub-serve=${match[1]}', '-p', 'chrome'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
@@ -294,7 +294,7 @@ void main() {
           var match = _servingRegExp.firstMatch(line);
 
           try {
-            var result = runUnittest(
+            var result = runTest(
                 ['--pub-serve=${match[1]}', '-p', 'content-shell'],
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
@@ -308,7 +308,7 @@ void main() {
   });
 
   test("gracefully handles pub serve not running for VM tests", () {
-    var result = runUnittest(['--pub-serve=54321'],
+    var result = runTest(['--pub-serve=54321'],
         workingDirectory: _sandbox);
     expect(result.stdout, allOf([
       contains('-1: load error'),
@@ -321,7 +321,7 @@ void main() {
   });
 
   test("gracefully handles pub serve not running for browser tests", () {
-    var result = runUnittest(['--pub-serve=54321', '-p', 'chrome'],
+    var result = runTest(['--pub-serve=54321', '-p', 'chrome'],
         workingDirectory: _sandbox);
     expect(result.stdout, allOf([
       contains('-1: load error'),
@@ -337,7 +337,7 @@ void main() {
     new File(p.join(_sandbox, 'test/my_test.dart'))
         .copySync(p.join(_sandbox, 'my_test.dart'));
 
-    var result = runUnittest(['--pub-serve=54321', 'my_test.dart'],
+    var result = runTest(['--pub-serve=54321', 'my_test.dart'],
         workingDirectory: _sandbox);
     expect(result.stdout, allOf([
       contains('-1: load error'),

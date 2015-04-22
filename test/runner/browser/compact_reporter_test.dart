@@ -35,7 +35,7 @@ void main() {
 }
 """);
 
-    var result = _runUnittest(
+    var result = _runTest(
         ["-p", "chrome", "-p", "vm", "-j", "1", "test.dart"]);
     expect(result.stdout, contains("[VM]"));
     expect(result.stdout, contains("[Chrome]"));
@@ -43,5 +43,5 @@ void main() {
   });
 }
 
-ProcessResult _runUnittest(List<String> args) =>
-    runUnittest(args, workingDirectory: _sandbox);
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);

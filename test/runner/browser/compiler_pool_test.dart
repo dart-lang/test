@@ -31,7 +31,7 @@ void main() {
     var testPath2 = p.join(_sandbox, "test2.dart");
     new File(testPath2).writeAsStringSync("int main() => 'foo';\n");
 
-    var result = _runUnittest(["-p", "chrome", "test1.dart", "test2.dart"]);
+    var result = _runTest(["-p", "chrome", "test1.dart", "test2.dart"]);
     expect(result.stdout, startsWith("""
 Compiling test1.dart...
 test1.dart:1:18:
@@ -51,11 +51,11 @@ int main() => 'foo';
     var testPath = p.join(_sandbox, "test.dart");
     new File(testPath).writeAsStringSync("String main() => 12;\n");
 
-    var result = _runUnittest(["--color", "-p", "chrome", "test.dart"]);
+    var result = _runTest(["--color", "-p", "chrome", "test.dart"]);
     expect(result.stdout, contains('\u001b[35m'));
     expect(result.exitCode, equals(1));
   });
 }
 
-ProcessResult _runUnittest(List<String> args) =>
-    runUnittest(args, workingDirectory: _sandbox);
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);

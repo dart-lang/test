@@ -43,7 +43,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["test.dart"]).then((process) {
+      return _startTest(["test.dart"]).then((process) {
         return _lines.bind(process.stdout).first.then((line) {
           expect(line, equals("in test.dart"));
           process.kill();
@@ -58,7 +58,7 @@ void main() {
       new File(p.join(_sandbox, "test.dart"))
           .writeAsStringSync("void main() {}");
 
-      return _startUnittest(["-p", "chrome", "test.dart"]).then((process) {
+      return _startTest(["-p", "chrome", "test.dart"]).then((process) {
         return _lines.bind(process.stdout).first.then((line) {
           expect(line, equals("Compiling test.dart..."));
           process.kill();
@@ -77,7 +77,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["test.dart"]).then((process) {
+      return _startTest(["test.dart"]).then((process) {
         return _lines.bind(process.stdout).first.then((line) {
           expect(line, equals("in test.dart"));
           process.kill();
@@ -114,7 +114,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["test.dart"]).then((process) {
+      return _startTest(["test.dart"]).then((process) {
         return _lines.bind(process.stdout).skip(2).first.then((line) {
           expect(line, equals("running test"));
           process.kill();
@@ -147,7 +147,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["-p", "chrome", "test.dart"]).then((process) {
+      return _startTest(["-p", "chrome", "test.dart"]).then((process) {
         return _lines.bind(process.stdout).skip(3).first.then((line) {
           expect(line, equals("running test"));
           process.kill();
@@ -170,7 +170,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["test.dart"]).then((process) {
+      return _startTest(["test.dart"]).then((process) {
         return _lines.bind(process.stdout).skip(2).first.then((line) {
           expect(line, equals("running test"));
           process.kill();
@@ -214,7 +214,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["test.dart"]).then((process) {
+      return _startTest(["test.dart"]).then((process) {
         return _lines.bind(process.stdout).skip(2).first.then((line) {
           expect(line, equals("running test"));
           process.kill();
@@ -255,7 +255,7 @@ void main() {
 }
 """);
 
-      return _startUnittest(["test.dart"]).then((process) {
+      return _startTest(["test.dart"]).then((process) {
         return _lines.bind(process.stdout).skip(2).first.then((line) {
           expect(line, equals("running test"));
           process.kill();
@@ -270,8 +270,8 @@ void main() {
   });
 }
 
-Future<Process> _startUnittest(List<String> args) {
+Future<Process> _startTest(List<String> args) {
   new Directory(_tempDir).create();
-  return startUnittest(args, workingDirectory: _sandbox,
+  return startTest(args, workingDirectory: _sandbox,
       environment: {"_UNITTEST_TEMP_DIR": _tempDir});
 }

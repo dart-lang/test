@@ -16,7 +16,7 @@ void main() {
   test("reports when no tests are run", () {
     return withTempDir((path) {
       new File(p.join(path, "test.dart")).writeAsStringSync("void main() {}");
-      var result = runUnittest(["test.dart"], workingDirectory: path);
+      var result = runTest(["test.dart"], workingDirectory: path);
       expect(result.stdout, equals("No tests ran.\n"));
     });
   });
@@ -334,7 +334,7 @@ $tests
     if (args == null) args = [];
     args = args.toList()..add("test.dart");
     args.add("--concurrency=$concurrency");
-    var result = runUnittest(args, workingDirectory: path);
+    var result = runTest(args, workingDirectory: path);
 
     // Convert CRs into newlines, remove excess trailing whitespace, and trim
     // off timestamps.

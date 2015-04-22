@@ -29,7 +29,7 @@ void main() {
     test("runs a test suite on a matching platform", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -37,7 +37,7 @@ void main() {
     test("doesn't run a test suite on a non-matching platform", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
 
-      var result = _runUnittest(["--platform", "chrome", "vm_test.dart"]);
+      var result = _runTest(["--platform", "chrome", "vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -45,7 +45,7 @@ void main() {
     test("runs a test suite on a matching operating system", () {
       _writeTestFile("os_test.dart", suiteTestOn: currentOS.name);
 
-      var result = _runUnittest(["os_test.dart"]);
+      var result = _runTest(["os_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -54,7 +54,7 @@ void main() {
       _writeTestFile("os_test.dart", suiteTestOn: _otherOS,
           loadable: false);
 
-      var result = _runUnittest(["os_test.dart"]);
+      var result = _runTest(["os_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -67,7 +67,7 @@ void main() {
       _writeTestFile("other_os_test.dart",
           suiteTestOn: _otherOS, loadable: false);
 
-      var result = _runUnittest(["."]);
+      var result = _runTest(["."]);
       expect(result.stdout, contains("+2: All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -77,7 +77,7 @@ void main() {
     test("runs a VM group on the VM", () {
       _writeTestFile("vm_test.dart", groupTestOn: "vm");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -85,7 +85,7 @@ void main() {
     test("doesn't run a Chrome group on the VM", () {
       _writeTestFile("chrome_test.dart", groupTestOn: "chrome");
 
-      var result = _runUnittest(["chrome_test.dart"]);
+      var result = _runTest(["chrome_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -93,7 +93,7 @@ void main() {
     test("runs a Chrome group on Chrome", () {
       _writeTestFile("chrome_test.dart", groupTestOn: "chrome");
 
-      var result = _runUnittest(["--platform", "chrome", "chrome_test.dart"]);
+      var result = _runTest(["--platform", "chrome", "chrome_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -101,7 +101,7 @@ void main() {
     test("doesn't run a VM group on Chrome", () {
       _writeTestFile("vm_test.dart", groupTestOn: "vm");
 
-      var result = _runUnittest(["--platform", "chrome", "vm_test.dart"]);
+      var result = _runTest(["--platform", "chrome", "vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -111,7 +111,7 @@ void main() {
     test("runs a VM test on the VM", () {
       _writeTestFile("vm_test.dart", testTestOn: "vm");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -119,7 +119,7 @@ void main() {
     test("doesn't run a Chrome test on the VM", () {
       _writeTestFile("chrome_test.dart", testTestOn: "chrome");
 
-      var result = _runUnittest(["chrome_test.dart"]);
+      var result = _runTest(["chrome_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -127,7 +127,7 @@ void main() {
     test("runs a Chrome test on Chrome", () {
       _writeTestFile("chrome_test.dart", testTestOn: "chrome");
 
-      var result = _runUnittest(["--platform", "chrome", "chrome_test.dart"]);
+      var result = _runTest(["--platform", "chrome", "chrome_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -135,7 +135,7 @@ void main() {
     test("doesn't run a VM test on Chrome", () {
       _writeTestFile("vm_test.dart", testTestOn: "vm");
 
-      var result = _runUnittest(["--platform", "chrome", "vm_test.dart"]);
+      var result = _runTest(["--platform", "chrome", "vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -146,7 +146,7 @@ void main() {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
           groupTestOn: "!js", testTestOn: "vm");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
@@ -155,7 +155,7 @@ void main() {
       _writeTestFile("vm_test.dart", suiteTestOn: "chrome",
           groupTestOn: "!js", testTestOn: "vm");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -164,7 +164,7 @@ void main() {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
           groupTestOn: "chrome", testTestOn: "vm");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -173,7 +173,7 @@ void main() {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
           groupTestOn: "!js", testTestOn: "chrome");
 
-      var result = _runUnittest(["vm_test.dart"]);
+      var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -213,5 +213,5 @@ void _writeTestFile(String filename, {String suiteTestOn, String groupTestOn,
   new File(p.join(_sandbox, filename)).writeAsStringSync(buffer.toString());
 }
 
-ProcessResult _runUnittest(List<String> args) =>
-    runUnittest(args, workingDirectory: _sandbox);
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);

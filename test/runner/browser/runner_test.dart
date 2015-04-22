@@ -47,7 +47,7 @@ void main() {
     test("a test file fails to compile", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("invalid Dart file");
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
 
       expect(result.stdout,
           contains("Expected a declaration, but got 'invalid'"));
@@ -64,7 +64,7 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -77,7 +77,7 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void foo() {}");
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -91,7 +91,7 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("int main;");
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -105,7 +105,7 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main(arg) {}");
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -128,7 +128,7 @@ void main() {
 """);
 
       var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -151,7 +151,7 @@ void main() {
 </html>
 """);
 
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -176,7 +176,7 @@ void main() {
 </html>
 """);
 
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -200,7 +200,7 @@ void main() {
 </html>
 """);
 
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -224,7 +224,7 @@ void main() {
 </html>
 """);
 
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -241,52 +241,52 @@ void main() {
   group("runs successful tests", () {
     test("on Chrome", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
     test("on PhantomJS", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "phantomjs", "test.dart"]);
+      var result = _runTest(["-p", "phantomjs", "test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
     test("on Firefox", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "firefox", "test.dart"]);
+      var result = _runTest(["-p", "firefox", "test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
     test("on Safari", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "safari", "test.dart"]);
+      var result = _runTest(["-p", "safari", "test.dart"]);
       expect(result.exitCode, equals(0));
     }, testOn: "mac-os");
 
     test("on Dartium", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.stdout, isNot(contains("Compiling")));
       expect(result.exitCode, equals(0));
     });
 
     test("on content shell", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, isNot(contains("Compiling")));
       expect(result.exitCode, equals(0));
     });
 
     test("on multiple browsers", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "firefox", "-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "firefox", "-p", "chrome", "test.dart"]);
       expect("Compiling".allMatches(result.stdout), hasLength(1));
       expect(result.exitCode, equals(0));
     });
 
     test("on a JS and non-JS browser", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(
+      var result = _runTest(
           ["-p", "content-shell", "-p", "chrome", "test.dart"]);
       expect("Compiling".allMatches(result.stdout), hasLength(1));
       expect(result.exitCode, equals(0));
@@ -294,7 +294,7 @@ void main() {
 
     test("on the browser and the VM", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "chrome", "-p", "vm", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
@@ -303,7 +303,7 @@ void main() {
       new Directory(p.join(_sandbox, "dir")).createSync();
       new File(p.join(_sandbox, "dir", "test.dart"))
           .writeAsStringSync(_success);
-      var result = _runUnittest(["-p", "chrome", "dir/test.dart"]);
+      var result = _runTest(["-p", "chrome", "dir/test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
@@ -335,12 +335,12 @@ void main() {
       });
 
       test("on content shell", () {
-        var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+        var result = _runTest(["-p", "content-shell", "test.dart"]);
         expect(result.exitCode, equals(0));
       });
 
       test("on Chrome", () {
-        var result = _runUnittest(["-p", "chrome", "test.dart"]);
+        var result = _runTest(["-p", "chrome", "test.dart"]);
         expect(result.exitCode, equals(0));
       });
 
@@ -360,7 +360,7 @@ void main() {
 </html>
 """);
 
-        var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+        var result = _runTest(["-p", "content-shell", "test.dart"]);
         expect(result.exitCode, equals(0));
       });
     });
@@ -369,37 +369,37 @@ void main() {
   group("runs failing tests", () {
     test("on Chrome", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
     test("on PhantomJS", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["-p", "phantomjs", "test.dart"]);
+      var result = _runTest(["-p", "phantomjs", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
     test("on Firefox", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["-p", "firefox", "test.dart"]);
+      var result = _runTest(["-p", "firefox", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
     test("on Safari", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["-p", "safari", "test.dart"]);
+      var result = _runTest(["-p", "safari", "test.dart"]);
       expect(result.exitCode, equals(1));
     }, testOn: "mac-os");
 
     test("on Dartium", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "dartium", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
     test("on content-shell", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
@@ -416,7 +416,7 @@ void main() {
   });
 }
 """);
-      var result = _runUnittest(["-p", "chrome", "-p", "vm", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
@@ -433,7 +433,7 @@ void main() {
   });
 }
 """);
-      var result = _runUnittest(["-p", "chrome", "-p", "vm", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
@@ -466,12 +466,12 @@ void main() {
       });
 
       test("on content shell", () {
-        var result = _runUnittest(["-p", "content-shell", "test.dart"]);
+        var result = _runTest(["-p", "content-shell", "test.dart"]);
         expect(result.exitCode, equals(1));
       });
 
       test("on Chrome", () {
-        var result = _runUnittest(["-p", "chrome", "test.dart"]);
+        var result = _runTest(["-p", "chrome", "test.dart"]);
         expect(result.exitCode, equals(1));
       });
     });
@@ -491,7 +491,7 @@ void main() {
 }
 """);
 
-    var result = _runUnittest(["-p", "chrome", "test.dart"]);
+    var result = _runTest(["-p", "chrome", "test.dart"]);
     expect(result.stdout, contains("Hello,\nworld!\n"));
     expect(result.exitCode, equals(0));
   });
@@ -509,7 +509,7 @@ void main() {
 }
 ''');
 
-    var result = _runUnittest(["-p", "chrome", "test.dart"]);
+    var result = _runTest(["-p", "chrome", "test.dart"]);
     expect(result.stdout, contains("Test timed out after 0 seconds."));
     expect(result.stdout, contains("-1: Some tests failed."));
   });
@@ -526,7 +526,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("+0 ~1: All tests skipped."));
     });
 
@@ -541,7 +541,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -558,7 +558,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("Test timed out after 0 seconds."));
       expect(result.stdout, contains("-1: Some tests failed."));
     });
@@ -576,7 +576,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -597,7 +597,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("Skip: fifth"));
       expect(result.stdout, isNot(anyOf([
         contains("Skip: first"),
@@ -622,7 +622,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("+0 ~1: All tests skipped."));
     });
 
@@ -639,7 +639,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -658,7 +658,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("Test timed out after 0 seconds."));
       expect(result.stdout, contains("-1: Some tests failed."));
     });
@@ -678,11 +678,11 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
   });
 }
 
-ProcessResult _runUnittest(List<String> args) =>
-    runUnittest(args, workingDirectory: _sandbox);
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);

@@ -72,7 +72,7 @@ void main() {
   });
 
   test("prints help information", () {
-    var result = _runUnittest(["--help"]);
+    var result = _runTest(["--help"]);
     expect(result.stdout, equals("""
 Runs tests in this package.
 
@@ -82,7 +82,7 @@ $_usage"""));
 
   group("fails gracefully if", () {
     test("an invalid option is passed", () {
-      var result = _runUnittest(["--asdf"]);
+      var result = _runTest(["--asdf"]);
       expect(result.stderr, equals("""
 Could not find an option named "asdf".
 
@@ -91,7 +91,7 @@ $_usage"""));
     });
 
     test("a non-existent file is passed", () {
-      var result = _runUnittest(["file"]);
+      var result = _runTest(["file"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains('Failed to load "file": Does not exist.')
@@ -100,7 +100,7 @@ $_usage"""));
     });
 
     test("the default directory doesn't exist", () {
-      var result = _runUnittest([]);
+      var result = _runTest([]);
       expect(result.stderr, equals("""
 No test files were passed and the default "test/" directory doesn't exist.
 
@@ -111,7 +111,7 @@ $_usage"""));
     test("a test file fails to load", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("invalid Dart file");
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
         contains('-1: load error'),
@@ -129,7 +129,7 @@ $_usage"""));
     test("a test file fails to parse", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("@TestOn)");
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
         contains('-1: load error'),
@@ -145,7 +145,7 @@ $_usage"""));
     test("an annotation's structure is invalid", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("@TestOn()\nlibrary foo;");
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
         contains('-1: load error'),
@@ -161,7 +161,7 @@ $_usage"""));
     test("an annotation's contents are invalid", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("@TestOn('zim')\nlibrary foo;");
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
         contains('-1: load error'),
@@ -178,7 +178,7 @@ $_usage"""));
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -191,7 +191,7 @@ $_usage"""));
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void foo() {}");
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -205,7 +205,7 @@ $_usage"""));
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("int main;");
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -219,7 +219,7 @@ $_usage"""));
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main(arg) {}");
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -232,7 +232,7 @@ $_usage"""));
     test("multiple load errors occur", () {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("invalid Dart file");
-      var result = _runUnittest(["test.dart", "nonexistent.dart"]);
+      var result = _runTest(["test.dart", "nonexistent.dart"]);
 
       expect(result.stdout, allOf([
         contains('test.dart: load error'),
@@ -253,7 +253,7 @@ $_usage"""));
   group("runs successful tests", () {
     test("defined in a single file", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
@@ -263,7 +263,7 @@ $_usage"""));
             .writeAsStringSync(_success);
       }
 
-      var result = _runUnittest(["."]);
+      var result = _runTest(["."]);
       expect(result.exitCode, equals(0));
     });
 
@@ -274,7 +274,7 @@ $_usage"""));
             .writeAsStringSync(_success);
       }
 
-      var result = _runUnittest([]);
+      var result = _runTest([]);
       expect(result.exitCode, equals(0));
     });
 
@@ -293,7 +293,7 @@ $_usage"""));
       new Directory(p.join(_sandbox, "dir")).createSync();
       new File(p.join(_sandbox, "dir", "test.dart"))
           .writeAsStringSync(_success);
-      var result = _runUnittest(["dir/test.dart"]);
+      var result = _runTest(["dir/test.dart"]);
       expect(result.exitCode, equals(0));
     });
   });
@@ -301,7 +301,7 @@ $_usage"""));
   group("runs failing tests", () {
     test("defined in a single file", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
@@ -311,7 +311,7 @@ $_usage"""));
             .writeAsStringSync(_failure);
       }
 
-      var result = _runUnittest(["."]);
+      var result = _runTest(["."]);
       expect(result.exitCode, equals(1));
     });
 
@@ -322,7 +322,7 @@ $_usage"""));
             .writeAsStringSync(_failure);
       }
 
-      var result = _runUnittest([]);
+      var result = _runTest([]);
       expect(result.exitCode, equals(1));
     });
 
@@ -339,7 +339,7 @@ $_usage"""));
 
   test("runs tests even when a file fails to load", () {
     new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-    var result = _runUnittest(["test.dart", "nonexistent.dart"]);
+    var result = _runTest(["test.dart", "nonexistent.dart"]);
     expect(result.stdout, contains("+1 -1: Some tests failed."));
     expect(result.exitCode, equals(1));
   });
@@ -357,7 +357,7 @@ void main() {
 }
 ''');
 
-    var result = _runUnittest(["test.dart"]);
+    var result = _runTest(["test.dart"]);
     expect(result.stdout, contains("Test timed out after 0 seconds."));
     expect(result.stdout, contains("-1: Some tests failed."));
   });
@@ -375,7 +375,7 @@ void main() {
 }
 ''');
 
-    var result = _runUnittest(["test.dart"]);
+    var result = _runTest(["test.dart"]);
     expect(result.stdout, contains("+0 ~1: All tests skipped."));
   });
 
@@ -391,7 +391,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("+0 ~1: All tests skipped."));
     });
 
@@ -406,7 +406,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -423,7 +423,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("Test timed out after 0 seconds."));
       expect(result.stdout, contains("-1: Some tests failed."));
     });
@@ -441,7 +441,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -462,7 +462,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("Skip: fifth"));
       expect(result.stdout, isNot(anyOf([
         contains("Skip: first"),
@@ -487,7 +487,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("+0 ~1: All tests skipped."));
     });
 
@@ -504,7 +504,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -523,7 +523,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("Test timed out after 0 seconds."));
       expect(result.stdout, contains("-1: Some tests failed."));
     });
@@ -543,7 +543,7 @@ void main() {
 }
 ''');
 
-      var result = _runUnittest(["test.dart"]);
+      var result = _runTest(["test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
   });
@@ -551,7 +551,7 @@ void main() {
   group("flags:", () {
     test("with the --color flag, uses colors", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runUnittest(["--color", "test.dart"]);
+      var result = _runTest(["--color", "test.dart"]);
       // This is the color code for red.
       expect(result.stdout, contains("\u001b[31m"));
     });
@@ -570,7 +570,7 @@ void main() {
 }
 """);
 
-        var result = _runUnittest(["--name", "selected", "test.dart"]);
+        var result = _runTest(["--name", "selected", "test.dart"]);
         expect(result.stdout, contains("+2: All tests passed!"));
         expect(result.exitCode, equals(0));
       });
@@ -588,7 +588,7 @@ void main() {
 }
 """);
 
-        var result = _runUnittest(["--name", "test [13]", "test.dart"]);
+        var result = _runTest(["--name", "test [13]", "test.dart"]);
         expect(result.stdout, contains("+2: All tests passed!"));
         expect(result.exitCode, equals(0));
       });
@@ -596,14 +596,14 @@ void main() {
       test("produces an error when no tests match", () {
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
 
-        var result = _runUnittest(["--name", "no match", "test.dart"]);
+        var result = _runTest(["--name", "no match", "test.dart"]);
         expect(result.stderr,
             contains('No tests match regular expression "no match".'));
         expect(result.exitCode, equals(exit_codes.data));
       });
 
       test("doesn't filter out load exceptions", () {
-        var result = _runUnittest(["--name", "name", "file"]);
+        var result = _runTest(["--name", "name", "file"]);
         expect(result.stdout, allOf([
           contains('-1: load error'),
           contains('Failed to load "file": Does not exist.')
@@ -626,7 +626,7 @@ void main() {
 }
 """);
 
-        var result = _runUnittest(["--plain-name", "selected", "test.dart"]);
+        var result = _runTest(["--plain-name", "selected", "test.dart"]);
         expect(result.stdout, contains("+2: All tests passed!"));
         expect(result.exitCode, equals(0));
       });
@@ -644,7 +644,7 @@ void main() {
 }
 """);
 
-        var result = _runUnittest(["--plain-name", "test [12]", "test.dart"]);
+        var result = _runTest(["--plain-name", "test [12]", "test.dart"]);
         expect(result.stdout, contains("+1: All tests passed!"));
         expect(result.exitCode, equals(0));
       });
@@ -652,7 +652,7 @@ void main() {
       test("produces an error when no tests match", () {
         new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
 
-        var result = _runUnittest(["--plain-name", "no match", "test.dart"]);
+        var result = _runTest(["--plain-name", "no match", "test.dart"]);
         expect(result.stderr,
             contains('No tests match "no match".'));
         expect(result.exitCode, equals(exit_codes.data));
@@ -661,8 +661,8 @@ void main() {
   });
 }
 
-ProcessResult _runUnittest(List<String> args) =>
-    runUnittest(args, workingDirectory: _sandbox);
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);
 
 ProcessResult _runDart(List<String> args) =>
     runDart(args, workingDirectory: _sandbox);

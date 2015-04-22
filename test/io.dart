@@ -19,7 +19,7 @@ final _pubPath = p.absolute(p.join(
     Platform.isWindows ? 'pub.bat' : 'pub'));
 
 /// Runs the test executable with the package root set properly.
-ProcessResult runUnittest(List<String> args, {String workingDirectory,
+ProcessResult runTest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
   var allArgs = [
     p.absolute(p.join(packageDir, 'bin/test.dart')),
@@ -59,7 +59,7 @@ ProcessResult runPub(List<String> args, {String workingDirectory,
 }
 
 /// Starts the test executable with the package root set properly.
-Future<Process> startUnittest(List<String> args, {String workingDirectory,
+Future<Process> startTest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
   var allArgs = [
     p.absolute(p.join(packageDir, 'bin/test.dart')),
