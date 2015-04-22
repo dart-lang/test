@@ -26,7 +26,7 @@ void main() {
     });
 
     test("describes a failure nicely", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => print("Hello, world!"), prints("Goodbye, world!\n"));
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -44,7 +44,7 @@ void main() {
     });
 
     test("describes a failure with a non-descriptive Matcher nicely", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => print("Hello, world!"), prints(contains("Goodbye")));
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -56,7 +56,7 @@ void main() {
     });
 
     test("describes a failure with no text nicely", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() {}, prints(contains("Goodbye")));
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -67,7 +67,7 @@ void main() {
     });
 
     test("with a non-function", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(10, prints(contains("Goodbye")));
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -96,7 +96,7 @@ void main() {
     });
 
     test("describes a failure nicely", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => new Future(() => print("Hello, world!")),
             prints("Goodbye, world!\n"));
       }).then((liveTest) {
@@ -115,7 +115,7 @@ void main() {
     });
 
     test("describes a failure with a non-descriptive Matcher nicely", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => new Future(() => print("Hello, world!")),
             prints(contains("Goodbye")));
       }).then((liveTest) {
@@ -128,7 +128,7 @@ void main() {
     });
 
     test("describes a failure with no text nicely", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => new Future.value(), prints(contains("Goodbye")));
       }).then((liveTest) {
         expectTestFailed(liveTest, startsWith(

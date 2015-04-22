@@ -147,7 +147,7 @@ void main() {
 }
 """);
 
-      return _startTest(["-p", "chrome", "test.dart"]).then((process) {
+      return _startTest(["-p", "content-shell", "test.dart"]).then((process) {
         return _lines.bind(process.stdout).skip(3).first.then((line) {
           expect(line, equals("running test"));
           process.kill();

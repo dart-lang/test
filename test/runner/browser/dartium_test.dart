@@ -5,7 +5,9 @@
 @TestOn("vm")
 
 import 'dart:async';
+import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
@@ -14,9 +16,20 @@ import 'package:test/src/util/io.dart';
 import 'package:test/src/utils.dart';
 import 'package:test/test.dart';
 
+import '../../io.dart';
 import '../../utils.dart';
 
+String _sandbox;
+
 void main() {
+  setUp(() {
+    _sandbox = createTempDir();
+  });
+
+  tearDown(() {
+    new Directory(_sandbox).deleteSync(recursive: true);
+  });
+
   group("running Dart", () {
     // The Dart to serve in the server.
     var dart;
@@ -139,4 +152,34 @@ webSocket.onOpen.first.then((_) =>
     expect(dartium.onExit, throwsA(isApplicationException(startsWith(
         "Failed to start Dartium: No such file or directory"))));
   });
+
+  test("can run successful tests", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
 }
+""");
+
+    var result = _runTest(["-p", "dartium", "test.dart"]);
+    expect(result.stdout, isNot(contains("Compiling")));
+    expect(result.exitCode, equals(0));
+  });
+
+  test("can run failing tests", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () => throw new TestFailure("oh no"));
+}
+""");
+
+    var result = _runTest(["-p", "dartium", "test.dart"]);
+    expect(result.exitCode, equals(1));
+  });
+}
+
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);

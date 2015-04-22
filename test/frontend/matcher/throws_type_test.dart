@@ -13,7 +13,7 @@ void main() {
     });
 
     test("fails when a non-ArgumentError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsArgumentError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -29,7 +29,7 @@ void main() {
     });
 
     test("fails when a non-ConcurrentModificationError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsConcurrentModificationError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -45,7 +45,7 @@ void main() {
     });
 
     test("fails when a non-CyclicInitializationError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsCyclicInitializationError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -60,7 +60,7 @@ void main() {
     });
 
     test("fails when a non-Exception is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw 'oh no', throwsException);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -75,7 +75,7 @@ void main() {
     });
 
     test("fails when a non-FormatException is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsFormatException);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -92,7 +92,7 @@ void main() {
     });
 
     test("fails when a non-NoSuchMethodError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsNoSuchMethodError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -107,7 +107,7 @@ void main() {
     });
 
     test("fails when a non-NullThrownError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsNullThrownError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -122,7 +122,7 @@ void main() {
     });
 
     test("fails when a non-RangeError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsRangeError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -137,7 +137,7 @@ void main() {
     });
 
     test("fails when a non-StateError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsStateError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -152,7 +152,7 @@ void main() {
     });
 
     test("fails when a non-UnimplementedError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsUnimplementedError);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -167,7 +167,7 @@ void main() {
     });
 
     test("fails when a non-UnsupportedError is thrown", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(() => throw new Exception(), throwsUnsupportedError);
       }).then((liveTest) {
         expectTestFailed(liveTest,

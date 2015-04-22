@@ -227,7 +227,7 @@ LiveTest createTest(body()) {
 /// Runs [body] as a test.
 ///
 /// Once it completes, returns the [LiveTest] used to run it.
-Future<LiveTest> runTest(body()) {
+Future<LiveTest> runTestBody(body()) {
   var liveTest = createTest(body);
   return liveTest.run().then((_) => liveTest);
 }

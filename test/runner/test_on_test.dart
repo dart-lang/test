@@ -37,7 +37,7 @@ void main() {
     test("doesn't run a test suite on a non-matching platform", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
 
-      var result = _runTest(["--platform", "chrome", "vm_test.dart"]);
+      var result = _runTest(["--platform", "content-shell", "vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -61,8 +61,8 @@ void main() {
 
     test("only loads matching files when loading as a group", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
-      _writeTestFile("chrome_test.dart",
-          suiteTestOn: "chrome", loadable: false);
+      _writeTestFile("browser_test.dart",
+          suiteTestOn: "browser", loadable: false);
       _writeTestFile("this_os_test.dart", suiteTestOn: currentOS.name);
       _writeTestFile("other_os_test.dart",
           suiteTestOn: _otherOS, loadable: false);
@@ -82,26 +82,27 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
-    test("doesn't run a Chrome group on the VM", () {
-      _writeTestFile("chrome_test.dart", groupTestOn: "chrome");
+    test("doesn't run a Browser group on the VM", () {
+      _writeTestFile("browser_test.dart", groupTestOn: "browser");
 
-      var result = _runTest(["chrome_test.dart"]);
+      var result = _runTest(["browser_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
 
-    test("runs a Chrome group on Chrome", () {
-      _writeTestFile("chrome_test.dart", groupTestOn: "chrome");
+    test("runs a browser group on a browser", () {
+      _writeTestFile("browser_test.dart", groupTestOn: "browser");
 
-      var result = _runTest(["--platform", "chrome", "chrome_test.dart"]);
+      var result = _runTest(
+          ["--platform", "content-shell", "browser_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
 
-    test("doesn't run a VM group on Chrome", () {
+    test("doesn't run a VM group on a browser", () {
       _writeTestFile("vm_test.dart", groupTestOn: "vm");
 
-      var result = _runTest(["--platform", "chrome", "vm_test.dart"]);
+      var result = _runTest(["--platform", "content-shell", "vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -116,26 +117,27 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
-    test("doesn't run a Chrome test on the VM", () {
-      _writeTestFile("chrome_test.dart", testTestOn: "chrome");
+    test("doesn't run a browser test on the VM", () {
+      _writeTestFile("browser_test.dart", testTestOn: "browser");
 
-      var result = _runTest(["chrome_test.dart"]);
+      var result = _runTest(["browser_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
 
-    test("runs a Chrome test on Chrome", () {
-      _writeTestFile("chrome_test.dart", testTestOn: "chrome");
+    test("runs a browser test on a browser", () {
+      _writeTestFile("browser_test.dart", testTestOn: "browser");
 
-      var result = _runTest(["--platform", "chrome", "chrome_test.dart"]);
+      var result = _runTest(
+          ["--platform", "content-shell", "browser_test.dart"]);
       expect(result.stdout, contains("All tests passed!"));
       expect(result.exitCode, equals(0));
     });
 
-    test("doesn't run a VM test on Chrome", () {
+    test("doesn't run a VM test on a browser", () {
       _writeTestFile("vm_test.dart", testTestOn: "vm");
 
-      var result = _runTest(["--platform", "chrome", "vm_test.dart"]);
+      var result = _runTest(["--platform", "content-shell", "vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
       expect(result.exitCode, equals(0));
     });
@@ -152,7 +154,7 @@ void main() {
     });
 
     test("doesn't runs the test if the suite doesn't match", () {
-      _writeTestFile("vm_test.dart", suiteTestOn: "chrome",
+      _writeTestFile("vm_test.dart", suiteTestOn: "browser",
           groupTestOn: "!js", testTestOn: "vm");
 
       var result = _runTest(["vm_test.dart"]);
@@ -162,7 +164,7 @@ void main() {
 
     test("doesn't runs the test if the group doesn't match", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
-          groupTestOn: "chrome", testTestOn: "vm");
+          groupTestOn: "browser", testTestOn: "vm");
 
       var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));
@@ -171,7 +173,7 @@ void main() {
 
     test("doesn't runs the test if the test doesn't match", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
-          groupTestOn: "!js", testTestOn: "chrome");
+          groupTestOn: "!js", testTestOn: "browser");
 
       var result = _runTest(["vm_test.dart"]);
       expect(result.stdout, contains("No tests ran."));

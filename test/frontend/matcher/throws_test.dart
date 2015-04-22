@@ -16,7 +16,7 @@ void main() {
       });
 
       test("with a function that doesn't throw", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(() {}, throws);
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -27,7 +27,7 @@ void main() {
       });
 
       test("with a non-function", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(10, throws);
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -49,7 +49,7 @@ void main() {
       });
 
       test("with a function that doesn't throw", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(() {}, throwsA('oh no'));
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -60,7 +60,7 @@ void main() {
       });
 
       test("with a non-function", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(10, throwsA('oh no'));
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -71,7 +71,7 @@ void main() {
       });
 
       test("with a function that throws the wrong error", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(() => throw 'aw dang', throwsA('oh no'));
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -90,7 +90,7 @@ void main() {
       });
 
       test("with a Future that doesn't throw", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(new Future.value(), throws);
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -118,7 +118,7 @@ void main() {
       });
 
       test("with a Future that doesn't throw", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(new Future.value(), throwsA('oh no'));
         }).then((liveTest) {
           expectTestFailed(liveTest,
@@ -127,7 +127,7 @@ void main() {
       });
 
       test("with a Future that throws the wrong error", () {
-        return runTest(() {
+        return runTestBody(() {
           expect(new Future.error('aw dang'), throwsA('oh no'));
         }).then((liveTest) {
           expectTestFailed(liveTest, startsWith(

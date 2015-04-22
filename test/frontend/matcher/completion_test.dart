@@ -19,7 +19,7 @@ void main() {
     });
 
     test("with an error", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(new Future.error('X'), completes);
       }).then((liveTest) {
         expectTestFailed(liveTest, startsWith(
@@ -28,7 +28,7 @@ void main() {
     });
 
     test("with a failure", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(new Future.error(new TestFailure('oh no')), completes);
       }).then((liveTest) {
         expectTestFailed(liveTest, "oh no");
@@ -36,7 +36,7 @@ void main() {
     });
 
     test("with a non-function", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(10, completes);
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -60,7 +60,7 @@ void main() {
     });
 
     test("with an error", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(new Future.error('X'), completion(isNull));
       }).then((liveTest) {
         expectTestFailed(liveTest, startsWith(
@@ -69,7 +69,7 @@ void main() {
     });
 
     test("with a failure", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(new Future.error(new TestFailure('oh no')), completion(isNull));
       }).then((liveTest) {
         expectTestFailed(liveTest, "oh no");
@@ -77,7 +77,7 @@ void main() {
     });
 
     test("with a non-function", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(10, completion(equals(10)));
       }).then((liveTest) {
         expectTestFailed(liveTest,
@@ -87,7 +87,7 @@ void main() {
     });
 
     test("with an incorrect value", () {
-      return runTest(() {
+      return runTestBody(() {
         expect(new Future.value('a'), completion(equals('b')));
       }).then((liveTest) {
         expectTestFailed(liveTest, startsWith(

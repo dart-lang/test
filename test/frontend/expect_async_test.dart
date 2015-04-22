@@ -11,7 +11,7 @@ void main() {
   group("supports a function with this many arguments:", () {
     test("0", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync(() {
           callbackRun = true;
         })();
@@ -23,7 +23,7 @@ void main() {
 
     test("1", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync((arg) {
           expect(arg, equals(1));
           callbackRun = true;
@@ -36,7 +36,7 @@ void main() {
 
     test("2", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync((arg1, arg2) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -50,7 +50,7 @@ void main() {
 
     test("3", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync((arg1, arg2, arg3) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -65,7 +65,7 @@ void main() {
 
     test("4", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync((arg1, arg2, arg3, arg4) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -81,7 +81,7 @@ void main() {
 
     test("5", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync((arg1, arg2, arg3, arg4, arg5) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -98,7 +98,7 @@ void main() {
 
     test("6", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync((arg1, arg2, arg3, arg4, arg5, arg6) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -118,7 +118,7 @@ void main() {
   group("with optional arguments", () {
     test("allows them to be passed", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync(([arg = 1]) {
           expect(arg, equals(2));
           callbackRun = true;
@@ -131,7 +131,7 @@ void main() {
 
     test("allows them not to be passed", () {
       var callbackRun = false;
-      return runTest(() {
+      return runTestBody(() {
         expectAsync(([arg = 1]) {
           expect(arg, equals(1));
           callbackRun = true;
@@ -156,7 +156,7 @@ void main() {
     });
 
     test("may only be called once", () {
-      return runTest(() {
+      return runTestBody(() {
         var callback = expectAsync(() {});
         callback();
         callback();
@@ -197,7 +197,7 @@ void main() {
     });
 
     test("will throw an error if it's called more than that many times", () {
-      return runTest(() {
+      return runTestBody(() {
         var callback = expectAsync(() {}, count: 3);
         callback();
         callback();
@@ -215,7 +215,7 @@ void main() {
       });
 
       test("will throw an error if it's ever called", () {
-        return runTest(() {
+        return runTestBody(() {
           expectAsync(() {}, count: 0)();
         }).then((liveTest) {
           expectTestFailed(
@@ -239,7 +239,7 @@ void main() {
     });
 
     test("will throw an error if it's called more than that many times", () {
-      return runTest(() {
+      return runTestBody(() {
         var callback = expectAsync(() {}, max: 3);
         callback();
         callback();
@@ -302,7 +302,7 @@ void main() {
 
   group("with errors", () {
     test("reports them to the current test", () {
-      return runTest(() {
+      return runTestBody(() {
         expectAsync(() => throw new TestFailure('oh no'))();
       }).then((liveTest) {
         expectTestFailed(liveTest, 'oh no');
@@ -312,7 +312,7 @@ void main() {
     test("swallows them and returns null", () {
       var returnValue;
       var caughtError = false;
-      return runTest(() {
+      return runTestBody(() {
         try {
           returnValue = expectAsync(() => throw new TestFailure('oh no'))();
         } on TestFailure catch (_) {

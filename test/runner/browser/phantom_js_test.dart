@@ -5,7 +5,9 @@
 @TestOn("vm")
 
 import 'dart:async';
+import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test/src/runner/browser/phantom_js.dart';
 import 'package:test/src/util/io.dart';
@@ -13,9 +15,20 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 
+import '../../io.dart';
 import '../../utils.dart';
 
+String _sandbox;
+
 void main() {
+  setUp(() {
+    _sandbox = createTempDir();
+  });
+
+  tearDown(() {
+    new Directory(_sandbox).deleteSync(recursive: true);
+  });
+
   group("running JavaScript", () {
     // The JavaScript to serve in the server. We use actual JavaScript here to
     // avoid the pain of compiling to JS in a test
@@ -143,4 +156,33 @@ webSocket.addEventListener("open", function() {
     expect(phantomJS.onExit, throwsA(isApplicationException(startsWith(
         "Failed to start PhantomJS: No such file or directory"))));
   });
+
+  test("can run successful tests", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
 }
+""");
+
+    var result = _runTest(["-p", "phantomjs", "test.dart"]);
+    expect(result.exitCode, equals(0));
+  });
+
+  test("can run failing tests", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () => throw new TestFailure("oh no"));
+}
+""");
+
+    var result = _runTest(["-p", "phantomjs", "test.dart"]);
+    expect(result.exitCode, equals(1));
+  });
+}
+
+ProcessResult _runTest(List<String> args) =>
+    runTest(args, workingDirectory: _sandbox);

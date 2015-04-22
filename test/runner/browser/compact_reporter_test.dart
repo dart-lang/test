@@ -36,9 +36,9 @@ void main() {
 """);
 
     var result = _runTest(
-        ["-p", "chrome", "-p", "vm", "-j", "1", "test.dart"]);
+        ["-p", "content-shell", "-p", "vm", "-j", "1", "test.dart"]);
     expect(result.stdout, contains("[VM]"));
-    expect(result.stdout, contains("[Chrome]"));
+    expect(result.stdout, contains("[Dartium Content Shell]"));
     expect(result.exitCode, equals(0));
   });
 }

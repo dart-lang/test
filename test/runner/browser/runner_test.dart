@@ -15,8 +15,6 @@ import '../../io.dart';
 String _sandbox;
 
 final _success = """
-import 'dart:async';
-
 import 'package:test/test.dart';
 
 void main() {
@@ -25,8 +23,6 @@ void main() {
 """;
 
 final _failure = """
-import 'dart:async';
-
 import 'package:test/test.dart';
 
 void main() {
@@ -128,7 +124,7 @@ void main() {
 """);
 
       var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -151,7 +147,7 @@ void main() {
 </html>
 """);
 
-      var result = _runTest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -176,7 +172,7 @@ void main() {
 </html>
 """);
 
-      var result = _runTest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -200,7 +196,7 @@ void main() {
 </html>
 """);
 
-      var result = _runTest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -224,7 +220,7 @@ void main() {
 </html>
 """);
 
-      var result = _runTest(["-p", "dartium", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
         contains('-1: load error'),
         contains(
@@ -245,42 +241,16 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
-    test("on PhantomJS", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "phantomjs", "test.dart"]);
-      expect(result.exitCode, equals(0));
-    });
-
-    test("on Firefox", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "firefox", "test.dart"]);
-      expect(result.exitCode, equals(0));
-    });
-
     test("on Safari", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runTest(["-p", "safari", "test.dart"]);
       expect(result.exitCode, equals(0));
     }, testOn: "mac-os");
 
-    test("on Dartium", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "dartium", "test.dart"]);
-      expect(result.stdout, isNot(contains("Compiling")));
-      expect(result.exitCode, equals(0));
-    });
-
     test("on content shell", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, isNot(contains("Compiling")));
-      expect(result.exitCode, equals(0));
-    });
-
-    test("on multiple browsers", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "firefox", "-p", "chrome", "test.dart"]);
-      expect("Compiling".allMatches(result.stdout), hasLength(1));
       expect(result.exitCode, equals(0));
     });
 
@@ -292,9 +262,9 @@ void main() {
       expect(result.exitCode, equals(0));
     });
 
-    test("on the browser and the VM", () {
+    test("on a browser and the VM", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(0));
     });
 
@@ -373,29 +343,11 @@ void main() {
       expect(result.exitCode, equals(1));
     });
 
-    test("on PhantomJS", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runTest(["-p", "phantomjs", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    });
-
-    test("on Firefox", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runTest(["-p", "firefox", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    });
-
     test("on Safari", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
       var result = _runTest(["-p", "safari", "test.dart"]);
       expect(result.exitCode, equals(1));
     }, testOn: "mac-os");
-
-    test("on Dartium", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runTest(["-p", "dartium", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    });
 
     test("on content-shell", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
@@ -416,7 +368,7 @@ void main() {
   });
 }
 """);
-      var result = _runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
@@ -433,7 +385,7 @@ void main() {
   });
 }
 """);
-      var result = _runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       expect(result.exitCode, equals(1));
     });
 
@@ -491,7 +443,7 @@ void main() {
 }
 """);
 
-    var result = _runTest(["-p", "chrome", "test.dart"]);
+    var result = _runTest(["-p", "content-shell", "test.dart"]);
     expect(result.stdout, contains("Hello,\nworld!\n"));
     expect(result.exitCode, equals(0));
   });
@@ -509,7 +461,7 @@ void main() {
 }
 ''');
 
-    var result = _runTest(["-p", "chrome", "test.dart"]);
+    var result = _runTest(["-p", "content-shell", "test.dart"]);
     expect(result.stdout, contains("Test timed out after 0 seconds."));
     expect(result.stdout, contains("-1: Some tests failed."));
   });
@@ -522,11 +474,11 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("fail", () => throw 'oh no', onPlatform: {"chrome": new Skip()});
+  test("fail", () => throw 'oh no', onPlatform: {"browser": new Skip()});
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("+0 ~1: All tests skipped."));
     });
 
@@ -541,7 +493,7 @@ void main() {
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -553,12 +505,12 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () => throw 'oh no', onPlatform: {
-    "chrome": new Timeout(new Duration(seconds: 0))
+    "browser": new Timeout(new Duration(seconds: 0))
   });
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("Test timed out after 0 seconds."));
       expect(result.stdout, contains("-1: Some tests failed."));
     });
@@ -576,7 +528,7 @@ void main() {
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
@@ -588,16 +540,16 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {}, onPlatform: {
-    "chrome": new Skip("first"),
-    "chrome || windows": new Skip("second"),
-    "chrome || linux": new Skip("third"),
-    "chrome || mac-os": new Skip("fourth"),
-    "chrome || android": new Skip("fifth")
+    "browser": new Skip("first"),
+    "browser || windows": new Skip("second"),
+    "browser || linux": new Skip("third"),
+    "browser || mac-os": new Skip("fourth"),
+    "browser || android": new Skip("fifth")
   });
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("Skip: fifth"));
       expect(result.stdout, isNot(anyOf([
         contains("Skip: first"),
@@ -611,7 +563,7 @@ void main() {
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
-@OnPlatform(const {"chrome": const Skip()})
+@OnPlatform(const {"browser": const Skip()})
 
 import 'dart:async';
 
@@ -622,7 +574,7 @@ void main() {
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("+0 ~1: All tests skipped."));
     });
 
@@ -639,14 +591,14 @@ void main() {
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
 
     test("respects matching Timeouts", () {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
 @OnPlatform(const {
-  "chrome": const Timeout(const Duration(seconds: 0))
+  "browser": const Timeout(const Duration(seconds: 0))
 })
 
 import 'dart:async';
@@ -658,7 +610,7 @@ void main() {
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("Test timed out after 0 seconds."));
       expect(result.stdout, contains("-1: Some tests failed."));
     });
@@ -678,7 +630,7 @@ void main() {
 }
 ''');
 
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, contains("+1: All tests passed!"));
     });
   });
