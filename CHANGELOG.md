@@ -1,4 +1,4 @@
-### 0.12.0-beta.11
+### 0.12.0-rc.0
 
 * Tests, groups, and suites can now be configured on a platform-by-platform
   basis. Tests and groups are configured using the `onPlatform` named argument;
