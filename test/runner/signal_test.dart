@@ -149,7 +149,9 @@ void main() {
 """);
 
       return _startTest(["-p", "content-shell", "test.dart"]).then((process) {
-        return _lines.bind(process.stdout).skip(3).first.then((line) {
+        // The first line is blank, and the second is a status line from the
+        // reporter.
+        return _lines.bind(process.stdout).skip(2).first.then((line) {
           expect(line, equals("running test"));
           process.kill();
           return process.exitCode;
