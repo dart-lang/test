@@ -98,7 +98,7 @@ well by passing `pub run test:test -p chrome path/to/test.dart`.
 `test` will take care of starting the browser and loading the tests, and all
 the results will be reported on the command line just like for VM tests. In
 fact, you can even run tests on both platforms with a single command: `pub run
-test:test -p chrome -p vm path/to/test.dart`.
+test:test -p chrome,vm path/to/test.dart`.
 
 ### Restricting Tests to Certain Platforms
 
@@ -357,7 +357,7 @@ void main() {
   group("complicated algorithm tests", () {
     // ...
   }, skip: "the algorithm isn't quite right");
-  
+
   test("error-checking test", () {
     // ...
   }, skip: "TODO: add error-checking.");
