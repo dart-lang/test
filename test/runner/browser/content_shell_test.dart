@@ -14,6 +14,7 @@ import 'package:test/src/util/io.dart';
 import 'package:test/src/utils.dart';
 import 'package:test/test.dart';
 
+import '../../io.dart';
 import '../../utils.dart';
 
 void main() {
@@ -143,6 +144,6 @@ webSocket.onOpen.first.then((_) =>
     var contentShell = new ContentShell("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(contentShell.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start content shell: No such file or directory"))));
+        "Failed to start content shell: $noSuchFileMessage"))));
   });
 }

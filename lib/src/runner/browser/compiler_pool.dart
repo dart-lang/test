@@ -108,8 +108,8 @@ void main(_) {
     // that we're done printing everything about one process before we start the
     // next.
     Future.wait([
-      compiler.process.stdout.listen(stdout.add).asFuture(),
-      compiler.process.stderr.listen(stderr.add).asFuture(),
+      santizeForWindows(compiler.process.stdout).listen(stdout.add).asFuture(),
+      santizeForWindows(compiler.process.stderr).listen(stderr.add).asFuture(),
       compiler.process.exitCode.then((exitCode) {
         if (exitCode == 0 || _closed) return;
         throw new LoadException(compiler.path, "dart2js failed.");

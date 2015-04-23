@@ -40,9 +40,12 @@ final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 /// Signals will only be captured as long as this has an active subscription.
 /// Otherwise, they'll be handled by Dart's default signal handler, which
 /// terminates the program immediately.
-final _signals = mergeStreams([
-  ProcessSignal.SIGTERM.watch(), ProcessSignal.SIGINT.watch()
-]);
+final _signals = Platform.isWindows
+    ? ProcessSignal.SIGINT.watch()
+    : mergeStreams([
+        ProcessSignal.SIGTERM.watch(),
+        ProcessSignal.SIGINT.watch()
+      ]);
 
 /// Returns whether the current package has a pubspec which uses the
 /// `test/pub_serve` transformer.

@@ -331,7 +331,8 @@ void main() {
         if (_closed) return;
 
         _jsHandler.add(
-            p.relative(dartPath, from: _root) + '.browser_test.dart.js',
+            p.toUri(p.relative(dartPath, from: _root)).path +
+                '.browser_test.dart.js',
             (request) {
           return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
               headers: {'Content-Type': 'application/javascript'});

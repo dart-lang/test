@@ -182,7 +182,8 @@ class Loader {
             .catchError((error, stackTrace) {
           if (error is! IsolateSpawnException) throw error;
 
-          if (error.message.contains("OS Error: Connection refused")) {
+          if (error.message.contains("OS Error: Connection refused") ||
+              error.message.contains("The remote computer refused")) {
             throw new LoadException(path,
                 "Error getting $url: Connection refused\n"
                 'Make sure "pub serve" is running.');
@@ -209,7 +210,7 @@ void main(_, Map message) {
 ''', {
           'reply': receivePort.sendPort,
           'metadata': metadata.serialize()
-        }, packageRoot: _packageRoot);
+        }, packageRoot: p.toUri(_packageRoot));
       }
     }).catchError((error, stackTrace) {
       receivePort.close();

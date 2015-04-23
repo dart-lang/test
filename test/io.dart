@@ -18,6 +18,11 @@ final _pubPath = p.absolute(p.join(
     p.dirname(Platform.executable),
     Platform.isWindows ? 'pub.bat' : 'pub'));
 
+/// The platform-specific message emitted when a nonexistent file is loaded.
+final String noSuchFileMessage = Platform.isWindows
+    ? "The system cannot find the file specified."
+    : "No such file or directory";
+
 /// Runs the test executable with the package root set properly.
 ProcessResult runTest(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
@@ -46,16 +51,18 @@ ProcessResult runDart(List<String> args, {String workingDirectory,
   }).toList()..addAll(args);
 
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return Process.runSync(p.absolute(Platform.executable), allArgs,
-      workingDirectory: workingDirectory, environment: environment);
+  return new _NormalizedProcessResult(Process.runSync(
+      p.absolute(Platform.executable), allArgs,
+      workingDirectory: workingDirectory, environment: environment));
 }
 
 /// Runs Pub.
 ProcessResult runPub(List<String> args, {String workingDirectory,
     Map<String, String> environment}) {
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return Process.runSync(_pubPath, args,
-      workingDirectory: workingDirectory, environment: environment);
+  return new _NormalizedProcessResult(Process.runSync(
+      _pubPath, args,
+      workingDirectory: workingDirectory, environment: environment));
 }
 
 /// Starts the test executable with the package root set properly.
@@ -89,4 +96,25 @@ Future<Process> startPub(List<String> args, {String workingDirectory,
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
   return Process.start(_pubPath, args,
       workingDirectory: workingDirectory, environment: environment);
+}
+
+/// A wrapper around [ProcessResult] that normalizes the newline format across
+/// operating systems.
+class _NormalizedProcessResult implements ProcessResult {
+  final ProcessResult _inner;
+
+  int get exitCode => _inner.exitCode;
+  int get pid => _inner.pid;
+
+  final String stdout;
+  final String stderr;
+
+  _NormalizedProcessResult(ProcessResult inner)
+      : _inner = inner,
+        stdout = Platform.isWindows
+            ? inner.stdout.replaceAll("\r\n", "\n")
+            : inner.stdout,
+        stderr = Platform.isWindows
+            ? inner.stderr.replaceAll("\r\n", "\n")
+            : inner.stderr;
 }

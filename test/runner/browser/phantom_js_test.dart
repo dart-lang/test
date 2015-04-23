@@ -154,7 +154,7 @@ webSocket.addEventListener("open", function() {
     var phantomJS = new PhantomJS("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(phantomJS.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start PhantomJS: No such file or directory"))));
+        "Failed to start PhantomJS: $noSuchFileMessage"))));
   });
 
   test("can run successful tests", () {

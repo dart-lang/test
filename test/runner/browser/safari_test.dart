@@ -13,6 +13,7 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 
+import '../../io.dart';
 import '../../utils.dart';
 
 void main() {
@@ -137,6 +138,6 @@ webSocket.addEventListener("open", function() {
     var safari = new Safari("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(safari.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start Safari: No such file or directory"))));
+        "Failed to start Safari: $noSuchFileMessage"))));
   });
 }

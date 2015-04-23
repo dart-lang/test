@@ -73,6 +73,13 @@ class MyTransformer extends Transformer {
   });
 
   tearDown(() {
+    // On Windows, there's no way to shut down the actual "pub serve" process.
+    // Killing the process we start will just kill the batch file wrapper (issue
+    // 23304), not the underlying "pub serve" process. Since that process has
+    // locks on files in the sandbox, we can't delete the sandbox on Windows
+    // without errors.
+    if (Platform.isWindows) return;
+
     new Directory(_sandbox).deleteSync(recursive: true);
   });
 
@@ -158,7 +165,7 @@ class MyTransformer extends Transformer {
                 workingDirectory: _sandbox);
             expect(result.stdout, allOf([
               contains('-1: load error'),
-              contains('Failed to load "test/my_test.dart":'),
+              contains('Failed to load "${p.join("test", "my_test.dart")}":'),
               contains('404 Not Found'),
               contains('Make sure "pub serve" is serving the test/ directory.')
             ]));
@@ -188,7 +195,7 @@ class MyTransformer extends Transformer {
                 workingDirectory: _sandbox);
             expect(result.stdout, allOf([
               contains('-1: load error'),
-              contains('Failed to load "test/my_test.dart":'),
+              contains('Failed to load "${p.join("test", "my_test.dart")}":'),
               contains('404 Not Found'),
               contains('Make sure "pub serve" is serving the test/ directory.')
             ]));
@@ -313,7 +320,7 @@ void main() {
     expect(result.stdout, allOf([
       contains('-1: load error'),
       contains('''
-  Failed to load "test/my_test.dart":
+  Failed to load "${p.join("test", "my_test.dart")}":
   Error getting http://localhost:54321/my_test.dart.vm_test.dart: Connection refused
   Make sure "pub serve" is running.''')
     ]));
@@ -323,11 +330,15 @@ void main() {
   test("gracefully handles pub serve not running for browser tests", () {
     var result = runTest(['--pub-serve=54321', '-p', 'chrome'],
         workingDirectory: _sandbox);
+    var message = Platform.isWindows
+        ? 'The remote computer refused the network connection.'
+        : 'Connection refused (errno ';
+
     expect(result.stdout, allOf([
       contains('-1: load error'),
-      contains('Failed to load "test/my_test.dart":'),
+      contains('Failed to load "${p.join("test", "my_test.dart")}":'),
       contains('Error getting http://localhost:54321/my_test.dart.browser_test'
-          '.dart.js: Connection refused (errno '),
+          '.dart.js: $message'),
       contains('Make sure "pub serve" is running.')
     ]));
     expect(result.exitCode, equals(1));
