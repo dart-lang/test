@@ -116,20 +116,21 @@ class CompactReporter {
           _passed.add(liveTest);
         }
 
-        // Always display the name of the oldest active test, unless testing is
-        // finished in which case display the last test to complete.
-        if (_active.isEmpty) {
-          _progressLine(_description(liveTest));
-        } else {
-          _progressLine(_description(_active.first));
-        }
-
         if (liveTest.test.metadata.skip &&
             liveTest.test.metadata.skipReason != null) {
+          _progressLine(_description(liveTest));
           print('');
           print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
               '$_noColor'));
         } else {
+          // Always display the name of the oldest active test, unless testing
+          // is finished in which case display the last test to complete.
+          if (_active.isEmpty) {
+            _progressLine(_description(liveTest));
+          } else {
+            _progressLine(_description(_active.first));
+          }
+
           _printedNewline = false;
         }
       });
