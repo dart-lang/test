@@ -455,7 +455,20 @@ allows the test runner to load your tests properly:
 ```yaml
 transformers:
 - test/pub_serve:
-    $include: test/**_test.dart
+    $include: test/**_test{.*,}.dart
+```
+
+Note that if you're using the test runner along with [`polymer`][polymer], you
+have to make sure that the `test/pub_serve` transformer comes *after* the
+`polymer` transformer:
+
+[polymer]: https://www.dartlang.org/polymer/
+
+```yaml
+transformer:
+- polymer
+- test/pub_serve:
+    $include: test/**_test{.*,}.dart
 ```
 
 Then, start up `pub serve`. Make sure to pay attention to which port it's using
