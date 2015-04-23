@@ -7,6 +7,9 @@
 
 [onPlatform]: https://github.com/dart-lang/test/blob/master/README.md#platform-specific-configuration
 
+* Add a `--reporter` flag and an expanded reporter that prints each test on its
+  own line.
+
 * Properly ignore unrelated `link` tags in custom HTML.
 
 * Preserve the stack traces for load errors in isolates and iframes.

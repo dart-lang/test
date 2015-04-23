@@ -86,8 +86,8 @@ class CompactReporter {
 
   /// Creates a [ConsoleReporter] that will run all tests in [suites].
   ///
-  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
-  /// won't.
+  /// [concurrency] controls how many suites are run at once. If [color] is
+  /// `true`, this will use terminal colors; if it's `false`, it won't.
   CompactReporter(Iterable<Suite> suites, {int concurrency, bool color: true})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =

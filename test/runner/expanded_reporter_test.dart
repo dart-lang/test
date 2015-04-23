@@ -16,7 +16,7 @@ void main() {
   test("reports when no tests are run", () {
     return withTempDir((path) {
       new File(p.join(path, "test.dart")).writeAsStringSync("void main() {}");
-      var result = runTest(["-r", "compact", "test.dart"],
+      var result = runTest(["-r", "expanded", "test.dart"],
           workingDirectory: path);
       expect(result.stdout, equals("No tests ran.\n"));
     });
@@ -29,11 +29,8 @@ void main() {
         test('success 3', () {});""",
         """
         +0: success 1
-        +1: success 1
         +1: success 2
-        +2: success 2
         +2: success 3
-        +3: success 3
         +3: All tests passed!""");
   });
 
@@ -48,18 +45,15 @@ void main() {
           oh no
           test.dart 6:33  main.<fn>
 
-
         +0 -1: failure 2
         +0 -2: failure 2
           oh no
           test.dart 7:33  main.<fn>
 
-
         +0 -2: failure 3
         +0 -3: failure 3
           oh no
           test.dart 8:33  main.<fn>
-
 
         +0 -3: Some tests failed.""");
   });
@@ -76,17 +70,13 @@ void main() {
           oh no
           test.dart 6:33  main.<fn>
 
-
         +0 -1: success 1
-        +1 -1: success 1
         +1 -1: failure 2
         +1 -2: failure 2
           oh no
           test.dart 8:33  main.<fn>
 
-
         +1 -2: success 2
-        +2 -2: success 2
         +2 -2: Some tests failed.""");
   });
 
@@ -123,9 +113,7 @@ void main() {
           dart:async       Future.Future.microtask
           test.dart 12:15  main.<fn>
 
-
         +0 -1: wait
-        +1 -1: wait
         +1 -1: Some tests failed.""");
   });
 
@@ -144,8 +132,6 @@ void main() {
         two
         three
         four
-
-        +1: test
         +1: All tests passed!""");
     });
 
@@ -170,15 +156,12 @@ void main() {
           return testDone.future;
         });""", """
         +0: test
-        +1: test
         +1: wait
         +1: test
         one
         two
         three
         four
-
-        +2: wait
         +2: All tests passed!""");
     });
 
@@ -210,7 +193,6 @@ void main() {
         +0: test
         one
         two
-
         +0 -1: test
           first error
           test.dart 24:11  main.<fn>
@@ -225,9 +207,7 @@ void main() {
 
         five
         six
-
         +0 -1: wait
-        +1 -1: wait
         +1 -1: Some tests failed.""");
     });
   });
@@ -240,11 +220,8 @@ void main() {
           test('skip 3', () {}, skip: true);""",
           """
           +0: skip 1
-          +0 ~1: skip 1
           +0 ~1: skip 2
-          +0 ~2: skip 2
           +0 ~2: skip 3
-          +0 ~3: skip 3
           +0 ~3: All tests skipped.""");
     });
 
@@ -256,13 +233,9 @@ void main() {
           test('success 2', () {});""",
           """
           +0: skip 1
-          +0 ~1: skip 1
           +0 ~1: success 1
-          +1 ~1: success 1
           +1 ~1: skip 2
-          +1 ~2: skip 2
           +1 ~2: success 2
-          +2 ~2: success 2
           +2 ~2: All tests passed!""");
     });
 
@@ -280,21 +253,15 @@ void main() {
             oh no
             test.dart 6:35  main.<fn>
 
-
           +0 -1: skip 1
-          +0 ~1 -1: skip 1
           +0 ~1 -1: success 1
-          +1 ~1 -1: success 1
           +1 ~1 -1: failure 2
           +1 ~1 -2: failure 2
             oh no
             test.dart 9:35  main.<fn>
 
-
           +1 ~1 -2: skip 2
-          +1 ~2 -2: skip 2
           +1 ~2 -2: success 2
-          +2 ~2 -2: success 2
           +2 ~2 -2: Some tests failed.""");
     });
 
@@ -306,11 +273,9 @@ void main() {
           +0: skip 1
           +0 ~1: skip 1
             Skip: some reason
-
           +0 ~1: skip 2
           +0 ~2: skip 2
             Skip: or another
-
           +0 ~2: All tests skipped.""");
     });
   });
@@ -336,12 +301,11 @@ $tests
     args = args.toList()
       ..add("test.dart")
       ..add("--concurrency=$concurrency")
-      ..add("--reporter=compact");
+      ..add("--reporter=expanded");
     var result = runTest(args, workingDirectory: path);
 
-    // Convert CRs into newlines, remove excess trailing whitespace, and trim
-    // off timestamps.
-    var actual = result.stdout.trim().split(new RegExp(r"[\r\n]")).map((line) {
+    // Remove excess trailing whitespace and trim off timestamps.
+    var actual = result.stdout.trim().split("\n").map((line) {
       if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
       return line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
     }).join("\n");

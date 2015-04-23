@@ -80,6 +80,8 @@ class Engine {
   }
 
   /// Creates an [Engine] that will run all tests in [suites].
+  ///
+  /// [concurrency] controls how many suites are run at once.
   Engine(Iterable<Suite> suites, {int concurrency})
       : _liveTestsBySuite = _computeLiveTestsBySuite(suites),
         _pool = new Pool(concurrency == null ? 1 : concurrency);

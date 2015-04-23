@@ -17,13 +17,13 @@ import '../engine.dart';
 /// Lines longer than this will be cropped.
 const _lineLength = 100;
 
-// TODO(nweiz): Get rid of this when issue 6943 is fixed.
-/// A reporter that doesn't import `dart:io`, even transitively.
+/// A reporter that prints each test on its own line.
 ///
-/// This is used in place of [CompactReporter] by `lib/test.dart`, which
-/// can't transitively import `dart:io` but still needs access to a runner so
-/// that test files can be run directly.
-class NoIoCompactReporter {
+/// This is currently used in place of [CompactReporter] by `lib/test.dart`,
+/// which can't transitively import `dart:io` but still needs access to a runner
+/// so that test files can be run directly. This means that until issue 6943 is
+/// fixed, this must not import `dart:io`.
+class ExpandedReporter {
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
   final String _green;
@@ -61,6 +61,9 @@ class NoIoCompactReporter {
   /// The set of tests that have completed and been marked as failing or error.
   final _failed = new Set<LiveTest>();
 
+  /// The set of tests that are still running.
+  final _active = new List<LiveTest>();
+
   /// The size of [_passed] last time a progress notification was printed.
   int _lastProgressPassed;
 
@@ -75,20 +78,24 @@ class NoIoCompactReporter {
 
   /// Creates a [NoIoCompactReporter] that will run all tests in [suites].
   ///
-  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
-  /// won't.
-  NoIoCompactReporter(Iterable<Suite> suites, {bool color: true})
+  /// [concurrency] controls how many suites are run at once. If [color] is
+  /// `true`, this will use terminal colors; if it's `false`, it won't.
+  ExpandedReporter(Iterable<Suite> suites, {int concurrency, bool color: true})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
-        _engine = new Engine(suites),
+        _engine = new Engine(suites, concurrency: concurrency),
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen((liveTest) {
+      if (_active.isEmpty) _progressLine(_description(liveTest));
+      _active.add(liveTest);
+
       liveTest.onStateChange.listen((state) {
         if (state.status != Status.complete) return;
+        _active.remove(liveTest);
 
         if (state.result != Result.success) {
           _passed.remove(liveTest);
@@ -99,12 +106,15 @@ class NoIoCompactReporter {
           _passed.add(liveTest);
         }
 
-        _progressLine(_description(liveTest));
-
         if (liveTest.test.metadata.skip &&
             liveTest.test.metadata.skipReason != null) {
+          _progressLine(_description(liveTest));
           print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
               '$_noColor'));
+        } else if (_active.isNotEmpty) {
+          // If any tests are running, display the name of the oldest active
+          // test.
+          _progressLine(_description(_active.first));
         }
       });
 
@@ -129,7 +139,7 @@ class NoIoCompactReporter {
   /// only return once all tests have finished running.
   Future<bool> run() {
     if (_stopwatch.isRunning) {
-      throw new StateError("CompactReporter.run() may not be called more than "
+      throw new StateError("ExpandedReporter.run() may not be called more than "
           "once.");
     }
 
@@ -180,7 +190,7 @@ class NoIoCompactReporter {
     var buffer = new StringBuffer();
 
     // \r moves back to the beginning of the current line.
-    buffer.write('\r${_timeString(duration)} ');
+    buffer.write('${_timeString(duration)} ');
     buffer.write(_green);
     buffer.write('+');
     buffer.write(_passed.length);
@@ -233,7 +243,7 @@ class NoIoCompactReporter {
     }
 
     if (_multiplePlatforms && liveTest.suite.platform != null) {
-      name = "[$liveTest.suite.platform] $name";
+      name = "[${liveTest.suite.platform}] $name";
     }
 
     return name;

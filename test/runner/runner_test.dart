@@ -58,6 +58,11 @@ Usage: pub run test:test [files or directories...]
                                (defaults to $_defaultConcurrency)
 
     --pub-serve=<port>         The port of a pub serve instance serving "test/".
+-r, --reporter                 The runner used to print test results.
+
+          [compact]            A single line, updated continuously.
+          [expanded]           A separate line for each update.
+
     --[no-]color               Whether to use terminal colors.
                                (auto-detected by default)
 """;

@@ -17,6 +17,7 @@ import 'package:yaml/yaml.dart';
 
 import 'backend/test_platform.dart';
 import 'runner/reporter/compact.dart';
+import 'runner/reporter/expanded.dart';
 import 'runner/application_exception.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_exception_suite.dart';
@@ -105,6 +106,15 @@ void main(List<String> args) {
       help: 'The port of a pub serve instance serving "test/".',
       hide: !supportsPubServe,
       valueHelp: 'port');
+  _parser.addOption("reporter",
+      abbr: 'r',
+      help: 'The runner used to print test results.',
+      allowed: ['compact', 'expanded'],
+      defaultsTo: Platform.isWindows ? 'expanded' : 'compact',
+      allowedHelp: {
+    'compact': 'A single line, updated continuously.',
+    'expanded': 'A separate line for each update.'
+  });
   _parser.addFlag("color", defaultsTo: null,
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
 
@@ -237,8 +247,11 @@ transformers:
       }
     }
 
-    var reporter = new CompactReporter(flatten(suites),
-        concurrency: concurrency, color: color);
+    var reporter = options["reporter"] == "compact"
+        ? new CompactReporter(flatten(suites),
+            concurrency: concurrency, color: color)
+        : new ExpandedReporter(flatten(suites),
+            concurrency: concurrency, color: color);
 
     // Override the signal handler to close [reporter]. [loader] will still be
     // closed in the [whenComplete] below.

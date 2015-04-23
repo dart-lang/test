@@ -13,7 +13,7 @@ import 'src/backend/invoker.dart';
 import 'src/backend/suite.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
-import 'src/runner/reporter/no_io_compact.dart';
+import 'src/runner/reporter/expanded.dart';
 import 'src/utils.dart';
 
 export 'package:matcher/matcher.dart';
@@ -56,7 +56,7 @@ Declarer get _declarer {
               platform: "VM")
         .forPlatform(TestPlatform.vm, os: currentOSGuess);
 
-    new NoIoCompactReporter([suite], color: true).run().then((success) {
+    new ExpandedReporter([suite], color: true).run().then((success) {
       // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
       if (success) return;
       print('');

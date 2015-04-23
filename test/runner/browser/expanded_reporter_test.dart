@@ -37,7 +37,7 @@ void main() {
 
     var result = _runTest([
       "-r",
-      "compact",
+      "expanded",
       "-p",
       "content-shell",
       "-p",
