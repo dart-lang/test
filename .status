@@ -28,6 +28,12 @@ test/runner/browser/phantom_js: Skip
 
 test/runner/browser/loader_test: Pass, Slow
 
+[ $system != windows ]
+test/runner/browser/internet_explorer: SkipByDesign
+
+[ $system != macos ]
+test/runner/browser/safari: SkipByDesign
+
 # The test harness for browser tests doesn't play nicely with the new way of
 # doing browser tests.
 [ $browser ]
@@ -35,6 +41,3 @@ test/*: SkipByDesign
 test/*/*: SkipByDesign
 test/*/*/*: SkipByDesign
 test/*/*/*/*: SkipByDesign
-
-[ $runtime == safari ]
-test/matcher/prints_test: Fail # Issue 4

@@ -152,6 +152,8 @@ valid identifiers are:
 
 * `safari`: Whether the test is running on Apple Safari.
 
+* `ie`: Whether the test is running on Microsoft Internet Explorer.
+
 * `dart-vm`: Whether the test is running on the Dart VM in any context,
   including Dartium. It's identical to `!js`.
 

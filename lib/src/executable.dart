@@ -78,6 +78,7 @@ bool get _usesTransformer {
 void main(List<String> args) {
   var allPlatforms = TestPlatform.all.toList();
   if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
+  if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
 
   _parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows this usage information.");

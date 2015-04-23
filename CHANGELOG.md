@@ -20,7 +20,7 @@
 * When running a test suite via `dart path/to/test.dart`, throw an exception if
   the suite fails so that the exit code is set properly.
 
-* Add support for running on Windows.
+* Add support for running on Windows and Internet Explorer.
 
 ### 0.12.0-beta.10
 

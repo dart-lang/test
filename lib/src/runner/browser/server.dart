@@ -28,9 +28,10 @@ import 'browser.dart';
 import 'browser_manager.dart';
 import 'compiler_pool.dart';
 import 'chrome.dart';
-import 'dartium.dart';
 import 'content_shell.dart';
+import 'dartium.dart';
 import 'firefox.dart';
+import 'internet_explorer.dart';
 import 'phantom_js.dart';
 import 'safari.dart';
 
@@ -389,6 +390,7 @@ void main() {
       case TestPlatform.phantomJS: return new PhantomJS(url);
       case TestPlatform.firefox: return new Firefox(url);
       case TestPlatform.safari: return new Safari(url);
+      case TestPlatform.internetExplorer: return new InternetExplorer(url);
       default:
         throw new ArgumentError("$browser is not a browser.");
     }

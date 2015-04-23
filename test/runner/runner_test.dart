@@ -40,7 +40,8 @@ final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 final _browsers =
     "[vm (default), dartium, content-shell, chrome, phantomjs, firefox" +
-        (Platform.isMacOS ? ", safari" : "") + "]";
+        (Platform.isMacOS ? ", safari" : "") +
+        (Platform.isWindows ? ", ie" : "") + "]";
 
 final _usage = """
 Usage: pub run test:test [files or directories...]
