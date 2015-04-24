@@ -56,6 +56,21 @@ void main() {
     });
   });
 
+  test("waits for a returned future sending a response", () {
+    return _spawnIsolate(_asyncTests).then((receivePort) {
+      return receivePort.first;
+    }).then((response) {
+      expect(response, containsPair("type", "success"));
+      expect(response, contains("tests"));
+
+      var tests = response["tests"];
+      expect(tests, hasLength(3));
+      expect(tests[0], containsPair("name", "successful 1"));
+      expect(tests[1], containsPair("name", "successful 2"));
+      expect(tests[2], containsPair("name", "successful 3"));
+    });
+  });
+
   test("sends an error response if loading fails", () {
     return _spawnIsolate(_loadError).then((receivePort) {
       return receivePort.first;
@@ -327,6 +342,23 @@ void _successfulTests(SendPort sendPort) {
     test("successful 1", () {});
     test("successful 2", () {});
     test("successful 3", () {});
+  });
+}
+
+/// An isolate entrypoint that defines three tests asynchronously.
+void _asyncTests(SendPort sendPort) {
+  IsolateListener.start(sendPort, new Metadata(), () => () {
+    return new Future(() {
+      test("successful 1", () {});
+
+      return new Future(() {
+        test("successful 2", () {});
+
+        return new Future(() {
+          test("successful 3", () {});
+        });
+      });
+    });
   });
 }
 

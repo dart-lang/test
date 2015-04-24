@@ -88,6 +88,39 @@ void main() {
     });
   });
 
+
+  test("loads tests that are defined asynchronously", () {
+    new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+Future main() {
+  return new Future(() {
+    test("success", () {});
+
+    return new Future(() {
+      test("failure", () => throw new TestFailure('oh no'));
+
+      return new Future(() {
+        test("error", () => throw 'oh no');
+      });
+    });
+  });
+}
+""");
+
+    return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).toList()
+        .then((suites) {
+      expect(suites, hasLength(1));
+      var suite = suites.first;
+      expect(suite.tests, hasLength(3));
+      expect(suite.tests[0].name, equals("success"));
+      expect(suite.tests[1].name, equals("failure"));
+      expect(suite.tests[2].name, equals("error"));
+    });
+  });
+
   test("loads a suite both in the browser and the VM", () {
     var loader = new Loader([TestPlatform.vm, TestPlatform.chrome],
         root: _sandbox,

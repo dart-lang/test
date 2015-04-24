@@ -3,6 +3,9 @@
 * Remove `handleExternalError`. This was never used in practice and its function
   was unclear.
 
+* If a test suite's `main()` method returns a `Future`, tests may be declared
+  until that `Future` returns.
+
 ### 0.12.0-rc.0
 
 * Tests, groups, and suites can now be configured on a platform-by-platform

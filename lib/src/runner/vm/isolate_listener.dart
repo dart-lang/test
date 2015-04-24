@@ -51,19 +51,18 @@ class IsolateListener {
     }
 
     var declarer = new Declarer();
-    try {
-      runZoned(main, zoneValues: {#test.declarer: declarer});
-    } catch (error, stackTrace) {
+    runZoned(() => new Future.sync(main), zoneValues: {
+      #test.declarer: declarer
+    }).then((_) {
+      var suite = new Suite(declarer.tests, metadata: metadata)
+          .forPlatform(TestPlatform.vm, os: currentOS);
+      new IsolateListener._(suite)._listen(sendPort);
+    }, onError: (error, stackTrace) {
       sendPort.send({
         "type": "error",
         "error": RemoteException.serialize(error, stackTrace)
       });
-      return;
-    }
-
-    var suite = new Suite(declarer.tests, metadata: metadata)
-        .forPlatform(TestPlatform.vm, os: currentOS);
-    new IsolateListener._(suite)._listen(sendPort);
+    });
   }
 
   /// Sends a message over [sendPort] indicating that the tests failed to load.
