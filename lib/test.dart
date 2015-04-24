@@ -172,12 +172,6 @@ void setUp(callback()) => _declarer.setUp(callback);
 /// groups or at the top level.
 void tearDown(callback()) => _declarer.tearDown(callback);
 
-/// Handle an error that occurs outside of any test.
-void handleExternalError(error, String message, [stackTrace]) {
-  // TODO(nweiz): handle this better.
-  registerException(error, stackTrace);
-}
-
 /// Registers an exception that was caught for the current test.
 void registerException(error, [StackTrace stackTrace]) =>
     Invoker.current.handleError(error, stackTrace);

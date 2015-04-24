@@ -1,3 +1,8 @@
+### 0.12.0-rc.1
+
+* Remove `handleExternalError`. This was never used in practice and its function
+  was unclear.
+
 ### 0.12.0-rc.0
 
 * Tests, groups, and suites can now be configured on a platform-by-platform
