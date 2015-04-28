@@ -429,6 +429,55 @@ void main() {
             equals(const State(Status.complete, Result.error)));
       });
     });
+
+    test("an asynchronous error in tearDown causes the test to error", () {
+      var liveTest = _localTest(() {}, tearDown: () {
+        Invoker.current.addOutstandingCallback();
+        new Future(() => throw "oh no");
+      }).load(suite);
+
+      expectSingleError(liveTest);
+      return liveTest.run();
+    });
+
+    test("an error reported in the test body after tearDown begins running "
+        "doesn't stop tearDown", () {
+      var tearDownComplete = false;;
+      var completer = new Completer();
+
+      var liveTest;
+      liveTest = _localTest(() {
+        completer.future.then((_) => throw "not again");
+        throw "oh no";
+      }, tearDown: () {
+        completer.complete();
+
+        // Pump the event queue so that we will run the following code after the
+        // test body has thrown a second error.
+        Invoker.current.addOutstandingCallback();
+        pumpEventQueue().then((_) {
+          Invoker.current.removeOutstandingCallback();
+          tearDownComplete = true;
+        });
+      }).load(suite);
+
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.error)
+      ]);
+
+      expectErrors(liveTest, [
+        (error) {
+          expect(lastState.status, equals(Status.complete));
+          expect(error, equals("oh no"));
+        },
+        (error) => expect(error, equals("not again"))
+      ]);
+
+      return liveTest.run().then((_) {
+        expect(tearDownComplete, isTrue);
+      });
+    });
   });
 
   test("a test doesn't complete until there are no outstanding callbacks",
@@ -470,6 +519,56 @@ void main() {
 
     return liveTest.run().then((_) {
       expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
+    });
+  });
+
+  test("a test's tearDown doesn't complete until there are no outstanding "
+      "callbacks", () {
+    var outstandingCallbackRemoved = false;
+    var liveTest = _localTest(() {}, tearDown: () {
+      Invoker.current.addOutstandingCallback();
+
+      // Pump the event queue to make sure the test isn't coincidentally
+      // completing after the outstanding callback is removed.
+      pumpEventQueue().then((_) {
+        outstandingCallbackRemoved = true;
+        Invoker.current.removeOutstandingCallback();
+      });
+    }).load(suite);
+
+    liveTest.onError.listen(expectAsync((_) {}, count: 0));
+
+    return liveTest.run().then((_) {
+      expect(outstandingCallbackRemoved, isTrue);
+    });
+  });
+
+  test("a test body's outstanding callbacks can't complete its tearDown", () {
+    var outstandingCallbackRemoved = false;
+    var completer = new Completer();
+    var liveTest = _localTest(() {
+      // Once the tearDown runs, remove an outstanding callback to see if it
+      // causes the tearDown to complete.
+      completer.future.then((_) {
+        Invoker.current.removeOutstandingCallback();
+      });
+    }, tearDown: () {
+      Invoker.current.addOutstandingCallback();
+
+      // This will cause the test BODY to remove an outstanding callback, which
+      // shouldn't cause the test to complete.
+      completer.complete();
+
+      pumpEventQueue().then((_) {
+        outstandingCallbackRemoved = true;
+        Invoker.current.removeOutstandingCallback();
+      });
+    }).load(suite);
+
+    liveTest.onError.listen(expectAsync((_) {}, count: 0));
+
+    return liveTest.run().then((_) {
+      expect(outstandingCallbackRemoved, isTrue);
     });
   });
 

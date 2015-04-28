@@ -14,6 +14,7 @@ import 'closed_exception.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
 import 'metadata.dart';
+import 'outstanding_callback_counter.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
@@ -76,14 +77,13 @@ class Invoker {
   /// The test metadata merged with the suite metadata.
   final Metadata metadata;
 
-  /// Note that this is meaningless once [_onCompleteCompleter] is complete.
-  var _outstandingCallbacks = 0;
-
-  /// The completer to complete once the test body finishes.
-  ///
-  /// This is distinct from [_controller.completer] because a tear-down may need
-  /// to run before the test is truly finished.
-  final _completer = new Completer();
+  /// The outstanding callback counter for the current zone.
+  OutstandingCallbackCounter get _outstandingCallbacks {
+    var counter = Zone.current[this];
+    if (counter != null) return counter;
+    throw new StateError("Can't add or remove outstanding callbacks outside "
+        "of a test body.");
+  }
 
   /// The current invoker, or `null` if none is defined.
   ///
@@ -112,22 +112,13 @@ class Invoker {
   /// Throws a [ClosedException] if this test has been closed.
   void addOutstandingCallback() {
     if (closed) throw new ClosedException();
-    _outstandingCallbacks++;
+    _outstandingCallbacks.addOutstandingCallback();
   }
 
   /// Tells the invoker that a callback declared with [addOutstandingCallback]
   /// is no longer running.
-  void removeOutstandingCallback() {
-    _outstandingCallbacks--;
-
-    if (_outstandingCallbacks != 0) return;
-    if (_completer.isCompleted) return;
-
-    // The test must be passing if we get here, because if there were an error
-    // the completer would already be completed.
-    assert(liveTest.state.result == Result.success);
-    _completer.complete();
-  }
+  void removeOutstandingCallback() =>
+      _outstandingCallbacks.removeOutstandingCallback();
 
   /// Notifies the invoker of an asynchronous error.
   ///
@@ -146,8 +137,7 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace);
-
-    if (!_completer.isCompleted) _completer.complete();
+    _outstandingCallbacks.removeAllOutstandingCallbacks();
 
     // If a test was marked as success but then had an error, that indicates
     // that it was poorly-written and could be flaky.
@@ -163,11 +153,12 @@ class Invoker {
   void _onRun() {
     _controller.setState(const State(Status.running, Result.success));
 
+    var outstandingCallbacksForBody = new OutstandingCallbackCounter();
+
     Chain.capture(() {
-      runZoned(() {
-        // TODO(nweiz): Make the timeout configurable.
-        // TODO(nweiz): Reset this timer whenever the user's code interacts with
-        // the library.
+      runZonedWithValues(() {
+        // TODO(nweiz): Reset this timer whenever the user's code interacts
+        // with the library.
         var timeout = metadata.timeout.apply(new Duration(seconds: 30));
         var timer = new Timer(timeout, () {
           if (liveTest.isComplete) return;
@@ -176,20 +167,30 @@ class Invoker {
                   "Test timed out after ${niceDuration(timeout)}.", timeout));
         });
 
-        addOutstandingCallback();
-
-        // Run the test asynchronously so that the "running" state change has a
-        // chance to hit its event handler(s) before the test produces an error.
-        // If an error is emitted before the first state change is handled, we
-        // can end up with [onError] callbacks firing before the corresponding
-        // [onStateChange], which violates the timing guarantees.
+        // Run the test asynchronously so that the "running" state change has
+        // a chance to hit its event handler(s) before the test produces an
+        // error. If an error is emitted before the first state change is
+        // handled, we can end up with [onError] callbacks firing before the
+        // corresponding [onStateChange], which violates the timing
+        // guarantees.
         new Future(_test._body)
             .then((_) => removeOutstandingCallback());
 
-        _completer.future.then((_) {
+        _outstandingCallbacks.noOutstandingCallbacks.then((_) {
           if (_test._tearDown == null) return null;
-          return new Future.sync(_test._tearDown);
-        }).catchError(Zone.current.handleUncaughtError).then((_) {
+
+          // Reset the outstanding callback counter to wait for callbacks from
+          // the test's `tearDown` to complete.
+          var outstandingCallbacksForTearDown = new OutstandingCallbackCounter();
+          runZonedWithValues(() {
+            new Future.sync(_test._tearDown)
+              .then((_) => removeOutstandingCallback());
+          }, onError: handleError, zoneValues: {
+            this: outstandingCallbacksForTearDown
+          });
+
+          return outstandingCallbacksForTearDown.noOutstandingCallbacks;
+        }).then((_) {
           timer.cancel();
           _controller.setState(
               new State(Status.complete, liveTest.state.result));
@@ -198,10 +199,14 @@ class Invoker {
           // non-microtask events.
           Timer.run(_controller.completer.complete);
         });
+      }, zoneValues: {
+        #test.invoker: this,
+        // Use the invoker as a key so that multiple invokers can have different
+        // outstanding callback counters at once.
+        this: outstandingCallbacksForBody
       },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) => _controller.print(line)),
-          zoneValues: {#test.invoker: this},
           onError: handleError);
     });
   }

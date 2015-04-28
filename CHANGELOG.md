@@ -1,3 +1,8 @@
+### 0.12.0-rc.2
+
+* Allow Future matchers and `expectAsync` to prevent tests'
+  `tearDown`s from completing.
+
 ### 0.12.0-rc.1
 
 * Remove `handleExternalError`. This was never used in practice and its function
