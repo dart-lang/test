@@ -34,6 +34,7 @@ import 'firefox.dart';
 import 'internet_explorer.dart';
 import 'phantom_js.dart';
 import 'safari.dart';
+import 'webdriver.dart';
 
 /// A server that serves JS-compiled tests to browsers.
 ///
@@ -391,6 +392,7 @@ void main() {
       case TestPlatform.firefox: return new Firefox(url);
       case TestPlatform.safari: return new Safari(url);
       case TestPlatform.internetExplorer: return new InternetExplorer(url);
+      case TestPlatform.webdriver: return new WebDriver(url);
       default:
         throw new ArgumentError("$browser is not a browser.");
     }

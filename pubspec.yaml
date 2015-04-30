@@ -19,6 +19,7 @@ dependencies:
   source_span: '^1.0.0'
   stack_trace: '^1.2.0'
   string_scanner: '^0.1.1'
+  webdriver: '^0.10.0-pre.5'
   yaml: '>=0.9.0 <3.0.0'
 
   # Use a tight version constraint to ensure that a constraint on matcher

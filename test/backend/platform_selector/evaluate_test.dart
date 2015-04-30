@@ -79,22 +79,31 @@ void main() {
       _expectEval("android", false, os: OperatingSystem.linux);
       _expectEval("android", false, os: OperatingSystem.none);
     });
+
+    test("webdriver", () {
+      _expectEval("webdriver", true, platform: TestPlatform.webdriver);
+      _expectEval("webdriver", false, platform: TestPlatform.vm);
+      _expectEval("webdriver", false, platform: TestPlatform.chrome);
+    });
   });
 
   group("derived variable:", () {
     test("dart-vm", () {
       _expectEval("dart-vm", true, platform: TestPlatform.vm);
       _expectEval("dart-vm", false, platform: TestPlatform.chrome);
+      _expectEval("dart-vm", false, platform: TestPlatform.webdriver);
     });
 
     test("browser", () {
       _expectEval("browser", true, platform: TestPlatform.chrome);
       _expectEval("browser", false, platform: TestPlatform.vm);
+      _expectEval("browser", true, platform: TestPlatform.webdriver);
     });
 
     test("js", () {
       _expectEval("js", true, platform: TestPlatform.chrome);
       _expectEval("js", false, platform: TestPlatform.vm);
+      _expectEval("js", true, platform: TestPlatform.webdriver);
     });
 
     test("blink", () {
