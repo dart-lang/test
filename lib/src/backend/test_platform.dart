@@ -36,6 +36,11 @@ class TestPlatform {
   static const TestPlatform firefox = const TestPlatform._("Firefox", "firefox",
       isBrowser: true, isJS: true);
 
+  /// WebDriver-provisioned browser.
+  static const TestPlatform webdriver = const TestPlatform._(
+      "WebDriver", "webdriver",
+      isBrowser: true, isJS: true);
+
   /// Apple Safari.
   static const TestPlatform safari = const TestPlatform._("Safari", "safari",
       isBrowser: true, isJS: true);
@@ -53,6 +58,7 @@ class TestPlatform {
     chrome,
     phantomJS,
     firefox,
+    webdriver,
     safari,
     internetExplorer
   ];

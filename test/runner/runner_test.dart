@@ -39,7 +39,7 @@ void main() {
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 final _browsers =
-    "[vm (default), dartium, content-shell, chrome, phantomjs, firefox" +
+    "[vm (default), dartium, content-shell, chrome, phantomjs, firefox, webdriver" +
         (Platform.isMacOS ? ", safari" : "") +
         (Platform.isWindows ? ", ie" : "") + "]";
 
