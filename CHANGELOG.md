@@ -1,170 +1,44 @@
-### 0.12.0-rc.2
+## 0.12.0
 
-* Allow Future matchers and `expectAsync` to prevent tests'
-  `tearDown`s from completing.
+### Test Runner
 
-### 0.12.0-rc.1
+`0.12.0` adds support for a test runner, which can be run via `pub run
+test:test` (or `pub run test` in Dart 1.10). By default it runs all files
+recursively in the `test/` directory that end in `_test.dart` and aren't in a
+`packages/` directory.
 
-* Remove `handleExternalError`. This was never used in practice and its function
-  was unclear.
+The test runner supports running tests on the Dart VM and many different
+browsers. Test files can use the `@TestOn` annotation to declare which platforms
+they support. For more information on this and many more new features, see [the
+README](README).
 
-* If a test suite's `main()` method returns a `Future`, tests may be declared
-  until that `Future` returns.
+[README]: https://github.com/dart-lang/test/blob/master/README.md
 
-### 0.12.0-rc.0
+### Removed and Changed APIs
 
-* Tests, groups, and suites can now be configured on a platform-by-platform
-  basis. Tests and groups are configured using the `onPlatform` named argument;
-  suites are configured using the `@OnPlatform` annotation. See [the
-  README][onPlatform] for more information.
+As part of moving to a runner-based model, most test configuration is moving out
+of the test file and into the runner. As such, many ancillary APIs have been
+removed. These APIs include `skip_` and `solo_` functions, `Configuration` and
+all its subclasses, `TestCase`, `TestFunction`, `testConfiguration`,
+`formatStacks`, `filterStacks`, `groupSep`, `logMessage`, `testCases`,
+`BREATH_INTERVAL`, `currentTestCase`, `PASS`, `FAIL`, `ERROR`, `filterTests`,
+`runTests`, `ensureInitialized`, `setSoloTest`, `enableTest`, `disableTest`, and
+`withTestEnvironment`.
 
-[onPlatform]: https://github.com/dart-lang/test/blob/master/README.md#platform-specific-configuration
+`FailureHandler`, `DefaultFailureHandler`, `configureExpectFailureHandler`, and
+`getOrCreateExpectFailureHandler` which used to be exported from the `matcher`
+package have also been removed. They existed to enable integration between
+`test` and `matcher` that has been streamlined.
 
-* Add a `--reporter` flag and an expanded reporter that prints each test on its
-  own line.
+A number of APIs from `matcher` have been into `test`, including: `completes`,
+`completion`, `ErrorFormatter`, `expect`,`fail`, `prints`, `TestFailure`,
+`Throws`, and all of the `throws` methods. Some of these have changed slightly:
 
-* Properly ignore unrelated `link` tags in custom HTML.
+* `expect` no longer has a named `failureHandler` argument.
 
-* Preserve the stack traces for load errors in isolates and iframes.
+* `expect` added an optional `formatter` argument.
 
-* Stop `pub serve` from emitting a duplicate-asset error for tests with custom
-  HTML files.
-
-* When running a test suite via `dart path/to/test.dart`, throw an exception if
-  the suite fails so that the exit code is set properly.
-
-* Add support for running on Windows and Internet Explorer.
-
-### 0.12.0-beta.10
-
-* Fix running browser tests in subdirectories.
-
-### 0.12.0-beta.9
-
-* A browser test may use a custom HTML file. See [the README][custom html] for
-  more information.
-
-[custom html]: https://github.com/dart-lang/test/blob/master/README.md#running-tests-with-custom-html
-
-* Tests, groups, and suites may be declared as skipped. Tests and groups are
-  skipped using the `skip` named argument; suites are skipped using the `@Skip`
-  annotation. See [the README][skip] for more information.
-
-[skip]: https://github.com/dart-lang/test/blob/master/README.md#skipping-tests
-
-* Fix running VM tests against `pub serve`.
-
-* More gracefully handle browser errors.
-
-* Properly load Dartium from the Dart Editor when possible.
-
-### 0.12.0-beta.8
-
-* Add support for configuring timeouts on a test, group, and suite basis. Test
-  and group timeouts are configured with the `timeout` named argument; suites
-  are configured using the `@Timeout` annotation. See [the README][timeout] for
-  more information.
-
-[timeout]: https://github.com/dart-lang/test/blob/master/README.md#timeouts
-
-* Support running tests on Safari.
-
-* Add a `--version` flag.
-
-* Add an animation to run in the browser while testing.
-
-### 0.12.0-beta.7
-
-* Browser tests can now load assets by making HTTP requests to the corresponding
-  relative URLs.
-
-* Add support for running tests on Dartium and the Dartium content shell.
-
-* Add support for running tests on [PhantomJS](http://phantomjs.org/).
-
-### 0.12.0-beta.6
-
-* Add the ability to run multiple test suites concurrently. By default a number
-  of concurrent test suites will be run equal to half the machine's processors;
-  this can be controlled with the `--concurrency` flag.
-
-* Expose load errors as test failures rather than having them kill the entire
-  process.
-
-* Add support for running tests on Firefox.
-
-### 0.12.0-beta.5
-
-* Add a `--pub-serve` flag that runs tests against a `pub serve` instance.
-  **This feature is only supported on Dart `1.9.2` and higher.**
-
-* When the test runner is killed prematurely, it will clean up its temporary
-  directories and give the current test a chance to run its `tearDown` logic.
-
-### 0.12.0-beta.4
-
-* Fix a package-root bug.
-
-### 0.12.0-beta.3
-
-* Add support for `shelf` `0.6.0`.
-
-* Fix a "failed to load" bug on Windows.
-
-### 0.12.0-beta.2
-
-* Rename the package to `test`. The `unittest` package will continue to exist
-  through the `0.12.0` cycle, but it's deprecated and will just export the
-  `test` package.
-
-* Remove the deprecated members from `test`. These members will remain in
-  `unittest` for now.
-
-### 0.12.0-beta.1
-
-* Add a `--name` (shorthand `-n`) flag to the test runner for selecting which
-  test to run.
-
-* Ensure that `print()` in tests always prints on its own line.
-
-* Forward `print()`s from browser tests to the command-line reporter.
-
-* Add a missing dependency on `string_scanner`.
-
-## 0.12.0-beta.0
-
-* Added support for a test runner, which can be run via `pub run
-  test:test`. By default it runs all files recursively in the `test/`
-  directory that end in `_test.dart` and aren't in a `packages/` directory.
-
-* As part of moving to a runner-based model, most test configuration is moving
-  out of the test file and into the runner. As such, many ancillary APIs are
-  stubbed out and marked as deprecated. They still exist to make adoption
-  easier, but they're now no-ops and will be removed before the stable 0.12.0
-  release. These APIs include `skip_` and `solo_` functions, `Configuration` and
-  all its subclasses, `TestCase`, `TestFunction`, `testConfiguration`,
-  `formatStacks`, `filterStacks`, `groupSep`, `logMessage`, `testCases`,
-  `BREATH_INTERVAL`, `currentTestCase`, `PASS`, `FAIL`, `ERROR`, `filterTests`,
-  `runTests`, `ensureInitialized`, `setSoloTest`, `enableTest`, `disableTest`,
-  and `withTestEnvironment`.
-
-* Removed `FailureHandler`, `DefaultFailureHandler`,
-  `configureExpectFailureHandler`, and `getOrCreateExpectFailureHandler` which
-  used to be exported from the `matcher` package. They existed to enable
-  integration between `test` and `matcher` that has been streamlined.
-
-* Moved a number of APIs from `matcher` into `test`, including:
-  `completes`, `completion`, `ErrorFormatter`, `expect`,`fail`, `prints`,
-  `TestFailure`, `Throws`, and all of the `throws` methods.
-
-    * `expect` no longer has a named `failureHandler` argument.
-
-    * `expect` added an optional `formatter` argument.
-
-    * `completion` argument `id` renamed to `description`.
-
-* Removed several members from `SimpleConfiguration` that relied on removed
-  functionality: `onExpectFailure`, `stopTestOnExpectFailure`, and 'name'.
+* `completion` argument `id` renamed to `description`.
 
 ##0.11.5+1
 
