@@ -64,6 +64,7 @@ Usage: pub run test:test [files or directories...]
           [compact]            A single line, updated continuously.
           [expanded]           A separate line for each update.
 
+    --verbose-trace            Whether to emit stack traces with core library frames.
     --[no-]color               Whether to use terminal colors.
                                (auto-detected by default)
 """;

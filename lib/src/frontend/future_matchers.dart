@@ -60,8 +60,9 @@ class _Completes extends Matcher {
       var reason = 'Expected future ${id}to complete successfully, '
           'but it failed with ${error}';
       if (trace != null) {
-        var stackTrace = terseChain(trace).toString();
-        stackTrace = '  ${stackTrace.replaceAll('\n', '\n  ')}';
+        var stackTrace = terseChain(trace,
+            verbose: Invoker.current.metadata.verboseTrace);
+        stackTrace = '  ${stackTrace.toString().replaceAll('\n', '\n  ')}';
         reason = '$reason\nStack trace:\n$stackTrace';
       }
       fail(reason);

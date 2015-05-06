@@ -33,6 +33,9 @@ class Loader {
   /// Whether to enable colors for Dart compilation.
   final bool _color;
 
+  /// Global metadata that applies to all test suites.
+  final Metadata _metadata;
+
   /// The root directory that will be served for browser tests.
   final String _root;
 
@@ -78,14 +81,17 @@ class Loader {
   ///
   /// If [color] is true, console colors will be used when compiling Dart.
   ///
+  /// [metadata] is the global metadata for all test suites.
+  ///
   /// If the package root doesn't exist, throws an [ApplicationException].
   Loader(Iterable<TestPlatform> platforms, {String root, String packageRoot,
-        Uri pubServeUrl, bool color: false})
+        Uri pubServeUrl, bool color: false, Metadata metadata})
       : _platforms = platforms.toList(),
         _pubServeUrl = pubServeUrl,
         _root = root == null ? p.current : root,
         _packageRoot = packageRootFor(root, packageRoot),
-        _color = color;
+        _color = color,
+        _metadata = metadata == null ? new Metadata() : metadata;
 
   /// Loads all test suites in [dir].
   ///
@@ -123,6 +129,7 @@ class Loader {
       return new Stream.fromFuture(
           new Future.error(new LoadException(path, error), stackTrace));
     }
+    suiteMetadata = _metadata.merge(suiteMetadata);
 
     var controller = new StreamController();
     Future.forEach(_platforms, (platform) {

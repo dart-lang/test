@@ -15,6 +15,7 @@ import 'package:args/args.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
 
+import 'backend/metadata.dart';
 import 'backend/test_platform.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
@@ -116,6 +117,8 @@ void main(List<String> args) {
     'compact': 'A single line, updated continuously.',
     'expanded': 'A separate line for each update.'
   });
+  _parser.addFlag("verbose-trace", negatable: false,
+      help: 'Whether to emit stack traces with core library frames.');
   _parser.addFlag("color", defaultsTo: null,
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
 
@@ -161,11 +164,13 @@ transformers:
     }
   }
 
+  var metadata = new Metadata(verboseTrace: options["verbose-trace"]);
   var platforms = options["platform"].map(TestPlatform.find);
   var loader = new Loader(platforms,
       pubServeUrl: pubServeUrl,
       packageRoot: options["package-root"],
-      color: color);
+      color: color,
+      metadata: metadata);
 
   var concurrency = _defaultConcurrency;
   if (options["concurrency"] != null) {
@@ -249,10 +254,16 @@ transformers:
     }
 
     var reporter = options["reporter"] == "compact"
-        ? new CompactReporter(flatten(suites),
-            concurrency: concurrency, color: color)
-        : new ExpandedReporter(flatten(suites),
-            concurrency: concurrency, color: color);
+        ? new CompactReporter(
+            flatten(suites),
+            concurrency: concurrency,
+            color: color,
+            verboseTrace: options["verbose-trace"])
+        : new ExpandedReporter(
+            flatten(suites),
+            concurrency: concurrency,
+            color: color,
+            verboseTrace: options["verbose-trace"]);
 
     // Override the signal handler to close [reporter]. [loader] will still be
     // closed in the [whenComplete] below.

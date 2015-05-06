@@ -88,7 +88,10 @@ final _isolatePath =
 
 /// Returns [stackTrace] converted to a [Chain] with all irrelevant frames
 /// folded together.
-Chain terseChain(StackTrace stackTrace) {
+///
+/// If [verbose] is `true`, returns the chain for [stackTrace] unmodified.
+Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
+  if (verbose) return new Chain.forTrace(stackTrace);
   return new Chain.forTrace(stackTrace).foldFrames((frame) {
     if (frame.package == 'test') return true;
 

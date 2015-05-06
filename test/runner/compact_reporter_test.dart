@@ -64,6 +64,23 @@ void main() {
         +0 -3: Some tests failed.""");
   });
 
+  test("includes the full stack trace with --verbose-trace", () {
+    return withTempDir((path) {
+      new File(p.join(path, "test.dart")).writeAsStringSync("""
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () => throw "oh no");
+}
+""");
+      var result = runTest(["-r", "compact", "--verbose-trace", "test.dart"],
+          workingDirectory: path);
+      expect(result.stdout, contains("dart:isolate-patch"));
+    });
+  });
+
   test("runs failing tests along with successful tests", () {
     _expectReport("""
         test('failure 1', () => throw new TestFailure('oh no'));

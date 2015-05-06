@@ -27,6 +27,9 @@ class Metadata {
   /// Whether the test or suite should be skipped.
   final bool skip;
 
+  /// Whether to use verbose stack traces.
+  final bool verboseTrace;
+
   /// The reason the test or suite should be skipped, if given.
   final String skipReason;
 
@@ -84,7 +87,8 @@ class Metadata {
   ///
   /// [testOn] defaults to [PlatformSelector.all].
   Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
-          this.skipReason, Map<PlatformSelector, Metadata> onPlatform})
+          this.verboseTrace: false, this.skipReason,
+          Map<PlatformSelector, Metadata> onPlatform})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip,
@@ -97,7 +101,7 @@ class Metadata {
   ///
   /// Throws a [FormatException] if any field is invalid.
   Metadata.parse({String testOn, Timeout timeout, skip,
-          Map<String, dynamic> onPlatform})
+          this.verboseTrace: false, Map<String, dynamic> onPlatform})
       : testOn = testOn == null
             ? PlatformSelector.all
             : new PlatformSelector.parse(testOn),
@@ -122,6 +126,7 @@ class Metadata {
                 microseconds: serialized['timeout']['duration'])),
         skip = serialized['skip'],
         skipReason = serialized['skipReason'],
+        verboseTrace = serialized['verboseTrace'],
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
             value: (pair) => new Metadata.deserialize(pair.last));
@@ -134,19 +139,23 @@ class Metadata {
           testOn: testOn.intersect(other.testOn),
           timeout: timeout.merge(other.timeout),
           skip: skip || other.skip,
+          verboseTrace: verboseTrace || other.verboseTrace,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,
           onPlatform: mergeMaps(onPlatform, other.onPlatform));
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change({PlatformSelector testOn, Timeout timeout, bool skip,
-      String skipReason, Map<PlatformSelector, Metadata> onPlatform}) {
+      bool verboseTrace, String skipReason,
+      Map<PlatformSelector, Metadata> onPlatform}) {
     if (testOn == null) testOn = this.testOn;
     if (timeout == null) timeout = this.timeout;
     if (skip == null) skip = this.skip;
+    if (verboseTrace == null) verboseTrace = this.verboseTrace;
     if (skipReason == null) skipReason = this.skipReason;
     if (onPlatform == null) onPlatform = this.onPlatform;
     return new Metadata(testOn: testOn, timeout: timeout, skip: skip,
-        skipReason: skipReason, onPlatform: onPlatform);
+        verboseTrace: verboseTrace, skipReason: skipReason,
+        onPlatform: onPlatform);
   }
 
   /// Returns a copy of [this] with all platform-specific metadata from
@@ -179,6 +188,7 @@ class Metadata {
       },
       'skip': skip,
       'skipReason': skipReason,
+      'verboseTrace': verboseTrace,
       'onPlatform': serializedOnPlatform
     };
   }

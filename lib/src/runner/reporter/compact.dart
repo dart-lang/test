@@ -42,6 +42,9 @@ class CompactReporter {
   /// this is Windows or not outputting to a terminal.
   final String _noColor;
 
+  /// Whether to use verbose stack traces.
+  final bool _verboseTrace;
+
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -87,12 +90,15 @@ class CompactReporter {
   /// Creates a [ConsoleReporter] that will run all tests in [suites].
   ///
   /// [concurrency] controls how many suites are run at once. If [color] is
-  /// `true`, this will use terminal colors; if it's `false`, it won't.
-  CompactReporter(Iterable<Suite> suites, {int concurrency, bool color: true})
+  /// `true`, this will use terminal colors; if it's `false`, it won't. If
+  /// [verboseTrace] is `true`, this will print core library frames.
+  CompactReporter(Iterable<Suite> suites, {int concurrency, bool color: true,
+          bool verboseTrace: false})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
         _engine = new Engine(suites, concurrency: concurrency),
+        _verboseTrace = verboseTrace,
         _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
@@ -144,7 +150,8 @@ class CompactReporter {
 
         if (error.error is! LoadException) {
           print(indent(error.error.toString()));
-          print(indent(terseChain(error.stackTrace).toString()));
+          var chain = terseChain(error.stackTrace, verbose: _verboseTrace);
+          print(indent(chain.toString()));
           return;
         }
 

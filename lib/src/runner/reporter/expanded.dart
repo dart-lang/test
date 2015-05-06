@@ -40,6 +40,9 @@ class ExpandedReporter {
   /// this is Windows or not outputting to a terminal.
   final String _noColor;
 
+  /// Whether to use verbose stack traces.
+  final bool _verboseTrace;
+
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -79,12 +82,15 @@ class ExpandedReporter {
   /// Creates a [NoIoCompactReporter] that will run all tests in [suites].
   ///
   /// [concurrency] controls how many suites are run at once. If [color] is
-  /// `true`, this will use terminal colors; if it's `false`, it won't.
-  ExpandedReporter(Iterable<Suite> suites, {int concurrency, bool color: true})
+  /// `true`, this will use terminal colors; if it's `false`, it won't. If
+  /// [verboseTrace] is `true`, this will print core library frames.
+  ExpandedReporter(Iterable<Suite> suites, {int concurrency, bool color: true,
+          bool verboseTrace: false})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
         _engine = new Engine(suites, concurrency: concurrency),
+        _verboseTrace = verboseTrace,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
@@ -123,7 +129,8 @@ class ExpandedReporter {
 
         _progressLine(_description(liveTest));
         print(indent(error.error.toString()));
-        print(indent(terseChain(error.stackTrace).toString()));
+        var chain = terseChain(error.stackTrace, verbose: _verboseTrace);
+        print(indent(chain.toString()));
       });
 
       liveTest.onPrint.listen((line) {
