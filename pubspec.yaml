@@ -17,7 +17,7 @@ dependencies:
   shelf_static: '^0.2.0'
   shelf_web_socket: '^0.0.1'
   source_span: '^1.0.0'
-  stack_trace: '^1.2.0'
+  stack_trace: '^1.2.1'
   string_scanner: '^0.1.1'
   yaml: '>=0.9.0 <3.0.0'
 
