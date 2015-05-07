@@ -1,8 +1,8 @@
 name: unittest
-version: 0.11.5+4
+version: 0.11.6-dev
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
-homepage: https://github.com/dart-lang/unittest
+homepage: https://github.com/dart-lang/old_unittest
 environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:

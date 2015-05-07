@@ -20,24 +20,20 @@ class HtmlIndividualConfiguration extends htmlconfig.HtmlConfiguration {
   HtmlIndividualConfiguration(bool isLayoutTest) : super(isLayoutTest);
 
   void onStart() {
-    var search = window.location.search;
-    if (search != '') {
-      var groups = search
-          .substring(1)
-          .split('&')
-          .where((p) => p.startsWith('group='))
-          .toList();
+    var uri = Uri.parse(window.location.href);
 
-      if (!groups.isEmpty) {
-        if (groups.length > 1) {
-          throw new ArgumentError('More than one "group" parameter provided.');
-        }
+    var groups = 'group='.allMatches(uri.query).toList();
 
-        var testGroupName = groups.single.split('=')[1];
-        var startsWith = "$testGroupName${unittest.groupSep}";
-        unittest.filterTests(
-            (unittest.TestCase tc) => tc.description.startsWith(startsWith));
-      }
+    if (groups.length > 1) {
+      throw new ArgumentError('More than one "group" parameter provided.');
+    }
+
+    var testGroupName = uri.queryParameters['group'];
+
+    if (testGroupName != null) {
+      var startsWith = "$testGroupName${unittest.groupSep}";
+      unittest.filterTests(
+          (unittest.TestCase tc) => tc.description.startsWith(startsWith));
     }
     super.onStart();
   }

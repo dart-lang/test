@@ -1,3 +1,9 @@
+##0.11.6
+
+* Fix running individual tests with `HtmlIndividualConfiguration` when the test
+  name contains URI-escaped values and is provided with the `group` query 
+  parameter.
+
 ##0.11.5+4
 
 * Improved the output of `TestCase` failures in `HtmlConfig`.
