@@ -6,7 +6,7 @@ library unittest.simple_configuration;
 
 import 'dart:isolate';
 
-import 'package:matcher/matcher.dart'
+import 'matcher.dart'
     show DefaultFailureHandler, configureExpectFailureHandler, TestFailure;
 
 import '../unittest.dart';

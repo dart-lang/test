@@ -1,5 +1,5 @@
 name: unittest
-version: 0.11.6-dev
+version: 0.11.6
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/old_unittest
@@ -7,10 +7,5 @@ environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:
   stack_trace: '>=0.9.0 <2.0.0'
-
-  # Because unittest exports matcher, it needs to keep its version constraint
-  # tight to ensure that a constraint on unittest properly constraints all
-  # features it provides.
-  matcher: '>=0.11.4 <0.11.5'
 dev_dependencies:
   metatest: '>=0.1.0 <0.2.0'

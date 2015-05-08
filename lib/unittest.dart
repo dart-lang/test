@@ -7,18 +7,16 @@ library unittest;
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:matcher/matcher.dart' show TestFailure, wrapAsync;
-
 import 'src/configuration.dart';
 import 'src/expected_function.dart';
 import 'src/group_context.dart';
 import 'src/internal_test_case.dart';
+import 'src/matcher.dart' show TestFailure, wrapAsync;
 import 'src/test_case.dart';
 import 'src/test_environment.dart';
 
-export 'package:matcher/matcher.dart';
-
 export 'src/configuration.dart';
+export 'src/matcher.dart';
 export 'src/simple_configuration.dart';
 export 'src/test_case.dart';
 

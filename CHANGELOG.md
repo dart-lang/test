@@ -1,7 +1,10 @@
 ##0.11.6
 
+* Merge in the last `0.11.x` release of `matcher` to allow projects to use both
+  `test` and `unittest` without conflicts.
+
 * Fix running individual tests with `HtmlIndividualConfiguration` when the test
-  name contains URI-escaped values and is provided with the `group` query 
+  name contains URI-escaped values and is provided with the `group` query
   parameter.
 
 ##0.11.5+4
