@@ -465,7 +465,7 @@ have to make sure that the `test/pub_serve` transformer comes *after* the
 [polymer]: https://www.dartlang.org/polymer/
 
 ```yaml
-transformer:
+transformers:
 - polymer
 - test/pub_serve:
     $include: test/**_test{.*,}.dart
