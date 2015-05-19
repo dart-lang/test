@@ -65,39 +65,44 @@ class PhantomJS implements Browser {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    withTempDir((dir) {
-      var script = p.join(dir, "script.js");
-      new File(script).writeAsStringSync(_script);
+    invoke(() async {
+      try {
+        var exitCode = await withTempDir((dir) async {
+          var script = p.join(dir, "script.js");
+          new File(script).writeAsStringSync(_script);
 
-      return Process.start(executable, [script, url.toString()])
-          .then((process) {
-        // PhantomJS synchronously emits standard output, which means that if we
-        // don't drain its stdout stream it can deadlock.
-        process.stdout.listen((_) {});
+          var process = await Process.start(
+              executable, [script, url.toString()]);
 
-        _process = process;
-        _onProcessStartedCompleter.complete();
+          // PhantomJS synchronously emits standard output, which means that if we
+          // don't drain its stdout stream it can deadlock.
+          process.stdout.listen((_) {});
 
-        return _process.exitCode;
-      });
-    }).then((exitCode) {
-      if (exitCode == exit_codes.protocol) {
-        throw new ApplicationException(
-            "Only PhantomJS version 2.0.0 or greater is supported.");
+          _process = process;
+          _onProcessStartedCompleter.complete();
+
+          return await _process.exitCode;
+        });
+
+        if (exitCode == exit_codes.protocol) {
+          throw new ApplicationException(
+              "Only PhantomJS version 2.0.0 or greater is supported");
+        }
+
+        if (exitCode != 0) {
+          var error = await UTF8.decodeStream(_process.stderr);
+          throw new ApplicationException(
+              "PhantomJS failed with exit code $exitCode:\n$error");
+        }
+
+        _onExitCompleter.complete();
+      } catch (error, stackTrace) {
+        if (stackTrace == null) stackTrace = new Trace.current();
+        _onExitCompleter.completeError(
+            new ApplicationException(
+                "Failed to start PhantomJS: ${getErrorMessage(error)}."),
+            stackTrace);
       }
-
-      if (exitCode == 0) return null;
-
-      return UTF8.decodeStream(_process.stderr).then((error) {
-        throw new ApplicationException(
-            "PhantomJS failed with exit code $exitCode:\n$error");
-      });
-    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
-      if (stackTrace == null) stackTrace = new Trace.current();
-      _onExitCompleter.completeError(
-          new ApplicationException(
-              "Failed to start PhantomJS: ${getErrorMessage(error)}."),
-          stackTrace);
     });
   }
 

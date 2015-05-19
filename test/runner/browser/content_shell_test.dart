@@ -39,7 +39,7 @@ void main() {
 import "dart:js" as js;
 import "dart:html";
 
-void main() {
+main() async {
   js.context['testRunner'].callMethod('waitUntilDone', []);
 
   $dart
@@ -52,17 +52,15 @@ void main() {
 
     var server;
     var webSockets;
-    setUp(() {
+    setUp(() async {
       var webSocketsController = new StreamController();
       webSockets = webSocketsController.stream;
 
-      return shelf_io.serve(
+      server = await shelf_io.serve(
           new shelf.Cascade()
               .add(webSocketHandler(webSocketsController.add))
               .add(servePage).handler,
-          'localhost', 0).then((server_) {
-        server = server_;
-      });
+          'localhost', 0);
     });
 
     tearDown(() {
@@ -73,19 +71,22 @@ void main() {
       webSockets = null;
     });
 
-    test("starts content shell with the given URL", () {
+    test("starts content shell with the given URL", () async {
       dart = '''
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
-webSocket.onOpen.first.then((_) => webSocket.send("loaded!"));
+await webSocket.onOpen.first;
+webSocket.send("loaded!");
 ''';
       var contentShell = new ContentShell(
           baseUrlForAddress(server.address, server.port));
 
-      return webSockets.first.then((webSocket) {
-        return webSocket.first.then(
-            (message) => expect(message, equals("loaded!")));
-      }).whenComplete(contentShell.close);
+      try {
+        var message = await (await webSockets.first).first;
+        expect(message, equals("loaded!"));
+      } finally {
+        contentShell.close();
+      }
     });
 
     test("doesn't preserve state across runs", () {
@@ -94,7 +95,8 @@ window.localStorage["data"] = "value";
 
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
-webSocket.onOpen.first.then((_) => webSocket.send("done"));
+await webSocket.onOpen.first;
+webSocket.send("done");
 ''';
       var contentShell = new ContentShell(
           baseUrlForAddress(server.address, server.port));
@@ -111,8 +113,8 @@ webSocket.onOpen.first.then((_) => webSocket.send("done"));
             dart = '''
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
-webSocket.onOpen.first.then((_) =>
-    webSocket.send(window.localStorage["data"].toString()));
+await webSocket.onOpen.first;
+webSocket.send(window.localStorage["data"].toString());
 ''';
             contentShell = new ContentShell(
                 baseUrlForAddress(server.address, server.port));
@@ -131,13 +133,17 @@ webSocket.onOpen.first.then((_) =>
     });
   });
 
-  test("a process can be killed synchronously after it's started", () {
-    return shelf_io.serve(expectAsync((_) {}, count: 0), 'localhost', 0)
-        .then((server) {
-      var contentShell = new ContentShell(
-          baseUrlForAddress(server.address, server.port));
-      return contentShell.close().whenComplete(server.close);
-    });
+  test("a process can be killed synchronously after it's started", () async {
+    var server = await shelf_io.serve(
+        expectAsync((_) {}, count: 0), 'localhost', 0);
+
+    try {
+      var contentShell =
+          new ContentShell(baseUrlForAddress(server.address, server.port));
+      await contentShell.close();
+    } finally {
+      server.close();
+    }
   });
 
   test("reports an error in onExit", () {

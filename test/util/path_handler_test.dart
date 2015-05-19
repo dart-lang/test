@@ -14,21 +14,17 @@ void main() {
 
   _handle(request) => new Future.sync(() => handler.handler(request));
 
-  test("returns a 404 for a root URL", () {
+  test("returns a 404 for a root URL", () async {
     var request = new shelf.Request("GET", Uri.parse("http://localhost/"));
-    return _handle(request).then((response) {
-      expect(response.statusCode, equals(404));
-    });
+    expect((await _handle(request)).statusCode, equals(404));
   });
 
-  test("returns a 404 for an unregistered URL", () {
+  test("returns a 404 for an unregistered URL", () async {
     var request = new shelf.Request("GET", Uri.parse("http://localhost/foo"));
-    return _handle(request).then((response) {
-      expect(response.statusCode, equals(404));
-    });
+    expect((await _handle(request)).statusCode, equals(404));
   });
 
-  test("runs a handler for an exact URL", () {
+  test("runs a handler for an exact URL", () async {
     var request = new shelf.Request("GET", Uri.parse("http://localhost/foo"));
     handler.add("foo", expectAsync((request) {
       expect(request.handlerPath, equals('/foo'));
@@ -36,13 +32,12 @@ void main() {
       return new shelf.Response.ok("good job!");
     }));
 
-    return _handle(request).then((response) {
-      expect(response.statusCode, equals(200));
-      expect(response.readAsString(), completion(equals("good job!")));
-    });
+    var response = await _handle(request);
+    expect(response.statusCode, equals(200));
+    expect(response.readAsString(), completion(equals("good job!")));
   });
 
-  test("runs a handler for a suffix", () {
+  test("runs a handler for a suffix", () async {
     var request = new shelf.Request(
         "GET", Uri.parse("http://localhost/foo/bar"));
     handler.add("foo", expectAsync((request) {
@@ -51,13 +46,12 @@ void main() {
       return new shelf.Response.ok("good job!");
     }));
 
-    return _handle(request).then((response) {
-      expect(response.statusCode, equals(200));
-      expect(response.readAsString(), completion(equals("good job!")));
-    });
+    var response = await _handle(request);
+    expect(response.statusCode, equals(200));
+    expect(response.readAsString(), completion(equals("good job!")));
   });
 
-  test("runs the longest matching handler", () {
+  test("runs the longest matching handler", () async {
     var request = new shelf.Request(
         "GET", Uri.parse("http://localhost/foo/bar/baz"));
 
@@ -69,9 +63,8 @@ void main() {
     }));
     handler.add("foo/bar/baz/bang", expectAsync((_) {}, count: 0));
 
-    return _handle(request).then((response) {
-      expect(response.statusCode, equals(200));
-      expect(response.readAsString(), completion(equals("good job!")));
-    });
+    var response = await _handle(request);
+    expect(response.statusCode, equals(200));
+    expect(response.readAsString(), completion(equals("good job!")));
   });
 }

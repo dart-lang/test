@@ -14,6 +14,7 @@ import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../util/remote_exception.dart';
+import '../../utils.dart';
 
 /// A test in another isolate.
 class IsolateTest extends Test {
@@ -71,13 +72,15 @@ class IsolateTest extends Test {
         return;
       }
 
-      // If the test is still running, send it a message telling it to shut down
-      // ASAP. This causes the [Invoker] to eagerly throw exceptions whenever
-      // the test touches it.
-      sendPortCompleter.future.then((sendPort) {
+      invoke(() async {
+        // If the test is still running, send it a message telling it to shut
+        // down ASAP. This causes the [Invoker] to eagerly throw exceptions
+        // whenever the test touches it.
+        var sendPort = await sendPortCompleter.future;
         sendPort.send({'command': 'close'});
-        return controller.completer.future;
-      }).then((_) => receivePort.close());
+        await controller.completer.future;
+        receivePort.close();
+      });
     });
     return controller.liveTest;
   }

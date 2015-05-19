@@ -53,7 +53,7 @@ class BrowserManager {
   /// [url] should be an HTML page with a reference to the JS-compiled test
   /// suite. [path] is the path of the original test suite file, which is used
   /// for reporting. [metadata] is the parsed metadata for the test suite.
-  Future<Suite> loadSuite(String path, Uri url, Metadata metadata) {
+  Future<Suite> loadSuite(String path, Uri url, Metadata metadata) async {
     url = url.replace(fragment: Uri.encodeFull(JSON.encode({
       "metadata": metadata.serialize(),
       "browser": browser.identifier
@@ -62,7 +62,7 @@ class BrowserManager {
     // The stream may close before emitting a value if the browser is killed
     // prematurely (e.g. via Control-C).
     var suiteChannel = _channel.virtualChannel();
-    return _pool.withResource(() {
+    var response = await _pool.withResource(() {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
@@ -80,23 +80,25 @@ class BrowserManager {
             "Timed out waiting for the test suite to connect on "
                 "${browser.name}.");
       });
-    }).then((response) {
-      if (response == null) return null;
-
-      if (response["type"] == "loadException") {
-        return new Future.error(new LoadException(path, response["message"]));
-      } else if (response["type"] == "error") {
-        var asyncError = RemoteException.deserialize(response["error"]);
-        return new Future.error(
-            new LoadException(path, asyncError.error),
-            asyncError.stackTrace);
-      }
-
-      return new Suite(response["tests"].map((test) {
-        var testMetadata = new Metadata.deserialize(test['metadata']);
-        var testChannel = suiteChannel.virtualChannel(test['channel']);
-        return new IframeTest(test['name'], testMetadata, testChannel);
-      }), metadata: metadata, path: path);
     });
+
+    if (response == null) return null;
+
+    if (response["type"] == "loadException") {
+      throw new LoadException(path, response["message"]);
+    }
+
+    if (response["type"] == "error") {
+      var asyncError = RemoteException.deserialize(response["error"]);
+      await new Future.error(
+          new LoadException(path, asyncError.error),
+          asyncError.stackTrace);
+    }
+
+    return new Suite(response["tests"].map((test) {
+      var testMetadata = new Metadata.deserialize(test['metadata']);
+      var testChannel = suiteChannel.virtualChannel(test['channel']);
+      return new IframeTest(test['name'], testMetadata, testChannel);
+    }), metadata: metadata, path: path);
   }
 }

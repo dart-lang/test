@@ -57,9 +57,10 @@ class BrowserServer {
   ///
   /// If the package root doesn't exist, throws an [ApplicationException].
   static Future<BrowserServer> start({String root, String packageRoot,
-      Uri pubServeUrl, bool color: false}) {
+      Uri pubServeUrl, bool color: false}) async {
     var server = new BrowserServer._(root, packageRoot, pubServeUrl, color);
-    return server._load().then((_) => server);
+    await server._load();
+    return server;
   }
 
   /// The underlying HTTP server.
@@ -233,7 +234,7 @@ void main() {
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
   Future<Suite> loadSuite(String path, TestPlatform browser,
-      Metadata metadata) {
+      Metadata metadata) async {
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
     }
@@ -248,39 +249,39 @@ void main() {
               '</script>.');
     }
 
-    return new Future.sync(() {
-      if (_pubServeUrl != null) {
-        var suitePrefix = p.withoutExtension(
-            p.relative(path, from: p.join(_root, 'test')));
-        var jsUrl = _pubServeUrl.resolve(
-            '$suitePrefix.dart.browser_test.dart.js');
-        return _pubServeSuite(path, jsUrl)
-            .then((_) => _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html')));
-      }
-
-      return new Future.sync(() => browser.isJS ? _compileSuite(path) : null)
-          .then((_) {
-        if (_closed) return null;
-        return url.resolveUri(p.toUri(
-            p.withoutExtension(p.relative(path, from: _root)) + ".html"));
-      });
-    }).then((suiteUrl) {
+    var suiteUrl;
+    if (_pubServeUrl != null) {
+      var suitePrefix = p.withoutExtension(
+          p.relative(path, from: p.join(_root, 'test')));
+      var jsUrl = _pubServeUrl.resolve(
+          '$suitePrefix.dart.browser_test.dart.js');
+      await _pubServeSuite(path, jsUrl);
+      suiteUrl = _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
+    } else {
+      if (browser.isJS) await _compileSuite(path);
       if (_closed) return null;
+      suiteUrl = url.resolveUri(p.toUri(
+          p.withoutExtension(p.relative(path, from: _root)) + ".html"));
+    }
 
-      // TODO(nweiz): Don't start the browser until all the suites are compiled.
-      return _browserManagerFor(browser).then((browserManager) {
-        if (_closed || browserManager == null) return null;
-        return browserManager.loadSuite(path, suiteUrl, metadata);
-      }).then((suite) {
-        if (_closed) return null;
-        if (suite != null) return suite.change(platform: browser.name);
+    if (_closed) return null;
 
-        // If the browser manager fails to load a suite and the server isn't
-        // closed, it's probably because the browser failed. We emit the failure
-        // here to ensure that it gets surfaced.
-        return _browsers[browser].onExit;
-      });
-    });
+    // TODO(nweiz): Don't start the browser until all the suites are compiled.
+    var browserManager = await _browserManagerFor(browser);
+    if (_closed) return null;
+
+    var suite;
+    if (browserManager != null) {
+      suite = await browserManager.loadSuite(path, suiteUrl, metadata);
+      if (_closed) return null;
+    }
+
+    if (suite != null) return suite.change(platform: browser.name);
+
+    // If the browser manager fails to load a suite and the server isn't
+    // closed, it's probably because the browser failed. We emit the failure
+    // here to ensure that it gets surfaced.
+    return _browsers[browser].onExit;
   }
 
   /// Loads a test suite at [path] from the `pub serve` URL [jsUrl].
@@ -288,17 +289,23 @@ void main() {
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
   Future _pubServeSuite(String path, Uri jsUrl) {
-    return _pubServePool.withResource(() {
+    return _pubServePool.withResource(() async {
       var timer = new Timer(new Duration(seconds: 1), () {
         print('"pub serve" is compiling $path...');
       });
 
-      return _http.headUrl(jsUrl)
-          .then((request) => request.close())
-          .whenComplete(timer.cancel)
-          .catchError((error, stackTrace) {
-        if (error is! IOException) throw error;
+      var response;
+      try {
+        var request = await _http.headUrl(jsUrl);
+        response = await request.close();
 
+        if (response.statusCode == 200) return;
+
+        throw new LoadException(path,
+            "Error getting $jsUrl: ${response.statusCode} "
+                "${response.reasonPhrase}\n"
+            'Make sure "pub serve" is serving the test/ directory.');
+      } on IOException catch (error) {
         var message = getErrorMessage(error);
         if (error is SocketException) {
           message = "${error.osError.message} "
@@ -308,14 +315,9 @@ void main() {
         throw new LoadException(path,
             "Error getting $jsUrl: $message\n"
             'Make sure "pub serve" is running.');
-      }).then((response) {
-        if (response.statusCode == 200) return;
-
-        throw new LoadException(path,
-            "Error getting $jsUrl: ${response.statusCode} "
-                "${response.reasonPhrase}\n"
-            'Make sure "pub serve" is serving the test/ directory.');
-      });
+      } finally {
+        timer.cancel();
+      }
     });
   }
 
@@ -324,21 +326,18 @@ void main() {
   /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
   /// served.
   Future _compileSuite(String dartPath) {
-    return _compileFutures.putIfAbsent(dartPath, () {
+    return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".js");
 
-      return _compilers.compile(dartPath, jsPath, packageRoot: _packageRoot)
-          .then((_) {
-        if (_closed) return;
+      await _compilers.compile(dartPath, jsPath, packageRoot: _packageRoot);
+      if (_closed) return;
 
-        _jsHandler.add(
-            p.toUri(p.relative(dartPath, from: _root)).path +
-                '.browser_test.dart.js',
-            (request) {
-          return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
-              headers: {'Content-Type': 'application/javascript'});
-        });
+      var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+          '.browser_test.dart.js';
+      _jsHandler.add(jsUrl, (request) {
+        return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
+            headers: {'Content-Type': 'application/javascript'});
       });
     });
   }

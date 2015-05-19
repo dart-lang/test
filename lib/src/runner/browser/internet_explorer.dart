@@ -42,27 +42,32 @@ class InternetExplorer implements Browser {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    Process.start(executable, ['-extoff', url.toString()])
-        .then((process) {
-      _process = process;
-      _onProcessStartedCompleter.complete();
+    invoke(() async {
+      try {
+        var process = await Process.start(
+            executable, ['-extoff', url.toString()]);
 
-      // TODO(nweiz): the browser's standard output is almost always useless
-      // noise, but we should allow the user to opt in to seeing it.
-      return _process.exitCode;
-    }).then((exitCode) {
-      if (exitCode == 0) return null;
+        _process = process;
+        _onProcessStartedCompleter.complete();
 
-      return UTF8.decodeStream(_process.stderr).then((error) {
-        throw new ApplicationException(
-            "Internet Explorer failed with exit code $exitCode:\n$error");
-      });
-    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
-      if (stackTrace == null) stackTrace = new Trace.current();
-      _onExitCompleter.completeError(
-          new ApplicationException(
-              "Failed to start Internet Explorer: ${getErrorMessage(error)}."),
-          stackTrace);
+        // TODO(nweiz): the browser's standard output is almost always useless
+        // noise, but we should allow the user to opt in to seeing it.
+        var exitCode = await _process.exitCode;
+        if (exitCode != 0) {
+          var error = await UTF8.decodeStream(_process.stderr);
+          throw new ApplicationException(
+              "Internet Explorer failed with exit code $exitCode:\n$error");
+        }
+
+        _onExitCompleter.complete();
+      } catch (error, stackTrace) {
+        if (stackTrace == null) stackTrace = new Trace.current();
+        _onExitCompleter.completeError(
+            new ApplicationException(
+                "Failed to start Internet Explorer: "
+                    "${getErrorMessage(error)}."),
+            stackTrace);
+      }
     });
   }
 

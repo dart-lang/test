@@ -26,20 +26,19 @@ void main() {
       expect(invoker, isNull);
     });
 
-    test("returns the current invoker in a test body", () {
+    test("returns the current invoker in a test body", () async {
       var invoker;
       var liveTest = _localTest(() {
         invoker = Invoker.current;
       }).load(suite);
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-      return liveTest.run().then((_) {
-        expect(invoker.liveTest, equals(liveTest));
-      });
+      await liveTest.run();
+      expect(invoker.liveTest, equals(liveTest));
     });
 
     test("returns the current invoker in a test body after the test completes",
-        () {
+        () async {
       var status;
       var completer = new Completer();
       var liveTest = _localTest(() {
@@ -53,26 +52,24 @@ void main() {
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
       expect(liveTest.run(), completes);
-      return completer.future.then((invoker) {
-        expect(invoker.liveTest, equals(liveTest));
-        expect(status, equals(Status.complete));
-      });
+      var invoker = await completer.future;
+      expect(invoker.liveTest, equals(liveTest));
+      expect(status, equals(Status.complete));
     });
 
-    test("returns the current invoker in a tearDown body", () {
+    test("returns the current invoker in a tearDown body", () async {
       var invoker;
       var liveTest = _localTest(() {}, tearDown: () {
         invoker = Invoker.current;
       }).load(suite);
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-      return liveTest.run().then((_) {
-        expect(invoker.liveTest, equals(liveTest));
-      });
+      await liveTest.run();
+      expect(invoker.liveTest, equals(liveTest));
     });
 
     test("returns the current invoker in a tearDown body after the test "
-        "completes", () {
+        "completes", () async {
       var status;
       var completer = new Completer();
       var liveTest = _localTest(() {}, tearDown: () {
@@ -86,15 +83,14 @@ void main() {
       liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
       expect(liveTest.run(), completes);
-      return completer.future.then((invoker) {
-        expect(invoker.liveTest, equals(liveTest));
-        expect(status, equals(Status.complete));
-      });
+      var invoker = await completer.future;
+      expect(invoker.liveTest, equals(liveTest));
+      expect(status, equals(Status.complete));
     });
   });
 
   group("in a successful test,", () {
-    test("the state changes from pending to running to complete", () {
+    test("the state changes from pending to running to complete", () async {
       var stateInTest;
       var stateInTearDown;
       var liveTest;
@@ -113,16 +109,16 @@ void main() {
       expect(liveTest.state.status, equals(Status.running));
       expect(liveTest.state.result, equals(Result.success));
 
-      return future.then((_) {
-        expect(stateInTest.status, equals(Status.running));
-        expect(stateInTest.result, equals(Result.success));
+      await future;
 
-        expect(stateInTearDown.status, equals(Status.running));
-        expect(stateInTearDown.result, equals(Result.success));
+      expect(stateInTest.status, equals(Status.running));
+      expect(stateInTest.result, equals(Result.success));
 
-        expect(liveTest.state.status, equals(Status.complete));
-        expect(liveTest.state.result, equals(Result.success));
-      });
+      expect(stateInTearDown.status, equals(Status.running));
+      expect(stateInTearDown.result, equals(Result.success));
+
+      expect(liveTest.state.status, equals(Status.complete));
+      expect(liveTest.state.result, equals(Result.success));
     });
 
     test("onStateChange fires for each state change", () {
@@ -278,7 +274,7 @@ void main() {
       return liveTest.run();
     });
 
-    test("tearDown is run after an asynchronous failure", () {
+    test("tearDown is run after an asynchronous failure", () async {
       var stateDuringTearDown;
       var liveTest;
       liveTest = _localTest(() {
@@ -289,10 +285,9 @@ void main() {
       }).load(suite);
 
       expectSingleFailure(liveTest);
-      return liveTest.run().then((_) {
-        expect(stateDuringTearDown,
-            equals(const State(Status.complete, Result.failure)));
-      });
+      await liveTest.run();
+      expect(stateDuringTearDown,
+          equals(const State(Status.complete, Result.failure)));
     });
   });
 
@@ -413,7 +408,7 @@ void main() {
       return liveTest.run();
     });
 
-    test("tearDown is run after an asynchronous error", () {
+    test("tearDown is run after an asynchronous error", () async {
       var stateDuringTearDown;
       var liveTest;
       liveTest = _localTest(() {
@@ -424,10 +419,9 @@ void main() {
       }).load(suite);
 
       expectSingleError(liveTest);
-      return liveTest.run().then((_) {
-        expect(stateDuringTearDown,
-            equals(const State(Status.complete, Result.error)));
-      });
+      await liveTest.run();
+      expect(stateDuringTearDown,
+          equals(const State(Status.complete, Result.error)));
     });
 
     test("an asynchronous error in tearDown causes the test to error", () {
@@ -441,7 +435,7 @@ void main() {
     });
 
     test("an error reported in the test body after tearDown begins running "
-        "doesn't stop tearDown", () {
+        "doesn't stop tearDown", () async {
       var tearDownComplete = false;;
       var completer = new Completer();
 
@@ -474,14 +468,13 @@ void main() {
         (error) => expect(error, equals("not again"))
       ]);
 
-      return liveTest.run().then((_) {
-        expect(tearDownComplete, isTrue);
-      });
+      await liveTest.run();
+      expect(tearDownComplete, isTrue);
     });
   });
 
   test("a test doesn't complete until there are no outstanding callbacks",
-      () {
+      () async {
     var outstandingCallbackRemoved = false;
     var liveTest = _localTest(() {
       Invoker.current.addOutstandingCallback();
@@ -496,13 +489,12 @@ void main() {
 
     liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-    return liveTest.run().then((_) {
-      expect(outstandingCallbackRemoved, isTrue);
-    });
+    await liveTest.run();
+    expect(outstandingCallbackRemoved, isTrue);
   });
 
   test("a test's tearDown isn't run until there are no outstanding callbacks",
-      () {
+      () async {
     var outstandingCallbackRemoved = false;
     var outstandingCallbackRemovedBeforeTeardown = false;
     var liveTest = _localTest(() {
@@ -517,13 +509,12 @@ void main() {
 
     liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-    return liveTest.run().then((_) {
-      expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
-    });
+    await liveTest.run();
+    expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
   });
 
   test("a test's tearDown doesn't complete until there are no outstanding "
-      "callbacks", () {
+      "callbacks", () async {
     var outstandingCallbackRemoved = false;
     var liveTest = _localTest(() {}, tearDown: () {
       Invoker.current.addOutstandingCallback();
@@ -538,12 +529,12 @@ void main() {
 
     liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-    return liveTest.run().then((_) {
-      expect(outstandingCallbackRemoved, isTrue);
-    });
+    await liveTest.run();
+    expect(outstandingCallbackRemoved, isTrue);
   });
 
-  test("a test body's outstanding callbacks can't complete its tearDown", () {
+  test("a test body's outstanding callbacks can't complete its tearDown",
+      () async {
     var outstandingCallbackRemoved = false;
     var completer = new Completer();
     var liveTest = _localTest(() {
@@ -567,9 +558,8 @@ void main() {
 
     liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-    return liveTest.run().then((_) {
-      expect(outstandingCallbackRemoved, isTrue);
-    });
+    await liveTest.run();
+    expect(outstandingCallbackRemoved, isTrue);
   });
 
   test("a test's prints are captured and reported", () {

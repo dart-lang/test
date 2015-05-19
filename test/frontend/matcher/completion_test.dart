@@ -18,31 +18,31 @@ void main() {
       }, (completer) => completer.complete());
     });
 
-    test("with an error", () {
-      return runTestBody(() {
+    test("with an error", () async {
+      var liveTest = await runTestBody(() {
         expect(new Future.error('X'), completes);
-      }).then((liveTest) {
-        expectTestFailed(liveTest, startsWith(
-            "Expected future to complete successfully, but it failed with X"));
       });
+
+      expectTestFailed(liveTest, startsWith(
+          "Expected future to complete successfully, but it failed with X"));
     });
 
-    test("with a failure", () {
-      return runTestBody(() {
+    test("with a failure", () async {
+      var liveTest = await runTestBody(() {
         expect(new Future.error(new TestFailure('oh no')), completes);
-      }).then((liveTest) {
-        expectTestFailed(liveTest, "oh no");
       });
+
+      expectTestFailed(liveTest, "oh no");
     });
 
-    test("with a non-function", () {
-      return runTestBody(() {
+    test("with a non-function", () async {
+      var liveTest = await runTestBody(() {
         expect(10, completes);
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Expected: completes successfully\n"
-            "  Actual: <10>\n");
       });
+
+      expectTestFailed(liveTest,
+          "Expected: completes successfully\n"
+          "  Actual: <10>\n");
     });
 
     test("with a successful future", () {
@@ -59,42 +59,42 @@ void main() {
       }, (completer) => completer.complete());
     });
 
-    test("with an error", () {
-      return runTestBody(() {
+    test("with an error", () async {
+      var liveTest = await runTestBody(() {
         expect(new Future.error('X'), completion(isNull));
-      }).then((liveTest) {
-        expectTestFailed(liveTest, startsWith(
-            "Expected future to complete successfully, but it failed with X"));
       });
+
+      expectTestFailed(liveTest, startsWith(
+          "Expected future to complete successfully, but it failed with X"));
     });
 
-    test("with a failure", () {
-      return runTestBody(() {
+    test("with a failure", () async {
+      var liveTest = await runTestBody(() {
         expect(new Future.error(new TestFailure('oh no')), completion(isNull));
-      }).then((liveTest) {
-        expectTestFailed(liveTest, "oh no");
       });
+
+      expectTestFailed(liveTest, "oh no");
     });
 
-    test("with a non-function", () {
-      return runTestBody(() {
+    test("with a non-function", () async {
+      var liveTest = await runTestBody(() {
         expect(10, completion(equals(10)));
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Expected: completes to a value that <10>\n"
-            "  Actual: <10>\n");
       });
+
+      expectTestFailed(liveTest,
+          "Expected: completes to a value that <10>\n"
+          "  Actual: <10>\n");
     });
 
-    test("with an incorrect value", () {
-      return runTestBody(() {
+    test("with an incorrect value", () async {
+      var liveTest = await runTestBody(() {
         expect(new Future.value('a'), completion(equals('b')));
-      }).then((liveTest) {
-        expectTestFailed(liveTest, startsWith(
-            "Expected: 'b'\n"
-            "  Actual: 'a'\n"
-            "   Which: is different."));;
       });
+
+      expectTestFailed(liveTest, startsWith(
+          "Expected: 'b'\n"
+          "  Actual: 'a'\n"
+          "   Which: is different."));;
     });
   });
 }

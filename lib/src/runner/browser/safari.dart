@@ -45,35 +45,39 @@ class Safari implements Browser {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    withTempDir((dir) {
-      // Safari will only open files (not general URLs) via the command-line
-      // API, so we create a dummy file to redirect it to the page we actually
-      // want it to load.
-      var redirect = p.join(dir, 'redirect.html');
-      new File(redirect).writeAsStringSync(
-          "<script>location = " + JSON.encode(url.toString()) + "</script>");
+    invoke(() async {
+      try {
+        var exitCode = await withTempDir((dir) async {
+          // Safari will only open files (not general URLs) via the command-line
+          // API, so we create a dummy file to redirect it to the page we actually
+          // want it to load.
+          var redirect = p.join(dir, 'redirect.html');
+          new File(redirect).writeAsStringSync(
+              "<script>location = " + JSON.encode(url.toString()) + "</script>");
 
-      return Process.start(executable, [redirect]).then((process) {
-        _process = process;
-        _onProcessStartedCompleter.complete();
+          var process = await Process.start(executable, [redirect]);
+          _process = process;
+          _onProcessStartedCompleter.complete();
 
-        // TODO(nweiz): the browser's standard output is almost always useless
-        // noise, but we should allow the user to opt in to seeing it.
-        return _process.exitCode;
-      });
-    }).then((exitCode) {
-      if (exitCode == 0) return null;
+          // TODO(nweiz): the browser's standard output is almost always useless
+          // noise, but we should allow the user to opt in to seeing it.
+          return await _process.exitCode;
+        });
 
-      return UTF8.decodeStream(_process.stderr).then((error) {
-        throw new ApplicationException(
-            "Safari failed with exit code $exitCode:\n$error");
-      });
-    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
-      if (stackTrace == null) stackTrace = new Trace.current();
-      _onExitCompleter.completeError(
-          new ApplicationException(
-              "Failed to start Safari: ${getErrorMessage(error)}."),
-          stackTrace);
+        if (exitCode != 0) {
+          var error = await UTF8.decodeStream(_process.stderr);
+          throw new ApplicationException(
+              "Safari failed with exit code $exitCode:\n$error");
+        }
+
+        _onExitCompleter.complete();
+      } catch (error, stackTrace) {
+        if (stackTrace == null) stackTrace = new Trace.current();
+        _onExitCompleter.completeError(
+            new ApplicationException(
+                "Safari to start Chrome: ${getErrorMessage(error)}."),
+            stackTrace);
+      }
     });
   }
 

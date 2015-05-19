@@ -49,12 +49,12 @@ void main() {
 
   group(".loadFile()", () {
     var suite;
-    setUp(() {
-      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).toList()
-          .then((suites) {
-        expect(suites, hasLength(1));
-        suite = suites.first;
-      });
+    setUp(() async {
+      var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+          .toList();
+
+      expect(suites, hasLength(1));
+      suite = suites.first;
     });
 
     test("returns a suite with the file path and platform", () {
@@ -89,7 +89,7 @@ void main() {
   });
 
 
-  test("loads tests that are defined asynchronously", () {
+  test("loads tests that are defined asynchronously", () async {
     new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync("""
 import 'dart:async';
 
@@ -110,23 +110,24 @@ Future main() {
 }
 """);
 
-    return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).toList()
-        .then((suites) {
-      expect(suites, hasLength(1));
-      var suite = suites.first;
-      expect(suite.tests, hasLength(3));
-      expect(suite.tests[0].name, equals("success"));
-      expect(suite.tests[1].name, equals("failure"));
-      expect(suite.tests[2].name, equals("error"));
-    });
+    var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+        .toList();
+    expect(suites, hasLength(1));
+    var suite = suites.first;
+    expect(suite.tests, hasLength(3));
+    expect(suite.tests[0].name, equals("success"));
+    expect(suite.tests[1].name, equals("failure"));
+    expect(suite.tests[2].name, equals("error"));
   });
 
-  test("loads a suite both in the browser and the VM", () {
+  test("loads a suite both in the browser and the VM", () async {
     var loader = new Loader([TestPlatform.vm, TestPlatform.chrome],
         root: _sandbox,
         packageRoot: p.join(packageDir, 'packages'));
     var path = p.join(_sandbox, 'a_test.dart');
-    return loader.loadFile(path).toList().then((suites) {
+
+    try {
+      var suites = await loader.loadFile(path).toList();
       expect(suites[0].platform, equals('VM'));
       expect(suites[0].path, equals(path));
       expect(suites[1].platform, equals('Chrome'));
@@ -138,6 +139,8 @@ Future main() {
         expect(suite.tests[1].name, equals("failure"));
         expect(suite.tests[2].name, equals("error"));
       }
-    }).whenComplete(loader.close);
+    } finally {
+      await loader.close();
+    }
   });
 }
