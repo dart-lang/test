@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:http_multi_server/http_multi_server.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:shelf/shelf.dart' as shelf;
@@ -144,7 +145,7 @@ class BrowserServer {
         _compilers = new CompilerPool(color: color);
 
   /// Starts the underlying server.
-  Future _load() {
+  Future _load() async {
     var cascade = new shelf.Cascade()
         .add(_webSocketHandler.handler);
 
@@ -160,9 +161,8 @@ class BrowserServer {
       .addMiddleware(nestingMiddleware(_secret))
       .addHandler(cascade.handler);
 
-    return shelf_io.serve(pipeline, 'localhost', 0).then((server) {
-      _server = server;
-    });
+    _server = await HttpMultiServer.loopback(0);
+    shelf_io.serveRequests(_server, pipeline);
   }
 
   /// Returns a handler that serves the contents of the "packages/" directory
