@@ -1,3 +1,8 @@
+## 0.12.2
+
+* Improve the browser test suite timeout logic to avoid timeouts when running
+  many browser suites at once.
+
 ## 0.12.1
 
 * Add a `--verbose-trace` flag to include core library frames in stack traces.

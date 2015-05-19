@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
+import 'package:pool/pool.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
@@ -31,6 +32,15 @@ class BrowserManager {
   /// This is connected to a page running `static/host.dart`.
   final MultiChannel _channel;
 
+  /// A pool that ensures that limits the number of initial connections the
+  /// manager will wait for at once.
+  ///
+  /// This isn't the *total* number of connections; any number of iframes may be
+  /// loaded in the same browser. However, the browser can only load so many at
+  /// once, and we want a timeout in case they fail so we only wait for so many
+  /// at once.
+  final _pool = new Pool(8);
+
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
   BrowserManager(this.browser, CompatibleWebSocket webSocket)
@@ -49,25 +59,27 @@ class BrowserManager {
       "browser": browser.identifier
     })));
 
-    var suiteChannel = _channel.virtualChannel();
-    _channel.sink.add({
-      "command": "loadSuite",
-      "url": url.toString(),
-      "channel": suiteChannel.id
-    });
-
-    // Create a nested MultiChannel because the iframe will be using a channel
-    // wrapped within the host's channel.
-    suiteChannel = new MultiChannel(suiteChannel.stream, suiteChannel.sink);
-
     // The stream may close before emitting a value if the browser is killed
     // prematurely (e.g. via Control-C).
-    return maybeFirst(suiteChannel.stream)
-        .timeout(new Duration(seconds: 7), onTimeout: () {
-      throw new LoadException(
-          path,
-          "Timed out waiting for the test suite to connect on "
-              "${browser.name}.");
+    var suiteChannel = _channel.virtualChannel();
+    return _pool.withResource(() {
+      _channel.sink.add({
+        "command": "loadSuite",
+        "url": url.toString(),
+        "channel": suiteChannel.id
+      });
+
+      // Create a nested MultiChannel because the iframe will be using a channel
+      // wrapped within the host's channel.
+      suiteChannel = new MultiChannel(suiteChannel.stream, suiteChannel.sink);
+
+      return maybeFirst(suiteChannel.stream)
+          .timeout(new Duration(seconds: 15), onTimeout: () {
+        throw new LoadException(
+            path,
+            "Timed out waiting for the test suite to connect on "
+                "${browser.name}.");
+      });
     }).then((response) {
       if (response == null) return null;
 
