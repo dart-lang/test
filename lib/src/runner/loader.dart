@@ -15,6 +15,7 @@ import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/suite.dart';
 import '../backend/test_platform.dart';
+import '../util/async_thunk.dart';
 import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/isolate_wrapper.dart';
@@ -54,19 +55,18 @@ class Loader {
   ///
   /// This is lazily initialized the first time it's accessed.
   Future<BrowserServer> get _browserServer {
-    if (_browserServerCompleter == null) {
-      _browserServerCompleter = new Completer();
-      BrowserServer.start(
-              root: _root,
-              packageRoot: _packageRoot,
-              pubServeUrl: _pubServeUrl,
-              color: _color)
-          .then(_browserServerCompleter.complete)
-          .catchError(_browserServerCompleter.completeError);
-    }
-    return _browserServerCompleter.future;
+    return _browserServerThunk.run(() {
+      return BrowserServer.start(
+          root: _root,
+          packageRoot: _packageRoot,
+          pubServeUrl: _pubServeUrl,
+          color: _color);
+    });
   }
-  Completer<BrowserServer> _browserServerCompleter;
+  final _browserServerThunk = new AsyncThunk<BrowserServer>();
+
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
 
   /// Creates a new loader.
   ///
@@ -245,12 +245,14 @@ void main(_, Map message) {
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() {
-    for (var isolate in _isolates) {
-      isolate.kill();
-    }
-    _isolates.clear();
+    return _closeThunk.run(() async {
+      for (var isolate in _isolates) {
+        isolate.kill();
+      }
+      _isolates.clear();
 
-    if (_browserServerCompleter == null) return new Future.value();
-    return _browserServer.then((browserServer) => browserServer.close());
+      if (!_browserServerThunk.hasRun) return;
+      await (await _browserServer).close();
+    });
   }
 }

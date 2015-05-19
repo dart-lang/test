@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
+import '../../util/async_thunk.dart';
 import '../../util/io.dart';
 import '../load_exception.dart';
 
@@ -36,10 +37,10 @@ class CompilerPool {
   final _compilers = new Queue<_Compiler>();
 
   /// Whether [close] has been called.
-  bool get _closed => _closeCompleter != null;
+  bool get _closed => _closeThunk.hasRun;
 
-  /// The completer for the [Future] returned by [close].
-  Completer _closeCompleter;
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
 
   /// Creates a compiler pool that runs up to [concurrency] instances of
   /// `dart2js` at once.
@@ -140,16 +141,15 @@ void main(_) {
   /// be started. It returns a [Future] that completes once all the compilers
   /// have been killed and all resources released.
   Future close() {
-    if (_closed) return _closeCompleter.future;
-    _closeCompleter = new Completer();
+    return _closeThunk.run(() async {
+      await Future.wait(_compilers.map((compiler) async {
+        compiler.process.kill();
+        await compiler.process.exitCode;
+        compiler.onDoneCompleter.complete();
+      }));
 
-    return Future.wait(_compilers.map((compiler) {
-      compiler.process.kill();
-      return compiler.process.exitCode.then(compiler.onDoneCompleter.complete);
-    })).then((_) {
       _compilers.clear();
-      _closeCompleter.complete();
-    }).catchError(_closeCompleter.completeError);
+    });
   }
 }
 

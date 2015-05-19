@@ -19,6 +19,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
+import '../../util/async_thunk.dart';
 import '../../util/io.dart';
 import '../../util/path_handler.dart';
 import '../../util/one_off_handler.dart';
@@ -113,10 +114,10 @@ class BrowserServer {
   final HttpClient _http;
 
   /// Whether [close] has been called.
-  bool get _closed => _closeCompleter != null;
+  bool get _closed => _closeThunk.hasRun;
 
-  /// The completer for the [Future] returned by [close].
-  Completer _closeCompleter;
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
 
   /// All currently-running browsers.
   ///
@@ -401,26 +402,22 @@ void main() {
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   Future close() {
-    if (_closeCompleter != null) return _closeCompleter.future;
-    _closeCompleter = new Completer();
+    return _closeThunk.run(() async {
+      var futures = _browserManagers.keys.map((platform) async {
+        await _browserManagers[platform];
+        await _browsers[platform].close();
+      }).toList();
 
-    return Future.wait([
-      _server.close(),
-      _compilers.close()
-    ]).then((_) {
-      if (_browserManagers.isEmpty) return null;
-      return Future.wait(_browserManagers.keys.map((platform) {
-        return _browserManagers[platform]
-            .then((_) => _browsers[platform].close());
-      }));
-    }).then((_) {
+      futures.add(_server.close());
+      futures.add(_compilers.close());
+
+      await Future.wait(futures);
+
       if (_pubServeUrl == null) {
         new Directory(_compiledDir).deleteSync(recursive: true);
       } else {
         _http.close();
       }
-
-      _closeCompleter.complete();
-    }).catchError(_closeCompleter.completeError);
+    });
   }
 }
