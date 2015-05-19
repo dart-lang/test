@@ -1,5 +1,8 @@
 ## 0.12.2
 
+* Convert JavaScript stack traces into Dart stack traces using source maps. This
+  can be disabled with the new `--js-trace` flag.
+
 * Improve the browser test suite timeout logic to avoid timeouts when running
   many browser suites at once.
 

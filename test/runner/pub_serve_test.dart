@@ -34,6 +34,8 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
+dependency_overrides:
+  matcher: '0.12.0-alpha.0'
 """);
 
     new Directory(p.join(_sandbox, "test")).createSync();
@@ -306,6 +308,73 @@ void main() {
                 workingDirectory: _sandbox);
             expect(result.exitCode, equals(0));
             expect(result.stdout, contains('+1: All tests passed!'));
+          } finally {
+            process.kill();
+          }
+        });
+      });
+    });
+  });
+
+
+  group("with a failing test", () {
+    setUp(() {
+      new File(p.join(_sandbox, "test", "my_test.dart")).writeAsStringSync("""
+import 'dart:html';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () => throw 'oh no');
+}
+""");
+    });
+
+    test("dartifies stack traces for JS-compiled tests by default", () {
+      return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
+          .then((process) {
+        return _lines.bind(process.stdout)
+            .firstWhere(_servingRegExp.hasMatch)
+            .then((line) {
+          var match = _servingRegExp.firstMatch(line);
+
+          try {
+            var result = runTest([
+              '--pub-serve=${match[1]}',
+              '-p', 'chrome',
+              '--verbose-trace'
+            ], workingDirectory: _sandbox);
+            expect(result.stdout, contains(" main.<fn>\n"));
+            expect(result.stdout, contains("package:test"));
+            expect(result.stdout, contains("dart:async/zone.dart"));
+            expect(result.exitCode, equals(1));
+          } finally {
+            process.kill();
+          }
+        });
+      });
+    });
+
+    test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
+        () {
+      return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
+          .then((process) {
+        return _lines.bind(process.stdout)
+            .firstWhere(_servingRegExp.hasMatch)
+            .then((line) {
+          var match = _servingRegExp.firstMatch(line);
+
+          try {
+            var result = runTest([
+              '--pub-serve=${match[1]}',
+              '-p', 'chrome',
+              '--js-trace',
+              '--verbose-trace'
+            ], workingDirectory: _sandbox);
+            expect(result.stdout, isNot(contains(" main.<fn>\n")));
+            expect(result.stdout, isNot(contains("package:test")));
+            expect(result.stdout, isNot(contains("dart:async/zone.dart")));
+            expect(result.exitCode, equals(1));
           } finally {
             process.kill();
           }
