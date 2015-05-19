@@ -158,7 +158,7 @@ void main() {
         // prints have happened.
         var testDone = new Completer();
         var waitStarted = new Completer();
-        test('test', () {
+        test('test', () async {
           waitStarted.future.then((_) {
             new Future(() => print("one"));
             new Future(() => print("two"));

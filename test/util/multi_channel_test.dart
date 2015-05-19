@@ -141,16 +141,16 @@ void main() {
     });
 
     test("closes the underlying channel when it closes without any other "
-        "virtual channels", () {
+        "virtual channels", () async {
       // First close the default channel so we can test the new channel as the
       // last living virtual channel.
       channel1.sink.close();
-      return channel2.stream.toList().then((_) {
-        expect(oneToTwo.done, completes);
-        expect(twoToOne.done, completes);
 
-        virtual1.sink.close();
-      });
+      await channel2.stream.toList();
+      expect(oneToTwo.done, completes);
+      expect(twoToOne.done, completes);
+
+      virtual1.sink.close();
     });
 
     test("doesn't close the underlying channel when it closes with other "
@@ -238,16 +238,16 @@ void main() {
     });
 
     test("closes the underlying channel when it closes without any other "
-        "virtual channels", () {
+        "virtual channels", () async {
       // First close the default channel so we can test the new channel as the
       // last living virtual channel.
       channel2.sink.close();
-      return channel1.stream.toList().then((_) {
-        expect(oneToTwo.done, completes);
-        expect(twoToOne.done, completes);
 
-        virtual2.sink.close();
-      });
+      await channel1.stream.toList();
+      expect(oneToTwo.done, completes);
+      expect(twoToOne.done, completes);
+
+      virtual2.sink.close();
     });
 
     test("doesn't close the underlying channel when it closes with other "

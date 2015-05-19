@@ -15,26 +15,26 @@ void main() {
         expect(() => throw 'oh no', throws);
       });
 
-      test("with a function that doesn't throw", () {
-        return runTestBody(() {
+      test("with a function that doesn't throw", () async {
+        var liveTest = await runTestBody(() {
           expect(() {}, throws);
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected: throws\n"
-              "  Actual: <$closureString>\n"
-              "   Which: did not throw\n");
         });
+
+        expectTestFailed(liveTest,
+            "Expected: throws\n"
+            "  Actual: <$closureString>\n"
+            "   Which: did not throw\n");
       });
 
-      test("with a non-function", () {
-        return runTestBody(() {
+      test("with a non-function", () async {
+        var liveTest = await runTestBody(() {
           expect(10, throws);
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected: throws\n"
-              "  Actual: <10>\n"
-              "   Which: is not a Function or Future\n");
         });
+
+        expectTestFailed(liveTest,
+            "Expected: throws\n"
+            "  Actual: <10>\n"
+            "   Which: is not a Function or Future\n");
       });
     });
 
@@ -48,37 +48,37 @@ void main() {
             throwsA(isFormatException));
       });
 
-      test("with a function that doesn't throw", () {
-        return runTestBody(() {
+      test("with a function that doesn't throw", () async {
+        var liveTest = await runTestBody(() {
           expect(() {}, throwsA('oh no'));
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected: throws 'oh no'\n"
-              "  Actual: <$closureString>\n"
-              "   Which: did not throw\n");
         });
+
+        expectTestFailed(liveTest,
+            "Expected: throws 'oh no'\n"
+            "  Actual: <$closureString>\n"
+            "   Which: did not throw\n");
       });
 
-      test("with a non-function", () {
-        return runTestBody(() {
+      test("with a non-function", () async {
+        var liveTest = await runTestBody(() {
           expect(10, throwsA('oh no'));
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected: throws 'oh no'\n"
-              "  Actual: <10>\n"
-              "   Which: is not a Function or Future\n");
         });
+
+        expectTestFailed(liveTest,
+            "Expected: throws 'oh no'\n"
+            "  Actual: <10>\n"
+            "   Which: is not a Function or Future\n");
       });
 
-      test("with a function that throws the wrong error", () {
-        return runTestBody(() {
+      test("with a function that throws the wrong error", () async {
+        var liveTest = await runTestBody(() {
           expect(() => throw 'aw dang', throwsA('oh no'));
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected: throws 'oh no'\n"
-              "  Actual: <$closureString>\n"
-              "   Which: threw 'aw dang'\n");
         });
+
+        expectTestFailed(liveTest,
+            "Expected: throws 'oh no'\n"
+            "  Actual: <$closureString>\n"
+            "   Which: threw 'aw dang'\n");
       });
     });
   });
@@ -89,13 +89,13 @@ void main() {
         expect(new Future.error('oh no'), throws);
       });
 
-      test("with a Future that doesn't throw", () {
-        return runTestBody(() {
+      test("with a Future that doesn't throw", () async {
+        var liveTest = await runTestBody(() {
           expect(new Future.value(), throws);
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected future to fail, but succeeded with 'null'.");
         });
+
+        expectTestFailed(liveTest,
+            "Expected future to fail, but succeeded with 'null'.");
       });
 
       test("won't let the test end until the Future completes", () {
@@ -117,24 +117,24 @@ void main() {
             throwsA(isFormatException));
       });
 
-      test("with a Future that doesn't throw", () {
-        return runTestBody(() {
+      test("with a Future that doesn't throw", () async {
+        var liveTest = await runTestBody(() {
           expect(new Future.value(), throwsA('oh no'));
-        }).then((liveTest) {
-          expectTestFailed(liveTest,
-              "Expected future to fail, but succeeded with 'null'.");
         });
+
+        expectTestFailed(liveTest,
+            "Expected future to fail, but succeeded with 'null'.");
       });
 
-      test("with a Future that throws the wrong error", () {
-        return runTestBody(() {
+      test("with a Future that throws the wrong error", () async {
+        var liveTest = await runTestBody(() {
           expect(new Future.error('aw dang'), throwsA('oh no'));
-        }).then((liveTest) {
-          expectTestFailed(liveTest, startsWith(
-              "Expected: throws 'oh no'\n"
-              "  Actual: <$closureString>\n"
-              "   Which: threw 'aw dang'\n"));
         });
+
+        expectTestFailed(liveTest, startsWith(
+            "Expected: throws 'oh no'\n"
+            "  Actual: <$closureString>\n"
+            "   Which: threw 'aw dang'\n"));
       });
 
       test("won't let the test end until the Future completes", () {

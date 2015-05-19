@@ -19,7 +19,7 @@ void main() {
   });
 
   group(".test()", () {
-    test("declares a test with a description and body", () {
+    test("declares a test with a description and body", () async {
       var bodyRun = false;
       _declarer.test("description", () {
         bodyRun = true;
@@ -28,9 +28,8 @@ void main() {
       expect(_declarer.tests, hasLength(1));
       expect(_declarer.tests.single.name, equals("description"));
 
-      return _runTest(0).then(expectAsync((_) {
-        expect(bodyRun, isTrue);
-      }, max: 1));
+      await _runTest(0);
+      expect(bodyRun, isTrue);
     });
 
     test("declares multiple tests", () {
@@ -46,7 +45,7 @@ void main() {
   });
 
   group(".setUp()", () {
-    test("is run before all tests", () {
+    test("is run before all tests", () async {
       var setUpRun = false;
       _declarer.setUp(() => setUpRun = true);
 
@@ -60,7 +59,8 @@ void main() {
         setUpRun = false;
       }, max: 1));
 
-      return _runTest(0).then((_) => _runTest(1));
+      await _runTest(0);
+      await _runTest(1);
     });
 
     test("can return a Future", () {
@@ -83,7 +83,7 @@ void main() {
   });
 
   group(".tearDown()", () {
-    test("is run after all tests", () {
+    test("is run after all tests", () async {
       var tearDownRun;
       _declarer.setUp(() => tearDownRun = false);
       _declarer.tearDown(() => tearDownRun = true);
@@ -96,13 +96,13 @@ void main() {
         expect(tearDownRun, isFalse);
       }, max: 1));
 
-      return _runTest(0).then((_) {
-        expect(tearDownRun, isTrue);
-        return _runTest(1);
-      }).then((_) => expect(tearDownRun, isTrue));
+      await _runTest(0);
+      expect(tearDownRun, isTrue);
+      await _runTest(1);
+      expect(tearDownRun, isTrue);
     });
 
-    test("can return a Future", () {
+    test("can return a Future", () async {
       var tearDownRun = false;
       _declarer.tearDown(() {
         return new Future(() => tearDownRun = true);
@@ -112,7 +112,8 @@ void main() {
         expect(tearDownRun, isFalse);
       }, max: 1));
 
-      return _runTest(0).then((_) => expect(tearDownRun, isTrue));
+      await _runTest(0);
+      expect(tearDownRun, isTrue);
     });
 
     test("can't be called multiple times", () {
@@ -164,7 +165,7 @@ void main() {
     });
 
     group(".setUp()", () {
-      test("is scoped to the group", () {
+      test("is scoped to the group", () async {
         var setUpRun = false;
         _declarer.group("group", () {
           _declarer.setUp(() => setUpRun = true);
@@ -180,7 +181,8 @@ void main() {
           setUpRun = false;
         }, max: 1));
 
-        return _runTest(0).then((_) => _runTest(1));
+        await _runTest(0);
+        await _runTest(1);
       });
 
       test("runs from the outside in", () {
@@ -250,7 +252,7 @@ void main() {
     });
 
     group(".tearDown()", () {
-      test("is scoped to the group", () {
+      test("is scoped to the group", () async {
         var tearDownRun;
         _declarer.setUp(() => tearDownRun = false);
 
@@ -266,13 +268,13 @@ void main() {
           expect(tearDownRun, isFalse);
         }, max: 1));
 
-        return _runTest(0).then((_) {
-          expect(tearDownRun, isTrue);
-          return _runTest(1);
-        }).then((_) => expect(tearDownRun, isFalse));
+        await _runTest(0);
+        expect(tearDownRun, isTrue);
+        await _runTest(1);
+        expect(tearDownRun, isFalse);
       });
 
-      test("runs from the inside out", () {
+      test("runs from the inside out", () async {
         var innerTearDownRun = false;
         var middleTearDownRun = false;
         var outerTearDownRun = false;
@@ -304,14 +306,13 @@ void main() {
           });
         });
 
-        return _runTest(0).then((_) {
-          expect(innerTearDownRun, isTrue);
-          expect(middleTearDownRun, isTrue);
-          expect(outerTearDownRun, isTrue);
-        });
+        await _runTest(0);
+        expect(innerTearDownRun, isTrue);
+        expect(middleTearDownRun, isTrue);
+        expect(outerTearDownRun, isTrue);
       });
 
-      test("handles Futures when chained", () {
+      test("handles Futures when chained", () async {
         var outerTearDownRun = false;
         var innerTearDownRun = false;
         _declarer.tearDown(expectAsync(() {
@@ -331,10 +332,9 @@ void main() {
           }, max: 1));
         });
 
-        return _runTest(0).then((_) {
-          expect(innerTearDownRun, isTrue);
-          expect(outerTearDownRun, isTrue);
-        });
+        await _runTest(0);
+        expect(innerTearDownRun, isTrue);
+        expect(outerTearDownRun, isTrue);
       });
 
       test("can't be called multiple times", () {

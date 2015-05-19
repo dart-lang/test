@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:test/src/backend/state.dart';
 import 'package:test/test.dart';
 
@@ -9,63 +11,63 @@ import '../utils.dart';
 
 void main() {
   group("supports a function with this many arguments:", () {
-    test("0", () {
+    test("0", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync(() {
           callbackRun = true;
         })();
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("1", () {
+    test("1", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync((arg) {
           expect(arg, equals(1));
           callbackRun = true;
         })(1);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("2", () {
+    test("2", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           callbackRun = true;
         })(1, 2);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("3", () {
+    test("3", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2, arg3) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           expect(arg3, equals(3));
           callbackRun = true;
         })(1, 2, 3);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("4", () {
+    test("4", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2, arg3, arg4) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -73,15 +75,15 @@ void main() {
           expect(arg4, equals(4));
           callbackRun = true;
         })(1, 2, 3, 4);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("5", () {
+    test("5", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2, arg3, arg4, arg5) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -90,15 +92,15 @@ void main() {
           expect(arg5, equals(5));
           callbackRun = true;
         })(1, 2, 3, 4, 5);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("6", () {
+    test("6", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2, arg3, arg4, arg5, arg6) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
@@ -108,38 +110,38 @@ void main() {
           expect(arg6, equals(6));
           callbackRun = true;
         })(1, 2, 3, 4, 5, 6);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
   });
 
   group("with optional arguments", () {
-    test("allows them to be passed", () {
+    test("allows them to be passed", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync(([arg = 1]) {
           expect(arg, equals(2));
           callbackRun = true;
         })(2);
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
 
-    test("allows them not to be passed", () {
+    test("allows them not to be passed", () async {
       var callbackRun = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         expectAsync(([arg = 1]) {
           expect(arg, equals(1));
           callbackRun = true;
         })();
-      }).then((liveTest) {
-        expectTestPassed(liveTest);
-        expect(callbackRun, isTrue);
       });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
     });
   });
 
@@ -155,58 +157,59 @@ void main() {
           (callback) => callback());
     });
 
-    test("may only be called once", () {
-      return runTestBody(() {
+    test("may only be called once", () async {
+      var liveTest = await runTestBody(() {
         var callback = expectAsync(() {});
         callback();
         callback();
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Callback called more times than expected (1).");
       });
+
+      expectTestFailed(liveTest,
+          "Callback called more times than expected (1).");
     });
   });
 
   group("with count", () {
     test("won't allow the test to complete until it's called at least that "
-        "many times", () {
+        "many times", () async {
       var liveTest;
       var future;
       liveTest = createTest(() {
         var callback = expectAsync(() {}, count: 3);
-        future = pumpEventQueue().then((_) {
+
+        future = new Future.sync(() async {
+          await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
-          return pumpEventQueue();
-        }).then((_) {
+
+          await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
-          return pumpEventQueue();
-        }).then((_) {
+
+          await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
         });
       });
 
-      return liveTest.run().then((_) {
-        expectTestPassed(liveTest);
-        // Ensure that the outer test doesn't complete until the inner future
-        // completes.
-        return future;
-      });
+      await liveTest.run();
+      expectTestPassed(liveTest);
+      // Ensure that the outer test doesn't complete until the inner future
+      // completes.
+      await future;
     });
 
-    test("will throw an error if it's called more than that many times", () {
-      return runTestBody(() {
+    test("will throw an error if it's called more than that many times", () async {
+      var liveTest = await runTestBody(() {
         var callback = expectAsync(() {}, count: 3);
         callback();
         callback();
         callback();
         callback();
-      }).then((liveTest) {
-        expectTestFailed(
-            liveTest, "Callback called more times than expected (3).");
       });
+
+      expectTestFailed(
+          liveTest, "Callback called more times than expected (3).");
     });
 
     group("0,", () {
@@ -214,13 +217,13 @@ void main() {
         expectAsync(() {}, count: 0);
       });
 
-      test("will throw an error if it's ever called", () {
-        return runTestBody(() {
+      test("will throw an error if it's ever called", () async {
+        var liveTest = await runTestBody(() {
           expectAsync(() {}, count: 0)();
-        }).then((liveTest) {
-          expectTestFailed(
-              liveTest, "Callback called more times than expected (0).");
         });
+
+        expectTestFailed(
+            liveTest, "Callback called more times than expected (0).");
       });
     });
   });
@@ -238,17 +241,18 @@ void main() {
       callback();
     });
 
-    test("will throw an error if it's called more than that many times", () {
-      return runTestBody(() {
+    test("will throw an error if it's called more than that many times",
+        () async {
+      var liveTest = await runTestBody(() {
         var callback = expectAsync(() {}, max: 3);
         callback();
         callback();
         callback();
         callback();
-      }).then((liveTest) {
-        expectTestFailed(
-            liveTest, "Callback called more times than expected (3).");
       });
+
+      expectTestFailed(
+          liveTest, "Callback called more times than expected (3).");
     });
 
     test("-1, will allow the callback to be called any number of times", () {
@@ -265,30 +269,30 @@ void main() {
   });
 
   group("expectAsyncUntil()", () {
-    test("won't allow the test to complete until isDone returns true", () {
+    test("won't allow the test to complete until isDone returns true",
+        () async {
       var liveTest;
       var future;
       liveTest = createTest(() {
         var done = false;
         var callback = expectAsyncUntil(() {}, () => done);
 
-        future = pumpEventQueue().then((_) {
+        future = new Future.sync(() async {
+          await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
-          return pumpEventQueue();
-        }).then((_) {
+          await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           done = true;
           callback();
         });
       });
 
-      return liveTest.run().then((_) {
-        expectTestPassed(liveTest);
-        // Ensure that the outer test doesn't complete until the inner future
-        // completes.
-        return future;
-      });
+      await liveTest.run();
+      expectTestPassed(liveTest);
+      // Ensure that the outer test doesn't complete until the inner future
+      // completes.
+      await future;
     });
 
     test("doesn't call isDone until after the callback is called", () {
@@ -301,28 +305,28 @@ void main() {
   });
 
   group("with errors", () {
-    test("reports them to the current test", () {
-      return runTestBody(() {
+    test("reports them to the current test", () async {
+      var liveTest = await runTestBody(() {
         expectAsync(() => throw new TestFailure('oh no'))();
-      }).then((liveTest) {
-        expectTestFailed(liveTest, 'oh no');
       });
+
+      expectTestFailed(liveTest, 'oh no');
     });
 
-    test("swallows them and returns null", () {
+    test("swallows them and returns null", () async {
       var returnValue;
       var caughtError = false;
-      return runTestBody(() {
+      var liveTest = await runTestBody(() {
         try {
           returnValue = expectAsync(() => throw new TestFailure('oh no'))();
         } on TestFailure catch (_) {
           caughtError = true;
         }
-      }).then((liveTest) {
-        expectTestFailed(liveTest, 'oh no');
-        expect(returnValue, isNull);
-        expect(caughtError, isFalse);
       });
+
+      expectTestFailed(liveTest, 'oh no');
+      expect(returnValue, isNull);
+      expect(caughtError, isFalse);
     });
   });
 }

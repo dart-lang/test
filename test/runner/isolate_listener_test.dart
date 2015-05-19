@@ -41,300 +41,270 @@ void main() {
     _liveTest = null;
   });
 
-  test("sends a list of available tests on startup", () {
-    return _spawnIsolate(_successfulTests).then((receivePort) {
-      return receivePort.first;
-    }).then((response) {
-      expect(response, containsPair("type", "success"));
-      expect(response, contains("tests"));
+  test("sends a list of available tests on startup", () async {
+    var response = await (await _spawnIsolate(_successfulTests)).first;
+    expect(response, containsPair("type", "success"));
+    expect(response, contains("tests"));
 
-      var tests = response["tests"];
-      expect(tests, hasLength(3));
-      expect(tests[0], containsPair("name", "successful 1"));
-      expect(tests[1], containsPair("name", "successful 2"));
-      expect(tests[2], containsPair("name", "successful 3"));
-    });
+    var tests = response["tests"];
+    expect(tests, hasLength(3));
+    expect(tests[0], containsPair("name", "successful 1"));
+    expect(tests[1], containsPair("name", "successful 2"));
+    expect(tests[2], containsPair("name", "successful 3"));
   });
 
-  test("waits for a returned future sending a response", () {
-    return _spawnIsolate(_asyncTests).then((receivePort) {
-      return receivePort.first;
-    }).then((response) {
-      expect(response, containsPair("type", "success"));
-      expect(response, contains("tests"));
+  test("waits for a returned future sending a response", () async {
+    var response = await (await _spawnIsolate(_asyncTests)).first;
+    expect(response, containsPair("type", "success"));
+    expect(response, contains("tests"));
 
-      var tests = response["tests"];
-      expect(tests, hasLength(3));
-      expect(tests[0], containsPair("name", "successful 1"));
-      expect(tests[1], containsPair("name", "successful 2"));
-      expect(tests[2], containsPair("name", "successful 3"));
-    });
+    var tests = response["tests"];
+    expect(tests, hasLength(3));
+    expect(tests[0], containsPair("name", "successful 1"));
+    expect(tests[1], containsPair("name", "successful 2"));
+    expect(tests[2], containsPair("name", "successful 3"));
   });
 
-  test("sends an error response if loading fails", () {
-    return _spawnIsolate(_loadError).then((receivePort) {
-      return receivePort.first;
-    }).then((response) {
-      expect(response, containsPair("type", "error"));
-      expect(response, contains("error"));
+  test("sends an error response if loading fails", () async {
+    var response = await (await _spawnIsolate(_loadError)).first;
+    expect(response, containsPair("type", "error"));
+    expect(response, contains("error"));
 
-      var error = RemoteException.deserialize(response["error"]).error;
-      expect(error.message, equals("oh no"));
-      expect(error.type, equals("String"));
-    });
+    var error = RemoteException.deserialize(response["error"]).error;
+    expect(error.message, equals("oh no"));
+    expect(error.type, equals("String"));
   });
 
-  test("sends an error response on a NoSuchMethodError", () {
-    return _spawnIsolate(_noSuchMethodError).then((receivePort) {
-      return receivePort.first;
-    }).then((response) {
-      expect(response, containsPair("type", "loadException"));
-      expect(response,
-          containsPair("message", "No top-level main() function defined."));
-    });
+  test("sends an error response on a NoSuchMethodError", () async {
+    var response = await (await _spawnIsolate(_noSuchMethodError)).first;
+    expect(response, containsPair("type", "loadException"));
+    expect(response,
+        containsPair("message", "No top-level main() function defined."));
   });
 
-  test("sends an error response on non-function main", () {
-    return _spawnIsolate(_nonFunction).then((receivePort) {
-      return receivePort.first;
-    }).then((response) {
-      expect(response, containsPair("type", "loadException"));
-      expect(response,
-          containsPair("message", "Top-level main getter is not a function."));
-    });
+  test("sends an error response on non-function main", () async {
+    var response = await (await _spawnIsolate(_nonFunction)).first;
+    expect(response, containsPair("type", "loadException"));
+    expect(response,
+        containsPair("message", "Top-level main getter is not a function."));
   });
 
-  test("sends an error response on wrong-arity main", () {
-    return _spawnIsolate(_wrongArity).then((receivePort) {
-      return receivePort.first;
-    }).then((response) {
-      expect(response, containsPair("type", "loadException"));
-      expect(
-          response,
-          containsPair(
-              "message",
-              "Top-level main() function takes arguments."));
-    });
+  test("sends an error response on wrong-arity main", () async {
+    var response = await (await _spawnIsolate(_wrongArity)).first;
+    expect(response, containsPair("type", "loadException"));
+    expect(
+        response,
+        containsPair(
+            "message",
+            "Top-level main() function takes arguments."));
   });
 
   group("in a successful test", () {
-    test("the state changes from pending to running to complete", () {
-      return _isolateTest(_successfulTests).then((liveTest) {
-        liveTest.onError.listen(expectAsync((_) {}, count: 0));
+    test("the state changes from pending to running to complete", () async {
+      var liveTest = await _isolateTest(_successfulTests);
+      liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-        expect(liveTest.state,
-            equals(const State(Status.pending, Result.success)));
+      expect(liveTest.state,
+          equals(const State(Status.pending, Result.success)));
 
-        var future = liveTest.run();
+      var future = liveTest.run();
+      expect(liveTest.state,
+          equals(const State(Status.running, Result.success)));
 
-        expect(liveTest.state,
-            equals(const State(Status.running, Result.success)));
-
-        return future.then((_) {
-          expect(liveTest.state,
-              equals(const State(Status.complete, Result.success)));
-        });
-      });
+      await future;
+      expect(liveTest.state,
+          equals(const State(Status.complete, Result.success)));
     });
 
-    test("onStateChange fires for each state change", () {
-      return _isolateTest(_successfulTests).then((liveTest) {
-        liveTest.onError.listen(expectAsync((_) {}, count: 0));
+    test("onStateChange fires for each state change", () async {
+      var liveTest = await _isolateTest(_successfulTests);
+      liveTest.onError.listen(expectAsync((_) {}, count: 0));
 
-        var first = true;
-        liveTest.onStateChange.listen(expectAsync((state) {
-          if (first) {
-            expect(state.status, equals(Status.running));
-            first = false;
-          } else {
-            expect(state.status, equals(Status.complete));
-          }
-          expect(state.result, equals(Result.success));
-        }, count: 2, max: 2));
+      var first = true;
+      liveTest.onStateChange.listen(expectAsync((state) {
+        if (first) {
+          expect(state.status, equals(Status.running));
+          first = false;
+        } else {
+          expect(state.status, equals(Status.complete));
+        }
+        expect(state.result, equals(Result.success));
+      }, count: 2, max: 2));
 
-        return liveTest.run();
-      });
+      await liveTest.run();
     });
   });
 
   group("in a test with failures", () {
-    test("a failure reported causes the test to fail", () {
-      return _isolateTest(_failingTest).then((liveTest) {
-        expectSingleFailure(liveTest);
-        return liveTest.run();
-      });
+    test("a failure reported causes the test to fail", () async {
+      var liveTest = await _isolateTest(_failingTest);
+      expectSingleFailure(liveTest);
+      await liveTest.run();
     });
 
     test("a failure reported asynchronously after the test causes it to error",
-        () {
-      return _isolateTest(_failAfterSucceedTest).then((liveTest) {
-        expectStates(liveTest, [
-          const State(Status.running, Result.success),
-          const State(Status.complete, Result.success),
-          const State(Status.complete, Result.failure),
-          const State(Status.complete, Result.error)
-        ]);
+        () async {
+      var liveTest = await _isolateTest(_failAfterSucceedTest);
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.success),
+        const State(Status.complete, Result.failure),
+        const State(Status.complete, Result.error)
+      ]);
 
-        expectErrors(liveTest, [(error) {
-          expect(lastState,
-              equals(const State(Status.complete, Result.failure)));
-          expect(error, isTestFailure("oh no"));
-        }, (error) {
-          expect(lastState, equals(const State(Status.complete, Result.error)));
-          expect(error, isRemoteException(
-               "This test failed after it had already completed. Make sure to "
-                   "use [expectAsync]\n"
-               "or the [completes] matcher when testing async code."));
-        }]);
+      expectErrors(liveTest, [(error) {
+        expect(lastState,
+            equals(const State(Status.complete, Result.failure)));
+        expect(error, isTestFailure("oh no"));
+      }, (error) {
+        expect(lastState, equals(const State(Status.complete, Result.error)));
+        expect(error, isRemoteException(
+             "This test failed after it had already completed. Make sure to "
+                 "use [expectAsync]\n"
+             "or the [completes] matcher when testing async code."));
+      }]);
 
-        return liveTest.run();
-      });
+      await liveTest.run();
     });
 
-    test("multiple asynchronous failures are reported", () {
-      return _isolateTest(_multiFailTest).then((liveTest) {
-        expectStates(liveTest, [
-          const State(Status.running, Result.success),
-          const State(Status.complete, Result.failure)
-        ]);
+    test("multiple asynchronous failures are reported", () async {
+      var liveTest = await _isolateTest(_multiFailTest);
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.failure)
+      ]);
 
-        expectErrors(liveTest, [(error) {
-          expect(lastState.status, equals(Status.complete));
-          expect(error, isTestFailure("one"));
-        }, (error) {
-          expect(error, isTestFailure("two"));
-        }, (error) {
-          expect(error, isTestFailure("three"));
-        }, (error) {
-          expect(error, isTestFailure("four"));
-        }]);
+      expectErrors(liveTest, [(error) {
+        expect(lastState.status, equals(Status.complete));
+        expect(error, isTestFailure("one"));
+      }, (error) {
+        expect(error, isTestFailure("two"));
+      }, (error) {
+        expect(error, isTestFailure("three"));
+      }, (error) {
+        expect(error, isTestFailure("four"));
+      }]);
 
-        return liveTest.run();
-      });
+      await liveTest.run();
     });
   });
 
   group("in a test with errors", () {
-    test("an error reported causes the test to error", () {
-      return _isolateTest(_errorTest).then((liveTest) {
-        expectStates(liveTest, [
-          const State(Status.running, Result.success),
-          const State(Status.complete, Result.error)
-        ]);
+    test("an error reported causes the test to error", () async {
+      var liveTest = await _isolateTest(_errorTest);
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.error)
+      ]);
 
-        expectErrors(liveTest, [(error) {
-          expect(lastState.status, equals(Status.complete));
-          expect(error, isRemoteException("oh no"));
-        }]);
+      expectErrors(liveTest, [(error) {
+        expect(lastState.status, equals(Status.complete));
+        expect(error, isRemoteException("oh no"));
+      }]);
 
-        return liveTest.run();
-      });
+      await liveTest.run();
     });
 
     test("an error reported asynchronously after the test causes it to error",
-        () {
-      return _isolateTest(_errorAfterSucceedTest).then((liveTest) {
-        expectStates(liveTest, [
-          const State(Status.running, Result.success),
-          const State(Status.complete, Result.success),
-          const State(Status.complete, Result.error)
-        ]);
+        () async {
+      var liveTest = await _isolateTest(_errorAfterSucceedTest);
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.success),
+        const State(Status.complete, Result.error)
+      ]);
 
-        expectErrors(liveTest, [(error) {
-          expect(lastState,
-              equals(const State(Status.complete, Result.error)));
-          expect(error, isRemoteException("oh no"));
-        }, (error) {
-          expect(error, isRemoteException(
-               "This test failed after it had already completed. Make sure to "
-                   "use [expectAsync]\n"
-               "or the [completes] matcher when testing async code."));
-        }]);
+      expectErrors(liveTest, [(error) {
+        expect(lastState,
+            equals(const State(Status.complete, Result.error)));
+        expect(error, isRemoteException("oh no"));
+      }, (error) {
+        expect(error, isRemoteException(
+             "This test failed after it had already completed. Make sure to "
+                 "use [expectAsync]\n"
+             "or the [completes] matcher when testing async code."));
+      }]);
 
-        return liveTest.run();
-      });
+      await liveTest.run();
     });
 
-    test("multiple asynchronous errors are reported", () {
-      return _isolateTest(_multiErrorTest).then((liveTest) {
-        expectStates(liveTest, [
-          const State(Status.running, Result.success),
-          const State(Status.complete, Result.error)
-        ]);
+    test("multiple asynchronous errors are reported", () async {
+      var liveTest = await _isolateTest(_multiErrorTest);
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.error)
+      ]);
 
-        expectErrors(liveTest, [(error) {
-          expect(lastState.status, equals(Status.complete));
-          expect(error, isRemoteException("one"));
-        }, (error) {
-          expect(error, isRemoteException("two"));
-        }, (error) {
-          expect(error, isRemoteException("three"));
-        }, (error) {
-          expect(error, isRemoteException("four"));
-        }]);
+      expectErrors(liveTest, [(error) {
+        expect(lastState.status, equals(Status.complete));
+        expect(error, isRemoteException("one"));
+      }, (error) {
+        expect(error, isRemoteException("two"));
+      }, (error) {
+        expect(error, isRemoteException("three"));
+      }, (error) {
+        expect(error, isRemoteException("four"));
+      }]);
 
-        return liveTest.run();
-      });
+      await liveTest.run();
     });
   });
 
-  test("forwards a test's prints", () {
-    return _isolateTest(_printTest).then((liveTest) {
-      expect(liveTest.onPrint.take(2).toList(),
-          completion(equals(["Hello,", "world!"])));
+  test("forwards a test's prints", () async {
+    var liveTest = await _isolateTest(_printTest);
+    expect(liveTest.onPrint.take(2).toList(),
+        completion(equals(["Hello,", "world!"])));
 
-      return liveTest.run();
-    });
+    await liveTest.run();
   });
 }
 
 /// Loads the first test defined in [entryPoint] in another isolate.
 ///
 /// This test will be automatically closed when the test is finished.
-Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) {
-  return _spawnIsolate(entryPoint).then((receivePort) {
-    return receivePort.first;
-  }).then((response) {
-    expect(response, containsPair("type", "success"));
+Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) async {
+  var response = await (await _spawnIsolate(entryPoint)).first;
+  expect(response, containsPair("type", "success"));
 
-    var testMap = response["tests"].first;
-    var metadata = new Metadata.deserialize(testMap["metadata"]);
-    var test = new IsolateTest(testMap["name"], metadata, testMap["sendPort"]);
-    var suite = new Suite([test]);
-    _liveTest = test.load(suite);
-    return _liveTest;
-  });
+  var testMap = response["tests"].first;
+  var metadata = new Metadata.deserialize(testMap["metadata"]);
+  var test = new IsolateTest(testMap["name"], metadata, testMap["sendPort"]);
+  var suite = new Suite([test]);
+  _liveTest = test.load(suite);
+  return _liveTest;
 }
 
 /// Spawns an isolate from [entryPoint], sends it a new [SendPort], and returns
 /// the corresponding [ReceivePort].
 ///
 /// This isolate will be automatically killed when the test is finished.
-Future<ReceivePort> _spawnIsolate(void entryPoint(SendPort sendPort)) {
+Future<ReceivePort> _spawnIsolate(void entryPoint(SendPort sendPort)) async {
   var receivePort = new ReceivePort();
-  return Isolate.spawn(entryPoint, receivePort.sendPort).then((isolate) {
-    _isolate = isolate;
-    return receivePort;
-  });
+  var isolate = await Isolate.spawn(entryPoint, receivePort.sendPort);
+  _isolate = isolate;
+  return receivePort;
 }
 
 /// An isolate entrypoint that throws immediately.
-void _loadError(SendPort sendPort) =>
-    IsolateListener.start(sendPort, new Metadata(), () => () => throw 'oh no');
+void _loadError(SendPort sendPort) {
+  IsolateListener.start(sendPort, new Metadata(), () => () => throw 'oh no');
+}
 
 /// An isolate entrypoint that throws a NoSuchMethodError.
 void _noSuchMethodError(SendPort sendPort) {
-  return IsolateListener.start(sendPort, new Metadata(), () =>
+  IsolateListener.start(sendPort, new Metadata(), () =>
       throw new NoSuchMethodError(null, #main, [], {}));
 }
 
 /// An isolate entrypoint that returns a non-function.
-void _nonFunction(SendPort sendPort) =>
-    IsolateListener.start(sendPort, new Metadata(), () => null);
+void _nonFunction(SendPort sendPort) {
+  IsolateListener.start(sendPort, new Metadata(), () => null);
+}
 
 /// An isolate entrypoint that returns a function with the wrong arity.
-void _wrongArity(SendPort sendPort) =>
-    IsolateListener.start(sendPort, new Metadata(), () => (_) {});
+void _wrongArity(SendPort sendPort) {
+  IsolateListener.start(sendPort, new Metadata(), () => (_) {});
+}
 
 /// An isolate entrypoint that defines three tests that succeed.
 void _successfulTests(SendPort sendPort) {
@@ -404,7 +374,9 @@ void _errorTest(SendPort sendPort) {
 void _errorAfterSucceedTest(SendPort sendPort) {
   IsolateListener.start(sendPort, new Metadata(), () => () {
     test("error after succeed", () {
-      pumpEventQueue().then((_) => throw 'oh no');
+      pumpEventQueue().then((_) {
+        throw 'oh no';
+      });
     });
   });
 }

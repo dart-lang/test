@@ -90,30 +90,34 @@ class Engine {
   ///
   /// This returns `true` if all tests succeed, and `false` otherwise. It will
   /// only return once all tests have finished running.
-  Future<bool> run() {
+  Future<bool> run() async {
     if (_runCalled) {
       throw new StateError("Engine.run() may not be called more than once.");
     }
     _runCalled = true;
 
-    return Future.wait(_liveTestsBySuite.map((suite) {
+    await Future.wait(_liveTestsBySuite.map((suite) {
       return _pool.withResource(() {
         if (_closed) return null;
 
-        return Future.forEach(suite, (liveTest) {
-          if (_closed) return new Future.value();
+        // TODO(nweiz): Use a real for loop when issue 23394 is fixed.
+        return Future.forEach(suite, (liveTest) async {
+          // TODO(nweiz): Just "return;" when issue 23200 is fixed.
+          if (_closed) return null;
           _onTestStartedController.add(liveTest);
 
           // First, schedule a microtask to ensure that [onTestStarted] fires
           // before the first [LiveTest.onStateChange] event. Once the test
           // finishes, use [new Future] to do a coarse-grained event loop pump
           // to avoid starving the DOM or other non-microtask events.
-          return new Future.microtask(liveTest.run)
-              .then((_) => new Future(() {}));
+          await new Future.microtask(liveTest.run);
+          await new Future(() {});
         });
       });
-    })).then((_) =>
-        liveTests.every((liveTest) => liveTest.state.result == Result.success));
+    }));
+
+    return liveTests.every(
+        (liveTest) => liveTest.state.result == Result.success);
   }
 
   /// Signals that the caller is done paying attention to test results and the

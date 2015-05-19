@@ -144,7 +144,7 @@ StreamSink mapSink(StreamSink original, fn(event)) {
 
 /// Like [runZoned], but [zoneValues] are set for the callbacks in
 /// [zoneSpecification] and [onError].
-runZonedWithValues(Function body(), {Map zoneValues,
+runZonedWithValues(body(), {Map zoneValues,
     ZoneSpecification zoneSpecification, Function onError}) {
   return runZoned(() {
     return runZoned(body,
@@ -264,6 +264,24 @@ Future maybeFirst(Stream stream) {
   });
 
   return completer.future;
+}
+
+/// Returns a stream that emits [error] and [stackTrace], then closes.
+///
+/// This is useful for adding errors to streams defined via `async*`.
+Stream errorStream(error, StackTrace stackTrace) {
+  var controller = new StreamController();
+  controller.addError(error, stackTrace);
+  controller.close();
+  return controller.stream;
+}
+
+/// Runs [fn] and discards its return value.
+///
+/// This is useful for making a block of code async without forcing the
+/// containing method to return a future.
+void invoke(fn()) {
+  fn();
 }
 
 /// Returns a random base64 string containing [bytes] bytes of data.

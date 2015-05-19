@@ -50,7 +50,7 @@ void main() {
         return new shelf.Response.ok('''
 import "dart:html";
 
-void main() {
+main() async {
   $dart
 }
 ''', headers: {'content-type': 'application/dart'});
@@ -61,17 +61,15 @@ void main() {
 
     var server;
     var webSockets;
-    setUp(() {
+    setUp(() async {
       var webSocketsController = new StreamController();
       webSockets = webSocketsController.stream;
 
-      return shelf_io.serve(
+      server = await shelf_io.serve(
           new shelf.Cascade()
               .add(webSocketHandler(webSocketsController.add))
               .add(servePage).handler,
-          'localhost', 0).then((server_) {
-        server = server_;
-      });
+          'localhost', 0);
     });
 
     tearDown(() {
@@ -82,18 +80,21 @@ void main() {
       webSockets = null;
     });
 
-    test("starts Dartium with the given URL", () {
+    test("starts Dartium with the given URL", () async {
       dart = '''
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
-webSocket.onOpen.first.then((_) => webSocket.send("loaded!"));
+await webSocket.onOpen.first;
+webSocket.send("loaded!");
 ''';
       var dartium = new Dartium(baseUrlForAddress(server.address, server.port));
 
-      return webSockets.first.then((webSocket) {
-        return webSocket.first.then(
-            (message) => expect(message, equals("loaded!")));
-      }).whenComplete(dartium.close);
+      try {
+        var message = await (await webSockets.first).first;
+        expect(message, equals("loaded!"));
+      } finally {
+        dartium.close();
+      }
     });
 
     test("doesn't preserve state across runs", () {
@@ -102,7 +103,8 @@ window.localStorage["data"] = "value";
 
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
-webSocket.onOpen.first.then((_) => webSocket.send("done"));
+await webSocket.onOpen.first;
+webSocket.send("done");
 ''';
       var dartium = new Dartium(baseUrlForAddress(server.address, server.port));
 
@@ -118,8 +120,8 @@ webSocket.onOpen.first.then((_) => webSocket.send("done"));
             dart = '''
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
-webSocket.onOpen.first.then((_) =>
-    webSocket.send(window.localStorage["data"].toString()));
+await webSocket.onOpen.first;
+webSocket.send(window.localStorage["data"].toString());
 ''';
             dartium = new Dartium(
                 baseUrlForAddress(server.address, server.port));
@@ -138,12 +140,16 @@ webSocket.onOpen.first.then((_) =>
     });
   });
 
-  test("a process can be killed synchronously after it's started", () {
-    return shelf_io.serve(expectAsync((_) {}, count: 0), 'localhost', 0)
-        .then((server) {
+  test("a process can be killed synchronously after it's started", () async {
+    var server = await shelf_io.serve(
+        expectAsync((_) {}, count: 0), 'localhost', 0);
+
+    try {
       var dartium = new Dartium(baseUrlForAddress(server.address, server.port));
-      return dartium.close().whenComplete(server.close);
-    });
+      await dartium.close();
+    } finally {
+      server.close();
+    }
   });
 
   test("reports an error in onExit", () {

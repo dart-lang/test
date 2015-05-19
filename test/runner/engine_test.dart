@@ -12,7 +12,7 @@ void main() {
   var declarer;
   setUp(() => declarer = new Declarer());
 
-  test("runs each test in each suite in order", () {
+  test("runs each test in each suite in order", () async {
     var testsRun = 0;
     for (var i = 0; i < 4; i++) {
       declarer.test("test ${i + 1}", expectAsync(() {
@@ -26,7 +26,8 @@ void main() {
       new Suite(declarer.tests.skip(2))
     ]);
 
-    return engine.run().then((_) => expect(testsRun, equals(4)));
+    await engine.run();
+    expect(testsRun, equals(4));
   });
 
   test("emits each test before it starts running and after the previous test "
@@ -82,18 +83,17 @@ void main() {
   test(".run() may not be called more than once", () {
     var engine = new Engine([]);
     expect(engine.run(), completes);
-    expect(() => engine.run(), throwsStateError);
+    expect(engine.run(), throwsStateError);
   });
 
   group("for a skipped test", () {
-    test("doesn't run the test's body", () {
+    test("doesn't run the test's body", () async {
       var bodyRun = false;
       declarer.test("test", () => bodyRun = true, skip: true);
 
       var engine = new Engine([new Suite(declarer.tests)]);
-      return engine.run().then((_) {
-        expect(bodyRun, isFalse);
-      });
+      await engine.run();
+      expect(bodyRun, isFalse);
     });
 
     test("exposes a LiveTest that emits the correct states", () {

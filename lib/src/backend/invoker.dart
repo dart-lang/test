@@ -155,6 +155,8 @@ class Invoker {
 
     var outstandingCallbacksForBody = new OutstandingCallbackCounter();
 
+    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
+    // stable versions.
     Chain.capture(() {
       runZonedWithValues(() {
         // TODO(nweiz): Reset this timer whenever the user's code interacts

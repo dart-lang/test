@@ -76,7 +76,7 @@ bool get _usesTransformer {
   });
 }
 
-void main(List<String> args) {
+main(List<String> args) async {
   var allPlatforms = TestPlatform.all.toList();
   if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
   if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
@@ -206,21 +206,23 @@ transformers:
     loader.close();
   });
 
-  mergeStreams(paths.map((path) {
-    if (new Directory(path).existsSync()) return loader.loadDir(path);
-    if (new File(path).existsSync()) return loader.loadFile(path);
-    return new Stream.fromFuture(new Future.error(
-        new LoadException(path, 'Does not exist.'),
-        new Trace.current()));
-  })).transform(new StreamTransformer.fromHandlers(
-      handleError: (error, stackTrace, sink) {
-    if (error is! LoadException) {
-      sink.addError(error, stackTrace);
-    } else {
-      sink.add(new LoadExceptionSuite(error, stackTrace));
-    }
-  })).toList().then((suites) {
-    if (closed) return null;
+  try {
+    var suites = await mergeStreams(paths.map((path) {
+      if (new Directory(path).existsSync()) return loader.loadDir(path);
+      if (new File(path).existsSync()) return loader.loadFile(path);
+      return new Stream.fromFuture(new Future.error(
+          new LoadException(path, 'Does not exist.'),
+          new Trace.current()));
+    })).transform(new StreamTransformer.fromHandlers(
+        handleError: (error, stackTrace, sink) {
+      if (error is! LoadException) {
+        sink.addError(error, stackTrace);
+      } else {
+        sink.add(new LoadExceptionSuite(error, stackTrace));
+      }
+    })).toList();
+
+    if (closed) return;
     suites = flatten(suites);
 
     var pattern;
@@ -228,7 +230,7 @@ transformers:
       if (options["plain-name"] != null) {
         _printUsage("--name and --plain-name may not both be passed.");
         exitCode = exit_codes.data;
-        return null;
+        return;
       }
       pattern = new RegExp(options["name"]);
     } else if (options["plain-name"] != null) {
@@ -252,7 +254,7 @@ transformers:
           stderr.writeln('"$pattern".');
         }
         exitCode = exit_codes.data;
-        return null;
+        return;
       }
     }
 
@@ -287,19 +289,17 @@ transformers:
       reporter.close().then((_) => timer.cancel());
     });
 
-    return reporter.run().then((success) {
+    try {
+      var success = await reporter.run();
       exitCode = success ? 0 : 1;
-    }).whenComplete(() {
+    } finally {
       signalSubscription.cancel();
-      return reporter.close();
-    });
-  }).whenComplete(signalSubscription.cancel).catchError((error, stackTrace) {
-    if (error is ApplicationException) {
-      stderr.writeln(error.message);
-      exitCode = exit_codes.data;
-      return;
+      await reporter.close();
     }
-
+  } on ApplicationException catch (error) {
+    stderr.writeln(error.message);
+    exitCode = exit_codes.data;
+  } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(new Trace.from(stackTrace).terse);
     stderr.writeln(
@@ -307,13 +307,13 @@ transformers:
             "http://github.com/dart-lang/test\n"
         "with the stack trace and instructions for reproducing the error.");
     exitCode = exit_codes.software;
-  }).whenComplete(() {
-    return loader.close().then((_) {
-      // If we're on a Dart version that doesn't support Isolate.kill(), we have
-      // to manually exit so that dangling isolates don't prevent it.
-      if (!supportsIsolateKill) exit(exitCode);
-    });
-  });
+  } finally {
+    signalSubscription.cancel();
+    await loader.close();
+    // If we're on a Dart version that doesn't support Isolate.kill(), we have
+    // to manually exit so that dangling isolates don't prevent it.
+    if (!supportsIsolateKill) exit(exitCode);
+  }
 }
 
 /// Print usage information for this command.

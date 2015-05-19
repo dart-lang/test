@@ -227,9 +227,10 @@ LiveTest createTest(body()) {
 /// Runs [body] as a test.
 ///
 /// Once it completes, returns the [LiveTest] used to run it.
-Future<LiveTest> runTestBody(body()) {
+Future<LiveTest> runTestBody(body()) async {
   var liveTest = createTest(body);
-  return liveTest.run().then((_) => liveTest);
+  await liveTest.run();
+  return liveTest;
 }
 
 /// Asserts that [liveTest] has completed and passed.
@@ -262,7 +263,7 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// is called at some later time.
 ///
 /// [stopBlocking] is passed the return value of [test].
-Future expectTestBlocks(test(), stopBlocking(value)) {
+Future expectTestBlocks(test(), stopBlocking(value)) async {
   var liveTest;
   var future;
   liveTest = createTest(() {
@@ -273,10 +274,9 @@ Future expectTestBlocks(test(), stopBlocking(value)) {
     });
   });
 
-  return liveTest.run().then((_) {
-    expectTestPassed(liveTest);
-    // Ensure that the outer test doesn't complete until the inner future
-    // completes.
-    return future;
-  });
+  await liveTest.run();
+  expectTestPassed(liveTest);
+  // Ensure that the outer test doesn't complete until the inner future
+  // completes.
+  return future;
 }

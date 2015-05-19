@@ -135,9 +135,9 @@ StreamChannel _connectToIframe(String url) {
     if (!readyCompleter.isCompleted) readyCompleter.complete();
   });
 
-  outputController.stream.listen((message) {
-    readyCompleter.future.then((_) =>
-        iframe.contentWindow.postMessage(message, window.location.origin));
+  outputController.stream.listen((message) async {
+    await readyCompleter.future;
+    iframe.contentWindow.postMessage(message, window.location.origin);
   });
 
   return new StreamChannel(inputController.stream, outputController.sink);

@@ -48,17 +48,15 @@ void main() {
 
     var server;
     var webSockets;
-    setUp(() {
+    setUp(() async {
       var webSocketsController = new StreamController();
       webSockets = webSocketsController.stream;
 
-      return shelf_io.serve(
+      server = await shelf_io.serve(
           new shelf.Cascade()
               .add(webSocketHandler(webSocketsController.add))
               .add(servePage).handler,
-          'localhost', 0).then((server_) {
-        server = server_;
-      });
+          'localhost', 0);
     });
 
     tearDown(() {
@@ -69,7 +67,7 @@ void main() {
       webSockets = null;
     });
 
-    test("starts Safari with the given URL", () {
+    test("starts Safari with the given URL", () async {
       javaScript = '''
 var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
 webSocket.addEventListener("open", function() {
@@ -78,10 +76,12 @@ webSocket.addEventListener("open", function() {
 ''';
       var safari = new Safari(baseUrlForAddress(server.address, server.port));
 
-      return webSockets.first.then((webSocket) {
-        return webSocket.first.then(
-            (message) => expect(message, equals("loaded!")));
-      }).whenComplete(safari.close);
+      try {
+        var message = await (await webSockets.first).first;
+        expect(message, equals("loaded!"));
+      } finally {
+        safari.close();
+      }
     });
 
     test("doesn't preserve state across runs", () {
@@ -126,12 +126,16 @@ webSocket.addEventListener("open", function() {
     });
   });
 
-  test("a process can be killed synchronously after it's started", () {
-    return shelf_io.serve(expectAsync((_) {}, count: 0), 'localhost', 0)
-        .then((server) {
+  test("a process can be killed synchronously after it's started", () async {
+    var server = await shelf_io.serve(
+        expectAsync((_) {}, count: 0), 'localhost', 0);
+
+    try {
       var safari = new Safari(baseUrlForAddress(server.address, server.port));
-      return safari.close().whenComplete(server.close);
-    });
+      await safari.close();
+    } finally {
+      server.close();
+    }
   });
 
   test("reports an error in onExit", () {

@@ -49,19 +49,19 @@ Declarer get _declarer {
   // [_globalDeclarer], and schedule a microtask to run the tests once they're
   // finished being defined.
   _globalDeclarer = new Declarer();
-  scheduleMicrotask(() {
+  scheduleMicrotask(() async {
     var suite =
         new Suite(_globalDeclarer.tests,
               path: p.prettyUri(Uri.base),
               platform: "VM")
         .forPlatform(TestPlatform.vm, os: currentOSGuess);
 
-    new ExpandedReporter([suite], color: true).run().then((success) {
-      // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
-      if (success) return;
-      print('');
-      new Future.error("Dummy exception to set exit code.");
-    });
+    var success = await new ExpandedReporter([suite], color: true).run();
+    // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
+    // TODO(nweiz): Just "return;" when issue 23200 is fixed.
+    if (success) return null;
+    print('');
+    new Future.error("Dummy exception to set exit code.");
   });
   return _globalDeclarer;
 }
