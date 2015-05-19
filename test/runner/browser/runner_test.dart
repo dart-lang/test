@@ -448,6 +448,25 @@ void main() {
     expect(result.exitCode, equals(0));
   });
 
+  test("dartifies stack traces for JS-compiled tests by default", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+    var result = _runTest(["-p", "chrome", "--verbose-trace", "test.dart"]);
+    expect(result.stdout, contains(" main.<fn>\n"));
+    expect(result.stdout, contains("package:test"));
+    expect(result.stdout, contains("dart:async/zone.dart"));
+    expect(result.exitCode, equals(1));
+  });
+
+  test("doesn't dartify stack traces for JS-compiled tests with --js-trace", () {
+    new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
+    var result = _runTest(
+        ["-p", "chrome", "--verbose-trace", "--js-trace", "test.dart"]);
+    expect(result.stdout, isNot(contains(" main.<fn>\n")));
+    expect(result.stdout, isNot(contains("package:test")));
+    expect(result.stdout, isNot(contains("dart:async/zone.dart")));
+    expect(result.exitCode, equals(1));
+  });
+
   test("respects top-level @Timeout declarations", () {
     new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
 @Timeout(const Duration(seconds: 0))

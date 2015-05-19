@@ -20,8 +20,9 @@ import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
-import '../../util/path_handler.dart';
 import '../../util/one_off_handler.dart';
+import '../../util/path_handler.dart';
+import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
 import '../load_exception.dart';
@@ -54,10 +55,14 @@ class BrowserServer {
   ///
   /// If [color] is true, console colors will be used when compiling Dart.
   ///
+  /// If [jsTrace] is true, raw JavaScript stack traces will be used for tests
+  /// that are compiled to JavaScript.
+  ///
   /// If the package root doesn't exist, throws an [ApplicationException].
   static Future<BrowserServer> start({String root, String packageRoot,
-      Uri pubServeUrl, bool color: false}) {
-    var server = new BrowserServer._(root, packageRoot, pubServeUrl, color);
+      Uri pubServeUrl, bool color: false, bool jsTrace: false}) {
+    var server = new BrowserServer._(
+        root, packageRoot, pubServeUrl, color, jsTrace);
     return server._load().then((_) => server);
   }
 
@@ -98,6 +103,8 @@ class BrowserServer {
   /// The package root.
   final String _packageRoot;
 
+  final bool _jsTrace;
+
   /// The URL for the `pub serve` instance to use to load tests.
   ///
   /// This is `null` if tests should be compiled manually.
@@ -133,10 +140,13 @@ class BrowserServer {
   /// suites are finished compiling.
   ///
   /// This is used to make sure that a given test suite is only compiled once
-  /// per run, rather than one per browser per run.
+  /// per run, rather than once per browser per run.
   final _compileFutures = new Map<String, Future>();
 
-  BrowserServer._(String root, String packageRoot, Uri pubServeUrl, bool color)
+  final _mappers = new Map<String, StackTraceMapper>();
+
+  BrowserServer._(String root, String packageRoot, Uri pubServeUrl, bool color,
+          this._jsTrace)
       : _root = root == null ? p.current : root,
         _packageRoot = packageRootFor(root, packageRoot),
         _pubServeUrl = pubServeUrl,
@@ -251,8 +261,8 @@ void main() {
       if (_pubServeUrl != null) {
         var suitePrefix = p.withoutExtension(
             p.relative(path, from: p.join(_root, 'test')));
-        var jsUrl = _pubServeUrl.resolve(
-            '$suitePrefix.dart.browser_test.dart.js');
+        var jsUrl = _pubServeUrl.resolveUri(
+            p.toUri('$suitePrefix.dart.browser_test.dart.js'));
         return _pubServeSuite(path, jsUrl)
             .then((_) => _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html')));
       }
@@ -269,7 +279,9 @@ void main() {
       // TODO(nweiz): Don't start the browser until all the suites are compiled.
       return _browserManagerFor(browser).then((browserManager) {
         if (_closed || browserManager == null) return null;
-        return browserManager.loadSuite(path, suiteUrl, metadata);
+
+        return browserManager.loadSuite(path, suiteUrl, metadata,
+            mapper: browser.isJS ? _mappers[path] : null);
       }).then((suite) {
         if (_closed) return null;
         if (suite != null) return suite.change(platform: browser.name);
@@ -292,7 +304,11 @@ void main() {
         print('"pub serve" is compiling $path...');
       });
 
-      return _http.headUrl(jsUrl)
+      // Get the source map here for two reasons. We want to verify that the
+      // server's dart2js compiler is running on the Dart code, and also
+      // load the StackTraceMapper.
+      var mapUrl = jsUrl.replace(path: jsUrl.path + '.map');
+      return _http.getUrl(mapUrl)
           .then((request) => request.close())
           .whenComplete(timer.cancel)
           .catchError((error, stackTrace) {
@@ -305,15 +321,29 @@ void main() {
         }
 
         throw new LoadException(path,
-            "Error getting $jsUrl: $message\n"
+            "Error getting $mapUrl: $message\n"
             'Make sure "pub serve" is running.');
       }).then((response) {
-        if (response.statusCode == 200) return;
+        if (response.statusCode != 200) {
+          throw new LoadException(path,
+              "Error getting $mapUrl: ${response.statusCode} "
+                  "${response.reasonPhrase}\n"
+              'Make sure "pub serve" is serving the test/ directory.');
+        }
 
-        throw new LoadException(path,
-            "Error getting $jsUrl: ${response.statusCode} "
-                "${response.reasonPhrase}\n"
-            'Make sure "pub serve" is serving the test/ directory.');
+        if (_jsTrace) {
+          // We don't care about the response body, but we have to drain it or
+          // else the process can't exit.
+          response.listen((_) {});
+          return null;
+        }
+
+        return UTF8.decodeStream(response).then((contents) {
+          _mappers[path] = new StackTraceMapper(contents,
+              mapUrl: mapUrl,
+              packageRoot: _pubServeUrl.resolve('packages'),
+              sdkRoot: _pubServeUrl.resolve('packages/\$sdk'));
+        });
       });
     });
   }
@@ -338,6 +368,23 @@ void main() {
           return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
               headers: {'Content-Type': 'application/javascript'});
         });
+
+        _jsHandler.add(
+            p.toUri(p.relative(dartPath, from: _root)).path +
+                '.browser_test.dart.js.map',
+            (request) {
+          return new shelf.Response.ok(
+              new File(jsPath + '.map').readAsStringSync(),
+              headers: {'Content-Type': 'application/json'});
+        });
+
+        if (_jsTrace) return;
+        var mapPath = jsPath + '.map';
+        _mappers[dartPath] = new StackTraceMapper(
+            new File(mapPath).readAsStringSync(),
+            mapUrl: p.toUri(mapPath),
+            packageRoot: p.toUri(_packageRoot),
+            sdkRoot: p.toUri(sdkDir));
       });
     });
   }
