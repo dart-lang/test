@@ -47,7 +47,7 @@ Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
           () => new Directory(dir).deleteSync(recursive: true));
     }
 
-    if (supportsIsolateKill) isolate.kill();
+    isolate.kill();
     var asyncError = RemoteException.deserialize(response['error']);
     await new Future.error(asyncError.error, asyncError.stackTrace);
     throw 'unreachable';
