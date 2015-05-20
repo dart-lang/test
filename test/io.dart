@@ -5,10 +5,12 @@
 library test.test.io;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/src/util/io.dart';
+import 'package:test/src/utils.dart';
 
 /// The path to the root directory of the `test` package.
 final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
@@ -22,6 +24,13 @@ final _pubPath = p.absolute(p.join(
 final String noSuchFileMessage = Platform.isWindows
     ? "The system cannot find the file specified."
     : "No such file or directory";
+
+/// A decoder that converts raw bytes to a line-by-line stream.
+final _lines = UTF8.decoder.fuse(const LineSplitter());
+
+/// A regular expression that matches the output of "pub serve".
+final _servingRegExp =
+    new RegExp(r'^Serving myapp [a-z]+ on http://localhost:(\d+)$');
 
 /// Runs the test executable with the package root set properly.
 ProcessResult runTest(List<String> args, {String workingDirectory,
@@ -96,6 +105,23 @@ Future<Process> startPub(List<String> args, {String workingDirectory,
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
   return Process.start(_pubPath, args,
       workingDirectory: workingDirectory, environment: environment);
+}
+
+/// Starts "pub serve".
+///
+/// This returns a pair of the pub serve process and the port it's serving on.
+Future<Pair<Process, int>> startPubServe({List<String> args,
+    String workingDirectory, Map<String, String> environment}) async {
+  var allArgs = ['serve', '--port', '0'];
+  if (args != null) allArgs.addAll(args);
+
+  var process = await startPub(allArgs,
+      workingDirectory: workingDirectory, environment: environment);
+  var line = await _lines.bind(process.stdout)
+      .firstWhere(_servingRegExp.hasMatch);
+  var match = _servingRegExp.firstMatch(line);
+
+  return new Pair(process, int.parse(match[1]));
 }
 
 /// A wrapper around [ProcessResult] that normalizes the newline format across
