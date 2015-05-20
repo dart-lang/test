@@ -14,7 +14,6 @@ import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
 import 'package:test/src/runner/vm/isolate_listener.dart';
 import 'package:test/src/runner/vm/isolate_test.dart';
-import 'package:test/src/util/io.dart';
 import 'package:test/src/util/remote_exception.dart';
 import 'package:test/test.dart';
 
@@ -32,9 +31,7 @@ LiveTest _liveTest;
 
 void main() {
   tearDown(() {
-    if (_isolate != null && supportsIsolateKill) {
-      _isolate.kill();
-    }
+    if (_isolate != null) _isolate.kill();
     _isolate = null;
 
     if (_liveTest != null) _liveTest.close();

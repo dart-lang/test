@@ -310,9 +310,6 @@ transformers:
   } finally {
     signalSubscription.cancel();
     await loader.close();
-    // If we're on a Dart version that doesn't support Isolate.kill(), we have
-    // to manually exit so that dangling isolates don't prevent it.
-    if (!supportsIsolateKill) exit(exitCode);
   }
 }
 
