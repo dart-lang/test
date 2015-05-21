@@ -80,8 +80,8 @@ class InternetExplorer implements Browser {
 
   /// Return the default executable for the current operating system.
   String _defaultExecutable() {
-    // Chrome could be installed in several places on Windows. The only way to
-    // find it is to check.
+    // Internet Explorer could be installed in several places on Windows. The
+    // only way to find it is to check.
     var prefixes = [
       Platform.environment['PROGRAMW6432'],
       Platform.environment['PROGRAMFILES'],
