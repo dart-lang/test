@@ -57,6 +57,8 @@ class Group {
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
   Future runSetUp() {
+    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
+    // stable versions.
     if (parent != null) {
       return parent.runSetUp().then((_) {
         if (setUp != null) return setUp();
@@ -72,6 +74,8 @@ class Group {
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
   Future runTearDown() {
+    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
+    // stable versions.
     if (parent != null) {
       return new Future.sync(() {
         if (tearDown != null) return tearDown();

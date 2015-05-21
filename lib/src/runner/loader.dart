@@ -15,6 +15,7 @@ import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/suite.dart';
 import '../backend/test_platform.dart';
+import '../util/async_thunk.dart';
 import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/isolate_wrapper.dart';
@@ -58,20 +59,19 @@ class Loader {
   ///
   /// This is lazily initialized the first time it's accessed.
   Future<BrowserServer> get _browserServer {
-    if (_browserServerCompleter == null) {
-      _browserServerCompleter = new Completer();
-      BrowserServer.start(
-              root: _root,
-              packageRoot: _packageRoot,
-              pubServeUrl: _pubServeUrl,
-              color: _color,
-              jsTrace: _jsTrace)
-          .then(_browserServerCompleter.complete)
-          .catchError(_browserServerCompleter.completeError);
-    }
-    return _browserServerCompleter.future;
+    return _browserServerThunk.run(() {
+      return BrowserServer.start(
+          root: _root,
+          packageRoot: _packageRoot,
+          pubServeUrl: _pubServeUrl,
+          color: _color,
+          jsTrace: _jsTrace);
+    });
   }
-  Completer<BrowserServer> _browserServerCompleter;
+  final _browserServerThunk = new AsyncThunk<BrowserServer>();
+
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
 
   /// Creates a new loader.
   ///
@@ -124,7 +124,7 @@ class Loader {
   /// Loads a test suite from the file at [path].
   ///
   /// This will emit a [LoadException] if the file fails to load.
-  Stream<Suite> loadFile(String path) {
+  Stream<Suite> loadFile(String path) async* {
     var suiteMetadata;
     try {
       suiteMetadata = parseMetadata(path);
@@ -133,84 +133,84 @@ class Loader {
       // the VM's or dart2js's.
       suiteMetadata = new Metadata();
     } on FormatException catch (error, stackTrace) {
-      return new Stream.fromFuture(
-          new Future.error(new LoadException(path, error), stackTrace));
+      await new Future.error(new LoadException(path, error), stackTrace);
     }
     suiteMetadata = _metadata.merge(suiteMetadata);
 
-    var controller = new StreamController();
-    Future.forEach(_platforms, (platform) {
-      if (!suiteMetadata.testOn.evaluate(platform, os: currentOS)) {
-        return null;
-      }
+    for (var platform in _platforms) {
+      if (!suiteMetadata.testOn.evaluate(platform, os: currentOS)) continue;
 
       var metadata = suiteMetadata.forPlatform(platform, os: currentOS);
 
       // Don't load a skipped suite.
       if (metadata.skip) {
-        controller.add(new Suite([
+        yield new Suite([
           new LocalTest(path, metadata, () {})
-        ], path: path, platform: platform.name, metadata: metadata));
-        return null;
+        ], path: path, platform: platform.name, metadata: metadata);
+        continue;
       }
 
-      return new Future.sync(() {
+      try {
         if (_pubServeUrl != null && !p.isWithin('test', path)) {
           throw new LoadException(path,
               'When using "pub serve", all test files must be in test/.');
         }
 
-        if (platform == TestPlatform.vm) return _loadVmFile(path, metadata);
-        assert(platform.isBrowser);
-        return _loadBrowserFile(path, platform, metadata);
-      }).then((suite) {
-        if (suite != null) controller.add(suite);
-      }).catchError(controller.addError);
-    }).then((_) => controller.close());
-
-    return controller.stream;
+        var suite = platform == TestPlatform.vm
+            ? await _loadVmFile(path, metadata)
+            : await _loadBrowserFile(path, platform, metadata);
+        if (suite != null) yield suite;
+      } catch (error, stackTrace) {
+        yield* errorStream(error, stackTrace);
+      }
+    }
   }
 
   /// Load the test suite at [path] in [platform].
   ///
   /// [metadata] is the suite-level metadata for the test.
   Future<Suite> _loadBrowserFile(String path, TestPlatform platform,
-        Metadata metadata) =>
-      _browserServer.then((browserServer) =>
-          browserServer.loadSuite(path, platform, metadata));
+        Metadata metadata) async =>
+      (await _browserServer).loadSuite(path, platform, metadata);
 
   /// Load the test suite at [path] in VM isolate.
   ///
   /// [metadata] is the suite-level metadata for the test.
-  Future<Suite> _loadVmFile(String path, Metadata metadata) {
+  Future<Suite> _loadVmFile(String path, Metadata metadata) async {
     var receivePort = new ReceivePort();
 
-    return new Future.sync(() {
+    var isolate;
+    try {
       if (_pubServeUrl != null) {
         var url = _pubServeUrl.resolve(
             p.relative(path, from: 'test') + '.vm_test.dart');
-        return Isolate.spawnUri(url, [], {
-          'reply': receivePort.sendPort,
-          'metadata': metadata.serialize()
-        }).then((isolate) => new IsolateWrapper(isolate, () {}))
-            .catchError((error, stackTrace) {
-          if (error is! IsolateSpawnException) throw error;
 
-          if (error.message.contains("OS Error: Connection refused") ||
-              error.message.contains("The remote computer refused")) {
-            throw new LoadException(path,
-                "Error getting $url: Connection refused\n"
-                'Make sure "pub serve" is running.');
-          } else if (error.message.contains("404 Not Found")) {
-            throw new LoadException(path,
-                "Error getting $url: 404 Not Found\n"
-                'Make sure "pub serve" is serving the test/ directory.');
+        // TODO(nweiz): Remove new Future.sync() once issue 23498 has been fixed
+        // in two stable versions.
+        await new Future.sync(() async {
+          try {
+            isolate = await Isolate.spawnUri(url, [], {
+              'reply': receivePort.sendPort,
+              'metadata': metadata.serialize()
+            });
+            isolate = new IsolateWrapper(isolate, () {});
+          } on IsolateSpawnException catch (error) {
+            if (error.message.contains("OS Error: Connection refused") ||
+                error.message.contains("The remote computer refused")) {
+              throw new LoadException(path,
+                  "Error getting $url: Connection refused\n"
+                  'Make sure "pub serve" is running.');
+            } else if (error.message.contains("404 Not Found")) {
+              throw new LoadException(path,
+                  "Error getting $url: 404 Not Found\n"
+                  'Make sure "pub serve" is serving the test/ directory.');
+            }
+
+            throw new LoadException(path, error);
           }
-
-          throw new LoadException(path, error);
         });
       } else {
-        return runInIsolate('''
+        isolate = await runInIsolate('''
 import "package:test/src/backend/metadata.dart";
 import "package:test/src/runner/vm/isolate_listener.dart";
 
@@ -226,38 +226,40 @@ void main(_, Map message) {
           'metadata': metadata.serialize()
         }, packageRoot: p.toUri(_packageRoot));
       }
-    }).catchError((error, stackTrace) {
+    } catch (error, stackTrace) {
       receivePort.close();
-      if (error is LoadException) throw error;
-      return new Future.error(new LoadException(path, error), stackTrace);
-    }).then((isolate) {
-      _isolates.add(isolate);
-      return receivePort.first;
-    }).then((response) {
-      if (response["type"] == "loadException") {
-        return new Future.error(new LoadException(path, response["message"]));
-      } else if (response["type"] == "error") {
-        var asyncError = RemoteException.deserialize(response["error"]);
-        return new Future.error(
-            new LoadException(path, asyncError.error),
-            asyncError.stackTrace);
-      }
+      if (error is LoadException) rethrow;
+      await new Future.error(new LoadException(path, error), stackTrace);
+    }
 
-      return new Suite(response["tests"].map((test) {
-        var testMetadata = new Metadata.deserialize(test['metadata']);
-        return new IsolateTest(test['name'], testMetadata, test['sendPort']);
-      }), metadata: metadata, path: path, platform: "VM");
-    });
+    _isolates.add(isolate);
+    var response = await receivePort.first;
+
+    if (response["type"] == "loadException") {
+      throw new LoadException(path, response["message"]);
+    } else if (response["type"] == "error") {
+      var asyncError = RemoteException.deserialize(response["error"]);
+      await new Future.error(
+          new LoadException(path, asyncError.error),
+          asyncError.stackTrace);
+    }
+
+    return new Suite(response["tests"].map((test) {
+      var testMetadata = new Metadata.deserialize(test['metadata']);
+      return new IsolateTest(test['name'], testMetadata, test['sendPort']);
+    }), metadata: metadata, path: path, platform: "VM");
   }
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() {
-    for (var isolate in _isolates) {
-      isolate.kill();
-    }
-    _isolates.clear();
+    return _closeThunk.run(() async {
+      for (var isolate in _isolates) {
+        isolate.kill();
+      }
+      _isolates.clear();
 
-    if (_browserServerCompleter == null) return new Future.value();
-    return _browserServer.then((browserServer) => browserServer.close());
+      if (!_browserServerThunk.hasRun) return;
+      await (await _browserServer).close();
+    });
   }
 }

@@ -36,7 +36,7 @@ class IframeListener {
   ///
   /// Once that's done, this starts listening for commands about which tests to
   /// run.
-  static void start(Function getMain()) {
+  static Future start(Function getMain()) async {
     var channel = _postMessageChannel();
 
     var main;
@@ -44,35 +44,46 @@ class IframeListener {
       main = getMain();
     } on NoSuchMethodError catch (_) {
       _sendLoadException(channel, "No top-level main() function defined.");
-      return;
+      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
+      return null;
     }
 
     if (main is! Function) {
       _sendLoadException(channel, "Top-level main getter is not a function.");
-      return;
+      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
+      return null;
     } else if (main is! AsyncFunction) {
       _sendLoadException(channel, "Top-level main() function takes arguments.");
-      return;
+      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
+      return null;
     }
 
-    var declarer = new Declarer();
-    runZoned(() => new Future.sync(main), zoneValues: {
-      #test.declarer: declarer
-    }).then((_) {
-      var url = Uri.parse(window.location.href);
-      var message = JSON.decode(Uri.decodeFull(url.fragment));
-      var metadata = new Metadata.deserialize(message['metadata']);
-      var browser = TestPlatform.find(message['browser']);
-
-      var suite = new Suite(declarer.tests, metadata: metadata)
-          .forPlatform(browser);
-      new IframeListener._(suite)._listen(channel);
-    }, onError: (error, stackTrace) {
+    var declarer;
+    try {
+      declarer = new Declarer();
+      await runZoned(() => new Future.sync(main), zoneValues: {
+        #test.declarer: declarer
+      });
+    } catch (error, stackTrace) {
       channel.sink.add({
         "type": "error",
         "error": RemoteException.serialize(error, stackTrace)
       });
-    });
+      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
+      return null;
+    }
+
+    var url = Uri.parse(window.location.href);
+    var message = JSON.decode(Uri.decodeFull(url.fragment));
+    var metadata = new Metadata.deserialize(message['metadata']);
+    var browser = TestPlatform.find(message['browser']);
+
+    var suite = new Suite(declarer.tests, metadata: metadata)
+        .forPlatform(browser);
+    new IframeListener._(suite)._listen(channel);
+
+    // TODO(nweiz): Remove this when issue 23200 is fixed.
+    return null;
   }
 
   /// Constructs a [MultiChannel] wrapping the `postMessage` communication with
@@ -140,7 +151,7 @@ class IframeListener {
     });
   }
 
-  /// Runs [test] and send the results across [sendPort].
+  /// Runs [test] and sends the results across [sendPort].
   void _runTest(Test test, MultiChannel channel) {
     var liveTest = test.load(_suite);
 

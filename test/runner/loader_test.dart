@@ -46,15 +46,14 @@ void main() {
 
   group(".loadFile()", () {
     var suite;
-    setUp(() {
+    setUp(() async {
       /// TODO(nweiz): Use scheduled_test for this once it's compatible with
       /// this version of test.
       new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
-      return _loader.loadFile(p.join(_sandbox, 'a_test.dart')).toList()
-          .then((suites) {
-        expect(suites, hasLength(1));
-        suite = suites.first;
-      });
+      var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+          .toList();
+      expect(suites, hasLength(1));
+      suite = suites.first;
     });
 
     test("returns a suite with the file path and platform", () {
@@ -115,7 +114,7 @@ void main() {
 
     group("with suites loaded from a directory", () {
       var suites;
-      setUp(() {
+      setUp(() async {
         /// TODO(nweiz): Use scheduled_test for this once it's compatible with
         /// this version of test.
         new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
@@ -125,8 +124,7 @@ void main() {
         new File(p.join(_sandbox, 'dir/sub_test.dart'))
             .writeAsStringSync(_tests);
 
-        return _loader.loadDir(_sandbox).toList()
-            .then((suites_) => suites = suites_);
+        suites = await _loader.loadDir(_sandbox).toList();
       });
 
       test("gives those suites the correct paths", () {

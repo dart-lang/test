@@ -19,6 +19,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
+import '../../util/async_thunk.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
@@ -60,10 +61,11 @@ class BrowserServer {
   ///
   /// If the package root doesn't exist, throws an [ApplicationException].
   static Future<BrowserServer> start({String root, String packageRoot,
-      Uri pubServeUrl, bool color: false, bool jsTrace: false}) {
+      Uri pubServeUrl, bool color: false, bool jsTrace: false}) async {
     var server = new BrowserServer._(
         root, packageRoot, pubServeUrl, color, jsTrace);
-    return server._load().then((_) => server);
+    await server._load();
+    return server;
   }
 
   /// The underlying HTTP server.
@@ -120,10 +122,10 @@ class BrowserServer {
   final HttpClient _http;
 
   /// Whether [close] has been called.
-  bool get _closed => _closeCompleter != null;
+  bool get _closed => _closeThunk.hasRun;
 
-  /// The completer for the [Future] returned by [close].
-  Completer _closeCompleter;
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
 
   /// All currently-running browsers.
   ///
@@ -242,7 +244,7 @@ void main() {
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
   Future<Suite> loadSuite(String path, TestPlatform browser,
-      Metadata metadata) {
+      Metadata metadata) async {
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
     }
@@ -257,41 +259,40 @@ void main() {
               '</script>.');
     }
 
-    return new Future.sync(() {
-      if (_pubServeUrl != null) {
-        var suitePrefix = p.withoutExtension(
-            p.relative(path, from: p.join(_root, 'test')));
-        var jsUrl = _pubServeUrl.resolveUri(
-            p.toUri('$suitePrefix.dart.browser_test.dart.js'));
-        return _pubServeSuite(path, jsUrl)
-            .then((_) => _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html')));
-      }
-
-      return new Future.sync(() => browser.isJS ? _compileSuite(path) : null)
-          .then((_) {
-        if (_closed) return null;
-        return url.resolveUri(p.toUri(
-            p.withoutExtension(p.relative(path, from: _root)) + ".html"));
-      });
-    }).then((suiteUrl) {
+    var suiteUrl;
+    if (_pubServeUrl != null) {
+      var suitePrefix = p.withoutExtension(
+          p.relative(path, from: p.join(_root, 'test')));
+      var jsUrl = _pubServeUrl.resolve(
+          '$suitePrefix.dart.browser_test.dart.js');
+      await _pubServeSuite(path, jsUrl);
+      suiteUrl = _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
+    } else {
+      if (browser.isJS) await _compileSuite(path);
       if (_closed) return null;
+      suiteUrl = url.resolveUri(p.toUri(
+          p.withoutExtension(p.relative(path, from: _root)) + ".html"));
+    }
 
-      // TODO(nweiz): Don't start the browser until all the suites are compiled.
-      return _browserManagerFor(browser).then((browserManager) {
-        if (_closed || browserManager == null) return null;
+    if (_closed) return null;
 
-        return browserManager.loadSuite(path, suiteUrl, metadata,
-            mapper: browser.isJS ? _mappers[path] : null);
-      }).then((suite) {
-        if (_closed) return null;
-        if (suite != null) return suite.change(platform: browser.name);
+    // TODO(nweiz): Don't start the browser until all the suites are compiled.
+    var browserManager = await _browserManagerFor(browser);
+    if (_closed) return null;
 
-        // If the browser manager fails to load a suite and the server isn't
-        // closed, it's probably because the browser failed. We emit the failure
-        // here to ensure that it gets surfaced.
-        return _browsers[browser].onExit;
-      });
-    });
+    var suite;
+    if (browserManager != null) {
+      suite = await browserManager.loadSuite(path, suiteUrl, metadata,
+          mapper: browser.isJS ? _mappers[path] : null);
+      if (_closed) return null;
+    }
+
+    if (suite != null) return suite.change(platform: browser.name);
+
+    // If the browser manager fails to load a suite and the server isn't
+    // closed, it's probably because the browser failed. We emit the failure
+    // here to ensure that it gets surfaced.
+    return _browsers[browser].onExit;
   }
 
   /// Loads a test suite at [path] from the `pub serve` URL [jsUrl].
@@ -299,31 +300,20 @@ void main() {
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
   Future _pubServeSuite(String path, Uri jsUrl) {
-    return _pubServePool.withResource(() {
+    return _pubServePool.withResource(() async {
       var timer = new Timer(new Duration(seconds: 1), () {
         print('"pub serve" is compiling $path...');
       });
 
-      // Get the source map here for two reasons. We want to verify that the
-      // server's dart2js compiler is running on the Dart code, and also
-      // load the StackTraceMapper.
-      var mapUrl = jsUrl.replace(path: jsUrl.path + '.map');
-      return _http.getUrl(mapUrl)
-          .then((request) => request.close())
-          .whenComplete(timer.cancel)
-          .catchError((error, stackTrace) {
-        if (error is! IOException) throw error;
+      var response;
+      try {
+        // Get the source map here for two reasons. We want to verify that the
+        // server's dart2js compiler is running on the Dart code, and also load
+        // the StackTraceMapper.
+        var mapUrl = jsUrl.replace(path: jsUrl.path + '.map');
+        var request = await _http.headUrl(mapUrl);
+        response = await request.close();
 
-        var message = getErrorMessage(error);
-        if (error is SocketException) {
-          message = "${error.osError.message} "
-              "(errno ${error.osError.errorCode})";
-        }
-
-        throw new LoadException(path,
-            "Error getting $mapUrl: $message\n"
-            'Make sure "pub serve" is running.');
-      }).then((response) {
         if (response.statusCode != 200) {
           throw new LoadException(path,
               "Error getting $mapUrl: ${response.statusCode} "
@@ -335,16 +325,27 @@ void main() {
           // We don't care about the response body, but we have to drain it or
           // else the process can't exit.
           response.listen((_) {});
-          return null;
+          return;
         }
 
-        return UTF8.decodeStream(response).then((contents) {
-          _mappers[path] = new StackTraceMapper(contents,
-              mapUrl: mapUrl,
-              packageRoot: _pubServeUrl.resolve('packages'),
-              sdkRoot: _pubServeUrl.resolve('packages/\$sdk'));
-        });
-      });
+        _mappers[path] = new StackTraceMapper(
+            await UTF8.decodeStream(response),
+            mapUrl: mapUrl,
+            packageRoot: _pubServeUrl.resolve('packages'),
+            sdkRoot: _pubServeUrl.resolve('packages/\$sdk'));
+      } on IOException catch (error) {
+        var message = getErrorMessage(error);
+        if (error is SocketException) {
+          message = "${error.osError.message} "
+              "(errno ${error.osError.errorCode})";
+        }
+
+        throw new LoadException(path,
+            "Error getting $mapUrl: $message\n"
+            'Make sure "pub serve" is running.');
+      } finally {
+        timer.cancel();
+      }
     });
   }
 
@@ -353,39 +354,35 @@ void main() {
   /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
   /// served.
   Future _compileSuite(String dartPath) {
-    return _compileFutures.putIfAbsent(dartPath, () {
+    return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".js");
 
-      return _compilers.compile(dartPath, jsPath, packageRoot: _packageRoot)
-          .then((_) {
-        if (_closed) return;
+      await _compilers.compile(dartPath, jsPath, packageRoot: _packageRoot);
+      if (_closed) return;
 
-        _jsHandler.add(
-            p.toUri(p.relative(dartPath, from: _root)).path +
-                '.browser_test.dart.js',
-            (request) {
-          return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
-              headers: {'Content-Type': 'application/javascript'});
-        });
-
-        _jsHandler.add(
-            p.toUri(p.relative(dartPath, from: _root)).path +
-                '.browser_test.dart.js.map',
-            (request) {
-          return new shelf.Response.ok(
-              new File(jsPath + '.map').readAsStringSync(),
-              headers: {'Content-Type': 'application/json'});
-        });
-
-        if (_jsTrace) return;
-        var mapPath = jsPath + '.map';
-        _mappers[dartPath] = new StackTraceMapper(
-            new File(mapPath).readAsStringSync(),
-            mapUrl: p.toUri(mapPath),
-            packageRoot: p.toUri(_packageRoot),
-            sdkRoot: p.toUri(sdkDir));
+      var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+          '.browser_test.dart.js';
+      _jsHandler.add(jsUrl, (request) {
+        return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
+            headers: {'Content-Type': 'application/javascript'});
       });
+
+      var mapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+          '.browser_test.dart.js.map';
+      _jsHandler.add(mapUrl, (request) {
+        return new shelf.Response.ok(
+            new File(jsPath + '.map').readAsStringSync(),
+            headers: {'Content-Type': 'application/json'});
+      });
+
+      if (_jsTrace) return;
+      var mapPath = jsPath + '.map';
+      _mappers[dartPath] = new StackTraceMapper(
+          new File(mapPath).readAsStringSync(),
+          mapUrl: p.toUri(mapPath),
+          packageRoot: p.toUri(_packageRoot),
+          sdkRoot: p.toUri(sdkDir));
     });
   }
 
@@ -448,26 +445,22 @@ void main() {
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   Future close() {
-    if (_closeCompleter != null) return _closeCompleter.future;
-    _closeCompleter = new Completer();
+    return _closeThunk.run(() async {
+      var futures = _browserManagers.keys.map((platform) async {
+        await _browserManagers[platform];
+        await _browsers[platform].close();
+      }).toList();
 
-    return Future.wait([
-      _server.close(),
-      _compilers.close()
-    ]).then((_) {
-      if (_browserManagers.isEmpty) return null;
-      return Future.wait(_browserManagers.keys.map((platform) {
-        return _browserManagers[platform]
-            .then((_) => _browsers[platform].close());
-      }));
-    }).then((_) {
+      futures.add(_server.close());
+      futures.add(_compilers.close());
+
+      await Future.wait(futures);
+
       if (_pubServeUrl == null) {
         new Directory(_compiledDir).deleteSync(recursive: true);
       } else {
         _http.close();
       }
-
-      _closeCompleter.complete();
-    }).catchError(_closeCompleter.completeError);
+    });
   }
 }

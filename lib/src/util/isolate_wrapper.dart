@@ -7,8 +7,6 @@ library test.util.isolate_wrapper;
 import 'dart:async';
 import 'dart:isolate';
 
-import 'io.dart';
-
 // TODO(nweiz): Get rid of this when issue 6610 is fixed.
 /// This is a wrapper around an [Isolate] that supports a callback that will
 /// fire when [Isolate.exit] is called.
@@ -44,7 +42,6 @@ class IsolateWrapper {
   String toString() => _inner.toString();
 
   void kill() {
-    if (supportsIsolateKill) _inner.kill();
     _onExit();
   }
 }

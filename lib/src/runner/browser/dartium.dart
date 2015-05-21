@@ -47,38 +47,43 @@ class Dartium implements Browser {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    withTempDir((dir) {
-      return Process.start(executable, [
-        "--user-data-dir=$dir",
-        url.toString(),
-        "--disable-extensions",
-        "--disable-popup-blocking",
-        "--bwsi",
-        "--no-first-run",
-        "--no-default-browser-check",
-        "--disable-default-apps",
-        "--disable-translate"
-      ], environment: {"DART_FLAGS": "--checked"}).then((process) {
-        _process = process;
-        _onProcessStartedCompleter.complete();
+    invoke(() async {
+      try {
+        var exitCode = await withTempDir((dir) async {
+          var process = await Process.start(executable, [
+            "--user-data-dir=$dir",
+            url.toString(),
+            "--disable-extensions",
+            "--disable-popup-blocking",
+            "--bwsi",
+            "--no-first-run",
+            "--no-default-browser-check",
+            "--disable-default-apps",
+            "--disable-translate"
+          ], environment: {"DART_FLAGS": "--checked"});
 
-        // TODO(nweiz): the browser's standard output is almost always useless
-        // noise, but we should allow the user to opt in to seeing it.
-        return _process.exitCode;
-      });
-    }).then((exitCode) {
-      if (exitCode == 0) return null;
+          _process = process;
+          _onProcessStartedCompleter.complete();
 
-      return UTF8.decodeStream(_process.stderr).then((error) {
-        throw new ApplicationException(
-            "Dartium failed with exit code $exitCode:\n$error");
-      });
-    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
-      if (stackTrace == null) stackTrace = new Trace.current();
-      _onExitCompleter.completeError(
-          new ApplicationException(
-              "Failed to start Dartium: ${getErrorMessage(error)}."),
-          stackTrace);
+          // TODO(nweiz): the browser's standard output is almost always useless
+          // noise, but we should allow the user to opt in to seeing it.
+          return await _process.exitCode;
+        });
+
+        if (exitCode != 0) {
+          var error = await UTF8.decodeStream(_process.stderr);
+          throw new ApplicationException(
+              "Dartium failed with exit code $exitCode:\n$error");
+        }
+
+        _onExitCompleter.complete();
+      } catch (error, stackTrace) {
+        if (stackTrace == null) stackTrace = new Trace.current();
+        _onExitCompleter.completeError(
+            new ApplicationException(
+                "Failed to start Dartium: ${getErrorMessage(error)}."),
+            stackTrace);
+      }
     });
   }
 

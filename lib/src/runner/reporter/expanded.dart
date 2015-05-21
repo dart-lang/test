@@ -67,6 +67,9 @@ class ExpandedReporter {
   /// The set of tests that are still running.
   final _active = new List<LiveTest>();
 
+  /// Whether [close] has been called.
+  bool _closed = false;
+
   /// The size of [_passed] last time a progress notification was printed.
   int _lastProgressPassed;
 
@@ -144,7 +147,7 @@ class ExpandedReporter {
   ///
   /// This returns `true` if all tests succeed, and `false` otherwise. It will
   /// only return once all tests have finished running.
-  Future<bool> run() {
+  Future<bool> run() async {
     if (_stopwatch.isRunning) {
       throw new StateError("ExpandedReporter.run() may not be called more than "
           "once.");
@@ -152,21 +155,22 @@ class ExpandedReporter {
 
     if (_engine.liveTests.isEmpty) {
       print("No tests ran.");
-      return new Future.value(true);
+      return true;
     }
 
     _stopwatch.start();
-    return _engine.run().then((success) {
-      if (!success) {
-        _progressLine('Some tests failed.', color: _red);
-      } else if (_passed.isEmpty) {
-        _progressLine("All tests skipped.");
-      } else {
-        _progressLine("All tests passed!");
-      }
+    var success = await _engine.run();
+    if (_closed) return false;
 
-      return success;
-    });
+    if (!success) {
+      _progressLine('Some tests failed.', color: _red);
+    } else if (_passed.isEmpty) {
+      _progressLine("All tests skipped.");
+    } else {
+      _progressLine("All tests passed!");
+    }
+
+    return success;
   }
 
   /// Signals that the caller is done with any test output and the reporter

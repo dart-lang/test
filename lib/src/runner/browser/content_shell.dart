@@ -45,48 +45,54 @@ class ContentShell implements Browser {
   ContentShell(url, {String executable}) {
     if (executable == null) executable = _defaultExecutable();
 
-    // Whether we killed content shell because it used an expired Dart version.
-    var expired = false;
-
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    Process.start(executable, ["--dump-render-tree", url.toString()],
-        environment: {"DART_FLAGS": "--checked"}).then((process) {
-      _lines.bind(process.stderr).listen((line) {
-        if (line != "[dartToStderr]: Dartium build has expired") return;
-        expired = true;
-        process.kill();
-      });
+    invoke(() async {
+      // Whether we killed content shell because it used an expired Dart
+      // version.
+      var expired = false;
 
-      _process = process;
-      _onProcessStartedCompleter.complete();
-      return _process.exitCode;
-    }).then((exitCode) {
-      if (expired) {
-        // TODO(nweiz): link to dartlang.org once it has download links for
-        // content shell
-        // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
-        throw new ApplicationException(
-            "You're using an expired content_shell. Upgrade to the latest "
-                "version:\n"
-            "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
-                "latest/dartium/");
+      try {
+        var process = await Process.start(
+            executable, ["--dump-render-tree", url.toString()],
+            environment: {"DART_FLAGS": "--checked"});
+
+        _lines.bind(process.stderr).listen((line) {
+          if (line != "[dartToStderr]: Dartium build has expired") return;
+          expired = true;
+          process.kill();
+        });
+
+        _process = process;
+        _onProcessStartedCompleter.complete();
+        var exitCode = await _process.exitCode;
+
+        if (expired) {
+          // TODO(nweiz): link to dartlang.org once it has download links for
+          // content shell
+          // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
+          throw new ApplicationException(
+              "You're using an expired content_shell. Upgrade to the latest "
+                  "version:\n"
+              "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
+                  "latest/dartium/");
+        }
+
+        if (exitCode != 0) {
+          var error = await UTF8.decodeStream(_process.stderr);
+          throw new ApplicationException(
+              "Content shell failed with exit code $exitCode:\n$error");
+        }
+
+        _onExitCompleter.complete();
+      } catch (error, stackTrace) {
+        if (stackTrace == null) stackTrace = new Trace.current();
+        _onExitCompleter.completeError(
+            new ApplicationException(
+                "Failed to start content shell: ${getErrorMessage(error)}."),
+            stackTrace);
       }
-
-      if (exitCode == 0) return null;
-
-
-      return UTF8.decodeStream(_process.stderr).then((error) {
-        throw new ApplicationException(
-            "Content shell failed with exit code $exitCode:\n$error");
-      });
-    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
-      if (stackTrace == null) stackTrace = new Trace.current();
-      _onExitCompleter.completeError(
-          new ApplicationException(
-              "Failed to start content shell: ${getErrorMessage(error)}."),
-          stackTrace);
     });
   }
 

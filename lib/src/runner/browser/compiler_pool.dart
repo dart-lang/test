@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
+import '../../util/async_thunk.dart';
 import '../../util/io.dart';
 import '../load_exception.dart';
 
@@ -36,10 +37,10 @@ class CompilerPool {
   final _compilers = new Queue<_Compiler>();
 
   /// Whether [close] has been called.
-  bool get _closed => _closeCompleter != null;
+  bool get _closed => _closeThunk.hasRun;
 
-  /// The completer for the [Future] returned by [close].
-  Completer _closeCompleter;
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
 
   /// Creates a compiler pool that runs up to [concurrency] instances of
   /// `dart2js` at once.
@@ -63,7 +64,7 @@ class CompilerPool {
     return _pool.withResource(() {
       if (_closed) return null;
 
-      return withTempDir((dir) {
+      return withTempDir((dir) async {
         var wrapperPath = p.join(dir, "runInBrowser.dart");
         new File(wrapperPath).writeAsStringSync('''
 import "package:test/src/runner/browser/iframe_listener.dart";
@@ -78,7 +79,7 @@ void main(_) {
         var dart2jsPath = p.join(sdkDir, 'bin', 'dart2js');
         if (Platform.isWindows) dart2jsPath += '.bat';
 
-        var args = ["--checked", wrapperPath, "--out=$jsPath"];
+        var args = ["--checked", wrapperPath, "--out=$jsPath", "--show-package-warnings"];
 
         if (packageRoot != null) {
           args.add("--package-root=${p.toUri(p.absolute(packageRoot))}");
@@ -86,14 +87,13 @@ void main(_) {
 
         if (_color) args.add("--enable-diagnostic-colors");
 
-        return Process.start(dart2jsPath, args).then((process) {
-          var compiler = new _Compiler(dartPath, process);
+        var process = await Process.start(dart2jsPath, args);
+        var compiler = new _Compiler(dartPath, process);
 
-          if (_compilers.isEmpty) _showProcess(compiler);
-          _compilers.add(compiler);
+        if (_compilers.isEmpty) _showProcess(compiler);
+        _compilers.add(compiler);
 
-          return compiler.onDone;
-        });
+        await compiler.onDone;
       });
     });
   }
@@ -104,31 +104,35 @@ void main(_) {
   void _showProcess(_Compiler compiler) {
     print("Compiling ${compiler.path}...");
 
-    // We wait for stdout and stderr to close and for exitCode to fire to ensure
-    // that we're done printing everything about one process before we start the
-    // next.
-    Future.wait([
-      santizeForWindows(compiler.process.stdout).listen(stdout.add).asFuture(),
-      santizeForWindows(compiler.process.stderr).listen(stderr.add).asFuture(),
-      compiler.process.exitCode.then((exitCode) {
-        if (exitCode == 0 || _closed) return;
-        throw new LoadException(compiler.path, "dart2js failed.");
-      })
-    ]).then((_) {
-      if (_closed) return;
-      compiler.onDoneCompleter.complete();
-    }).catchError((error, stackTrace) {
-      if (_closed) return;
-      compiler.onDoneCompleter.completeError(error, stackTrace);
-    }).then((_) {
-      if (_closed) return;
+    invoke(() async {
+      try {
+        // We wait for stdout and stderr to close and for exitCode to fire to
+        // ensure that we're done printing everything about one process before
+        // we start the next.
+        await Future.wait([
+          santizeForWindows(compiler.process.stdout).listen(stdout.add)
+              .asFuture(),
+          santizeForWindows(compiler.process.stderr).listen(stderr.add)
+              .asFuture(),
+          compiler.process.exitCode.then((exitCode) {
+            if (exitCode == 0 || _closed) return;
+            throw new LoadException(compiler.path, "dart2js failed.");
+          })
+        ]);
+
+        if (_closed) return;
+        compiler.onDoneCompleter.complete();
+      } catch (error, stackTrace) {
+        if (_closed) return;
+        compiler.onDoneCompleter.completeError(error, stackTrace);
+      }
 
       _compilers.removeFirst();
       if (_compilers.isEmpty) return;
 
       var next = _compilers.first;
 
-      // Wait a bit before printing the next progress in case the current one
+      // Wait a bit before printing the next process in case the current one
       // threw an error that needs to be printed.
       Timer.run(() => _showProcess(next));
     });
@@ -140,16 +144,15 @@ void main(_) {
   /// be started. It returns a [Future] that completes once all the compilers
   /// have been killed and all resources released.
   Future close() {
-    if (_closed) return _closeCompleter.future;
-    _closeCompleter = new Completer();
+    return _closeThunk.run(() async {
+      await Future.wait(_compilers.map((compiler) async {
+        compiler.process.kill();
+        await compiler.process.exitCode;
+        compiler.onDoneCompleter.complete();
+      }));
 
-    return Future.wait(_compilers.map((compiler) {
-      compiler.process.kill();
-      return compiler.process.exitCode.then(compiler.onDoneCompleter.complete);
-    })).then((_) {
       _compilers.clear();
-      _closeCompleter.complete();
-    }).catchError(_closeCompleter.completeError);
+    });
   }
 }
 

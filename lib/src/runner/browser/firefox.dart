@@ -53,37 +53,42 @@ class Firefox implements Browser {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    withTempDir((dir) {
-      new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
+    invoke(() async {
+      try {
+        var exitCode = await withTempDir((dir) async {
+          new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
-      return Process.start(executable, [
-        "--profile",
-        "$dir",
-        url.toString(),
-        "--no-remote"
-      ], environment: {
-        "MOZ_CRASHREPORTER_DISABLE": "1"
-      }).then((process) {
-        _process = process;
-        _onProcessStartedCompleter.complete();
+          var process = await Process.start(executable, [
+            "--profile",
+            "$dir",
+            url.toString(),
+            "--no-remote"
+          ], environment: {
+            "MOZ_CRASHREPORTER_DISABLE": "1"
+          });
 
-        // TODO(nweiz): the browser's standard output is almost always useless
-        // noise, but we should allow the user to opt in to seeing it.
-        return _process.exitCode;
-      });
-    }).then((exitCode) {
-      if (exitCode == 0) return null;
+          _process = process;
+          _onProcessStartedCompleter.complete();
 
-      return UTF8.decodeStream(_process.stderr).then((error) {
-        throw new ApplicationException(
-            "Firefox failed with exit code $exitCode:\n$error");
-      });
-    }).then(_onExitCompleter.complete).catchError((error, stackTrace) {
-      if (stackTrace == null) stackTrace = new Trace.current();
-      _onExitCompleter.completeError(
-          new ApplicationException(
-              "Failed to start Firefox: ${getErrorMessage(error)}."),
-          stackTrace);
+          // TODO(nweiz): the browser's standard output is almost always useless
+          // noise, but we should allow the user to opt in to seeing it.
+          return await _process.exitCode;
+        });
+
+        if (exitCode != 0) {
+          var error = await UTF8.decodeStream(_process.stderr);
+          throw new ApplicationException(
+              "Firefox failed with exit code $exitCode:\n$error");
+        }
+
+        _onExitCompleter.complete();
+      } catch (error, stackTrace) {
+        if (stackTrace == null) stackTrace = new Trace.current();
+        _onExitCompleter.completeError(
+            new ApplicationException(
+                "Failed to start Firefox: ${getErrorMessage(error)}."),
+            stackTrace);
+      }
     });
   }
 

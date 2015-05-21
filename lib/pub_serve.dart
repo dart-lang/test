@@ -24,7 +24,7 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     transform.declareOutput(id.addExtension('.browser_test.dart'));
   }
 
-  Future apply(Transform transform) {
+  Future apply(Transform transform) async {
     var id = transform.primaryInput.id;
 
     transform.addOutput(
@@ -55,10 +55,10 @@ void main() {
     // If the user has their own HTML file for the test, let that take
     // precedence. Otherwise, create our own basic file.
     var htmlId = id.changeExtension('.html');
-    return transform.hasInput(htmlId).then((hasInput) {
-      if (hasInput) return;
-      transform.addOutput(
-          new Asset.fromString(htmlId, '''
+    if (await transform.hasInput(htmlId)) return;
+
+    transform.addOutput(
+        new Asset.fromString(htmlId, '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -68,6 +68,5 @@ void main() {
 </head>
 </html>
 '''));
-    });
   }
 }

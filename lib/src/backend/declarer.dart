@@ -42,6 +42,9 @@ class Declarer {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
       // running while other tests from the same declarer are also running,
       // since they might share closurized state.
+
+      // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
+      // two stable versions.
       return group.runSetUp().then((_) => body());
     }, tearDown: group.runTearDown));
   }

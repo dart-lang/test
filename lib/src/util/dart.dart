@@ -26,31 +26,35 @@ import 'remote_exception.dart';
 ///
 /// [packageRoot] controls the package root of the isolate. It may be either a
 /// [String] or a [Uri].
-Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) {
+Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
   // TODO(nweiz): load code from a local server rather than from a file.
   var dir = createTempDir();
   var dartPath = p.join(dir, 'runInIsolate.dart');
   new File(dartPath).writeAsStringSync(code);
   var port = new ReceivePort();
-  return Isolate.spawn(_isolateBuffer, {
-    'replyTo': port.sendPort,
-    'uri': p.toUri(dartPath).toString(),
-    'packageRoot': packageRoot == null ? null : packageRoot.toString(),
-    'message': message
-  }).then((isolate) {
-    return port.first.then((response) {
-      if (response['type'] != 'error') return isolate;
-      if (supportsIsolateKill) isolate.kill();
-      var asyncError = RemoteException.deserialize(response['error']);
-      return new Future.error(asyncError.error, asyncError.stackTrace);
+
+  try {
+    var isolate = await Isolate.spawn(_isolateBuffer, {
+      'replyTo': port.sendPort,
+      'uri': p.toUri(dartPath).toString(),
+      'packageRoot': packageRoot == null ? null : packageRoot.toString(),
+      'message': message
     });
-  }).catchError((error) {
+
+    var response = await port.first;
+    if (response['type'] != 'error') {
+      return new IsolateWrapper(isolate,
+          () => new Directory(dir).deleteSync(recursive: true));
+    }
+
+    isolate.kill();
+    var asyncError = RemoteException.deserialize(response['error']);
+    await new Future.error(asyncError.error, asyncError.stackTrace);
+    throw 'unreachable';
+  } catch (error) {
     new Directory(dir).deleteSync(recursive: true);
-    throw error;
-  }).then((isolate) {
-    return new IsolateWrapper(isolate,
-        () => new Directory(dir).deleteSync(recursive: true));
-  });
+    rethrow;
+  }
 }
 
 // TODO(nweiz): remove this when issue 12617 is fixed.
@@ -59,19 +63,21 @@ Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) {
 /// [spawnUri] synchronously loads the file and its imports, which can deadlock
 /// the host isolate if there's an HTTP import pointing at a server in the host.
 /// Adding an additional isolate in the middle works around this.
-void _isolateBuffer(message) {
+Future _isolateBuffer(message) async {
   var replyTo = message['replyTo'];
   var packageRoot = message['packageRoot'];
   if (packageRoot != null) packageRoot = Uri.parse(packageRoot);
-  Isolate.spawnUri(Uri.parse(message['uri']), [], message['message'],
-          packageRoot: packageRoot)
-      .then((_) => replyTo.send({'type': 'success'}))
-      .catchError((error, stackTrace) {
+
+  try {
+    await Isolate.spawnUri(Uri.parse(message['uri']), [], message['message'],
+        packageRoot: packageRoot);
+    replyTo.send({'type': 'success'});
+  } catch (error, stackTrace) {
     replyTo.send({
       'type': 'error',
       'error': RemoteException.serialize(error, stackTrace)
     });
-  });
+  }
 }
 
 // TODO(nweiz): Move this into the analyzer once it starts using SourceSpan

@@ -9,7 +9,6 @@ import 'dart:collection';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../utils.dart';
 import 'live_test.dart';
 import 'state.dart';
 import 'suite.dart';
@@ -69,7 +68,7 @@ class LiveTestController {
   /// A function to run when the test is closed.
   ///
   /// This may be `null`.
-  final AsyncFunction _onClose;
+  final Function _onClose;
 
   /// The list of errors caught by the test.
   final _errors = new List<AsyncError>();

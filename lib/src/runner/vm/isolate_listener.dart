@@ -32,7 +32,8 @@ class IsolateListener {
   /// run.
   ///
   /// [metadata] is the suite-level metadata defined at the top of the file.
-  static void start(SendPort sendPort, Metadata metadata, Function getMain()) {
+  static Future start(SendPort sendPort, Metadata metadata, Function getMain())
+      async {
     var main;
     try {
       main = getMain();
@@ -51,18 +52,21 @@ class IsolateListener {
     }
 
     var declarer = new Declarer();
-    runZoned(() => new Future.sync(main), zoneValues: {
-      #test.declarer: declarer
-    }).then((_) {
-      var suite = new Suite(declarer.tests, metadata: metadata)
-          .forPlatform(TestPlatform.vm, os: currentOS);
-      new IsolateListener._(suite)._listen(sendPort);
-    }, onError: (error, stackTrace) {
+    try {
+      await runZoned(() => new Future.sync(main), zoneValues: {
+        #test.declarer: declarer
+      });
+    } catch (error, stackTrace) {
       sendPort.send({
         "type": "error",
         "error": RemoteException.serialize(error, stackTrace)
       });
-    });
+      return;
+    }
+
+    var suite = new Suite(declarer.tests, metadata: metadata)
+        .forPlatform(TestPlatform.vm, os: currentOS);
+    new IsolateListener._(suite)._listen(sendPort);
   }
 
   /// Sends a message over [sendPort] indicating that the tests failed to load.
@@ -99,7 +103,7 @@ class IsolateListener {
     });
   }
 
-  /// Runs [test] and send the results across [sendPort].
+  /// Runs [test] and sends the results across [sendPort].
   void _runTest(Test test, SendPort sendPort) {
     var liveTest = test.load(_suite);
 

@@ -53,15 +53,6 @@ String libDir({String packageRoot}) {
   return p.dirname(p.dirname(p.dirname(pathToIo)));
 }
 
-/// Returns whether the current Dart version supports [Isolate.kill].
-final bool supportsIsolateKill = _supportsIsolateKill;
-bool get _supportsIsolateKill {
-  // This isn't 100% accurate, since early 1.9 dev releases didn't support
-  // Isolate.kill(), but it's very unlikely anyone will be using them.
-  // TODO(nweiz): remove this when we no longer support older Dart versions.
-  return new VersionConstraint.parse('>=1.9.0-dev <2.0.0').allows(_sdkVersion);
-}
-
 /// Returns whether the current Dart version has a fix for issue 23084.
 final bool supportsPubServe = _supportsPubServe;
 bool get _supportsPubServe {

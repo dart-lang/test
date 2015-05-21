@@ -25,55 +25,55 @@ void main() {
       expect(() => print("Hello, world!"), prints(contains("Hello")));
     });
 
-    test("describes a failure nicely", () {
-      return runTestBody(() {
+    test("describes a failure nicely", () async {
+      var liveTest = await runTestBody(() {
         expect(() => print("Hello, world!"), prints("Goodbye, world!\n"));
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Expected: prints 'Goodbye, world!\\n'\n"
-            "  ''\n"
-            "  Actual: <$closureString>\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "  ''\n"
-            "   Which: is different.\n"
-            "Expected: Goodbye, w ...\n"
-            "  Actual: Hello, wor ...\n"
-            "          ^\n"
-            " Differ at offset 0\n");
       });
+
+      expectTestFailed(liveTest,
+          "Expected: prints 'Goodbye, world!\\n'\n"
+          "  ''\n"
+          "  Actual: <$closureString>\n"
+          "   Which: printed 'Hello, world!\\n'\n"
+          "  ''\n"
+          "   Which: is different.\n"
+          "Expected: Goodbye, w ...\n"
+          "  Actual: Hello, wor ...\n"
+          "          ^\n"
+          " Differ at offset 0\n");
     });
 
-    test("describes a failure with a non-descriptive Matcher nicely", () {
-      return runTestBody(() {
+    test("describes a failure with a non-descriptive Matcher nicely", () async {
+      var liveTest = await runTestBody(() {
         expect(() => print("Hello, world!"), prints(contains("Goodbye")));
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "  ''\n");
       });
+
+      expectTestFailed(liveTest,
+          "Expected: prints contains 'Goodbye'\n"
+          "  Actual: <$closureString>\n"
+          "   Which: printed 'Hello, world!\\n'\n"
+          "  ''\n");
     });
 
-    test("describes a failure with no text nicely", () {
-      return runTestBody(() {
+    test("describes a failure with no text nicely", () async {
+      var liveTest = await runTestBody(() {
         expect(() {}, prints(contains("Goodbye")));
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: printed nothing.\n");
       });
+
+      expectTestFailed(liveTest,
+          "Expected: prints contains 'Goodbye'\n"
+          "  Actual: <$closureString>\n"
+          "   Which: printed nothing.\n");
     });
 
-    test("with a non-function", () {
-      return runTestBody(() {
+    test("with a non-function", () async {
+      var liveTest = await runTestBody(() {
         expect(10, prints(contains("Goodbye")));
-      }).then((liveTest) {
-        expectTestFailed(liveTest,
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <10>\n");
       });
+
+      expectTestFailed(liveTest,
+          "Expected: prints contains 'Goodbye'\n"
+          "  Actual: <10>\n");
     });
   });
 
@@ -95,47 +95,47 @@ void main() {
           prints(contains("Hello")));
     });
 
-    test("describes a failure nicely", () {
-      return runTestBody(() {
+    test("describes a failure nicely", () async {
+      var liveTest = await runTestBody(() {
         expect(() => new Future(() => print("Hello, world!")),
             prints("Goodbye, world!\n"));
-      }).then((liveTest) {
-        expectTestFailed(liveTest, startsWith(
-            "Expected: prints 'Goodbye, world!\\n'\n"
-            "  ''\n"
-            "  Actual: <$closureString>\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "  ''\n"
-            "   Which: is different.\n"
-            "Expected: Goodbye, w ...\n"
-            "  Actual: Hello, wor ...\n"
-            "          ^\n"
-            " Differ at offset 0"));
       });
+
+      expectTestFailed(liveTest, startsWith(
+          "Expected: prints 'Goodbye, world!\\n'\n"
+          "  ''\n"
+          "  Actual: <$closureString>\n"
+          "   Which: printed 'Hello, world!\\n'\n"
+          "  ''\n"
+          "   Which: is different.\n"
+          "Expected: Goodbye, w ...\n"
+          "  Actual: Hello, wor ...\n"
+          "          ^\n"
+          " Differ at offset 0"));
     });
 
-    test("describes a failure with a non-descriptive Matcher nicely", () {
-      return runTestBody(() {
+    test("describes a failure with a non-descriptive Matcher nicely", () async {
+      var liveTest = await runTestBody(() {
         expect(() => new Future(() => print("Hello, world!")),
             prints(contains("Goodbye")));
-      }).then((liveTest) {
-        expectTestFailed(liveTest, startsWith(
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "  ''"));
       });
+
+      expectTestFailed(liveTest, startsWith(
+          "Expected: prints contains 'Goodbye'\n"
+          "  Actual: <$closureString>\n"
+          "   Which: printed 'Hello, world!\\n'\n"
+          "  ''"));
     });
 
-    test("describes a failure with no text nicely", () {
-      return runTestBody(() {
+    test("describes a failure with no text nicely", () async {
+      var liveTest = await runTestBody(() {
         expect(() => new Future.value(), prints(contains("Goodbye")));
-      }).then((liveTest) {
-        expectTestFailed(liveTest, startsWith(
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: printed nothing."));
       });
+
+      expectTestFailed(liveTest, startsWith(
+          "Expected: prints contains 'Goodbye'\n"
+          "  Actual: <$closureString>\n"
+          "   Which: printed nothing."));
     });
 
     test("won't let the test end until the Future completes", () {
