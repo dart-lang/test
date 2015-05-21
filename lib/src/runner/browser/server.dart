@@ -305,16 +305,20 @@ void main() {
         print('"pub serve" is compiling $path...');
       });
 
+      var mapUrl = jsUrl.replace(path: jsUrl.path + '.map');
       var response;
       try {
         // Get the source map here for two reasons. We want to verify that the
         // server's dart2js compiler is running on the Dart code, and also load
         // the StackTraceMapper.
-        var mapUrl = jsUrl.replace(path: jsUrl.path + '.map');
-        var request = await _http.headUrl(mapUrl);
+        var request = await _http.getUrl(mapUrl);
         response = await request.close();
 
         if (response.statusCode != 200) {
+          // We don't care about the response body, but we have to drain it or
+          // else the process can't exit.
+          response.listen((_) {});
+
           throw new LoadException(path,
               "Error getting $mapUrl: ${response.statusCode} "
                   "${response.reasonPhrase}\n"
@@ -322,8 +326,7 @@ void main() {
         }
 
         if (_jsTrace) {
-          // We don't care about the response body, but we have to drain it or
-          // else the process can't exit.
+          // Drain the response stream.
           response.listen((_) {});
           return;
         }

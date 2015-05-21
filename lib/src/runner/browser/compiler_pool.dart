@@ -13,6 +13,7 @@ import 'package:pool/pool.dart';
 
 import '../../util/async_thunk.dart';
 import '../../util/io.dart';
+import '../../utils.dart';
 import '../load_exception.dart';
 
 /// A pool of `dart2js` instances.

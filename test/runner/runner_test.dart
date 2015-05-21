@@ -65,6 +65,7 @@ Usage: pub run test:test [files or directories...]
           [expanded]           A separate line for each update.
 
     --verbose-trace            Whether to emit stack traces with core library frames.
+    --js-trace                 Whether to emit raw JavaScript stack traces for browser tests.
     --[no-]color               Whether to use terminal colors.
                                (auto-detected by default)
 """;
