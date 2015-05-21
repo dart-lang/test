@@ -1,3 +1,7 @@
+##0.11.6+1
+
+* Give tests more time to start running.
+
 ##0.11.6
 
 * Merge in the last `0.11.x` release of `matcher` to allow projects to use both
