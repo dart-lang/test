@@ -54,8 +54,6 @@ class MyTransformer extends Transformer {
 
   Future apply(Transform transform) async {
     var contents = await transform.primaryInput.readAsString();
-    print("contents: \$contents");
-    print("new contents: \${contents.replaceAll("isFalse", "isTrue")}");
     transform.addOutput(new Asset.fromString(
         transform.primaryInput.id,
         contents.replaceAll("isFalse", "isTrue")));
@@ -79,6 +77,18 @@ class MyTransformer extends Transformer {
   });
 
   group("with transformed tests", () {
+    setUp(() {
+      // Give the test a failing assertion that the transformer will convert to
+      // a passing assertion.
+      new File(p.join(_sandbox, "test", "my_test.dart")).writeAsStringSync("""
+import 'package:test/test.dart';
+
+void main() {
+  test("test", () => expect(true, isFalse));
+}
+""");
+    });
+
     test("runs those tests in the VM", () async {
       var pair = await startPubServe(workingDirectory: _sandbox);
       try {
@@ -249,56 +259,40 @@ void main() {
 """);
     });
 
-    test("dartifies stack traces for JS-compiled tests by default", () {
-      return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
-          .then((process) {
-        return _lines.bind(process.stdout)
-            .firstWhere(_servingRegExp.hasMatch)
-            .then((line) {
-          var match = _servingRegExp.firstMatch(line);
-
-          try {
-            var result = runTest([
-              '--pub-serve=${match[1]}',
-              '-p', 'chrome',
-              '--verbose-trace'
-            ], workingDirectory: _sandbox);
-            expect(result.stdout, contains(" main.<fn>\n"));
-            expect(result.stdout, contains("package:test"));
-            expect(result.stdout, contains("dart:async/zone.dart"));
-            expect(result.exitCode, equals(1));
-          } finally {
-            process.kill();
-          }
-        });
-      });
+    test("dartifies stack traces for JS-compiled tests by default", () async {
+      var pair = await startPubServe(workingDirectory: _sandbox);
+      try {
+        var result = runTest([
+          '--pub-serve=${pair.last}',
+          '-p', 'chrome',
+          '--verbose-trace'
+        ], workingDirectory: _sandbox);
+        expect(result.stdout, contains(" main.<fn>\n"));
+        expect(result.stdout, contains("package:test"));
+        expect(result.stdout, contains("dart:async/zone.dart"));
+        expect(result.exitCode, equals(1));
+      } finally {
+        pair.first.kill();
+      }
     });
 
     test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
-        () {
-      return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
-          .then((process) {
-        return _lines.bind(process.stdout)
-            .firstWhere(_servingRegExp.hasMatch)
-            .then((line) {
-          var match = _servingRegExp.firstMatch(line);
-
-          try {
-            var result = runTest([
-              '--pub-serve=${match[1]}',
-              '-p', 'chrome',
-              '--js-trace',
-              '--verbose-trace'
-            ], workingDirectory: _sandbox);
-            expect(result.stdout, isNot(contains(" main.<fn>\n")));
-            expect(result.stdout, isNot(contains("package:test")));
-            expect(result.stdout, isNot(contains("dart:async/zone.dart")));
-            expect(result.exitCode, equals(1));
-          } finally {
-            process.kill();
-          }
-        });
-      });
+        () async {
+      var pair = await startPubServe(workingDirectory: _sandbox);
+      try {
+        var result = runTest([
+          '--pub-serve=${pair.last}',
+          '-p', 'chrome',
+          '--js-trace',
+          '--verbose-trace'
+        ], workingDirectory: _sandbox);
+        expect(result.stdout, isNot(contains(" main.<fn>\n")));
+        expect(result.stdout, isNot(contains("package:test")));
+        expect(result.stdout, isNot(contains("dart:async/zone.dart")));
+        expect(result.exitCode, equals(1));
+      } finally {
+        pair.first.kill();
+      }
     });
   });
 
@@ -326,7 +320,7 @@ void main() {
       contains('-1: load error'),
       contains('Failed to load "${p.join("test", "my_test.dart")}":'),
       contains('Error getting http://localhost:54321/my_test.dart.browser_test'
-          '.dart.js: $message'),
+          '.dart.js.map: $message'),
       contains('Make sure "pub serve" is running.')
     ]));
     expect(result.exitCode, equals(1));
