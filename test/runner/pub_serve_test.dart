@@ -252,11 +252,7 @@ void main() {
     test("dartifies stack traces for JS-compiled tests by default", () {
       return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
           .then((process) {
-        return _lines.bind(process.stdout)
-            .firstWhere(_servingRegExp.hasMatch)
-            .then((line) {
-          var match = _servingRegExp.firstMatch(line);
-
+        return getServingMatchFromProcess(process).then((match) {
           try {
             var result = runTest([
               '--pub-serve=${match[1]}',
@@ -278,10 +274,7 @@ void main() {
         () {
       return startPub(['serve', '--port', '0'], workingDirectory: _sandbox)
           .then((process) {
-        return _lines.bind(process.stdout)
-            .firstWhere(_servingRegExp.hasMatch)
-            .then((line) {
-          var match = _servingRegExp.firstMatch(line);
+        return getServingMatchFromProcess(process).then((match) {
 
           try {
             var result = runTest([

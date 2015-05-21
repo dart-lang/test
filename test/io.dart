@@ -107,6 +107,15 @@ Future<Process> startPub(List<String> args, {String workingDirectory,
       workingDirectory: workingDirectory, environment: environment);
 }
 
+/// Finds the output from pub serve that includes the hosting port.
+///
+/// Returns the [Match] that contains the matched output.
+Future<Match> getServingMatchFromProcess(Process process) async {
+  var line =
+      await _lines.bind(process.stdout).firstWhere(_servingRegExp.hasMatch);
+  return _servingRegExp.firstMatch(line);
+}
+
 /// Starts "pub serve".
 ///
 /// This returns a pair of the pub serve process and the port it's serving on.
@@ -117,9 +126,8 @@ Future<Pair<Process, int>> startPubServe({List<String> args,
 
   var process = await startPub(allArgs,
       workingDirectory: workingDirectory, environment: environment);
-  var line = await _lines.bind(process.stdout)
-      .firstWhere(_servingRegExp.hasMatch);
-  var match = _servingRegExp.firstMatch(line);
+
+  var match = await getServingMatchFromProcess(process);
 
   return new Pair(process, int.parse(match[1]));
 }
