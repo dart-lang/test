@@ -5,7 +5,7 @@
 library matcher.operator_matchers_test;
 
 import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart'
+import 'package:test/test.dart'
     show test, group, expect, throwsArgumentError;
 
 import 'test_utils.dart';

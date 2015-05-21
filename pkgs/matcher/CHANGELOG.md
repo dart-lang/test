@@ -1,3 +1,7 @@
+## 0.12.0+1
+
+* Fix test files to use `test` instead of `unittest` pkg.
+
 ## 0.12.0
 
 * Moved a number of members to the

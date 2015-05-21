@@ -6,7 +6,7 @@ library matcher.test_utils;
 
 import 'dart:collection';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void shouldFail(value, Matcher matcher, expected) {
   var failed = false;

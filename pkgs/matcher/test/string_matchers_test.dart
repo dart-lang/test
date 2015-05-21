@@ -5,7 +5,7 @@
 library matcher.string_matchers_test;
 
 import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart' show test, group, expect;
+import 'package:test/test.dart' show test, group, expect;
 
 import 'test_utils.dart';
 

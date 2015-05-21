@@ -5,7 +5,7 @@
 library matcher.mirror_test;
 
 import 'package:matcher/mirror_matchers.dart';
-import 'package:unittest/unittest.dart' show test;
+import 'package:test/test.dart' show test;
 
 import 'test_utils.dart';
 

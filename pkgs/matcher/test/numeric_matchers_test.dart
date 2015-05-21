@@ -5,7 +5,7 @@
 library matcher.numeric_matchers_test;
 
 import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart' show test, group;
+import 'package:test/test.dart' show test, group;
 
 import 'test_utils.dart';
 
