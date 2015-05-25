@@ -150,40 +150,6 @@ valid identifiers are:
 
 * `firefox`: Whether the test is running on Mozilla Firefox.
 
-* `safari`: Whether the test is running on Apple Safari.
-
-* `ie`: Whether the test is running on Microsoft Internet Explorer.
-
-* `dart-vm`: Whether the test is running on the Dart VM in any context,
-  including Dartium. It's identical to `!js`.
-
-* `browser`: Whether the test is running in any browser.
-
-* `js`: Whether the test has been compiled to JS. This is identical to
-  `!dart-vm`.
-
-* `blink`: Whether the test is running in a browser that uses the Blink
-  rendering engine.
-
-* `windows`: Whether the test is running on Windows. If `vm` is false, this will
-  be `false` as well.
-
-* `mac-os`: Whether the test is running on Mac OS. If `vm` is false, this will
-  be `false` as well.
-
-* `linux`: Whether the test is running on Linux. If `vm` is false, this will be
-  `false` as well.
-
-* `android`: Whether the test is running on Android. If `vm` is false, this will
-  be `false` as well, which means that this *won't* be true if the test is
-  running on an Android browser.
-
-* `posix`: Whether the test is running on a POSIX operating system. This is
-  equivalent to `!windows`.
-
-For example, if you wanted to run a test on every browser but Chrome, you would
-write `@TestOn("browser && !chrome")`.
-
 ### Running Tests on Dartium
 
 Tests can be run on [Dartium][] by passing the `-p dartium` flag. If you're
