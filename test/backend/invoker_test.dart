@@ -642,6 +642,42 @@ void main() {
       });
     });
   });
+
+  group("waitForOutstandingCallbacks:", () {
+    test("waits for the wrapped function to complete", () async {
+      var functionCompleted = false;
+      await Invoker.current.waitForOutstandingCallbacks(() async {
+        await pumpEventQueue();
+        functionCompleted = true;
+      });
+
+      expect(functionCompleted, isTrue);
+    });
+
+    test("waits for registered callbacks in the wrapped function to run",
+        () async {
+      var callbackRun = false;
+      await Invoker.current.waitForOutstandingCallbacks(() {
+        pumpEventQueue().then(expectAsync((_) {
+          callbackRun = true;
+        }));
+      });
+
+      expect(callbackRun, isTrue);
+    });
+
+    test("doesn't automatically block the enclosing context", () async {
+      var innerFunctionCompleted = false;
+      await Invoker.current.waitForOutstandingCallbacks(() {
+        Invoker.current.waitForOutstandingCallbacks(() async {
+          await pumpEventQueue();
+          innerFunctionCompleted = true;
+        });
+      });
+
+      expect(innerFunctionCompleted, isFalse);
+    });
+  });
 }
 
 LocalTest _localTest(body(), {tearDown(), Metadata metadata}) {

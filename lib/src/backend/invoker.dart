@@ -120,6 +120,29 @@ class Invoker {
   void removeOutstandingCallback() =>
       _outstandingCallbacks.removeOutstandingCallback();
 
+  /// Runs [fn] and returns once all (registered) outstanding callbacks it
+  /// transitively invokes have completed.
+  ///
+  /// If [fn] itself returns a future, this will automatically wait until that
+  /// future completes as well.
+  ///
+  /// Note that outstanding callbacks registered within [fn] will *not* be
+  /// registered as outstanding callback outside of [fn].
+  Future waitForOutstandingCallbacks(fn()) {
+    var counter = new OutstandingCallbackCounter();
+    runZoned(() {
+      // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
+      // two stable versions.
+      new Future.sync(fn).then((_) => counter.removeOutstandingCallback());
+    }, zoneValues: {
+      // Use the invoker as a key so that multiple invokers can have different
+      // outstanding callback counters at once.
+      this: counter
+    });
+
+    return counter.noOutstandingCallbacks;
+  }
+
   /// Notifies the invoker of an asynchronous error.
   ///
   /// Note that calling this explicitly is rarely necessary, since any
@@ -183,15 +206,8 @@ class Invoker {
 
           // Reset the outstanding callback counter to wait for callbacks from
           // the test's `tearDown` to complete.
-          var outstandingCallbacksForTearDown = new OutstandingCallbackCounter();
-          runZonedWithValues(() {
-            new Future.sync(_test._tearDown)
-              .then((_) => removeOutstandingCallback());
-          }, onError: handleError, zoneValues: {
-            this: outstandingCallbacksForTearDown
-          });
-
-          return outstandingCallbacksForTearDown.noOutstandingCallbacks;
+          return waitForOutstandingCallbacks(() =>
+              runZoned(_test._tearDown, onError: handleError));
         }).then((_) {
           timer.cancel();
           _controller.setState(
