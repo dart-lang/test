@@ -32,10 +32,19 @@ class LoadException implements Exception {
 
       // If this is a file system error, get rid of both the preamble and the
       // useless stack trace.
+
+      // This message was used prior to 1.11.0-dev.3.0.
       innerString = innerString.replaceFirst(
           "Unhandled exception:\n"
           "Uncaught Error: Load Error: ",
           "");
+
+      // This message was used after 1.11.0-dev.3.0.
+      innerString = innerString.replaceFirst(
+          "Unhandled exception:\n"
+          "Load Error for ",
+          "");
+
       innerString = innerString.replaceFirst("FileSystemException: ", "");
       innerString = innerString.split("Stack Trace:\n").first.trim();
     } if (innerError is SourceSpanException) {
