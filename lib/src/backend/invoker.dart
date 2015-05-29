@@ -127,6 +127,13 @@ class Invoker {
     _outstandingCallbacks.removeOutstandingCallback();
   }
 
+  /// Removes all outstanding callbacks, for example when an error occurs.
+  ///
+  /// Future calls to [addOutstandingCallback] and [removeOutstandingCallback]
+  /// will be ignored.
+  void removeAllOutstandingCallbacks() =>
+      _outstandingCallbacks.removeAllOutstandingCallbacks();
+
   /// Runs [fn] and returns once all (registered) outstanding callbacks it
   /// transitively invokes have completed.
   ///
@@ -186,7 +193,7 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace);
-    _outstandingCallbacks.removeAllOutstandingCallbacks();
+    removeAllOutstandingCallbacks();
 
     // If a test was marked as success but then had an error, that indicates
     // that it was poorly-written and could be flaky.
