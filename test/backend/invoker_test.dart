@@ -169,7 +169,7 @@ void main() {
 
     test("a synchronous reported failure causes the test to fail", () {
       var liveTest = _localTest(() {
-        Invoker.current.handleError(new TestFailure("oh no"));
+        registerException(new TestFailure("oh no"));
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -180,7 +180,7 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => Invoker.current.handleError(new TestFailure("oh no")));
+        new Future(() => registerException(new TestFailure("oh no")));
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -201,7 +201,7 @@ void main() {
     test("a failure reported asynchronously after the test causes it to error",
         () {
       var liveTest = _localTest(() {
-        new Future(() => Invoker.current.handleError(new TestFailure("oh no")));
+        new Future(() => registerException(new TestFailure("oh no")));
       }).load(suite);
 
       expectStates(liveTest, [
@@ -303,7 +303,7 @@ void main() {
 
     test("a synchronous reported error causes the test to error", () {
       var liveTest = _localTest(() {
-        Invoker.current.handleError("oh no");
+        registerException("oh no");
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -314,7 +314,7 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => Invoker.current.handleError("oh no"));
+        new Future(() => registerException("oh no"));
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -335,7 +335,7 @@ void main() {
     test("an error reported asynchronously after the test causes it to error",
         () {
       var liveTest = _localTest(() {
-        new Future(() => Invoker.current.handleError("oh no"));
+        new Future(() => registerException("oh no"));
       }).load(suite);
 
       expectStates(liveTest, [
