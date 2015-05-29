@@ -173,5 +173,8 @@ void setUp(callback()) => _declarer.setUp(callback);
 void tearDown(callback()) => _declarer.tearDown(callback);
 
 /// Registers an exception that was caught for the current test.
-void registerException(error, [StackTrace stackTrace]) =>
-    Invoker.current.handleError(error, stackTrace);
+void registerException(error, [StackTrace stackTrace]) {
+  // This will usually forward directly to [Invoker.current.handleError], but
+  // going through the zone API allows other zones to consistently see errors.
+  Zone.current.handleUncaughtError(error, stackTrace);
+}

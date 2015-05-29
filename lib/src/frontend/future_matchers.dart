@@ -51,10 +51,7 @@ class _Completes extends Matcher {
       if (_matcher != null) expect(value, _matcher);
       Invoker.current.removeOutstandingCallback();
     }, onError: (error, trace) {
-      if (error is TestFailure) {
-        Invoker.current.handleError(error, trace);
-        return;
-      }
+      if (error is TestFailure) throw error;
 
       var id = _id == '' ? '' : '${_id} ';
       var reason = 'Expected future ${id}to complete successfully, '

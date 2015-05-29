@@ -1,5 +1,8 @@
 ## 0.12.3
 
+* In order to be more extensible, all exception handling within tests now uses
+  the Zone API.
+
 * Add a heartbeat to reset a test's timeout whenever the test interacts with the
   test infrastructure.
 

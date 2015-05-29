@@ -4,6 +4,8 @@
 
 library test.frontend.expect_async;
 
+import 'dart:async';
+
 import '../backend/invoker.dart';
 import '../backend/state.dart';
 import 'expect.dart';
@@ -66,7 +68,10 @@ class _ExpectedFunction {
   int _actualCalls = 0;
 
   /// The test invoker in which this function was wrapped.
-  final Invoker _invoker;
+  Invoker get _invoker => _zone[#test.invoker];
+
+  /// The zone in which this function was wrapped.
+  final Zone _zone;
 
   /// Whether this function has been called the requisite number of times.
   bool _complete;
@@ -86,7 +91,7 @@ class _ExpectedFunction {
             : maxExpected,
         this._isDone = isDone,
         this._reason = reason == null ? '' : '\n$reason',
-        this._invoker = Invoker.current,
+        this._zone = Zone.current,
         this._id = _makeCallbackId(id, callback) {
     if (_invoker == null) {
       throw new StateError("[expectAsync] was called outside of a test.");
@@ -178,7 +183,7 @@ class _ExpectedFunction {
 
       return Function.apply(_callback, args.toList());
     } catch (error, stackTrace) {
-      _invoker.handleError(error, stackTrace);
+      _zone.handleUncaughtError(error, stackTrace);
       return null;
     } finally {
       _afterRun();

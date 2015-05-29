@@ -170,17 +170,14 @@ class Invoker {
     var timeout = metadata.timeout.apply(new Duration(seconds: 30));
     _timeoutTimer = new Timer(timeout, () {
       if (liveTest.isComplete) return;
-      handleError(
+      _handleError(
           new TimeoutException(
               "Test timed out after ${niceDuration(timeout)}.", timeout));
     });
   }
 
   /// Notifies the invoker of an asynchronous error.
-  ///
-  /// Note that calling this explicitly is rarely necessary, since any
-  /// otherwise-uncaught errors will be forwarded to the invoker anyway.
-  void handleError(error, [StackTrace stackTrace]) {
+  void _handleError(error, [StackTrace stackTrace]) {
     if (stackTrace == null) stackTrace = new Chain.current();
 
     var afterSuccess = liveTest.isComplete &&
@@ -198,7 +195,7 @@ class Invoker {
     // If a test was marked as success but then had an error, that indicates
     // that it was poorly-written and could be flaky.
     if (!afterSuccess) return;
-    handleError(
+    _handleError(
         "This test failed after it had already completed. Make sure to use "
             "[expectAsync]\n"
         "or the [completes] matcher when testing async code.",
@@ -232,7 +229,7 @@ class Invoker {
           // Reset the outstanding callback counter to wait for callbacks from
           // the test's `tearDown` to complete.
           return waitForOutstandingCallbacks(() =>
-              runZoned(_test._tearDown, onError: handleError));
+              runZoned(_test._tearDown, onError: _handleError));
         }).then((_) {
           _timeoutTimer.cancel();
           _controller.setState(
@@ -250,7 +247,7 @@ class Invoker {
       },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) => _controller.print(line)),
-          onError: handleError);
+          onError: _handleError);
     });
   }
 }
