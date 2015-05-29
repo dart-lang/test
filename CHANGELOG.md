@@ -1,3 +1,8 @@
+## 0.12.3
+
+* Add a heartbeat to reset a test's timeout whenever the test interacts with the
+  test infrastructure.
+
 ## 0.12.2
 
 * Convert JavaScript stack traces into Dart stack traces using source maps. This

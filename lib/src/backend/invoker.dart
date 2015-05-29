@@ -93,6 +93,11 @@ class Invoker {
     return Zone.current[#test.invoker];
   }
 
+  /// The timer for tracking timeouts.
+  ///
+  /// This will be `null` until the test starts running.
+  Timer _timeoutTimer;
+
   Invoker._(Suite suite, LocalTest test)
       : metadata = suite.metadata.merge(test.metadata) {
     _controller = new LiveTestController(suite, test, _onRun, () {
@@ -117,8 +122,10 @@ class Invoker {
 
   /// Tells the invoker that a callback declared with [addOutstandingCallback]
   /// is no longer running.
-  void removeOutstandingCallback() =>
-      _outstandingCallbacks.removeOutstandingCallback();
+  void removeOutstandingCallback() {
+    heartbeat();
+    _outstandingCallbacks.removeOutstandingCallback();
+  }
 
   /// Runs [fn] and returns once all (registered) outstanding callbacks it
   /// transitively invokes have completed.
@@ -129,6 +136,8 @@ class Invoker {
   /// Note that outstanding callbacks registered within [fn] will *not* be
   /// registered as outstanding callback outside of [fn].
   Future waitForOutstandingCallbacks(fn()) {
+    heartbeat();
+
     var counter = new OutstandingCallbackCounter();
     runZoned(() {
       // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
@@ -141,6 +150,23 @@ class Invoker {
     });
 
     return counter.noOutstandingCallbacks;
+  }
+
+  /// Notifies the invoker that progress is being made.
+  ///
+  /// Each heartbeat resets the timeout timer. This helps ensure that
+  /// long-running tests that still make progress don't time out.
+  void heartbeat() {
+    if (liveTest.isComplete) return;
+    if (_timeoutTimer != null) _timeoutTimer.cancel();
+
+    var timeout = metadata.timeout.apply(new Duration(seconds: 30));
+    _timeoutTimer = new Timer(timeout, () {
+      if (liveTest.isComplete) return;
+      handleError(
+          new TimeoutException(
+              "Test timed out after ${niceDuration(timeout)}.", timeout));
+    });
   }
 
   /// Notifies the invoker of an asynchronous error.
@@ -182,15 +208,7 @@ class Invoker {
     // stable versions.
     Chain.capture(() {
       runZonedWithValues(() {
-        // TODO(nweiz): Reset this timer whenever the user's code interacts
-        // with the library.
-        var timeout = metadata.timeout.apply(new Duration(seconds: 30));
-        var timer = new Timer(timeout, () {
-          if (liveTest.isComplete) return;
-          handleError(
-              new TimeoutException(
-                  "Test timed out after ${niceDuration(timeout)}.", timeout));
-        });
+        heartbeat();
 
         // Run the test asynchronously so that the "running" state change has
         // a chance to hit its event handler(s) before the test produces an
@@ -209,7 +227,7 @@ class Invoker {
           return waitForOutstandingCallbacks(() =>
               runZoned(_test._tearDown, onError: handleError));
         }).then((_) {
-          timer.cancel();
+          _timeoutTimer.cancel();
           _controller.setState(
               new State(Status.complete, liveTest.state.result));
 
