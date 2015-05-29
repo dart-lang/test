@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
+import 'package:test/src/backend/state.dart';
 
 import '../../utils.dart';
 
@@ -23,8 +24,10 @@ void main() {
         expect(new Future.error('X'), completes);
       });
 
-      expectTestFailed(liveTest, startsWith(
-          "Expected future to complete successfully, but it failed with X"));
+      expect(liveTest.state.status, equals(Status.complete));
+      expect(liveTest.state.result, equals(Result.error));
+      expect(liveTest.errors, hasLength(1));
+      expect(liveTest.errors.first.error, equals('X'));
     });
 
     test("with a failure", () async {
@@ -64,8 +67,10 @@ void main() {
         expect(new Future.error('X'), completion(isNull));
       });
 
-      expectTestFailed(liveTest, startsWith(
-          "Expected future to complete successfully, but it failed with X"));
+      expect(liveTest.state.status, equals(Status.complete));
+      expect(liveTest.state.result, equals(Result.error));
+      expect(liveTest.errors, hasLength(1));
+      expect(liveTest.errors.first.error, equals('X'));
     });
 
     test("with a failure", () async {

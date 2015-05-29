@@ -1,5 +1,10 @@
 ## 0.12.3
 
+* If a future matched against the `completes` or `completion()` matcher throws
+  an error, that error is printed directly rather than being wrapped in a
+  string. This allows such errors to be captured using the Zone API and improves
+  formatting.
+
 * In order to be more extensible, all exception handling within tests now uses
   the Zone API.
 

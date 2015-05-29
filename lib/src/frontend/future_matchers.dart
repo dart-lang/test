@@ -20,7 +20,7 @@ import 'expect.dart';
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
-final Matcher completes = const _Completes(null, '');
+final Matcher completes = const _Completes(null);
 
 /// Matches a [Future] that completes succesfully with a value that matches
 /// [matcher].
@@ -32,16 +32,14 @@ final Matcher completes = const _Completes(null, '');
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
 ///
-/// [description] is an optional tag that can be used to identify the completion
-/// matcher in error messages.
-Matcher completion(matcher, [String description = '']) =>
-    new _Completes(wrapMatcher(matcher), description);
+/// The [description] parameter is deprecated and shouldn't be used.
+Matcher completion(matcher, [@deprecated String description]) =>
+    new _Completes(wrapMatcher(matcher));
 
 class _Completes extends Matcher {
   final Matcher _matcher;
-  final String _id;
 
-  const _Completes(this._matcher, this._id);
+  const _Completes(this._matcher);
 
   bool matches(item, Map matchState) {
     if (item is! Future) return false;
@@ -50,19 +48,6 @@ class _Completes extends Matcher {
     item.then((value) {
       if (_matcher != null) expect(value, _matcher);
       Invoker.current.removeOutstandingCallback();
-    }, onError: (error, trace) {
-      if (error is TestFailure) throw error;
-
-      var id = _id == '' ? '' : '${_id} ';
-      var reason = 'Expected future ${id}to complete successfully, '
-          'but it failed with ${error}';
-      if (trace != null) {
-        var stackTrace = terseChain(trace,
-            verbose: Invoker.current.metadata.verboseTrace);
-        stackTrace = '  ${stackTrace.toString().replaceAll('\n', '\n  ')}';
-        reason = '$reason\nStack trace:\n$stackTrace';
-      }
-      fail(reason);
     });
 
     return true;
