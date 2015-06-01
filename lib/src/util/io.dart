@@ -21,8 +21,11 @@ const _newline = 0xA;
 const _carriageReturn = 0xD;
 
 /// The root directory of the Dart SDK.
-final String sdkDir =
-    p.dirname(p.dirname(Platform.executable));
+final String sdkDir = (() {
+  // TODO(kevmoo): work-around for accessing the SDK root dartbug.com/16994
+  var path = new File(Platform.executable).resolveSymbolicLinksSync();
+  return p.dirname(p.dirname(path));
+})();
 
 /// The version of the Dart SDK currently in use.
 final Version _sdkVersion = new Version.parse(
