@@ -5,6 +5,10 @@
   string. This allows such errors to be captured using the Zone API and improves
   formatting.
 
+* Improve support for Polymer tests. This fixes a flaky time-out error and adds
+  support for Dartifying JavaScript stack traces when running Polymer tests via
+  `pub serve`.
+
 * In order to be more extensible, all exception handling within tests now uses
   the Zone API.
 

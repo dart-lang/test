@@ -36,6 +36,7 @@ import 'dartium.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
 import 'phantom_js.dart';
+import 'polymer.dart';
 import 'safari.dart';
 
 /// A server that serves JS-compiled tests to browsers.
@@ -263,8 +264,21 @@ void main() {
     if (_pubServeUrl != null) {
       var suitePrefix = p.withoutExtension(
           p.relative(path, from: p.join(_root, 'test')));
-      var jsUrl = _pubServeUrl.resolve(
+
+      var jsUrl;
+      // Polymer generates a bootstrap entrypoint that wraps the entrypoint we
+      // see on disk, and modifies the HTML file to point to the bootstrap
+      // instead. To make sure we get the right source maps and wait for the
+      // right file to compile, we have some Polymer-specific logic here to load
+      // the boostrap instead of the unwrapped file.
+      if (isPolymerEntrypoint(path)) {
+        jsUrl = _pubServeUrl.resolve(
+            "$suitePrefix.html.polymer.bootstrap.dart.browser_test.dart.js");
+      } else {
+        jsUrl = _pubServeUrl.resolve(
           '$suitePrefix.dart.browser_test.dart.js');
+      }
+
       await _pubServeSuite(path, jsUrl);
       suiteUrl = _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
