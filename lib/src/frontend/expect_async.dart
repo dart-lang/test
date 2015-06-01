@@ -220,8 +220,14 @@ class _ExpectedFunction {
 /// callback when debugging. [id] should be the name of the callback, while
 /// [reason] should be the reason the callback is expected to be called.
 Function expectAsync(Function callback,
-        {int count: 1, int max: 0, String id, String reason}) =>
-    new _ExpectedFunction(callback, count, max, id: id, reason: reason).func;
+        {int count: 1, int max: 0, String id, String reason}) {
+  if (Invoker.current == null) {
+    throw new StateError("expectAsync() may only be called within a test.");
+  }
+
+  return new _ExpectedFunction(callback, count, max, id: id, reason: reason)
+      .func;
+}
 
 /// Indicate that [callback] is expected to be called until [isDone] returns
 /// true.
@@ -235,5 +241,12 @@ Function expectAsync(Function callback,
 /// callback when debugging. [id] should be the name of the callback, while
 /// [reason] should be the reason the callback is expected to be called.
 Function expectAsyncUntil(Function callback, bool isDone(),
-    {String id, String reason}) => new _ExpectedFunction(callback, 0, -1,
-        id: id, reason: reason, isDone: isDone).func;
+    {String id, String reason}) {
+  if (Invoker.current == null) {
+    throw new StateError(
+        "expectAsyncUntil() may only be called within a test.");
+  }
+
+  return new _ExpectedFunction(callback, 0, -1,
+      id: id, reason: reason, isDone: isDone).func;
+}

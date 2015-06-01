@@ -39,6 +39,10 @@ typedef String ErrorFormatter(
 /// [verbose] should be specified as `true`.
 void expect(actual, matcher,
     {String reason, bool verbose: false, ErrorFormatter formatter}) {
+  if (Invoker.current == null) {
+    throw new StateError("extend() may only be called within a test.");
+  }
+
   if (Invoker.current.closed) throw new ClosedException();
 
   matcher = wrapMatcher(matcher);
