@@ -9,7 +9,6 @@ import 'dart:async';
 import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
-import 'src/backend/invoker.dart';
 import 'src/backend/suite.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';

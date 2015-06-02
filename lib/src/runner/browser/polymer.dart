@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 /// Whether the package being tested uses the Polymer transforemrs at all.
