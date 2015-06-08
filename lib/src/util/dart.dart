@@ -32,16 +32,29 @@ Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
   var dartPath = p.join(dir, 'runInIsolate.dart');
   new File(dartPath).writeAsStringSync(code);
 
+  return await spawnUri(
+      p.toUri(dartPath), message,
+      packageRoot: packageRoot,
+      onExit: () => new Directory(dir).deleteSync(recursive: true));
+}
+
+/// Like [Isolate.spawnUri], except that [uri] and [packageRoot] may be strings
+/// and [onExit] is run after the isolate is killed.
+///
+/// If the isolate fails to load, [onExit] will also be run.
+Future<IsolateWrapper> spawnUri(uri, message, {packageRoot, void onExit()})
+    async {
+  if (uri is String) uri = Uri.parse(uri);
   if (packageRoot is String) packageRoot = Uri.parse(packageRoot);
+  if (onExit == null) onExit = () {};
 
   try {
     var isolate = await Isolate.spawnUri(
-        p.toUri(dartPath), [], message,
+        uri, [], message,
         packageRoot: packageRoot);
-    return new IsolateWrapper(isolate,
-        () => new Directory(dir).deleteSync(recursive: true));
+    return new IsolateWrapper(isolate, onExit);
   } catch (error) {
-    new Directory(dir).deleteSync(recursive: true);
+    onExit();
     rethrow;
   }
 }

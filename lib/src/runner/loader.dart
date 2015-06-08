@@ -16,7 +16,7 @@ import '../backend/metadata.dart';
 import '../backend/suite.dart';
 import '../backend/test_platform.dart';
 import '../util/async_thunk.dart';
-import '../util/dart.dart';
+import '../util/dart.dart' as dart;
 import '../util/io.dart';
 import '../util/isolate_wrapper.dart';
 import '../util/remote_exception.dart';
@@ -189,11 +189,10 @@ class Loader {
         // in two stable versions.
         await new Future.sync(() async {
           try {
-            isolate = await Isolate.spawnUri(url, [], {
+            isolate = await dart.spawnUri(url, {
               'reply': receivePort.sendPort,
               'metadata': metadata.serialize()
             });
-            isolate = new IsolateWrapper(isolate, () {});
           } on IsolateSpawnException catch (error) {
             if (error.message.contains("OS Error: Connection refused") ||
                 error.message.contains("The remote computer refused")) {
@@ -210,7 +209,7 @@ class Loader {
           }
         });
       } else {
-        isolate = await runInIsolate('''
+        isolate = await dart.runInIsolate('''
 import "package:test/src/backend/metadata.dart";
 import "package:test/src/runner/vm/isolate_listener.dart";
 
