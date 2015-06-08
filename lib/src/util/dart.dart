@@ -26,7 +26,8 @@ import 'remote_exception.dart';
 ///
 /// [packageRoot] controls the package root of the isolate. It may be either a
 /// [String] or a [Uri].
-Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
+Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot,
+    bool checked}) async {
   // TODO(nweiz): load code from a local server rather than from a file.
   var dir = createTempDir();
   var dartPath = p.join(dir, 'runInIsolate.dart');
@@ -35,23 +36,27 @@ Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
   return await spawnUri(
       p.toUri(dartPath), message,
       packageRoot: packageRoot,
+      checked: checked,
       onExit: () => new Directory(dir).deleteSync(recursive: true));
 }
 
-/// Like [Isolate.spawnUri], except that [uri] and [packageRoot] may be strings
-/// and [onExit] is run after the isolate is killed.
+/// Like [Isolate.spawnUri], except that [uri] and [packageRoot] may be strings,
+/// [checked] mode is silently ignored on older Dart versions, and [onExit] is
+/// run after the isolate is killed.
 ///
 /// If the isolate fails to load, [onExit] will also be run.
-Future<IsolateWrapper> spawnUri(uri, message, {packageRoot, void onExit()})
-    async {
+Future<IsolateWrapper> spawnUri(uri, message, {packageRoot, bool checked,
+    void onExit()}) async {
   if (uri is String) uri = Uri.parse(uri);
   if (packageRoot is String) packageRoot = Uri.parse(packageRoot);
   if (onExit == null) onExit = () {};
 
   try {
-    var isolate = await Isolate.spawnUri(
-        uri, [], message,
-        packageRoot: packageRoot);
+    var isolate = supportsIsolateCheckedMode
+        ? await Isolate.spawnUri(
+            uri, [], message, checked: checked, packageRoot: packageRoot)
+        : await Isolate.spawnUri(
+            uri, [], message, packageRoot: packageRoot);
     return new IsolateWrapper(isolate, onExit);
   } catch (error) {
     onExit();

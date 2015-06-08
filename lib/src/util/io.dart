@@ -57,13 +57,20 @@ String libDir({String packageRoot}) {
 }
 
 /// Returns whether the current Dart version has a fix for issue 23084.
-final bool supportsPubServe = _supportsPubServe;
-bool get _supportsPubServe {
+final bool supportsPubServe = ((){
   // This isn't 100% accurate, since issue 23084 wasn't fixed in early 1.10 dev
   // releases, but it's unlikely anyone will be using them.
   // TODO(nweiz): remove this when we no longer support older Dart versions.
   return new VersionConstraint.parse('>=1.9.2 <2.0.0').allows(_sdkVersion);
-}
+})();
+
+/// Returns whether the current Dart version supports running isolates in
+/// checked mode.
+final bool supportsIsolateCheckedMode = (() {
+  // TODO(nweiz): remove this when we no longer support older Dart versions.
+  return new VersionConstraint.parse('>=1.11.0-dev.5.0 <2.0.0')
+      .allows(_sdkVersion);
+})();
 
 // TODO(nweiz): Make this check [stdioType] once that works within "pub run".
 /// Whether "special" strings such as Unicode characters or color escapes are

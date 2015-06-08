@@ -192,7 +192,7 @@ class Loader {
             isolate = await dart.spawnUri(url, {
               'reply': receivePort.sendPort,
               'metadata': metadata.serialize()
-            });
+            }, checked: true);
           } on IsolateSpawnException catch (error) {
             if (error.message.contains("OS Error: Connection refused") ||
                 error.message.contains("The remote computer refused")) {
@@ -223,7 +223,7 @@ void main(_, Map message) {
 ''', {
           'reply': receivePort.sendPort,
           'metadata': metadata.serialize()
-        }, packageRoot: p.toUri(_packageRoot));
+        }, packageRoot: p.toUri(_packageRoot), checked: true);
       }
     } catch (error, stackTrace) {
       receivePort.close();
