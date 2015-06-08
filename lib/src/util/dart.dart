@@ -31,52 +31,18 @@ Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
   var dir = createTempDir();
   var dartPath = p.join(dir, 'runInIsolate.dart');
   new File(dartPath).writeAsStringSync(code);
-  var port = new ReceivePort();
+
+  if (packageRoot is String) packageRoot = Uri.parse(packageRoot);
 
   try {
-    var isolate = await Isolate.spawn(_isolateBuffer, {
-      'replyTo': port.sendPort,
-      'uri': p.toUri(dartPath).toString(),
-      'packageRoot': packageRoot == null ? null : packageRoot.toString(),
-      'message': message
-    });
-
-    var response = await port.first;
-    if (response['type'] != 'error') {
-      return new IsolateWrapper(isolate,
-          () => new Directory(dir).deleteSync(recursive: true));
-    }
-
-    isolate.kill();
-    var asyncError = RemoteException.deserialize(response['error']);
-    await new Future.error(asyncError.error, asyncError.stackTrace);
-    throw 'unreachable';
+    var isolate = await Isolate.spawnUri(
+        p.toUri(dartPath), [], message,
+        packageRoot: packageRoot);
+    return new IsolateWrapper(isolate,
+        () => new Directory(dir).deleteSync(recursive: true));
   } catch (error) {
     new Directory(dir).deleteSync(recursive: true);
     rethrow;
-  }
-}
-
-// TODO(nweiz): remove this when issue 12617 is fixed.
-/// A function used as a buffer between the host isolate and [spawnUri].
-///
-/// [spawnUri] synchronously loads the file and its imports, which can deadlock
-/// the host isolate if there's an HTTP import pointing at a server in the host.
-/// Adding an additional isolate in the middle works around this.
-Future _isolateBuffer(message) async {
-  var replyTo = message['replyTo'];
-  var packageRoot = message['packageRoot'];
-  if (packageRoot != null) packageRoot = Uri.parse(packageRoot);
-
-  try {
-    await Isolate.spawnUri(Uri.parse(message['uri']), [], message['message'],
-        packageRoot: packageRoot);
-    replyTo.send({'type': 'success'});
-  } catch (error, stackTrace) {
-    replyTo.send({
-      'type': 'error',
-      'error': RemoteException.serialize(error, stackTrace)
-    });
   }
 }
 

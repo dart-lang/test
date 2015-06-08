@@ -42,6 +42,7 @@ class IsolateWrapper {
   String toString() => _inner.toString();
 
   void kill() {
+    _inner.kill();
     _onExit();
   }
 }
