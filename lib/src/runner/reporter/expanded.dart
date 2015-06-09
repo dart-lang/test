@@ -55,28 +55,19 @@ class ExpandedReporter {
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
 
-  /// The set of tests that have completed and been marked as passing.
-  final _passed = new Set<LiveTest>();
-
-  /// The set of tests that have completed and been marked as skipped.
-  final _skipped = new Set<LiveTest>();
-
-  /// The set of tests that have completed and been marked as failing or error.
-  final _failed = new Set<LiveTest>();
-
-  /// The set of tests that are still running.
-  final _active = new List<LiveTest>();
-
   /// Whether [close] has been called.
   bool _closed = false;
 
-  /// The size of [_passed] last time a progress notification was printed.
+  /// The size of `_engine.passed` last time a progress notification was
+  /// printed.
   int _lastProgressPassed;
 
-  /// The size of [_skipped] last time a progress notification was printed.
+  /// The size of `_engine.skipped` last time a progress notification was
+  /// printed.
   int _lastProgressSkipped;
 
-  /// The size of [_failed] last time a progress notification was printed.
+  /// The size of `_engine.failed` last time a progress notification was
+  /// printed.
   int _lastProgressFailed;
 
   /// The message printed for the last progress notification.
@@ -99,31 +90,22 @@ class ExpandedReporter {
         _yellow = color ? '\u001b[33m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen((liveTest) {
-      if (_active.isEmpty) _progressLine(_description(liveTest));
-      _active.add(liveTest);
+      // If this is the first test to start, print a progress line so the user
+      // knows what's running.
+      if (_engine.active.length == 1) _progressLine(_description(liveTest));
 
       liveTest.onStateChange.listen((state) {
         if (state.status != Status.complete) return;
-        _active.remove(liveTest);
-
-        if (state.result != Result.success) {
-          _passed.remove(liveTest);
-          _failed.add(liveTest);
-        } else if (liveTest.test.metadata.skip) {
-          _skipped.add(liveTest);
-        } else {
-          _passed.add(liveTest);
-        }
 
         if (liveTest.test.metadata.skip &&
             liveTest.test.metadata.skipReason != null) {
           _progressLine(_description(liveTest));
           print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
               '$_noColor'));
-        } else if (_active.isNotEmpty) {
+        } else if (_engine.active.isNotEmpty) {
           // If any tests are running, display the name of the oldest active
           // test.
-          _progressLine(_description(_active.first));
+          _progressLine(_description(_engine.active.first));
         }
       });
 
@@ -164,7 +146,7 @@ class ExpandedReporter {
 
     if (!success) {
       _progressLine('Some tests failed.', color: _red);
-    } else if (_passed.isEmpty) {
+    } else if (_engine.passed.isEmpty) {
       _progressLine("All tests skipped.");
     } else {
       _progressLine("All tests passed!");
@@ -184,16 +166,16 @@ class ExpandedReporter {
   /// color for [message].
   void _progressLine(String message, {String color}) {
     // Print nothing if nothing has changed since the last progress line.
-    if (_passed.length == _lastProgressPassed &&
-        _skipped.length == _lastProgressSkipped &&
-        _failed.length == _lastProgressFailed &&
+    if (_engine.passed.length == _lastProgressPassed &&
+        _engine.skipped.length == _lastProgressSkipped &&
+        _engine.failed.length == _lastProgressFailed &&
         message == _lastProgressMessage) {
       return;
     }
 
-    _lastProgressPassed = _passed.length;
-    _lastProgressSkipped = _skipped.length;
-    _lastProgressFailed = _failed.length;
+    _lastProgressPassed = _engine.passed.length;
+    _lastProgressSkipped = _engine.skipped.length;
+    _lastProgressFailed = _engine.failed.length;
     _lastProgressMessage = message;
 
     if (color == null) color = '';
@@ -204,20 +186,20 @@ class ExpandedReporter {
     buffer.write('${_timeString(duration)} ');
     buffer.write(_green);
     buffer.write('+');
-    buffer.write(_passed.length);
+    buffer.write(_engine.passed.length);
     buffer.write(_noColor);
 
-    if (_skipped.isNotEmpty) {
+    if (_engine.skipped.isNotEmpty) {
       buffer.write(_yellow);
       buffer.write(' ~');
-      buffer.write(_skipped.length);
+      buffer.write(_engine.skipped.length);
       buffer.write(_noColor);
     }
 
-    if (_failed.isNotEmpty) {
+    if (_engine.failed.isNotEmpty) {
       buffer.write(_red);
       buffer.write(' -');
-      buffer.write(_failed.length);
+      buffer.write(_engine.failed.length);
       buffer.write(_noColor);
     }
 
@@ -228,7 +210,7 @@ class ExpandedReporter {
     // escape sequences too. Because these sequences are not visible characters,
     // we make sure they are not counted towards the limit.
     var nonVisible = 1 + _green.length + _noColor.length + color.length +
-        (_failed.isEmpty ? 0 : _red.length + _noColor.length);
+        (_engine.failed.isEmpty ? 0 : _red.length + _noColor.length);
     var length = buffer.length - nonVisible;
     buffer.write(truncate(message, _lineLength - length));
     buffer.write(_noColor);

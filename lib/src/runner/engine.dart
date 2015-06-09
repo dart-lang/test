@@ -7,6 +7,7 @@ library test.runner.engine;
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
 
 import '../backend/live_test.dart';
@@ -54,6 +55,22 @@ class Engine {
   /// This is guaranteed to fire before [LiveTest.onStateChange] first fires.
   Stream<LiveTest> get onTestStarted => _onTestStartedController.stream;
   final _onTestStartedController = new StreamController<LiveTest>.broadcast();
+
+  /// The set of tests that have completed and been marked as passing.
+  Set<LiveTest> get passed => new UnmodifiableSetView(_passed);
+  final _passed = new Set<LiveTest>();
+
+  /// The set of tests that have completed and been marked as skipped.
+  Set<LiveTest> get skipped => new UnmodifiableSetView(_skipped);
+  final _skipped = new Set<LiveTest>();
+
+  /// The set of tests that have completed and been marked as failing or error.
+  Set<LiveTest> get failed => new UnmodifiableSetView(_failed);
+  final _failed = new Set<LiveTest>();
+
+  /// The tests that are still running, in the order they begain running.
+  List<LiveTest> get active => new UnmodifiableListView(_active);
+  final _active = new List<LiveTest>();
 
   /// Returns the tests in [suites] grouped by suite.
   ///
@@ -104,6 +121,23 @@ class Engine {
         return Future.forEach(suite, (liveTest) async {
           // TODO(nweiz): Just "return;" when issue 23200 is fixed.
           if (_closed) return null;
+
+          _active.add(liveTest);
+
+          liveTest.onStateChange.listen((state) {
+            if (state.status != Status.complete) return;
+            _active.remove(liveTest);
+
+            if (state.result != Result.success) {
+              _passed.remove(liveTest);
+              _failed.add(liveTest);
+            } else if (liveTest.test.metadata.skip) {
+              _skipped.add(liveTest);
+            } else {
+              _passed.add(liveTest);
+            }
+          });
+
           _onTestStartedController.add(liveTest);
 
           // First, schedule a microtask to ensure that [onTestStarted] fires
