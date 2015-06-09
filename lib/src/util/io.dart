@@ -23,7 +23,12 @@ const _carriageReturn = 0xD;
 /// The root directory of the Dart SDK.
 final String sdkDir = (() {
   // TODO(kevmoo): work-around for accessing the SDK root dartbug.com/16994
-  var path = new File(Platform.executable).resolveSymbolicLinksSync();
+  //
+  // Don't resolve symlinks on Windows because of issue 133. Once the TODO above
+  // is resolved, we won't have to do explicit symlink resolution anyway.
+  var path = Platform.isWindows
+      ? Platform.executable
+      : new File(Platform.executable).resolveSymbolicLinksSync();
   return p.dirname(p.dirname(path));
 })();
 

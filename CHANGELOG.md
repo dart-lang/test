@@ -1,3 +1,8 @@
+## 0.12.3+1
+
+* Fix a bug that caused the test runner to crash on Windows because symlink
+  resolution failed.
+
 ## 0.12.3
 
 * If a future matched against the `completes` or `completion()` matcher throws
