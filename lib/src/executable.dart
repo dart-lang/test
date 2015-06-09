@@ -259,13 +259,11 @@ transformers:
     }
 
     var reporter = options["reporter"] == "compact"
-        ? new CompactReporter(
-            flatten(suites),
+        ? new CompactReporter(flatten(suites), stdout,
             concurrency: concurrency,
             color: color,
             verboseTrace: options["verbose-trace"])
-        : new ExpandedReporter(
-            flatten(suites),
+        : new ExpandedReporter(flatten(suites), stdout,
             concurrency: concurrency,
             color: color,
             verboseTrace: options["verbose-trace"]);

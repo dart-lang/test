@@ -24,6 +24,9 @@ const _lineLength = 100;
 /// so that test files can be run directly. This means that until issue 6943 is
 /// fixed, this must not import `dart:io`.
 class ExpandedReporter {
+  /// The [StrinkSink] that reporter should write to.
+  final StringSink _out;
+
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
   final String _green;
@@ -78,8 +81,8 @@ class ExpandedReporter {
   /// [concurrency] controls how many suites are run at once. If [color] is
   /// `true`, this will use terminal colors; if it's `false`, it won't. If
   /// [verboseTrace] is `true`, this will print core library frames.
-  ExpandedReporter(Iterable<Suite> suites, {int concurrency, bool color: true,
-          bool verboseTrace: false})
+  ExpandedReporter(Iterable<Suite> suites, this._out,
+      {int concurrency, bool color: true, bool verboseTrace: false})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
@@ -100,8 +103,8 @@ class ExpandedReporter {
         if (liveTest.test.metadata.skip &&
             liveTest.test.metadata.skipReason != null) {
           _progressLine(_description(liveTest));
-          print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
-              '$_noColor'));
+          _out.writeln(indent('${_yellow}Skip: '
+              '${liveTest.test.metadata.skipReason}$_noColor'));
         } else if (_engine.active.isNotEmpty) {
           // If any tests are running, display the name of the oldest active
           // test.
@@ -113,14 +116,14 @@ class ExpandedReporter {
         if (liveTest.state.status != Status.complete) return;
 
         _progressLine(_description(liveTest));
-        print(indent(error.error.toString()));
+        _out.writeln(indent(error.error.toString()));
         var chain = terseChain(error.stackTrace, verbose: _verboseTrace);
-        print(indent(chain.toString()));
+        _out.writeln(indent(chain.toString()));
       });
 
       liveTest.onPrint.listen((line) {
         _progressLine(_description(liveTest));
-        print(line);
+        _out.writeln(line);
       });
     });
   }
@@ -131,12 +134,12 @@ class ExpandedReporter {
   /// only return once all tests have finished running.
   Future<bool> run() async {
     if (_stopwatch.isRunning) {
-      throw new StateError("ExpandedReporter.run() may not be called more than "
-          "once.");
+      throw new StateError("ExpandedReporter.run() may not be called more "
+          "than once.");
     }
 
     if (_engine.liveTests.isEmpty) {
-      print("No tests ran.");
+      _out.writeln("No tests ran.");
       return true;
     }
 
@@ -215,7 +218,7 @@ class ExpandedReporter {
     buffer.write(truncate(message, _lineLength - length));
     buffer.write(_noColor);
 
-    print(buffer.toString());
+    _out.writeln(buffer.toString());
   }
 
   /// Returns a representation of [duration] as `MM:SS`.
