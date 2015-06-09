@@ -26,57 +26,41 @@ import 'remote_exception.dart';
 ///
 /// [packageRoot] controls the package root of the isolate. It may be either a
 /// [String] or a [Uri].
-Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot}) async {
+Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot,
+    bool checked}) async {
   // TODO(nweiz): load code from a local server rather than from a file.
   var dir = createTempDir();
   var dartPath = p.join(dir, 'runInIsolate.dart');
   new File(dartPath).writeAsStringSync(code);
-  var port = new ReceivePort();
 
-  try {
-    var isolate = await Isolate.spawn(_isolateBuffer, {
-      'replyTo': port.sendPort,
-      'uri': p.toUri(dartPath).toString(),
-      'packageRoot': packageRoot == null ? null : packageRoot.toString(),
-      'message': message
-    });
-
-    var response = await port.first;
-    if (response['type'] != 'error') {
-      return new IsolateWrapper(isolate,
-          () => new Directory(dir).deleteSync(recursive: true));
-    }
-
-    isolate.kill();
-    var asyncError = RemoteException.deserialize(response['error']);
-    await new Future.error(asyncError.error, asyncError.stackTrace);
-    throw 'unreachable';
-  } catch (error) {
-    new Directory(dir).deleteSync(recursive: true);
-    rethrow;
-  }
+  return await spawnUri(
+      p.toUri(dartPath), message,
+      packageRoot: packageRoot,
+      checked: checked,
+      onExit: () => new Directory(dir).deleteSync(recursive: true));
 }
 
-// TODO(nweiz): remove this when issue 12617 is fixed.
-/// A function used as a buffer between the host isolate and [spawnUri].
+/// Like [Isolate.spawnUri], except that [uri] and [packageRoot] may be strings,
+/// [checked] mode is silently ignored on older Dart versions, and [onExit] is
+/// run after the isolate is killed.
 ///
-/// [spawnUri] synchronously loads the file and its imports, which can deadlock
-/// the host isolate if there's an HTTP import pointing at a server in the host.
-/// Adding an additional isolate in the middle works around this.
-Future _isolateBuffer(message) async {
-  var replyTo = message['replyTo'];
-  var packageRoot = message['packageRoot'];
-  if (packageRoot != null) packageRoot = Uri.parse(packageRoot);
+/// If the isolate fails to load, [onExit] will also be run.
+Future<IsolateWrapper> spawnUri(uri, message, {packageRoot, bool checked,
+    void onExit()}) async {
+  if (uri is String) uri = Uri.parse(uri);
+  if (packageRoot is String) packageRoot = Uri.parse(packageRoot);
+  if (onExit == null) onExit = () {};
 
   try {
-    await Isolate.spawnUri(Uri.parse(message['uri']), [], message['message'],
-        packageRoot: packageRoot);
-    replyTo.send({'type': 'success'});
-  } catch (error, stackTrace) {
-    replyTo.send({
-      'type': 'error',
-      'error': RemoteException.serialize(error, stackTrace)
-    });
+    var isolate = supportsIsolateCheckedMode
+        ? await Isolate.spawnUri(
+            uri, [], message, checked: checked, packageRoot: packageRoot)
+        : await Isolate.spawnUri(
+            uri, [], message, packageRoot: packageRoot);
+    return new IsolateWrapper(isolate, onExit);
+  } catch (error) {
+    onExit();
+    rethrow;
   }
 }
 
