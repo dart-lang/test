@@ -132,6 +132,24 @@ $_usage"""));
       expect(result.exitCode, equals(1));
     });
 
+    // This syntax error is detected lazily, and so requires some extra
+    // machinery to support.
+    test("a test file fails to parse due to a missing semicolon", () {
+      var testPath = p.join(_sandbox, "test.dart");
+      new File(testPath).writeAsStringSync("void main() {foo}");
+      var result = _runTest(["test.dart"]);
+
+      expect(result.stdout, allOf([
+        contains('-1: load error'),
+        contains(
+          '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
+          "  line 1 pos 17: semicolon expected\n"
+          "  void main() {foo}\n"
+          "                  ^\n")
+      ]));
+      expect(result.exitCode, equals(1));
+    });
+
     // This is slightly different from the above test because it's an error
     // that's caught first by the analyzer when it's used to parse the file.
     test("a test file fails to parse", () {

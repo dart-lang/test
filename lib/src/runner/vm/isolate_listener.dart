@@ -7,6 +7,8 @@ library test.runner.vm.isolate_listener;
 import 'dart:isolate';
 import 'dart:async';
 
+import 'package:stack_trace/stack_trace.dart';
+
 import '../../backend/declarer.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
@@ -34,6 +36,24 @@ class IsolateListener {
   /// [metadata] is the suite-level metadata defined at the top of the file.
   static Future start(SendPort sendPort, Metadata metadata, Function getMain())
       async {
+    // Capture any top-level errors (mostly lazy syntax errors, since other are
+    // caught below) and report them to the parent isolate. We set errors
+    // non-fatal because otherwise they'll be double-printed.
+    var errorPort = new ReceivePort();
+    Isolate.current.setErrorsFatal(false);
+    Isolate.current.addErrorListener(errorPort.sendPort);
+    errorPort.listen((message) {
+      // Masquerade as an IsoalteSpawnException because that's what this would
+      // be if the error had been detected statically.
+      var error = new IsolateSpawnException(message[0]);
+      var stackTrace =
+          message[1] == null ? new Trace([]) : new Trace.parse(message[1]);
+      sendPort.send({
+        "type": "error",
+        "error": RemoteException.serialize(error, stackTrace)
+      });
+    });
+
     var main;
     try {
       main = getMain();

@@ -1,3 +1,7 @@
+## 0.12.4
+
+* Improve the display of syntax errors in VM tests.
+
 ## 0.12.3+1
 
 * Fix a bug that caused the test runner to crash on Windows because symlink

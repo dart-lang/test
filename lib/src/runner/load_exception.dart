@@ -11,6 +11,11 @@ import 'package:source_span/source_span.dart';
 
 import '../utils.dart';
 
+/// A regular expression for matching filename annotations in
+/// [IsolateSpawnException] messages.
+final _isolateFileRegExp =
+    new RegExp(r"^'(file:/[^']+)': (error|warning): ", multiLine: true);
+
 class LoadException implements Exception {
   final String path;
 
@@ -26,9 +31,11 @@ class LoadException implements Exception {
 
     var innerString = getErrorMessage(innerError);
     if (innerError is IsolateSpawnException) {
-      // If this is a parse error, get rid of the noisy preamble.
-      innerString = innerString
-          .replaceFirst("'${p.toUri(p.absolute(path))}': error: ", "");
+      // If this is a parse error, clean up the noisy filename annotations.
+      innerString = innerString.replaceAllMapped(_isolateFileRegExp, (match) {
+        if (p.fromUri(match[1]) == p.absolute(path)) return "";
+        return "${p.prettyUri(match[1])}: ";
+      });
 
       // If this is a file system error, get rid of both the preamble and the
       // useless stack trace.
