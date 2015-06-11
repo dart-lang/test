@@ -5,7 +5,6 @@
 library test.runner.reporter.compact;
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 
 import '../../backend/live_test.dart';
@@ -23,6 +22,9 @@ const _lineLength = 100;
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
 class CompactReporter {
+  /// The [StrinkSink] that reporter should write to.
+  final StringSink _out;
+
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -82,8 +84,8 @@ class CompactReporter {
   /// [concurrency] controls how many suites are run at once. If [color] is
   /// `true`, this will use terminal colors; if it's `false`, it won't. If
   /// [verboseTrace] is `true`, this will print core library frames.
-  CompactReporter(Iterable<Suite> suites, {int concurrency, bool color: true,
-          bool verboseTrace: false})
+  CompactReporter(Iterable<Suite> suites, this._out,
+      {int concurrency, bool color: true, bool verboseTrace: false})
       : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
         _multiplePlatforms =
             suites.map((suite) => suite.platform).toSet().length > 1,
@@ -139,8 +141,7 @@ class CompactReporter {
         print(indent(error.error.toString(color: _color)));
 
         // Only print stack traces for load errors that come from the user's code.
-        if (error.error.innerError is! IOException &&
-            error.error.innerError is! IsolateSpawnException &&
+        if (error.error.innerError is! IsolateSpawnException &&
             error.error.innerError is! FormatException &&
             error.error.innerError is! String) {
           print(indent(terseChain(error.stackTrace).toString()));
@@ -258,7 +259,7 @@ class CompactReporter {
     // Pad the rest of the line so that it looks erased.
     length = buffer.length - nonVisible - _noColor.length;
     buffer.write(' ' * (_lineLength - length));
-    stdout.write(buffer.toString());
+    _out.write(buffer.toString());
     return true;
   }
 

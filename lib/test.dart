@@ -14,6 +14,7 @@ import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/utils.dart';
+import 'src/util/buffered_string_sink.dart';
 
 export 'package:matcher/matcher.dart';
 
@@ -55,7 +56,8 @@ Declarer get _declarer {
               platform: "VM")
         .forPlatform(TestPlatform.vm, os: currentOSGuess);
 
-    var success = await new ExpandedReporter([suite], color: true).run();
+    var success = await new ExpandedReporter([suite], new BufferedStringSink(),
+        color: true).run();
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     // TODO(nweiz): Just "return;" when issue 23200 is fixed.
     if (success) return null;
