@@ -2,12 +2,14 @@
  * for details. All rights reserved. Use of this source code is governed by a
  * BSD-style license that can be found in the LICENSE file. */
 
+iframe {
+  /* We would use display: none here, but then Firefox fails to properly compute
+   * styles. See #274 */
+  visibility: hidden;
+}
+
 /* Compiled output from
  * http://codepen.io/mknadler/pen/11b75cb014a3c382f54abf527655af21. */
-
-iframe {
-  display: none;
-}
 
 svg {
   position: absolute;

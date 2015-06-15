@@ -2,6 +2,10 @@
 
 * Improve the display of syntax errors in VM tests.
 
+* Work around a [Firefox bug][]. Computed styles now work in tests on Firefox.
+
+[Firefox bug]: https://bugzilla.mozilla.org/show_bug.cgi?id=548397
+
 ## 0.12.3+1
 
 * Fix a bug that caused the test runner to crash on Windows because symlink
