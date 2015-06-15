@@ -16,14 +16,18 @@ void main() {
       });
 
       test("with a function that doesn't throw", () async {
+        var closure = () {};
         var liveTest = await runTestBody(() {
-          expect(() {}, throws);
+          expect(closure, throws);
         });
 
-        expectTestFailed(liveTest,
-            "Expected: throws\n"
-            "  Actual: <$closureString>\n"
-            "   Which: did not throw\n");
+        expectTestFailed(liveTest, allOf([
+          startsWith(
+              "Expected: throws\n"
+              "  Actual: <"),
+          endsWith(">\n"
+              "   Which: did not throw\n")
+        ]));
       });
 
       test("with a non-function", () async {
@@ -49,14 +53,18 @@ void main() {
       });
 
       test("with a function that doesn't throw", () async {
+        var closure = () {};
         var liveTest = await runTestBody(() {
-          expect(() {}, throwsA('oh no'));
+          expect(closure, throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest,
-            "Expected: throws 'oh no'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: did not throw\n");
+        expectTestFailed(liveTest, allOf([
+          startsWith(
+              "Expected: throws 'oh no'\n"
+              "  Actual: <"),
+          endsWith(">\n"
+              "   Which: did not throw\n")
+        ]));
       });
 
       test("with a non-function", () async {
@@ -75,10 +83,13 @@ void main() {
           expect(() => throw 'aw dang', throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest,
-            "Expected: throws 'oh no'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: threw 'aw dang'\n");
+        expectTestFailed(liveTest, allOf([
+          startsWith(
+              "Expected: throws 'oh no'\n"
+              "  Actual: <"),
+          endsWith(">\n"
+              "   Which: threw 'aw dang'\n")
+        ]));
       });
     });
   });
@@ -131,10 +142,13 @@ void main() {
           expect(new Future.error('aw dang'), throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest, startsWith(
-            "Expected: throws 'oh no'\n"
-            "  Actual: <$closureString>\n"
-            "   Which: threw 'aw dang'\n"));
+        expectTestFailed(liveTest, allOf([
+          startsWith(
+              "Expected: throws 'oh no'\n"
+              "  Actual: <"),
+          contains(">\n"
+              "   Which: threw 'aw dang'\n")
+        ]));
       });
 
       test("won't let the test end until the Future completes", () {
