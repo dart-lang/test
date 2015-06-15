@@ -156,7 +156,7 @@ webSocket.send(window.localStorage["data"].toString());
     var dartium = new Dartium("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(dartium.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start Dartium: $noSuchFileMessage"))));
+        "Failed to run Dartium: $noSuchFileMessage"))));
   });
 
   test("can run successful tests", () {

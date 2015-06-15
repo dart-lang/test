@@ -5,6 +5,14 @@
 library test.runner.browser.browser;
 
 import 'dart:async';
+import 'dart:io';
+
+import 'package:stack_trace/stack_trace.dart';
+
+import '../../utils.dart';
+import '../application_exception.dart';
+
+typedef Future<Process> StartBrowserFn();
 
 /// An interface for running browser instances.
 ///
@@ -15,15 +23,70 @@ import 'dart:async';
 /// Any errors starting or running the browser process are reported through
 /// [onExit].
 abstract class Browser {
+  String get name;
+
+  /// The underlying process.
+  ///
+  /// This will fire once the process has started successfully.
+  Future<Process> get _process => _processCompleter.future;
+  final _processCompleter = new Completer<Process>();
+
+  /// Whether [close] has been called.
+  var _closed = false;
+
   /// A future that completes when the browser exits.
   ///
   /// If there's a problem starting or running the browser, this will complete
   /// with an error.
-  Future get onExit;
+  Future get onExit => _onExitCompleter.future;
+  final _onExitCompleter = new Completer();
+
+  /// Creates a new browser.
+  ///
+  /// This is intended to be called by subclasses. They pass in [startBrowser],
+  /// which asynchronously returns the browser process. Any errors in
+  /// [startBrowser] (even those raised asynchronously after it returns) are
+  /// piped to [onExit] and will cause the browser to be killed.
+  Browser(Future<Process> startBrowser()) {
+    // Don't return a Future here because there's no need for the caller to wait
+    // for the process to actually start. They should just wait for the HTTP
+    // request instead.
+    runZoned(() async {
+      var process = await startBrowser();
+      _processCompleter.complete(process);
+
+      var exitCode = await process.exitCode;
+
+      if (!_closed && exitCode != 0) {
+        throw new ApplicationException(
+            "$name failed with exit code $exitCode.");
+      }
+
+      _onExitCompleter.complete();
+    }, onError: (error, stackTrace) {
+      // Ignore any errors after the browser has been closed.
+      if (_closed) return;
+
+      // Make sure the process dies even if the error wasn't fatal.
+      _process.then((process) => process.kill());
+
+      if (stackTrace == null) stackTrace = new Trace.current();
+      _onExitCompleter.completeError(
+          new ApplicationException(
+              "Failed to run $name: ${getErrorMessage(error)}."),
+          stackTrace);
+    });
+  }
 
   /// Kills the browser process.
   ///
   /// Returns the same [Future] as [onExit], except that it won't emit
   /// exceptions.
-  Future close();
+  Future close() {
+    _closed = true;
+    _process.then((process) => process.kill());
+
+    // Swallow exceptions. The user should explicitly use [onExit] for these.
+    return onExit.catchError((_) {});
+  }
 }

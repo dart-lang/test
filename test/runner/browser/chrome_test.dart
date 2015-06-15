@@ -145,6 +145,6 @@ webSocket.addEventListener("open", function() {
     var chrome = new Chrome("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(chrome.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start Chrome: $noSuchFileMessage"))));
+        "Failed to run Chrome: $noSuchFileMessage"))));
   });
 }

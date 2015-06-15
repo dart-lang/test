@@ -103,6 +103,6 @@ webSocket.addEventListener("open", function() {
     var ie = new InternetExplorer("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(ie.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start Internet Explorer: $noSuchFileMessage"))));
+        "Failed to run Internet Explorer: $noSuchFileMessage"))));
   });
 }

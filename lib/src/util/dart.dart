@@ -15,7 +15,6 @@ import 'package:source_span/source_span.dart';
 import 'string_literal_iterator.dart';
 import 'io.dart';
 import 'isolate_wrapper.dart';
-import 'remote_exception.dart';
 
 /// Runs [code] in an isolate.
 ///

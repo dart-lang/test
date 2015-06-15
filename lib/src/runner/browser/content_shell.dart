@@ -8,9 +8,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:stack_trace/stack_trace.dart';
-
-import '../../utils.dart';
 import '../application_exception.dart';
 import 'browser.dart';
 
@@ -24,86 +21,41 @@ final _lines = UTF8.decoder.fuse(const LineSplitter());
 /// constructed, and is killed when [close] is called.
 ///
 /// Any errors starting or running the process are reported through [onExit].
-class ContentShell implements Browser {
-  /// The underlying process.
-  Process _process;
+class ContentShell extends Browser {
+  final name = "Content Shell";
 
-  Future get onExit => _onExitCompleter.future;
-  final _onExitCompleter = new Completer();
-
-  /// A future that completes when the browser process has started.
-  ///
-  /// This is used to ensure that [close] works regardless of when it's called.
-  Future get _onProcessStarted => _onProcessStartedCompleter.future;
-  final _onProcessStartedCompleter = new Completer();
+  ContentShell(url, {String executable})
+      : super(() => _startBrowser(url, executable));
 
   /// Starts a new instance of content shell open to the given [url], which may
   /// be a [Uri] or a [String].
   ///
   /// If [executable] is passed, it's used as the content shell executable.
   /// Otherwise the default executable name for the current OS will be used.
-  ContentShell(url, {String executable}) {
+  static Future<Process> _startBrowser(url, [String executable]) async {
     if (executable == null) executable = _defaultExecutable();
 
-    // Don't return a Future here because there's no need for the caller to wait
-    // for the process to actually start. They should just wait for the HTTP
-    // request instead.
-    invoke(() async {
-      // Whether we killed content shell because it used an expired Dart
-      // version.
-      var expired = false;
+    var process = await Process.start(
+        executable, ["--dump-render-tree", url.toString()],
+        environment: {"DART_FLAGS": "--checked"});
 
-      try {
-        var process = await Process.start(
-            executable, ["--dump-render-tree", url.toString()],
-            environment: {"DART_FLAGS": "--checked"});
+    _lines.bind(process.stderr).listen((line) {
+      if (line != "[dartToStderr]: Dartium build has expired") return;
 
-        _lines.bind(process.stderr).listen((line) {
-          if (line != "[dartToStderr]: Dartium build has expired") return;
-          expired = true;
-          process.kill();
-        });
-
-        _process = process;
-        _onProcessStartedCompleter.complete();
-        var exitCode = await _process.exitCode;
-
-        if (expired) {
-          // TODO(nweiz): link to dartlang.org once it has download links for
-          // content shell
-          // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
-          throw new ApplicationException(
-              "You're using an expired content_shell. Upgrade to the latest "
-                  "version:\n"
-              "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
-                  "latest/dartium/");
-        }
-
-        if (exitCode != 0) {
-          var error = await UTF8.decodeStream(_process.stderr);
-          throw new ApplicationException(
-              "Content shell failed with exit code $exitCode:\n$error");
-        }
-
-        _onExitCompleter.complete();
-      } catch (error, stackTrace) {
-        if (stackTrace == null) stackTrace = new Trace.current();
-        _onExitCompleter.completeError(
-            new ApplicationException(
-                "Failed to start content shell: ${getErrorMessage(error)}."),
-            stackTrace);
-      }
+      // TODO(nweiz): link to dartlang.org once it has download links for
+      // content shell
+      // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
+      throw new ApplicationException(
+          "You're using an expired content_shell. Upgrade to the latest "
+              "version:\n"
+          "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
+              "latest/dartium/");
     });
-  }
 
-  Future close() {
-    _onProcessStarted.then((_) => _process.kill());
-
-    // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.catchError((_) {});
+    return process;
   }
 
   /// Return the default executable for the current operating system.
-  String _defaultExecutable() =>
+  static String _defaultExecutable() =>
       Platform.isWindows ? "content_shell.exe" : "content_shell";
 }

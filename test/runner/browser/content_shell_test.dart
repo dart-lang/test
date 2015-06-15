@@ -150,6 +150,6 @@ webSocket.send(window.localStorage["data"].toString());
     var contentShell = new ContentShell("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(contentShell.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start content shell: $noSuchFileMessage"))));
+        "Failed to run Content Shell: $noSuchFileMessage"))));
   });
 }

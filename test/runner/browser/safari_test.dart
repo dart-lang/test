@@ -142,6 +142,6 @@ webSocket.addEventListener("open", function() {
     var safari = new Safari("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(safari.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start Safari: $noSuchFileMessage"))));
+        "Failed to run Safari: $noSuchFileMessage"))));
   });
 }

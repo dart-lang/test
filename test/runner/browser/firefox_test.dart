@@ -154,7 +154,7 @@ webSocket.addEventListener("open", function() {
     var firefox = new Firefox("http://dart-lang.org",
         executable: "_does_not_exist");
     expect(firefox.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to start Firefox: $noSuchFileMessage"))));
+        "Failed to run Firefox: $noSuchFileMessage"))));
   });
 
   group("can run successful tests", () {

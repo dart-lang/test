@@ -5,15 +5,11 @@
 library test.runner.browser.firefox;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:stack_trace/stack_trace.dart';
 
 import '../../util/io.dart';
-import '../../utils.dart';
-import '../application_exception.dart';
 import 'browser.dart';
 
 final _preferences = '''
@@ -29,78 +25,39 @@ user_pref("dom.max_script_run_time", 0);
 /// constructed, and is killed when [close] is called.
 ///
 /// Any errors starting or running the process are reported through [onExit].
-class Firefox implements Browser {
-  /// The underlying process.
-  Process _process;
+class Firefox extends Browser {
+  final name = "Firefox";
 
-  Future get onExit => _onExitCompleter.future;
-  final _onExitCompleter = new Completer();
-
-  /// A future that completes when the browser process has started.
-  ///
-  /// This is used to ensure that [close] works regardless of when it's called.
-  Future get _onProcessStarted => _onProcessStartedCompleter.future;
-  final _onProcessStartedCompleter = new Completer();
+  Firefox(url, {String executable})
+      : super(() => _startBrowser(url, executable));
 
   /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
   ///
-  /// If [executable] is passed, it's used as the Firefox executable. Otherwise
-  /// the default executable name for the current OS will be used.
-  Firefox(url, {String executable}) {
+  /// If [executable] is passed, it's used as the Firefox executable.
+  /// Otherwise the default executable name for the current OS will be used.
+  static Future<Process> _startBrowser(url, [String executable]) async {
     if (executable == null) executable = _defaultExecutable();
 
-    // Don't return a Future here because there's no need for the caller to wait
-    // for the process to actually start. They should just wait for the HTTP
-    // request instead.
-    invoke(() async {
-      try {
-        var exitCode = await withTempDir((dir) async {
-          new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
+    var dir = createTempDir();
+    new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
-          var process = await Process.start(executable, [
-            "--profile",
-            "$dir",
-            url.toString(),
-            "--no-remote"
-          ], environment: {
-            "MOZ_CRASHREPORTER_DISABLE": "1"
-          });
-
-          _process = process;
-          _onProcessStartedCompleter.complete();
-
-          // TODO(nweiz): the browser's standard output is almost always useless
-          // noise, but we should allow the user to opt in to seeing it.
-          return await _process.exitCode;
-        });
-
-        if (exitCode != 0) {
-          var error = await UTF8.decodeStream(_process.stderr);
-          throw new ApplicationException(
-              "Firefox failed with exit code $exitCode:\n$error");
-        }
-
-        _onExitCompleter.complete();
-      } catch (error, stackTrace) {
-        if (stackTrace == null) stackTrace = new Trace.current();
-        _onExitCompleter.completeError(
-            new ApplicationException(
-                "Failed to start Firefox: ${getErrorMessage(error)}."),
-            stackTrace);
-      }
+    var process = await Process.start(executable, [
+      "--profile", "$dir",
+      url.toString(),
+      "--no-remote"
+    ], environment: {
+      "MOZ_CRASHREPORTER_DISABLE": "1"
     });
-  }
 
-  Future close() {
-    _onProcessStarted.then((_) => _process.kill());
+    process.exitCode
+        .then((_) => new Directory(dir).deleteSync(recursive: true));
 
-    // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.catchError((_) {});
+    return process;
   }
 
   /// Return the default executable for the current operating system.
-  String _defaultExecutable() {
+  static String _defaultExecutable() {
     if (Platform.isMacOS) {
       return '/Applications/Firefox.app/Contents/MacOS/firefox-bin';
     }
