@@ -431,7 +431,11 @@ void main() {
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
-    browser.onExit.catchError((error, stackTrace) {
+    browser.onExit.then((_) {
+      if (completer.isCompleted) return;
+      if (!_closed) return;
+      completer.complete(null);
+    }).catchError((error, stackTrace) {
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
     });
@@ -463,10 +467,7 @@ void main() {
   /// resources have been fully released.
   Future close() {
     return _closeThunk.run(() async {
-      var futures = _browserManagers.keys.map((platform) async {
-        await _browserManagers[platform];
-        await _browsers[platform].close();
-      }).toList();
+      var futures = _browsers.values.map((browser) => browser.close()).toList();
 
       futures.add(_server.close());
       futures.add(_compilers.close());
