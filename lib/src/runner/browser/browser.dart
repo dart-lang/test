@@ -57,6 +57,20 @@ abstract class Browser {
 
       var exitCode = await process.exitCode;
 
+      // This hack dodges an otherwise intractable race condition. When the user
+      // presses Control-C, the signal is sent to the browser and the test
+      // runner at the same time. It's possible for the browser to exit before
+      // the [Browser.close] is called, which would trigger the error below.
+      //
+      // A negative exit code signals that the process exited due to a signal.
+      // However, it's possible that this signal didn't come from the user's
+      // Control-C, in which case we do want to throw the error. The only way to
+      // resolve the ambiguity is to wait a brief amount of time and see if this
+      // browser is actually closed.
+      if (!_closed && exitCode < 0) {
+        await new Future.delayed(new Duration(milliseconds: 200));
+      }
+
       if (!_closed && exitCode != 0) {
         throw new ApplicationException(
             "$name failed with exit code $exitCode.");

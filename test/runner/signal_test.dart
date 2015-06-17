@@ -6,20 +6,18 @@
 @TestOn("vm && !windows")
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test/test.dart';
 import 'package:test/src/util/io.dart';
+import 'package:test/src/utils.dart';
+import 'package:test/test.dart';
 
 import '../io.dart';
 
 String _sandbox;
 
 String get _tempDir => p.join(_sandbox, "tmp");
-
-final _lines = UTF8.decoder.fuse(const LineSplitter());
 
 // This test is inherently prone to race conditions. If it fails, it will likely
 // do so flakily, but if it succeeds, it will succeed consistently. The tests
@@ -45,7 +43,7 @@ void main() {
 """);
 
       var process = await _startTest(["test.dart"]);
-      var line = await _lines.bind(process.stdout).first;
+      var line = await lineSplitter.bind(process.stdout).first;
       expect(line, equals("in test.dart"));
       process.kill();
       await process.exitCode;
@@ -57,7 +55,7 @@ void main() {
           .writeAsStringSync("void main() {}");
 
       var process = await _startTest(["-p", "chrome", "test.dart"]);
-      var line = await _lines.bind(process.stdout).first;
+      var line = await lineSplitter.bind(process.stdout).first;
       expect(line, equals("Compiling test.dart..."));
       process.kill();
       await process.exitCode;
@@ -73,7 +71,7 @@ void main() {
 """);
 
       var process = await _startTest(["test.dart"]);
-      var line = await _lines.bind(process.stdout).first;
+      var line = await lineSplitter.bind(process.stdout).first;
       expect(line, equals("in test.dart"));
       process.kill();
 
@@ -106,7 +104,7 @@ void main() {
 """);
 
       var process = await _startTest(["test.dart"]);
-      var line = await _lines.bind(process.stdout).skip(2).first;
+      var line = await lineSplitter.bind(process.stdout).skip(2).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;
@@ -138,7 +136,7 @@ void main() {
       var process = await _startTest(["-p", "content-shell", "test.dart"]);
       // The first line is blank, and the second is a status line from the
       // reporter.
-      var line = await _lines.bind(process.stdout).skip(2).first;
+      var line = await lineSplitter.bind(process.stdout).skip(2).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;
@@ -158,7 +156,7 @@ void main() {
 """);
 
       var process = await _startTest(["test.dart"]);
-      var line = await _lines.bind(process.stdout).skip(2).first;
+      var line = await lineSplitter.bind(process.stdout).skip(2).first;
       expect(line, equals("running test"));
       process.kill();
 
@@ -198,7 +196,7 @@ void main() {
 """);
 
       var process = await _startTest(["test.dart"]);
-      var line = await _lines.bind(process.stdout).skip(2).first;
+      var line = await lineSplitter.bind(process.stdout).skip(2).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;
@@ -235,7 +233,7 @@ void main() {
 """);
 
       var process = await _startTest(["test.dart"]);
-      var line = await _lines.bind(process.stdout).skip(2).first;
+      var line = await lineSplitter.bind(process.stdout).skip(2).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;

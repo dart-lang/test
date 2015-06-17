@@ -5,14 +5,11 @@
 library test.runner.browser.content_shell;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
+import '../../utils.dart';
 import '../application_exception.dart';
 import 'browser.dart';
-
-/// A converter that transforms a byte stream into a stream of lines.
-final _lines = UTF8.decoder.fuse(const LineSplitter());
 
 /// A class for running an instance of the Dartium content shell.
 ///
@@ -39,7 +36,7 @@ class ContentShell extends Browser {
         executable, ["--dump-render-tree", url.toString()],
         environment: {"DART_FLAGS": "--checked"});
 
-    _lines.bind(process.stderr).listen((line) {
+    lineSplitter.bind(process.stderr).listen((line) {
       if (line != "[dartToStderr]: Dartium build has expired") return;
 
       // TODO(nweiz): link to dartlang.org once it has download links for

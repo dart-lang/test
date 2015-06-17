@@ -4,13 +4,13 @@
 
 library test.runner.reporter.no_io_compact;
 
-import 'dart:async';
+import 'dart:isolate';
 
 import '../../backend/live_test.dart';
 import '../../backend/state.dart';
-import '../../backend/suite.dart';
 import '../../utils.dart';
 import '../engine.dart';
+import '../load_exception.dart';
 
 /// The maximum console line length.
 ///
@@ -24,6 +24,9 @@ const _lineLength = 100;
 /// so that test files can be run directly. This means that until issue 6943 is
 /// fixed, this must not import `dart:io`.
 class ExpandedReporter {
+  /// Whether the reporter should emit terminal color escapes.
+  final bool _color;
+
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
   final String _green;
@@ -46,17 +49,14 @@ class ExpandedReporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  /// Whether multiple test files are being run.
-  final bool _multiplePaths;
+  /// Whether the path to each test's suite should be printed.
+  final bool _printPath;
 
-  /// Whether tests are being run on multiple platforms.
-  final bool _multiplePlatforms;
+  /// Whether the platform each test is running on should be printed.
+  final bool _printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
-
-  /// Whether [close] has been called.
-  bool _closed = false;
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
@@ -73,91 +73,116 @@ class ExpandedReporter {
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
 
-  /// Creates a [NoIoCompactReporter] that will run all tests in [suites].
+  /// Watches the tests run by [engine] and prints their results to the
+  /// terminal.
   ///
-  /// [concurrency] controls how many suites are run at once. If [color] is
-  /// `true`, this will use terminal colors; if it's `false`, it won't. If
-  /// [verboseTrace] is `true`, this will print core library frames.
-  ExpandedReporter(Iterable<Suite> suites, {int concurrency, bool color: true,
-          bool verboseTrace: false})
-      : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
-        _multiplePlatforms =
-            suites.map((suite) => suite.platform).toSet().length > 1,
-        _engine = new Engine(suites, concurrency: concurrency),
-        _verboseTrace = verboseTrace,
+  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
+  /// won't. If [verboseTrace] is `true`, this will print core library frames.
+  /// If [printPath] is `true`, this will print the path name as part of the
+  /// test description. Likewise, if [printPlatform] is `true`, this will print
+  /// the platform as part of the test description.
+  static void watch(Engine engine, {bool color: true, bool verboseTrace: false,
+          bool printPath: true, bool printPlatform: true}) {
+    new ExpandedReporter._(
+        engine,
+        color: color,
+        verboseTrace: verboseTrace,
+        printPath: printPath,
+        printPlatform: printPlatform);
+  }
+
+  ExpandedReporter._(this._engine, {bool color: true, bool verboseTrace: false,
+          bool printPath: true, bool printPlatform: true})
+      : _verboseTrace = verboseTrace,
+        _printPath = printPath,
+        _printPlatform = printPlatform,
+        _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
         _noColor = color ? '\u001b[0m' : '' {
-    _engine.onTestStarted.listen((liveTest) {
-      // If this is the first test to start, print a progress line so the user
-      // knows what's running.
-      if (_engine.active.length == 1) _progressLine(_description(liveTest));
+    _engine.onTestStarted.listen(_onTestStarted);
+    _engine.success.then(_onDone);
+  }
 
-      liveTest.onStateChange.listen((state) {
-        if (state.status != Status.complete) return;
+  /// A callback called when the engine begins running [liveTest].
+  void _onTestStarted(LiveTest liveTest) {
+    if (!_stopwatch.isRunning) _stopwatch.start();
 
-        if (liveTest.test.metadata.skip &&
-            liveTest.test.metadata.skipReason != null) {
-          _progressLine(_description(liveTest));
-          print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
-              '$_noColor'));
-        } else if (_engine.active.isNotEmpty) {
-          // If any tests are running, display the name of the oldest active
-          // test.
-          _progressLine(_description(_engine.active.first));
-        }
-      });
+    // If this is the first test to start, print a progress line so
+    // the user knows what's running.
+    if (_engine.active.length == 1) _progressLine(_description(liveTest));
 
-      liveTest.onError.listen((error) {
-        if (liveTest.state.status != Status.complete) return;
+    liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
 
-        _progressLine(_description(liveTest));
-        print(indent(error.error.toString()));
-        var chain = terseChain(error.stackTrace, verbose: _verboseTrace);
-        print(indent(chain.toString()));
-      });
+    liveTest.onError.listen((error) =>
+        _onError(liveTest, error.error, error.stackTrace));
 
-      liveTest.onPrint.listen((line) {
-        _progressLine(_description(liveTest));
-        print(line);
-      });
+    liveTest.onPrint.listen((line) {
+      _progressLine(_description(liveTest));
+      print(line);
     });
   }
 
-  /// Runs all tests in all provided suites.
-  ///
-  /// This returns `true` if all tests succeed, and `false` otherwise. It will
-  /// only return once all tests have finished running.
-  Future<bool> run() async {
-    if (_stopwatch.isRunning) {
-      throw new StateError("ExpandedReporter.run() may not be called more than "
-          "once.");
+  /// A callback called when [liveTest]'s state becomes [state].
+  void _onStateChange(LiveTest liveTest, State state) {
+    if (state.status != Status.complete) return;
+
+    if (liveTest.test.metadata.skip &&
+        liveTest.test.metadata.skipReason != null) {
+      _progressLine(_description(liveTest));
+      print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
+          '$_noColor'));
+    } else if (_engine.active.isNotEmpty) {
+      // If any tests are running, display the name of the oldest active
+      // test.
+      _progressLine(_description(_engine.active.first));
     }
+  }
+
+  /// A callback called when [liveTest] throws [error].
+  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+    if (liveTest.state.status != Status.complete) return;
+
+    _progressLine(_description(liveTest));
+
+    if (error is! LoadException) {
+      print(indent(error.toString()));
+      var chain = terseChain(stackTrace, verbose: _verboseTrace);
+      print(indent(chain.toString()));
+      return;
+    }
+
+    print(indent(error.toString(color: _color)));
+
+    // Only print stack traces for load errors that come from the user's code.
+    if (error.innerError is! IsolateSpawnException &&
+        error.innerError is! FormatException &&
+        error.innerError is! String) {
+      print(indent(terseChain(stackTrace).toString()));
+    }
+  }
+
+  /// A callback called when the engine is finished running tests.
+  ///
+  /// [success] will be `true` if all tests passed, `false` if some tests
+  /// failed, and `null` if the engine was closed prematurely.
+  void _onDone(bool success) {
+    // A null success value indicates that the engine was closed before the
+    // tests finished running, probably because of a signal from the user, in
+    // which case we shouldn't print summary information.
+    if (success == null) return;
 
     if (_engine.liveTests.isEmpty) {
       print("No tests ran.");
-      return true;
-    }
-
-    _stopwatch.start();
-    var success = await _engine.run();
-    if (_closed) return false;
-
-    if (!success) {
+    } else if (!success) {
       _progressLine('Some tests failed.', color: _red);
     } else if (_engine.passed.isEmpty) {
       _progressLine("All tests skipped.");
     } else {
       _progressLine("All tests passed!");
     }
-
-    return success;
   }
-
-  /// Signals that the caller is done with any test output and the reporter
-  /// should release any resources it has allocated.
-  Future close() => _engine.close();
 
   /// Prints a line representing the current state of the tests.
   ///
@@ -231,11 +256,11 @@ class ExpandedReporter {
   String _description(LiveTest liveTest) {
     var name = liveTest.test.name;
 
-    if (_multiplePaths && liveTest.suite.path != null) {
+    if (_printPath && liveTest.suite.path != null) {
       name = "${liveTest.suite.path}: $name";
     }
 
-    if (_multiplePlatforms && liveTest.suite.platform != null) {
+    if (_printPlatform && liveTest.suite.platform != null) {
       name = "[${liveTest.suite.platform}] $name";
     }
 

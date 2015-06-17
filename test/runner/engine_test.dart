@@ -21,13 +21,31 @@ void main() {
       }, max: 1));
     }
 
-    var engine = new Engine([
+    var engine = new Engine.withSuites([
       new Suite(declarer.tests.take(2)),
       new Suite(declarer.tests.skip(2))
     ]);
 
     await engine.run();
     expect(testsRun, equals(4));
+  });
+
+  test("runs tests in a suite added after run() was called", () {
+    var testsRun = 0;
+    for (var i = 0; i < 4; i++) {
+      declarer.test("test ${i + 1}", expectAsync(() {
+        expect(testsRun, equals(i));
+        testsRun++;
+      }, max: 1));
+    }
+
+    var engine = new Engine();
+    expect(engine.run().then((_) {
+      expect(testsRun, equals(4));
+    }), completes);
+
+    engine.suiteSink.add(new Suite(declarer.tests));
+    engine.suiteSink.close();
   });
 
   test("emits each test before it starts running and after the previous test "
@@ -37,7 +55,8 @@ void main() {
       declarer.test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
     }
 
-    var engine = new Engine([new Suite(declarer.tests)]);
+    var engine = new Engine.withSuites([new Suite(declarer.tests)]);
+
     engine.onTestStarted.listen(expectAsync((liveTest) {
       // [testsRun] should be one less than the test currently running.
       expect(liveTest.test.name, equals("test ${testsRun + 1}"));
@@ -56,7 +75,7 @@ void main() {
       declarer.test("test ${i + 1}", () {});
     }
 
-    var engine = new Engine([new Suite(declarer.tests)]);
+    var engine = new Engine.withSuites([new Suite(declarer.tests)]);
     expect(engine.run(), completion(isTrue));
   });
 
@@ -66,7 +85,7 @@ void main() {
     }
     declarer.test("failure", () => throw new TestFailure("oh no"));
 
-    var engine = new Engine([new Suite(declarer.tests)]);
+    var engine = new Engine.withSuites([new Suite(declarer.tests)]);
     expect(engine.run(), completion(isFalse));
   });
 
@@ -76,14 +95,14 @@ void main() {
     }
     declarer.test("failure", () => throw "oh no");
 
-    var engine = new Engine([new Suite(declarer.tests)]);
+    var engine = new Engine.withSuites([new Suite(declarer.tests)]);
     expect(engine.run(), completion(isFalse));
   });
 
   test(".run() may not be called more than once", () {
-    var engine = new Engine([]);
+    var engine = new Engine.withSuites([]);
     expect(engine.run(), completes);
-    expect(engine.run(), throwsStateError);
+    expect(engine.run, throwsStateError);
   });
 
   group("for a skipped test", () {
@@ -91,7 +110,7 @@ void main() {
       var bodyRun = false;
       declarer.test("test", () => bodyRun = true, skip: true);
 
-      var engine = new Engine([new Suite(declarer.tests)]);
+      var engine = new Engine.withSuites([new Suite(declarer.tests)]);
       await engine.run();
       expect(bodyRun, isFalse);
     });
@@ -99,19 +118,22 @@ void main() {
     test("exposes a LiveTest that emits the correct states", () {
       declarer.test("test", () {}, skip: true);
 
-      var engine = new Engine([new Suite(declarer.tests)]);
-      var liveTest = engine.liveTests.single;
-      expect(liveTest.test, equals(declarer.tests.single));
+      var engine = new Engine.withSuites([new Suite(declarer.tests)]);
 
-      var first = true;
-      liveTest.onStateChange.listen(expectAsync((state) {
-        expect(state, equals(first
-            ? const State(Status.running, Result.success)
-            : const State(Status.complete, Result.success)));
-        first = false;
-      }, count: 2));
+      engine.onTestStarted.listen(expectAsync((liveTest) {
+        expect(liveTest, same(engine.liveTests.single));
+        expect(liveTest.test, equals(declarer.tests.single));
 
-      expect(liveTest.onComplete, completes);
+        var first = true;
+        liveTest.onStateChange.listen(expectAsync((state) {
+          expect(state, equals(first
+              ? const State(Status.running, Result.success)
+              : const State(Status.complete, Result.success)));
+          first = false;
+        }, count: 2));
+
+        expect(liveTest.onComplete, completes);
+      }));
 
       return engine.run();
     });

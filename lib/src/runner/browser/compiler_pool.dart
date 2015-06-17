@@ -111,9 +111,9 @@ void main(_) {
         // ensure that we're done printing everything about one process before
         // we start the next.
         await Future.wait([
-          santizeForWindows(compiler.process.stdout).listen(stdout.add)
+          sanitizeForWindows(compiler.process.stdout).listen(stdout.add)
               .asFuture(),
-          santizeForWindows(compiler.process.stderr).listen(stderr.add)
+          sanitizeForWindows(compiler.process.stderr).listen(stderr.add)
               .asFuture(),
           compiler.process.exitCode.then((exitCode) {
             if (exitCode == 0 || _closed) return;

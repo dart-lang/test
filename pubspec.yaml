@@ -8,6 +8,9 @@ environment:
 dependencies:
   analyzer: '>=0.23.0 <0.26.0'
   args: '>=0.12.1 <0.14.0'
+  # TODO(nweiz): Use a hosted dependency once async 0.13.2 is published. Don't
+  # publish this with a git dependency.
+  async: {git: git://github.com/dart-lang/async}
   barback: '>=0.14.0 <0.16.0'
   crypto: '^0.9.0'
   glob: '^1.0.0'

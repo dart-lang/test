@@ -7,6 +7,7 @@ library test.runner.engine;
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
 
@@ -15,7 +16,7 @@ import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
-import '../utils.dart';
+import '../util/delegating_sink.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///
@@ -31,24 +32,50 @@ class Engine {
   /// Whether [close] has been called.
   var _closed = false;
 
+  /// Whether [close] was called before all the tests finished running.
+  ///
+  /// This is `null` if close hasn't been called and the tests are still
+  /// running, `true` if close was called before the tests finished running, and
+  /// `false` if the tests finished running before close was called.
+  var _closedBeforeDone;
+
   /// A pool that limits the number of test suites running concurrently.
   final Pool _pool;
 
-  /// An unmodifiable list of tests to run.
+  /// Whether all tests passed.
+  ///
+  /// This fires once all tests have completed and [suiteSink] has been closed.
+  /// This will be `null` if [close] was called before all the tests finished
+  /// running.
+  Future<bool> get success async {
+    await _group.future;
+    if (_closedBeforeDone) return null;
+    return liveTests.every((liveTest) =>
+        liveTest.state.result == Result.success);
+  }
+
+  /// A group of futures for each test suite.
+  final _group = new FutureGroup();
+
+  /// A sink used to pass [Suite]s in to the engine to run.
+  ///
+  /// Suites may be added as quickly as they're available; the Engine will only
+  /// run as many as necessary at a time based on its concurrency settings.
+  Sink<Suite> get suiteSink => new DelegatingSink(_suiteController.sink);
+  final _suiteController = new StreamController<Suite>();
+
+  /// All the currently-known tests that have run, are running, or will run.
   ///
   /// These are [LiveTest]s, representing the in-progress state of each test.
   /// Tests that have not yet begun running are marked [Status.pending]; tests
   /// that have finished are marked [Status.complete].
   ///
-  /// [LiveTest.run] must not be called on these tests.
-  List<LiveTest> get liveTests =>
-      new UnmodifiableListView(flatten(_liveTestsBySuite));
-
-  /// The tests in [liveTests], organized by their original test suite.
+  /// This is guaranteed to contain the same tests as the union of [passed],
+  /// [skipped], [failed], and [active].
   ///
-  /// This allows test suites to be run in parallel without running multiple
-  /// tests in the same suite at once.
-  final List<List<LiveTest>> _liveTestsBySuite;
+  /// [LiveTest.run] must not be called on these tests.
+  List<LiveTest> get liveTests => new UnmodifiableListView(_liveTests);
+  final _liveTests = new List<LiveTest>();
 
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
@@ -72,56 +99,53 @@ class Engine {
   List<LiveTest> get active => new UnmodifiableListView(_active);
   final _active = new List<LiveTest>();
 
-  /// Returns the tests in [suites] grouped by suite.
+  /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
-  /// Also replaces tests marked as "skip" with dummy [LiveTest]s.
-  static List<List<LiveTest>> _computeLiveTestsBySuite(Iterable<Suite> suites) {
-    return suites.map((suite) {
-      return suite.tests.map((test) {
-        return test.metadata.skip
-            ? _skippedTest(suite, test)
-            : test.load(suite);
-      }).toList();
-    }).toList();
-  }
-
-  /// Returns a dummy [LiveTest] for a test marked as "skip".
-  static LiveTest _skippedTest(Suite suite, Test test) {
-    var controller;
-    controller = new LiveTestController(suite, test, () {
-      controller.setState(const State(Status.running, Result.success));
-      controller.setState(const State(Status.complete, Result.success));
-      controller.completer.complete();
-    }, () {});
-    return controller.liveTest;
+  /// [concurrency] controls how many suites are run at once.
+  Engine({int concurrency})
+      : _pool = new Pool(concurrency == null ? 1 : concurrency) {
+    _group.future.then((_) {
+      if (_closedBeforeDone == null) _closedBeforeDone = false;
+    }).catchError((_) {
+      // Don't top-level errors. They'll be thrown via [success] anyway.
+    });
   }
 
   /// Creates an [Engine] that will run all tests in [suites].
   ///
-  /// [concurrency] controls how many suites are run at once.
-  Engine(Iterable<Suite> suites, {int concurrency})
-      : _liveTestsBySuite = _computeLiveTestsBySuite(suites),
-        _pool = new Pool(concurrency == null ? 1 : concurrency);
+  /// [concurrency] controls how many suites are run at once. An engine
+  /// constructed this way will automatically close its [suiteSink], meaning
+  /// that no further suites may be provided.
+  factory Engine.withSuites(List<Suite> suites, {int concurrency}) {
+    var engine = new Engine(concurrency: concurrency);
+    for (var suite in suites) engine.suiteSink.add(suite);
+    engine.suiteSink.close();
+    return engine;
+  }
 
   /// Runs all tests in all suites defined by this engine.
   ///
   /// This returns `true` if all tests succeed, and `false` otherwise. It will
-  /// only return once all tests have finished running.
-  Future<bool> run() async {
+  /// only return once all tests have finished running and [suiteSink] has been
+  /// closed.
+  Future<bool> run() {
     if (_runCalled) {
       throw new StateError("Engine.run() may not be called more than once.");
     }
     _runCalled = true;
 
-    await Future.wait(_liveTestsBySuite.map((suite) {
-      return _pool.withResource(() {
+    _suiteController.stream.listen((suite) {
+      _group.add(_pool.withResource(() {
         if (_closed) return null;
 
         // TODO(nweiz): Use a real for loop when issue 23394 is fixed.
-        return Future.forEach(suite, (liveTest) async {
-          // TODO(nweiz): Just "return;" when issue 23200 is fixed.
-          if (_closed) return null;
+        return Future.forEach(suite.tests, (test) async {
+          if (_closed) return;
 
+          var liveTest = test.metadata.skip
+              ? _skippedTest(suite, test)
+              : test.load(suite);
+          _liveTests.add(liveTest);
           _active.add(liveTest);
 
           liveTest.onStateChange.listen((state) {
@@ -143,15 +167,25 @@ class Engine {
           // First, schedule a microtask to ensure that [onTestStarted] fires
           // before the first [LiveTest.onStateChange] event. Once the test
           // finishes, use [new Future] to do a coarse-grained event loop pump
-          // to avoid starving the DOM or other non-microtask events.
+          // to avoid starving non-microtask events.
           await new Future.microtask(liveTest.run);
           await new Future(() {});
         });
-      });
-    }));
+      }));
+    }, onDone: _group.close);
 
-    return liveTests.every(
-        (liveTest) => liveTest.state.result == Result.success);
+    return success;
+  }
+
+  /// Returns a dummy [LiveTest] for a test marked as "skip".
+  LiveTest _skippedTest(Suite suite, Test test) {
+    var controller;
+    controller = new LiveTestController(suite, test, () {
+      controller.setState(const State(Status.running, Result.success));
+      controller.setState(const State(Status.complete, Result.success));
+      controller.completer.complete();
+    }, () {});
+    return controller.liveTest;
   }
 
   /// Signals that the caller is done paying attention to test results and the
@@ -160,8 +194,15 @@ class Engine {
   /// Any actively-running tests are also closed. VM tests are allowed to finish
   /// running so that any modifications they've made to the filesystem can be
   /// cleaned up.
+  ///
+  /// **Note that closing the engine is not the same as closing [suiteSink].**
+  /// Closing [suiteSink] indicates that no more input will be provided, closing
+  /// the engine indicates that no more output should be emitted.
   Future close() {
     _closed = true;
+    if (_closedBeforeDone == null) _closedBeforeDone = true;
+    _suiteController.close();
+
     return Future.wait(liveTests.map((liveTest) => liveTest.close()));
   }
 }

@@ -12,6 +12,7 @@ import 'src/backend/declarer.dart';
 import 'src/backend/suite.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
+import 'src/runner/engine.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/utils.dart';
 
@@ -55,10 +56,15 @@ Declarer get _declarer {
               platform: "VM")
         .forPlatform(TestPlatform.vm, os: currentOSGuess);
 
-    var success = await new ExpandedReporter([suite], color: true).run();
+    var engine = new Engine();
+    engine.suiteSink.add(suite);
+    engine.suiteSink.close();
+    ExpandedReporter.watch(engine,
+        color: true, printPath: false, printPlatform: false);
+
+    var success = await engine.run();
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
-    // TODO(nweiz): Just "return;" when issue 23200 is fixed.
-    if (success) return null;
+    if (success) return;
     print('');
     new Future.error("Dummy exception to set exit code.");
   });

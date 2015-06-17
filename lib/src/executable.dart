@@ -17,12 +17,13 @@ import 'package:yaml/yaml.dart';
 
 import 'backend/metadata.dart';
 import 'backend/test_platform.dart';
-import 'runner/reporter/compact.dart';
-import 'runner/reporter/expanded.dart';
+import 'runner/engine.dart';
 import 'runner/application_exception.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_exception_suite.dart';
 import 'runner/loader.dart';
+import 'runner/reporter/compact.dart';
+import 'runner/reporter/expanded.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 import 'utils.dart';
@@ -166,15 +167,6 @@ transformers:
     }
   }
 
-  var metadata = new Metadata(verboseTrace: options["verbose-trace"]);
-  var platforms = options["platform"].map(TestPlatform.find);
-  var loader = new Loader(platforms,
-      pubServeUrl: pubServeUrl,
-      packageRoot: options["package-root"],
-      color: color,
-      metadata: metadata,
-      jsTrace: options["js-trace"]);
-
   var concurrency = _defaultConcurrency;
   if (options["concurrency"] != null) {
     try {
@@ -198,83 +190,52 @@ transformers:
     paths = ["test"];
   }
 
+  var pattern;
+  if (options["name"] != null) {
+    if (options["plain-name"] != null) {
+      _printUsage("--name and --plain-name may not both be passed.");
+      exitCode = exit_codes.data;
+      return;
+    }
+    pattern = new RegExp(options["name"]);
+  } else if (options["plain-name"] != null) {
+    pattern = options["plain-name"];
+  }
+
+  var metadata = new Metadata(verboseTrace: options["verbose-trace"]);
+  var platforms = options["platform"].map(TestPlatform.find);
+  var loader = new Loader(platforms,
+      pubServeUrl: pubServeUrl,
+      packageRoot: options["package-root"],
+      color: color,
+      metadata: metadata,
+      jsTrace: options["js-trace"]);
+
   var signalSubscription;
-  var closed = false;
   signalSubscription = _signals.listen((_) {
     signalSubscription.cancel();
-    closed = true;
     loader.close();
   });
 
   try {
-    var suites = await mergeStreams(paths.map((path) {
-      if (new Directory(path).existsSync()) return loader.loadDir(path);
-      if (new File(path).existsSync()) return loader.loadFile(path);
-      return new Stream.fromFuture(new Future.error(
-          new LoadException(path, 'Does not exist.'),
-          new Trace.current()));
-    })).transform(new StreamTransformer.fromHandlers(
-        handleError: (error, stackTrace, sink) {
-      if (error is! LoadException) {
-        sink.addError(error, stackTrace);
-      } else {
-        sink.add(new LoadExceptionSuite(error, stackTrace));
-      }
-    })).toList();
+    var engine = new Engine(concurrency: concurrency);
 
-    if (closed) return;
-    suites = flatten(suites);
+    var watch = options["reporter"] == "compact"
+        ? CompactReporter.watch
+        : ExpandedReporter.watch;
 
-    var pattern;
-    if (options["name"] != null) {
-      if (options["plain-name"] != null) {
-        _printUsage("--name and --plain-name may not both be passed.");
-        exitCode = exit_codes.data;
-        return;
-      }
-      pattern = new RegExp(options["name"]);
-    } else if (options["plain-name"] != null) {
-      pattern = options["plain-name"];
-    }
-
-    if (pattern != null) {
-      suites = suites.map((suite) {
-        // Don't ever filter out load errors.
-        if (suite is LoadExceptionSuite) return suite;
-        return suite.change(
-            tests: suite.tests.where((test) => test.name.contains(pattern)));
-      }).toList();
-
-      if (suites.every((suite) => suite.tests.isEmpty)) {
-        stderr.write('No tests match ');
-
-        if (pattern is RegExp) {
-          stderr.writeln('regular expression "${pattern.pattern}".');
-        } else {
-          stderr.writeln('"$pattern".');
-        }
-        exitCode = exit_codes.data;
-        return;
-      }
-    }
-
-    var reporter = options["reporter"] == "compact"
-        ? new CompactReporter(
-            flatten(suites),
-            concurrency: concurrency,
-            color: color,
-            verboseTrace: options["verbose-trace"])
-        : new ExpandedReporter(
-            flatten(suites),
-            concurrency: concurrency,
-            color: color,
-            verboseTrace: options["verbose-trace"]);
+    watch(
+        engine,
+        color: color,
+        verboseTrace: options["verbose-trace"],
+        printPath: paths.length > 1 ||
+            new Directory(paths.single).existsSync(),
+        printPlatform: platforms.length > 1);
 
     // Override the signal handler to close [reporter]. [loader] will still be
     // closed in the [whenComplete] below.
-    signalSubscription.onData((_) {
+    signalSubscription.onData((_) async {
       signalSubscription.cancel();
-      closed = true;
 
       // Wait a bit to print this message, since printing it eagerly looks weird
       // if the tests then finish immediately.
@@ -286,15 +247,35 @@ transformers:
         print("Press Control-C again to terminate immediately.");
       });
 
-      reporter.close().then((_) => timer.cancel());
+      await engine.close();
+      timer.cancel();
+      await loader.close();
     });
 
     try {
-      var success = await reporter.run();
-      exitCode = success ? 0 : 1;
+      var results = await Future.wait([
+        _loadSuites(paths, pattern, loader, engine),
+        engine.run()
+      ], eagerError: true);
+
+      // Explicitly check "== true" here because [engine.run] can return `null`
+      // if the engine was closed prematurely.
+      exitCode = results.last == true ? 0 : 1;
     } finally {
       signalSubscription.cancel();
-      await reporter.close();
+      await engine.close();
+    }
+
+    if (engine.passed.length == 0 && engine.failed.length == 0 &&
+        engine.skipped.length == 0 && pattern != null) {
+      stderr.write('No tests match ');
+
+      if (pattern is RegExp) {
+        stderr.writeln('regular expression "${pattern.pattern}".');
+      } else {
+        stderr.writeln('"$pattern".');
+      }
+      exitCode = exit_codes.data;
     }
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
@@ -311,6 +292,42 @@ transformers:
     signalSubscription.cancel();
     await loader.close();
   }
+}
+
+/// Load the test suites in [paths] that match [pattern] and pass them to
+/// [engine].
+///
+/// This completes once all the tests have been added to the engine. It does not
+/// run the engine.
+Future _loadSuites(List<String> paths, Pattern pattern, Loader loader,
+    Engine engine) async {
+  var completer = new Completer();
+
+  mergeStreams(paths.map((path) {
+    if (new Directory(path).existsSync()) return loader.loadDir(path);
+    if (new File(path).existsSync()) return loader.loadFile(path);
+
+    return new Stream.fromFuture(new Future.error(
+        new LoadException(path, 'Does not exist.'),
+        new Trace.current()));
+  })).map((suite) {
+    if (pattern == null) return suite;
+    return suite.change(
+        tests: suite.tests.where((test) => test.name.contains(pattern)));
+  }).listen((suite) => engine.suiteSink.add(suite),
+      onError: (error, stackTrace) {
+    if (error is LoadException) {
+      engine.suiteSink.add(new LoadExceptionSuite(error, stackTrace));
+    } else if (!completer.isCompleted) {
+      completer.completeError(error, stackTrace);
+    }
+  }, onDone: () => completer.complete());
+
+  await completer.future;
+
+  // Once we've loaded all the suites, notify the engine that no more will be
+  // coming.
+  engine.suiteSink.close();
 }
 
 /// Print usage information for this command.

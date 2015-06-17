@@ -4,13 +4,11 @@
 
 library test.runner.reporter.compact;
 
-import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
 import '../../backend/live_test.dart';
 import '../../backend/state.dart';
-import '../../backend/suite.dart';
 import '../../utils.dart';
 import '../engine.dart';
 import '../load_exception.dart';
@@ -48,17 +46,14 @@ class CompactReporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  /// Whether multiple test files are being run.
-  final bool _multiplePaths;
+  /// Whether the path to each test's suite should be printed.
+  final bool _printPath;
 
-  /// Whether tests are being run on multiple platforms.
-  final bool _multiplePlatforms;
+  /// Whether the platform each test is running on should be printed.
+  final bool _printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
-
-  /// Whether [close] has been called.
-  bool _closed = false;
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
@@ -77,106 +72,129 @@ class CompactReporter {
   // Whether a newline has been printed since the last progress line.
   var _printedNewline = true;
 
-  /// Creates a [ConsoleReporter] that will run all tests in [suites].
+  /// Watches the tests run by [engine] and prints their results to the
+  /// terminal.
   ///
-  /// [concurrency] controls how many suites are run at once. If [color] is
-  /// `true`, this will use terminal colors; if it's `false`, it won't. If
-  /// [verboseTrace] is `true`, this will print core library frames.
-  CompactReporter(Iterable<Suite> suites, {int concurrency, bool color: true,
-          bool verboseTrace: false})
-      : _multiplePaths = suites.map((suite) => suite.path).toSet().length > 1,
-        _multiplePlatforms =
-            suites.map((suite) => suite.platform).toSet().length > 1,
-        _engine = new Engine(suites, concurrency: concurrency),
-        _verboseTrace = verboseTrace,
+  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
+  /// won't. If [verboseTrace] is `true`, this will print core library frames.
+  /// If [printPath] is `true`, this will print the path name as part of the
+  /// test description. Likewise, if [printPlatform] is `true`, this will print
+  /// the platform as part of the test description.
+  static void watch(Engine engine, {bool color: true, bool verboseTrace: false,
+          bool printPath: true, bool printPlatform: true}) {
+    new CompactReporter._(
+        engine,
+        color: color,
+        verboseTrace: verboseTrace,
+        printPath: printPath,
+        printPlatform: printPlatform);
+  }
+
+  CompactReporter._(this._engine, {bool color: true, bool verboseTrace: false,
+          bool printPath: true, bool printPlatform: true})
+      : _verboseTrace = verboseTrace,
+        _printPath = printPath,
+        _printPlatform = printPlatform,
         _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
         _noColor = color ? '\u001b[0m' : '' {
-    _engine.onTestStarted.listen((liveTest) {
-      // If this is the first test to start, print a progress line so the user
-      // knows what's running.
-      if (_engine.active.length == 1) _progressLine(_description(liveTest));
-      _printedNewline = false;
+    _engine.onTestStarted.listen(_onTestStarted);
+    _engine.success.then(_onDone);
+  }
 
-      liveTest.onStateChange.listen((state) {
-        if (state.status != Status.complete) return;
+  /// A callback called when the engine begins running [liveTest].
+  void _onTestStarted(LiveTest liveTest) {
+    if (!_stopwatch.isRunning) _stopwatch.start();
 
-        if (liveTest.test.metadata.skip &&
-            liveTest.test.metadata.skipReason != null) {
-          _progressLine(_description(liveTest));
-          print('');
-          print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
-              '$_noColor'));
-        } else {
-          // Always display the name of the oldest active test, unless testing
-          // is finished in which case display the last test to complete.
-          if (_engine.active.isEmpty) {
-            _progressLine(_description(liveTest));
-          } else {
-            _progressLine(_description(_engine.active.first));
-          }
+    // If this is the first test to start, print a progress line so the user
+    // knows what's running.
+    if (_engine.active.length == 1) _progressLine(_description(liveTest));
+    _printedNewline = false;
 
-          _printedNewline = false;
-        }
-      });
+    liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
 
-      liveTest.onError.listen((error) {
-        if (liveTest.state.status != Status.complete) return;
+    liveTest.onError.listen((error) =>
+        _onError(liveTest, error.error, error.stackTrace));
 
-        _progressLine(_description(liveTest));
-        if (!_printedNewline) print('');
-        _printedNewline = true;
+    liveTest.onPrint.listen((line) {
+      _progressLine(_description(liveTest));
+      if (!_printedNewline) print('');
+      _printedNewline = true;
 
-        if (error.error is! LoadException) {
-          print(indent(error.error.toString()));
-          var chain = terseChain(error.stackTrace, verbose: _verboseTrace);
-          print(indent(chain.toString()));
-          return;
-        }
-
-        print(indent(error.error.toString(color: _color)));
-
-        // Only print stack traces for load errors that come from the user's code.
-        if (error.error.innerError is! IOException &&
-            error.error.innerError is! IsolateSpawnException &&
-            error.error.innerError is! FormatException &&
-            error.error.innerError is! String) {
-          print(indent(terseChain(error.stackTrace).toString()));
-        }
-      });
-
-      liveTest.onPrint.listen((line) {
-        _progressLine(_description(liveTest));
-        if (!_printedNewline) print('');
-        _printedNewline = true;
-
-        print(line);
-      });
+      print(line);
     });
   }
 
-  /// Runs all tests in all provided suites.
+  /// A callback called when [liveTest]'s state becomes [state].
+  void _onStateChange(LiveTest liveTest, State state) {
+    if (state.status != Status.complete) return;
+
+    if (liveTest.test.metadata.skip &&
+        liveTest.test.metadata.skipReason != null) {
+      _progressLine(_description(liveTest));
+      print('');
+      print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
+          '$_noColor'));
+    } else {
+      // Always display the name of the oldest active test, unless testing
+      // is finished in which case display the last test to complete.
+      if (_engine.active.isEmpty) {
+        _progressLine(_description(liveTest));
+      } else {
+        _progressLine(_description(_engine.active.first));
+      }
+
+      _printedNewline = false;
+    }
+  }
+
+  /// A callback called when [liveTest] throws [error].
+  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+    if (liveTest.state.status != Status.complete) return;
+
+    _progressLine(_description(liveTest));
+    if (!_printedNewline) print('');
+    _printedNewline = true;
+
+    if (error is! LoadException) {
+      print(indent(error.toString()));
+      var chain = terseChain(stackTrace, verbose: _verboseTrace);
+      print(indent(chain.toString()));
+      return;
+    }
+
+    print(indent(error.toString(color: _color)));
+
+    // Only print stack traces for load errors that come from the user's code.
+    if (error.innerError is! IOException &&
+        error.innerError is! IsolateSpawnException &&
+        error.innerError is! FormatException &&
+        error.innerError is! String) {
+      print(indent(terseChain(stackTrace).toString()));
+    }
+  }
+
+  /// A callback called when the engine is finished running tests.
   ///
-  /// This returns `true` if all tests succeed, and `false` otherwise. It will
-  /// only return once all tests have finished running.
-  Future<bool> run() async {
-    if (_stopwatch.isRunning) {
-      throw new StateError("CompactReporter.run() may not be called more than "
-          "once.");
+  /// [success] will be `true` if all tests passed, `false` if some tests
+  /// failed, and `null` if the engine was closed prematurely.
+  void _onDone(bool success) {
+    // A null success value indicates that the engine was closed before the
+    // tests finished running, probably because of a signal from the user. We
+    // shouldn't print summary information, we should just make sure the
+    // terminal cursor is on its own line.
+    if (success == null) {
+      if (!_printedNewline) print("");
+      _printedNewline = true;
+      return;
     }
 
     if (_engine.liveTests.isEmpty) {
+      if (!_printedNewline) print("");
       print("No tests ran.");
-      return true;
-    }
-
-    _stopwatch.start();
-    var success = await _engine.run();
-    if (_closed) return false;
-
-    if (!success) {
+    } else if (!success) {
       _progressLine('Some tests failed.', color: _red);
       print('');
     } else if (_engine.passed.isEmpty) {
@@ -186,17 +204,6 @@ class CompactReporter {
       _progressLine("All tests passed!");
       print('');
     }
-
-    return success;
-  }
-
-  /// Signals that the caller is done with any test output and the reporter
-  /// should release any resources it has allocated.
-  Future close() {
-    if (!_printedNewline) print("");
-    _printedNewline = true;
-    _closed = true;
-    return _engine.close();
   }
 
   /// Prints a line representing the current state of the tests.
@@ -275,11 +282,11 @@ class CompactReporter {
   String _description(LiveTest liveTest) {
     var name = liveTest.test.name;
 
-    if (_multiplePaths && liveTest.suite.path != null) {
+    if (_printPath && liveTest.suite.path != null) {
       name = "${liveTest.suite.path}: $name";
     }
 
-    if (_multiplePlatforms && liveTest.suite.platform != null) {
+    if (_printPlatform && liveTest.suite.platform != null) {
       name = "[${liveTest.suite.platform}] $name";
     }
 

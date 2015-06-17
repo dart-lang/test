@@ -5,7 +5,6 @@
 library test.test.io;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -24,9 +23,6 @@ final _pubPath = p.absolute(p.join(
 final String noSuchFileMessage = Platform.isWindows
     ? "The system cannot find the file specified."
     : "No such file or directory";
-
-/// A decoder that converts raw bytes to a line-by-line stream.
-final _lines = UTF8.decoder.fuse(const LineSplitter());
 
 /// A regular expression that matches the output of "pub serve".
 final _servingRegExp =
@@ -117,7 +113,7 @@ Future<Pair<Process, int>> startPubServe({List<String> args,
 
   var process = await startPub(allArgs,
       workingDirectory: workingDirectory, environment: environment);
-  var line = await _lines.bind(process.stdout)
+  var line = await lineSplitter.bind(process.stdout)
       .firstWhere(_servingRegExp.hasMatch);
   var match = _servingRegExp.firstMatch(line);
 

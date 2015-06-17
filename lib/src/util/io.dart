@@ -117,7 +117,7 @@ Future withTempDir(Future fn(String path)) {
 /// that are followed by newlines, to ensure that carriage returns aren't
 /// doubled up in the output. This can be removed when the issue is fixed in the
 /// oldest supported SDk.
-Stream<List<int>> santizeForWindows(Stream<List<int>> input) {
+Stream<List<int>> sanitizeForWindows(Stream<List<int>> input) {
   if (!Platform.isWindows) return input;
 
   return input.map((list) {
