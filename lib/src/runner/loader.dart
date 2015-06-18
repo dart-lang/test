@@ -182,8 +182,8 @@ class Loader {
     var isolate;
     try {
       if (_pubServeUrl != null) {
-        var url = _pubServeUrl.resolve(
-            p.relative(path, from: 'test') + '.vm_test.dart');
+        var url = _pubServeUrl.resolveUri(
+            p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
 
         // TODO(nweiz): Remove new Future.sync() once issue 23498 has been fixed
         // in two stable versions.

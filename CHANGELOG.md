@@ -1,10 +1,13 @@
-## 0.12.4
+## 0.12.3+2
 
 * Improve the display of syntax errors in VM tests.
 
 * Work around a [Firefox bug][]. Computed styles now work in tests on Firefox.
 
 [Firefox bug]: https://bugzilla.mozilla.org/show_bug.cgi?id=548397
+
+* Fix a bug where VM tests would be loaded from the wrong URLs on Windows (or in
+  special circumstances on other operating systems).
 
 ## 0.12.3+1
 
