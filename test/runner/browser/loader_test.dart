@@ -54,7 +54,8 @@ void main() {
           .toList();
 
       expect(suites, hasLength(1));
-      suite = suites.first;
+      var loadSuite = suites.first;
+      suite = await loadSuite.getSuite();
     });
 
     test("returns a suite with the file path and platform", () {
@@ -113,7 +114,8 @@ Future main() {
     var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
         .toList();
     expect(suites, hasLength(1));
-    var suite = suites.first;
+    var loadSuite = suites.first;
+    var suite = await loadSuite.getSuite();
     expect(suite.tests, hasLength(3));
     expect(suite.tests[0].name, equals("success"));
     expect(suite.tests[1].name, equals("failure"));
@@ -127,7 +129,8 @@ Future main() {
     var path = p.join(_sandbox, 'a_test.dart');
 
     try {
-      var suites = await loader.loadFile(path).toList();
+      var suites = await loader.loadFile(path)
+          .asyncMap((loadSuite) => loadSuite.getSuite()).toList();
       expect(suites[0].platform, equals('VM'));
       expect(suites[0].path, equals(path));
       expect(suites[1].platform, equals('Chrome'));
@@ -142,5 +145,22 @@ Future main() {
     } finally {
       await loader.close();
     }
+  });
+
+  test("a print in a loaded file is piped through the LoadSuite", () async {
+    new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync("""
+void main() {
+  print('print within test');
+}
+""");
+    var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+        .toList();
+    expect(suites, hasLength(1));
+    var loadSuite = suites.first;
+
+    var liveTest = await loadSuite.tests.single.load(loadSuite);
+    expect(liveTest.onPrint.first, completion(equals("print within test")));
+    await liveTest.run();
+    expectTestPassed(liveTest);
   });
 }

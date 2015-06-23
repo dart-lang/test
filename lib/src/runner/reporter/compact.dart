@@ -12,6 +12,7 @@ import '../../backend/state.dart';
 import '../../utils.dart';
 import '../engine.dart';
 import '../load_exception.dart';
+import '../load_suite.dart';
 
 /// The maximum console line length.
 ///
@@ -35,6 +36,14 @@ class CompactReporter {
   /// The terminal escape for yellow text, or the empty string if this is
   /// Windows or not outputting to a terminal.
   final String _yellow;
+
+  /// The terminal escape for gray text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _gray;
+
+  /// The terminal escape for bold text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _bold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
@@ -99,6 +108,8 @@ class CompactReporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
+        _gray = color ? '\u001b[1;30m' : '',
+        _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen(_onTestStarted);
     _engine.success.then(_onDone);
@@ -109,8 +120,11 @@ class CompactReporter {
     if (!_stopwatch.isRunning) _stopwatch.start();
 
     // If this is the first test to start, print a progress line so the user
-    // knows what's running.
-    if (_engine.active.length == 1) _progressLine(_description(liveTest));
+    // knows what's running. It's possible that the active test may not be
+    // [liveTest] because the engine doesn't always surface load tests.
+    if (_engine.active.length == 1 && _engine.active.first == liveTest) {
+      _progressLine(_description(liveTest));
+    }
     _printedNewline = false;
 
     liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
@@ -192,8 +206,13 @@ class CompactReporter {
     }
 
     if (_engine.liveTests.isEmpty) {
-      if (!_printedNewline) print("");
-      print("No tests ran.");
+      if (!_printedNewline) stdout.write("\r");
+      var message = "No tests ran.";
+      stdout.write(message);
+
+      // Add extra padding to overwrite any load messages.
+      if (!_printedNewline) stdout.write(" " * (_lineLength - message.length));
+      stdout.writeln();
     } else if (!success) {
       _progressLine('Some tests failed.', color: _red);
       print('');
@@ -256,15 +275,12 @@ class CompactReporter {
     // Ensure the line fits within [_lineLength]. [buffer] includes the color
     // escape sequences too. Because these sequences are not visible characters,
     // we make sure they are not counted towards the limit.
-    var nonVisible = 1 + _green.length + _noColor.length + color.length +
-        (_engine.failed.isEmpty ? 0 : _red.length + _noColor.length);
-    var length = buffer.length - nonVisible;
+    var length = withoutColors(buffer.toString()).length;
     buffer.write(truncate(message, _lineLength - length));
     buffer.write(_noColor);
 
     // Pad the rest of the line so that it looks erased.
-    length = buffer.length - nonVisible - _noColor.length;
-    buffer.write(' ' * (_lineLength - length));
+    buffer.write(' ' * (_lineLength - withoutColors(buffer.toString()).length));
     stdout.write(buffer.toString());
     return true;
   }
@@ -289,6 +305,8 @@ class CompactReporter {
     if (_printPlatform && liveTest.suite.platform != null) {
       name = "[${liveTest.suite.platform}] $name";
     }
+
+    if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";
 
     return name;
   }

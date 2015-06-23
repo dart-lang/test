@@ -10,6 +10,7 @@ import 'dart:isolate';
 
 import 'package:analyzer/analyzer.dart';
 import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
@@ -23,6 +24,7 @@ import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'browser/server.dart';
 import 'load_exception.dart';
+import 'load_suite.dart';
 import 'parse_metadata.dart';
 import 'vm/isolate_test.dart';
 
@@ -104,7 +106,10 @@ class Loader {
   ///
   /// This will load tests from files that end in "_test.dart". Any tests that
   /// fail to load will be emitted as [LoadException]s.
-  Stream<Suite> loadDir(String dir) {
+  ///
+  /// This emits [LoadSuite]s that must then be run to emit the actual [Suite]s
+  /// defined in the file.
+  Stream<LoadSuite> loadDir(String dir) {
     return mergeStreams(new Directory(dir).listSync(recursive: true)
         .map((entry) {
       if (entry is! File) return new Stream.fromIterable([]);
@@ -123,8 +128,11 @@ class Loader {
 
   /// Loads a test suite from the file at [path].
   ///
+  /// This emits [LoadSuite]s that must then be run to emit the actual [Suite]s
+  /// defined in the file.
+  ///
   /// This will emit a [LoadException] if the file fails to load.
-  Stream<Suite> loadFile(String path) async* {
+  Stream<LoadSuite> loadFile(String path) async* {
     var suiteMetadata;
     try {
       suiteMetadata = parseMetadata(path);
@@ -133,9 +141,17 @@ class Loader {
       // the VM's or dart2js's.
       suiteMetadata = new Metadata();
     } on FormatException catch (error, stackTrace) {
-      await new Future.error(new LoadException(path, error), stackTrace);
+      yield new LoadSuite.forLoadException(
+          new LoadException(path, error), stackTrace: stackTrace);
+      return;
     }
     suiteMetadata = _metadata.merge(suiteMetadata);
+
+    if (_pubServeUrl != null && !p.isWithin('test', path)) {
+      yield new LoadSuite.forLoadException(new LoadException(
+          path, 'When using "pub serve", all test files must be in test/.'));
+      return;
+    }
 
     for (var platform in _platforms) {
       if (!suiteMetadata.testOn.evaluate(platform, os: currentOS)) continue;
@@ -144,25 +160,18 @@ class Loader {
 
       // Don't load a skipped suite.
       if (metadata.skip) {
-        yield new Suite([
+        yield new LoadSuite.forSuite(new Suite([
           new LocalTest(path, metadata, () {})
-        ], path: path, platform: platform.name, metadata: metadata);
+        ], path: path, platform: platform.name, metadata: metadata));
         continue;
       }
 
-      try {
-        if (_pubServeUrl != null && !p.isWithin('test', path)) {
-          throw new LoadException(path,
-              'When using "pub serve", all test files must be in test/.');
-        }
-
-        var suite = platform == TestPlatform.vm
-            ? await _loadVmFile(path, metadata)
-            : await _loadBrowserFile(path, platform, metadata);
-        if (suite != null) yield suite;
-      } catch (error, stackTrace) {
-        yield* errorStream(error, stackTrace);
-      }
+      var name = (platform.isJS ? "compiling " : "loading ") + path;
+      yield new LoadSuite(name, () {
+        return platform == TestPlatform.vm
+            ? _loadVmFile(path, metadata)
+            : _loadBrowserFile(path, platform, metadata);
+      }, platform: platform.name);
     }
   }
 
@@ -232,21 +241,35 @@ void main(_, Map message) {
     }
 
     _isolates.add(isolate);
-    var response = await receivePort.first;
 
-    if (response["type"] == "loadException") {
-      throw new LoadException(path, response["message"]);
-    } else if (response["type"] == "error") {
-      var asyncError = RemoteException.deserialize(response["error"]);
-      await new Future.error(
-          new LoadException(path, asyncError.error),
-          asyncError.stackTrace);
+    var completer = new Completer();
+
+    var subscription = receivePort.listen((response) {
+      if (response["type"] == "print") {
+        print(response["line"]);
+      } else if (response["type"] == "loadException") {
+        completer.completeError(
+            new LoadException(path, response["message"]),
+            new Trace.current());
+      } else if (response["type"] == "error") {
+        var asyncError = RemoteException.deserialize(response["error"]);
+        completer.completeError(
+            new LoadException(path, asyncError.error),
+            asyncError.stackTrace);
+      } else {
+        assert(response["type"] == "success");
+        completer.complete(response["tests"]);
+      }
+    });
+
+    try {
+      return new Suite((await completer.future).map((test) {
+        var testMetadata = new Metadata.deserialize(test['metadata']);
+        return new IsolateTest(test['name'], testMetadata, test['sendPort']);
+      }), metadata: metadata, path: path, platform: "VM");
+    } finally {
+      subscription.cancel();
     }
-
-    return new Suite(response["tests"].map((test) {
-      var testMetadata = new Metadata.deserialize(test['metadata']);
-      return new IsolateTest(test['name'], testMetadata, test['sendPort']);
-    }), metadata: metadata, path: path, platform: "VM");
   }
 
   /// Closes the loader and releases all resources allocated by it.

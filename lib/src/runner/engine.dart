@@ -17,14 +17,33 @@ import '../backend/state.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../util/delegating_sink.dart';
+import 'load_suite.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
+///
+/// Test suites are provided by passing them into [suiteSink]. Once all suites
+/// have been provided, the user should close [suiteSink] to indicate this.
+/// [run] won't terminate until [suiteSink] is closed. Suites will be run in the
+/// order they're provided to [suiteSink]. Tests within those suites will
+/// likewise be run in the order of [Suite.tests].
 ///
 /// The current status of every test is visible via [liveTests]. [onTestStarted]
 /// can also be used to be notified when a test is about to be run.
 ///
-/// Suites will be run in the order they're provided to [new Engine]. Tests
-/// within those suites will likewise be run in the order of [Suite.tests].
+/// The engine has some special logic for [LoadSuite]s and the tests they
+/// contain, referred to as "load tests". Load tests exist to provide visibility
+/// into the process of loading test files, but as long as that process is
+/// proceeding normally users usually don't care about it, so the engine only
+/// surfaces running load tests (that is, includes them in [liveTests] and other
+/// collections) under specific circumstances.
+///
+/// If only load tests are running, exactly one load test will be in [active]
+/// and [liveTests]. If this test passes, it will be removed from both [active]
+/// and [liveTests] and *will not* be added to [passed]. If at any point a load
+/// test fails, it will be added to [failed] and [liveTests].
+///
+/// Load tests will always be emitted through [onTestStarted] so users can watch
+/// their event streams once they start running.
 class Engine {
   /// Whether [run] has been called yet.
   var _runCalled = false;
@@ -97,7 +116,13 @@ class Engine {
 
   /// The tests that are still running, in the order they begain running.
   List<LiveTest> get active => new UnmodifiableListView(_active);
-  final _active = new List<LiveTest>();
+  final _active = new QueueList<LiveTest>();
+
+  /// The tests from [LoadSuite]s that are still running, in the order they
+  /// began running.
+  ///
+  /// This is separate from [active] because load tests aren't always surfaced.
+  final _activeLoadTests = new List<LiveTest>();
 
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
@@ -135,6 +160,11 @@ class Engine {
     _runCalled = true;
 
     _suiteController.stream.listen((suite) {
+      if (suite is LoadSuite) {
+        _group.add(_addLoadSuite(suite));
+        return;
+      }
+
       _group.add(_pool.withResource(() {
         if (_closed) return null;
 
@@ -148,9 +178,22 @@ class Engine {
           _liveTests.add(liveTest);
           _active.add(liveTest);
 
+          // If there were no active non-load tests, the current active test
+          // would have been a load test. In that case, remove it, since now we
+          // have a non-load test to add.
+          if (_active.isNotEmpty && _active.first.suite is LoadSuite) {
+            _liveTests.remove(_active.removeFirst());
+          }
+
           liveTest.onStateChange.listen((state) {
             if (state.status != Status.complete) return;
             _active.remove(liveTest);
+
+            // If we're out of non-load tests, surface a load test.
+            if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
+              _active.add(_activeLoadTests.first);
+              _liveTests.add(_activeLoadTests.first);
+            }
 
             if (state.result != Result.success) {
               _passed.remove(liveTest);
@@ -188,6 +231,49 @@ class Engine {
     return controller.liveTest;
   }
 
+  /// Adds listeners for [suite].
+  ///
+  /// Load suites have specific logic apart from normal test suites.
+  Future _addLoadSuite(LoadSuite suite) async {
+    var liveTest = await suite.tests.single.load(suite);
+
+    _activeLoadTests.add(liveTest);
+
+    // Only surface the load test if there are no other tests currently running.
+    if (_active.isEmpty) {
+      _liveTests.add(liveTest);
+      _active.add(liveTest);
+    }
+
+    liveTest.onStateChange.listen((state) {
+      if (state.status != Status.complete) return;
+      _activeLoadTests.remove(liveTest);
+
+      // Only one load test will be active at any given time, and it will always
+      // be the only active test. Remove it and, if possible, surface another
+      // load test.
+      if (_active.isNotEmpty && _active.first.suite == suite) {
+        _active.remove(liveTest);
+        _liveTests.remove(liveTest);
+
+        if (_activeLoadTests.isNotEmpty) {
+          _active.add(_activeLoadTests.last);
+          _liveTests.add(_activeLoadTests.last);
+        }
+      }
+
+      // Surface the load test if it fails so that the user can see the failure.
+      if (state.result == Result.success) return;
+      _failed.add(liveTest);
+      _liveTests.add(liveTest);
+    });
+
+    // Run the test immediately. We don't want loading to be blocked on suites
+    // that are already running.
+    _onTestStartedController.add(liveTest);
+    await liveTest.run();
+  }
+
   /// Signals that the caller is done paying attention to test results and the
   /// engine should release any resources it has allocated.
   ///
@@ -203,6 +289,7 @@ class Engine {
     if (_closedBeforeDone == null) _closedBeforeDone = true;
     _suiteController.close();
 
-    return Future.wait(liveTests.map((liveTest) => liveTest.close()));
+    var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
+    return Future.wait(allLiveTests.map((liveTest) => liveTest.close()));
   }
 }

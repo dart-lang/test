@@ -18,7 +18,7 @@ void main() {
       new File(p.join(path, "test.dart")).writeAsStringSync("void main() {}");
       var result = runTest(["-r", "compact", "test.dart"],
           workingDirectory: path);
-      expect(result.stdout, equals("No tests ran.\n"));
+      expect(result.stdout, contains("No tests ran."));
     });
   });
 
@@ -28,6 +28,7 @@ void main() {
         test('success 2', () {});
         test('success 3', () {});""",
         """
+        +0: loading test.dart
         +0: success 1
         +1: success 1
         +1: success 2
@@ -43,6 +44,7 @@ void main() {
         test('failure 2', () => throw new TestFailure('oh no'));
         test('failure 3', () => throw new TestFailure('oh no'));""",
         """
+        +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1
           oh no
@@ -88,6 +90,7 @@ void main() {
         test('failure 2', () => throw new TestFailure('oh no'));
         test('success 2', () {});""",
         """
+        +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1
           oh no
@@ -120,6 +123,7 @@ void main() {
         });
         test('wait', () => completer.future);""",
         """
+        +0: loading test.dart
         +0: failures
         +0 -1: failures
           first error
@@ -156,6 +160,7 @@ void main() {
           print("four");
         });""",
         """
+        +0: loading test.dart
         +0: test
         one
         two
@@ -186,6 +191,7 @@ void main() {
           waitStarted.complete();
           return testDone.future;
         });""", """
+        +0: loading test.dart
         +0: test
         +1: test
         +1: wait
@@ -224,6 +230,7 @@ void main() {
 
         test('wait', () => completer.future);""",
         """
+        +0: loading test.dart
         +0: test
         one
         two
@@ -256,6 +263,7 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);""",
           """
+          +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 1
           +0 ~1: skip 2
@@ -272,6 +280,7 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('success 2', () {});""",
           """
+          +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 1
           +0 ~1: success 1
@@ -292,6 +301,7 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('success 2', () {});""",
           """
+          +0: loading test.dart
           +0: failure 1
           +0 -1: failure 1
             oh no
@@ -320,6 +330,7 @@ void main() {
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');""",
           """
+          +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 1
             Skip: some reason

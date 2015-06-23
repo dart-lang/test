@@ -63,7 +63,9 @@ class IframeListener {
       declarer = new Declarer();
       await runZoned(() => new Future.sync(main), zoneValues: {
         #test.declarer: declarer
-      });
+      }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
+        channel.sink.add({"type": "print", "line": line});
+      }));
     } catch (error, stackTrace) {
       channel.sink.add({
         "type": "error",

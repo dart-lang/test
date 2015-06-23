@@ -53,7 +53,8 @@ void main() {
       var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
           .toList();
       expect(suites, hasLength(1));
-      suite = suites.first;
+      var loadSuite = suites.first;
+      suite = await loadSuite.getSuite();
     });
 
     test("returns a suite with the file path and platform", () {
@@ -124,7 +125,9 @@ void main() {
         new File(p.join(_sandbox, 'dir/sub_test.dart'))
             .writeAsStringSync(_tests);
 
-        suites = await _loader.loadDir(_sandbox).toList();
+        suites = await _loader.loadDir(_sandbox)
+            .asyncMap((loadSuite) => loadSuite.getSuite())
+            .toList();
       });
 
       test("gives those suites the correct paths", () {
@@ -143,4 +146,24 @@ void main() {
       });
     });
   });
+
+  test("a print in a loaded file is piped through the LoadSuite", () async {
+    new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync("""
+void main() {
+  print('print within test');
+}
+""");
+    var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+        .toList();
+    expect(suites, hasLength(1));
+    var loadSuite = suites.first;
+
+    var liveTest = await loadSuite.tests.single.load(loadSuite);
+    expect(liveTest.onPrint.first, completion(equals("print within test")));
+    await liveTest.run();
+    expectTestPassed(liveTest);
+  });
+
+  // TODO: Test load suites. Don't forget to test that prints in loaded files
+  // are piped through the suite. Also for browser tests!
 }

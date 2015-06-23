@@ -18,7 +18,7 @@ void main() {
       new File(p.join(path, "test.dart")).writeAsStringSync("void main() {}");
       var result = runTest(["-r", "expanded", "test.dart"],
           workingDirectory: path);
-      expect(result.stdout, equals("No tests ran.\n"));
+      expect(result.stdout, contains("No tests ran."));
     });
   });
 

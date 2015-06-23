@@ -42,8 +42,10 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).first;
+      var process = await _startTest(["-r", "expanded", "test.dart"]);
+
+      // Skip a progress line.
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("in test.dart"));
       process.kill();
       await process.exitCode;
@@ -54,9 +56,10 @@ void main() {
       new File(p.join(_sandbox, "test.dart"))
           .writeAsStringSync("void main() {}");
 
-      var process = await _startTest(["-p", "chrome", "test.dart"]);
+      var process = await _startTest(
+          ["-r", "expanded", "-p", "chrome", "test.dart"]);
       var line = await lineSplitter.bind(process.stdout).first;
-      expect(line, equals("Compiling test.dart..."));
+      expect(line, endsWith("compiling test.dart"));
       process.kill();
       await process.exitCode;
       expect(new Directory(_tempDir).listSync(), isEmpty);
@@ -70,8 +73,10 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).first;
+      var process = await _startTest(["-r", "expanded", "test.dart"]);
+
+      // Skip a progress line.
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("in test.dart"));
       process.kill();
 
@@ -103,8 +108,10 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).skip(2).first;
+      var process = await _startTest(["-r", "expanded", "test.dart"]);
+
+      // Skip a progress line.
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;
@@ -133,10 +140,11 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["-p", "content-shell", "test.dart"]);
-      // The first line is blank, and the second is a status line from the
-      // reporter.
-      var line = await lineSplitter.bind(process.stdout).skip(2).first;
+      var process = await _startTest(
+          ["-r", "expanded", "-p", "content-shell", "test.dart"]);
+
+      // Skip a progress line..
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;
@@ -155,8 +163,10 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).skip(2).first;
+      var process = await _startTest(["-r", "expanded", "test.dart"]);
+
+      // Skip a progress line.
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("running test"));
       process.kill();
 
@@ -195,8 +205,10 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).skip(2).first;
+      var process = await _startTest(["-r", "expanded", "test.dart"]);
+
+      // Skip a progress line.
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;
@@ -232,8 +244,10 @@ void main() {
 }
 """);
 
-      var process = await _startTest(["test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).skip(2).first;
+      var process = await _startTest(["-r", "expanded", "test.dart"]);
+
+      // Skip a progress line.
+      var line = await lineSplitter.bind(process.stdout).skip(1).first;
       expect(line, equals("running test"));
       process.kill();
       await process.exitCode;

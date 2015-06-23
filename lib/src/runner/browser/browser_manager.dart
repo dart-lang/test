@@ -78,8 +78,18 @@ class BrowserManager {
       // wrapped within the host's channel.
       suiteChannel = new MultiChannel(suiteChannel.stream, suiteChannel.sink);
 
-      return maybeFirst(suiteChannel.stream)
-          .timeout(new Duration(seconds: 15), onTimeout: () {
+      var completer = new Completer();
+      suiteChannel.stream.listen((response) {
+        if (response["type"] == "print") {
+          print(response["line"]);
+        } else {
+          completer.complete(response);
+        }
+      }, onDone: () {
+        if (!completer.isCompleted) completer.complete();
+      });
+
+      return completer.future.timeout(new Duration(seconds: 15), onTimeout: () {
         throw new LoadException(
             path,
             "Timed out waiting for the test suite to connect on "

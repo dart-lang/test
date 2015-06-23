@@ -45,13 +45,11 @@ void main() {
       new File(testPath).writeAsStringSync("invalid Dart file");
       var result = _runTest(["-p", "chrome", "test.dart"]);
 
-      expect(result.stdout,
-          contains("Expected a declaration, but got 'invalid'"));
+      var relativePath = p.relative(testPath, from: _sandbox);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
-        contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": dart2js '
-                'failed.')
+        contains("Expected a declaration, but got 'invalid'"),
+        contains('-1: compiling $relativePath'),
+        contains('Failed to load "$relativePath": dart2js failed.')
       ]));
       expect(result.exitCode, equals(1));
     });
@@ -60,11 +58,11 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
-        contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": oh no')
+        contains('-1: compiling $relativePath'),
+        contains('Failed to load "$relativePath": oh no')
       ]));
       expect(result.exitCode, equals(1));
     });
@@ -73,12 +71,12 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void foo() {}");
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
-        contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": No '
-                'top-level main() function defined.')
+        contains('-1: compiling $relativePath'),
+        contains('Failed to load "$relativePath": No top-level main() function '
+            'defined.')
       ]));
       expect(result.exitCode, equals(1));
     });
@@ -87,12 +85,12 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("int main;");
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
-        contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
-                'Top-level main getter is not a function.\n')
+        contains('-1: compiling $relativePath'),
+        contains('Failed to load "$relativePath": Top-level main getter is not '
+            'a function.\n')
       ]));
       expect(result.exitCode, equals(1));
     });
@@ -101,12 +99,12 @@ void main() {
       var testPath = p.join(_sandbox, "test.dart");
       new File(testPath).writeAsStringSync("void main(arg) {}");
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "chrome", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
-        contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
-                'Top-level main() function takes arguments.\n')
+        contains('-1: compiling $relativePath'),
+        contains('Failed to load "$relativePath": Top-level main() function '
+            'takes arguments.\n')
       ]));
       expect(result.exitCode, equals(1));
     });
@@ -126,7 +124,7 @@ void main() {
       var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading $relativePath'),
         contains(
             'Failed to load "$relativePath": '
                 '"${p.withoutExtension(relativePath)}.html" must contain '
@@ -147,11 +145,12 @@ void main() {
 </html>
 """);
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading $relativePath'),
         contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+            'Failed to load "$relativePath": '
                 'Expected exactly 1 <link rel="x-dart-test"> in test.html, '
                 'found 0.\n')
       ]));
@@ -172,11 +171,12 @@ void main() {
 </html>
 """);
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading $relativePath'),
         contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+            'Failed to load "$relativePath": '
                 'Expected exactly 1 <link rel="x-dart-test"> in test.html, '
                 'found 2.\n')
       ]));
@@ -196,11 +196,12 @@ void main() {
 </html>
 """);
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading $relativePath'),
         contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+            'Failed to load "$relativePath": '
                 'Expected <link rel="x-dart-test"> in test.html to have an '
                 '"href" attribute.\n')
       ]));
@@ -220,11 +221,12 @@ void main() {
 </html>
 """);
 
+      var relativePath = p.relative(testPath, from: _sandbox);
       var result = _runTest(["-p", "content-shell", "test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading $relativePath'),
         contains(
-            'Failed to load "${p.relative(testPath, from: _sandbox)}": '
+            'Failed to load "$relativePath": '
                 'Failed to load script at ')
       ]));
       expect(result.exitCode, equals(1));
@@ -258,7 +260,9 @@ void main() {
       new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
       var result = _runTest(
           ["-p", "content-shell", "-p", "chrome", "test.dart"]);
-      expect("Compiling".allMatches(result.stdout), hasLength(1));
+      expect(result.stdout, contains("[Chrome] compiling"));
+      expect(result.stdout,
+          isNot(contains("[Dartium Content Shell] compiling")));
       expect(result.exitCode, equals(0));
     });
 
@@ -427,6 +431,15 @@ void main() {
         expect(result.exitCode, equals(1));
       });
     });
+  });
+
+  test("the compiler uses colors if the test runner uses colors", () {
+    var testPath = p.join(_sandbox, "test.dart");
+    new File(testPath).writeAsStringSync("String main() => 12;\n");
+
+    var result = _runTest(["--color", "-p", "chrome", "test.dart"]);
+    expect(result.stdout, contains('\u001b[35m'));
+    expect(result.exitCode, equals(1));
   });
 
   test("forwards prints from the browser test", () {

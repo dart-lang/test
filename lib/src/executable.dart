@@ -12,6 +12,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:args/args.dart';
+import 'package:async/async.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
 
@@ -20,7 +21,7 @@ import 'backend/test_platform.dart';
 import 'runner/engine.dart';
 import 'runner/application_exception.dart';
 import 'runner/load_exception.dart';
-import 'runner/load_exception_suite.dart';
+import 'runner/load_suite.dart';
 import 'runner/loader.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
@@ -211,8 +212,10 @@ transformers:
       metadata: metadata,
       jsTrace: options["js-trace"]);
 
+  var closed = false;
   var signalSubscription;
   signalSubscription = _signals.listen((_) {
+    closed = true;
     signalSubscription.cancel();
     loader.close();
   });
@@ -235,6 +238,7 @@ transformers:
     // Override the signal handler to close [reporter]. [loader] will still be
     // closed in the [whenComplete] below.
     signalSubscription.onData((_) async {
+      closed = true;
       signalSubscription.cancel();
 
       // Wait a bit to print this message, since printing it eagerly looks weird
@@ -247,6 +251,8 @@ transformers:
         print("Press Control-C again to terminate immediately.");
       });
 
+      // Make sure we close the engine *before* the loader. Otherwise,
+      // LoadSuites provided by the loader may get into bad states.
       await engine.close();
       timer.cancel();
       await loader.close();
@@ -257,6 +263,8 @@ transformers:
         _loadSuites(paths, pattern, loader, engine),
         engine.run()
       ], eagerError: true);
+
+      if (closed) return;
 
       // Explicitly check "== true" here because [engine.run] can return `null`
       // if the engine was closed prematurely.
@@ -301,29 +309,34 @@ transformers:
 /// run the engine.
 Future _loadSuites(List<String> paths, Pattern pattern, Loader loader,
     Engine engine) async {
-  var completer = new Completer();
+  var group = new FutureGroup();
 
   mergeStreams(paths.map((path) {
     if (new Directory(path).existsSync()) return loader.loadDir(path);
     if (new File(path).existsSync()) return loader.loadFile(path);
 
-    return new Stream.fromFuture(new Future.error(
-        new LoadException(path, 'Does not exist.'),
-        new Trace.current()));
-  })).map((suite) {
-    if (pattern == null) return suite;
-    return suite.change(
-        tests: suite.tests.where((test) => test.name.contains(pattern)));
-  }).listen((suite) => engine.suiteSink.add(suite),
-      onError: (error, stackTrace) {
-    if (error is LoadException) {
-      engine.suiteSink.add(new LoadExceptionSuite(error, stackTrace));
-    } else if (!completer.isCompleted) {
-      completer.completeError(error, stackTrace);
-    }
-  }, onDone: () => completer.complete());
+    return new Stream.fromIterable([
+      new LoadSuite("loading $path", () =>
+          throw new LoadException(path, 'Does not exist.'))
+    ]);
+  })).listen((loadSuite) {
+    group.add(new Future.sync(() async {
+      engine.suiteSink.add(loadSuite);
 
-  await completer.future;
+      var suite = await loadSuite.suite;
+      if (suite == null) return;
+      if (pattern != null) {
+        suite = suite.change(
+            tests: suite.tests.where((test) => test.name.contains(pattern)));
+      }
+
+      engine.suiteSink.add(suite);
+    }));
+  }, onError: (error, stackTrace) {
+    group.add(new Future.error(error, stackTrace));
+  }, onDone: group.close);
+
+  await group.future;
 
   // Once we've loaded all the suites, notify the engine that no more will be
   // coming.

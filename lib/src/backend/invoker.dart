@@ -68,8 +68,11 @@ class Invoker {
   /// Once the test is closed, [expect] and [expectAsync] will throw
   /// [ClosedException]s whenever accessed to help the test stop executing as
   /// soon as possible.
-  bool get closed => _closed;
-  bool _closed = false;
+  bool get closed => _onCloseCompleter.isCompleted;
+
+  /// A future that completes once the test has been closed.
+  Future get onClose => _onCloseCompleter.future;
+  final _onCloseCompleter = new Completer();
 
   /// The test being run.
   LocalTest get _test => liveTest.test as LocalTest;
@@ -100,9 +103,8 @@ class Invoker {
 
   Invoker._(Suite suite, LocalTest test)
       : metadata = suite.metadata.merge(test.metadata) {
-    _controller = new LiveTestController(suite, test, _onRun, () {
-      _closed = true;
-    });
+    _controller = new LiveTestController(
+        suite, test, _onRun, _onCloseCompleter.complete);
   }
 
   /// Tells the invoker that there's a callback running that it should wait for

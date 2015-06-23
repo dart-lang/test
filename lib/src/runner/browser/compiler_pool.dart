@@ -5,7 +5,7 @@
 library test.util.compiler_pool;
 
 import 'dart:async';
-import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -13,15 +13,11 @@ import 'package:pool/pool.dart';
 
 import '../../util/async_thunk.dart';
 import '../../util/io.dart';
-import '../../utils.dart';
 import '../load_exception.dart';
 
 /// A pool of `dart2js` instances.
 ///
-/// This limits the number of compiler instances running concurrently. It also
-/// ensures that their output doesn't intermingle; only one instance is
-/// "visible" (that is, having its output printed) at a time, and the other
-/// instances' output is buffered until it's their turn to be visible.
+/// This limits the number of compiler instances running concurrently.
 class CompilerPool {
   /// The internal pool that controls the number of process running at once.
   final Pool _pool;
@@ -29,13 +25,8 @@ class CompilerPool {
   /// Whether to enable colors on dart2js.
   final bool _color;
 
-  /// The currently-active compilers.
-  ///
-  /// The first one is the only visible the compiler; the rest will become
-  /// visible in queue order. Note that some of these processes may actually
-  /// have already exited; they're kept around so that their output can be
-  /// emitted once they become visible.
-  final _compilers = new Queue<_Compiler>();
+  /// The currently-active dart2js processes.
+  final _processes = new Set<Process>();
 
   /// Whether [close] has been called.
   bool get _closed => _closeThunk.hasRun;
@@ -89,54 +80,43 @@ void main(_) {
         if (_color) args.add("--enable-diagnostic-colors");
 
         var process = await Process.start(dart2jsPath, args);
-        var compiler = new _Compiler(dartPath, process);
+        if (_closed) {
+          process.kill();
+          return;
+        }
 
-        if (_compilers.isEmpty) _showProcess(compiler);
-        _compilers.add(compiler);
+        _processes.add(process);
 
-        await compiler.onDone;
+        /// Wait until the process is entirely done to print out any output.
+        /// This can produce a little extra time for users to wait with no
+        /// update, but it also avoids some really nasty-looking interleaved
+        /// output. Write both stdout and stderr to the same buffer in case
+        /// they're intended to be printed in order.
+        var buffer = new StringBuffer();
+
+        await Future.wait([
+          _printOutputStream(process.stdout, buffer),
+          _printOutputStream(process.stderr, buffer),
+        ]);
+
+        var exitCode = await process.exitCode;
+        _processes.remove(process);
+        if (_closed) return;
+
+        if (buffer.isNotEmpty) print(buffer);
+
+        if (exitCode != 0) {
+          throw new LoadException(dartPath, "dart2js failed.");
+        }
       });
     });
   }
 
-  /// Mark [compiler] as the visible instance.
-  ///
-  /// This prints all [compiler]'s standard output and error.
-  void _showProcess(_Compiler compiler) {
-    print("Compiling ${compiler.path}...");
-
-    invoke(() async {
-      try {
-        // We wait for stdout and stderr to close and for exitCode to fire to
-        // ensure that we're done printing everything about one process before
-        // we start the next.
-        await Future.wait([
-          sanitizeForWindows(compiler.process.stdout).listen(stdout.add)
-              .asFuture(),
-          sanitizeForWindows(compiler.process.stderr).listen(stderr.add)
-              .asFuture(),
-          compiler.process.exitCode.then((exitCode) {
-            if (exitCode == 0 || _closed) return;
-            throw new LoadException(compiler.path, "dart2js failed.");
-          })
-        ]);
-
-        if (_closed) return;
-        compiler.onDoneCompleter.complete();
-      } catch (error, stackTrace) {
-        if (_closed) return;
-        compiler.onDoneCompleter.completeError(error, stackTrace);
-      }
-
-      _compilers.removeFirst();
-      if (_compilers.isEmpty) return;
-
-      var next = _compilers.first;
-
-      // Wait a bit before printing the next process in case the current one
-      // threw an error that needs to be printed.
-      Timer.run(() => _showProcess(next));
-    });
+  /// Sanitizes the bytes emitted by [stream], converts them to text, and writes
+  /// them to [buffer].
+  Future _printOutputStream(Stream<List<int>> stream, StringBuffer buffer) {
+    return sanitizeForWindows(stream)
+        .listen((data) => buffer.write(UTF8.decode(data))).asFuture();
   }
 
   /// Closes the compiler pool.
@@ -146,29 +126,10 @@ void main(_) {
   /// have been killed and all resources released.
   Future close() {
     return _closeThunk.run(() async {
-      await Future.wait(_compilers.map((compiler) async {
-        compiler.process.kill();
-        await compiler.process.exitCode;
-        compiler.onDoneCompleter.complete();
+      await Future.wait(_processes.map((process) async {
+        process.kill();
+        await process.exitCode;
       }));
-
-      _compilers.clear();
     });
   }
-}
-
-/// A running instance of `dart2js`.
-class _Compiler {
-  /// The path of the Dart file being compiled.
-  final String path;
-
-  /// The underlying process.
-  final Process process;
-
-  /// A future that will complete once this instance has finished running and
-  /// all its output has been printed.
-  Future get onDone => onDoneCompleter.future;
-  final onDoneCompleter = new Completer();
-
-  _Compiler(this.path, this.process);
 }

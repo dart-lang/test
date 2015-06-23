@@ -83,6 +83,12 @@ String getErrorMessage(error) =>
 String indent(String str) =>
     str.replaceAll(new RegExp("^", multiLine: true), "  ");
 
+/// A regular expression matching terminal color codes.
+final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
+
+/// Returns [str] without any color codes.
+String withoutColors(String str) => str.replaceAll(_colorCode, '');
+
 /// A regular expression matching the path to a temporary file used to start an
 /// isolate.
 ///

@@ -135,7 +135,7 @@ void main() {
         var result = runTest(['--pub-serve=${pair.last}'],
             workingDirectory: _sandbox);
         expect(result.stdout, allOf([
-          contains('-1: ${p.join("test", "my_test.dart")}: load error'),
+          contains('-1: loading ${p.join("test", "my_test.dart")}'),
           contains('Failed to load "${p.join("test", "my_test.dart")}":'),
           contains('404 Not Found'),
           contains('Make sure "pub serve" is serving the test/ directory.')
@@ -155,7 +155,7 @@ void main() {
         var result = runTest(['--pub-serve=${pair.last}', '-p', 'chrome'],
             workingDirectory: _sandbox);
         expect(result.stdout, allOf([
-          contains('-1: ${p.join("test", "my_test.dart")}: load error'),
+          contains('-1: compiling ${p.join("test", "my_test.dart")}'),
           contains('Failed to load "${p.join("test", "my_test.dart")}":'),
           contains('404 Not Found'),
           contains('Make sure "pub serve" is serving the test/ directory.')
@@ -300,7 +300,7 @@ void main() {
     var result = runTest(['--pub-serve=54321'],
         workingDirectory: _sandbox);
     expect(result.stdout, allOf([
-      contains('-1: ${p.join("test", "my_test.dart")}: load error'),
+      contains('-1: loading ${p.join("test", "my_test.dart")}'),
       contains('''
   Failed to load "${p.join("test", "my_test.dart")}":
   Error getting http://localhost:54321/my_test.dart.vm_test.dart: Connection refused
@@ -317,7 +317,7 @@ void main() {
         : 'Connection refused (errno ';
 
     expect(result.stdout, allOf([
-      contains('-1: ${p.join("test", "my_test.dart")}: load error'),
+      contains('-1: compiling ${p.join("test", "my_test.dart")}'),
       contains('Failed to load "${p.join("test", "my_test.dart")}":'),
       contains('Error getting http://localhost:54321/my_test.dart.browser_test'
           '.dart.js.map: $message'),
@@ -333,7 +333,7 @@ void main() {
     var result = runTest(['--pub-serve=54321', 'my_test.dart'],
         workingDirectory: _sandbox);
     expect(result.stdout, allOf([
-      contains('-1: load error'),
+      contains('-1: loading my_test.dart'),
       contains(
           'Failed to load "my_test.dart": When using "pub serve", all test '
               'files must be in test/.\n')

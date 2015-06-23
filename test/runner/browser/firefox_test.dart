@@ -175,7 +175,10 @@ void main() {
 
     test("alongside another browser", () {
       var result = _runTest(["-p", "firefox", "-p", "chrome", "test.dart"]);
-      expect("Compiling".allMatches(result.stdout), hasLength(1));
+
+      // Only one browser should compile the code.
+      expect(result.stdout.contains("[Chrome] compiling"),
+          isNot(result.stdout.contains("[Firefox] compiling")));
       expect(result.exitCode, equals(0));
     });
   });

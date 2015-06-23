@@ -11,6 +11,7 @@ import '../../backend/state.dart';
 import '../../utils.dart';
 import '../engine.dart';
 import '../load_exception.dart';
+import '../load_suite.dart';
 
 /// The maximum console line length.
 ///
@@ -38,6 +39,14 @@ class ExpandedReporter {
   /// The terminal escape for yellow text, or the empty string if this is
   /// Windows or not outputting to a terminal.
   final String _yellow;
+
+  /// The terminal escape for gray text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _gray;
+
+  /// The terminal escape for bold text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _bold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
@@ -100,6 +109,8 @@ class ExpandedReporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
+        _gray = color ? '\u001b[1;30m' : '',
+        _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _engine.onTestStarted.listen(_onTestStarted);
     _engine.success.then(_onDone);
@@ -107,13 +118,24 @@ class ExpandedReporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
-    if (!_stopwatch.isRunning) _stopwatch.start();
+    if (liveTest.suite is! LoadSuite) {
+      if (!_stopwatch.isRunning) _stopwatch.start();
 
-    // If this is the first test to start, print a progress line so
-    // the user knows what's running.
-    if (_engine.active.length == 1) _progressLine(_description(liveTest));
+      // If this is the first non-load test to start, print a progress line so
+      // the user knows what's running.
+      if (_engine.active.length == 1) _progressLine(_description(liveTest));
 
-    liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
+      // The engine surfaces load tests when there are no other tests running,
+      // but because the expanded reporter's output is always visible, we don't
+      // emit information about them unless they fail.
+      liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
+    } else if (_engine.active.length == 1 &&
+        _engine.active.first == liveTest &&
+        liveTest.test.name.startsWith("compiling ")) {
+      // Print a progress line for load tests that come from compiling JS, since
+      // that takes a long time.
+      _progressLine(_description(liveTest));
+    }
 
     liveTest.onError.listen((error) =>
         _onError(liveTest, error.error, error.stackTrace));
@@ -234,9 +256,7 @@ class ExpandedReporter {
     // Ensure the line fits within [_lineLength]. [buffer] includes the color
     // escape sequences too. Because these sequences are not visible characters,
     // we make sure they are not counted towards the limit.
-    var nonVisible = 1 + _green.length + _noColor.length + color.length +
-        (_engine.failed.isEmpty ? 0 : _red.length + _noColor.length);
-    var length = buffer.length - nonVisible;
+    var length = withoutColors(buffer.toString()).length;
     buffer.write(truncate(message, _lineLength - length));
     buffer.write(_noColor);
 
@@ -263,6 +283,8 @@ class ExpandedReporter {
     if (_printPlatform && liveTest.suite.platform != null) {
       name = "[${liveTest.suite.platform}] $name";
     }
+
+    if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";
 
     return name;
   }

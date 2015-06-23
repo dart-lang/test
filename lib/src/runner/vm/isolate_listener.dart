@@ -75,7 +75,9 @@ class IsolateListener {
     try {
       await runZoned(() => new Future.sync(main), zoneValues: {
         #test.declarer: declarer
-      });
+      }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
+        sendPort.send({"type": "print", "line": line});
+      }));
     } catch (error, stackTrace) {
       sendPort.send({
         "type": "error",

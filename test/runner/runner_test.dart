@@ -101,7 +101,7 @@ $_usage"""));
     test("a non-existent file is passed", () {
       var result = _runTest(["file"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading file'),
         contains('Failed to load "file": Does not exist.')
       ]));
       expect(result.exitCode, equals(1));
@@ -122,7 +122,7 @@ $_usage"""));
       var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
           '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
           "  line 1 pos 1: unexpected token 'invalid'\n"
@@ -140,7 +140,7 @@ $_usage"""));
       var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
           '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
           "  line 1 pos 17: semicolon expected\n"
@@ -158,7 +158,7 @@ $_usage"""));
       var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
           '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
           "  line 1 pos 8: unexpected token ')'\n"
@@ -174,7 +174,7 @@ $_usage"""));
       var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
           '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
           "  Error on line 1, column 8: TestOn takes 1 argument.\n"
@@ -190,7 +190,7 @@ $_usage"""));
       var result = _runTest(["test.dart"]);
 
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
           '  Failed to load "${p.relative(testPath, from: _sandbox)}":\n'
           "  Error on line 1, column 10: Undefined variable.\n"
@@ -206,7 +206,7 @@ $_usage"""));
 
       var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
             'Failed to load "${p.relative(testPath, from: _sandbox)}": oh no')
       ]));
@@ -219,7 +219,7 @@ $_usage"""));
 
       var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
             'Failed to load "${p.relative(testPath, from: _sandbox)}": No '
                 'top-level main() function defined.')
@@ -233,7 +233,7 @@ $_usage"""));
 
       var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
             'Failed to load "${p.relative(testPath, from: _sandbox)}": '
                 'Top-level main getter is not a function.')
@@ -247,7 +247,7 @@ $_usage"""));
 
       var result = _runTest(["test.dart"]);
       expect(result.stdout, allOf([
-        contains('-1: load error'),
+        contains('-1: loading test.dart'),
         contains(
             'Failed to load "${p.relative(testPath, from: _sandbox)}": '
                 'Top-level main() function takes arguments.')
@@ -261,13 +261,13 @@ $_usage"""));
       var result = _runTest(["test.dart", "nonexistent.dart"]);
 
       expect(result.stdout, allOf([
-        contains('test.dart: load error'),
+        contains('loading test.dart'),
         contains(
           '  Failed to load "test.dart":\n'
           "  line 1 pos 1: unexpected token 'invalid'\n"
           "  invalid Dart file\n"
           "  ^\n"),
-        contains('nonexistent.dart: load error'),
+        contains('loading nonexistent.dart'),
         contains('Failed to load "nonexistent.dart": Does not exist.')
       ]));
     });
@@ -631,7 +631,7 @@ void main() {
       test("doesn't filter out load exceptions", () {
         var result = _runTest(["--name", "name", "file"]);
         expect(result.stdout, allOf([
-          contains('-1: load error'),
+          contains('-1: loading file'),
           contains('Failed to load "file": Does not exist.')
         ]));
         expect(result.exitCode, equals(1));
