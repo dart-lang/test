@@ -42,6 +42,12 @@ class BrowserManager {
   /// at once.
   final _pool = new Pool(8);
 
+  /// The ID of the next suite to be loaded.
+  ///
+  /// This is used to ensure that the suites can be referred to consistently
+  /// across the client and server.
+  int _suiteId = 0;
+
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
   BrowserManager(this.browser, CompatibleWebSocket webSocket)
@@ -66,17 +72,30 @@ class BrowserManager {
 
     // The stream may close before emitting a value if the browser is killed
     // prematurely (e.g. via Control-C).
-    var suiteChannel = _channel.virtualChannel();
+    var suiteVirtualChannel = _channel.virtualChannel();
+    var suiteId = _suiteId++;
+    var suiteChannel;
+
+    closeIframe() {
+      suiteChannel.sink.close();
+      _channel.sink.add({
+        "command": "closeSuite",
+        "id": suiteId
+      });
+    }
+
     var response = await _pool.withResource(() {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
-        "channel": suiteChannel.id
+        "id": _suiteId++,
+        "channel": suiteVirtualChannel.id
       });
 
       // Create a nested MultiChannel because the iframe will be using a channel
       // wrapped within the host's channel.
-      suiteChannel = new MultiChannel(suiteChannel.stream, suiteChannel.sink);
+      suiteChannel = new MultiChannel(
+          suiteVirtualChannel.stream, suiteVirtualChannel.sink);
 
       var completer = new Completer();
       suiteChannel.stream.listen((response) {
@@ -97,13 +116,18 @@ class BrowserManager {
       });
     });
 
-    if (response == null) return null;
+    if (response == null) {
+      closeIframe();
+      return null;
+    }
 
     if (response["type"] == "loadException") {
+      closeIframe();
       throw new LoadException(path, response["message"]);
     }
 
     if (response["type"] == "error") {
+      closeIframe();
       var asyncError = RemoteException.deserialize(response["error"]);
       await new Future.error(
           new LoadException(path, asyncError.error),
@@ -115,6 +139,6 @@ class BrowserManager {
       var testChannel = suiteChannel.virtualChannel(test['channel']);
       return new IframeTest(test['name'], testMetadata, testChannel,
           mapper: mapper);
-    }), metadata: metadata, path: path);
+    }), metadata: metadata, path: path, onClose: () => closeIframe());
   }
 }

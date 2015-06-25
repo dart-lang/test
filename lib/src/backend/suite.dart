@@ -4,8 +4,11 @@
 
 library test.backend.suite;
 
+import 'dart:async';
 import 'dart:collection';
 
+import '../util/async_thunk.dart';
+import '../utils.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
 import 'test.dart';
@@ -26,11 +29,19 @@ class Suite {
   /// The metadata associated with this test suite.
   final Metadata metadata;
 
+  /// The thunk for running [close] exactly once.
+  final _closeThunk = new AsyncThunk();
+
+  /// The function to call when the suite is closed.
+  final AsyncFunction _onClose;
+
   /// The tests in the test suite.
   final List<Test> tests;
 
-  Suite(Iterable<Test> tests, {this.path, this.platform, Metadata metadata})
+  Suite(Iterable<Test> tests, {this.path, this.platform, Metadata metadata,
+          AsyncFunction onClose})
       : metadata = metadata == null ? new Metadata() : metadata,
+        _onClose = onClose,
         tests = new UnmodifiableListView<Test>(tests.toList());
 
   /// Returns a view of this suite for the given [platform] and [os].
@@ -54,6 +65,14 @@ class Suite {
     if (platform == null) platform = this.platform;
     if (metadata == null) metadata = this.metadata;
     if (tests == null) tests = this.tests;
-    return new Suite(tests, path: path, platform: platform, metadata: metadata);
+    return new Suite(tests, path: path, platform: platform, metadata: metadata,
+        onClose: this.close);
+  }
+
+  /// Closes the suite and releases any resources associated with it.
+  Future close() {
+    return _closeThunk.run(() async {
+      if (_onClose != null) await _onClose();
+    });
   }
 }

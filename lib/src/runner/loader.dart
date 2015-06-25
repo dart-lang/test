@@ -19,7 +19,6 @@ import '../backend/test_platform.dart';
 import '../util/async_thunk.dart';
 import '../util/dart.dart' as dart;
 import '../util/io.dart';
-import '../util/isolate_wrapper.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'browser/server.dart';
@@ -54,8 +53,8 @@ class Loader {
   /// This is `null` if tests should be loaded from the filesystem.
   final Uri _pubServeUrl;
 
-  /// All isolates that have been spun up by the loader.
-  final _isolates = new Set<IsolateWrapper>();
+  /// All suites that have been created by the loader.
+  final _suites = new Set<Suite>();
 
   /// The server that serves browser test pages.
   ///
@@ -240,18 +239,18 @@ void main(_, Map message) {
       await new Future.error(new LoadException(path, error), stackTrace);
     }
 
-    _isolates.add(isolate);
-
     var completer = new Completer();
 
     var subscription = receivePort.listen((response) {
       if (response["type"] == "print") {
         print(response["line"]);
       } else if (response["type"] == "loadException") {
+        isolate.kill();
         completer.completeError(
             new LoadException(path, response["message"]),
             new Trace.current());
       } else if (response["type"] == "error") {
+        isolate.kill();
         var asyncError = RemoteException.deserialize(response["error"]);
         completer.completeError(
             new LoadException(path, asyncError.error),
@@ -263,10 +262,16 @@ void main(_, Map message) {
     });
 
     try {
-      return new Suite((await completer.future).map((test) {
+      var suite = new Suite((await completer.future).map((test) {
         var testMetadata = new Metadata.deserialize(test['metadata']);
         return new IsolateTest(test['name'], testMetadata, test['sendPort']);
-      }), metadata: metadata, path: path, platform: "VM");
+      }),
+          metadata: metadata,
+          path: path,
+          platform: "VM",
+          onClose: isolate.kill);
+      _suites.add(suite);
+      return suite;
     } finally {
       subscription.cancel();
     }
@@ -275,10 +280,8 @@ void main(_, Map message) {
   /// Closes the loader and releases all resources allocated by it.
   Future close() {
     return _closeThunk.run(() async {
-      for (var isolate in _isolates) {
-        isolate.kill();
-      }
-      _isolates.clear();
+      await Future.wait(_suites.map((suite) => suite.close()));
+      _suites.clear();
 
       if (!_browserServerThunk.hasRun) return;
       await (await _browserServer).close();

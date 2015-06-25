@@ -104,6 +104,44 @@ void main() {
     expectTestPassed(liveTest);
   });
 
+  group("changeSuite()", () {
+    test("returns a new load suite with the same properties", () {
+      var innerSuite = new Suite([]);
+      var suite = new LoadSuite("name", () => innerSuite, platform: "platform");
+      expect(suite.tests, hasLength(1));
+
+      var newSuite = suite.changeSuite((suite) => suite);
+      expect(newSuite.platform, equals("platform"));
+      expect(newSuite.tests, equals(suite.tests));
+    });
+
+    test("changes the inner suite", () async {
+      var innerSuite = new Suite([]);
+      var suite = new LoadSuite("name", () => innerSuite);
+      expect(suite.tests, hasLength(1));
+
+      var newInnerSuite = new Suite([]);
+      var newSuite = suite.changeSuite((suite) => newInnerSuite);
+      expect(newSuite.suite, completion(equals(newInnerSuite)));
+
+      var liveTest = await suite.tests.single.load(suite);
+      await liveTest.run();
+      expectTestPassed(liveTest);
+    });
+
+    test("doesn't run change() if the suite is null", () async {
+      var suite = new LoadSuite("name", () => null);
+      expect(suite.tests, hasLength(1));
+
+      var newSuite = suite.changeSuite(expectAsync((_) {}, count: 0));
+      expect(newSuite.suite, completion(isNull));
+
+      var liveTest = await suite.tests.single.load(suite);
+      await liveTest.run();
+      expectTestPassed(liveTest);
+    });
+  });
+
   group("getSuite()", () {
     test("runs the test and returns the suite", () {
       var innerSuite = new Suite([]);

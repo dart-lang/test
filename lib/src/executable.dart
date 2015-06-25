@@ -320,17 +320,12 @@ Future _loadSuites(List<String> paths, Pattern pattern, Loader loader,
           throw new LoadException(path, 'Does not exist.'))
     ]);
   })).listen((loadSuite) {
-    group.add(new Future.sync(() async {
-      engine.suiteSink.add(loadSuite);
-
-      var suite = await loadSuite.suite;
-      if (suite == null) return;
-      if (pattern != null) {
-        suite = suite.change(
+    group.add(new Future.sync(() {
+      engine.suiteSink.add(loadSuite.changeSuite((suite) {
+        if (pattern == null) return suite;
+        return suite.change(
             tests: suite.tests.where((test) => test.name.contains(pattern)));
-      }
-
-      engine.suiteSink.add(suite);
+      }));
     }));
   }, onError: (error, stackTrace) {
     group.add(new Future.error(error, stackTrace));

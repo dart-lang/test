@@ -42,6 +42,9 @@ class LoadSuite extends Suite {
   /// [body] may return either a [Suite] or a [Future] that completes to a
   /// [Suite]. Its return value is forwarded through [suite], although if it
   /// throws an error that will be forwarded through the suite's test.
+  ///
+  /// If the the load test is closed before [body] is complete, it will close
+  /// the suite returned by [body] once it completes.
   factory LoadSuite(String name, body(), {String platform}) {
     var completer = new Completer.sync();
     return new LoadSuite._(name, () {
@@ -51,7 +54,13 @@ class LoadSuite extends Suite {
       invoke(() async {
         try {
           var suite = await body();
-          if (completer.isCompleted) return;
+          if (completer.isCompleted) {
+            // If the load test has already been closed, close the suite it
+            // generated.
+            suite.close();
+            return;
+          }
+
           completer.complete(suite);
           invoker.removeOutstandingCallback();
         } catch (error, stackTrace) {
@@ -94,6 +103,21 @@ class LoadSuite extends Suite {
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
             body)
       ], platform: platform);
+
+  /// A constructor used by [changeSuite].
+  LoadSuite._changeSuite(LoadSuite old, Future<Suite> this.suite)
+      : super(old.tests, platform: old.platform);
+
+  /// Creates a new [LoadSuite] that's identical to this one, but that
+  /// transforms [suite] once it's loaded.
+  ///
+  /// If [suite] completes to `null`, [change] won't be run.
+  Suite changeSuite(Suite change(Suite suite)) {
+    return new LoadSuite._changeSuite(this, suite.then((loadedSuite) {
+      if (loadedSuite == null) return null;
+      return change(loadedSuite);
+    }));
+  }
 
   /// Runs the test and returns the suite.
   ///

@@ -13,6 +13,9 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:test/src/util/multi_channel.dart';
 import 'package:test/src/util/stream_channel.dart';
 
+/// The iframes created for each loaded test suite, indexed by the suite id.
+final _iframes = new Map<int, IFrameElement>();
+
 // TODO(nweiz): test this once we can run browser tests.
 /// Code that runs in the browser and loads test suites at the server's behest.
 ///
@@ -74,10 +77,14 @@ void main() {
   runZoned(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
-      assert(message['command'] == 'loadSuite');
-      var suiteChannel = serverChannel.virtualChannel(message['channel']);
-      var iframeChannel = _connectToIframe(message['url']);
-      suiteChannel.pipe(iframeChannel);
+      if (message['command'] == 'loadSuite') {
+        var suiteChannel = serverChannel.virtualChannel(message['channel']);
+        var iframeChannel = _connectToIframe(message['url'], message['id']);
+        suiteChannel.pipe(iframeChannel);
+      } else {
+        assert(message['command'] == 'closeSuite');
+        _iframes[message['id']].remove();
+      }
     });
   }, onError: (error, stackTrace) {
     print("$error\n${new Trace.from(stackTrace).terse}");
@@ -105,8 +112,11 @@ MultiChannel _connectToServer() {
 
 /// Creates an iframe with `src` [url] and establishes a connection to it using
 /// `postMessage`.
-StreamChannel _connectToIframe(String url) {
+///
+/// [id] identifies the suite loaded in this iframe.
+StreamChannel _connectToIframe(String url, int id) {
   var iframe = new IFrameElement();
+  _iframes[id] = iframe;
   iframe.src = url;
   document.body.children.add(iframe);
 

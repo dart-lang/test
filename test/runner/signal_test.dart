@@ -86,7 +86,6 @@ void main() {
       await new Future.delayed(new Duration(seconds: 1));
       process.kill();
       await process.exitCode;
-      expect(new Directory(_tempDir).listSync(), isEmpty);
     });
   });
 

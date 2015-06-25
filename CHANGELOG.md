@@ -1,3 +1,9 @@
+## 0.12.4
+
+* Limit the number of test suites loaded at once. This helps ensure that the
+  test runner won't run out of memory when running many test suites that each
+  load a large amount of code.
+
 ## 0.12.3+2
 
 * Improve the display of syntax errors in VM tests.

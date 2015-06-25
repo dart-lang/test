@@ -42,6 +42,9 @@ import 'load_suite.dart';
 /// and [liveTests] and *will not* be added to [passed]. If at any point a load
 /// test fails, it will be added to [failed] and [liveTests].
 ///
+/// The test suite loaded by a load suite will be automatically be run by the
+/// engine; it doesn't need to be added to [suiteSink] manually.
+///
 /// Load tests will always be emitted through [onTestStarted] so users can watch
 /// their event streams once they start running.
 class Engine {
@@ -59,7 +62,13 @@ class Engine {
   var _closedBeforeDone;
 
   /// A pool that limits the number of test suites running concurrently.
-  final Pool _pool;
+  final Pool _runPool;
+
+  /// A pool that limits the number of test suites loaded concurrently.
+  ///
+  /// Once this reaches its limit, loading any additional test suites will cause
+  /// previous suites to be unloaded in the order they completed.
+  final Pool _loadPool;
 
   /// Whether all tests passed.
   ///
@@ -80,6 +89,9 @@ class Engine {
   ///
   /// Suites may be added as quickly as they're available; the Engine will only
   /// run as many as necessary at a time based on its concurrency settings.
+  ///
+  /// Suites added to the sink will be closed by the engine based on its
+  /// internal logic.
   Sink<Suite> get suiteSink => new DelegatingSink(_suiteController.sink);
   final _suiteController = new StreamController<Suite>();
 
@@ -126,9 +138,14 @@ class Engine {
 
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
-  /// [concurrency] controls how many suites are run at once.
-  Engine({int concurrency})
-      : _pool = new Pool(concurrency == null ? 1 : concurrency) {
+  /// [concurrency] controls how many suites are run at once, and defaults to 1.
+  /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
+  /// four times [concurrency].
+  Engine({int concurrency, int maxSuites})
+      : _runPool = new Pool(concurrency == null ? 1 : concurrency),
+        _loadPool = new Pool(maxSuites == null
+            ? (concurrency == null ? 4 : concurrency * 4)
+            : maxSuites) {
     _group.future.then((_) {
       if (_closedBeforeDone == null) _closedBeforeDone = false;
     }).catchError((_) {
@@ -160,59 +177,68 @@ class Engine {
     _runCalled = true;
 
     _suiteController.stream.listen((suite) {
-      if (suite is LoadSuite) {
-        _group.add(_addLoadSuite(suite));
-        return;
-      }
+      _group.add(new Future.sync(() async {
+        var loadResource = await _loadPool.request();
 
-      _group.add(_pool.withResource(() {
-        if (_closed) return null;
-
-        // TODO(nweiz): Use a real for loop when issue 23394 is fixed.
-        return Future.forEach(suite.tests, (test) async {
-          if (_closed) return;
-
-          var liveTest = test.metadata.skip
-              ? _skippedTest(suite, test)
-              : test.load(suite);
-          _liveTests.add(liveTest);
-          _active.add(liveTest);
-
-          // If there were no active non-load tests, the current active test
-          // would have been a load test. In that case, remove it, since now we
-          // have a non-load test to add.
-          if (_active.isNotEmpty && _active.first.suite is LoadSuite) {
-            _liveTests.remove(_active.removeFirst());
+        if (suite is LoadSuite) {
+          suite = await _addLoadSuite(suite);
+          if (suite == null) {
+            loadResource.release();
+            return;
           }
+        }
 
-          liveTest.onStateChange.listen((state) {
-            if (state.status != Status.complete) return;
-            _active.remove(liveTest);
+        await _runPool.withResource(() async {
+          if (_closed) return null;
 
-            // If we're out of non-load tests, surface a load test.
-            if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-              _active.add(_activeLoadTests.first);
-              _liveTests.add(_activeLoadTests.first);
+          // TODO(nweiz): Use a real for loop when issue 23394 is fixed.
+          await Future.forEach(suite.tests, (test) async {
+            if (_closed) return;
+
+            var liveTest = test.metadata.skip
+                ? _skippedTest(suite, test)
+                : test.load(suite);
+            _liveTests.add(liveTest);
+            _active.add(liveTest);
+
+            // If there were no active non-load tests, the current active test
+            // would have been a load test. In that case, remove it, since now we
+            // have a non-load test to add.
+            if (_active.isNotEmpty && _active.first.suite is LoadSuite) {
+              _liveTests.remove(_active.removeFirst());
             }
 
-            if (state.result != Result.success) {
-              _passed.remove(liveTest);
-              _failed.add(liveTest);
-            } else if (liveTest.test.metadata.skip) {
-              _skipped.add(liveTest);
-            } else {
-              _passed.add(liveTest);
-            }
+            liveTest.onStateChange.listen((state) {
+              if (state.status != Status.complete) return;
+              _active.remove(liveTest);
+
+              // If we're out of non-load tests, surface a load test.
+              if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
+                _active.add(_activeLoadTests.first);
+                _liveTests.add(_activeLoadTests.first);
+              }
+
+              if (state.result != Result.success) {
+                _passed.remove(liveTest);
+                _failed.add(liveTest);
+              } else if (liveTest.test.metadata.skip) {
+                _skipped.add(liveTest);
+              } else {
+                _passed.add(liveTest);
+              }
+            });
+
+            _onTestStartedController.add(liveTest);
+
+            // First, schedule a microtask to ensure that [onTestStarted] fires
+            // before the first [LiveTest.onStateChange] event. Once the test
+            // finishes, use [new Future] to do a coarse-grained event loop pump
+            // to avoid starving non-microtask events.
+            await new Future.microtask(liveTest.run);
+            await new Future(() {});
           });
 
-          _onTestStartedController.add(liveTest);
-
-          // First, schedule a microtask to ensure that [onTestStarted] fires
-          // before the first [LiveTest.onStateChange] event. Once the test
-          // finishes, use [new Future] to do a coarse-grained event loop pump
-          // to avoid starving non-microtask events.
-          await new Future.microtask(liveTest.run);
-          await new Future(() {});
+          loadResource.allowRelease(() => suite.close());
         });
       }));
     }, onDone: _group.close);
@@ -234,7 +260,7 @@ class Engine {
   /// Adds listeners for [suite].
   ///
   /// Load suites have specific logic apart from normal test suites.
-  Future _addLoadSuite(LoadSuite suite) async {
+  Future<Suite> _addLoadSuite(LoadSuite suite) async {
     var liveTest = await suite.tests.single.load(suite);
 
     _activeLoadTests.add(liveTest);
@@ -272,6 +298,8 @@ class Engine {
     // that are already running.
     _onTestStartedController.add(liveTest);
     await liveTest.run();
+
+    return suite.suite;
   }
 
   /// Signals that the caller is done paying attention to test results and the
@@ -284,12 +312,17 @@ class Engine {
   /// **Note that closing the engine is not the same as closing [suiteSink].**
   /// Closing [suiteSink] indicates that no more input will be provided, closing
   /// the engine indicates that no more output should be emitted.
-  Future close() {
+  Future close() async {
     _closed = true;
     if (_closedBeforeDone == null) _closedBeforeDone = true;
     _suiteController.close();
 
+    // Close the running tests first so that we're sure to wait for them to
+    // finish before we close their suites and cause them to become unloaded.
     var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
-    return Future.wait(allLiveTests.map((liveTest) => liveTest.close()));
+    await Future.wait(allLiveTests.map((liveTest) => liveTest.close()));
+
+    var allSuites = allLiveTests.map((liveTest) => liveTest.suite).toSet();
+    await Future.wait(allSuites.map((suite) => suite.close()));
   }
 }
