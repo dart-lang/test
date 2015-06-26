@@ -144,7 +144,7 @@ class Engine {
   Engine({int concurrency, int maxSuites})
       : _runPool = new Pool(concurrency == null ? 1 : concurrency),
         _loadPool = new Pool(maxSuites == null
-            ? (concurrency == null ? 4 : concurrency * 4)
+            ? (concurrency == null ? 2 : concurrency * 2)
             : maxSuites) {
     _group.future.then((_) {
       if (_closedBeforeDone == null) _closedBeforeDone = false;

@@ -1,4 +1,4 @@
-## 0.12.4
+## 0.12.3+3
 
 * Limit the number of test suites loaded at once. This helps ensure that the
   test runner won't run out of memory when running many test suites that each
