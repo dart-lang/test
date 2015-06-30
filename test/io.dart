@@ -52,7 +52,7 @@ ProcessResult runDart(List<String> args, {String workingDirectory,
     // we're going to run in a different working directory.
     if (!arg.startsWith("--package-root=")) return arg;
     return "--package-root=" +
-        p.absolute(arg.substring("--package-root=".length));
+        p.absolute(p.fromUri(arg.substring("--package-root=".length)));
   }).toList()..addAll(args);
 
   // TODO(nweiz): Use ScheduledProcess once it's compatible.
