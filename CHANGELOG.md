@@ -1,3 +1,13 @@
+## 0.12.3+4
+
+* The compact reporter will update the timer every second, rather than only
+  updating it occasionally.
+
+* The compact reporter will now print the full, untruncated test name before any
+  errors or prints emitted by a test.
+
+* The expanded reporter will now *always* print the full, untruncated test name.
+
 ## 0.12.3+3
 
 * Limit the number of test suites loaded at once. This helps ensure that the

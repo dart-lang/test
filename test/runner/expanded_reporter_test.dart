@@ -97,6 +97,17 @@ void main() {
         +2 -2: Some tests failed.""");
   });
 
+  test("always prints the full test name", () {
+    _expectReport("""
+        test(
+           'really gosh dang long test name. Even longer than that. No, yet '
+               'longer. A little more... okay, that should do it.',
+           () {});""",
+        """
+        +0: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
+        +1: All tests passed!""");
+  });
+
   test("gracefully handles multiple test failures in a row", () {
     _expectReport("""
         // This completer ensures that the test isolate isn't killed until all

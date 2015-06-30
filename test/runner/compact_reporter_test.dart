@@ -150,6 +150,24 @@ void main() {
         +1 -1: Some tests failed.""");
   });
 
+  test("prints the full test name before an error", () {
+    _expectReport("""
+        test(
+           'really gosh dang long test name. Even longer than that. No, yet '
+               'longer. A little more... okay, that should do it.',
+           () => throw new TestFailure('oh no'));""",
+        """
+        +0: loading test.dart
+        +0: really ... longer than that. No, yet longer. A little more... okay, that should do it.
+        +0 -1: really ... longer than that. No, yet longer. A little more... okay, that should do it.
+        +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
+          oh no
+          test.dart 9:18  main.<fn>
+
+
+        +0 -1: Some tests failed.""");
+  });
+
   group("print:", () {
     test("handles multiple prints", () {
       _expectReport("""
@@ -253,6 +271,22 @@ void main() {
         +0 -1: wait
         +1 -1: wait
         +1 -1: Some tests failed.""");
+    });
+
+    test("prints the full test name before a print", () {
+      _expectReport("""
+          test(
+             'really gosh dang long test name. Even longer than that. No, yet '
+                 'longer. A little more... okay, that should do it.',
+             () => print('hello'));""",
+          """
+          +0: loading test.dart
+          +0: really ... longer than that. No, yet longer. A little more... okay, that should do it.
+          +0: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
+          hello
+
+          +1: really ... longer than that. No, yet longer. A little more... okay, that should do it.
+          +1: All tests passed!""");
     });
   });
 

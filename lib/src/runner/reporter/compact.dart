@@ -11,6 +11,7 @@ import 'dart:isolate';
 import '../../backend/live_test.dart';
 import '../../backend/state.dart';
 import '../../utils.dart';
+import '../../utils.dart' as utils;
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
@@ -86,6 +87,10 @@ class CompactReporter {
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
 
+  /// Whether the message printed for the last progress notification was
+  /// truncated.
+  bool _lastProgressTruncated;
+
   // Whether a newline has been printed since the last progress line.
   var _printedNewline = true;
 
@@ -138,7 +143,6 @@ class CompactReporter {
     if (_engine.active.length == 1 && _engine.active.first == liveTest) {
       _progressLine(_description(liveTest));
     }
-    _printedNewline = false;
 
     liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
 
@@ -146,7 +150,7 @@ class CompactReporter {
         _onError(liveTest, error.error, error.stackTrace));
 
     liveTest.onPrint.listen((line) {
-      _progressLine(_description(liveTest));
+      _progressLine(_description(liveTest), truncate: false);
       if (!_printedNewline) print('');
       _printedNewline = true;
 
@@ -172,8 +176,6 @@ class CompactReporter {
       } else {
         _progressLine(_description(_engine.active.first));
       }
-
-      _printedNewline = false;
     }
   }
 
@@ -181,7 +183,7 @@ class CompactReporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest));
+    _progressLine(_description(liveTest), truncate: false);
     if (!_printedNewline) print('');
     _printedNewline = true;
 
@@ -247,7 +249,7 @@ class CompactReporter {
   /// [message] goes after the progress report, and may be truncated to fit the
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
   /// color for [message].
-  bool _progressLine(String message, {String color}) {
+  bool _progressLine(String message, {String color, bool truncate: true}) {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.
@@ -255,7 +257,8 @@ class CompactReporter {
         _engine.skipped.length == _lastProgressSkipped &&
         _engine.failed.length == _lastProgressFailed &&
         elapsed == _lastProgressElapsed &&
-        message == _lastProgressMessage) {
+        message == _lastProgressMessage &&
+        truncate == _lastProgressTruncated) {
       return false;
     }
 
@@ -264,6 +267,7 @@ class CompactReporter {
     _lastProgressFailed = _engine.failed.length;
     _lastProgressElapsed = elapsed;
     _lastProgressMessage = message;
+    _lastProgressTruncated = truncate;
 
     if (color == null) color = '';
     var duration = _stopwatch.elapsed;
@@ -297,12 +301,15 @@ class CompactReporter {
     // escape sequences too. Because these sequences are not visible characters,
     // we make sure they are not counted towards the limit.
     var length = withoutColors(buffer.toString()).length;
-    buffer.write(truncate(message, _lineLength - length));
+    if (truncate) message = utils.truncate(message, _lineLength - length);
+    buffer.write(message);
     buffer.write(_noColor);
 
     // Pad the rest of the line so that it looks erased.
     buffer.write(' ' * (_lineLength - withoutColors(buffer.toString()).length));
     stdout.write(buffer.toString());
+
+    _printedNewline = false;
     return true;
   }
 

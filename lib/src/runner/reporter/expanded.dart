@@ -252,12 +252,7 @@ class ExpandedReporter {
 
     buffer.write(': ');
     buffer.write(color);
-
-    // Ensure the line fits within [_lineLength]. [buffer] includes the color
-    // escape sequences too. Because these sequences are not visible characters,
-    // we make sure they are not counted towards the limit.
-    var length = withoutColors(buffer.toString()).length;
-    buffer.write(truncate(message, _lineLength - length));
+    buffer.write(message);
     buffer.write(_noColor);
 
     print(buffer.toString());
