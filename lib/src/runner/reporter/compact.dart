@@ -4,6 +4,7 @@
 
 library test.runner.reporter.compact;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -64,6 +65,9 @@ class CompactReporter {
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
 
+  /// A timer that triggers printing updated time information.
+  Timer _timer;
+
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed;
@@ -74,6 +78,10 @@ class CompactReporter {
   /// The size of `_engine.failed` last time a progress notification was
   /// printed.
   int _lastProgressFailed;
+
+  /// The duration of the test run in seconds last time a progress notification
+  /// was printed.
+  int _lastProgressElapsed;
 
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
@@ -117,7 +125,12 @@ class CompactReporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
-    if (!_stopwatch.isRunning) _stopwatch.start();
+    if (_timer == null) {
+      _stopwatch.start();
+      /// Keep updating the time even when nothing else is happening.
+      _timer = new Timer.periodic(new Duration(seconds: 1),
+          (_) => _progressLine(_lastProgressMessage));
+    }
 
     // If this is the first test to start, print a progress line so the user
     // knows what's running. It's possible that the active test may not be
@@ -195,6 +208,10 @@ class CompactReporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool success) {
+    _timer.cancel();
+    _timer = null;
+    _stopwatch.stop();
+
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user. We
     // shouldn't print summary information, we should just make sure the
@@ -231,10 +248,13 @@ class CompactReporter {
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
   /// color for [message].
   bool _progressLine(String message, {String color}) {
+    var elapsed = _stopwatch.elapsed.inSeconds;
+
     // Print nothing if nothing has changed since the last progress line.
     if (_engine.passed.length == _lastProgressPassed &&
         _engine.skipped.length == _lastProgressSkipped &&
         _engine.failed.length == _lastProgressFailed &&
+        elapsed == _lastProgressElapsed &&
         message == _lastProgressMessage) {
       return false;
     }
@@ -242,6 +262,7 @@ class CompactReporter {
     _lastProgressPassed = _engine.passed.length;
     _lastProgressSkipped = _engine.skipped.length;
     _lastProgressFailed = _engine.failed.length;
+    _lastProgressElapsed = elapsed;
     _lastProgressMessage = message;
 
     if (color == null) color = '';

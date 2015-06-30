@@ -369,10 +369,19 @@ $tests
 
     // Convert CRs into newlines, remove excess trailing whitespace, and trim
     // off timestamps.
+    var lastLine;
     var actual = result.stdout.trim().split(new RegExp(r"[\r\n]")).map((line) {
       if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
-      return line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
-    }).join("\n");
+
+      var trimmed = line.trim()
+          .replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
+
+      // Trim identical lines so the test isn't dependent on how fast each test
+      // runs.
+      if (trimmed == lastLine) return null;
+      lastLine = trimmed;
+      return trimmed;
+    }).where((line) => line != null).join("\n");
 
     // Un-indent the expected string.
     var indentation = expected.indexOf(new RegExp("[^ ]"));
