@@ -1,3 +1,7 @@
+## 0.12.3+5
+
+* Fix a crash when skipping tests because their platforms don't match.
+
 ## 0.12.3+4
 
 * The compact reporter will update the timer every second, rather than only

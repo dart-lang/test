@@ -210,7 +210,7 @@ class CompactReporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool success) {
-    _timer.cancel();
+    if (_timer != null) _timer.cancel();
     _timer = null;
     _stopwatch.stop();
 
