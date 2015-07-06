@@ -9,34 +9,22 @@ library test.executable;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 
-import 'package:args/args.dart';
 import 'package:async/async.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
 
 import 'backend/metadata.dart';
-import 'backend/test_platform.dart';
-import 'runner/engine.dart';
 import 'runner/application_exception.dart';
+import 'runner/configuration.dart';
+import 'runner/engine.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_suite.dart';
 import 'runner/loader.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'util/exit_codes.dart' as exit_codes;
-import 'util/io.dart';
 import 'utils.dart';
-
-/// The argument parser used to parse the executable arguments.
-final _parser = new ArgParser(allowTrailingOptions: true);
-
-/// The default number of test suites to run at once.
-///
-/// This defaults to half the available processors, since presumably some of
-/// them will be used for the OS and other processes.
-final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 /// A merged stream of all signals that tell the test runner to shut down
 /// gracefully.
@@ -78,69 +66,23 @@ bool get _usesTransformer {
   });
 }
 
+Configuration _configuration;
+
 main(List<String> args) async {
-  var allPlatforms = TestPlatform.all.toList();
-  if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
-  if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
-
-  _parser.addFlag("help", abbr: "h", negatable: false,
-      help: "Shows this usage information.");
-  _parser.addFlag("version", negatable: false,
-      help: "Shows the package's version.");
-  _parser.addOption("package-root", hide: true);
-  _parser.addOption("name",
-      abbr: 'n',
-      help: 'A substring of the name of the test to run.\n'
-          'Regular expression syntax is supported.');
-  _parser.addOption("plain-name",
-      abbr: 'N',
-      help: 'A plain-text substring of the name of the test to run.');
-  _parser.addOption("platform",
-      abbr: 'p',
-      help: 'The platform(s) on which to run the tests.',
-      allowed: allPlatforms.map((platform) => platform.identifier).toList(),
-      defaultsTo: 'vm',
-      allowMultiple: true);
-  _parser.addOption("concurrency",
-      abbr: 'j',
-      help: 'The number of concurrent test suites run.\n'
-          '(defaults to $_defaultConcurrency)',
-      valueHelp: 'threads');
-  _parser.addOption("pub-serve",
-      help: 'The port of a pub serve instance serving "test/".',
-      hide: !supportsPubServe,
-      valueHelp: 'port');
-  _parser.addOption("reporter",
-      abbr: 'r',
-      help: 'The runner used to print test results.',
-      allowed: ['compact', 'expanded'],
-      defaultsTo: Platform.isWindows ? 'expanded' : 'compact',
-      allowedHelp: {
-    'compact': 'A single line, updated continuously.',
-    'expanded': 'A separate line for each update.'
-  });
-  _parser.addFlag("verbose-trace", negatable: false,
-      help: 'Whether to emit stack traces with core library frames.');
-  _parser.addFlag("js-trace", negatable: false,
-      help: 'Whether to emit raw JavaScript stack traces for browser tests.');
-  _parser.addFlag("color", defaultsTo: null,
-      help: 'Whether to use terminal colors.\n(auto-detected by default)');
-
-  var options;
   try {
-    options = _parser.parse(args);
+    _configuration = new Configuration.parse(args);
   } on FormatException catch (error) {
     _printUsage(error.message);
     exitCode = exit_codes.usage;
     return;
   }
 
-  if (options["help"]) {
+  if (_configuration.help) {
     _printUsage();
     return;
   }
 
-  if (options["version"]) {
+  if (_configuration.version) {
     if (!_printVersion()) {
       stderr.writeln("Couldn't find version number.");
       exitCode = exit_codes.data;
@@ -148,14 +90,8 @@ main(List<String> args) async {
     return;
   }
 
-  var color = options["color"];
-  if (color == null) color = canUseSpecialChars;
-
-  var pubServeUrl;
-  if (options["pub-serve"] != null) {
-    pubServeUrl = Uri.parse("http://localhost:${options['pub-serve']}");
-    if (!_usesTransformer) {
-      stderr.write('''
+  if (_configuration.pubServeUrl != null && !_usesTransformer) {
+    stderr.write('''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
 your pubspec:
 
@@ -163,54 +99,26 @@ transformers:
 - test/pub_serve:
     \$include: test/**_test.dart
 ''');
-      exitCode = exit_codes.data;
-      return;
-    }
+    exitCode = exit_codes.data;
+    return;
   }
 
-  var concurrency = _defaultConcurrency;
-  if (options["concurrency"] != null) {
-    try {
-      concurrency = int.parse(options["concurrency"]);
-    } catch (error) {
-      _printUsage('Couldn\'t parse --concurrency "${options["concurrency"]}":'
-          ' ${error.message}');
-      exitCode = exit_codes.usage;
-      return;
-    }
+  if (!_configuration.explicitPaths &&
+      !new Directory(_configuration.paths.single).existsSync()) {
+    _printUsage('No test files were passed and the default "test/" '
+        "directory doesn't exist.");
+    exitCode = exit_codes.data;
+    return;
   }
 
-  var paths = options.rest;
-  if (paths.isEmpty) {
-    if (!new Directory("test").existsSync()) {
-      _printUsage('No test files were passed and the default "test/" '
-          "directory doesn't exist.");
-      exitCode = exit_codes.data;
-      return;
-    }
-    paths = ["test"];
-  }
-
-  var pattern;
-  if (options["name"] != null) {
-    if (options["plain-name"] != null) {
-      _printUsage("--name and --plain-name may not both be passed.");
-      exitCode = exit_codes.data;
-      return;
-    }
-    pattern = new RegExp(options["name"]);
-  } else if (options["plain-name"] != null) {
-    pattern = options["plain-name"];
-  }
-
-  var metadata = new Metadata(verboseTrace: options["verbose-trace"]);
-  var platforms = options["platform"].map(TestPlatform.find);
-  var loader = new Loader(platforms,
-      pubServeUrl: pubServeUrl,
-      packageRoot: options["package-root"],
-      color: color,
+  var metadata = new Metadata(
+      verboseTrace: _configuration.verboseTrace);
+  var loader = new Loader(_configuration.platforms,
+      pubServeUrl: _configuration.pubServeUrl,
+      packageRoot: _configuration.packageRoot,
+      color: _configuration.color,
       metadata: metadata,
-      jsTrace: options["js-trace"]);
+      jsTrace: _configuration.jsTrace);
 
   var closed = false;
   var signalSubscription;
@@ -221,19 +129,19 @@ transformers:
   });
 
   try {
-    var engine = new Engine(concurrency: concurrency);
+    var engine = new Engine(concurrency: _configuration.concurrency);
 
-    var watch = options["reporter"] == "compact"
+    var watch = _configuration.reporter == "compact"
         ? CompactReporter.watch
         : ExpandedReporter.watch;
 
     watch(
         engine,
-        color: color,
-        verboseTrace: options["verbose-trace"],
-        printPath: paths.length > 1 ||
-            new Directory(paths.single).existsSync(),
-        printPlatform: platforms.length > 1);
+        color: _configuration.color,
+        verboseTrace: _configuration.verboseTrace,
+        printPath: _configuration.paths.length > 1 ||
+            new Directory(_configuration.paths.single).existsSync(),
+        printPlatform: _configuration.platforms.length > 1);
 
     // Override the signal handler to close [reporter]. [loader] will still be
     // closed in the [whenComplete] below.
@@ -260,7 +168,7 @@ transformers:
 
     try {
       var results = await Future.wait([
-        _loadSuites(paths, pattern, loader, engine),
+        _loadSuites(loader, engine),
         engine.run()
       ], eagerError: true);
 
@@ -275,13 +183,14 @@ transformers:
     }
 
     if (engine.passed.length == 0 && engine.failed.length == 0 &&
-        engine.skipped.length == 0 && pattern != null) {
+        engine.skipped.length == 0 && _configuration.pattern != null) {
       stderr.write('No tests match ');
 
-      if (pattern is RegExp) {
-        stderr.writeln('regular expression "${pattern.pattern}".');
+      if (_configuration.pattern is RegExp) {
+        var pattern = (_configuration.pattern as RegExp).pattern;
+        stderr.writeln('regular expression "$pattern".');
       } else {
-        stderr.writeln('"$pattern".');
+        stderr.writeln('"${_configuration.pattern}".');
       }
       exitCode = exit_codes.data;
     }
@@ -302,16 +211,15 @@ transformers:
   }
 }
 
-/// Load the test suites in [paths] that match [pattern] and pass them to
-/// [engine].
+/// Load the test suites in [_configuration.paths] that match
+/// [_configuration.pattern] and pass them to [engine].
 ///
 /// This completes once all the tests have been added to the engine. It does not
 /// run the engine.
-Future _loadSuites(List<String> paths, Pattern pattern, Loader loader,
-    Engine engine) async {
+Future _loadSuites(Loader loader, Engine engine) async {
   var group = new FutureGroup();
 
-  mergeStreams(paths.map((path) {
+  mergeStreams(_configuration.paths.map((path) {
     if (new Directory(path).existsSync()) return loader.loadDir(path);
     if (new File(path).existsSync()) return loader.loadFile(path);
 
@@ -322,9 +230,9 @@ Future _loadSuites(List<String> paths, Pattern pattern, Loader loader,
   })).listen((loadSuite) {
     group.add(new Future.sync(() {
       engine.suiteSink.add(loadSuite.changeSuite((suite) {
-        if (pattern == null) return suite;
-        return suite.change(
-            tests: suite.tests.where((test) => test.name.contains(pattern)));
+        if (_configuration.pattern == null) return suite;
+        return suite.change(tests: suite.tests.where(
+            (test) => test.name.contains(_configuration.pattern)));
       }));
     }));
   }, onError: (error, stackTrace) {
@@ -355,7 +263,7 @@ void _printUsage([String error]) {
 
 Usage: pub run test:test [files or directories...]
 
-${_parser.usage}
+${Configuration.usage}
 """);
 }
 
