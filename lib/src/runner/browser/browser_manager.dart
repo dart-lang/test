@@ -108,7 +108,7 @@ class BrowserManager {
         if (!completer.isCompleted) completer.complete();
       });
 
-      return completer.future.timeout(new Duration(seconds: 15), onTimeout: () {
+      return completer.future.timeout(new Duration(minutes: 1), onTimeout: () {
         throw new LoadException(
             path,
             "Timed out waiting for the test suite to connect on "

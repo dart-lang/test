@@ -446,7 +446,7 @@ void main() {
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future.timeout(new Duration(seconds: 7), onTimeout: () {
+    return completer.future.timeout(new Duration(seconds: 30), onTimeout: () {
       throw new ApplicationException(
           "Timed out waiting for ${platform.name} to connect.");
     });

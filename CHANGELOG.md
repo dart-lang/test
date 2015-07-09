@@ -2,6 +2,10 @@
 
 * Properly report load errors caused by failing to start browsers.
 
+* Substantially increase browser timeouts. These timeouts are the cause of a lot
+  of flakiness, and now that they don't block test running there's less harm in
+  making them longer.
+
 ## 0.12.3+5
 
 * Fix a crash when skipping tests because their platforms don't match.
