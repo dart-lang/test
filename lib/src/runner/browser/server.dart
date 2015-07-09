@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
@@ -134,10 +135,12 @@ class BrowserServer {
   final _browsers = new Map<TestPlatform, Browser>();
 
   /// A map from browser identifiers to futures that will complete to the
-  /// [BrowserManager]s for those browsers.
+  /// [BrowserManager]s for those browsers, or the errors that occurred when
+  /// trying to load those managers.
   ///
   /// This should only be accessed through [_browserManagerFor].
-  final _browserManagers = new Map<TestPlatform, Future<BrowserManager>>();
+  final _browserManagers =
+      new Map<TestPlatform, Future<Result<BrowserManager>>>();
 
   /// A map from test suite paths to Futures that will complete once those
   /// suites are finished compiling.
@@ -408,13 +411,16 @@ void main() {
   /// If no browser manager is running yet, starts one.
   Future<BrowserManager> _browserManagerFor(TestPlatform platform) {
     var manager = _browserManagers[platform];
-    if (manager != null) return manager;
+    if (manager != null) return Result.release(manager);
 
     var completer = new Completer();
 
-    // Swallow errors, since they're already being surfaced through the return
-    // value and [browser.onError].
-    _browserManagers[platform] = completer.future.catchError((_) {});
+    // Capture errors and release them later to avoid Zone issues. This call to
+    // [_browserManagerFor] is running in a different [LoadSuite] than future
+    // calls, which means they're also running in different error zones so
+    // errors can't be freely passed between them. Storing the error or value as
+    // an explicit [Result] fixes that.
+    _browserManagers[platform] = Result.capture(completer.future);
     var path = _webSocketHandler.create(webSocketHandler((webSocket) {
       completer.complete(new BrowserManager(platform, webSocket));
     }));

@@ -1,3 +1,7 @@
+## 0.12.3+6
+
+* Properly report load errors caused by failing to start browsers.
+
 ## 0.12.3+5
 
 * Fix a crash when skipping tests because their platforms don't match.
