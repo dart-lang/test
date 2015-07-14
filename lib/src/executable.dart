@@ -7,22 +7,14 @@
 // bin.
 library test.executable;
 
-import 'dart:async';
 import 'dart:io';
 
-import 'package:async/async.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
 
-import 'backend/metadata.dart';
+import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
-import 'runner/engine.dart';
-import 'runner/load_exception.dart';
-import 'runner/load_suite.dart';
-import 'runner/loader.dart';
-import 'runner/reporter/compact.dart';
-import 'runner/reporter/expanded.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'utils.dart';
 
@@ -66,23 +58,22 @@ bool get _usesTransformer {
   });
 }
 
-Configuration _configuration;
-
 main(List<String> args) async {
+  var configuration;
   try {
-    _configuration = new Configuration.parse(args);
+    configuration = new Configuration.parse(args);
   } on FormatException catch (error) {
     _printUsage(error.message);
     exitCode = exit_codes.usage;
     return;
   }
 
-  if (_configuration.help) {
+  if (configuration.help) {
     _printUsage();
     return;
   }
 
-  if (_configuration.version) {
+  if (configuration.version) {
     if (!_printVersion()) {
       stderr.writeln("Couldn't find version number.");
       exitCode = exit_codes.data;
@@ -90,7 +81,7 @@ main(List<String> args) async {
     return;
   }
 
-  if (_configuration.pubServeUrl != null && !_usesTransformer) {
+  if (configuration.pubServeUrl != null && !_usesTransformer) {
     stderr.write('''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
 your pubspec:
@@ -103,97 +94,28 @@ transformers:
     return;
   }
 
-  if (!_configuration.explicitPaths &&
-      !new Directory(_configuration.paths.single).existsSync()) {
+  if (!configuration.explicitPaths &&
+      !new Directory(configuration.paths.single).existsSync()) {
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
     return;
   }
 
-  var metadata = new Metadata(
-      verboseTrace: _configuration.verboseTrace);
-  var loader = new Loader(_configuration.platforms,
-      pubServeUrl: _configuration.pubServeUrl,
-      packageRoot: _configuration.packageRoot,
-      color: _configuration.color,
-      metadata: metadata,
-      jsTrace: _configuration.jsTrace);
+  var runner = new Runner(configuration);
 
-  var closed = false;
   var signalSubscription;
-  signalSubscription = _signals.listen((_) {
-    closed = true;
+  close() async {
+    if (signalSubscription == null) return;
     signalSubscription.cancel();
-    loader.close();
-  });
+    signalSubscription = null;
+    await runner.close();
+  }
+
+  signalSubscription = _signals.listen((_) => close());
 
   try {
-    var engine = new Engine(concurrency: _configuration.concurrency);
-
-    var watch = _configuration.reporter == "compact"
-        ? CompactReporter.watch
-        : ExpandedReporter.watch;
-
-    watch(
-        engine,
-        color: _configuration.color,
-        verboseTrace: _configuration.verboseTrace,
-        printPath: _configuration.paths.length > 1 ||
-            new Directory(_configuration.paths.single).existsSync(),
-        printPlatform: _configuration.platforms.length > 1);
-
-    // Override the signal handler to close [reporter]. [loader] will still be
-    // closed in the [whenComplete] below.
-    signalSubscription.onData((_) async {
-      closed = true;
-      signalSubscription.cancel();
-
-      // Wait a bit to print this message, since printing it eagerly looks weird
-      // if the tests then finish immediately.
-      var timer = new Timer(new Duration(seconds: 1), () {
-        // Print a blank line first to ensure that this doesn't interfere with
-        // the compact reporter's unfinished line.
-        print("");
-        print("Waiting for current test(s) to finish.");
-        print("Press Control-C again to terminate immediately.");
-      });
-
-      // Make sure we close the engine *before* the loader. Otherwise,
-      // LoadSuites provided by the loader may get into bad states.
-      await engine.close();
-      timer.cancel();
-      await loader.close();
-    });
-
-    try {
-      var results = await Future.wait([
-        _loadSuites(loader, engine),
-        engine.run()
-      ], eagerError: true);
-
-      if (closed) return;
-
-      // Explicitly check "== true" here because [engine.run] can return `null`
-      // if the engine was closed prematurely.
-      exitCode = results.last == true ? 0 : 1;
-    } finally {
-      signalSubscription.cancel();
-      await engine.close();
-    }
-
-    if (engine.passed.length == 0 && engine.failed.length == 0 &&
-        engine.skipped.length == 0 && _configuration.pattern != null) {
-      stderr.write('No tests match ');
-
-      if (_configuration.pattern is RegExp) {
-        var pattern = (_configuration.pattern as RegExp).pattern;
-        stderr.writeln('regular expression "$pattern".');
-      } else {
-        stderr.writeln('"${_configuration.pattern}".');
-      }
-      exitCode = exit_codes.data;
-    }
+    exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
@@ -206,44 +128,8 @@ transformers:
         "with the stack trace and instructions for reproducing the error.");
     exitCode = exit_codes.software;
   } finally {
-    signalSubscription.cancel();
-    await loader.close();
+    await close();
   }
-}
-
-/// Load the test suites in [_configuration.paths] that match
-/// [_configuration.pattern] and pass them to [engine].
-///
-/// This completes once all the tests have been added to the engine. It does not
-/// run the engine.
-Future _loadSuites(Loader loader, Engine engine) async {
-  var group = new FutureGroup();
-
-  mergeStreams(_configuration.paths.map((path) {
-    if (new Directory(path).existsSync()) return loader.loadDir(path);
-    if (new File(path).existsSync()) return loader.loadFile(path);
-
-    return new Stream.fromIterable([
-      new LoadSuite("loading $path", () =>
-          throw new LoadException(path, 'Does not exist.'))
-    ]);
-  })).listen((loadSuite) {
-    group.add(new Future.sync(() {
-      engine.suiteSink.add(loadSuite.changeSuite((suite) {
-        if (_configuration.pattern == null) return suite;
-        return suite.change(tests: suite.tests.where(
-            (test) => test.name.contains(_configuration.pattern)));
-      }));
-    }));
-  }, onError: (error, stackTrace) {
-    group.add(new Future.error(error, stackTrace));
-  }, onDone: group.close);
-
-  await group.future;
-
-  // Once we've loaded all the suites, notify the engine that no more will be
-  // coming.
-  engine.suiteSink.close();
 }
 
 /// Print usage information for this command.
