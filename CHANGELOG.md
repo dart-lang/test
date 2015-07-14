@@ -1,4 +1,10 @@
+## 0.12.3+7
+
+* Add a missing dependency on the `collection` package.
+
 ## 0.12.3+6
+
+**This version was unpublished due to [issue 287][].**
 
 * Properly report load errors caused by failing to start browsers.
 
@@ -8,9 +14,13 @@
 
 ## 0.12.3+5
 
+**This version was unpublished due to [issue 287][].**
+
 * Fix a crash when skipping tests because their platforms don't match.
 
 ## 0.12.3+4
+
+**This version was unpublished due to [issue 287][].**
 
 * The compact reporter will update the timer every second, rather than only
   updating it occasionally.
@@ -22,11 +32,17 @@
 
 ## 0.12.3+3
 
+**This version was unpublished due to [issue 287][].**
+
 * Limit the number of test suites loaded at once. This helps ensure that the
   test runner won't run out of memory when running many test suites that each
   load a large amount of code.
 
 ## 0.12.3+2
+
+**This version was unpublished due to [issue 287][].**
+
+[issue 287]: https://github.com/dart-lang/test/issues/287
 
 * Improve the display of syntax errors in VM tests.
 
