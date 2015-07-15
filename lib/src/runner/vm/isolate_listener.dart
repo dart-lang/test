@@ -86,8 +86,8 @@ class IsolateListener {
       return;
     }
 
-    var suite = new Suite(declarer.tests, metadata: metadata)
-        .forPlatform(TestPlatform.vm, os: currentOS);
+    var suite = new Suite(declarer.tests,
+        platform: TestPlatform.vm, os: currentOS, metadata: metadata);
     new IsolateListener._(suite)._listen(sendPort);
   }
 

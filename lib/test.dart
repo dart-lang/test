@@ -50,11 +50,11 @@ Declarer get _declarer {
   // finished being defined.
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() async {
-    var suite =
-        new Suite(_globalDeclarer.tests,
-              path: p.prettyUri(Uri.base),
-              platform: "VM")
-        .forPlatform(TestPlatform.vm, os: currentOSGuess);
+    var suite = new Suite(
+        _globalDeclarer.tests,
+        path: p.prettyUri(Uri.base),
+        platform: TestPlatform.vm,
+        os: currentOSGuess);
 
     var engine = new Engine();
     engine.suiteSink.add(suite);

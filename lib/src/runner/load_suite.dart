@@ -12,6 +12,7 @@ import '../../test.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/suite.dart';
+import '../backend/test_platform.dart';
 import '../utils.dart';
 import 'load_exception.dart';
 
@@ -45,7 +46,7 @@ class LoadSuite extends Suite {
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
-  factory LoadSuite(String name, body(), {String platform}) {
+  factory LoadSuite(String name, body(), {TestPlatform platform}) {
     var completer = new Completer.sync();
     return new LoadSuite._(name, () {
       var invoker = Invoker.current;
@@ -83,7 +84,7 @@ class LoadSuite extends Suite {
   ///
   /// The suite's name will be based on [exception]'s path.
   factory LoadSuite.forLoadException(LoadException exception,
-      {StackTrace stackTrace, String platform}) {
+      {StackTrace stackTrace, TestPlatform platform}) {
     if (stackTrace == null) stackTrace = new Trace.current();
 
     return new LoadSuite("loading ${exception.path}", () {
@@ -97,7 +98,7 @@ class LoadSuite extends Suite {
         platform: suite.platform);
   }
 
-  LoadSuite._(String name, void body(), this.suite, {String platform})
+  LoadSuite._(String name, void body(), this.suite, {TestPlatform platform})
       : super([
         new LocalTest(name,
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
@@ -112,7 +113,7 @@ class LoadSuite extends Suite {
   /// transforms [suite] once it's loaded.
   ///
   /// If [suite] completes to `null`, [change] won't be run.
-  Suite changeSuite(Suite change(Suite suite)) {
+  LoadSuite changeSuite(Suite change(Suite suite)) {
     return new LoadSuite._changeSuite(this, suite.then((loadedSuite) {
       if (loadedSuite == null) return null;
       return change(loadedSuite);

@@ -45,6 +45,7 @@ class LocalTest implements Test {
   }
 
   Test change({String name, Metadata metadata}) {
+    if (name == name && metadata == this.metadata) return this;
     if (name == null) name = this.name;
     if (metadata == null) metadata = this.metadata;
     return new LocalTest(name, metadata, _body, tearDown: _tearDown);

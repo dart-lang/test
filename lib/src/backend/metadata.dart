@@ -161,6 +161,8 @@ class Metadata {
   /// Returns a copy of [this] with all platform-specific metadata from
   /// [onPlatform] resolved.
   Metadata forPlatform(TestPlatform platform, {OperatingSystem os}) {
+    if (onPlatform.isEmpty) return this;
+
     var metadata = this;
     onPlatform.forEach((platformSelector, platformMetadata) {
       if (!platformSelector.evaluate(platform, os: os)) return;

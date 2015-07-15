@@ -161,7 +161,7 @@ class Loader {
       if (metadata.skip) {
         yield new LoadSuite.forSuite(new Suite([
           new LocalTest(path, metadata, () {})
-        ], path: path, platform: platform.name, metadata: metadata));
+        ], path: path, platform: platform, metadata: metadata));
         continue;
       }
 
@@ -170,7 +170,7 @@ class Loader {
         return platform == TestPlatform.vm
             ? _loadVmFile(path, metadata)
             : _loadBrowserFile(path, platform, metadata);
-      }, platform: platform.name);
+      }, platform: platform);
     }
   }
 
@@ -268,7 +268,8 @@ void main(_, Map message) {
       }),
           metadata: metadata,
           path: path,
-          platform: "VM",
+          platform: TestPlatform.vm,
+          os: currentOS,
           onClose: isolate.kill);
       _suites.add(suite);
       return suite;

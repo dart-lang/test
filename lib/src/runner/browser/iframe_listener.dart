@@ -80,8 +80,8 @@ class IframeListener {
     var metadata = new Metadata.deserialize(message['metadata']);
     var browser = TestPlatform.find(message['browser']);
 
-    var suite = new Suite(declarer.tests, metadata: metadata)
-        .forPlatform(browser);
+    var suite = new Suite(
+        declarer.tests, platform: browser, metadata: metadata);
     new IframeListener._(suite)._listen(channel);
 
     // TODO(nweiz): Remove this when issue 23200 is fixed.

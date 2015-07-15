@@ -331,7 +331,7 @@ class CompactReporter {
     }
 
     if (_printPlatform && liveTest.suite.platform != null) {
-      name = "[${liveTest.suite.platform}] $name";
+      name = "[${liveTest.suite.platform.name}] $name";
     }
 
     if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";

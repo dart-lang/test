@@ -17,7 +17,7 @@ import '../../util/remote_exception.dart';
 import '../../utils.dart';
 
 /// A test in another isolate.
-class IsolateTest extends Test {
+class IsolateTest implements Test {
   final String name;
   final Metadata metadata;
 
@@ -86,6 +86,7 @@ class IsolateTest extends Test {
   }
 
   Test change({String name, Metadata metadata}) {
+    if (name == name && metadata == this.metadata) return this;
     if (name == null) name = this.name;
     if (metadata == null) metadata = this.metadata;
     return new IsolateTest(name, metadata, _sendPort);

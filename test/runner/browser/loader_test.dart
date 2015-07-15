@@ -60,7 +60,7 @@ void main() {
 
     test("returns a suite with the file path and platform", () {
       expect(suite.path, equals(p.join(_sandbox, 'a_test.dart')));
-      expect(suite.platform, equals('Chrome'));
+      expect(suite.platform, equals(TestPlatform.chrome));
     });
 
     test("returns tests with the correct names", () {
@@ -131,9 +131,9 @@ Future main() {
     try {
       var suites = await loader.loadFile(path)
           .asyncMap((loadSuite) => loadSuite.getSuite()).toList();
-      expect(suites[0].platform, equals('VM'));
+      expect(suites[0].platform, equals(TestPlatform.vm));
       expect(suites[0].path, equals(path));
-      expect(suites[1].platform, equals('Chrome'));
+      expect(suites[1].platform, equals(TestPlatform.chrome));
       expect(suites[1].path, equals(path));
 
       for (var suite in suites) {

@@ -145,6 +145,7 @@ class BrowserManager {
       var testChannel = suiteChannel.virtualChannel(test['channel']);
       return new IframeTest(test['name'], testMetadata, testChannel,
           mapper: mapper);
-    }), metadata: metadata, path: path, onClose: () => closeIframe());
+    }), platform: browser, metadata: metadata, path: path,
+        onClose: () => closeIframe());
   }
 }

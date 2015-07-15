@@ -19,9 +19,15 @@ import 'test_platform.dart';
 /// A test suite is a set of tests that are intended to be run together and that
 /// share default configuration.
 class Suite {
-  /// A description of the platform on which the suite is running, or `null` if
-  /// that platform is unknown.
-  final String platform;
+  /// The platform on which the suite is running, or `null` if that platform is
+  /// unknown.
+  final TestPlatform platform;
+
+  /// The operating system on which the suite is running, or `null` if that
+  /// operating system is unknown.
+  ///
+  /// This will always be `null` if [platform] is `null`.
+  final OperatingSystem os;
 
   /// The path to the Dart test suite, or `null` if that path is unknown.
   final String path;
@@ -38,34 +44,59 @@ class Suite {
   /// The tests in the test suite.
   final List<Test> tests;
 
-  Suite(Iterable<Test> tests, {this.path, this.platform, Metadata metadata,
-          AsyncFunction onClose})
-      : metadata = metadata == null ? new Metadata() : metadata,
-        _onClose = onClose,
-        tests = new UnmodifiableListView<Test>(tests.toList());
-
-  /// Returns a view of this suite for the given [platform] and [os].
+  /// Creates a new suite containing [tests].
   ///
-  /// This filters out tests that are invalid for [platform] and [os] and
-  /// resolves platform-specific metadata. If the suite itself is invalid for
-  /// [platform] and [os], returns `null`.
-  Suite forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return change(tests: tests.where((test) {
+  /// If [platform] and/or [os] are passed, [tests] and [metadata] are filtered
+  /// to match that platform information.
+  ///
+  /// If [os] is passed without [platform], throws an [ArgumentError].
+  Suite(Iterable<Test> tests, {this.path, TestPlatform platform,
+          OperatingSystem os, Metadata metadata, AsyncFunction onClose})
+      : platform = platform,
+        os = os,
+        metadata = _filterMetadata(metadata, platform, os),
+        _onClose = onClose,
+        tests = new UnmodifiableListView<Test>(
+            _filterTests(tests, platform, os));
+
+  /// Returns [metadata] filtered according to [platform] and [os].
+  ///
+  /// Gracefully handles either [metadata] or [platform] being null.
+  static Metadata _filterMetadata(Metadata metadata, TestPlatform platform,
+      OperatingSystem os) {
+    if (platform == null && os != null) {
+      throw new ArgumentError.value(null, "os",
+          "If os is passed, platform must be passed as well");
+    }
+
+    if (metadata == null) return new Metadata();
+    if (platform == null) return metadata;
+    return metadata.forPlatform(platform, os: os);
+  }
+
+  /// Returns [tests] filtered according to [platform] and [os].
+  ///
+  /// Gracefully handles [platform] being null.
+  static List<Test> _filterTests(Iterable<Test> tests,
+      TestPlatform platform, OperatingSystem os) {
+    if (platform == null) return tests.toList();
+
+    return tests.where((test) {
       return test.metadata.testOn.evaluate(platform, os: os);
     }).map((test) {
       return test.change(metadata: test.metadata.forPlatform(platform, os: os));
-    }), metadata: metadata.forPlatform(platform, os: os));
+    }).toList();
   }
 
   /// Returns a new suite with the given fields updated.
-  Suite change({String path, String platform, Metadata metadata,
-      Iterable<Test> tests}) {
+  ///
+  /// In the new suite, [metadata] and [tests] will be filtered according to
+  /// [platform] and [os].
+  Suite change({String path, Metadata metadata, Iterable<Test> tests}) {
     if (path == null) path = this.path;
-    if (platform == null) platform = this.platform;
     if (metadata == null) metadata = this.metadata;
     if (tests == null) tests = this.tests;
-    return new Suite(tests, path: path, platform: platform, metadata: metadata,
+    return new Suite(tests, path: path, metadata: metadata,
         onClose: this.close);
   }
 

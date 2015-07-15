@@ -8,6 +8,7 @@ import 'dart:async';
 
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
+import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
 import 'package:test/test.dart';
@@ -107,11 +108,12 @@ void main() {
   group("changeSuite()", () {
     test("returns a new load suite with the same properties", () {
       var innerSuite = new Suite([]);
-      var suite = new LoadSuite("name", () => innerSuite, platform: "platform");
+      var suite = new LoadSuite("name", () => innerSuite,
+          platform: TestPlatform.vm);
       expect(suite.tests, hasLength(1));
 
       var newSuite = suite.changeSuite((suite) => suite);
-      expect(newSuite.platform, equals("platform"));
+      expect(newSuite.platform, equals(TestPlatform.vm));
       expect(newSuite.tests, equals(suite.tests));
     });
 

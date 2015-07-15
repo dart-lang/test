@@ -297,14 +297,12 @@ void main() {
     var browserManager = await _browserManagerFor(browser);
     if (_closed) return null;
 
-    var suite;
     if (browserManager != null) {
-      suite = await browserManager.loadSuite(path, suiteUrl, metadata,
+      var suite = await browserManager.loadSuite(path, suiteUrl, metadata,
           mapper: browser.isJS ? _mappers[path] : null);
       if (_closed) return null;
+      if (suite != null) return suite;
     }
-
-    if (suite != null) return suite.change(platform: browser.name);
 
     // If the browser manager fails to load a suite and the server isn't
     // closed, it's probably because the browser failed. We emit the failure
