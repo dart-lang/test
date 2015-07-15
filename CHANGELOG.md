@@ -1,3 +1,8 @@
+## 0.12.4
+
+* Fix an uncaught error that could crop up when killing the test runner process
+  at the wrong time.
+
 ## 0.12.3+7
 
 * Add a missing dependency on the `collection` package.

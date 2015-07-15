@@ -48,12 +48,17 @@ class BrowserManager {
   /// across the client and server.
   int _suiteId = 0;
 
+  /// Whether the channel to the browser has closed.
+  bool _closed;
+
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
   BrowserManager(this.browser, CompatibleWebSocket webSocket)
       : _channel = new MultiChannel(
           webSocket.map(JSON.decode),
-          mapSink(webSocket, JSON.encode));
+          mapSink(webSocket, JSON.encode)) {
+    _channel.stream.listen(null, onDone: () => _closed = true);
+  }
 
   /// Tells the browser the load a test suite from the URL [url].
   ///
@@ -77,6 +82,7 @@ class BrowserManager {
     var suiteChannel;
 
     closeIframe() {
+      if (_closed) return;
       suiteChannel.sink.close();
       _channel.sink.add({
         "command": "closeSuite",
