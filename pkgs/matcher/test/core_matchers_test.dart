@@ -104,8 +104,7 @@ void main() {
   test('returnsNormally', () {
     shouldPass(doesNotThrow, returnsNormally);
     shouldFail(doesThrow, returnsNormally, matches(r"Expected: return normally"
-        r"  Actual: <Closure(: \(\) => dynamic "
-        r"from Function 'doesThrow': static\.)?>"
+        r"  Actual: <Closure.*>"
         r"   Which: threw 'X'"));
   });
 
