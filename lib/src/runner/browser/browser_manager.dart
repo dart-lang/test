@@ -49,7 +49,7 @@ class BrowserManager {
   int _suiteId = 0;
 
   /// Whether the channel to the browser has closed.
-  bool _closed;
+  bool _closed = false;
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
