@@ -6,57 +6,50 @@
 
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/util/io.dart';
-import 'package:test/test.dart';
 
 import '../io.dart';
-
-String _sandbox;
 
 final _otherOS = Platform.isWindows ? "mac-os" : "windows";
 
 void main() {
-  setUp(() {
-    _sandbox = createTempDir();
-  });
-
-  tearDown(() {
-    new Directory(_sandbox).deleteSync(recursive: true);
-  });
+  useSandbox();
 
   group("for suite", () {
     test("runs a test suite on a matching platform", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't run a test suite on a non-matching platform", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
 
-      var result = _runTest(["--platform", "content-shell", "vm_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["--platform", "content-shell", "vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
 
     test("runs a test suite on a matching operating system", () {
       _writeTestFile("os_test.dart", suiteTestOn: currentOS.name);
 
-      var result = _runTest(["os_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["os_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't run a test suite on a non-matching operating system", () {
       _writeTestFile("os_test.dart", suiteTestOn: _otherOS,
           loadable: false);
 
-      var result = _runTest(["os_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["os_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
 
     test("only loads matching files when loading as a group", () {
@@ -67,9 +60,9 @@ void main() {
       _writeTestFile("other_os_test.dart",
           suiteTestOn: _otherOS, loadable: false);
 
-      var result = _runTest(["."]);
-      expect(result.stdout, contains("+2: All tests passed!"));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["."]);
+      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
+      test.shouldExit(0);
     });
   });
 
@@ -77,34 +70,34 @@ void main() {
     test("runs a VM group on the VM", () {
       _writeTestFile("vm_test.dart", groupTestOn: "vm");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't run a Browser group on the VM", () {
       _writeTestFile("browser_test.dart", groupTestOn: "browser");
 
-      var result = _runTest(["browser_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["browser_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
 
     test("runs a browser group on a browser", () {
       _writeTestFile("browser_test.dart", groupTestOn: "browser");
 
-      var result = _runTest(
+      var test = runTest(
           ["--platform", "content-shell", "browser_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't run a VM group on a browser", () {
       _writeTestFile("vm_test.dart", groupTestOn: "vm");
 
-      var result = _runTest(["--platform", "content-shell", "vm_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["--platform", "content-shell", "vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
   });
 
@@ -112,34 +105,34 @@ void main() {
     test("runs a VM test on the VM", () {
       _writeTestFile("vm_test.dart", testTestOn: "vm");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't run a browser test on the VM", () {
       _writeTestFile("browser_test.dart", testTestOn: "browser");
 
-      var result = _runTest(["browser_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["browser_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
 
     test("runs a browser test on a browser", () {
       _writeTestFile("browser_test.dart", testTestOn: "browser");
 
-      var result = _runTest(
+      var test = runTest(
           ["--platform", "content-shell", "browser_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't run a VM test on a browser", () {
       _writeTestFile("vm_test.dart", testTestOn: "vm");
 
-      var result = _runTest(["--platform", "content-shell", "vm_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["--platform", "content-shell", "vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
   });
 
@@ -148,36 +141,36 @@ void main() {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
           groupTestOn: "!js", testTestOn: "vm");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("All tests passed!"));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("doesn't runs the test if the suite doesn't match", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "browser",
           groupTestOn: "!js", testTestOn: "vm");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
 
     test("doesn't runs the test if the group doesn't match", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
           groupTestOn: "browser", testTestOn: "vm");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
 
     test("doesn't runs the test if the test doesn't match", () {
       _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
           groupTestOn: "!js", testTestOn: "browser");
 
-      var result = _runTest(["vm_test.dart"]);
-      expect(result.stdout, contains("No tests ran."));
-      expect(result.exitCode, equals(0));
+      var test = runTest(["vm_test.dart"]);
+      test.stdout.expect(consumeThrough(contains("No tests ran.")));
+      test.shouldExit(0);
     });
   });
 }
@@ -212,8 +205,5 @@ void _writeTestFile(String filename, {String suiteTestOn, String groupTestOn,
 
   buffer.writeln("}");
 
-  new File(p.join(_sandbox, filename)).writeAsStringSync(buffer.toString());
+  d.file(filename, buffer.toString()).create();
 }
-
-ProcessResult _runTest(List<String> args) =>
-    runTest(args, workingDirectory: _sandbox);

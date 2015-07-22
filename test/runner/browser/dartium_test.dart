@@ -4,152 +4,47 @@
 
 @TestOn("vm")
 
-import 'dart:async';
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
-import 'package:shelf/shelf.dart' as shelf;
-import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/runner/browser/dartium.dart';
-import 'package:test/src/util/io.dart';
-import 'package:test/src/utils.dart';
-import 'package:test/test.dart';
 
 import '../../io.dart';
 import '../../utils.dart';
-
-String _sandbox;
+import 'code_server.dart';
 
 void main() {
-  setUp(() {
-    _sandbox = createTempDir();
-  });
+  useSandbox();
 
-  tearDown(() {
-    new Directory(_sandbox).deleteSync(recursive: true);
-  });
+  test("starts Dartium with the given URL", () {
+    var server = new CodeServer();
 
-  group("running Dart", () {
-    // The Dart to serve in the server.
-    var dart;
-
-    var servePage = (request) {
-      var path = shelfUrl(request).path;
-
-      if (path.isEmpty) {
-        return new shelf.Response.ok("""
-<!doctype html>
-<html>
-<head>
-  <script type="application/dart" src="index.dart"></script>
-</head>
-</html>
-""", headers: {'content-type': 'text/html'});
-      } else if (path == "index.dart") {
-        return new shelf.Response.ok('''
-import "dart:html";
-
-main() async {
-  $dart
-}
-''', headers: {'content-type': 'application/dart'});
-      } else {
-        return new shelf.Response.notFound(null);
-      }
-    };
-
-    var server;
-    var webSockets;
-    setUp(() async {
-      var webSocketsController = new StreamController();
-      webSockets = webSocketsController.stream;
-
-      server = await shelf_io.serve(
-          new shelf.Cascade()
-              .add(webSocketHandler(webSocketsController.add))
-              .add(servePage).handler,
-          'localhost', 0);
+    schedule(() async {
+      var dartium = new Dartium(await server.url);
+      currentSchedule.onComplete.schedule(() async => (await dartium).close());
     });
 
-    tearDown(() {
-      if (server != null) server.close();
-
-      dart = null;
-      server = null;
-      webSockets = null;
-    });
-
-    test("starts Dartium with the given URL", () async {
-      dart = '''
+    server.handleDart('''
 var webSocket = new WebSocket(
     window.location.href.replaceFirst("http://", "ws://"));
 await webSocket.onOpen.first;
 webSocket.send("loaded!");
-''';
-      var dartium = new Dartium(baseUrlForAddress(server.address, server.port));
+''');
 
-      try {
-        var message = await (await webSockets.first).first;
-        expect(message, equals("loaded!"));
-      } finally {
-        dartium.close();
-      }
-    });
+    var webSocket = server.handleWebSocket();
 
-    test("doesn't preserve state across runs", () {
-      dart = '''
-window.localStorage["data"] = "value";
-
-var webSocket = new WebSocket(
-    window.location.href.replaceFirst("http://", "ws://"));
-await webSocket.onOpen.first;
-webSocket.send("done");
-''';
-      var dartium = new Dartium(baseUrlForAddress(server.address, server.port));
-
-      var first = true;
-      webSockets.listen(expectAsync((webSocket) {
-        if (first) {
-          // The first request will set local storage data. We can't kill the
-          // old Dartium and start a new one until we're sure that that has
-          // finished.
-          webSocket.first.then((_) {
-            dartium.close();
-
-            dart = '''
-var webSocket = new WebSocket(
-    window.location.href.replaceFirst("http://", "ws://"));
-await webSocket.onOpen.first;
-webSocket.send(window.localStorage["data"].toString());
-''';
-            dartium = new Dartium(
-                baseUrlForAddress(server.address, server.port));
-            first = false;
-          });
-        } else {
-          // The second request will return the local storage data. This should
-          // be null, indicating that no data was saved between runs.
-          expect(
-              webSocket.first
-                  .then((message) => expect(message, equals('null')))
-                  .whenComplete(dartium.close),
-              completes);
-        }
-      }, count: 2));
+    schedule(() async {
+      expect(await (await webSocket).first, equals("loaded!"));
     });
   });
 
   test("a process can be killed synchronously after it's started", () async {
-    var server = await shelf_io.serve(
-        expectAsync((_) {}, count: 0), 'localhost', 0);
+    var server = new CodeServer();
 
-    try {
-      var dartium = new Dartium(baseUrlForAddress(server.address, server.port));
+    schedule(() async {
+      var dartium = new Dartium(await server.url);
       await dartium.close();
-    } finally {
-      server.close();
-    }
+    });
   });
 
   test("reports an error in onExit", () {
@@ -160,32 +55,31 @@ webSocket.send(window.localStorage["data"].toString());
   });
 
   test("can run successful tests", () {
-    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""");
+""").create();
 
-    var result = _runTest(["-p", "dartium", "test.dart"]);
-    expect(result.stdout, isNot(contains("Compiling")));
-    expect(result.exitCode, equals(0));
+    var test = runTest(["-p", "dartium", "test.dart"]);
+    test.stdout.fork().expect(never(contains("Compiling")));
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
   });
 
   test("can run failing tests", () {
-    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""");
+""").create();
 
-    var result = _runTest(["-p", "dartium", "test.dart"]);
-    expect(result.exitCode, equals(1));
+    var test = runTest(["-p", "dartium", "test.dart"]);
+    test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
+    test.shouldExit(1);
   });
 }
-
-ProcessResult _runTest(List<String> args) =>
-    runTest(args, workingDirectory: _sandbox);

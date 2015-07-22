@@ -4,15 +4,11 @@
 
 @TestOn("vm")
 
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
-import 'package:test/src/util/io.dart';
-import 'package:test/test.dart';
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 
 import '../../io.dart';
-
-String _sandbox;
 
 final _success = """
 import 'package:test/test.dart';
@@ -31,137 +27,109 @@ void main() {
 """;
 
 void main() {
-  setUp(() {
-    _sandbox = createTempDir();
-  });
-
-  tearDown(() {
-    new Directory(_sandbox).deleteSync(recursive: true);
-  });
+  useSandbox();
 
   group("fails gracefully if", () {
     test("a test file fails to compile", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("invalid Dart file");
-      var result = _runTest(["-p", "chrome", "test.dart"]);
+      d.file("test.dart", "invalid Dart file").create();
+      var test = runTest(["-p", "chrome", "test.dart"]);
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      expect(result.stdout, allOf([
-        contains("Expected a declaration, but got 'invalid'"),
-        contains('-1: compiling $relativePath'),
-        contains('Failed to load "$relativePath": dart2js failed.')
+      test.stdout.expect(containsInOrder([
+        "Expected a declaration, but got 'invalid'",
+        '-1: compiling test.dart',
+        'Failed to load "test.dart": dart2js failed.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a test file throws", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main() => throw 'oh no';");
+      d.file("test.dart", "void main() => throw 'oh no';").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "chrome", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: compiling $relativePath'),
-        contains('Failed to load "$relativePath": oh no')
+      var test = runTest(["-p", "chrome", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: compiling test.dart',
+        'Failed to load "test.dart": oh no'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a test file doesn't have a main defined", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void foo() {}");
+      d.file("test.dart", "void foo() {}").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "chrome", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: compiling $relativePath'),
-        contains('Failed to load "$relativePath": No top-level main() function '
-            'defined.')
+      var test = runTest(["-p", "chrome", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: compiling test.dart',
+        'Failed to load "test.dart": No top-level main() function defined.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a test file has a non-function main", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("int main;");
+      d.file("test.dart", "int main;").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "chrome", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: compiling $relativePath'),
-        contains('Failed to load "$relativePath": Top-level main getter is not '
-            'a function.\n')
+      var test = runTest(["-p", "chrome", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: compiling test.dart',
+        'Failed to load "test.dart": Top-level main getter is not a function.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a test file has a main with arguments", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main(arg) {}");
+      d.file("test.dart", "void main(arg) {}").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "chrome", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: compiling $relativePath'),
-        contains('Failed to load "$relativePath": Top-level main() function '
-            'takes arguments.\n')
+      var test = runTest(["-p", "chrome", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: compiling test.dart',
+        'Failed to load "test.dart": Top-level main() function takes arguments.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a custom HTML file has no script tag", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main(arg) {}");
+      d.file("test.dart", "void main() {}").create();
 
-      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+      d.file("test.html", """
 <html>
 <head>
   <link rel="x-dart-test" href="test.dart">
 </head>
 </html>
-""");
+""").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: loading $relativePath'),
-        contains(
-            'Failed to load "$relativePath": '
-                '"${p.withoutExtension(relativePath)}.html" must contain '
-                '<script src="packages/test/dart.js"></script>.\n')
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: loading test.dart',
+        'Failed to load "test.dart": "test.html" must contain '
+            '<script src="packages/test/dart.js"></script>.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a custom HTML file has no link", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main(arg) {}");
+      d.file("test.dart", "void main() {}").create();
 
-      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+      d.file("test.html", """
 <html>
 <head>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""");
+""").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: loading $relativePath'),
-        contains(
-            'Failed to load "$relativePath": '
-                'Expected exactly 1 <link rel="x-dart-test"> in test.html, '
-                'found 0.\n')
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: loading test.dart',
+        'Failed to load "test.dart": Expected exactly 1 '
+            '<link rel="x-dart-test"> in test.html, found 0.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a custom HTML file has too many links", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main(arg) {}");
+      d.file("test.dart", "void main() {}").create();
 
-      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+      d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -169,67 +137,56 @@ void main() {
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""");
+""").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: loading $relativePath'),
-        contains(
-            'Failed to load "$relativePath": '
-                'Expected exactly 1 <link rel="x-dart-test"> in test.html, '
-                'found 2.\n')
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: loading test.dart',
+        'Failed to load "test.dart": Expected exactly 1 '
+            '<link rel="x-dart-test"> in test.html, found 2.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a custom HTML file has no href in the link", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main(arg) {}");
+      d.file("test.dart", "void main() {}").create();
 
-      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+      d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test'>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""");
+""").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: loading $relativePath'),
-        contains(
-            'Failed to load "$relativePath": '
-                'Expected <link rel="x-dart-test"> in test.html to have an '
-                '"href" attribute.\n')
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: loading test.dart',
+        'Failed to load "test.dart": Expected <link rel="x-dart-test"> in '
+            'test.html to have an "href" attribute.'
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     test("a custom HTML file has an invalid test URL", () {
-      var testPath = p.join(_sandbox, "test.dart");
-      new File(testPath).writeAsStringSync("void main(arg) {}");
+      d.file("test.dart", "void main() {}").create();
 
-      new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+      d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='wrong.dart'>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""");
+""").create();
 
-      var relativePath = p.relative(testPath, from: _sandbox);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, allOf([
-        contains('-1: loading $relativePath'),
-        contains(
-            'Failed to load "$relativePath": '
-                'Failed to load script at ')
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        '-1: loading test.dart',
+        'Failed to load "test.dart": Failed to load script at '
       ]));
-      expect(result.exitCode, equals(1));
+      test.shouldExit(1);
     });
 
     // TODO(nweiz): test what happens when a test file is unreadable once issue
@@ -237,53 +194,35 @@ void main() {
   });
 
   group("runs successful tests", () {
-    test("on Chrome", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "chrome", "test.dart"]);
-      expect(result.exitCode, equals(0));
-    });
-
-    test("on Safari", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "safari", "test.dart"]);
-      expect(result.exitCode, equals(0));
-    }, testOn: "mac-os");
-
-    test("on content shell", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, isNot(contains("Compiling")));
-      expect(result.exitCode, equals(0));
-    });
-
     test("on a JS and non-JS browser", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(
-          ["-p", "content-shell", "-p", "chrome", "test.dart"]);
-      expect(result.stdout, contains("[Chrome] compiling"));
-      expect(result.stdout,
-          isNot(contains("[Dartium Content Shell] compiling")));
-      expect(result.exitCode, equals(0));
+      d.file("test.dart", _success).create();
+      var test = runTest(["-p", "content-shell", "-p", "chrome", "test.dart"]);
+
+      test.stdout.fork().expect(consumeThrough(contains("[Chrome] compiling")));
+      test.stdout.expect(never(contains("[Dartium Content Shell] compiling")));
+      test.shouldExit(0);
     });
 
     test("on a browser and the VM", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_success);
-      var result = _runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
-      expect(result.exitCode, equals(0));
+      d.file("test.dart", _success).create();
+      var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
+
+      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
+      test.shouldExit(0);
     });
 
     // Regression test; this broke in 0.12.0-beta.9.
     test("on a file in a subdirectory", () {
-      new Directory(p.join(_sandbox, "dir")).createSync();
-      new File(p.join(_sandbox, "dir", "test.dart"))
-          .writeAsStringSync(_success);
-      var result = _runTest(["-p", "chrome", "dir/test.dart"]);
-      expect(result.exitCode, equals(0));
+      d.dir("dir", [d.file("test.dart", _success)]).create();
+
+      var test = runTest(["-p", "chrome", "dir/test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
     });
 
     group("with a custom HTML file", () {
       setUp(() {
-        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+        d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -293,9 +232,9 @@ void main() {
     expect(document.query('#foo'), isNotNull);
   });
 }
-""");
+""").create();
 
-        new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+        d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -305,22 +244,24 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""");
+""").create();
       });
 
       test("on content shell", () {
-        var result = _runTest(["-p", "content-shell", "test.dart"]);
-        expect(result.exitCode, equals(0));
+        var test = runTest(["-p", "content-shell", "test.dart"]);
+        test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+        test.shouldExit(0);
       });
 
       test("on Chrome", () {
-        var result = _runTest(["-p", "chrome", "test.dart"]);
-        expect(result.exitCode, equals(0));
+        var test = runTest(["-p", "chrome", "test.dart"]);
+        test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+        test.shouldExit(0);
       });
 
       // Regression test for https://github.com/dart-lang/test/issues/82.
       test("ignores irrelevant link tags", () {
-        new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+        d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test-not'>
@@ -332,35 +273,18 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""");
+""").create();
 
-        var result = _runTest(["-p", "content-shell", "test.dart"]);
-        expect(result.exitCode, equals(0));
+        var test = runTest(["-p", "content-shell", "test.dart"]);
+        test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+        test.shouldExit(0);
       });
     });
   });
 
   group("runs failing tests", () {
-    test("on Chrome", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runTest(["-p", "chrome", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    });
-
-    test("on Safari", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runTest(["-p", "safari", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    }, testOn: "mac-os");
-
-    test("on content-shell", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    });
-
     test("that fail only on the browser", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+      d.file("test.dart", """
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -371,13 +295,15 @@ void main() {
     if (p.style == p.Style.url) throw new TestFailure("oh no");
   });
 }
-""");
-      var result = _runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
-      expect(result.exitCode, equals(1));
+""").create();
+
+      var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
+      test.shouldExit(1);
     });
 
     test("that fail only on the VM", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+      d.file("test.dart", """
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -388,15 +314,16 @@ void main() {
     if (p.style != p.Style.url) throw new TestFailure("oh no");
   });
 }
-""");
-      var result = _runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
-      expect(result.exitCode, equals(1));
-    });
+""").create();
 
+      var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
+      test.shouldExit(1);
+    });
 
     group("with a custom HTML file", () {
       setUp(() {
-        new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+        d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -406,9 +333,9 @@ void main() {
     expect(document.query('#foo'), isNull);
   });
 }
-""");
+""").create();
 
-        new File(p.join(_sandbox, "test.html")).writeAsStringSync("""
+        d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -418,32 +345,33 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""");
+""").create();
       });
 
       test("on content shell", () {
-        var result = _runTest(["-p", "content-shell", "test.dart"]);
-        expect(result.exitCode, equals(1));
+        var test = runTest(["-p", "content-shell", "test.dart"]);
+        test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
+        test.shouldExit(1);
       });
 
       test("on Chrome", () {
-        var result = _runTest(["-p", "chrome", "test.dart"]);
-        expect(result.exitCode, equals(1));
+        var test = runTest(["-p", "chrome", "test.dart"]);
+        test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
+        test.shouldExit(1);
       });
     });
   });
 
   test("the compiler uses colors if the test runner uses colors", () {
-    var testPath = p.join(_sandbox, "test.dart");
-    new File(testPath).writeAsStringSync("String main() => 12;\n");
+    d.file("test.dart", "String main() => 12;\n").create();
 
-    var result = _runTest(["--color", "-p", "chrome", "test.dart"]);
-    expect(result.stdout, contains('\u001b[35m'));
-    expect(result.exitCode, equals(1));
+    var test = runTest(["--color", "-p", "chrome", "test.dart"]);
+    test.stdout.expect(consumeThrough(contains('\u001b[35m')));
+    test.shouldExit(1);
   });
 
   test("forwards prints from the browser test", () {
-    new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    d.file("test.dart", """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -454,34 +382,42 @@ void main() {
     return new Future(() => print("world!"));
   });
 }
-""");
+""").create();
 
-    var result = _runTest(["-p", "content-shell", "test.dart"]);
-    expect(result.stdout, contains("Hello,\nworld!\n"));
-    expect(result.exitCode, equals(0));
+    var test = runTest(["-p", "content-shell", "test.dart"]);
+    test.stdout.expect(inOrder([
+      consumeThrough("Hello,"),
+      "world!"
+    ]));
+    test.shouldExit(0);
   });
 
   test("dartifies stack traces for JS-compiled tests by default", () {
-    new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-    var result = _runTest(["-p", "chrome", "--verbose-trace", "test.dart"]);
-    expect(result.stdout, contains(" main.<fn>\n"));
-    expect(result.stdout, contains("package:test"));
-    expect(result.stdout, contains("dart:async/zone.dart"));
-    expect(result.exitCode, equals(1));
+    d.file("test.dart", _failure).create();
+
+    var test = runTest(["-p", "chrome", "--verbose-trace", "test.dart"]);
+    test.stdout.expect(containsInOrder([
+      " main.<fn>",
+      "package:test",
+      "dart:async/zone.dart"
+    ]));
+    test.shouldExit(1);
   });
 
   test("doesn't dartify stack traces for JS-compiled tests with --js-trace", () {
-    new File(p.join(_sandbox, "test.dart")).writeAsStringSync(_failure);
-    var result = _runTest(
+    d.file("test.dart", _failure).create();
+
+    var test = runTest(
         ["-p", "chrome", "--verbose-trace", "--js-trace", "test.dart"]);
-    expect(result.stdout, isNot(contains(" main.<fn>\n")));
-    expect(result.stdout, isNot(contains("package:test")));
-    expect(result.stdout, isNot(contains("dart:async/zone.dart")));
-    expect(result.exitCode, equals(1));
+    test.stdout.fork().expect(never(endsWith(" main.<fn>")));
+    test.stdout.fork().expect(never(contains("package:test")));
+    test.stdout.fork().expect(never(contains("dart:async/zone.dart")));
+    test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
+    test.shouldExit(1);
   });
 
   test("respects top-level @Timeout declarations", () {
-    new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+    d.file("test.dart", '''
 @Timeout(const Duration(seconds: 0))
 
 import 'dart:async';
@@ -491,16 +427,19 @@ import 'package:test/test.dart';
 void main() {
   test("timeout", () {});
 }
-''');
+''').create();
 
-    var result = _runTest(["-p", "content-shell", "test.dart"]);
-    expect(result.stdout, contains("Test timed out after 0 seconds."));
-    expect(result.stdout, contains("-1: Some tests failed."));
+    var test = runTest(["-p", "content-shell", "test.dart"]);
+    test.stdout.expect(containsInOrder([
+      "Test timed out after 0 seconds.",
+      "-1: Some tests failed."
+    ]));
+    test.shouldExit(1);
   });
 
   group("with onPlatform", () {
     test("respects matching Skips", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -508,14 +447,15 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no', onPlatform: {"browser": new Skip()});
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("+0 ~1: All tests skipped."));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
+      test.shouldExit(0);
     });
 
     test("ignores non-matching Skips", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -523,14 +463,15 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {}, onPlatform: {"vm": new Skip()});
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("+1: All tests passed!"));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("respects matching Timeouts", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -540,15 +481,18 @@ void main() {
     "browser": new Timeout(new Duration(seconds: 0))
   });
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("Test timed out after 0 seconds."));
-      expect(result.stdout, contains("-1: Some tests failed."));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "Test timed out after 0 seconds.",
+        "-1: Some tests failed."
+      ]));
+      test.shouldExit(1);
     });
 
     test("ignores non-matching Timeouts", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -558,14 +502,15 @@ void main() {
     "vm": new Timeout(new Duration(seconds: 0))
   });
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("+1: All tests passed!"));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("applies matching platforms in order", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -579,22 +524,21 @@ void main() {
     "browser || android": new Skip("fifth")
   });
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("Skip: fifth"));
-      expect(result.stdout, isNot(anyOf([
-        contains("Skip: first"),
-        contains("Skip: second"),
-        contains("Skip: third"),
-        contains("Skip: fourth")
-      ])));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.fork().expect(never(contains("Skip: first")));
+      test.stdout.fork().expect(never(contains("Skip: second")));
+      test.stdout.fork().expect(never(contains("Skip: third")));
+      test.stdout.fork().expect(never(contains("Skip: fourth")));
+      test.stdout.expect(consumeThrough(contains("Skip: fifth")));
+      test.shouldExit(0);
     });
   });
 
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 @OnPlatform(const {"browser": const Skip()})
 
 import 'dart:async';
@@ -604,14 +548,15 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no');
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("+0 ~1: All tests skipped."));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("~1: All tests skipped.")));
+      test.shouldExit(0);
     });
 
     test("ignores non-matching Skips", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 @OnPlatform(const {"vm": const Skip()})
 
 import 'dart:async';
@@ -621,14 +566,15 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("+1: All tests passed!"));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
     });
 
     test("respects matching Timeouts", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 @OnPlatform(const {
   "browser": const Timeout(const Duration(seconds: 0))
 })
@@ -640,15 +586,18 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no');
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("Test timed out after 0 seconds."));
-      expect(result.stdout, contains("-1: Some tests failed."));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "Test timed out after 0 seconds.",
+        "-1: Some tests failed."
+      ]));
+      test.shouldExit(1);
     });
 
     test("ignores non-matching Timeouts", () {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync('''
+      d.file("test.dart", '''
 @OnPlatform(const {
   "vm": const Timeout(const Duration(seconds: 0))
 })
@@ -660,13 +609,11 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''');
+''').create();
 
-      var result = _runTest(["-p", "content-shell", "test.dart"]);
-      expect(result.stdout, contains("+1: All tests passed!"));
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
     });
   });
 }
-
-ProcessResult _runTest(List<String> args) =>
-    runTest(args, workingDirectory: _sandbox);

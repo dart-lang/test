@@ -4,21 +4,24 @@
 
 @TestOn("vm")
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
-import 'package:test/test.dart';
 
 import '../io.dart';
 
-String _sandbox;
+/// The `--pub-serve` argument for the test process, based on [pubServePort].
+Future<String> get _pubServeArg =>
+    pubServePort.then((port) => '--pub-serve=$port');
 
 void main() {
-  setUp(() {
-    _sandbox = Directory.systemTemp.createTempSync('test_').path;
-
-    new File(p.join(_sandbox, "pubspec.yaml")).writeAsStringSync("""
+  useSandbox(() {
+    d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
@@ -30,21 +33,20 @@ transformers:
     \$include: test/**_test.dart
 dependency_overrides:
   matcher: '0.12.0-alpha.0'
-""");
+""").create();
 
-    new Directory(p.join(_sandbox, "test")).createSync();
-
-    new File(p.join(_sandbox, "test", "my_test.dart")).writeAsStringSync("""
+    d.dir("test", [
+      d.file("my_test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("test", () => expect(true, isTrue));
 }
-""");
+""")
+    ]).create();
 
-    new Directory(p.join(_sandbox, "lib")).createSync();
-
-    new File(p.join(_sandbox, "lib", "myapp.dart")).writeAsStringSync("""
+    d.dir("lib", [
+      d.file("myapp.dart", """
 import 'package:barback/barback.dart';
 
 class MyTransformer extends Transformer {
@@ -59,143 +61,111 @@ class MyTransformer extends Transformer {
         contents.replaceAll("isFalse", "isTrue")));
   }
 }
-""");
+""")
+    ]).create();
 
-    var pubGetResult = runPub(['get'], workingDirectory: _sandbox);
-    expect(pubGetResult.exitCode, equals(0));
-  });
-
-  tearDown(() {
-    // On Windows, there's no way to shut down the actual "pub serve" process.
-    // Killing the process we start will just kill the batch file wrapper (issue
-    // 23304), not the underlying "pub serve" process. Since that process has
-    // locks on files in the sandbox, we can't delete the sandbox on Windows
-    // without errors.
-    if (Platform.isWindows) return;
-
-    new Directory(_sandbox).deleteSync(recursive: true);
+    runPub(['get']).shouldExit(0);
   });
 
   group("with transformed tests", () {
     setUp(() {
       // Give the test a failing assertion that the transformer will convert to
       // a passing assertion.
-      new File(p.join(_sandbox, "test", "my_test.dart")).writeAsStringSync("""
+      d.file("test/my_test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("test", () => expect(true, isFalse));
 }
-""");
+""").create();
     });
 
-    test("runs those tests in the VM", () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest(['--pub-serve=${pair.last}'],
-            workingDirectory: _sandbox);
-        expect(result.exitCode, equals(0));
-        expect(result.stdout, contains('+1: All tests passed!'));
-      } finally {
-        pair.first.kill();
-      }
+    test("runs those tests in the VM", () {
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg]);
+      test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
+      test.shouldExit(0);
+      pub.kill();
     });
 
-    test("runs those tests on Chrome", () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest(['--pub-serve=${pair.last}', '-p', 'chrome'],
-            workingDirectory: _sandbox);
-        expect(result.exitCode, equals(0));
-        expect(result.stdout, contains('+1: All tests passed!'));
-      } finally {
-        pair.first.kill();
-      }
+    test("runs those tests on Chrome", () {
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg, '-p', 'chrome']);
+      test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
+      test.shouldExit(0);
+      pub.kill();
     });
 
-    test("runs those tests on content shell", () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest(
-            ['--pub-serve=${pair.last}', '-p', 'content-shell'],
-            workingDirectory: _sandbox);
-        expect(result.exitCode, equals(0));
-        expect(result.stdout, contains('+1: All tests passed!'));
-      } finally {
-        pair.first.kill();
-      }
+    test("runs those tests on content shell", () {
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg, '-p', 'content-shell']);
+      test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
+      test.shouldExit(0);
+      pub.kill();
     });
 
     test("gracefully handles pub serve running on the wrong directory for "
-        "VM tests", () async {
-      new Directory(p.join(_sandbox, "web")).createSync();
+        "VM tests", () {
+      d.dir("web").create();
 
-      var pair = await startPubServe(args: ['web'], workingDirectory: _sandbox);
-      try {
-        var result = runTest(['--pub-serve=${pair.last}'],
-            workingDirectory: _sandbox);
-        expect(result.stdout, allOf([
-          contains('-1: loading ${p.join("test", "my_test.dart")}'),
-          contains('Failed to load "${p.join("test", "my_test.dart")}":'),
-          contains('404 Not Found'),
-          contains('Make sure "pub serve" is serving the test/ directory.')
-        ]));
-        expect(result.exitCode, equals(1));
-      } finally {
-        pair.first.kill();
-      }
+      var pub = runPubServe(args: ['web']);
+      var test = runTest([_pubServeArg]);
+      test.stdout.expect(containsInOrder([
+        '-1: loading ${p.join("test", "my_test.dart")}',
+        'Failed to load "${p.join("test", "my_test.dart")}":',
+        '404 Not Found',
+        'Make sure "pub serve" is serving the test/ directory.'
+      ]));
+      test.shouldExit(1);
+
+      pub.kill();
     });
 
     test("gracefully handles pub serve running on the wrong directory for "
-        "browser tests", () async {
-      new Directory(p.join(_sandbox, "web")).createSync();
+        "browser tests", () {
+      d.dir("web").create();
 
-      var pair = await startPubServe(args: ['web'], workingDirectory: _sandbox);
-      try {
-        var result = runTest(['--pub-serve=${pair.last}', '-p', 'chrome'],
-            workingDirectory: _sandbox);
-        expect(result.stdout, allOf([
-          contains('-1: compiling ${p.join("test", "my_test.dart")}'),
-          contains('Failed to load "${p.join("test", "my_test.dart")}":'),
-          contains('404 Not Found'),
-          contains('Make sure "pub serve" is serving the test/ directory.')
-        ]));
-        expect(result.exitCode, equals(1));
-      } finally {
-        pair.first.kill();
-      }
+      var pub = runPubServe(args: ['web']);
+      var test = runTest([_pubServeArg, '-p', 'chrome']);
+      test.stdout.expect(containsInOrder([
+        '-1: compiling ${p.join("test", "my_test.dart")}',
+        'Failed to load "${p.join("test", "my_test.dart")}":',
+        '404 Not Found',
+        'Make sure "pub serve" is serving the test/ directory.'
+      ]));
+      test.shouldExit(1);
+
+      pub.kill();
     });
 
-    test("gracefully handles unconfigured transformers", () async {
-      new File(p.join(_sandbox, "pubspec.yaml")).writeAsStringSync("""
+    test("gracefully handles unconfigured transformers", () {
+      d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
   test: {path: ${p.current}}
-""");
+""").create();
 
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest(['--pub-serve=${pair.last}'],
-            workingDirectory: _sandbox);
-        expect(result.exitCode, equals(exit_codes.data));
-        expect(result.stderr, equals('''
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg]);
+      expectStderrEquals(test, '''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
 your pubspec:
 
 transformers:
 - test/pub_serve:
     \$include: test/**_test.dart
-'''));
-      } finally {
-        pair.first.kill();
-      }
+''');
+      test.shouldExit(exit_codes.data);
+
+      pub.kill();
     });
   });
 
   group("uses a custom HTML file", () {
     setUp(() {
-      new File(p.join(_sandbox, "test", "test.dart")).writeAsStringSync("""
+      d.dir("test", [
+        d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -205,9 +175,9 @@ void main() {
     expect(document.query('#foo'), isNull);
   });
 }
-""");
+"""),
 
-      new File(p.join(_sandbox, "test", "test.html")).writeAsStringSync("""
+      d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -216,39 +186,30 @@ void main() {
 <body>
   <div id="foo"></div>
 </body>
-""");
+""")
+      ]).create();
     });
 
-    test("on Chrome", () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest(['--pub-serve=${pair.last}', '-p', 'chrome'],
-            workingDirectory: _sandbox);
-        expect(result.exitCode, equals(0));
-        expect(result.stdout, contains('+1: All tests passed!'));
-      } finally {
-        pair.first.kill();
-      }
+    test("on Chrome", () {
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg, '-p', 'chrome']);
+      test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
+      test.shouldExit(0);
+      pub.kill();
     });
 
-    test("on content shell", () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest(
-            ['--pub-serve=${pair.last}', '-p', 'content-shell'],
-            workingDirectory: _sandbox);
-        expect(result.exitCode, equals(0));
-        expect(result.stdout, contains('+1: All tests passed!'));
-      } finally {
-        pair.first.kill();
-      }
+    test("on content shell", () {
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg, '-p', 'content-shell']);
+      test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
+      test.shouldExit(0);
+      pub.kill();
     });
   });
 
-
   group("with a failing test", () {
     setUp(() {
-      new File(p.join(_sandbox, "test", "my_test.dart")).writeAsStringSync("""
+      d.file("test/my_test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -256,88 +217,81 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw 'oh no');
 }
-""");
+""").create();
     });
 
-    test("dartifies stack traces for JS-compiled tests by default", () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest([
-          '--pub-serve=${pair.last}',
-          '-p', 'chrome',
-          '--verbose-trace'
-        ], workingDirectory: _sandbox);
-        expect(result.stdout, contains(" main.<fn>\n"));
-        expect(result.stdout, contains("package:test"));
-        expect(result.stdout, contains("dart:async/zone.dart"));
-        expect(result.exitCode, equals(1));
-      } finally {
-        pair.first.kill();
-      }
+    test("dartifies stack traces for JS-compiled tests by default", () {
+      var pub = runPubServe();
+      var test = runTest([_pubServeArg, '-p', 'chrome', '--verbose-trace']);
+      test.stdout.expect(containsInOrder([
+        " main.<fn>",
+        "package:test",
+        "dart:async/zone.dart"
+      ]));
+      test.shouldExit(1);
+      pub.kill();
     });
 
     test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
-        () async {
-      var pair = await startPubServe(workingDirectory: _sandbox);
-      try {
-        var result = runTest([
-          '--pub-serve=${pair.last}',
-          '-p', 'chrome',
-          '--js-trace',
-          '--verbose-trace'
-        ], workingDirectory: _sandbox);
-        expect(result.stdout, isNot(contains(" main.<fn>\n")));
-        expect(result.stdout, isNot(contains("package:test")));
-        expect(result.stdout, isNot(contains("dart:async/zone.dart")));
-        expect(result.exitCode, equals(1));
-      } finally {
-        pair.first.kill();
-      }
+        () {
+      var pub = runPubServe();
+      var test = runTest([
+        _pubServeArg,
+        '-p', 'chrome',
+        '--js-trace',
+        '--verbose-trace'
+      ]);
+
+      test.stdout.fork().expect(never(endsWith(" main.<fn>")));
+      test.stdout.fork().expect(never(contains("package:test")));
+      test.stdout.fork().expect(never(contains("dart:async/zone.dart")));
+      test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
+      test.shouldExit(1);
+
+      pub.kill();
     });
   });
 
   test("gracefully handles pub serve not running for VM tests", () {
-    var result = runTest(['--pub-serve=54321'],
-        workingDirectory: _sandbox);
-    expect(result.stdout, allOf([
-      contains('-1: loading ${p.join("test", "my_test.dart")}'),
-      contains('''
-  Failed to load "${p.join("test", "my_test.dart")}":
-  Error getting http://localhost:54321/my_test.dart.vm_test.dart: Connection refused
-  Make sure "pub serve" is running.''')
+    var test = runTest(['--pub-serve=54321']);
+    test.stdout.expect(containsInOrder([
+      '-1: loading ${p.join("test", "my_test.dart")}',
+      'Failed to load "${p.join("test", "my_test.dart")}":',
+      'Error getting http://localhost:54321/my_test.dart.vm_test.dart: '
+          'Connection refused',
+      'Make sure "pub serve" is running.'
     ]));
-    expect(result.exitCode, equals(1));
+    test.shouldExit(1);
   });
 
   test("gracefully handles pub serve not running for browser tests", () {
-    var result = runTest(['--pub-serve=54321', '-p', 'chrome'],
-        workingDirectory: _sandbox);
+    var test = runTest(['--pub-serve=54321', '-p', 'chrome']);
     var message = Platform.isWindows
         ? 'The remote computer refused the network connection.'
         : 'Connection refused (errno ';
 
-    expect(result.stdout, allOf([
-      contains('-1: compiling ${p.join("test", "my_test.dart")}'),
-      contains('Failed to load "${p.join("test", "my_test.dart")}":'),
-      contains('Error getting http://localhost:54321/my_test.dart.browser_test'
-          '.dart.js.map: $message'),
-      contains('Make sure "pub serve" is running.')
+    test.stdout.expect(containsInOrder([
+      '-1: compiling ${p.join("test", "my_test.dart")}',
+      'Failed to load "${p.join("test", "my_test.dart")}":',
+      'Error getting http://localhost:54321/my_test.dart.browser_test.dart.js'
+          '.map: $message',
+      'Make sure "pub serve" is running.'
     ]));
-    expect(result.exitCode, equals(1));
+    test.shouldExit(1);
   });
 
   test("gracefully handles a test file not being in test/", () {
-    new File(p.join(_sandbox, 'test/my_test.dart'))
-        .copySync(p.join(_sandbox, 'my_test.dart'));
+    schedule(() {
+      new File(p.join(sandbox, 'test/my_test.dart'))
+          .copySync(p.join(sandbox, 'my_test.dart'));
+    });
 
-    var result = runTest(['--pub-serve=54321', 'my_test.dart'],
-        workingDirectory: _sandbox);
-    expect(result.stdout, allOf([
-      contains('-1: loading my_test.dart'),
-      contains(
-          'Failed to load "my_test.dart": When using "pub serve", all test '
-              'files must be in test/.\n')
+    var test = runTest(['--pub-serve=54321', 'my_test.dart']);
+    test.stdout.expect(containsInOrder([
+      '-1: loading my_test.dart',
+      'Failed to load "my_test.dart": When using "pub serve", all test files '
+          'must be in test/.'
     ]));
-    expect(result.exitCode, equals(1));
+    test.shouldExit(1);
   });
 }

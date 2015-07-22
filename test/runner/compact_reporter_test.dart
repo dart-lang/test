@@ -4,22 +4,21 @@
 
 @TestOn("vm")
 
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
-import 'package:test/src/util/io.dart';
-import 'package:test/test.dart';
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 
 import '../io.dart';
 
 void main() {
+  useSandbox();
+
   test("reports when no tests are run", () {
-    return withTempDir((path) {
-      new File(p.join(path, "test.dart")).writeAsStringSync("void main() {}");
-      var result = runTest(["-r", "compact", "test.dart"],
-          workingDirectory: path);
-      expect(result.stdout, contains("No tests ran."));
-    });
+    d.file("test.dart", "void main() {}").create();
+
+    var test = runTest(["test.dart"], compact: true);
+    test.stdout.expect(consumeThrough(contains("No tests ran.")));
+    test.shouldExit(0);
   });
 
   test("runs several successful tests and reports when each completes", () {
@@ -67,8 +66,7 @@ void main() {
   });
 
   test("includes the full stack trace with --verbose-trace", () {
-    return withTempDir((path) {
-      new File(p.join(path, "test.dart")).writeAsStringSync("""
+    d.file("test.dart", """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -76,11 +74,11 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw "oh no");
 }
-""");
-      var result = runTest(["-r", "compact", "--verbose-trace", "test.dart"],
-          workingDirectory: path);
-      expect(result.stdout, contains("dart:isolate-patch"));
-    });
+""").create();
+
+    var test = runTest(["--verbose-trace", "test.dart"], compact: true);
+    test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
+    test.shouldExit(1);
   });
 
   test("runs failing tests along with successful tests", () {
@@ -378,10 +376,7 @@ void main() {
   });
 }
 
-void _expectReport(String tests, String expected, {List<String> args,
-    int concurrency}) {
-  if (concurrency == null) concurrency = 1;
-
+void _expectReport(String tests, String expected) {
   var dart = """
 import 'dart:async';
 
@@ -392,19 +387,18 @@ $tests
 }
 """;
 
-  expect(withTempDir((path) {
-    new File(p.join(path, "test.dart")).writeAsStringSync(dart);
-    if (args == null) args = [];
-    args = args.toList()
-      ..add("test.dart")
-      ..add("--concurrency=$concurrency")
-      ..add("--reporter=compact");
-    var result = runTest(args, workingDirectory: path);
+  d.file("test.dart", dart).create();
 
-    // Convert CRs into newlines, remove excess trailing whitespace, and trim
-    // off timestamps.
+  var test = runTest(["test.dart"], compact: true);
+  test.shouldExit();
+
+  schedule(() async {
+    var stdoutLines = await test.stdoutStream().toList();
+
+    // Skip the first CR, remove excess trailing whitespace, and trim off
+    // timestamps.
     var lastLine;
-    var actual = result.stdout.trim().split(new RegExp(r"[\r\n]")).map((line) {
+    var actual = stdoutLines.skip(1).map((line) {
       if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
 
       var trimmed = line.trim()
@@ -425,5 +419,5 @@ $tests
     }).join("\n");
 
     expect(actual, equals(expected));
-  }), completes);
+  });
 }

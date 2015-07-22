@@ -1,5 +1,8 @@
 name: test
-version: 0.12.3+8
+
+# This version should really be 0.12.4-dev, but scheduled_test depends on
+# test <0.12.4, so we're using + instead.
+version: 0.12.3+dev
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
@@ -33,3 +36,4 @@ dependencies:
   matcher: '>=0.12.0 <0.12.1'
 dev_dependencies:
   fake_async: '^0.1.2'
+  scheduled_test: '^0.12.2'

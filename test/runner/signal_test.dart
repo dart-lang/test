@@ -9,89 +9,73 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test/src/util/io.dart';
-import 'package:test/src/utils.dart';
-import 'package:test/test.dart';
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_process.dart';
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 
 import '../io.dart';
 
-String _sandbox;
-
-String get _tempDir => p.join(_sandbox, "tmp");
+String get _tempDir => p.join(sandbox, "tmp");
 
 // This test is inherently prone to race conditions. If it fails, it will likely
 // do so flakily, but if it succeeds, it will succeed consistently. The tests
 // represent a best effort to kill the test runner at certain times during its
 // execution.
 void main() {
-  setUp(() {
-    _sandbox = createTempDir();
-  });
-
-  tearDown(() {
-    new Directory(_sandbox).deleteSync(recursive: true);
-  });
+  useSandbox(() => d.dir("tmp").create());
 
   group("during loading,", () {
-    test("cleans up if killed while loading a VM test", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("cleans up if killed while loading a VM test", () {
+      d.file("test.dart", """
 void main() {
   print("in test.dart");
   // Spin for a long time so the test is probably killed while still loading.
   for (var i = 0; i < 100000000; i++) {}
 }
-""");
+""").create();
 
-      var process = await _startTest(["-r", "expanded", "test.dart"]);
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("in test.dart"));
+      signalAndQuit(test);
 
-      // Skip a progress line.
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("in test.dart"));
-      process.kill();
-      await process.exitCode;
-      expect(new Directory(_tempDir).listSync(), isEmpty);
+      expectTempDirEmpty();
     });
 
-    test("cleans up if killed while loading a browser test", () async {
-      new File(p.join(_sandbox, "test.dart"))
-          .writeAsStringSync("void main() {}");
+    test("cleans up if killed while loading a browser test", () {
+      d.file("test.dart", "void main() {}").create();
 
-      var process = await _startTest(
-          ["-r", "expanded", "-p", "chrome", "test.dart"]);
-      var line = await lineSplitter.bind(process.stdout).first;
-      expect(line, endsWith("compiling test.dart"));
-      process.kill();
-      await process.exitCode;
-      expect(new Directory(_tempDir).listSync(), isEmpty);
+      var test = _runTest(["-p", "chrome", "test.dart"]);
+      test.stdout.expect(consumeThrough(endsWith("compiling test.dart")));
+      signalAndQuit(test);
+
+      expectTempDirEmpty();
     });
 
-    test("exits immediately if ^C is sent twice", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("exits immediately if ^C is sent twice", () {
+      d.file("test.dart", """
 void main() {
   print("in test.dart");
   while (true) {}
 }
-""");
+""").create();
 
-      var process = await _startTest(["-r", "expanded", "test.dart"]);
-
-      // Skip a progress line.
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("in test.dart"));
-      process.kill();
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("in test.dart"));
+      test.signal(ProcessSignal.SIGTERM);
 
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await new Future.delayed(new Duration(seconds: 1));
-      process.kill();
-      await process.exitCode;
+      schedule(() => new Future.delayed(new Duration(seconds: 1)));
+
+      signalAndQuit(test);
     });
   });
 
   group("during test running", () {
-    test("waits for a VM test to finish running", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("waits for a VM test to finish running", () {
+      d.file("test.dart", """
 import 'dart:async';
 import 'dart:io';
 
@@ -105,22 +89,18 @@ void main() {
     return new Future.delayed(new Duration(seconds: 1));
   });
 }
-""");
+""").create();
 
-      var process = await _startTest(["-r", "expanded", "test.dart"]);
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("running test"));
+      signalAndQuit(test);
 
-      // Skip a progress line.
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("running test"));
-      process.kill();
-      await process.exitCode;
-      expect(new File(p.join(_sandbox, "output")).readAsStringSync(),
-          equals("ran teardown"));
-      expect(new Directory(_tempDir).listSync(), isEmpty);
+      d.file("output", "ran teardown").validate();
+      expectTempDirEmpty();
     });
 
-    test("kills a browser test immediately", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("kills a browser test immediately", () {
+      d.file("test.dart", """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -137,21 +117,17 @@ void main() {
     });
   });
 }
-""");
+""").create();
 
-      var process = await _startTest(
-          ["-r", "expanded", "-p", "content-shell", "test.dart"]);
+      var test = _runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough("running test"));
+      signalAndQuit(test);
 
-      // Skip a progress line..
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("running test"));
-      process.kill();
-      await process.exitCode;
-      expect(new Directory(_tempDir).listSync(), isEmpty);
+      expectTempDirEmpty();
     });
 
-    test("kills a VM test immediately if ^C is sent twice", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("kills a VM test immediately if ^C is sent twice", () {
+      d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -160,25 +136,21 @@ void main() {
     while (true) {}
   });
 }
-""");
+""").create();
 
-      var process = await _startTest(["-r", "expanded", "test.dart"]);
-
-      // Skip a progress line.
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("running test"));
-      process.kill();
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("running test"));
+      test.signal(ProcessSignal.SIGTERM);
 
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await new Future.delayed(new Duration(seconds: 1));
-      process.kill();
-      await process.exitCode;
+      schedule(() => new Future.delayed(new Duration(seconds: 1)));
+      signalAndQuit(test);
     });
 
-    test("causes expect() to always throw an error immediately", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("causes expect() to always throw an error immediately", () {
+      d.file("test.dart", """
 import 'dart:async';
 import 'dart:io';
 
@@ -202,22 +174,18 @@ void main() {
     }
   });
 }
-""");
+""").create();
 
-      var process = await _startTest(["-r", "expanded", "test.dart"]);
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("running test"));
+      signalAndQuit(test);
 
-      // Skip a progress line.
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("running test"));
-      process.kill();
-      await process.exitCode;
-      expect(new File(p.join(_sandbox, "output")).readAsStringSync(),
-          equals("true"));
-      expect(new Directory(_tempDir).listSync(), isEmpty);
+      d.file("output", "true").validate();
+      expectTempDirEmpty();
     });
 
-    test("causes expectAsync() to always throw an error immediately", () async {
-      new File(p.join(_sandbox, "test.dart")).writeAsStringSync("""
+    test("causes expectAsync() to always throw an error immediately", () {
+      d.file("test.dart", """
 import 'dart:async';
 import 'dart:io';
 
@@ -241,24 +209,27 @@ void main() {
     }
   });
 }
-""");
+""").create();
 
-      var process = await _startTest(["-r", "expanded", "test.dart"]);
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("running test"));
+      signalAndQuit(test);
 
-      // Skip a progress line.
-      var line = await lineSplitter.bind(process.stdout).skip(1).first;
-      expect(line, equals("running test"));
-      process.kill();
-      await process.exitCode;
-      expect(new File(p.join(_sandbox, "output")).readAsStringSync(),
-          equals("true"));
-      expect(new Directory(_tempDir).listSync(), isEmpty);
+      d.file("output", "true").validate();
+      expectTempDirEmpty();
     });
   });
 }
 
-Future<Process> _startTest(List<String> args) {
-  new Directory(_tempDir).create();
-  return startTest(args, workingDirectory: _sandbox,
-      environment: {"_UNITTEST_TEMP_DIR": _tempDir});
+ScheduledProcess _runTest(List<String> args) =>
+    runTest(args, environment: {"_UNITTEST_TEMP_DIR": _tempDir});
+
+void signalAndQuit(ScheduledProcess test) {
+  test.signal(ProcessSignal.SIGTERM);
+  test.shouldExit();
+  test.stderr.expect(isDone);
+}
+
+void expectTempDirEmpty() {
+  schedule(() => expect(new Directory(_tempDir).listSync(), isEmpty));
 }

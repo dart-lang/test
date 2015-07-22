@@ -8,8 +8,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:scheduled_test/descriptor.dart' as d;
+import 'package:scheduled_test/scheduled_process.dart';
+import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/util/io.dart';
-import 'package:test/src/utils.dart';
 
 /// The path to the root directory of the `test` package.
 final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
@@ -28,25 +31,93 @@ final String noSuchFileMessage = Platform.isWindows
 final _servingRegExp =
     new RegExp(r'^Serving myapp [a-z]+ on http://localhost:(\d+)$');
 
+/// A future that will return the port of a pub serve instance run via
+/// [runPubServe].
+///
+/// This should only be called after [runPubServe].
+Future<int> get pubServePort => _pubServePortCompleter.future;
+Completer<int> _pubServePortCompleter;
+
+/// The path to the sandbox directory.
+///
+/// This is only set in tests for which [useSandbox] is active.
+String get sandbox => _sandbox;
+String _sandbox;
+
+/// Declares a [setUp] function that creates a sandbox diretory and sets it as
+/// the default for scheduled_test's directory descriptors.
+///
+/// This should be called outside of any tests. If [additionalSetup] is passed,
+/// it's run after the sandbox creation has been scheduled.
+void useSandbox([void additionalSetup()]) {
+  setUp(() {
+    _sandbox = createTempDir();
+    d.defaultRoot = _sandbox;
+
+    currentSchedule.onComplete.schedule(() {
+      try {
+        new Directory(_sandbox).deleteSync(recursive: true);
+      } on IOException catch (_) {
+        // Silently swallow exceptions on Windows. If the test failed, there may
+        // still be lingering processes that have files in the sandbox open,
+        // which will cause this to fail on Windows.
+        if (!Platform.isWindows) rethrow;
+      }
+    }, 'deleting the sandbox directory');
+
+    if (additionalSetup != null) additionalSetup();
+  });
+}
+
+/// Expects that the entire stdout stream of [test] equals [expected].
+void expectStdoutEquals(ScheduledProcess test, String expected) =>
+    _expectStreamEquals(test.stdoutStream(), expected);
+
+/// Expects that the entire stderr stream of [test] equals [expected].
+void expectStderrEquals(ScheduledProcess test, String expected) =>
+    _expectStreamEquals(test.stderrStream(), expected);
+
+/// Expects that the entirety of the line stream [stream] equals [expected].
+void _expectStreamEquals(Stream<String> stream, String expected) {
+  expect((() async {
+    var lines = await stream.toList();
+    expect(lines.join("\n").trim(), equals(expected.trim()));
+  })(), completes);
+}
+
+/// Returns a [StreamMatcher] that asserts that the stream emits strings
+/// containing each string in [strings] in order.
+///
+/// This expects each string in [strings] to match a different string in the
+/// stream.
+StreamMatcher containsInOrder(Iterable<String> strings) =>
+    inOrder(strings.map((string) => consumeThrough(contains(string))));
+
 /// Runs the test executable with the package root set properly.
-ProcessResult runTest(List<String> args, {String workingDirectory,
-    Map<String, String> environment}) {
+ScheduledProcess runTest(List args, {bool compact: false,
+    int concurrency, Map<String, String> environment}) {
+  if (concurrency == null) concurrency = 1;
+
   var allArgs = [
     p.absolute(p.join(packageDir, 'bin/test.dart')),
-    "--package-root=${p.join(packageDir, 'packages')}"
-  ]..addAll(args);
+    "--package-root=${p.join(packageDir, 'packages')}",
+    "--concurrency=$concurrency"
+  ];
+
+  if (!compact) allArgs.addAll(["-r", "expanded"]);
+  allArgs.addAll(args);
 
   if (environment == null) environment = {};
   environment.putIfAbsent("_UNITTEST_USE_COLOR", () => "false");
 
-  // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return runDart(allArgs, workingDirectory: workingDirectory,
-      environment: environment);
+  return runDart(allArgs,
+      environment: environment,
+      description: "dart bin/test.dart");
 }
 
 /// Runs Dart.
-ProcessResult runDart(List<String> args, {String workingDirectory,
-    Map<String, String> environment}) {
+ScheduledProcess runDart(List args, {Map<String, String> environment,
+    String description}) {
   var allArgs = Platform.executableArguments.map((arg) {
     // The package root might be relative, so we need to make it absolute if
     // we're going to run in a different working directory.
@@ -55,88 +126,44 @@ ProcessResult runDart(List<String> args, {String workingDirectory,
         p.absolute(p.fromUri(arg.substring("--package-root=".length)));
   }).toList()..addAll(args);
 
-  // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return new _NormalizedProcessResult(Process.runSync(
+  return new ScheduledProcess.start(
       p.absolute(Platform.executable), allArgs,
-      workingDirectory: workingDirectory, environment: environment));
+      workingDirectory: _sandbox,
+      environment: environment,
+      description: description);
 }
 
 /// Runs Pub.
-ProcessResult runPub(List<String> args, {String workingDirectory,
-    Map<String, String> environment}) {
-  // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return new _NormalizedProcessResult(Process.runSync(
+ScheduledProcess runPub(List args, {Map<String, String> environment}) {
+  return new ScheduledProcess.start(
       _pubPath, args,
-      workingDirectory: workingDirectory, environment: environment));
+      workingDirectory: _sandbox,
+      environment: environment,
+      description: "pub ${args.first}");
 }
 
-/// Starts the test executable with the package root set properly.
-Future<Process> startTest(List<String> args, {String workingDirectory,
-    Map<String, String> environment}) {
-  var allArgs = [
-    p.absolute(p.join(packageDir, 'bin/test.dart')),
-    "--package-root=${p.join(packageDir, 'packages')}"
-  ]..addAll(args);
-
-  if (environment == null) environment = {};
-  environment.putIfAbsent("_UNITTEST_USE_COLOR", () => "false");
-
-  return startDart(allArgs, workingDirectory: workingDirectory,
-      environment: environment);
-}
-
-/// Starts Dart.
-Future<Process> startDart(List<String> args, {String workingDirectory,
-    Map<String, String> environment}) {
-  var allArgs = Platform.executableArguments.toList()..addAll(args);
-
-  // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return Process.start(Platform.executable, allArgs,
-      workingDirectory: workingDirectory, environment: environment);
-}
-
-/// Starts Pub.
-Future<Process> startPub(List<String> args, {String workingDirectory,
-    Map<String, String> environment}) {
-  // TODO(nweiz): Use ScheduledProcess once it's compatible.
-  return Process.start(_pubPath, args,
-      workingDirectory: workingDirectory, environment: environment);
-}
-
-/// Starts "pub serve".
+/// Runs "pub serve".
 ///
-/// This returns a pair of the pub serve process and the port it's serving on.
-Future<Pair<Process, int>> startPubServe({List<String> args,
-    String workingDirectory, Map<String, String> environment}) async {
+/// This returns assigns [_pubServePort] to a future that will complete to the
+/// port of the "pub serve" instance.
+ScheduledProcess runPubServe({List args, String workingDirectory,
+    Map<String, String> environment}) {
+  _pubServePortCompleter = new Completer();
+  currentSchedule.onComplete.schedule(() => _pubServePortCompleter = null);
+
   var allArgs = ['serve', '--port', '0'];
   if (args != null) allArgs.addAll(args);
 
-  var process = await startPub(allArgs,
-      workingDirectory: workingDirectory, environment: environment);
-  var line = await lineSplitter.bind(process.stdout)
-      .firstWhere(_servingRegExp.hasMatch);
-  var match = _servingRegExp.firstMatch(line);
+  var pub = runPub(allArgs, environment: environment);
 
-  return new Pair(process, int.parse(match[1]));
-}
+  schedule(() async {
+    var match;
+    while (match == null) {
+      var line = await pub.stdout.next();
+      match = _servingRegExp.firstMatch(line);
+    }
+    _pubServePortCompleter.complete(int.parse(match[1]));
+  }, "waiting for pub serve to emit its port number");
 
-/// A wrapper around [ProcessResult] that normalizes the newline format across
-/// operating systems.
-class _NormalizedProcessResult implements ProcessResult {
-  final ProcessResult _inner;
-
-  int get exitCode => _inner.exitCode;
-  int get pid => _inner.pid;
-
-  final String stdout;
-  final String stderr;
-
-  _NormalizedProcessResult(ProcessResult inner)
-      : _inner = inner,
-        stdout = Platform.isWindows
-            ? inner.stdout.replaceAll("\r\n", "\n")
-            : inner.stdout,
-        stderr = Platform.isWindows
-            ? inner.stderr.replaceAll("\r\n", "\n")
-            : inner.stderr;
+  return pub;
 }
