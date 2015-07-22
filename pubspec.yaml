@@ -1,12 +1,12 @@
 name: test
-version: 0.12.4-dev
+version: 0.12.3+8
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
 environment:
   sdk: '>=1.9.0 <2.0.0'
 dependencies:
-  analyzer: '>=0.23.0 <0.26.0'
+  analyzer: '>=0.23.0 <=0.26.0-alpha.0'
   args: '>=0.12.1 <0.14.0'
   async: '^1.2.0'
   barback: '>=0.14.0 <0.16.0'
@@ -29,7 +29,7 @@ dependencies:
   yaml: '>=0.9.0 <3.0.0'
 
   # Use a tight version constraint to ensure that a constraint on matcher
-  # properly constraints all features it provides.
+  # properly constrains all features it provides.
   matcher: '>=0.12.0 <0.12.1'
 dev_dependencies:
   fake_async: '^0.1.2'
