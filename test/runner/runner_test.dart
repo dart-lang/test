@@ -58,6 +58,10 @@ Usage: pub run test:test [files or directories...]
                                (defaults to $_defaultConcurrency)
 
     --pub-serve=<port>         The port of a pub serve instance serving "test/".
+    --pause-after-load         Pauses for debugging before any tests execute.
+                               Implies --concurrency=1.
+                               Currently only supported for browser tests.
+
 -r, --reporter                 The runner used to print test results.
 
           [compact]            A single line, updated continuously.

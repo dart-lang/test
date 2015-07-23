@@ -16,6 +16,9 @@ import 'package:stack_trace/stack_trace.dart';
 import 'backend/operating_system.dart';
 import 'util/path_handler.dart';
 
+/// The maximum console line length.
+const _lineLength = 100;
+
 /// A typedef for a possibly-asynchronous function.
 ///
 /// The return type should only ever by [Future] or void.
@@ -82,6 +85,48 @@ String getErrorMessage(error) =>
 /// Indent each line in [str] by two spaces.
 String indent(String str) =>
     str.replaceAll(new RegExp("^", multiLine: true), "  ");
+
+/// Returns a sentence fragment listing the elements of [iter].
+///
+/// This converts each element of [iter] to a string and separates them with
+/// commas and/or "and" where appropriate.
+String toSentence(Iterable iter) {
+  if (iter.length == 1) return iter.first.toString();
+  var result = iter.take(iter.length - 1).join(", ");
+  if (iter.length > 2) result += ",";
+  return "$result and ${iter.last}";
+}
+
+/// Wraps [text] so that it fits within [lineLength], which defaults to 100
+/// characters.
+///
+/// This preserves existing newlines and doesn't consider terminal color escapes
+/// part of a word's length.
+String wordWrap(String text, {int lineLength}) {
+  if (lineLength == null) lineLength = _lineLength;
+  return text.split("\n").map((originalLine) {
+    var buffer = new StringBuffer();
+    var lengthSoFar = 0;
+    for (var word in originalLine.split(" ")) {
+      var wordLength = withoutColors(word).length;
+      if (wordLength > lineLength) {
+        if (lengthSoFar != 0) buffer.writeln();
+        buffer.writeln(word);
+      } else if (lengthSoFar == 0) {
+        buffer.write(word);
+        lengthSoFar = wordLength;
+      } else if (lengthSoFar + 1 + wordLength > lineLength) {
+        buffer.writeln();
+        buffer.write(word);
+        lengthSoFar = wordLength;
+      } else {
+        buffer.write(" $word");
+        lengthSoFar += 1 + wordLength;
+      }
+    }
+    return buffer.toString();
+  }).join("\n");
+}
 
 /// A regular expression matching terminal color codes.
 final _colorCode = new RegExp('\u001b\\[[0-9;]+m');

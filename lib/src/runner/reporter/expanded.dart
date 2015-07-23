@@ -4,6 +4,7 @@
 
 library test.runner.reporter.no_io_compact;
 
+import 'dart:async';
 import 'dart:isolate';
 
 import '../../backend/live_test.dart';
@@ -12,6 +13,7 @@ import '../../utils.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
+import '../reporter.dart';
 
 /// The maximum console line length.
 ///
@@ -24,7 +26,7 @@ const _lineLength = 100;
 /// which can't transitively import `dart:io` but still needs access to a runner
 /// so that test files can be run directly. This means that until issue 6943 is
 /// fixed, this must not import `dart:io`.
-class ExpandedReporter {
+class ExpandedReporter implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -67,6 +69,12 @@ class ExpandedReporter {
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
 
+  /// Whether we've started [_stopwatch].
+  ///
+  /// We can't just use `_stopwatch.isRunning` because the stopwatch is stopped
+  /// when the reporter is paused.
+  var _stopwatchStarted = false;
+
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed;
@@ -82,6 +90,12 @@ class ExpandedReporter {
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
 
+  /// Whether the reporter is paused.
+  var _paused = false;
+
+  /// The set of all subscriptions to various streams.
+  final _subscriptions = new Set<StreamSubscription>();
+
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   ///
@@ -90,9 +104,10 @@ class ExpandedReporter {
   /// If [printPath] is `true`, this will print the path name as part of the
   /// test description. Likewise, if [printPlatform] is `true`, this will print
   /// the platform as part of the test description.
-  static void watch(Engine engine, {bool color: true, bool verboseTrace: false,
-          bool printPath: true, bool printPlatform: true}) {
-    new ExpandedReporter._(
+  static ExpandedReporter watch(Engine engine, {bool color: true,
+      bool verboseTrace: false, bool printPath: true,
+      bool printPlatform: true}) {
+    return new ExpandedReporter._(
         engine,
         color: color,
         verboseTrace: verboseTrace,
@@ -112,8 +127,38 @@ class ExpandedReporter {
         _gray = color ? '\u001b[1;30m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
-    _engine.onTestStarted.listen(_onTestStarted);
-    _engine.success.then(_onDone);
+    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+
+    /// Convert the future to a stream so that the subscription can be paused or
+    /// canceled.
+    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+  }
+
+  void pause() {
+    if (_paused) return;
+    _paused = true;
+
+    _stopwatch.stop();
+
+    for (var subscription in _subscriptions) {
+      subscription.pause();
+    }
+  }
+
+  void resume() {
+    if (!_paused) return;
+    if (_stopwatchStarted) _stopwatch.start();
+
+    for (var subscription in _subscriptions) {
+      subscription.resume();
+    }
+  }
+
+  void cancel() {
+    for (var subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
@@ -128,7 +173,8 @@ class ExpandedReporter {
       // The engine surfaces load tests when there are no other tests running,
       // but because the expanded reporter's output is always visible, we don't
       // emit information about them unless they fail.
-      liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
+      _subscriptions.add(liveTest.onStateChange
+          .listen((state) => _onStateChange(liveTest, state)));
     } else if (_engine.active.length == 1 &&
         _engine.active.first == liveTest &&
         liveTest.test.name.startsWith("compiling ")) {
@@ -137,13 +183,13 @@ class ExpandedReporter {
       _progressLine(_description(liveTest));
     }
 
-    liveTest.onError.listen((error) =>
-        _onError(liveTest, error.error, error.stackTrace));
+    _subscriptions.add(liveTest.onError.listen((error) =>
+        _onError(liveTest, error.error, error.stackTrace)));
 
-    liveTest.onPrint.listen((line) {
+    _subscriptions.add(liveTest.onPrint.listen((line) {
       _progressLine(_description(liveTest));
       print(line);
-    });
+    }));
   }
 
   /// A callback called when [liveTest]'s state becomes [state].

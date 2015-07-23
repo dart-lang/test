@@ -11,7 +11,9 @@ environment:
 dependencies:
   analyzer: '>=0.23.0 <=0.26.0-alpha.0'
   args: '>=0.12.1 <0.14.0'
-  async: '^1.2.0'
+
+  # TODO(nweiz): Bring in a hosted version of async when 1.3.0 is released.
+  async: {git: git://github.com/dart-lang/async.git}
   barback: '>=0.14.0 <0.16.0'
   collection: '^1.1.0'
   crypto: '^0.9.0'

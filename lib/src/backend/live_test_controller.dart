@@ -151,7 +151,15 @@ class LiveTestController {
   }
 
   /// Emits a line printed by the test over [LiveTest.onPrint].
-  void print(String line) => _onPrintController.add(line);
+  void print(String line) {
+    if (_onPrintController.hasListener) {
+      _onPrintController.add(line);
+    } else {
+      // Make sure all prints get surfaced one way or another to aid in
+      // debugging.
+      Zone.ROOT.print(line);
+    }
+  }
 
   /// A wrapper for [_onRun] that ensures that it follows the guarantees for
   /// [LiveTest.run].

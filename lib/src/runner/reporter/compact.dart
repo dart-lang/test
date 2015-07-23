@@ -15,6 +15,7 @@ import '../../utils.dart' as utils;
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
+import '../reporter.dart';
 
 /// The maximum console line length.
 ///
@@ -23,7 +24,7 @@ const _lineLength = 100;
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
-class CompactReporter {
+class CompactReporter implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -66,8 +67,11 @@ class CompactReporter {
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
 
-  /// A timer that triggers printing updated time information.
-  Timer _timer;
+  /// Whether we've started [_stopwatch].
+  ///
+  /// We can't just use `_stopwatch.isRunning` because the stopwatch is stopped
+  /// when the reporter is paused.
+  var _stopwatchStarted = false;
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
@@ -94,6 +98,12 @@ class CompactReporter {
   // Whether a newline has been printed since the last progress line.
   var _printedNewline = true;
 
+  /// Whether the reporter is paused.
+  var _paused = false;
+
+  /// The set of all subscriptions to various streams.
+  final _subscriptions = new Set<StreamSubscription>();
+
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   ///
@@ -102,9 +112,10 @@ class CompactReporter {
   /// If [printPath] is `true`, this will print the path name as part of the
   /// test description. Likewise, if [printPlatform] is `true`, this will print
   /// the platform as part of the test description.
-  static void watch(Engine engine, {bool color: true, bool verboseTrace: false,
-          bool printPath: true, bool printPlatform: true}) {
-    new CompactReporter._(
+  static CompactReporter watch(Engine engine, {bool color: true,
+      bool verboseTrace: false, bool printPath: true,
+      bool printPlatform: true}) {
+    return new CompactReporter._(
         engine,
         color: color,
         verboseTrace: verboseTrace,
@@ -124,17 +135,52 @@ class CompactReporter {
         _gray = color ? '\u001b[1;30m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
-    _engine.onTestStarted.listen(_onTestStarted);
-    _engine.success.then(_onDone);
+    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+
+    /// Convert the future to a stream so that the subscription can be paused or
+    /// canceled.
+    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+  }
+
+  void pause() {
+    if (_paused) return;
+    _paused = true;
+
+    if (!_printedNewline) print('');
+    _printedNewline = true;
+    _stopwatch.stop();
+
+    for (var subscription in _subscriptions) {
+      subscription.pause();
+    }
+  }
+
+  void resume() {
+    if (!_paused) return;
+    _paused = false;
+
+    if (_stopwatchStarted) _stopwatch.start();
+
+    for (var subscription in _subscriptions) {
+      subscription.resume();
+    }
+  }
+
+  void cancel() {
+    for (var subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
-    if (_timer == null) {
+    if (!_stopwatchStarted) {
+      _stopwatchStarted = true;
       _stopwatch.start();
       /// Keep updating the time even when nothing else is happening.
-      _timer = new Timer.periodic(new Duration(seconds: 1),
-          (_) => _progressLine(_lastProgressMessage));
+      _subscriptions.add(new Stream.periodic(new Duration(seconds: 1))
+          .listen((_) => _progressLine(_lastProgressMessage)));
     }
 
     // If this is the first test to start, print a progress line so the user
@@ -144,18 +190,19 @@ class CompactReporter {
       _progressLine(_description(liveTest));
     }
 
-    liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state));
+    _subscriptions.add(liveTest.onStateChange
+        .listen((state) => _onStateChange(liveTest, state)));
 
-    liveTest.onError.listen((error) =>
-        _onError(liveTest, error.error, error.stackTrace));
+    _subscriptions.add(liveTest.onError.listen((error) =>
+        _onError(liveTest, error.error, error.stackTrace)));
 
-    liveTest.onPrint.listen((line) {
+    _subscriptions.add(liveTest.onPrint.listen((line) {
       _progressLine(_description(liveTest), truncate: false);
       if (!_printedNewline) print('');
       _printedNewline = true;
 
       print(line);
-    });
+    }));
   }
 
   /// A callback called when [liveTest]'s state becomes [state].
@@ -210,8 +257,7 @@ class CompactReporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool success) {
-    if (_timer != null) _timer.cancel();
-    _timer = null;
+    cancel();
     _stopwatch.stop();
 
     // A null success value indicates that the engine was closed before the

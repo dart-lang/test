@@ -5,14 +5,17 @@
 library test.util.io;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
 import '../runner/application_exception.dart';
+import '../utils.dart';
 
 /// The ASCII code for a newline character.
 const _newline = 0xA;
@@ -45,6 +48,10 @@ final OperatingSystem currentOS = (() {
 
   throw new UnsupportedError('Unsupported operating system "$name".');
 })();
+
+/// A queue of lines of standard input.
+final stdinLines = new StreamQueue(
+    UTF8.decoder.fuse(const LineSplitter()).bind(stdin));
 
 /// The root directory below which to nest temporary directories created by the
 /// test runner.
@@ -129,6 +136,19 @@ Stream<List<int>> sanitizeForWindows(Stream<List<int>> input) {
       return true;
     }).toList().reversed.toList();
   });
+}
+
+/// Print a warning containing [message].
+///
+/// This automatically wraps lines if they get too long. If [color] is passed,
+/// it controls whether the warning header is color; otherwise, it defaults to
+/// [canUseSpecialChars].
+void warn(String message, {bool color}) {
+  if (color == null) color = canUseSpecialChars;
+  var header = color
+      ? "\u001b[33mWarning:\u001b[0m"
+      : "Warning:";
+  stderr.writeln(wordWrap("$header $message\n"));
 }
 
 /// Creates a URL string for [address]:[port].

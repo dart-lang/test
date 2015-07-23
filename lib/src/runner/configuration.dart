@@ -56,6 +56,11 @@ class Configuration {
         help: 'The port of a pub serve instance serving "test/".',
         hide: !supportsPubServe,
         valueHelp: 'port');
+    parser.addFlag("pause-after-load",
+        help: 'Pauses for debugging before any tests execute.\n'
+            'Implies --concurrency=1.\n'
+            'Currently only supported for browser tests.',
+        negatable: false);
     parser.addOption("reporter",
         abbr: 'r',
         help: 'The runner used to print test results.',
@@ -94,6 +99,9 @@ class Configuration {
   /// Whether JavaScript stack traces should be left as-is or converted to
   /// Dart-like traces.
   bool get jsTrace => _options['js-trace'];
+
+  /// Whether to pause for debugging after loading each test suite.
+  bool get pauseAfterLoad => _options['pause-after-load'];
 
   /// The package root for resolving "package:" URLs.
   String get packageRoot => _options['package-root'] == null

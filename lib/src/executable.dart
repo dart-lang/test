@@ -16,6 +16,7 @@ import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'util/exit_codes.dart' as exit_codes;
+import 'util/io.dart';
 import 'utils.dart';
 
 /// A merged stream of all signals that tell the test runner to shut down
@@ -109,6 +110,7 @@ transformers:
     if (signalSubscription == null) return;
     signalSubscription.cancel();
     signalSubscription = null;
+    stdinLines.cancel(immediate: true);
     await runner.close();
   }
 

@@ -1,3 +1,9 @@
+## 0.12.4
+
+* Add a `--pause-after-load` flag that pauses the test runner after each suite
+  is loaded so that breakpoints and other debugging annotations can be added.
+  Currently this is only supported on browsers.
+
 ## 0.12.3+8
 
 * Fix an uncaught error that could crop up when killing the test runner process

@@ -16,7 +16,6 @@ import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
-import '../util/delegating_sink.dart';
 import 'load_suite.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
@@ -135,6 +134,13 @@ class Engine {
   ///
   /// This is separate from [active] because load tests aren't always surfaced.
   final _activeLoadTests = new List<LiveTest>();
+
+  /// Whether this engine is idle—that is, not currently executing a test.
+  bool get isIdle => _group.isIdle;
+
+  /// A broadcast stream that fires an event whenever [isIdle] switches from
+  /// `false` to `true`.
+  Stream get onIdle => _group.onIdle;
 
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
