@@ -234,4 +234,45 @@ void main() {
     test.shouldExit();
     test.stderr.expect(isDone);
   }, testOn: "!windows");
+
+  // Regression test for #304.
+  test("supports test name patterns", () {
+    d.file("test.dart", """
+import 'package:test/test.dart';
+
+void main() {
+  print('loaded test 1!');
+
+  test("failure 1", () {});
+  test("success", () {});
+  test("failure 2", () {});
+}
+""").create();
+
+    var test = runTest(
+        ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
+    test.stdout.expect(consumeThrough("loaded test 1!"));
+    test.stdout.expect(consumeThrough(inOrder([
+      "The test runner is paused. Open the dev console in Dartium and set "
+          "breakpoints. Once you're",
+      "finished, return to this terminal and press Enter."
+    ])));
+
+    schedule(() async {
+      var nextLineFired = false;
+      test.stdout.next().then(expectAsync((line) {
+        expect(line, contains("+0: success"));
+        nextLineFired = true;
+      }));
+
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await new Future.delayed(new Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
+    });
+
+    test.writeLine('');
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
+  });
 }

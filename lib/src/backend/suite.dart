@@ -96,8 +96,8 @@ class Suite {
     if (path == null) path = this.path;
     if (metadata == null) metadata = this.metadata;
     if (tests == null) tests = this.tests;
-    return new Suite(tests, path: path, metadata: metadata,
-        onClose: this.close);
+    return new Suite(tests, platform: platform, os: os, path: path,
+        metadata: metadata, onClose: this.close);
   }
 
   /// Closes the suite and releases any resources associated with it.
