@@ -9,11 +9,11 @@ import 'dart:async';
 import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
-import 'src/backend/suite.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/engine.dart';
 import 'src/runner/reporter/expanded.dart';
+import 'src/runner/runner_suite.dart';
 import 'src/utils.dart';
 
 export 'package:matcher/matcher.dart';
@@ -50,7 +50,7 @@ Declarer get _declarer {
   // finished being defined.
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() async {
-    var suite = new Suite(
+    var suite = new RunnerSuite(
         _globalDeclarer.tests,
         path: p.prettyUri(Uri.base),
         platform: TestPlatform.vm,

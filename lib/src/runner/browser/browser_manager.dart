@@ -11,13 +11,13 @@ import 'package:http_parser/http_parser.dart';
 import 'package:pool/pool.dart';
 
 import '../../backend/metadata.dart';
-import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../load_exception.dart';
+import '../runner_suite.dart';
 import 'iframe_test.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -68,7 +68,7 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<Suite> loadSuite(String path, Uri url, Metadata metadata,
+  Future<RunnerSuite> loadSuite(String path, Uri url, Metadata metadata,
       {StackTraceMapper mapper}) async {
     url = url.replace(fragment: Uri.encodeFull(JSON.encode({
       "metadata": metadata.serialize(),
@@ -140,7 +140,7 @@ class BrowserManager {
           asyncError.stackTrace);
     }
 
-    return new Suite(response["tests"].map((test) {
+    return new RunnerSuite(response["tests"].map((test) {
       var testMetadata = new Metadata.deserialize(test['metadata']);
       var testChannel = suiteChannel.virtualChannel(test['channel']);
       return new IframeTest(test['name'], testMetadata, testChannel,

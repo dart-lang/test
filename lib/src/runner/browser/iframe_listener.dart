@@ -10,12 +10,12 @@ import 'dart:html' hide Metadata;
 
 import '../../backend/declarer.dart';
 import '../../backend/metadata.dart';
-import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
+import '../runner_suite.dart';
 
 // TODO(nweiz): test this once we can run browser tests.
 /// A class that runs tests in a separate iframe.
@@ -25,7 +25,7 @@ import '../../utils.dart';
 /// to the test server.
 class IframeListener {
   /// The test suite to run.
-  final Suite _suite;
+  final RunnerSuite _suite;
 
   /// Extracts metadata about all the tests in the function returned by
   /// [getMain] and sends information about them over the `postMessage`
@@ -80,7 +80,7 @@ class IframeListener {
     var metadata = new Metadata.deserialize(message['metadata']);
     var browser = TestPlatform.find(message['browser']);
 
-    var suite = new Suite(
+    var suite = new RunnerSuite(
         declarer.tests, platform: browser, metadata: metadata);
     new IframeListener._(suite)._listen(channel);
 

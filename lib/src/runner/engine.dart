@@ -14,9 +14,9 @@ import 'package:pool/pool.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
-import '../backend/suite.dart';
 import '../backend/test.dart';
 import 'load_suite.dart';
+import 'runner_suite.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///
@@ -84,15 +84,15 @@ class Engine {
   /// A group of futures for each test suite.
   final _group = new FutureGroup();
 
-  /// A sink used to pass [Suite]s in to the engine to run.
+  /// A sink used to pass [RunnerSuite]s in to the engine to run.
   ///
   /// Suites may be added as quickly as they're available; the Engine will only
   /// run as many as necessary at a time based on its concurrency settings.
   ///
   /// Suites added to the sink will be closed by the engine based on its
   /// internal logic.
-  Sink<Suite> get suiteSink => new DelegatingSink(_suiteController.sink);
-  final _suiteController = new StreamController<Suite>();
+  Sink<RunnerSuite> get suiteSink => new DelegatingSink(_suiteController.sink);
+  final _suiteController = new StreamController<RunnerSuite>();
 
   /// All the currently-known tests that have run, are running, or will run.
   ///
@@ -164,7 +164,7 @@ class Engine {
   /// [concurrency] controls how many suites are run at once. An engine
   /// constructed this way will automatically close its [suiteSink], meaning
   /// that no further suites may be provided.
-  factory Engine.withSuites(List<Suite> suites, {int concurrency}) {
+  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency}) {
     var engine = new Engine(concurrency: concurrency);
     for (var suite in suites) engine.suiteSink.add(suite);
     engine.suiteSink.close();
@@ -253,7 +253,7 @@ class Engine {
   }
 
   /// Returns a dummy [LiveTest] for a test marked as "skip".
-  LiveTest _skippedTest(Suite suite, Test test) {
+  LiveTest _skippedTest(RunnerSuite suite, Test test) {
     var controller;
     controller = new LiveTestController(suite, test, () {
       controller.setState(const State(Status.running, Result.success));
@@ -266,7 +266,7 @@ class Engine {
   /// Adds listeners for [suite].
   ///
   /// Load suites have specific logic apart from normal test suites.
-  Future<Suite> _addLoadSuite(LoadSuite suite) async {
+  Future<RunnerSuite> _addLoadSuite(LoadSuite suite) async {
     var liveTest = await suite.tests.single.load(suite);
 
     _activeLoadTests.add(liveTest);

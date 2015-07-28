@@ -14,7 +14,6 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
-import '../backend/suite.dart';
 import '../backend/test_platform.dart';
 import '../util/async_thunk.dart';
 import '../util/dart.dart' as dart;
@@ -25,6 +24,7 @@ import 'browser/server.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
 import 'parse_metadata.dart';
+import 'runner_suite.dart';
 import 'vm/isolate_test.dart';
 
 /// A class for finding test files and loading them into a runnable form.
@@ -54,7 +54,7 @@ class Loader {
   final Uri _pubServeUrl;
 
   /// All suites that have been created by the loader.
-  final _suites = new Set<Suite>();
+  final _suites = new Set<RunnerSuite>();
 
   /// The server that serves browser test pages.
   ///
@@ -106,8 +106,8 @@ class Loader {
   /// This will load tests from files that end in "_test.dart". Any tests that
   /// fail to load will be emitted as [LoadException]s.
   ///
-  /// This emits [LoadSuite]s that must then be run to emit the actual [Suite]s
-  /// defined in the file.
+  /// This emits [LoadSuite]s that must then be run to emit the actual
+  /// [RunnerSuite]s defined in the file.
   Stream<LoadSuite> loadDir(String dir) {
     return mergeStreams(new Directory(dir).listSync(recursive: true)
         .map((entry) {
@@ -127,8 +127,8 @@ class Loader {
 
   /// Loads a test suite from the file at [path].
   ///
-  /// This emits [LoadSuite]s that must then be run to emit the actual [Suite]s
-  /// defined in the file.
+  /// This emits [LoadSuite]s that must then be run to emit the actual
+  /// [RunnerSuite]s defined in the file.
   ///
   /// This will emit a [LoadException] if the file fails to load.
   Stream<LoadSuite> loadFile(String path) async* {
@@ -159,7 +159,7 @@ class Loader {
 
       // Don't load a skipped suite.
       if (metadata.skip) {
-        yield new LoadSuite.forSuite(new Suite([
+        yield new LoadSuite.forSuite(new RunnerSuite([
           new LocalTest(path, metadata, () {})
         ], path: path, platform: platform, metadata: metadata));
         continue;
@@ -177,14 +177,14 @@ class Loader {
   /// Load the test suite at [path] in [platform].
   ///
   /// [metadata] is the suite-level metadata for the test.
-  Future<Suite> _loadBrowserFile(String path, TestPlatform platform,
+  Future<RunnerSuite> _loadBrowserFile(String path, TestPlatform platform,
         Metadata metadata) async =>
       (await _browserServer).loadSuite(path, platform, metadata);
 
   /// Load the test suite at [path] in VM isolate.
   ///
   /// [metadata] is the suite-level metadata for the test.
-  Future<Suite> _loadVmFile(String path, Metadata metadata) async {
+  Future<RunnerSuite> _loadVmFile(String path, Metadata metadata) async {
     var receivePort = new ReceivePort();
 
     var isolate;
@@ -262,7 +262,7 @@ void main(_, Map message) {
     });
 
     try {
-      var suite = new Suite((await completer.future).map((test) {
+      var suite = new RunnerSuite((await completer.future).map((test) {
         var testMetadata = new Metadata.deserialize(test['metadata']);
         return new IsolateTest(test['name'], testMetadata, test['sendPort']);
       }),

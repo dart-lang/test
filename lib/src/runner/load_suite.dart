@@ -11,10 +11,10 @@ import 'package:stack_trace/stack_trace.dart';
 import '../../test.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
-import '../backend/suite.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
 import 'load_exception.dart';
+import 'runner_suite.dart';
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
@@ -30,19 +30,19 @@ import 'load_exception.dart';
 /// a normal test body, this logic isn't run until [LiveTest.run] is called. The
 /// suite itself is returned by [suite] once it's avaialble, but any errors or
 /// prints will be emitted through the running [LiveTest].
-class LoadSuite extends Suite {
+class LoadSuite extends RunnerSuite {
   /// A future that completes to the loaded suite once the suite's test has been
   /// run and completed successfully.
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  final Future<Suite> suite;
+  final Future<RunnerSuite> suite;
 
   /// Creates a load suite named [name] on [platform].
   ///
-  /// [body] may return either a [Suite] or a [Future] that completes to a
-  /// [Suite]. Its return value is forwarded through [suite], although if it
-  /// throws an error that will be forwarded through the suite's test.
+  /// [body] may return either a [RunnerSuite] or a [Future] that completes to a
+  /// [RunnerSuite]. Its return value is forwarded through [suite], although if
+  /// it throws an error that will be forwarded through the suite's test.
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
@@ -93,7 +93,7 @@ class LoadSuite extends Suite {
   }
 
   /// A utility constructor for a load suite that just emits [suite].
-  factory LoadSuite.forSuite(Suite suite) {
+  factory LoadSuite.forSuite(RunnerSuite suite) {
     return new LoadSuite("loading ${suite.path}", () => suite,
         platform: suite.platform);
   }
@@ -106,14 +106,14 @@ class LoadSuite extends Suite {
       ], platform: platform);
 
   /// A constructor used by [changeSuite].
-  LoadSuite._changeSuite(LoadSuite old, Future<Suite> this.suite)
+  LoadSuite._changeSuite(LoadSuite old, Future<RunnerSuite> this.suite)
       : super(old.tests, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
   ///
   /// If [suite] completes to `null`, [change] won't be run.
-  LoadSuite changeSuite(Suite change(Suite suite)) {
+  LoadSuite changeSuite(RunnerSuite change(RunnerSuite suite)) {
     return new LoadSuite._changeSuite(this, suite.then((loadedSuite) {
       if (loadedSuite == null) return null;
       return change(loadedSuite);
@@ -124,7 +124,7 @@ class LoadSuite extends Suite {
   ///
   /// Rather than emitting errors through a [LiveTest], this just pipes them
   /// through the return value.
-  Future<Suite> getSuite() async {
+  Future<RunnerSuite> getSuite() async {
     var liveTest = await tests.single.load(this);
     liveTest.onPrint.listen(print);
     await liveTest.run();

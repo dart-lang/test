@@ -11,18 +11,18 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../../backend/declarer.dart';
 import '../../backend/metadata.dart';
-import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
+import '../runner_suite.dart';
 
 /// A class that runs tests in a separate isolate and communicates the results
 /// back to the main isolate.
 class IsolateListener {
   /// The test suite to run.
-  final Suite _suite;
+  final RunnerSuite _suite;
 
   /// Extracts metadata about all the tests in the function returned by
   /// [getMain] and sends information about them over [sendPort].
@@ -86,7 +86,7 @@ class IsolateListener {
       return;
     }
 
-    var suite = new Suite(declarer.tests,
+    var suite = new RunnerSuite(declarer.tests,
         platform: TestPlatform.vm, os: currentOS, metadata: metadata);
     new IsolateListener._(suite)._listen(sendPort);
   }

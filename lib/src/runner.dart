@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'backend/metadata.dart';
-import 'backend/suite.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
@@ -19,6 +18,7 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
+import 'runner/runner_suite.dart';
 import 'util/async_thunk.dart';
 import 'util/io.dart';
 import 'utils.dart';
@@ -221,7 +221,7 @@ class Runner {
   ///
   /// This is a no-op for test suites that aren't on platforms where debugging
   /// is supported.
-  Future _pause(Suite suite) async {
+  Future _pause(RunnerSuite suite) async {
     if (suite.platform == null) return;
     if (_debugUnsupportedPlatforms.contains(suite.platform)) return;
 
