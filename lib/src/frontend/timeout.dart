@@ -10,10 +10,13 @@ library test.frontend.timeout;
 /// can be overridden entirely; with [new Timeout.factor], it can be scaled
 /// relative to the default.
 class Timeout {
+  /// A constant indicating that a test should never time out.
+  static const none = const Timeout._none();
+
   /// The timeout duration.
   ///
-  /// If set, this overrides the default duration entirely. It will be
-  /// non-`null` only when [scaleFactor] is `null`.
+  /// If set, this overrides the default duration entirely. It's `null` for
+  /// timeouts with a non-null [scaleFactor] and for [Timeout.none].
   final Duration duration;
 
   /// The timeout factor.
@@ -21,6 +24,9 @@ class Timeout {
   /// The default timeout will be multiplied by this to get the new timeout.
   /// Thus a factor of 2 means that the test will take twice as long to time
   /// out, and a factor of 0.5 means that it will time out twice as quickly.
+  ///
+  /// This is `null` for timeouts with a non-null [duration] and for
+  /// [Timeout.none].
   final num scaleFactor;
 
   /// Declares an absolute timeout that overrides the default.
@@ -31,17 +37,26 @@ class Timeout {
   const Timeout.factor(this.scaleFactor)
       : duration = null;
 
+  const Timeout._none()
+      : scaleFactor = null,
+        duration = null;
+
   /// Returns a new [Timeout] that merges [this] with [other].
   ///
   /// If [other] declares a [duration], that takes precedence. Otherwise, this
   /// timeout's [duration] or [factor] are multiplied by [other]'s [factor].
   Timeout merge(Timeout other) {
+    if (this == none || other == none) return none;
     if (other.duration != null) return new Timeout(other.duration);
     if (duration != null) return new Timeout(duration * other.scaleFactor);
     return new Timeout.factor(scaleFactor * other.scaleFactor);
   }
 
   /// Returns a new [Duration] from applying [this] to [base].
-  Duration apply(Duration base) =>
-      duration == null ? base * scaleFactor : duration;
+  ///
+  /// If this is [none], returns `null`.
+  Duration apply(Duration base) {
+    if (this == none) return null;
+    return duration == null ? base * scaleFactor : duration;
+  }
 }

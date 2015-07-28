@@ -103,10 +103,15 @@ class _Parser {
   /// constructor for the annotation, if any.
   Timeout _parseTimeout(Annotation annotation, String constructorName) {
     _assertConstructorName(constructorName, 'Timeout', annotation,
-        validNames: [null, 'factor']);
+        validNames: [null, 'factor', 'none']);
 
     var description = 'Timeout';
     if (constructorName != null) description += '.$constructorName'; 
+
+    if (constructorName == 'none') {
+      _assertNoArguments(annotation, description);
+      return Timeout.none;
+    }
 
     _assertArguments(annotation.arguments, description, annotation,
         positional: 1);
@@ -176,7 +181,8 @@ class _Parser {
       var expressions = [];
       if (value is ListLiteral) {
         expressions = _parseList(value);
-      } else if (value is InstanceCreationExpression) {
+      } else if (value is InstanceCreationExpression ||
+                 value is PrefixedIdentifier) {
         expressions = [value];
       } else {
         throw new SourceSpanFormatException(
@@ -187,23 +193,35 @@ class _Parser {
       var timeout;
       var skip;
       for (var expression in expressions) {
-        var className = expression is InstanceCreationExpression
-            ? _resolveConstructor(
-                expression.constructorName.type.name,
-                expression.constructorName.name).first
-            : null;
+        if (expression is InstanceCreationExpression) {
+          var className = _resolveConstructor(
+              expression.constructorName.type.name,
+              expression.constructorName.name).first;
 
-        if (className == 'Timeout') {
+          if (className == 'Timeout') {
+            _assertSingle(timeout, 'Timeout', expression);
+            timeout = _parseTimeoutConstructor(expression);
+            continue;
+          } else if (className == 'Skip') {
+            _assertSingle(skip, 'Skip', expression);
+            skip = _parseSkipConstructor(expression);
+            continue;
+          }
+        } else if (expression is PrefixedIdentifier &&
+            expression.prefix.name == 'Timeout') {
+          if (expression.identifier.name != 'none') {
+            throw new SourceSpanFormatException(
+                'Undefined value.', _spanFor(expression));
+          }
+
           _assertSingle(timeout, 'Timeout', expression);
-          timeout = _parseTimeoutConstructor(expression);
-        } else if (className == 'Skip') {
-          _assertSingle(skip, 'Skip', expression);
-          skip = _parseSkipConstructor(expression);
-        } else {
-          throw new SourceSpanFormatException(
-              'Expected a Timeout or Skip.',
-              _spanFor(expression));
+          timeout = Timeout.none;
+          continue;
         }
+
+        throw new SourceSpanFormatException(
+            'Expected a Timeout or Skip.',
+            _spanFor(expression));
       }
 
       return new Metadata.parse(timeout: timeout, skip: skip);
@@ -405,6 +423,13 @@ class _Parser {
     }
 
     return namedValues;
+  }
+
+  /// Assert that [annotation] (described by [name]) has no argument list.
+  void _assertNoArguments(Annotation annotation, String name) {
+    if (annotation.arguments == null) return;
+    throw new SourceSpanFormatException(
+        "$name doesn't take arguments.", _spanFor(annotation));
   }
 
   /// Parses a Map literal.

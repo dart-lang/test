@@ -641,6 +641,20 @@ void main() {
         async.elapse(new Duration(seconds: 15));
       });
     });
+
+    test("a test with Timeout.none never times out", () {
+      new FakeAsync().run((async) {
+        var liveTest = _localTest(() {
+          Invoker.current.addOutstandingCallback();
+        }, metadata: new Metadata(timeout: Timeout.none)).load(suite);
+
+        expectStates(liveTest, [const State(Status.running, Result.success)]);
+
+        liveTest.run();
+        async.elapse(new Duration(hours: 10));
+        expect(liveTest.state.status, equals(Status.running));
+      });
+    });
   });
 
   group("waitForOutstandingCallbacks:", () {

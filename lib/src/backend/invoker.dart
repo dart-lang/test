@@ -97,6 +97,12 @@ class Invoker {
     return Zone.current[#test.invoker];
   }
 
+  /// The zone that the top level of [_test.body] is running in.
+  ///
+  /// Tracking this ensures that [_timeoutTimer] isn't created in a
+  /// timer-mocking zone created by the test.
+  Zone _invokerZone;
+
   /// The timer for tracking timeouts.
   ///
   /// This will be `null` until the test starts running.
@@ -171,12 +177,14 @@ class Invoker {
     if (_timeoutTimer != null) _timeoutTimer.cancel();
 
     var timeout = metadata.timeout.apply(new Duration(seconds: 30));
-    _timeoutTimer = new Timer(timeout, () {
+    if (timeout == null) return;
+    _timeoutTimer = _invokerZone.createTimer(timeout,
+        Zone.current.bindCallback(() {
       if (liveTest.isComplete) return;
       _handleError(
           new TimeoutException(
               "Test timed out after ${niceDuration(timeout)}.", timeout));
-    });
+    }));
   }
 
   /// Notifies the invoker of an asynchronous error.
@@ -215,6 +223,8 @@ class Invoker {
     // stable versions.
     Chain.capture(() {
       runZonedWithValues(() {
+        _invokerZone = Zone.current;
+
         heartbeat();
 
         // Run the test asynchronously so that the "running" state change has
@@ -234,7 +244,7 @@ class Invoker {
           return waitForOutstandingCallbacks(() =>
               runZoned(_test._tearDown, onError: _handleError));
         }).then((_) {
-          _timeoutTimer.cancel();
+          if (_timeoutTimer != null) _timeoutTimer.cancel();
           _controller.setState(
               new State(Status.complete, liveTest.state.result));
 

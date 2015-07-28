@@ -144,6 +144,16 @@ library foo;
       expect(metadata.timeout.scaleFactor, equals(0.5));
     });
 
+    test("parses a valid Timeout.none annotation", () {
+      new File(_path).writeAsStringSync("""
+@Timeout.none
+
+library foo;
+""");
+      var metadata = parseMetadata(_path);
+      expect(metadata.timeout, same(Timeout.none));
+    });
+
     test("ignores a constructor named Timeout", () {
       new File(_path).writeAsStringSync("@foo.Timeout('foo')\nlibrary foo;");
       var metadata = parseMetadata(_path);
@@ -163,6 +173,11 @@ library foo;
 
       test("an empty argument list", () {
         new File(_path).writeAsStringSync("@Timeout()\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("an argument list for Timeout.none", () {
+        new File(_path).writeAsStringSync("@Timeout.none()\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 

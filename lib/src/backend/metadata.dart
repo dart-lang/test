@@ -120,16 +120,22 @@ class Metadata {
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
             : new PlatformSelector.parse(serialized['testOn']),
-        timeout = serialized['timeout']['duration'] == null
-            ? new Timeout.factor(serialized['timeout']['scaleFactor'])
-            : new Timeout(new Duration(
-                microseconds: serialized['timeout']['duration'])),
+        timeout = _deserializeTimeout(serialized['timeout']),
         skip = serialized['skip'],
         skipReason = serialized['skipReason'],
         verboseTrace = serialized['verboseTrace'],
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
             value: (pair) => new Metadata.deserialize(pair.last));
+
+  /// Deserializes timeout from the format returned by [_serializeTimeout].
+  static _deserializeTimeout(serialized) {
+    if (serialized == 'none') return Timeout.none;
+    var scaleFactor = serialized['scaleFactor'];
+    if (scaleFactor != null) return new Timeout.factor(scaleFactor);
+    return new Timeout(
+        new Duration(microseconds: serialized['duration']));
+  }
 
   /// Return a new [Metadata] that merges [this] with [other].
   ///
@@ -182,16 +188,22 @@ class Metadata {
 
     return {
       'testOn': testOn == PlatformSelector.all ? null : testOn.toString(),
-      'timeout': {
-        'duration': timeout.duration == null
-            ? null
-            : timeout.duration.inMicroseconds,
-        'scaleFactor': timeout.scaleFactor
-      },
+      'timeout': _serializeTimeout(timeout),
       'skip': skip,
       'skipReason': skipReason,
       'verboseTrace': verboseTrace,
       'onPlatform': serializedOnPlatform
+    };
+  }
+
+  /// Serializes timeout into a JSON-safe object.
+  _serializeTimeout(Timeout timeout) {
+    if (timeout == Timeout.none) return 'none';
+    return {
+      'duration': timeout.duration == null
+          ? null
+          : timeout.duration.inMicroseconds,
+      'scaleFactor': timeout.scaleFactor
     };
   }
 }

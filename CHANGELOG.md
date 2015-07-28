@@ -4,6 +4,8 @@
   is loaded so that breakpoints and other debugging annotations can be added.
   Currently this is only supported on browsers.
 
+* Add a `Timeout.none` value indicating that a test should never time out.
+
 ## 0.12.3+8
 
 * Fix an uncaught error that could crop up when killing the test runner process
