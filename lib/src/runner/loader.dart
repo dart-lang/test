@@ -9,13 +9,13 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:analyzer/analyzer.dart';
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
-import '../util/async_thunk.dart';
 import '../util/dart.dart' as dart;
 import '../util/io.dart';
 import '../util/remote_exception.dart';
@@ -60,7 +60,7 @@ class Loader {
   ///
   /// This is lazily initialized the first time it's accessed.
   Future<BrowserServer> get _browserServer {
-    return _browserServerThunk.run(() {
+    return _browserServerMemo.runOnce(() {
       return BrowserServer.start(
           root: _root,
           packageRoot: _packageRoot,
@@ -69,10 +69,10 @@ class Loader {
           jsTrace: _jsTrace);
     });
   }
-  final _browserServerThunk = new AsyncThunk<BrowserServer>();
+  final _browserServerMemo = new AsyncMemoizer<BrowserServer>();
 
-  /// The thunk for running [close] exactly once.
-  final _closeThunk = new AsyncThunk();
+  /// The memoizer for running [close] exactly once.
+  final _closeMemo = new AsyncMemoizer();
 
   /// Creates a new loader.
   ///
@@ -280,11 +280,11 @@ void main(_, Map message) {
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() {
-    return _closeThunk.run(() async {
+    return _closeMemo.runOnce(() async {
       await Future.wait(_suites.map((suite) => suite.close()));
       _suites.clear();
 
-      if (!_browserServerThunk.hasRun) return;
+      if (!_browserServerMemo.hasRun) return;
       await (await _browserServer).close();
     });
   }

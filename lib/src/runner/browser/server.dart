@@ -20,7 +20,6 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
-import '../../util/async_thunk.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
@@ -124,10 +123,10 @@ class BrowserServer {
   final HttpClient _http;
 
   /// Whether [close] has been called.
-  bool get _closed => _closeThunk.hasRun;
+  bool get _closed => _closeMemo.hasRun;
 
-  /// The thunk for running [close] exactly once.
-  final _closeThunk = new AsyncThunk();
+  /// The memoizer for running [close] exactly once.
+  final _closeMemo = new AsyncMemoizer();
 
   /// All currently-running browsers.
   ///
@@ -470,7 +469,7 @@ void main() {
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   Future close() {
-    return _closeThunk.run(() async {
+    return _closeMemo.runOnce(() async {
       var futures = _browsers.values.map((browser) => browser.close()).toList();
 
       futures.add(_server.close());

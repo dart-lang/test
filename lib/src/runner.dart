@@ -7,6 +7,8 @@ library test.runner;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:async/async.dart';
+
 import 'backend/metadata.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
@@ -19,7 +21,6 @@ import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/runner_suite.dart';
-import 'util/async_thunk.dart';
 import 'util/io.dart';
 import 'utils.dart';
 
@@ -48,9 +49,9 @@ class Runner {
   /// The subscription to the stream returned by [_loadSuites].
   StreamSubscription _suiteSubscription;
 
-  /// The thunk for ensuring [close] only runs once.
-  final _closeThunk = new AsyncThunk();
-  bool get _closed => _closeThunk.hasRun;
+  /// The memoizer for ensuring [close] only runs once.
+  final _closeMemo = new AsyncMemoizer();
+  bool get _closed => _closeMemo.hasRun;
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration configuration) {
@@ -131,7 +132,7 @@ class Runner {
   /// This stops any future test suites from running. It will wait for any
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
-  Future close() => _closeThunk.run(() async {
+  Future close() => _closeMemo.runOnce(() async {
     var timer;
     if (!_engine.isIdle) {
       // Wait a bit to print this message, since printing it eagerly looks weird

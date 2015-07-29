@@ -8,10 +8,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
-import '../../util/async_thunk.dart';
 import '../../util/io.dart';
 import '../load_exception.dart';
 
@@ -29,10 +29,10 @@ class CompilerPool {
   final _processes = new Set<Process>();
 
   /// Whether [close] has been called.
-  bool get _closed => _closeThunk.hasRun;
+  bool get _closed => _closeMemo.hasRun;
 
-  /// The thunk for running [close] exactly once.
-  final _closeThunk = new AsyncThunk();
+  /// The memoizer for running [close] exactly once.
+  final _closeMemo = new AsyncMemoizer();
 
   /// Creates a compiler pool that runs up to [concurrency] instances of
   /// `dart2js` at once.
@@ -125,7 +125,7 @@ void main(_) {
   /// be started. It returns a [Future] that completes once all the compilers
   /// have been killed and all resources released.
   Future close() {
-    return _closeThunk.run(() async {
+    return _closeMemo.runOnce(() async {
       await Future.wait(_processes.map((process) async {
         process.kill();
         await process.exitCode;
