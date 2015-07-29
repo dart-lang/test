@@ -11,6 +11,7 @@ import 'package:async/async.dart';
 
 import 'backend/metadata.dart';
 import 'backend/test_platform.dart';
+import 'frontend/timeout.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/engine.dart';
@@ -56,6 +57,7 @@ class Runner {
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration configuration) {
     var metadata = new Metadata(
+        timeout: configuration.pauseAfterLoad ? Timeout.none : null,
         verboseTrace: configuration.verboseTrace);
     var loader = new Loader(configuration.platforms,
         pubServeUrl: configuration.pubServeUrl,
@@ -96,7 +98,6 @@ class Runner {
 
     var success;
     if (_configuration.pauseAfterLoad) {
-      // TODO(nweiz): disable timeouts when debugging.
       success = await _loadThenPause(suites);
     } else {
       _suiteSubscription = suites.listen(_engine.suiteSink.add);
