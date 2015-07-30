@@ -15,6 +15,7 @@ import '../backend/test_platform.dart';
 import '../utils.dart';
 import 'load_exception.dart';
 import 'runner_suite.dart';
+import 'vm/environment.dart';
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
@@ -99,7 +100,7 @@ class LoadSuite extends RunnerSuite {
   }
 
   LoadSuite._(String name, void body(), this.suite, {TestPlatform platform})
-      : super([
+      : super(const VMEnvironment(), [
         new LocalTest(name,
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
             body)
@@ -107,7 +108,7 @@ class LoadSuite extends RunnerSuite {
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, Future<RunnerSuite> this.suite)
-      : super(old.tests, platform: old.platform);
+      : super(const VMEnvironment(), old.tests, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.

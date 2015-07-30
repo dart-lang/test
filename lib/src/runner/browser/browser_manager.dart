@@ -16,6 +16,7 @@ import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
+import '../environment.dart';
 import '../load_exception.dart';
 import '../runner_suite.dart';
 import 'iframe_test.dart';
@@ -51,12 +52,16 @@ class BrowserManager {
   /// Whether the channel to the browser has closed.
   bool _closed = false;
 
+  /// The environment to attach to each suite.
+  _BrowserEnvironment _environment;
+
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
   BrowserManager(this.browser, CompatibleWebSocket webSocket)
       : _channel = new MultiChannel(
           webSocket.map(JSON.decode),
           mapSink(webSocket, JSON.encode)) {
+    _environment = new _BrowserEnvironment(this);
     _channel.stream.listen(null, onDone: () => _closed = true);
   }
 
@@ -140,7 +145,7 @@ class BrowserManager {
           asyncError.stackTrace);
     }
 
-    return new RunnerSuite(response["tests"].map((test) {
+    return new RunnerSuite(_environment, response["tests"].map((test) {
       var testMetadata = new Metadata.deserialize(test['metadata']);
       var testChannel = suiteChannel.virtualChannel(test['channel']);
       return new IframeTest(test['name'], testMetadata, testChannel,
@@ -148,4 +153,13 @@ class BrowserManager {
     }), platform: browser, metadata: metadata, path: path,
         onClose: () => closeIframe());
   }
+}
+
+/// An implementation of [Environment] for the browser.
+///
+/// All methods forward directly to [BrowserManager].
+class _BrowserEnvironment implements Environment {
+  final BrowserManager _manager;
+
+  _BrowserEnvironment(this._manager);
 }

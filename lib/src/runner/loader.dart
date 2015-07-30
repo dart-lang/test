@@ -25,6 +25,7 @@ import 'load_exception.dart';
 import 'load_suite.dart';
 import 'parse_metadata.dart';
 import 'runner_suite.dart';
+import 'vm/environment.dart';
 import 'vm/isolate_test.dart';
 
 /// A class for finding test files and loading them into a runnable form.
@@ -159,7 +160,7 @@ class Loader {
 
       // Don't load a skipped suite.
       if (metadata.skip) {
-        yield new LoadSuite.forSuite(new RunnerSuite([
+        yield new LoadSuite.forSuite(new RunnerSuite(const VMEnvironment(), [
           new LocalTest(path, metadata, () {})
         ], path: path, platform: platform, metadata: metadata));
         continue;
@@ -262,7 +263,8 @@ void main(_, Map message) {
     });
 
     try {
-      var suite = new RunnerSuite((await completer.future).map((test) {
+      var suite = new RunnerSuite(const VMEnvironment(),
+          (await completer.future).map((test) {
         var testMetadata = new Metadata.deserialize(test['metadata']);
         return new IsolateTest(test['name'], testMetadata, test['sendPort']);
       }),

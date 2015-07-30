@@ -11,13 +11,16 @@ import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
 import 'package:test/src/runner/runner_suite.dart';
+import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
 
 void main() {
+  var innerSuite;
+  setUp(() => innerSuite = new RunnerSuite(const VMEnvironment(), []));
+
   test("running a load test causes LoadSuite.suite to emit a suite", () async {
-    var innerSuite = new RunnerSuite([]);
     var suite = new LoadSuite("name", () => new Future.value(innerSuite));
     expect(suite.tests, hasLength(1));
 
@@ -28,7 +31,6 @@ void main() {
   });
 
   test("running a load suite's body may be synchronous", () async {
-    var innerSuite = new RunnerSuite([]);
     var suite = new LoadSuite("name", () => innerSuite);
     expect(suite.tests, hasLength(1));
 
@@ -48,7 +50,7 @@ void main() {
     await new Future.delayed(Duration.ZERO);
     expect(liveTest.state.status, equals(Status.running));
 
-    completer.complete(new RunnerSuite([]));
+    completer.complete(innerSuite);
     await new Future.delayed(Duration.ZERO);
     expectTestPassed(liveTest);
   });
@@ -95,7 +97,6 @@ void main() {
 
   test("forSuite() creates a load suite that completes to a test suite",
       () async {
-    var innerSuite = new RunnerSuite([]);
     var suite = new LoadSuite.forSuite(innerSuite);
     expect(suite.tests, hasLength(1));
 
@@ -107,7 +108,6 @@ void main() {
 
   group("changeSuite()", () {
     test("returns a new load suite with the same properties", () {
-      var innerSuite = new RunnerSuite([]);
       var suite = new LoadSuite("name", () => innerSuite,
           platform: TestPlatform.vm);
       expect(suite.tests, hasLength(1));
@@ -118,11 +118,10 @@ void main() {
     });
 
     test("changes the inner suite", () async {
-      var innerSuite = new RunnerSuite([]);
       var suite = new LoadSuite("name", () => innerSuite);
       expect(suite.tests, hasLength(1));
 
-      var newInnerSuite = new RunnerSuite([]);
+      var newInnerSuite = new RunnerSuite(const VMEnvironment(), []);
       var newSuite = suite.changeSuite((suite) => newInnerSuite);
       expect(newSuite.suite, completion(equals(newInnerSuite)));
 
@@ -146,7 +145,6 @@ void main() {
 
   group("getSuite()", () {
     test("runs the test and returns the suite", () {
-      var innerSuite = new RunnerSuite([]);
       var suite = new LoadSuite.forSuite(innerSuite);
       expect(suite.tests, hasLength(1));
 

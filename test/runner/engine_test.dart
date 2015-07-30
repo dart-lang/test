@@ -6,6 +6,7 @@ import 'package:test/src/backend/declarer.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/src/runner/runner_suite.dart';
+import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -22,8 +23,8 @@ void main() {
     }
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(declarer.tests.take(2)),
-      new RunnerSuite(declarer.tests.skip(2))
+      new RunnerSuite(const VMEnvironment(), declarer.tests.take(2)),
+      new RunnerSuite(const VMEnvironment(), declarer.tests.skip(2))
     ]);
 
     await engine.run();
@@ -44,7 +45,8 @@ void main() {
       expect(testsRun, equals(4));
     }), completes);
 
-    engine.suiteSink.add(new RunnerSuite(declarer.tests));
+    engine.suiteSink.add(
+        new RunnerSuite(const VMEnvironment(), declarer.tests));
     engine.suiteSink.close();
   });
 
@@ -55,7 +57,9 @@ void main() {
       declarer.test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
     }
 
-    var engine = new Engine.withSuites([new RunnerSuite(declarer.tests)]);
+    var engine = new Engine.withSuites([
+      new RunnerSuite(const VMEnvironment(), declarer.tests)
+    ]);
 
     engine.onTestStarted.listen(expectAsync((liveTest) {
       // [testsRun] should be one less than the test currently running.
@@ -75,7 +79,9 @@ void main() {
       declarer.test("test ${i + 1}", () {});
     }
 
-    var engine = new Engine.withSuites([new RunnerSuite(declarer.tests)]);
+    var engine = new Engine.withSuites([
+      new RunnerSuite(const VMEnvironment(), declarer.tests)
+    ]);
     expect(engine.run(), completion(isTrue));
   });
 
@@ -85,7 +91,9 @@ void main() {
     }
     declarer.test("failure", () => throw new TestFailure("oh no"));
 
-    var engine = new Engine.withSuites([new RunnerSuite(declarer.tests)]);
+    var engine = new Engine.withSuites([
+      new RunnerSuite(const VMEnvironment(), declarer.tests)
+    ]);
     expect(engine.run(), completion(isFalse));
   });
 
@@ -95,7 +103,9 @@ void main() {
     }
     declarer.test("failure", () => throw "oh no");
 
-    var engine = new Engine.withSuites([new RunnerSuite(declarer.tests)]);
+    var engine = new Engine.withSuites([
+      new RunnerSuite(const VMEnvironment(), declarer.tests)
+    ]);
     expect(engine.run(), completion(isFalse));
   });
 
@@ -110,7 +120,9 @@ void main() {
       var bodyRun = false;
       declarer.test("test", () => bodyRun = true, skip: true);
 
-      var engine = new Engine.withSuites([new RunnerSuite(declarer.tests)]);
+      var engine = new Engine.withSuites([
+        new RunnerSuite(const VMEnvironment(), declarer.tests)
+      ]);
       await engine.run();
       expect(bodyRun, isFalse);
     });
@@ -118,7 +130,9 @@ void main() {
     test("exposes a LiveTest that emits the correct states", () {
       declarer.test("test", () {}, skip: true);
 
-      var engine = new Engine.withSuites([new RunnerSuite(declarer.tests)]);
+      var engine = new Engine.withSuites([
+        new RunnerSuite(const VMEnvironment(), declarer.tests)
+      ]);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
