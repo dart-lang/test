@@ -12,6 +12,7 @@ import 'package:pool/pool.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
+import '../../util/cancelable_future.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
@@ -52,6 +53,12 @@ class BrowserManager {
   /// Whether the channel to the browser has closed.
   bool _closed = false;
 
+  /// The completer for [_BrowserEnvironment.displayPause].
+  ///
+  /// This will be `null` as long as the browser isn't displaying a pause
+  /// screen.
+  CancelableCompleter _pauseCompleter;
+
   /// The environment to attach to each suite.
   _BrowserEnvironment _environment;
 
@@ -62,7 +69,7 @@ class BrowserManager {
           webSocket.map(JSON.decode),
           mapSink(webSocket, JSON.encode)) {
     _environment = new _BrowserEnvironment(this);
-    _channel.stream.listen(null, onDone: () => _closed = true);
+    _channel.stream.listen(_onMessage, onDone: _onDone);
   }
 
   /// Tells the browser the load a test suite from the URL [url].
@@ -153,6 +160,35 @@ class BrowserManager {
     }), platform: browser, metadata: metadata, path: path,
         onClose: () => closeIframe());
   }
+
+  /// An implementation of [Environment.displayPause].
+  CancelableFuture _displayPause() {
+    if (_pauseCompleter != null) return _pauseCompleter.future;
+
+    _pauseCompleter = new CancelableCompleter(() {
+      _channel.sink.add({"command": "resume"});
+      _pauseCompleter = null;
+    });
+
+    _channel.sink.add({"command": "displayPause"});
+    return _pauseCompleter.future.whenComplete(() {
+      _pauseCompleter = null;
+    });
+  }
+
+  /// The callback for handling messages received from the host page.
+  void _onMessage(Map message) {
+    assert(message["command"] == "resume");
+    if (_pauseCompleter == null) return;
+    _pauseCompleter.complete();
+  }
+
+  /// The callback called when the WebSocket is closed.
+  void _onDone() {
+    _closed = true;
+    if (_pauseCompleter != null) _pauseCompleter.complete();
+    _pauseCompleter = null;
+  }
 }
 
 /// An implementation of [Environment] for the browser.
@@ -162,4 +198,6 @@ class _BrowserEnvironment implements Environment {
   final BrowserManager _manager;
 
   _BrowserEnvironment(this._manager);
+
+  CancelableFuture displayPause() => _manager._displayPause();
 }

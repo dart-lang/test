@@ -81,10 +81,20 @@ void main() {
         var suiteChannel = serverChannel.virtualChannel(message['channel']);
         var iframeChannel = _connectToIframe(message['url'], message['id']);
         suiteChannel.pipe(iframeChannel);
+      } else if (message['command'] == 'displayPause') {
+        document.body.classes.add('paused');
+      } else if (message['command'] == 'resume') {
+        document.body.classes.remove('paused');
       } else {
         assert(message['command'] == 'closeSuite');
         _iframes[message['id']].remove();
       }
+    });
+
+    var play = document.querySelector("#play");
+    play.onClick.listen((_) {
+      document.body.classes.remove('paused');
+      serverChannel.sink.add({"command": "resume"});
     });
   }, onError: (error, stackTrace) {
     print("$error\n${new Trace.from(stackTrace).terse}");
@@ -100,8 +110,9 @@ MultiChannel _connectToServer() {
   var webSocket = new WebSocket(currentUrl.queryParameters['managerUrl']);
 
   var inputController = new StreamController(sync: true);
-  webSocket.onMessage.listen(
-      (message) => inputController.add(JSON.decode(message.data)));
+  webSocket.onMessage.listen((message) {
+    inputController.add(JSON.decode(message.data));
+  });
 
   var outputController = new StreamController(sync: true);
   outputController.stream.listen(

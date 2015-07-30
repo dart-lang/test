@@ -8,6 +8,35 @@ iframe {
   visibility: hidden;
 }
 
+#play {
+  display: none;
+  cursor: pointer;
+}
+
+#dark {
+  display: none;
+}
+
+.paused #play {
+  display: block;
+}
+
+.paused #dark {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.paused #right-flank, .paused #right-ear, .paused #right-paw,
+.paused #left-flank,  .paused #left-ear,  .paused #left-paw {
+  -webkit-animation-play-state: paused;
+          animation-play-state: paused;
+}
+
 /* Compiled output from
  * http://codepen.io/mknadler/pen/11b75cb014a3c382f54abf527655af21. */
 

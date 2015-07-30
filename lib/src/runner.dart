@@ -238,10 +238,10 @@ class Runner {
               "${suite.platform} and set breakpoints. Once you're finished, "
               "return to this terminal and press Enter."));
 
-      // TODO(nweiz): Display something in the paused browsers indicating that
-      // they're paused.
-
-      await stdinLines.next;
+      await race([
+        suite.environment.displayPause(),
+        cancelableNext(stdinLines)
+      ]);
     } finally {
       _reporter.resume();
     }
