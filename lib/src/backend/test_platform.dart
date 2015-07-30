@@ -12,16 +12,16 @@ class TestPlatform {
 
   /// The command-line Dart VM.
   static const TestPlatform vm =
-      const TestPlatform._("VM", "vm", isDartVm: true);
+      const TestPlatform._("VM", "vm", isDartVM: true);
 
   /// Dartium.
   static const TestPlatform dartium = const TestPlatform._("Dartium", "dartium",
-      isBrowser: true, isBlink: true);
+      isBrowser: true, isBlink: true, isDartVM: true);
 
   /// Dartium content shell.
   static const TestPlatform contentShell = const TestPlatform._(
       "Dartium Content Shell", "content-shell",
-      isBrowser: true, isBlink: true);
+      isBrowser: true, isBlink: true, isDartVM: true);
 
   /// Google Chrome.
   static const TestPlatform chrome = const TestPlatform._("Chrome", "chrome",
@@ -71,7 +71,7 @@ class TestPlatform {
   final String identifier;
 
   /// Whether this platform runs the Dart VM in any capacity.
-  final bool isDartVm;
+  final bool isDartVM;
 
   /// Whether this platform is a browser.
   final bool isBrowser;
@@ -82,7 +82,7 @@ class TestPlatform {
   /// Whether this platform uses the Blink rendering engine.
   final bool isBlink;
 
-  const TestPlatform._(this.name, this.identifier, {this.isDartVm: false,
+  const TestPlatform._(this.name, this.identifier, {this.isDartVM: false,
       this.isBrowser: false, this.isJS: false, this.isBlink: false});
 
   String toString() => name;

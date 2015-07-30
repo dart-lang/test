@@ -26,7 +26,7 @@ class Evaluator implements Visitor<bool> {
     if (node.name == _os.name) return true;
 
     switch (node.name) {
-      case "dart-vm": return _platform.isDartVm;
+      case "dart-vm": return _platform.isDartVM;
       case "browser": return _platform.isBrowser;
       case "js": return _platform.isJS;
       case "blink": return _platform.isBlink;

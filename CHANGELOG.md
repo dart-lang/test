@@ -6,6 +6,9 @@
 
 * Add a `Timeout.none` value indicating that a test should never time out.
 
+* The `dart-vm` platform selector variable is now `true` for Dartium and content
+  shell.
+
 ## 0.12.3+8
 
 * Fix an uncaught error that could crop up when killing the test runner process
