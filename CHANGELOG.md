@@ -1,4 +1,8 @@
-## 0.12.4
+## 0.12.3+9
+
+* Widen the constraint on `analyzer` to include `0.26.0`.
+
+## 0.12.3+8
 
 * Add a `--pause-after-load` flag that pauses the test runner after each suite
   is loaded so that breakpoints and other debugging annotations can be added.
