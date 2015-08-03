@@ -323,6 +323,12 @@ Future maybeFirst(Stream stream) {
   return completer.future;
 }
 
+/// Returns a [CancelableFuture] that returns the next value of [queue] unless
+/// it's canceled.
+///
+/// If the future is canceled, [queue] is not moved forward at all. Note that
+/// it's not safe to call further methods on [queue] until this future has
+/// either completed or been canceled.
 CancelableFuture cancelableNext(StreamQueue queue) {
   var fork = queue.fork();
   var completer = new CancelableCompleter(() => fork.cancel(immediate: true));
@@ -333,6 +339,8 @@ CancelableFuture cancelableNext(StreamQueue queue) {
   return completer.future;
 }
 
+/// Returns the result of whichever of [futures] completes first, and cancels
+/// the others.
 Future race(Iterable<CancelableFuture> futures) {
   var completer = new Completer.sync();
   for (var future in futures) {
