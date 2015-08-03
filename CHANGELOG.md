@@ -1,4 +1,8 @@
-## 0.12.4
+## 0.12.3+9
+
+* Widen the constraint on `analyzer` to include `0.26.0`.
+
+## 0.12.3+8
 
 * Fix an uncaught error that could crop up when killing the test runner process
   at the wrong time.
