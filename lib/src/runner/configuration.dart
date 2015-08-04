@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 
+import '../frontend/timeout.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
 
@@ -83,98 +84,121 @@ class Configuration {
   /// The usage string for the command-line arguments.
   static String get usage => _parser.usage;
 
-  /// The results of parsing the arguments.
-  final ArgResults _options;
-
   /// Whether `--help` was passed.
-  bool get help => _options['help'];
+  final bool help;
 
   /// Whether `--version` was passed.
-  bool get version => _options['version'];
+  final bool version;
 
   /// Whether stack traces should be presented as-is or folded to remove
   /// irrelevant packages.
-  bool get verboseTrace => _options['verbose-trace'];
+  final bool verboseTrace;
 
   /// Whether JavaScript stack traces should be left as-is or converted to
   /// Dart-like traces.
-  bool get jsTrace => _options['js-trace'];
+  final bool jsTrace;
 
   /// Whether to pause for debugging after loading each test suite.
-  bool get pauseAfterLoad => _options['pause-after-load'];
+  final bool pauseAfterLoad;
 
   /// The package root for resolving "package:" URLs.
-  String get packageRoot => _options['package-root'] == null
-      ? p.join(p.current, 'packages')
-      : _options['package-root'];
+  final String packageRoot;
 
   /// The name of the reporter to use to display results.
-  String get reporter => _options['reporter'];
+  final String reporter;
 
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
-  Uri get pubServeUrl {
-    if (_options['pub-serve'] == null) return null;
-    return Uri.parse("http://localhost:${_options['pub-serve']}");
-  }
+  final Uri pubServeUrl;
 
   /// Whether to use command-line color escapes.
-  bool get color =>
-      _options["color"] == null ? canUseSpecialChars : _options["color"];
+  final bool color;
 
   /// How many tests to run concurrently.
-  int get concurrency => _concurrency;
-  int _concurrency;
+  final int concurrency;
 
   /// The from which to load tests.
-  List<String> get paths => _options.rest.isEmpty ? ["test"] : _options.rest;
+  final List<String> paths;
 
   /// Whether the load paths were passed explicitly or the default was used.
-  bool get explicitPaths => _options.rest.isNotEmpty;
+  final bool explicitPaths;
 
   /// The pattern to match against test names to decide which to run, or `null`
   /// if all tests should be run.
-  Pattern get pattern {
-    if (_options["name"] != null) {
-      return new RegExp(_options["name"]);
-    } else if (_options["plain-name"] != null) {
-      return _options["plain-name"];
-    } else {
-      return null;
-    }
-  }
+  final Pattern pattern;
 
   /// The set of platforms on which to run tests.
-  List<TestPlatform> get platforms =>
-      _options["platform"].map(TestPlatform.find).toList();
+  final List<TestPlatform> platforms;
 
   /// Parses the configuration from [args].
   ///
   /// Throws a [FormatException] if [args] are invalid.
-  Configuration.parse(List<String> args)
-      : _options = _parser.parse(args) {
-    if (pauseAfterLoad) {
-      _concurrency = 1;
-    } else if (_options['concurrency'] == null) {
-      _concurrency = _defaultConcurrency;
-    } else {
-      _concurrency = _wrapFormatException('concurrency', int.parse);
+  factory Configuration.parse(List<String> args) {
+    var options = _parser.parse(args);
+
+    var pattern;
+    if (options['name'] != null) {
+      if (options["plain-name"] != null) {
+        throw new FormatException(
+            "--name and --plain-name may not both be passed.");
+      }
+
+      pattern = _wrapFormatException(
+          options, 'name', (value) => new RegExp(value));
+    } else if (options['plain-name'] != null) {
+      pattern = options['plain-name'];
     }
 
-    if (_options["name"] != null && _options["plain-name"] != null) {
-      throw new FormatException(
-          "--name and --plain-name may not both be passed.");
-    }
+    return new Configuration(
+        help: options['help'],
+        version: options['version'],
+        verboseTrace: options['verbose-trace'],
+        jsTrace: options['js-trace'],
+        pauseAfterLoad: options['pause-after-load'],
+        color: options['color'],
+        packageRoot: options['package-root'],
+        reporter: options['reporter'],
+        pubServePort: _wrapFormatException(options, 'pub-serve', int.parse),
+        concurrency: _wrapFormatException(options, 'concurrency', int.parse,
+            orElse: () => _defaultConcurrency),
+        pattern: pattern,
+        platforms: options['platforms'].map(TestPlatform.find).toList(),
+        paths: options.rest.isEmpty ? null : options.rest);
   }
 
   /// Runs [parse] on the value of the option [name], and wraps any
   /// [FormatException] it throws with additional information.
-  _wrapFormatException(String name, parse(value)) {
+  static _wrapFormatException(ArgResults options, String name, parse(value),
+      {orElse()}) {
+    var value = options[name];
+    if (value == null) return orElse == null ? null : orElse();
+
     try {
-      return parse(_options[name]);
+      return parse(value);
     } on FormatException catch (error) {
-      throw new FormatException('Couldn\'t parse --$name "${_options[name]}": '
+      throw new FormatException('Couldn\'t parse --$name "${options[name]}": '
           '${error.message}');
     }
   }
+
+  Configuration({this.help: false, this.version: false,
+          this.verboseTrace: false, this.jsTrace: false,
+          bool pauseAfterLoad: false, bool color, String packageRoot,
+          String reporter, int pubServePort, int concurrency, this.pattern,
+          Iterable<TestPlatform> platforms, Iterable<String> paths})
+      : pauseAfterLoad = pauseAfterLoad,
+        color = color == null ? canUseSpecialChars : color,
+        packageRoot = packageRoot == null
+            ? p.join(p.current, 'packages')
+            : packageRoot,
+        reporter = reporter == null ? 'compact' : reporter,
+        pubServeUrl = pubServePort == null
+            ? null
+            : Uri.parse("http://localhost:$pubServePort"),
+        concurrency = pauseAfterLoad
+            ? 1
+            : (concurrency == null ? _defaultConcurrency : concurrency),
+        platforms = platforms.toList(),
+        paths = paths == null ? ["test"] : paths.toList(),
+        explicitPaths = paths != null;
 }
