@@ -153,9 +153,13 @@ class Configuration {
   /// Throws a [FormatException] if [args] are invalid.
   Configuration.parse(List<String> args)
       : _options = _parser.parse(args) {
-    _concurrency = _options['concurrency'] == null
-        ? _defaultConcurrency
-        : _wrapFormatException('concurrency', int.parse);
+    if (pauseAfterLoad) {
+      _concurrency = 1;
+    } else if (_options['concurrency'] == null) {
+      _concurrency = _defaultConcurrency;
+    } else {
+      _concurrency = _wrapFormatException('concurrency', int.parse);
+    }
 
     if (_options["name"] != null && _options["plain-name"] != null) {
       throw new FormatException(
