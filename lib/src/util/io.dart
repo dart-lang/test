@@ -195,3 +195,24 @@ String libraryPath(Symbol libraryName, {String packageRoot}) {
   if (packageRoot == null) packageRoot = p.absolute('packages');
   return p.join(packageRoot, p.fromUri(lib.uri.path));
 }
+
+/// Repeatedly finds a probably-unused port on localhost and passes it to
+/// [tryPort] until it binds successfully.
+///
+/// [tryPort] should return a non-`null` value or a Future completing to a
+/// non-`null` value once it binds successfully. This value will be returned
+/// by [getUnusedPort] in turn.
+///
+/// This is necessary for ensuring that our port binding isn't flaky for
+/// applications that don't print out the bound port.
+Future getUnusedPort(tryPort(int port)) {
+  var value;
+  return Future.doWhile(() async {
+    var socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    var port = socket.port;
+    await socket.close();
+
+    value = await tryPort(port);
+    return value == null;
+  }).then((_) => value);
+}

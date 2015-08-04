@@ -234,6 +234,15 @@ class Runner {
         }
       }
 
+      if (suite.platform == TestPlatform.contentShell) {
+        var url = suite.environment.remoteDebuggerUrl;
+        if (url == null) {
+          print("${yellow}Remote debugger URL not found.$noColor");
+        } else {
+          print("Remote debugger URL: $bold$url$noColor");
+        }
+      }
+
       var buffer = new StringBuffer(
           "${bold}The test runner is paused.${noColor} ");
       if (!suite.platform.isHeadless) {
@@ -241,6 +250,9 @@ class Runner {
         if (suite.platform.isDartVM) buffer.write("or ");
       } else {
         buffer.write("Open ");
+        if (suite.platform == TestPlatform.contentShell) {
+          buffer.write("the remote debugger or ");
+        }
       }
       if (suite.platform.isDartVM) buffer.write("the Observatory ");
 

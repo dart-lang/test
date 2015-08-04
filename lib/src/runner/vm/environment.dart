@@ -14,6 +14,9 @@ class VMEnvironment implements Environment {
   Uri get observatoryUrl => throw new UnsupportedError(
       "VMEnvironment.observatoryUrl is not currently supported.");
 
+  Uri get remoteDebuggerUrl => throw new UnsupportedError(
+      "VMEnvironment.observatoryUrl is not supported.");
+
   CancelableFuture displayPause() =>
       throw new UnsupportedError(
           "The VM doesn't yet support Environment.displayPause.");

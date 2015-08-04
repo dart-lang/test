@@ -13,6 +13,10 @@ abstract class Environment {
   /// environment doesn't run the Dart VM or the URL couldn't be detected.
   Uri get observatoryUrl;
 
+  /// The URL of the remote debugger for this environment, or `null` if it isn't
+  /// enabled.
+  Uri get remoteDebuggerUrl;
+
   /// Displays information indicating that the test runner is paused.
   ///
   /// The returned future will complete when the user takes action within the

@@ -32,6 +32,14 @@ abstract class Browser {
   Future<Uri> get observatoryUrl =>
       throw new UnsupportedError("$name doesn't support Observatory.");
 
+  /// The remote debugger URL for this browser.
+  ///
+  /// This will throw an [UnsupportedError] for browsers that don't support
+  /// remote debugging, and return `null` if the remote debugging URL can't be
+  /// found.
+  Future<Uri> get remoteDebuggerUrl =>
+      throw new UnsupportedError("$name doesn't support remote debugging.");
+
   /// The underlying process.
   ///
   /// This will fire once the process has started successfully.
