@@ -81,13 +81,14 @@ class BrowserManager {
   ///
   /// [url] should serve a page that establishes a WebSocket connection with
   /// this process. That connection, once established, should be emitted via
-  /// [future].
+  /// [future]. If [debug] is true, starts the browser in debug mode, with its
+  /// debugger interfaces on and detected.
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
   static Future<BrowserManager> start(TestPlatform platform, Uri url,
-      Future<CompatibleWebSocket> future) {
-    var browser = _newBrowser(url, platform);
+      Future<CompatibleWebSocket> future, {bool debug: false}) {
+    var browser = _newBrowser(url, platform, debug: debug);
 
     var completer = new Completer();
 
@@ -118,10 +119,14 @@ class BrowserManager {
   }
 
   /// Starts the browser identified by [browser] and has it load [url].
-  static Browser _newBrowser(Uri url, TestPlatform browser) {
+  ///
+  /// If [debug] is true, starts the browser in debug mode.
+  static Browser _newBrowser(Uri url, TestPlatform browser,
+      {bool debug: false}) {
     switch (browser) {
-      case TestPlatform.dartium: return new Dartium(url);
-      case TestPlatform.contentShell: return new ContentShell(url);
+      case TestPlatform.dartium: return new Dartium(url, debug: debug);
+      case TestPlatform.contentShell:
+        return new ContentShell(url, debug: debug);
       case TestPlatform.chrome: return new Chrome(url);
       case TestPlatform.phantomJS: return new PhantomJS(url);
       case TestPlatform.firefox: return new Firefox(url);

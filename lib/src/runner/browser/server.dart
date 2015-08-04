@@ -374,7 +374,8 @@ void main() {
         .resolve('packages/test/src/runner/browser/static/index.html')
         .replace(queryParameters: {'managerUrl': webSocketUrl.toString()});
 
-    var future = BrowserManager.start(platform, hostUrl, completer.future);
+    var future = BrowserManager.start(platform, hostUrl, completer.future,
+        debug: _config.pauseAfterLoad);
 
     // Capture errors and release them later to avoid Zone issues. This call to
     // [_browserManagerFor] is running in a different [LoadSuite] than future

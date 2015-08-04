@@ -25,7 +25,7 @@ class ContentShell extends Browser {
 
   final Future<Uri> observatoryUrl;
 
-  factory ContentShell(url, {String executable}) {
+  factory ContentShell(url, {String executable, bool debug: false}) {
     var completer = new Completer.sync();
     return new ContentShell._(() async {
       if (executable == null) executable = _defaultExecutable();
@@ -34,13 +34,15 @@ class ContentShell extends Browser {
           executable, ["--dump-render-tree", url.toString()],
           environment: {"DART_FLAGS": "--checked"});
 
-      // The first observatory URL emitted is for the empty start page; the
-      // second is actually for the host page.
-      completer.complete(lineSplitter.bind(process.stdout).map((line) {
-        var match = _observatoryRegExp.firstMatch(line);
-        if (match == null) return null;
-        return Uri.parse(match[1]);
-      }).where((uri) => uri != null).first);
+      if (debug) {
+        completer.complete(lineSplitter.bind(process.stdout).map((line) {
+          var match = _observatoryRegExp.firstMatch(line);
+          if (match == null) return null;
+          return Uri.parse(match[1]);
+        }).where((uri) => uri != null).first);
+      } else {
+        completer.complete(null);
+      }
 
       lineSplitter.bind(process.stderr).listen((line) {
         if (line != "[dartToStderr]: Dartium build has expired") return;

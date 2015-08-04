@@ -30,7 +30,7 @@ class Dartium extends Browser {
 
   final Future<Uri> observatoryUrl;
 
-  factory Dartium(url, {String executable}) {
+  factory Dartium(url, {String executable, bool debug: false}) {
     var completer = new Completer.sync();
     return new Dartium._(() async {
       if (executable == null) executable = _defaultExecutable();
@@ -48,9 +48,11 @@ class Dartium extends Browser {
         "--disable-translate"
       ], environment: {"DART_FLAGS": "--checked"});
 
-      // The first observatory URL emitted is for the empty start page; the
-      // second is actually for the host page.
-      completer.complete(_getObservatoryUrl(process.stdout));
+      if (debug) {
+        completer.complete(_getObservatoryUrl(process.stdout));
+      } else {
+        completer.complete(null);
+      }
 
       process.exitCode
           .then((_) => new Directory(dir).deleteSync(recursive: true));
