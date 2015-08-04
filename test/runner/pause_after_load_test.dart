@@ -41,9 +41,10 @@ void main() {
         ["--pause-after-load", "-p", "dartium", "test1.dart", "test2.dart"]);
     test.stdout.expect(consumeThrough("loaded test 1!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -63,9 +64,10 @@ void main() {
 
     test.stdout.expect(consumeThrough("loaded test 2!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -102,9 +104,10 @@ void main() {
         ["--pause-after-load", "-p", "dartium", "-p", "chrome", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -157,10 +160,10 @@ void main() {
 """).create();
 
     var test = runTest(
-        ["--pause-after-load", "-p", "vm", "-p", "content-shell", "test.dart"]);
+        ["--pause-after-load", "-p", "vm", "-p", "phantomjs", "test.dart"]);
     test.stderr.expect(
         "Warning: Debugging is currently unsupported on the Dart VM and "
-            "Dartium Content Shell.");
+            "PhantomJS.");
     test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
     test.shouldExit(0);
   });
@@ -183,9 +186,10 @@ void main() {
 
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -225,9 +229,10 @@ void main() {
     var test = runTest(["--pause-after-load", "-p", "dartium", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     test.signal(ProcessSignal.SIGTERM);
@@ -250,9 +255,10 @@ void main() {
         ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test 1!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -291,9 +297,10 @@ void main() {
         ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test 1!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Dartium and set "
-          "breakpoints. Once you're",
-      "finished, return to this terminal and press Enter."
+      startsWith("Observatory URL: "),
+      "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+      "Once you're finished, return to this terminal and press Enter."
     ])));
 
     schedule(() async {

@@ -25,6 +25,13 @@ typedef Future<Process> StartBrowserFn();
 abstract class Browser {
   String get name;
 
+  /// The Observatory URL for this browser.
+  ///
+  /// This will throw an [UnsupportedError] for browsers that aren't running the
+  /// Dart VM, and return `null` if the Observatory URL can't be found.
+  Future<Uri> get observatoryUrl =>
+      throw new UnsupportedError("$name doesn't support Observatory.");
+
   /// The underlying process.
   ///
   /// This will fire once the process has started successfully.

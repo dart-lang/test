@@ -27,7 +27,7 @@ import 'utils.dart';
 
 /// The set of platforms for which debug flags are (currently) not supported.
 final _debugUnsupportedPlatforms = new Set.from(
-    [TestPlatform.vm, TestPlatform.phantomJS, TestPlatform.contentShell]);
+    [TestPlatform.vm, TestPlatform.phantomJS]);
 
 /// A class that loads and runs tests based on a [Configuration].
 ///
@@ -231,17 +231,39 @@ class Runner {
       _reporter.pause();
 
       var bold = _configuration.color ? '\u001b[1m' : '';
+      var yellow = _configuration.color ? '\u001b[33m' : '';
       var noColor = _configuration.color ? '\u001b[0m' : '';
       print('');
-      print(wordWrap(
-          "${bold}The test runner is paused.${noColor} Open the dev console in "
-              "${suite.platform} and set breakpoints. Once you're finished, "
-              "return to this terminal and press Enter."));
 
-      await race([
+      if (suite.platform.isDartVM) {
+        var url = suite.environment.observatoryUrl;
+        if (url == null) {
+          print("${yellow}Observatory URL not found. Make sure you're using "
+              "${suite.platform.name} 1.11 or later.$noColor");
+        } else {
+          print("Observatory URL: $bold$url$noColor");
+        }
+      }
+
+      var buffer = new StringBuffer(
+          "${bold}The test runner is paused.${noColor} ");
+      if (!suite.platform.isHeadless) {
+        buffer.write("Open the dev console in ${suite.platform} ");
+        if (suite.platform.isDartVM) buffer.write("or ");
+      } else {
+        buffer.write("Open ");
+      }
+      if (suite.platform.isDartVM) buffer.write("the Observatory ");
+
+      buffer.write("and set breakpoints. Once you're finished, return to this "
+          "terminal and press Enter.");
+
+      print(wordWrap(buffer.toString()));
+
+      await inCompletionOrder([
         suite.environment.displayPause(),
         cancelableNext(stdinLines)
-      ]);
+      ]).first;
     } finally {
       _reporter.resume();
     }

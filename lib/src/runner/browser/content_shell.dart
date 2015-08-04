@@ -11,6 +11,8 @@ import '../../utils.dart';
 import '../application_exception.dart';
 import 'browser.dart';
 
+final _observatoryRegExp = new RegExp(r"^Observatory listening on ([^ ]+)");
+
 /// A class for running an instance of the Dartium content shell.
 ///
 /// Most of the communication with the browser is expected to happen via HTTP,
@@ -21,36 +23,44 @@ import 'browser.dart';
 class ContentShell extends Browser {
   final name = "Content Shell";
 
-  ContentShell(url, {String executable})
-      : super(() => _startBrowser(url, executable));
+  final Future<Uri> observatoryUrl;
 
-  /// Starts a new instance of content shell open to the given [url], which may
-  /// be a [Uri] or a [String].
-  ///
-  /// If [executable] is passed, it's used as the content shell executable.
-  /// Otherwise the default executable name for the current OS will be used.
-  static Future<Process> _startBrowser(url, [String executable]) async {
-    if (executable == null) executable = _defaultExecutable();
+  factory ContentShell(url, {String executable}) {
+    var completer = new Completer.sync();
+    return new ContentShell._(() async {
+      if (executable == null) executable = _defaultExecutable();
 
-    var process = await Process.start(
-        executable, ["--dump-render-tree", url.toString()],
-        environment: {"DART_FLAGS": "--checked"});
+      var process = await Process.start(
+          executable, ["--dump-render-tree", url.toString()],
+          environment: {"DART_FLAGS": "--checked"});
 
-    lineSplitter.bind(process.stderr).listen((line) {
-      if (line != "[dartToStderr]: Dartium build has expired") return;
+      // The first observatory URL emitted is for the empty start page; the
+      // second is actually for the host page.
+      completer.complete(lineSplitter.bind(process.stdout).map((line) {
+        var match = _observatoryRegExp.firstMatch(line);
+        if (match == null) return null;
+        return Uri.parse(match[1]);
+      }).where((uri) => uri != null).first);
 
-      // TODO(nweiz): link to dartlang.org once it has download links for
-      // content shell
-      // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
-      throw new ApplicationException(
-          "You're using an expired content_shell. Upgrade to the latest "
-              "version:\n"
-          "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
-              "latest/dartium/");
-    });
+      lineSplitter.bind(process.stderr).listen((line) {
+        if (line != "[dartToStderr]: Dartium build has expired") return;
 
-    return process;
+        // TODO(nweiz): link to dartlang.org once it has download links for
+        // content shell
+        // (https://github.com/dart-lang/www.dartlang.org/issues/1164).
+        throw new ApplicationException(
+            "You're using an expired content_shell. Upgrade to the latest "
+                "version:\n"
+            "http://gsdview.appspot.com/dart-archive/channels/stable/release/"
+                "latest/dartium/");
+      });
+
+      return process;
+    }, completer.future);
   }
+
+  ContentShell._(Future<Process> startBrowser(), this.observatoryUrl)
+      : super(startBrowser);
 
   /// Return the default executable for the current operating system.
   static String _defaultExecutable() =>

@@ -7,6 +7,7 @@ library test.runner.browser.browser_manager;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:async/async.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:pool/pool.dart';
 
@@ -17,18 +18,32 @@ import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
+import '../application_exception.dart';
 import '../environment.dart';
 import '../load_exception.dart';
 import '../runner_suite.dart';
+import 'browser.dart';
+import 'chrome.dart';
+import 'content_shell.dart';
+import 'dartium.dart';
+import 'firefox.dart';
 import 'iframe_test.dart';
+import 'internet_explorer.dart';
+import 'phantom_js.dart';
+import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
 ///
 /// This is in charge of telling the browser which test suites to load and
 /// converting its responses into [Suite] objects.
 class BrowserManager {
-  /// The browser that this is managing.
-  final TestPlatform browser;
+  /// The browser instance that this is connected to via [_channel].
+  final Browser _browser;
+
+  // TODO(nweiz): Consider removing the duplication between this and
+  // [_browser.name].
+  /// The [TestPlatform] for [_browser].
+  final TestPlatform _platform;
 
   /// The channel used to communicate with the browser.
   ///
@@ -60,16 +75,78 @@ class BrowserManager {
   CancelableCompleter _pauseCompleter;
 
   /// The environment to attach to each suite.
-  _BrowserEnvironment _environment;
+  Future<_BrowserEnvironment> _environment;
+
+  /// Starts the browser identified by [platform] and has it connect to [url].
+  ///
+  /// [url] should serve a page that establishes a WebSocket connection with
+  /// this process. That connection, once established, should be emitted via
+  /// [future].
+  ///
+  /// Returns the browser manager, or throws an [ApplicationException] if a
+  /// connection fails to be established.
+  static Future<BrowserManager> start(TestPlatform platform, Uri url,
+      Future<CompatibleWebSocket> future) {
+    var browser = _newBrowser(url, platform);
+
+    var completer = new Completer();
+
+    // TODO(nweiz): Gracefully handle the browser being killed before the
+    // tests complete.
+    browser.onExit.then((_) {
+      throw new ApplicationException(
+          "${platform.name} exited before connecting.");
+    }).catchError((error, stackTrace) {
+      if (completer.isCompleted) return;
+      completer.completeError(error, stackTrace);
+    });
+
+    future.then((webSocket) {
+      if (completer.isCompleted) return;
+      completer.complete(new BrowserManager._(browser, platform, webSocket));
+    }).catchError((error, stackTrace) {
+      browser.close();
+      if (completer.isCompleted) return;
+      completer.completeError(error, stackTrace);
+    });
+
+    return completer.future.timeout(new Duration(seconds: 30), onTimeout: () {
+      browser.close();
+      throw new ApplicationException(
+          "Timed out waiting for ${platform.name} to connect.");
+    });
+  }
+
+  /// Starts the browser identified by [browser] and has it load [url].
+  static Browser _newBrowser(Uri url, TestPlatform browser) {
+    switch (browser) {
+      case TestPlatform.dartium: return new Dartium(url);
+      case TestPlatform.contentShell: return new ContentShell(url);
+      case TestPlatform.chrome: return new Chrome(url);
+      case TestPlatform.phantomJS: return new PhantomJS(url);
+      case TestPlatform.firefox: return new Firefox(url);
+      case TestPlatform.safari: return new Safari(url);
+      case TestPlatform.internetExplorer: return new InternetExplorer(url);
+      default:
+        throw new ArgumentError("$browser is not a browser.");
+    }
+  }
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
-  BrowserManager(this.browser, CompatibleWebSocket webSocket)
+  BrowserManager._(this._browser, this._platform, CompatibleWebSocket webSocket)
       : _channel = new MultiChannel(
           webSocket.map(JSON.decode),
           mapSink(webSocket, JSON.encode)) {
-    _environment = new _BrowserEnvironment(this);
-    _channel.stream.listen(_onMessage, onDone: _onDone);
+    _environment = _loadBrowserEnvironment();
+    _channel.stream.listen(_onMessage, onDone: close);
+  }
+
+  /// Loads [_BrowserEnvironment].
+  Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
+    var observatoryUrl;
+    if (_platform.isDartVM) observatoryUrl = await _browser.observatoryUrl;
+    return new _BrowserEnvironment(this, observatoryUrl);
   }
 
   /// Tells the browser the load a test suite from the URL [url].
@@ -84,7 +161,7 @@ class BrowserManager {
       {StackTraceMapper mapper}) async {
     url = url.replace(fragment: Uri.encodeFull(JSON.encode({
       "metadata": metadata.serialize(),
-      "browser": browser.identifier
+      "browser": _platform.identifier
     })));
 
     // The stream may close before emitting a value if the browser is killed
@@ -130,13 +207,14 @@ class BrowserManager {
         throw new LoadException(
             path,
             "Timed out waiting for the test suite to connect on "
-                "${browser.name}.");
+                "${_platform.name}.");
       });
     });
 
     if (response == null) {
       closeIframe();
-      return null;
+      throw new LoadException(
+          path, "Connection closed before test suite loaded.");
     }
 
     if (response["type"] == "loadException") {
@@ -152,12 +230,12 @@ class BrowserManager {
           asyncError.stackTrace);
     }
 
-    return new RunnerSuite(_environment, response["tests"].map((test) {
+    return new RunnerSuite(await _environment, response["tests"].map((test) {
       var testMetadata = new Metadata.deserialize(test['metadata']);
       var testChannel = suiteChannel.virtualChannel(test['channel']);
       return new IframeTest(test['name'], testMetadata, testChannel,
           mapper: mapper);
-    }), platform: browser, metadata: metadata, path: path,
+    }), platform: _platform, metadata: metadata, path: path,
         onClose: () => closeIframe());
   }
 
@@ -183,12 +261,15 @@ class BrowserManager {
     _pauseCompleter.complete();
   }
 
-  /// The callback called when the WebSocket is closed.
-  void _onDone() {
+  /// Closes the manager and releases any resources it owns, including closing
+  /// the browser.
+  Future close() => _closeMemoizer.runOnce(() {
     _closed = true;
     if (_pauseCompleter != null) _pauseCompleter.complete();
     _pauseCompleter = null;
-  }
+    return _browser.close();
+  });
+  final _closeMemoizer = new AsyncMemoizer();
 }
 
 /// An implementation of [Environment] for the browser.
@@ -197,7 +278,9 @@ class BrowserManager {
 class _BrowserEnvironment implements Environment {
   final BrowserManager _manager;
 
-  _BrowserEnvironment(this._manager);
+  final Uri observatoryUrl;
+
+  _BrowserEnvironment(this._manager, this.observatoryUrl);
 
   CancelableFuture displayPause() => _manager._displayPause();
 }

@@ -11,6 +11,9 @@ import '../../util/cancelable_future.dart';
 class VMEnvironment implements Environment {
   const VMEnvironment();
 
+  Uri get observatoryUrl => throw new UnsupportedError(
+      "VMEnvironment.observatoryUrl is not currently supported.");
+
   CancelableFuture displayPause() =>
       throw new UnsupportedError(
           "The VM doesn't yet support Environment.displayPause.");

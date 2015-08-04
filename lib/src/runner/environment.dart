@@ -9,6 +9,10 @@ import '../util/cancelable_future.dart';
 /// The abstract class of environments in which test suites are
 /// loaded—specifically, browsers and the Dart VM.
 abstract class Environment {
+  /// The URL of the Dart VM Observatory for this environment, or `null` if this
+  /// environment doesn't run the Dart VM or the URL couldn't be detected.
+  Uri get observatoryUrl;
+
   /// Displays information indicating that the test runner is paused.
   ///
   /// The returned future will complete when the user takes action within the

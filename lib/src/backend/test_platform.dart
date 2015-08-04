@@ -21,7 +21,7 @@ class TestPlatform {
   /// Dartium content shell.
   static const TestPlatform contentShell = const TestPlatform._(
       "Dartium Content Shell", "content-shell",
-      isBrowser: true, isBlink: true, isDartVM: true);
+      isBrowser: true, isBlink: true, isDartVM: true, isHeadless: true);
 
   /// Google Chrome.
   static const TestPlatform chrome = const TestPlatform._("Chrome", "chrome",
@@ -30,7 +30,7 @@ class TestPlatform {
   /// PhantomJS.
   static const TestPlatform phantomJS = const TestPlatform._(
       "PhantomJS", "phantomjs",
-      isBrowser: true, isJS: true, isBlink: true);
+      isBrowser: true, isJS: true, isBlink: true, isHeadless: true);
 
   /// Mozilla Firefox.
   static const TestPlatform firefox = const TestPlatform._("Firefox", "firefox",
@@ -82,8 +82,12 @@ class TestPlatform {
   /// Whether this platform uses the Blink rendering engine.
   final bool isBlink;
 
+  /// Whether this platform has no visible window.
+  final bool isHeadless;
+
   const TestPlatform._(this.name, this.identifier, {this.isDartVM: false,
-      this.isBrowser: false, this.isJS: false, this.isBlink: false});
+      this.isBrowser: false, this.isJS: false, this.isBlink: false,
+      this.isHeadless: false});
 
   String toString() => name;
 }

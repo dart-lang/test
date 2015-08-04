@@ -27,17 +27,9 @@ import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
 import '../load_exception.dart';
-import 'browser.dart';
 import 'browser_manager.dart';
 import 'compiler_pool.dart';
-import 'chrome.dart';
-import 'content_shell.dart';
-import 'dartium.dart';
-import 'firefox.dart';
-import 'internet_explorer.dart';
-import 'phantom_js.dart';
 import 'polymer.dart';
-import 'safari.dart';
 
 /// A server that serves JS-compiled tests to browsers.
 ///
@@ -127,11 +119,6 @@ class BrowserServer {
 
   /// The memoizer for running [close] exactly once.
   final _closeMemo = new AsyncMemoizer();
-
-  /// All currently-running browsers.
-  ///
-  /// These are controlled by [_browserManager]s.
-  final _browsers = new Map<TestPlatform, Browser>();
 
   /// A map from browser identifiers to futures that will complete to the
   /// [BrowserManager]s for those browsers, or the errors that occurred when
@@ -296,17 +283,10 @@ void main() {
     var browserManager = await _browserManagerFor(browser);
     if (_closed) return null;
 
-    if (browserManager != null) {
-      var suite = await browserManager.loadSuite(path, suiteUrl, metadata,
-          mapper: browser.isJS ? _mappers[path] : null);
-      if (_closed) return null;
-      if (suite != null) return suite;
-    }
-
-    // If the browser manager fails to load a suite and the server isn't
-    // closed, it's probably because the browser failed. We emit the failure
-    // here to ensure that it gets surfaced.
-    return _browsers[browser].onExit;
+    var suite = await browserManager.loadSuite(path, suiteUrl, metadata,
+        mapper: browser.isJS ? _mappers[path] : null);
+    if (_closed) return null;
+    return suite;
   }
 
   /// Loads a test suite at [path] from the `pub serve` URL [jsUrl].
@@ -410,58 +390,23 @@ void main() {
     var manager = _browserManagers[platform];
     if (manager != null) return Result.release(manager);
 
-    var completer = new Completer();
+    var completer = new Completer.sync();
+    var path = _webSocketHandler.create(webSocketHandler(completer.complete));
+    var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
+    var hostUrl = (_pubServeUrl == null ? url : _pubServeUrl)
+        .resolve('packages/test/src/runner/browser/static/index.html')
+        .replace(queryParameters: {'managerUrl': webSocketUrl.toString()});
+
+    var future = BrowserManager.start(platform, hostUrl, completer.future);
 
     // Capture errors and release them later to avoid Zone issues. This call to
     // [_browserManagerFor] is running in a different [LoadSuite] than future
     // calls, which means they're also running in different error zones so
     // errors can't be freely passed between them. Storing the error or value as
     // an explicit [Result] fixes that.
-    _browserManagers[platform] = Result.capture(completer.future);
-    var path = _webSocketHandler.create(webSocketHandler((webSocket) {
-      completer.complete(new BrowserManager(platform, webSocket));
-    }));
+    _browserManagers[platform] = Result.capture(future);
 
-    var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
-
-    var hostUrl = (_pubServeUrl == null ? url : _pubServeUrl)
-        .resolve('packages/test/src/runner/browser/static/index.html');
-
-    var browser = _newBrowser(hostUrl.replace(queryParameters: {
-      'managerUrl': webSocketUrl.toString()
-    }), platform);
-    _browsers[platform] = browser;
-
-    // TODO(nweiz): Gracefully handle the browser being killed before the
-    // tests complete.
-    browser.onExit.then((_) {
-      if (completer.isCompleted) return;
-      if (!_closed) return;
-      completer.complete(null);
-    }).catchError((error, stackTrace) {
-      if (completer.isCompleted) return;
-      completer.completeError(error, stackTrace);
-    });
-
-    return completer.future.timeout(new Duration(seconds: 30), onTimeout: () {
-      throw new ApplicationException(
-          "Timed out waiting for ${platform.name} to connect.");
-    });
-  }
-
-  /// Starts the browser identified by [browser] and has it load [url].
-  Browser _newBrowser(Uri url, TestPlatform browser) {
-    switch (browser) {
-      case TestPlatform.dartium: return new Dartium(url);
-      case TestPlatform.contentShell: return new ContentShell(url);
-      case TestPlatform.chrome: return new Chrome(url);
-      case TestPlatform.phantomJS: return new PhantomJS(url);
-      case TestPlatform.firefox: return new Firefox(url);
-      case TestPlatform.safari: return new Safari(url);
-      case TestPlatform.internetExplorer: return new InternetExplorer(url);
-      default:
-        throw new ArgumentError("$browser is not a browser.");
-    }
+    return future;
   }
 
   /// Closes the server and releases all its resources.
@@ -470,7 +415,12 @@ void main() {
   /// resources have been fully released.
   Future close() {
     return _closeMemo.runOnce(() async {
-      var futures = _browsers.values.map((browser) => browser.close()).toList();
+      var futures = _browserManagers.values.map((future) async {
+        var result = await future;
+        if (result.isError) return;
+
+        await result.asValue.value.close();
+      }).toList();
 
       futures.add(_server.close());
       futures.add(_compilers.close());
