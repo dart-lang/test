@@ -20,6 +20,7 @@ import '../util/dart.dart' as dart;
 import '../util/io.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
+import 'configuration.dart';
 import 'browser/server.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
@@ -30,29 +31,11 @@ import 'vm/isolate_test.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
-  /// All platforms for which tests should be loaded.
-  final List<TestPlatform> _platforms;
-
-  /// Whether to enable colors for Dart compilation.
-  final bool _color;
-
-  /// Whether raw JavaScript stack traces should be used for tests that are
-  /// compiled to JavaScript.
-  final bool _jsTrace;
-
-  /// Global metadata that applies to all test suites.
-  final Metadata _metadata;
+  /// The test runner configuration.
+  final Configuration _config;
 
   /// The root directory that will be served for browser tests.
   final String _root;
-
-  /// The package root to use for loading tests.
-  final String _packageRoot;
-
-  /// The URL for the `pub serve` instance to use to load tests.
-  ///
-  /// This is `null` if tests should be loaded from the filesystem.
-  final Uri _pubServeUrl;
 
   /// All suites that have been created by the loader.
   final _suites = new Set<RunnerSuite>();
@@ -62,12 +45,7 @@ class Loader {
   /// This is lazily initialized the first time it's accessed.
   Future<BrowserServer> get _browserServer {
     return _browserServerMemo.runOnce(() {
-      return BrowserServer.start(
-          root: _root,
-          packageRoot: _packageRoot,
-          pubServeUrl: _pubServeUrl,
-          color: _color,
-          jsTrace: _jsTrace);
+      return BrowserServer.start(_config, root: _root);
     });
   }
   final _browserServerMemo = new AsyncMemoizer<BrowserServer>();
@@ -75,32 +53,12 @@ class Loader {
   /// The memoizer for running [close] exactly once.
   final _closeMemo = new AsyncMemoizer();
 
-  /// Creates a new loader.
+  /// Creates a new loader that loads tests on platforms defined in [_config].
   ///
   /// [root] is the root directory that will be served for browser tests. It
   /// defaults to the working directory.
-  ///
-  /// If [packageRoot] is passed, it's used as the package root for all loaded
-  /// tests. Otherwise, it's inferred from [root].
-  ///
-  /// If [pubServeUrl] is passed, tests will be loaded from the `pub serve`
-  /// instance at that URL rather than from the filesystem.
-  ///
-  /// If [color] is true, console colors will be used when compiling Dart.
-  ///
-  /// [metadata] is the global metadata for all test suites.
-  ///
-  /// If the package root doesn't exist, throws an [ApplicationException].
-  Loader(Iterable<TestPlatform> platforms, {String root, String packageRoot,
-        Uri pubServeUrl, bool color: false, bool jsTrace: false,
-        Metadata metadata})
-      : _platforms = platforms.toList(),
-        _pubServeUrl = pubServeUrl,
-        _root = root == null ? p.current : root,
-        _packageRoot = packageRootFor(root, packageRoot),
-        _color = color,
-        _jsTrace = jsTrace,
-        _metadata = metadata == null ? new Metadata() : metadata;
+  Loader(this._config, {String root})
+      : _root = root == null ? p.current : root;
 
   /// Loads all test suites in [dir].
   ///
@@ -145,15 +103,15 @@ class Loader {
           new LoadException(path, error), stackTrace: stackTrace);
       return;
     }
-    suiteMetadata = _metadata.merge(suiteMetadata);
+    suiteMetadata = _config.metadata.merge(suiteMetadata);
 
-    if (_pubServeUrl != null && !p.isWithin('test', path)) {
+    if (_config.pubServeUrl != null && !p.isWithin('test', path)) {
       yield new LoadSuite.forLoadException(new LoadException(
           path, 'When using "pub serve", all test files must be in test/.'));
       return;
     }
 
-    for (var platform in _platforms) {
+    for (var platform in _config.platforms) {
       if (!suiteMetadata.testOn.evaluate(platform, os: currentOS)) continue;
 
       var metadata = suiteMetadata.forPlatform(platform, os: currentOS);
@@ -190,8 +148,8 @@ class Loader {
 
     var isolate;
     try {
-      if (_pubServeUrl != null) {
-        var url = _pubServeUrl.resolveUri(
+      if (_config.pubServeUrl != null) {
+        var url = _config.pubServeUrl.resolveUri(
             p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
 
         // TODO(nweiz): Remove new Future.sync() once issue 23498 has been fixed
@@ -232,7 +190,7 @@ void main(_, Map message) {
 ''', {
           'reply': receivePort.sendPort,
           'metadata': metadata.serialize()
-        }, packageRoot: p.toUri(_packageRoot), checked: true);
+        }, packageRoot: p.toUri(_config.packageRoot), checked: true);
       }
     } catch (error, stackTrace) {
       receivePort.close();

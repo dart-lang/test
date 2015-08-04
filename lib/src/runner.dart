@@ -9,9 +9,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 
-import 'backend/metadata.dart';
 import 'backend/test_platform.dart';
-import 'frontend/timeout.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/engine.dart';
@@ -36,7 +34,7 @@ final _debugUnsupportedPlatforms = new Set.from(
 /// [ExpandedReporter].
 class Runner {
   /// The configuration for the runner.
-  final Configuration _configuration;
+  final Configuration _config;
 
   /// The loader that loads the test suites from the filesystem.
   final Loader _loader;
@@ -55,35 +53,26 @@ class Runner {
   bool get _closed => _closeMemo.hasRun;
 
   /// Creates a new runner based on [configuration].
-  factory Runner(Configuration configuration) {
-    var metadata = new Metadata(
-        timeout: configuration.pauseAfterLoad ? Timeout.none : null,
-        verboseTrace: configuration.verboseTrace);
-    var loader = new Loader(configuration.platforms,
-        pubServeUrl: configuration.pubServeUrl,
-        packageRoot: configuration.packageRoot,
-        color: configuration.color,
-        metadata: metadata,
-        jsTrace: configuration.jsTrace);
+  factory Runner(Configuration config) {
+    var loader = new Loader(config);
+    var engine = new Engine(concurrency: config.concurrency);
 
-    var engine = new Engine(concurrency: configuration.concurrency);
-
-    var watch = configuration.reporter == "compact"
+    var watch = config.reporter == "compact"
         ? CompactReporter.watch
         : ExpandedReporter.watch;
 
     var reporter = watch(
         engine,
-        color: configuration.color,
-        verboseTrace: configuration.verboseTrace,
-        printPath: configuration.paths.length > 1 ||
-            new Directory(configuration.paths.single).existsSync(),
-        printPlatform: configuration.platforms.length > 1);
+        color: config.color,
+        verboseTrace: config.verboseTrace,
+        printPath: config.paths.length > 1 ||
+            new Directory(config.paths.single).existsSync(),
+        printPlatform: config.platforms.length > 1);
 
-    return new Runner._(configuration, loader, engine, reporter);
+    return new Runner._(config, loader, engine, reporter);
   }
 
-  Runner._(this._configuration, this._loader, this._engine, this._reporter);
+  Runner._(this._config, this._loader, this._engine, this._reporter);
 
   /// Starts the runner.
   ///
@@ -97,7 +86,7 @@ class Runner {
     var suites = _loadSuites();
 
     var success;
-    if (_configuration.pauseAfterLoad) {
+    if (_config.pauseAfterLoad) {
       success = await _loadThenPause(suites);
     } else {
       _suiteSubscription = suites.listen(_engine.suiteSink.add);
@@ -111,14 +100,14 @@ class Runner {
     if (_closed) return false;
 
     if (_engine.passed.length == 0 && _engine.failed.length == 0 &&
-        _engine.skipped.length == 0 && _configuration.pattern != null) {
+        _engine.skipped.length == 0 && _config.pattern != null) {
       var message = 'No tests match ';
 
-      if (_configuration.pattern is RegExp) {
-        var pattern = (_configuration.pattern as RegExp).pattern;
+      if (_config.pattern is RegExp) {
+        var pattern = (_config.pattern as RegExp).pattern;
         message += 'regular expression "$pattern".';
       } else {
-        message += '"${_configuration.pattern}".';
+        message += '"${_config.pattern}".';
       }
       throw new ApplicationException(message);
     }
@@ -158,12 +147,12 @@ class Runner {
     await _loader.close();
   });
 
-  /// Return a stream of [LoadSuite]s in [_configuration.paths].
+  /// Return a stream of [LoadSuite]s in [_config.paths].
   ///
-  /// Only tests that match [_configuration.pattern] will be included in the
+  /// Only tests that match [_config.pattern] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return mergeStreams(_configuration.paths.map((path) {
+    return mergeStreams(_config.paths.map((path) {
       if (new Directory(path).existsSync()) return _loader.loadDir(path);
       if (new File(path).existsSync()) return _loader.loadFile(path);
 
@@ -173,9 +162,9 @@ class Runner {
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        if (_configuration.pattern == null) return suite;
+        if (_config.pattern == null) return suite;
         return suite.change(tests: suite.tests.where((test) =>
-            test.name.contains(_configuration.pattern)));
+            test.name.contains(_config.pattern)));
       });
     });
   }
@@ -183,7 +172,7 @@ class Runner {
   /// Loads each suite in [suites] in order, pausing after load for platforms
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    var unsupportedPlatforms = _configuration.platforms
+    var unsupportedPlatforms = _config.platforms
         .where(_debugUnsupportedPlatforms.contains)
         .map((platform) =>
              platform == TestPlatform.vm ? "the Dart VM" : platform.name)
@@ -193,7 +182,7 @@ class Runner {
       warn(
           wordWrap("Debugging is currently unsupported on "
               "${toSentence(unsupportedPlatforms)}."),
-          color: _configuration.color);
+          color: _config.color);
     }
 
     _suiteSubscription = suites.asyncMap((loadSuite) async {
@@ -230,9 +219,9 @@ class Runner {
     try {
       _reporter.pause();
 
-      var bold = _configuration.color ? '\u001b[1m' : '';
-      var yellow = _configuration.color ? '\u001b[33m' : '';
-      var noColor = _configuration.color ? '\u001b[0m' : '';
+      var bold = _config.color ? '\u001b[1m' : '';
+      var yellow = _config.color ? '\u001b[33m' : '';
+      var noColor = _config.color ? '\u001b[0m' : '';
       print('');
 
       if (suite.platform.isDartVM) {

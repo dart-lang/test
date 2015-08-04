@@ -25,7 +25,7 @@ import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
-import '../application_exception.dart';
+import '../configuration.dart';
 import '../load_exception.dart';
 import 'browser_manager.dart';
 import 'compiler_pool.dart';
@@ -39,24 +39,9 @@ class BrowserServer {
   ///
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
-  ///
-  /// If [packageRoot] is passed, it's used for all package imports when
-  /// compiling tests to JS. Otherwise, the package root is inferred from
-  /// [root].
-  ///
-  /// If [pubServeUrl] is passed, tests will be loaded from the `pub serve`
-  /// instance at that URL rather than from the filesystem.
-  ///
-  /// If [color] is true, console colors will be used when compiling Dart.
-  ///
-  /// If [jsTrace] is true, raw JavaScript stack traces will be used for tests
-  /// that are compiled to JavaScript.
-  ///
-  /// If the package root doesn't exist, throws an [ApplicationException].
-  static Future<BrowserServer> start({String root, String packageRoot,
-      Uri pubServeUrl, bool color: false, bool jsTrace: false}) async {
-    var server = new BrowserServer._(
-        root, packageRoot, pubServeUrl, color, jsTrace);
+  static Future<BrowserServer> start(Configuration config, {String root})
+      async {
+    var server = new BrowserServer._(root, config);
     await server._load();
     return server;
   }
@@ -73,6 +58,9 @@ class BrowserServer {
   /// The URL for this server.
   Uri get url => baseUrlForAddress(_server.address, _server.port)
       .resolve(_secret + "/");
+
+  /// The test runner configuration.
+  Configuration _config;
 
   /// A [OneOffHandler] for servicing WebSocket connections for
   /// [BrowserManager]s.
@@ -94,16 +82,6 @@ class BrowserServer {
 
   /// The root directory served statically by this server.
   final String _root;
-
-  /// The package root.
-  final String _packageRoot;
-
-  final bool _jsTrace;
-
-  /// The URL for the `pub serve` instance to use to load tests.
-  ///
-  /// This is `null` if tests should be compiled manually.
-  final Uri _pubServeUrl;
 
   /// The pool of active `pub serve` compilations.
   ///
@@ -137,21 +115,19 @@ class BrowserServer {
 
   final _mappers = new Map<String, StackTraceMapper>();
 
-  BrowserServer._(String root, String packageRoot, Uri pubServeUrl, bool color,
-          this._jsTrace)
+  BrowserServer._(String root, Configuration config)
       : _root = root == null ? p.current : root,
-        _packageRoot = packageRootFor(root, packageRoot),
-        _pubServeUrl = pubServeUrl,
-        _compiledDir = pubServeUrl == null ? createTempDir() : null,
-        _http = pubServeUrl == null ? null : new HttpClient(),
-        _compilers = new CompilerPool(color: color);
+        _config = config,
+        _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
+        _http = config.pubServeUrl == null ? null : new HttpClient(),
+        _compilers = new CompilerPool(color: config.color);
 
   /// Starts the underlying server.
   Future _load() async {
     var cascade = new shelf.Cascade()
         .add(_webSocketHandler.handler);
 
-    if (_pubServeUrl == null) {
+    if (_config.pubServeUrl == null) {
       cascade = cascade
           .add(_createPackagesHandler())
           .add(_jsHandler.handler)
@@ -173,7 +149,7 @@ class BrowserServer {
   /// This is a factory so it can wrap a static handler.
   shelf.Handler _createPackagesHandler() {
     var staticHandler =
-      createStaticHandler(_packageRoot, serveFilesOutsidePath: true);
+      createStaticHandler(_config.packageRoot, serveFilesOutsidePath: true);
 
     return (request) {
       var segments = p.url.split(shelfUrl(request).path);
@@ -250,7 +226,7 @@ void main() {
     }
 
     var suiteUrl;
-    if (_pubServeUrl != null) {
+    if (_config.pubServeUrl != null) {
       var suitePrefix = p.withoutExtension(
           p.relative(path, from: p.join(_root, 'test')));
 
@@ -261,15 +237,15 @@ void main() {
       // right file to compile, we have some Polymer-specific logic here to load
       // the boostrap instead of the unwrapped file.
       if (isPolymerEntrypoint(path)) {
-        jsUrl = _pubServeUrl.resolve(
+        jsUrl = _config.pubServeUrl.resolve(
             "$suitePrefix.html.polymer.bootstrap.dart.browser_test.dart.js");
       } else {
-        jsUrl = _pubServeUrl.resolve(
+        jsUrl = _config.pubServeUrl.resolve(
           '$suitePrefix.dart.browser_test.dart.js');
       }
 
       await _pubServeSuite(path, jsUrl);
-      suiteUrl = _pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
+      suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (browser.isJS) await _compileSuite(path);
       if (_closed) return null;
@@ -319,7 +295,7 @@ void main() {
               'Make sure "pub serve" is serving the test/ directory.');
         }
 
-        if (_jsTrace) {
+        if (_config.jsTrace) {
           // Drain the response stream.
           response.listen((_) {});
           return;
@@ -328,8 +304,8 @@ void main() {
         _mappers[path] = new StackTraceMapper(
             await UTF8.decodeStream(response),
             mapUrl: mapUrl,
-            packageRoot: _pubServeUrl.resolve('packages'),
-            sdkRoot: _pubServeUrl.resolve('packages/\$sdk'));
+            packageRoot: _config.pubServeUrl.resolve('packages'),
+            sdkRoot: _config.pubServeUrl.resolve('packages/\$sdk'));
       } on IOException catch (error) {
         var message = getErrorMessage(error);
         if (error is SocketException) {
@@ -355,7 +331,8 @@ void main() {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".js");
 
-      await _compilers.compile(dartPath, jsPath, packageRoot: _packageRoot);
+      await _compilers.compile(dartPath, jsPath,
+          packageRoot: _config.packageRoot);
       if (_closed) return;
 
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
@@ -373,12 +350,12 @@ void main() {
             headers: {'Content-Type': 'application/json'});
       });
 
-      if (_jsTrace) return;
+      if (_config.jsTrace) return;
       var mapPath = jsPath + '.map';
       _mappers[dartPath] = new StackTraceMapper(
           new File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
-          packageRoot: p.toUri(_packageRoot),
+          packageRoot: p.toUri(_config.packageRoot),
           sdkRoot: p.toUri(sdkDir));
     });
   }
@@ -393,7 +370,7 @@ void main() {
     var completer = new Completer.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
-    var hostUrl = (_pubServeUrl == null ? url : _pubServeUrl)
+    var hostUrl = (_config.pubServeUrl == null ? url : _config.pubServeUrl)
         .resolve('packages/test/src/runner/browser/static/index.html')
         .replace(queryParameters: {'managerUrl': webSocketUrl.toString()});
 
@@ -427,7 +404,7 @@ void main() {
 
       await Future.wait(futures);
 
-      if (_pubServeUrl == null) {
+      if (_config.pubServeUrl == null) {
         new Directory(_compiledDir).deleteSync(recursive: true);
       } else {
         _http.close();

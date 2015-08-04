@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/runner/configuration.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
@@ -34,9 +35,9 @@ void main() {
 void main() {
   setUp(() {
     _sandbox = createTempDir();
-    _loader = new Loader([TestPlatform.vm],
-        root: _sandbox,
-        packageRoot: p.join(packageDir, 'packages'));
+    _loader = new Loader(
+        new Configuration(packageRoot: p.join(packageDir, 'packages')),
+        root: _sandbox);
   });
 
   tearDown(() {
@@ -85,13 +86,6 @@ void main() {
       var liveTest = suite.tests[1].load(suite);
       expectSingleFailure(liveTest);
       return liveTest.run().whenComplete(() => liveTest.close());
-    });
-
-    test("throws a nice error if the package root doesn't exist", () {
-      expect(() => new Loader([TestPlatform.chrome], root: _sandbox),
-          throwsA(isApplicationException(
-              "Directory ${p.prettyUri(p.toUri(p.join(_sandbox, 'packages')))} "
-                  "does not exist.")));
     });
   });
 

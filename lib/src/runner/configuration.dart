@@ -11,6 +11,7 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 
 import '../frontend/timeout.dart';
+import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
 
@@ -130,6 +131,12 @@ class Configuration {
   /// The set of platforms on which to run tests.
   final List<TestPlatform> platforms;
 
+  /// The global test metadata derived from this configuration.
+  Metadata get metadata =>
+      new Metadata(
+          timeout: pauseAfterLoad ? Timeout.none : null,
+          verboseTrace: verboseTrace);
+
   /// Parses the configuration from [args].
   ///
   /// Throws a [FormatException] if [args] are invalid.
@@ -162,7 +169,7 @@ class Configuration {
         concurrency: _wrapFormatException(options, 'concurrency', int.parse,
             orElse: () => _defaultConcurrency),
         pattern: pattern,
-        platforms: options['platforms'].map(TestPlatform.find).toList(),
+        platforms: options['platform'].map(TestPlatform.find),
         paths: options.rest.isEmpty ? null : options.rest);
   }
 
@@ -198,7 +205,7 @@ class Configuration {
         concurrency = pauseAfterLoad
             ? 1
             : (concurrency == null ? _defaultConcurrency : concurrency),
-        platforms = platforms.toList(),
+        platforms = platforms == null ? [TestPlatform.vm] : platforms.toList(),
         paths = paths == null ? ["test"] : paths.toList(),
         explicitPaths = paths != null;
 }
