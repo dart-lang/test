@@ -1,8 +1,4 @@
-## 0.12.3+9
-
-* Widen the constraint on `analyzer` to include `0.26.0`.
-
-## 0.12.3+8
+## 0.12.4
 
 * Add a `--pause-after-load` flag that pauses the test runner after each suite
   is loaded so that breakpoints and other debugging annotations can be added.
@@ -12,6 +8,13 @@
 
 * The `dart-vm` platform selector variable is now `true` for Dartium and content
   shell.
+
+* The compact reporter no longer prints status lines that only update the clock
+  if they would get in the way of messages or errors from a test.
+
+## 0.12.3+9
+
+* Widen the constraint on `analyzer` to include `0.26.0`.
 
 ## 0.12.3+8
 

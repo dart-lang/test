@@ -286,6 +286,23 @@ void main() {
           +1: really ... longer than that. No, yet longer. A little more... okay, that should do it.
           +1: All tests passed!""");
     });
+
+    test("doesn't print a clock update between two prints", () {
+      _expectReport("""
+          test('slow', () async {
+            print('hello');
+            await new Future.delayed(new Duration(seconds: 3));
+            print('goodbye');
+          });""",
+          """
+          +0: loading test.dart
+          +0: slow
+          hello
+          goodbye
+
+          +1: slow
+          +1: All tests passed!""");
+    });
   });
 
   group("skip:", () {

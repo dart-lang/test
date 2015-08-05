@@ -302,9 +302,14 @@ class CompactReporter implements Reporter {
     if (_engine.passed.length == _lastProgressPassed &&
         _engine.skipped.length == _lastProgressSkipped &&
         _engine.failed.length == _lastProgressFailed &&
-        elapsed == _lastProgressElapsed &&
         message == _lastProgressMessage &&
-        truncate == _lastProgressTruncated) {
+        // Don't re-print just because the message became re-truncated, because
+        // that doesn't add information.
+        (truncate || !_lastProgressTruncated) &&
+        // If we printed a newline, that means the last line *wasn't* a progress
+        // line. In that case, we don't want to print a new progress line just
+        // because the elapsed time changed.
+        (_printedNewline || elapsed == _lastProgressElapsed)) {
       return false;
     }
 
