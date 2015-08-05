@@ -160,11 +160,10 @@ void main() {
 """).create();
 
     var test = runTest(
-        ["--pause-after-load", "-p", "vm", "-p", "phantomjs", "test.dart"]);
+        ["--pause-after-load", "-p", "vm", "test.dart"]);
     test.stderr.expect(
-        "Warning: Debugging is currently unsupported on the Dart VM and "
-            "PhantomJS.");
-    test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
+        "Warning: Debugging is currently unsupported on the Dart VM.");
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
   });
 

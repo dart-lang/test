@@ -23,10 +23,6 @@ import 'runner/runner_suite.dart';
 import 'util/io.dart';
 import 'utils.dart';
 
-/// The set of platforms for which debug flags are (currently) not supported.
-final _debugUnsupportedPlatforms = new Set.from(
-    [TestPlatform.vm, TestPlatform.phantomJS]);
-
 /// A class that loads and runs tests based on a [Configuration].
 ///
 /// This maintains a [Loader] and an [Engine] and passes test suites from one to
@@ -172,16 +168,8 @@ class Runner {
   /// Loads each suite in [suites] in order, pausing after load for platforms
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    var unsupportedPlatforms = _config.platforms
-        .where(_debugUnsupportedPlatforms.contains)
-        .map((platform) =>
-             platform == TestPlatform.vm ? "the Dart VM" : platform.name)
-        .toList();
-
-    if (unsupportedPlatforms.isNotEmpty) {
-      warn(
-          wordWrap("Debugging is currently unsupported on "
-              "${toSentence(unsupportedPlatforms)}."),
+    if (_config.platforms.contains(TestPlatform.vm)) {
+      warn("Debugging is currently unsupported on the Dart VM.",
           color: _config.color);
     }
 
@@ -214,7 +202,7 @@ class Runner {
   /// is supported.
   Future _pause(RunnerSuite suite) async {
     if (suite.platform == null) return;
-    if (_debugUnsupportedPlatforms.contains(suite.platform)) return;
+    if (suite.platform == TestPlatform.vm) return;
 
     try {
       _reporter.pause();
@@ -234,7 +222,7 @@ class Runner {
         }
       }
 
-      if (suite.platform == TestPlatform.contentShell) {
+      if (suite.platform.isHeadless) {
         var url = suite.environment.remoteDebuggerUrl;
         if (url == null) {
           print("${yellow}Remote debugger URL not found.$noColor");
@@ -247,14 +235,10 @@ class Runner {
           "${bold}The test runner is paused.${noColor} ");
       if (!suite.platform.isHeadless) {
         buffer.write("Open the dev console in ${suite.platform} ");
-        if (suite.platform.isDartVM) buffer.write("or ");
       } else {
-        buffer.write("Open ");
-        if (suite.platform == TestPlatform.contentShell) {
-          buffer.write("the remote debugger or ");
-        }
+        buffer.write("Open the remote debugger ");
       }
-      if (suite.platform.isDartVM) buffer.write("the Observatory ");
+      if (suite.platform.isDartVM) buffer.write("or the Observatory ");
 
       buffer.write("and set breakpoints. Once you're finished, return to this "
           "terminal and press Enter.");

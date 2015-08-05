@@ -39,39 +39,55 @@ page.open(system.args[1], function(status) {
 class PhantomJS extends Browser {
   final name = "PhantomJS";
 
-  PhantomJS(url, {String executable})
-      : super(() => _startBrowser(url, executable));
+  final Future<Uri> remoteDebuggerUrl;
 
-  /// Starts a new instance of PhantomJS open to the given [url], which may be a
-  /// [Uri] or a [String].
-  ///
-  /// If [executable] is passed, it's used as the PhantomJS executable.
-  /// Otherwise the default executable name for the current OS will be used.
-  static Future<Process> _startBrowser(url, [String executable]) async {
-    if (executable == null) {
-      executable = Platform.isWindows ? "phantomjs.exe" : "phantomjs";
-    }
-
-    var dir = createTempDir();
-    var script = p.join(dir, "script.js");
-    new File(script).writeAsStringSync(_script);
-
-    var process = await Process.start(
-        executable, [script, url.toString()]);
-
-    // PhantomJS synchronously emits standard output, which means that if we
-    // don't drain its stdout stream it can deadlock.
-    process.stdout.listen((_) {});
-
-    process.exitCode.then((exitCode) {
-      new Directory(dir).deleteSync(recursive: true);
-
-      if (exitCode == exit_codes.protocol) {
-        throw new ApplicationException(
-            "Only PhantomJS version 2.0.0 or greater is supported");
+  factory PhantomJS(url, {String executable, bool debug: false}) {
+    var remoteDebuggerCompleter = new Completer.sync();
+    return new PhantomJS._(() async {
+      if (executable == null) {
+        executable = Platform.isWindows ? "phantomjs.exe" : "phantomjs";
       }
-    });
 
-    return process;
+      var dir = createTempDir();
+      var script = p.join(dir, "script.js");
+      new File(script).writeAsStringSync(_script);
+
+      var port = debug ? await getUnsafeUnusedPort() : null;
+
+      var args = [];
+      if (debug) {
+        args.addAll([
+          "--remote-debugger-port=$port",
+          "--remote-debugger-autorun=yes"
+        ]);
+      }
+      args.addAll([script, url.toString()]);
+      var process = await Process.start(executable, args);
+
+      // PhantomJS synchronously emits standard output, which means that if we
+      // don't drain its stdout stream it can deadlock.
+      process.stdout.listen((_) {});
+
+      process.exitCode.then((exitCode) {
+        new Directory(dir).deleteSync(recursive: true);
+
+        if (exitCode == exit_codes.protocol) {
+          throw new ApplicationException(
+              "Only PhantomJS version 2.0.0 or greater is supported");
+        }
+      });
+
+      if (port != null) {
+        remoteDebuggerCompleter.complete(Uri.parse(
+            "http://localhost:$port/webkit/inspector/inspector.html?page=2"));
+      } else {
+        remoteDebuggerCompleter.complete(null);
+      }
+
+      return process;
+    }, remoteDebuggerCompleter.future);
   }
+
+  PhantomJS._(Future<Process> startBrowser(), this.remoteDebuggerUrl)
+      : super(startBrowser);
 }

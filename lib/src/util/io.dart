@@ -208,11 +208,19 @@ String libraryPath(Symbol libraryName, {String packageRoot}) {
 Future getUnusedPort(tryPort(int port)) {
   var value;
   return Future.doWhile(() async {
-    var socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
-    var port = socket.port;
-    await socket.close();
-
-    value = await tryPort(port);
+    value = await tryPort(await getUnsafeUnusedPort());
     return value == null;
   }).then((_) => value);
+}
+
+/// Returns a port that is probably, but not definitely, not in use.
+///
+/// This has a built-in race condition: another process may bind this port at
+/// any time after this call has returned. If at all possible, callers should
+/// use [getUnusedPort] instead.
+Future<int> getUnsafeUnusedPort() async {
+  var socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+  var port = socket.port;
+  await socket.close();
+  return port;
 }

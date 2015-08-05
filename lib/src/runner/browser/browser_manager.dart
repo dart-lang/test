@@ -128,7 +128,7 @@ class BrowserManager {
       case TestPlatform.contentShell:
         return new ContentShell(url, debug: debug);
       case TestPlatform.chrome: return new Chrome(url);
-      case TestPlatform.phantomJS: return new PhantomJS(url);
+      case TestPlatform.phantomJS: return new PhantomJS(url, debug: debug);
       case TestPlatform.firefox: return new Firefox(url);
       case TestPlatform.safari: return new Safari(url);
       case TestPlatform.internetExplorer: return new InternetExplorer(url);
@@ -153,7 +153,7 @@ class BrowserManager {
     if (_platform.isDartVM) observatoryUrl = await _browser.observatoryUrl;
 
     var remoteDebuggerUrl;
-    if (_platform == TestPlatform.contentShell) {
+    if (_platform.isHeadless) {
       remoteDebuggerUrl = await _browser.remoteDebuggerUrl;
     }
 
