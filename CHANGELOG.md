@@ -12,6 +12,9 @@
 * The compact reporter no longer prints status lines that only update the clock
   if they would get in the way of messages or errors from a test.
 
+* The expanded reporter no longer double-prints the descriptions of skipped
+  tests.
+
 ## 0.12.3+9
 
 * Widen the constraint on `analyzer` to include `0.26.0`.

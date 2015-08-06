@@ -198,7 +198,6 @@ class ExpandedReporter implements Reporter {
 
     if (liveTest.test.metadata.skip &&
         liveTest.test.metadata.skipReason != null) {
-      _progressLine(_description(liveTest));
       print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
           '$_noColor'));
     } else if (_engine.active.isNotEmpty) {
