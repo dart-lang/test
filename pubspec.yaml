@@ -1,13 +1,10 @@
 name: test
-
-# This version should really be 0.12.4-dev, but scheduled_test depends on
-# test <0.12.4, so we're using + instead.
-version: 0.12.3+dev
+version: 0.12.4
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
 environment:
-  sdk: '>=1.9.0 <2.0.0'
+  sdk: '>=1.9.0 <1.13.0'
 dependencies:
   analyzer: '>=0.23.0 <0.27.0'
   args: '>=0.12.1 <0.14.0'
