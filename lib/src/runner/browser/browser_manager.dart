@@ -194,7 +194,7 @@ class BrowserManager {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
-        "id": _suiteId++,
+        "id": suiteId,
         "channel": suiteVirtualChannel.id
       });
 

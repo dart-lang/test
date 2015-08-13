@@ -1,3 +1,8 @@
+## 0.12.4+2
+
+* Fix a memory leak when running many browser tests where old test suites failed
+  to be unloaded when they were supposed to.
+
 ## 0.12.4+1
 
 * Require Dart SDK >= `1.11.0` and `shelf` >= `0.6.0`, allowing `test` to remove
