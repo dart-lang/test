@@ -152,12 +152,12 @@ class BrowserServer {
       createStaticHandler(_config.packageRoot, serveFilesOutsidePath: true);
 
     return (request) {
-      var segments = p.url.split(shelfUrl(request).path);
+      var segments = p.url.split(request.url.path);
 
       for (var i = 0; i < segments.length; i++) {
         if (segments[i] != "packages") continue;
         return staticHandler(
-            shelfChange(request, path: p.url.joinAll(segments.take(i + 1))));
+            request.change(path: p.url.joinAll(segments.take(i + 1))));
       }
 
       return new shelf.Response.notFound("Not found.");
@@ -166,7 +166,7 @@ class BrowserServer {
 
   /// A handler that serves wrapper files used to bootstrap tests.
   shelf.Response _wrapperHandler(shelf.Request request) {
-    var path = p.fromUri(shelfUrl(request));
+    var path = p.fromUri(request.url);
 
     if (path.endsWith(".browser_test.dart")) {
       return new shelf.Response.ok('''

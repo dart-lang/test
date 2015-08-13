@@ -445,8 +445,7 @@ like duration-based timeouts, the last matching value wins.
 Packages using the `barback` transformer system may need to test code that's
 created or modified using transformers. The test runner handles this using the
 `--pub-serve` option, which tells it to load the test code from a `pub serve`
-instance rather than from the filesystem. **This feature is only supported on
-Dart `1.9.2` and higher.**
+instance rather than from the filesystem.
 
 Before using the `--pub-serve` option, add the `test/pub_serve` transformer to
 your `pubspec.yaml`. This transformer adds the necessary bootstrapping code that

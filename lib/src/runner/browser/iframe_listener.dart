@@ -43,18 +43,15 @@ class IframeListener {
       main = getMain();
     } on NoSuchMethodError catch (_) {
       _sendLoadException(channel, "No top-level main() function defined.");
-      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
-      return null;
+      return;
     }
 
     if (main is! Function) {
       _sendLoadException(channel, "Top-level main getter is not a function.");
-      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
-      return null;
+      return;
     } else if (main is! AsyncFunction) {
       _sendLoadException(channel, "Top-level main() function takes arguments.");
-      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
-      return null;
+      return;
     }
 
     var declarer;
@@ -70,8 +67,7 @@ class IframeListener {
         "type": "error",
         "error": RemoteException.serialize(error, stackTrace)
       });
-      // TODO(nweiz): Just "return;" when issue 23200 is fixed.
-      return null;
+      return;
     }
 
     var url = Uri.parse(window.location.href);
@@ -83,8 +79,7 @@ class IframeListener {
         declarer.tests, platform: browser, metadata: metadata);
     new IframeListener._(suite)._listen(channel);
 
-    // TODO(nweiz): Remove this when issue 23200 is fixed.
-    return null;
+    return;
   }
 
   /// Constructs a [MultiChannel] wrapping the `postMessage` communication with

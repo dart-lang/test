@@ -7,8 +7,6 @@ library test.util.one_off_handler;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 
-import '../utils.dart';
-
 /// A Shelf handler that provides support for one-time handlers.
 ///
 /// This is useful for handlers that only expect to be hit once before becoming
@@ -38,12 +36,12 @@ class OneOffHandler {
 
   /// Dispatches [request] to the appropriate handler.
   _onRequest(shelf.Request request) {
-    var components = p.url.split(shelfUrl(request).path);
+    var components = p.url.split(request.url.path);
     if (components.isEmpty) return new shelf.Response.notFound(null);
 
     var path = components.removeAt(0);
     var handler = _handlers.remove(path);
     if (handler == null) return new shelf.Response.notFound(null);
-    return handler(shelfChange(request, path: path));
+    return handler(request.change(path: path));
   }
 }

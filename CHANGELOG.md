@@ -1,3 +1,8 @@
+## 0.12.4+1
+
+* Require Dart SDK >= `1.11.0` and `shelf` >= `0.6.0`, allowing `test` to remove
+  various hacks and workarounds.
+
 ## 0.12.4
 
 * Add a `--pause-after-load` flag that pauses the test runner after each suite

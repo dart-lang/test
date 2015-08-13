@@ -5,16 +5,12 @@
 library test.util.dart;
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 
 import 'package:analyzer/analyzer.dart';
-import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 
 import 'string_literal_iterator.dart';
-import 'io.dart';
-import 'isolate_wrapper.dart';
 
 /// Runs [code] in an isolate.
 ///
@@ -25,42 +21,16 @@ import 'isolate_wrapper.dart';
 ///
 /// [packageRoot] controls the package root of the isolate. It may be either a
 /// [String] or a [Uri].
-Future<IsolateWrapper> runInIsolate(String code, message, {packageRoot,
+Future<Isolate> runInIsolate(String code, message, {packageRoot,
     bool checked}) async {
-  // TODO(nweiz): load code from a local server rather than from a file.
-  var dir = createTempDir();
-  var dartPath = p.join(dir, 'runInIsolate.dart');
-  new File(dartPath).writeAsStringSync(code);
-
-  return await spawnUri(
-      p.toUri(dartPath), message,
-      packageRoot: packageRoot,
-      checked: checked,
-      onExit: () => new Directory(dir).deleteSync(recursive: true));
-}
-
-/// Like [Isolate.spawnUri], except that [uri] and [packageRoot] may be strings,
-/// [checked] mode is silently ignored on older Dart versions, and [onExit] is
-/// run after the isolate is killed.
-///
-/// If the isolate fails to load, [onExit] will also be run.
-Future<IsolateWrapper> spawnUri(uri, message, {packageRoot, bool checked,
-    void onExit()}) async {
-  if (uri is String) uri = Uri.parse(uri);
   if (packageRoot is String) packageRoot = Uri.parse(packageRoot);
-  if (onExit == null) onExit = () {};
 
-  try {
-    var isolate = supportsIsolateCheckedMode
-        ? await Isolate.spawnUri(
-            uri, [], message, checked: checked, packageRoot: packageRoot)
-        : await Isolate.spawnUri(
-            uri, [], message, packageRoot: packageRoot);
-    return new IsolateWrapper(isolate, onExit);
-  } catch (error) {
-    onExit();
-    rethrow;
-  }
+  return await Isolate.spawnUri(
+      Uri.parse('data:application/dart;charset=utf-8,' + Uri.encodeFull(code)),
+      [],
+      message,
+      packageRoot: packageRoot,
+      checked: checked);
 }
 
 // TODO(nweiz): Move this into the analyzer once it starts using SourceSpan

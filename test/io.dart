@@ -19,7 +19,7 @@ final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
 
 /// The path to the `pub` executable in the current Dart SDK.
 final _pubPath = p.absolute(p.join(
-    p.dirname(Platform.executable),
+    p.dirname(Platform.resolvedExecutable),
     Platform.isWindows ? 'pub.bat' : 'pub'));
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
@@ -127,7 +127,7 @@ ScheduledProcess runDart(List args, {Map<String, String> environment,
   }).toList()..addAll(args);
 
   return new ScheduledProcess.start(
-      p.absolute(Platform.executable), allArgs,
+      p.absolute(Platform.resolvedExecutable), allArgs,
       workingDirectory: _sandbox,
       environment: environment,
       description: description);

@@ -152,29 +152,25 @@ class Loader {
         var url = _config.pubServeUrl.resolveUri(
             p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
 
-        // TODO(nweiz): Remove new Future.sync() once issue 23498 has been fixed
-        // in two stable versions.
-        await new Future.sync(() async {
-          try {
-            isolate = await dart.spawnUri(url, {
-              'reply': receivePort.sendPort,
-              'metadata': metadata.serialize()
-            }, checked: true);
-          } on IsolateSpawnException catch (error) {
-            if (error.message.contains("OS Error: Connection refused") ||
-                error.message.contains("The remote computer refused")) {
-              throw new LoadException(path,
-                  "Error getting $url: Connection refused\n"
-                  'Make sure "pub serve" is running.');
-            } else if (error.message.contains("404 Not Found")) {
-              throw new LoadException(path,
-                  "Error getting $url: 404 Not Found\n"
-                  'Make sure "pub serve" is serving the test/ directory.');
-            }
-
-            throw new LoadException(path, error);
+        try {
+          isolate = await Isolate.spawnUri(url, [], {
+            'reply': receivePort.sendPort,
+            'metadata': metadata.serialize()
+          }, checked: true);
+        } on IsolateSpawnException catch (error) {
+          if (error.message.contains("OS Error: Connection refused") ||
+              error.message.contains("The remote computer refused")) {
+            throw new LoadException(path,
+                "Error getting $url: Connection refused\n"
+                'Make sure "pub serve" is running.');
+          } else if (error.message.contains("404 Not Found")) {
+            throw new LoadException(path,
+                "Error getting $url: 404 Not Found\n"
+                'Make sure "pub serve" is serving the test/ directory.');
           }
-        });
+
+          throw new LoadException(path, error);
+        }
       } else {
         isolate = await dart.runInIsolate('''
 import "package:test/src/backend/metadata.dart";

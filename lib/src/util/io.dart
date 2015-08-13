@@ -24,16 +24,7 @@ const _newline = 0xA;
 const _carriageReturn = 0xD;
 
 /// The root directory of the Dart SDK.
-final String sdkDir = (() {
-  // TODO(kevmoo): work-around for accessing the SDK root dartbug.com/16994
-  //
-  // Don't resolve symlinks on Windows because of issue 133. Once the TODO above
-  // is resolved, we won't have to do explicit symlink resolution anyway.
-  var path = Platform.isWindows
-      ? Platform.executable
-      : new File(Platform.executable).resolveSymbolicLinksSync();
-  return p.dirname(p.dirname(path));
-})();
+final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
 /// The version of the Dart SDK currently in use.
 final Version _sdkVersion = new Version.parse(
@@ -67,22 +58,6 @@ String libDir({String packageRoot}) {
   var pathToIo = libraryPath(#test.util.io, packageRoot: packageRoot);
   return p.dirname(p.dirname(p.dirname(pathToIo)));
 }
-
-/// Returns whether the current Dart version has a fix for issue 23084.
-final bool supportsPubServe = ((){
-  // This isn't 100% accurate, since issue 23084 wasn't fixed in early 1.10 dev
-  // releases, but it's unlikely anyone will be using them.
-  // TODO(nweiz): remove this when we no longer support older Dart versions.
-  return new VersionConstraint.parse('>=1.9.2 <2.0.0').allows(_sdkVersion);
-})();
-
-/// Returns whether the current Dart version supports running isolates in
-/// checked mode.
-final bool supportsIsolateCheckedMode = (() {
-  // TODO(nweiz): remove this when we no longer support older Dart versions.
-  return new VersionConstraint.parse('>=1.11.0-dev.5.0 <2.0.0')
-      .allows(_sdkVersion);
-})();
 
 // TODO(nweiz): Make this check [stdioType] once that works within "pub run".
 /// Whether "special" strings such as Unicode characters or color escapes are

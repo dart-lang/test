@@ -396,42 +396,6 @@ String randomBase64(int bytes, {int seed, bool urlSafe: false,
       urlSafe: urlSafe, addLineSeparator: addLineSeparator);
 }
 
-// TODO(nweiz): Remove this and [shelfChange] once Shelf 0.6.0 has been out for
-// six months or so.
-/// Returns `request.url` in a cross-version way.
-///
-/// This follows the semantics of Shelf 0.6.x, even when using Shelf 0.5.x: the
-/// returned URL never starts with "/".
-Uri shelfUrl(shelf.Request request) {
-  var url = request.url;
-  if (!url.path.startsWith("/")) return url;
-  return url.replace(path: url.path.replaceFirst("/", ""));
-}
-
-/// Like [shelf.Request.change], but cross-version.
-///
-/// This follows the semantics of Shelf 0.6.x, even when using Shelf 0.5.x.
-shelf.Request shelfChange(shelf.Request typedRequest, {String path}) {
-  // Explicitly make the request dynamic since we're calling methods here that
-  // aren't defined in all support Shelf versions, and we don't want the
-  // analyzer to complain.
-  var request = typedRequest as dynamic;
-
-  try {
-    return request.change(path: path);
-  } on NoSuchMethodError catch (_) {
-    var newScriptName = p.url.join(request.scriptName, path);
-    if (request.scriptName.isEmpty) newScriptName = "/" + newScriptName;
-
-    var newUrlPath = p.url.relative(request.url.path.replaceFirst("/", ""),
-        from: path);
-    newUrlPath = newUrlPath == "." ? "" : "/" + newUrlPath;
-
-    return request.change(
-        scriptName: newScriptName, url: request.url.replace(path: newUrlPath));
-  }
-}
-
 /// Returns middleware that nests all requests beneath the URL prefix [beneath].
 shelf.Middleware nestingMiddleware(String beneath) {
   return (handler) {

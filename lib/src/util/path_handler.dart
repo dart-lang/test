@@ -7,8 +7,6 @@ library test.util.path_handler;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 
-import '../utils.dart';
-
 /// A handler that routes to sub-handlers based on exact path prefixes.
 class PathHandler {
   /// A trie of path components to handlers.
@@ -35,7 +33,7 @@ class PathHandler {
     var handler;
     var handlerIndex;
     var node = _paths;
-    var components = p.url.split(shelfUrl(request).path);
+    var components = p.url.split(request.url.path);
     for (var i = 0; i < components.length; i++ ) {
       node = node.children[components[i]];
       if (node == null) break;
@@ -46,7 +44,7 @@ class PathHandler {
 
     if (handler == null) return new shelf.Response.notFound("Not found.");
 
-    return handler(shelfChange(request,
+    return handler(request.change(
         path: p.url.joinAll(components.take(handlerIndex + 1))));
   }
 }

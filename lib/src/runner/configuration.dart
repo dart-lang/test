@@ -56,7 +56,6 @@ class Configuration {
         valueHelp: 'threads');
     parser.addOption("pub-serve",
         help: 'The port of a pub serve instance serving "test/".',
-        hide: !supportsPubServe,
         valueHelp: 'port');
     parser.addFlag("pause-after-load",
         help: 'Pauses for debugging before any tests execute.\n'
