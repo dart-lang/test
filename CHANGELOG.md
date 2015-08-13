@@ -1,3 +1,7 @@
+## 0.12.4+3
+
+* Make source maps work properly in the browser when not using `--pub-serve`.
+
 ## 0.12.4+2
 
 * Fix a memory leak when running many browser tests where old test suites failed

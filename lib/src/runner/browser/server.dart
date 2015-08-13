@@ -329,7 +329,7 @@ void main() {
   Future _compileSuite(String dartPath) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
-      var jsPath = p.join(dir, p.basename(dartPath) + ".js");
+      var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
 
       await _compilers.compile(dartPath, jsPath,
           packageRoot: _config.packageRoot);

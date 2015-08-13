@@ -105,11 +105,28 @@ void main(_) {
 
         if (buffer.isNotEmpty) print(buffer);
 
-        if (exitCode != 0) {
-          throw new LoadException(dartPath, "dart2js failed.");
-        }
+        if (exitCode != 0) throw new LoadException(dartPath, "dart2js failed.");
+
+        _fixSourceMap(jsPath + '.map');
       });
     });
+  }
+
+  // TODO(nweiz): Remove this when sdk#17544 is fixed.
+  /// Fix up the source map at [mapPath] so that it points to absolute file:
+  /// URIs that are resolvable by the browser.
+  void _fixSourceMap(String mapPath) {
+    var map = JSON.decode(new File(mapPath).readAsStringSync());
+    var root = map['sourceRoot'];
+
+    map['sources'] = map['sources'].map((source) {
+      var url = Uri.parse(root + source);
+      if (url.scheme != '' && url.scheme != 'file') return source;
+      if (url.path.endsWith("/runInBrowser.dart")) return "";
+      return p.toUri(mapPath).resolveUri(url).toString();
+    }).toList();
+
+    new File(mapPath).writeAsStringSync(JSON.encode(map));
   }
 
   /// Sanitizes the bytes emitted by [stream], converts them to text, and writes
