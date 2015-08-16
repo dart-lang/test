@@ -6,19 +6,15 @@ library test.runner.loader;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:analyzer/analyzer.dart';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
-import '../util/dart.dart' as dart;
 import '../util/io.dart';
-import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'configuration.dart';
 import 'browser/server.dart';
@@ -27,7 +23,7 @@ import 'load_suite.dart';
 import 'parse_metadata.dart';
 import 'runner_suite.dart';
 import 'vm/environment.dart';
-import 'vm/isolate_test.dart';
+import 'vm/isolate_loader.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
@@ -36,9 +32,6 @@ class Loader {
 
   /// The root directory that will be served for browser tests.
   final String _root;
-
-  /// All suites that have been created by the loader.
-  final _suites = new Set<RunnerSuite>();
 
   /// The server that serves browser test pages.
   ///
@@ -49,6 +42,16 @@ class Loader {
     });
   }
   final _browserServerMemo = new AsyncMemoizer<BrowserServer>();
+
+  /// The loader for isolate-based test suites.
+  ///
+  /// This is lazily initialized the first time it's accessed.
+  IsolateLoader get _isolateLoader {
+    if (_isolateLoaderMemo == null)
+      _isolateLoaderMemo = new IsolateLoader(_config);
+    return _isolateLoaderMemo;
+  }
+  IsolateLoader _isolateLoaderMemo;
 
   /// The memoizer for running [close] exactly once.
   final _closeMemo = new AsyncMemoizer();
@@ -137,111 +140,25 @@ class Loader {
   ///
   /// [metadata] is the suite-level metadata for the test.
   Future<RunnerSuite> _loadBrowserFile(String path, TestPlatform platform,
-        Metadata metadata) async =>
-      (await _browserServer).loadSuite(path, platform, metadata);
+        Metadata metadata) async {
+    return (await _browserServer).loadSuite(path, platform, metadata);
+  }
 
   /// Load the test suite at [path] in VM isolate.
   ///
   /// [metadata] is the suite-level metadata for the test.
-  Future<RunnerSuite> _loadVmFile(String path, Metadata metadata) async {
-    var receivePort = new ReceivePort();
-
-    var isolate;
-    try {
-      if (_config.pubServeUrl != null) {
-        var url = _config.pubServeUrl.resolveUri(
-            p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
-
-        try {
-          isolate = await Isolate.spawnUri(url, [], {
-            'reply': receivePort.sendPort,
-            'metadata': metadata.serialize()
-          }, checked: true);
-        } on IsolateSpawnException catch (error) {
-          if (error.message.contains("OS Error: Connection refused") ||
-              error.message.contains("The remote computer refused")) {
-            throw new LoadException(path,
-                "Error getting $url: Connection refused\n"
-                'Make sure "pub serve" is running.');
-          } else if (error.message.contains("404 Not Found")) {
-            throw new LoadException(path,
-                "Error getting $url: 404 Not Found\n"
-                'Make sure "pub serve" is serving the test/ directory.');
-          }
-
-          throw new LoadException(path, error);
-        }
-      } else {
-        isolate = await dart.runInIsolate('''
-import "package:test/src/backend/metadata.dart";
-import "package:test/src/runner/vm/isolate_listener.dart";
-
-import "${p.toUri(p.absolute(path))}" as test;
-
-void main(_, Map message) {
-  var sendPort = message['reply'];
-  var metadata = new Metadata.deserialize(message['metadata']);
-  IsolateListener.start(sendPort, metadata, () => test.main);
-}
-''', {
-          'reply': receivePort.sendPort,
-          'metadata': metadata.serialize()
-        }, packageRoot: p.toUri(_config.packageRoot), checked: true);
-      }
-    } catch (error, stackTrace) {
-      receivePort.close();
-      if (error is LoadException) rethrow;
-      await new Future.error(new LoadException(path, error), stackTrace);
-    }
-
-    var completer = new Completer();
-
-    var subscription = receivePort.listen((response) {
-      if (response["type"] == "print") {
-        print(response["line"]);
-      } else if (response["type"] == "loadException") {
-        isolate.kill();
-        completer.completeError(
-            new LoadException(path, response["message"]),
-            new Trace.current());
-      } else if (response["type"] == "error") {
-        isolate.kill();
-        var asyncError = RemoteException.deserialize(response["error"]);
-        completer.completeError(
-            new LoadException(path, asyncError.error),
-            asyncError.stackTrace);
-      } else {
-        assert(response["type"] == "success");
-        completer.complete(response["tests"]);
-      }
-    });
-
-    try {
-      var suite = new RunnerSuite(const VMEnvironment(),
-          (await completer.future).map((test) {
-        var testMetadata = new Metadata.deserialize(test['metadata']);
-        return new IsolateTest(test['name'], testMetadata, test['sendPort']);
-      }),
-          metadata: metadata,
-          path: path,
-          platform: TestPlatform.vm,
-          os: currentOS,
-          onClose: isolate.kill);
-      _suites.add(suite);
-      return suite;
-    } finally {
-      subscription.cancel();
-    }
+  Future<RunnerSuite> _loadVmFile(String path, Metadata metadata) {
+    return _isolateLoader.loadSuite(path, metadata);
   }
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() {
     return _closeMemo.runOnce(() async {
-      await Future.wait(_suites.map((suite) => suite.close()));
-      _suites.clear();
+      if (_isolateLoaderMemo != null)
+        await _isolateLoader.close();
 
-      if (!_browserServerMemo.hasRun) return;
-      await (await _browserServer).close();
+      if (_browserServerMemo.hasRun)
+        await (await _browserServer).close();
     });
   }
 }
