@@ -30,6 +30,11 @@ class Dartium extends Browser {
 
   final Future<Uri> observatoryUrl;
 
+  /// Starts a new instance of Dartium open to the given [url], which may be a
+  /// [Uri] or a [String].
+  ///
+  /// If [executable] is passed, it's used as the Dartium executable. Otherwise
+  /// the default executable name for the current OS will be used.
   factory Dartium(url, {String executable, bool debug: false}) {
     var completer = new Completer.sync();
     return new Dartium._(() async {
@@ -63,12 +68,6 @@ class Dartium extends Browser {
 
   Dartium._(Future<Process> startBrowser(), this.observatoryUrl)
       : super(startBrowser);
-
-  /// Starts a new instance of Dartium open to the given [url], which may be a
-  /// [Uri] or a [String].
-  ///
-  /// If [executable] is passed, it's used as the Dartium executable. Otherwise
-  /// the default executable name for the current OS will be used.
 
   /// Return the default executable for the current operating system.
   static String _defaultExecutable() {
