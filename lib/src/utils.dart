@@ -29,6 +29,9 @@ typedef AsyncFunction();
 /// A typedef for a zero-argument callback function.
 typedef void Callback();
 
+/// A typedef for a function that can receive an arbitrary message.
+typedef void MessageSink(dynamic message);
+
 /// A converter that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = UTF8.decoder.fuse(const LineSplitter());
 

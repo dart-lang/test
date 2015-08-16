@@ -18,8 +18,6 @@ import '../../util/io.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
 
-typedef void MessageSink(dynamic message);
-
 abstract class VMListener {
   /// The test suite to run.
   final Suite suite;

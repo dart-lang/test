@@ -9,6 +9,7 @@ import 'dart:async';
 
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
+import '../../utils.dart';
 import 'vm_listener.dart';
 
 /// A class that runs tests in a separate isolate and communicates the results
