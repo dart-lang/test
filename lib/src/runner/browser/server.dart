@@ -18,7 +18,6 @@ import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 
 import '../../backend/metadata.dart';
-import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
@@ -27,6 +26,7 @@ import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import '../load_exception.dart';
+import '../runner_suite.dart';
 import 'browser_manager.dart';
 import 'compiler_pool.dart';
 import 'polymer.dart';
@@ -209,7 +209,7 @@ void main() {
   ///
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<Suite> loadSuite(String path, TestPlatform browser,
+  Future<RunnerSuite> loadSuite(String path, TestPlatform browser,
       Metadata metadata) async {
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
