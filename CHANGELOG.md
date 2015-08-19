@@ -1,3 +1,7 @@
+## 0.12.4+4
+
+* Widen the Dart SDK constraint to include `1.13.0`.
+
 ## 0.12.4+3
 
 * Make source maps work properly in the browser when not using `--pub-serve`.
