@@ -1,3 +1,7 @@
+## 0.12.4+5
+
+* Internal changes only.
+
 ## 0.12.4+4
 
 * Widen the Dart SDK constraint to include `1.13.0`.

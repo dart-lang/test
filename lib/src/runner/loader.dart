@@ -20,8 +20,9 @@ import '../util/dart.dart' as dart;
 import '../util/io.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
-import 'configuration.dart';
 import 'browser/server.dart';
+import 'configuration.dart';
+import 'hack_load_vm_file_hook.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
 import 'parse_metadata.dart';
@@ -144,6 +145,12 @@ class Loader {
   ///
   /// [metadata] is the suite-level metadata for the test.
   Future<RunnerSuite> _loadVmFile(String path, Metadata metadata) async {
+    if (loadVMFileHook != null) {
+      var suite = await loadVMFileHook(path, metadata, _config);
+      _suites.add(suite);
+      return suite;
+    }
+
     var receivePort = new ReceivePort();
 
     var isolate;
