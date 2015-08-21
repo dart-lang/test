@@ -249,7 +249,7 @@ The [`throwsA()`][throwsA] matcher and the various `throwsExceptionType`
 matchers work with both synchronous callbacks and asynchronous `Future`s. They
 ensure that a particular type of exception is thrown:
 
-[completion]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_throwsA
+[throwsA]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_throwsA
 
 ```dart
 import "dart:async";
