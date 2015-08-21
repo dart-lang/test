@@ -1,3 +1,7 @@
+## 0.12.4+6
+
+* Fix a broken link in the README.
+
 ## 0.12.4+5
 
 * Internal changes only.
