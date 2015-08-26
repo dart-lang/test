@@ -1,3 +1,7 @@
+## 0.12.4+7
+
+* Support `http_parser` 1.0.0.
+
 ## 0.12.4+6
 
 * Fix a broken link in the README.
