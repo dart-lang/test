@@ -7,7 +7,6 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -281,10 +280,7 @@ $_usage""");
 
     test("directly", () {
       d.file("test.dart", _success).create();
-      var test = runDart([
-        "--package-root=${p.join(packageDir, 'packages')}",
-        "test.dart"
-      ]);
+      var test = runDart(["test.dart"]);
 
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
       test.shouldExit(0);
@@ -331,10 +327,7 @@ $_usage""");
 
     test("directly", () {
       d.file("test.dart", _failure).create();
-      var test = runDart([
-        "--package-root=${p.join(packageDir, 'packages')}",
-        "test.dart"
-      ]);
+      var test = runDart(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("Some tests failed.")));
       test.shouldExit(255);
     });
