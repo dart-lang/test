@@ -1,3 +1,8 @@
+## 0.12.4+8
+
+* Don't compile tests to JavaScript when running via `pub serve` on Dartium or
+  content shell.
+
 ## 0.12.4+7
 
 * Support `http_parser` 1.0.0.
