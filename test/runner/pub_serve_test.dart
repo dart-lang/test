@@ -121,21 +121,39 @@ void main() {
       pub.kill();
     });
 
-    test("gracefully handles pub serve running on the wrong directory for "
+    group("gracefully handles pub serve running on the wrong directory for "
         "browser tests", () {
-      d.dir("web").create();
+      test("when run on Chrome", () {
+        d.dir("web").create();
 
-      var pub = runPubServe(args: ['web']);
-      var test = runTest([_pubServeArg, '-p', 'chrome']);
-      test.stdout.expect(containsInOrder([
-        '-1: compiling ${p.join("test", "my_test.dart")}',
-        'Failed to load "${p.join("test", "my_test.dart")}":',
-        '404 Not Found',
-        'Make sure "pub serve" is serving the test/ directory.'
-      ]));
-      test.shouldExit(1);
+        var pub = runPubServe(args: ['web']);
+        var test = runTest([_pubServeArg, '-p', 'chrome']);
+        test.stdout.expect(containsInOrder([
+          '-1: compiling ${p.join("test", "my_test.dart")}',
+          'Failed to load "${p.join("test", "my_test.dart")}":',
+          '404 Not Found',
+          'Make sure "pub serve" is serving the test/ directory.'
+        ]));
+        test.shouldExit(1);
 
-      pub.kill();
+        pub.kill();
+      });
+
+      test("when run on content shell", () {
+        d.dir("web").create();
+
+        var pub = runPubServe(args: ['web']);
+        var test = runTest([_pubServeArg, '-p', 'content-shell']);
+        test.stdout.expect(containsInOrder([
+          '-1: loading ${p.join("test", "my_test.dart")}',
+          'Failed to load "${p.join("test", "my_test.dart")}":',
+          '404 Not Found',
+          'Make sure "pub serve" is serving the test/ directory.'
+        ]));
+        test.shouldExit(1);
+
+        pub.kill();
+      });
     });
 
     test("gracefully handles unconfigured transformers", () {
