@@ -30,11 +30,11 @@ class Group {
   }
   final Metadata _metadata;
 
-  /// The set-up function for this group, or `null`.
-  AsyncFunction setUp;
+  /// The set-up functions for this group.
+  final setUps = new List<AsyncFunction>();
 
-  /// The tear-down function for this group, or `null`.
-  AsyncFunction tearDown;
+  /// The tear-down functions for this group.
+  final tearDowns = new List<AsyncFunction>();
 
   /// Returns the description for this group, including the description of any
   /// parent groups.
@@ -57,33 +57,31 @@ class Group {
   ///
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
-  Future runSetUp() {
+  Future runSetUps() {
     // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
     // stable versions.
     if (parent != null) {
-      return parent.runSetUp().then((_) {
-        if (setUp != null) return setUp();
+      return parent.runSetUps().then((_) {
+        return Future.forEach(setUps, (setUp) => setUp());
       });
     }
 
-    if (setUp != null) return new Future.sync(setUp);
-    return new Future.value();
+    return Future.forEach(setUps, (setUp) => setUp());
   }
 
   /// Run the tear-up functions for this and any parent groups.
   ///
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
-  Future runTearDown() {
+  Future runTearDowns() {
     // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
     // stable versions.
     if (parent == null) {
-      return tearDown == null ? new Future.value() : new Future.sync(tearDown);
+      return Future.forEach(tearDowns.reversed, _errorsDontStopTest);
     }
 
-    return _errorsDontStopTest(() {
-      if (tearDown != null) return tearDown();
-    }).then((_) => parent.runTearDown());
+    return Future.forEach(tearDowns.reversed, _errorsDontStopTest)
+        .then((_) => parent.runTearDowns());
   }
 
   /// Runs [body] with special error-handling behavior.
@@ -93,9 +91,12 @@ class Group {
   /// callbacks registered outside of [body].
   Future _errorsDontStopTest(body()) {
     var completer = new Completer();
+
+    Invoker.current.addOutstandingCallback();
     Invoker.current.waitForOutstandingCallbacks(() {
       new Future.sync(body).whenComplete(completer.complete);
-    });
+    }).then((_) => Invoker.current.removeOutstandingCallback());
+
     return completer.future;
   }
 }

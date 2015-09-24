@@ -46,8 +46,8 @@ class Declarer {
       // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
       // two stable versions.
       return Invoker.current.waitForOutstandingCallbacks(() {
-        return group.runSetUp().then((_) => body());
-      }).then((_) => group.runTearDown());
+        return group.runSetUps().then((_) => body());
+      }).then((_) => group.runTearDowns());
     }));
   }
 
@@ -75,21 +75,11 @@ class Declarer {
 
   /// Registers a function to be run before tests.
   void setUp(callback()) {
-    if (_group.setUp != null) {
-      throw new StateError("setUp() may not be called multiple times for the "
-          "same group.");
-    }
-
-    _group.setUp = callback;
+    _group.setUps.add(callback);
   }
 
   /// Registers a function to be run after tests.
   void tearDown(callback()) {
-    if (_group.tearDown != null) {
-      throw new StateError("tearDown() may not be called multiple times for "
-          "the same group.");
-    }
-
-    _group.tearDown = callback;
+    _group.tearDowns.add(callback);
   }
 }

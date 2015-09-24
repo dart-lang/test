@@ -1,3 +1,8 @@
+## 0.12.5
+
+* Allow `setUp()` and `tearDown()` to be called multiple times within the same
+  group.
+
 ## 0.12.4+9
 
 * If a `tearDown()` callback throws an error, outer `tearDown()` callbacks are

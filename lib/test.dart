@@ -169,6 +169,9 @@ void group(String description, void body(), {String testOn, Timeout timeout,
 /// If this is called within a test group, it applies only to tests in that
 /// group. [callback] will be run after any set-up callbacks in parent groups or
 /// at the top level.
+///
+/// Each callback at the top level or in a given group will be run in the order
+/// they were declared.
 void setUp(callback()) => _declarer.setUp(callback);
 
 /// Registers a function to be run after tests.
@@ -179,6 +182,9 @@ void setUp(callback()) => _declarer.setUp(callback);
 /// If this is called within a test group, it applies only to tests in that
 /// group. [callback] will be run before any tear-down callbacks in parent
 /// groups or at the top level.
+///
+/// Each callback at the top level or in a given group will be run in the
+/// reverse of the order they were declared.
 void tearDown(callback()) => _declarer.tearDown(callback);
 
 /// Registers an exception that was caught for the current test.

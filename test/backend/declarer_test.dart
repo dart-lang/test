@@ -79,9 +79,35 @@ void main() {
       return _runTest(0);
     });
 
-    test("can't be called multiple times", () {
-      _declarer.setUp(() {});
-      expect(() => _declarer.setUp(() {}), throwsStateError);
+    test("runs in call order within a group", () async {
+      var firstSetUpRun = false;
+      var secondSetUpRun = false;
+      var thirdSetUpRun = false;
+      _declarer.setUp(expectAsync(() async {
+        expect(secondSetUpRun, isFalse);
+        expect(thirdSetUpRun, isFalse);
+        firstSetUpRun = true;
+      }));
+
+      _declarer.setUp(expectAsync(() async {
+        expect(firstSetUpRun, isTrue);
+        expect(thirdSetUpRun, isFalse);
+        secondSetUpRun = true;
+      }));
+
+      _declarer.setUp(expectAsync(() async {
+        expect(firstSetUpRun, isTrue);
+        expect(secondSetUpRun, isTrue);
+        thirdSetUpRun = true;
+      }));
+
+      _declarer.test("description", expectAsync(() {
+        expect(firstSetUpRun, isTrue);
+        expect(secondSetUpRun, isTrue);
+        expect(thirdSetUpRun, isTrue);
+      }));
+
+      await _runTest(0);
     });
   });
 
@@ -168,9 +194,47 @@ void main() {
       expect(outstandingCallbackRemoved, isTrue);
     });
 
-    test("can't be called multiple times", () {
-      _declarer.tearDown(() {});
-      expect(() => _declarer.tearDown(() {}), throwsStateError);
+    test("runs in reverse call order within a group", () async {
+      var firstTearDownRun = false;
+      var secondTearDownRun = false;
+      var thirdTearDownRun = false;
+      _declarer.tearDown(expectAsync(() async {
+        expect(secondTearDownRun, isTrue);
+        expect(thirdTearDownRun, isTrue);
+        firstTearDownRun = true;
+      }));
+
+      _declarer.tearDown(expectAsync(() async {
+        expect(firstTearDownRun, isFalse);
+        expect(thirdTearDownRun, isTrue);
+        secondTearDownRun = true;
+      }));
+
+      _declarer.tearDown(expectAsync(() async {
+        expect(firstTearDownRun, isFalse);
+        expect(secondTearDownRun, isFalse);
+        thirdTearDownRun = true;
+      }));
+
+      _declarer.test("description", expectAsync(() {
+        expect(firstTearDownRun, isFalse);
+        expect(secondTearDownRun, isFalse);
+        expect(thirdTearDownRun, isFalse);
+      }, max: 1));
+
+      await _runTest(0);
+    });
+
+    test("runs further tearDowns in a group even if one fails", () async {
+      _declarer.tearDown(expectAsync(() {}));
+
+      _declarer.tearDown(() async {
+        throw 'error';
+      });
+
+      _declarer.test("description", expectAsync(() {}));
+
+      await _runTest(0, shouldFail: true);
     });
   });
 
@@ -294,13 +358,6 @@ void main() {
 
         return _runTest(0);
       });
-
-      test("can't be called multiple times", () {
-        _declarer.group("group", () {
-          _declarer.setUp(() {});
-          expect(() => _declarer.setUp(() {}), throwsStateError);
-        });
-      });
     });
 
     group(".tearDown()", () {
@@ -408,13 +465,6 @@ void main() {
         await _runTest(0, shouldFail: true);
         expect(outerTearDownRun, isTrue);
       });
-
-      test("can't be called multiple times", () {
-        _declarer.group("group", () {
-          _declarer.tearDown(() {});
-          expect(() => _declarer.tearDown(() {}), throwsStateError);
-        });
-      });
     });
   });
 }
@@ -428,8 +478,7 @@ Future _runTest(int index, {bool shouldFail: false}) {
 
   liveTest.onError.listen(shouldFail
       ? expectAsync((_) {})
-      : expectAsync((_) {},
-            count: 0, reason: "No errors expected for test #$index."));
+      : (error) => registerException(error.error, error.stackTrace));
 
   return liveTest.run();
 }
