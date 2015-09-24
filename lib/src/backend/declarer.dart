@@ -45,8 +45,10 @@ class Declarer {
 
       // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
       // two stable versions.
-      return group.runSetUp().then((_) => body());
-    }, tearDown: group.runTearDown));
+      return Invoker.current.waitForOutstandingCallbacks(() {
+        return group.runSetUp().then((_) => body());
+      }).then((_) => group.runTearDown());
+    }));
   }
 
   /// Creates a group of tests.

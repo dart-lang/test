@@ -5,9 +5,12 @@
 import 'dart:async';
 
 import 'package:test/src/backend/declarer.dart';
+import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/suite.dart';
 import 'package:test/src/frontend/timeout.dart';
 import 'package:test/test.dart';
+
+import '../utils.dart';
 
 Declarer _declarer;
 Suite _suite;
@@ -102,6 +105,20 @@ void main() {
       expect(tearDownRun, isTrue);
     });
 
+    test("is run after an out-of-band failure", () async {
+      var tearDownRun;
+      _declarer.setUp(() => tearDownRun = false);
+      _declarer.tearDown(() => tearDownRun = true);
+
+      _declarer.test("description 1", expectAsync(() {
+        Invoker.current.addOutstandingCallback();
+        new Future(() => throw new TestFailure("oh no"));
+      }, max: 1));
+
+      await _runTest(0, shouldFail: true);
+      expect(tearDownRun, isTrue);
+    });
+
     test("can return a Future", () async {
       var tearDownRun = false;
       _declarer.tearDown(() {
@@ -114,6 +131,41 @@ void main() {
 
       await _runTest(0);
       expect(tearDownRun, isTrue);
+    });
+
+    test("isn't run until there are no outstanding callbacks", () async {
+      var outstandingCallbackRemoved = false;
+      var outstandingCallbackRemovedBeforeTeardown = false;
+      _declarer.tearDown(() {
+        outstandingCallbackRemovedBeforeTeardown = outstandingCallbackRemoved;
+      });
+
+      _declarer.test("description", () {
+        Invoker.current.addOutstandingCallback();
+        pumpEventQueue().then((_) {
+          outstandingCallbackRemoved = true;
+          Invoker.current.removeOutstandingCallback();
+        });
+      });
+
+      await _runTest(0);
+      expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
+    });
+
+    test("doesn't complete until there are no outstanding callbacks", () async {
+      var outstandingCallbackRemoved = false;
+      _declarer.tearDown(() {
+        Invoker.current.addOutstandingCallback();
+        pumpEventQueue().then((_) {
+          outstandingCallbackRemoved = true;
+          Invoker.current.removeOutstandingCallback();
+        });
+      });
+
+      _declarer.test("description", () {});
+
+      await _runTest(0);
+      expect(outstandingCallbackRemoved, isTrue);
     });
 
     test("can't be called multiple times", () {
@@ -351,9 +403,13 @@ void main() {
 ///
 /// This automatically sets up an `onError` listener to ensure that the test
 /// doesn't throw any invisible exceptions.
-Future _runTest(int index) {
+Future _runTest(int index, {bool shouldFail: false}) {
   var liveTest = _declarer.tests[index].load(_suite);
-  liveTest.onError.listen(expectAsync((_) {},
-      count: 0, reason: "No errors expected for test #$index."));
+
+  liveTest.onError.listen(shouldFail
+      ? expectAsync((_) {})
+      : expectAsync((_) {},
+            count: 0, reason: "No errors expected for test #$index."));
+
   return liveTest.run();
 }

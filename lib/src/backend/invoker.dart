@@ -27,16 +27,8 @@ class LocalTest implements Test {
   /// The test body.
   final AsyncFunction _body;
 
-  /// The callback used to clean up after the test.
-  ///
-  /// This is separated out from [_body] because it needs to run once the test's
-  /// asynchronous computation has finished, even if that's different from the
-  /// completion of the main body of the test.
-  final AsyncFunction _tearDown;
-
-  LocalTest(this.name, this.metadata, body(), {tearDown()})
-      : _body = body,
-        _tearDown = tearDown;
+  LocalTest(this.name, this.metadata, body())
+      : _body = body;
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite) {
@@ -48,7 +40,7 @@ class LocalTest implements Test {
     if (name == name && metadata == this.metadata) return this;
     if (name == null) name = this.name;
     if (metadata == null) metadata = this.metadata;
-    return new LocalTest(name, metadata, _body, tearDown: _tearDown);
+    return new LocalTest(name, metadata, _body);
   }
 }
 
@@ -147,10 +139,14 @@ class Invoker {
   /// transitively invokes have completed.
   ///
   /// If [fn] itself returns a future, this will automatically wait until that
-  /// future completes as well.
+  /// future completes as well. Note that outstanding callbacks registered
+  /// within [fn] will *not* be registered as outstanding callback outside of
+  /// [fn].
   ///
-  /// Note that outstanding callbacks registered within [fn] will *not* be
-  /// registered as outstanding callback outside of [fn].
+  /// If [fn] produces an unhandled error, this marks the current test as
+  /// failed, removes all outstanding callbacks registered within [fn], and
+  /// completes the returned future. It does not remove any outstanding
+  /// callbacks registered outside of [fn].
   Future waitForOutstandingCallbacks(fn()) {
     heartbeat();
 
@@ -158,7 +154,9 @@ class Invoker {
     runZoned(() {
       // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
       // two stable versions.
-      new Future.sync(fn).then((_) => counter.removeOutstandingCallback());
+      runZoned(() {
+        new Future.sync(fn).then((_) => counter.removeOutstandingCallback());
+      }, onError: _handleError);
     }, zoneValues: {
       // Use the invoker as a key so that multiple invokers can have different
       // outstanding callback counters at once.
@@ -237,13 +235,6 @@ class Invoker {
             .then((_) => removeOutstandingCallback());
 
         _outstandingCallbacks.noOutstandingCallbacks.then((_) {
-          if (_test._tearDown == null) return null;
-
-          // Reset the outstanding callback counter to wait for callbacks from
-          // the test's `tearDown` to complete.
-          return waitForOutstandingCallbacks(() =>
-              runZoned(_test._tearDown, onError: _handleError));
-        }).then((_) {
           if (_timeoutTimer != null) _timeoutTimer.cancel();
           _controller.setState(
               new State(Status.complete, liveTest.state.result));
