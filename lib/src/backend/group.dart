@@ -7,6 +7,7 @@ library test.backend.group;
 import 'dart:async';
 
 import '../utils.dart';
+import 'invoker.dart';
 import 'metadata.dart';
 
 /// A group contains multiple tests and subgroups.
@@ -76,13 +77,25 @@ class Group {
   Future runTearDown() {
     // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
     // stable versions.
-    if (parent != null) {
-      return new Future.sync(() {
-        if (tearDown != null) return tearDown();
-      }).then((_) => parent.runTearDown());
+    if (parent == null) {
+      return tearDown == null ? new Future.value() : new Future.sync(tearDown);
     }
 
-    if (tearDown != null) return new Future.sync(tearDown);
-    return new Future.value();
+    return _errorsDontStopTest(() {
+      if (tearDown != null) return tearDown();
+    }).then((_) => parent.runTearDown());
+  }
+
+  /// Runs [body] with special error-handling behavior.
+  ///
+  /// Errors emitted [body] will still cause be the test to fail, but they won't
+  /// cause it to *stop*. In particular, they won't remove any outstanding
+  /// callbacks registered outside of [body].
+  Future _errorsDontStopTest(body()) {
+    var completer = new Completer();
+    Invoker.current.waitForOutstandingCallbacks(() {
+      new Future.sync(body).whenComplete(completer.complete);
+    });
+    return completer.future;
   }
 }

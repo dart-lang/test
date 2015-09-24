@@ -389,6 +389,26 @@ void main() {
         expect(outerTearDownRun, isTrue);
       });
 
+      test("runs outer callbacks even when inner ones fail", () async {
+        var outerTearDownRun = false;
+        _declarer.tearDown(() {
+          return new Future(() => outerTearDownRun = true);
+        });
+
+        _declarer.group("inner", () {
+          _declarer.tearDown(() {
+            throw 'inner error';
+          });
+
+          _declarer.test("description", expectAsync(() {
+            expect(outerTearDownRun, isFalse);
+          }, max: 1));
+        });
+
+        await _runTest(0, shouldFail: true);
+        expect(outerTearDownRun, isTrue);
+      });
+
       test("can't be called multiple times", () {
         _declarer.group("group", () {
           _declarer.tearDown(() {});

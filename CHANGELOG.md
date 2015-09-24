@@ -1,3 +1,8 @@
+## 0.12.4+9
+
+* If a `tearDown()` callback throws an error, outer `tearDown()` callbacks are
+  still executed.
+
 ## 0.12.4+8
 
 * Don't compile tests to JavaScript when running via `pub serve` on Dartium or
