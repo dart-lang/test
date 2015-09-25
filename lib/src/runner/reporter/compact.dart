@@ -104,6 +104,9 @@ class CompactReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = new Set<StreamSubscription>();
 
+  /// Whether testing stops after the first error
+  var _failFast = false;
+
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   ///
@@ -114,20 +117,22 @@ class CompactReporter implements Reporter {
   /// the platform as part of the test description.
   static CompactReporter watch(Engine engine, {bool color: true,
       bool verboseTrace: false, bool printPath: true,
-      bool printPlatform: true}) {
+      bool printPlatform: true, bool failFast: false}) {
     return new CompactReporter._(
         engine,
         color: color,
         verboseTrace: verboseTrace,
         printPath: printPath,
-        printPlatform: printPlatform);
+        printPlatform: printPlatform,
+        failFast: failFast);
   }
 
   CompactReporter._(this._engine, {bool color: true, bool verboseTrace: false,
-          bool printPath: true, bool printPlatform: true})
+          bool printPath: true, bool printPlatform: true, bool failFast: false})
       : _verboseTrace = verboseTrace,
         _printPath = printPath,
         _printPlatform = printPlatform,
+        _failFast = failFast,
         _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
@@ -228,6 +233,7 @@ class CompactReporter implements Reporter {
 
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+    if (_failFast == true) cancel();
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest), truncate: false);
