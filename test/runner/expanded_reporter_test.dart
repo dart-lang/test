@@ -302,10 +302,30 @@ void main() {
             Skip: or another
           +0 ~2: All tests skipped.""");
     });
+
+    test("test failFast option", () {
+      _expectReport("""
+          test('ok 1', () {expect(1, 1);}, skip: false);
+          test('skip 2', () {expect(1, 2);}, skip: true);
+          test('fail 3', () {expect(1, 3);}, skip: false);
+          test('fail 4', () {expect(1, 4);}, skip: false);
+          """,
+          """
+          +0: ok 1
+          +1: skip 2
+          +1 ~1: fail 3
+          +1 ~1 -1: fail 3
+            Expected: <3>
+              Actual: <1>
+
+            package:test    expect
+            test.dart 8:30  main.<fn>
+          """, failFast: true);
+    });
   });
 }
 
-void _expectReport(String tests, String expected) {
+void _expectReport(String tests, String expected, {bool failFast: false}) {
   var dart = """
 import 'dart:async';
 
@@ -318,7 +338,7 @@ $tests
 
   d.file("test.dart", dart).create();
 
-  var test = runTest(["test.dart"]);
+  var test = runTest(["test.dart"], failFast: failFast);
   test.shouldExit();
 
   schedule(() async {
