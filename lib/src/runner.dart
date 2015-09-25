@@ -63,7 +63,8 @@ class Runner {
         verboseTrace: config.verboseTrace,
         printPath: config.paths.length > 1 ||
             new Directory(config.paths.single).existsSync(),
-        printPlatform: config.platforms.length > 1);
+        printPlatform: config.platforms.length > 1,
+        failFast: config.failFast);
 
     return new Runner._(config, loader, engine, reporter);
   }

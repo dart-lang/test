@@ -95,7 +95,7 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 
 /// Runs the test executable with the package root set properly.
 ScheduledProcess runTest(List args, {bool compact: false,
-    int concurrency, Map<String, String> environment}) {
+    int concurrency, Map<String, String> environment, bool failFast: false}) {
   if (concurrency == null) concurrency = 1;
 
   var allArgs = [
@@ -105,6 +105,7 @@ ScheduledProcess runTest(List args, {bool compact: false,
   ];
 
   if (!compact) allArgs.addAll(["-r", "expanded"]);
+  if (failFast) allArgs.addAll(["-f"]);
   allArgs.addAll(args);
 
   if (environment == null) environment = {};

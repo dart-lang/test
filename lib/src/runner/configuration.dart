@@ -71,6 +71,10 @@ class Configuration {
       'compact': 'A single line, updated continuously.',
       'expanded': 'A separate line for each update.'
     });
+    parser.addFlag("fail-fast",
+        abbr: 'f',
+        help: 'Stop testing after the first error.',
+        negatable: false);
     parser.addFlag("verbose-trace", negatable: false,
         help: 'Whether to emit stack traces with core library frames.');
     parser.addFlag("js-trace", negatable: false,
@@ -130,6 +134,9 @@ class Configuration {
   /// The set of platforms on which to run tests.
   final List<TestPlatform> platforms;
 
+  /// Whether testing stops after the first error.
+  final bool failFast;
+
   /// The global test metadata derived from this configuration.
   Metadata get metadata =>
       new Metadata(
@@ -169,7 +176,8 @@ class Configuration {
             orElse: () => _defaultConcurrency),
         pattern: pattern,
         platforms: options['platform'].map(TestPlatform.find),
-        paths: options.rest.isEmpty ? null : options.rest);
+        paths: options.rest.isEmpty ? null : options.rest,
+        failFast: options['fail-fast']);
   }
 
   /// Runs [parse] on the value of the option [name], and wraps any
@@ -191,7 +199,7 @@ class Configuration {
           this.verboseTrace: false, this.jsTrace: false,
           bool pauseAfterLoad: false, bool color, String packageRoot,
           String reporter, int pubServePort, int concurrency, this.pattern,
-          Iterable<TestPlatform> platforms, Iterable<String> paths})
+          Iterable<TestPlatform> platforms, Iterable<String> paths, this.failFast})
       : pauseAfterLoad = pauseAfterLoad,
         color = color == null ? canUseSpecialChars : color,
         packageRoot = packageRoot == null
