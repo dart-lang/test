@@ -71,7 +71,7 @@ class Configuration {
       'compact': 'A single line, updated continuously.',
       'expanded': 'A separate line for each update.'
     });
-    parser.addFlag("failFast",
+    parser.addFlag("fail-fast",
         abbr: 'f',
         help: 'Stop testing after the first error.',
         negatable: false);
