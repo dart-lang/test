@@ -177,7 +177,7 @@ class Configuration {
         pattern: pattern,
         platforms: options['platform'].map(TestPlatform.find),
         paths: options.rest.isEmpty ? null : options.rest,
-        failFast: options['failFast']);
+        failFast: options['fail-fast']);
   }
 
   /// Runs [parse] on the value of the option [name], and wraps any
