@@ -24,8 +24,10 @@ void main() {
 }
 ```
 
-Tests can be grouped together using the [`group()`] function. Each group's
-description is added to the beginning of its test's descriptions.
+Tests can be grouped together using the [`group()`][group] function. Each
+group's description is added to the beginning of its test's descriptions.
+
+[group]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_group
 
 ```dart
 import "package:test/test.dart";
