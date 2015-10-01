@@ -6,7 +6,7 @@ library test.frontend.throws_matcher;
 
 import 'dart:async';
 
-import 'package:matcher/matcher.dart' hide fail, expect;
+import 'package:matcher/matcher.dart';
 
 import '../backend/invoker.dart';
 import '../utils.dart';

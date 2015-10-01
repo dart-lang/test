@@ -6,7 +6,7 @@ library test.frontend.prints_matcher;
 
 import 'dart:async';
 
-import 'package:matcher/matcher.dart' hide completes, expect;
+import 'package:matcher/matcher.dart';
 
 import 'expect.dart';
 import 'future_matchers.dart';

@@ -4,7 +4,7 @@
 
 library test.frontend.throws_matchers;
 
-import 'package:matcher/matcher.dart' hide Throws;
+import 'package:matcher/matcher.dart';
 
 import 'throws_matcher.dart';
 
