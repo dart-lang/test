@@ -56,15 +56,28 @@ class Invoker {
   LiveTest get liveTest => _controller.liveTest;
   LiveTestController _controller;
 
+  bool get _closable => Zone.current[_closableKey];
+
+  /// An opaque object used as a key in the zone value map to identify
+  /// [_closable].
+  ///
+  /// This is an instance variable to ensure that multiple invokers don't step
+  /// on one anothers' toes.
+  final _closableKey = new Object();
+
   /// Whether the test has been closed.
   ///
   /// Once the test is closed, [expect] and [expectAsync] will throw
   /// [ClosedException]s whenever accessed to help the test stop executing as
   /// soon as possible.
-  bool get closed => _onCloseCompleter.isCompleted;
+  bool get closed => _closable && _onCloseCompleter.isCompleted;
 
   /// A future that completes once the test has been closed.
-  Future get onClose => _onCloseCompleter.future;
+  Future get onClose => _closable
+      ? _onCloseCompleter.future
+      // If we're in an unclosable block, return a future that will never
+      // complete.
+      : new Completer().future;
   final _onCloseCompleter = new Completer();
 
   /// The test being run.
@@ -75,11 +88,18 @@ class Invoker {
 
   /// The outstanding callback counter for the current zone.
   OutstandingCallbackCounter get _outstandingCallbacks {
-    var counter = Zone.current[this];
+    var counter = Zone.current[_counterKey];
     if (counter != null) return counter;
     throw new StateError("Can't add or remove outstanding callbacks outside "
         "of a test body.");
   }
+
+  /// An opaque object used as a key in the zone value map to identify
+  /// [_outstandingCallbacks].
+  ///
+  /// This is an instance variable to ensure that multiple invokers don't step
+  /// on one anothers' toes.
+  final _counterKey = new Object();
 
   /// The current invoker, or `null` if none is defined.
   ///
@@ -158,12 +178,23 @@ class Invoker {
         new Future.sync(fn).then((_) => counter.removeOutstandingCallback());
       }, onError: _handleError);
     }, zoneValues: {
-      // Use the invoker as a key so that multiple invokers can have different
-      // outstanding callback counters at once.
-      this: counter
+      _counterKey: counter
     });
 
     return counter.noOutstandingCallbacks;
+  }
+
+  /// Runs [fn] in a zone where [closed] is always `false`.
+  ///
+  /// This is useful for running code that should be able to register callbacks
+  /// and interact with the test framework normally even when the invoker is
+  /// closed, for example cleanup code.
+  unclosable(fn()) {
+    heartbeat();
+
+    return runZoned(fn, zoneValues: {
+      _closableKey: false
+    });
   }
 
   /// Notifies the invoker that progress is being made.
@@ -247,7 +278,8 @@ class Invoker {
         #test.invoker: this,
         // Use the invoker as a key so that multiple invokers can have different
         // outstanding callback counters at once.
-        this: outstandingCallbacksForBody
+        _counterKey: outstandingCallbacksForBody,
+        _closableKey: true
       },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) => _controller.print(line)),

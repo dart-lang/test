@@ -3,6 +3,10 @@
 * Allow `setUp()` and `tearDown()` to be called multiple times within the same
   group.
 
+* When a `tearDown()` callback runs after a signal has been caught, it can now
+  schedule out-of-band asynchronous callbacks normally rather than having them
+  throw exceptions.
+
 ## 0.12.4+9
 
 * If a `tearDown()` callback throws an error, outer `tearDown()` callbacks are

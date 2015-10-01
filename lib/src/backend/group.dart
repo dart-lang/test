@@ -74,14 +74,14 @@ class Group {
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
   Future runTearDowns() {
-    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
-    // stable versions.
-    if (parent == null) {
-      return Future.forEach(tearDowns.reversed, _errorsDontStopTest);
-    }
+    return Invoker.current.unclosable(() {
+      var tearDowns = [];
+      for (var group = this; group != null; group = group.parent) {
+        tearDowns.addAll(group.tearDowns.reversed);
+      }
 
-    return Future.forEach(tearDowns.reversed, _errorsDontStopTest)
-        .then((_) => parent.runTearDowns());
+      return Future.forEach(tearDowns, _errorsDontStopTest);
+    });
   }
 
   /// Runs [body] with special error-handling behavior.
