@@ -9,22 +9,23 @@ import 'package:test/src/runner/runner_suite.dart';
 import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/test.dart';
 
-void main() {
-  var declarer;
-  setUp(() => declarer = new Declarer());
+import '../utils.dart';
 
+void main() {
   test("runs each test in each suite in order", () async {
     var testsRun = 0;
-    for (var i = 0; i < 4; i++) {
-      declarer.test("test ${i + 1}", expectAsync(() {
-        expect(testsRun, equals(i));
-        testsRun++;
-      }, max: 1));
-    }
+    var tests = declare(() {
+      for (var i = 0; i < 4; i++) {
+        test("test ${i + 1}", expectAsync(() {
+          expect(testsRun, equals(i));
+          testsRun++;
+        }, max: 1));
+      }
+    });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), declarer.tests.take(2)),
-      new RunnerSuite(const VMEnvironment(), declarer.tests.skip(2))
+      new RunnerSuite(const VMEnvironment(), tests.take(2)),
+      new RunnerSuite(const VMEnvironment(), tests.skip(2))
     ]);
 
     await engine.run();
@@ -33,32 +34,35 @@ void main() {
 
   test("runs tests in a suite added after run() was called", () {
     var testsRun = 0;
-    for (var i = 0; i < 4; i++) {
-      declarer.test("test ${i + 1}", expectAsync(() {
-        expect(testsRun, equals(i));
-        testsRun++;
-      }, max: 1));
-    }
+    var tests = declare(() {
+      for (var i = 0; i < 4; i++) {
+        test("test ${i + 1}", expectAsync(() {
+          expect(testsRun, equals(i));
+          testsRun++;
+        }, max: 1));
+      }
+    });
 
     var engine = new Engine();
     expect(engine.run().then((_) {
       expect(testsRun, equals(4));
     }), completes);
 
-    engine.suiteSink.add(
-        new RunnerSuite(const VMEnvironment(), declarer.tests));
+    engine.suiteSink.add(new RunnerSuite(const VMEnvironment(), tests));
     engine.suiteSink.close();
   });
 
   test("emits each test before it starts running and after the previous test "
       "finished", () {
     var testsRun = 0;
-    for (var i = 0; i < 3; i++) {
-      declarer.test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
-    }
+    var tests = declare(() {
+      for (var i = 0; i < 3; i++) {
+        test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
+      }
+    });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), declarer.tests)
+      new RunnerSuite(const VMEnvironment(), tests)
     ]);
 
     engine.onTestStarted.listen(expectAsync((liveTest) {
@@ -75,36 +79,42 @@ void main() {
   });
 
   test(".run() returns true if every test passes", () {
-    for (var i = 0; i < 2; i++) {
-      declarer.test("test ${i + 1}", () {});
-    }
+    var tests = declare(() {
+      for (var i = 0; i < 2; i++) {
+        test("test ${i + 1}", () {});
+      }
+    });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), declarer.tests)
+      new RunnerSuite(const VMEnvironment(), tests)
     ]);
     expect(engine.run(), completion(isTrue));
   });
 
   test(".run() returns false if any test fails", () {
-    for (var i = 0; i < 2; i++) {
-      declarer.test("test ${i + 1}", () {});
-    }
-    declarer.test("failure", () => throw new TestFailure("oh no"));
+    var tests = declare(() {
+      for (var i = 0; i < 2; i++) {
+        test("test ${i + 1}", () {});
+      }
+      test("failure", () => throw new TestFailure("oh no"));
+    });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), declarer.tests)
+      new RunnerSuite(const VMEnvironment(), tests)
     ]);
     expect(engine.run(), completion(isFalse));
   });
 
   test(".run() returns false if any test errors", () {
-    for (var i = 0; i < 2; i++) {
-      declarer.test("test ${i + 1}", () {});
-    }
-    declarer.test("failure", () => throw "oh no");
+    var tests = declare(() {
+      for (var i = 0; i < 2; i++) {
+        test("test ${i + 1}", () {});
+      }
+      test("failure", () => throw "oh no");
+    });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), declarer.tests)
+      new RunnerSuite(const VMEnvironment(), tests)
     ]);
     expect(engine.run(), completion(isFalse));
   });
@@ -118,25 +128,29 @@ void main() {
   group("for a skipped test", () {
     test("doesn't run the test's body", () async {
       var bodyRun = false;
-      declarer.test("test", () => bodyRun = true, skip: true);
+      var tests = declare(() {
+        test("test", () => bodyRun = true, skip: true);
+      });
 
       var engine = new Engine.withSuites([
-        new RunnerSuite(const VMEnvironment(), declarer.tests)
+        new RunnerSuite(const VMEnvironment(), tests)
       ]);
       await engine.run();
       expect(bodyRun, isFalse);
     });
 
     test("exposes a LiveTest that emits the correct states", () {
-      declarer.test("test", () {}, skip: true);
+      var tests = declare(() {
+        test("test", () {}, skip: true);
+      });
 
       var engine = new Engine.withSuites([
-        new RunnerSuite(const VMEnvironment(), declarer.tests)
+        new RunnerSuite(const VMEnvironment(), tests)
       ]);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
-        expect(liveTest.test, equals(declarer.tests.single));
+        expect(liveTest.test.name, equals(tests.single.name));
 
         var first = true;
         liveTest.onStateChange.listen(expectAsync((state) {

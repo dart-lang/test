@@ -41,7 +41,7 @@ Declarer _globalDeclarer;
 /// [IsolateListener] or [IframeListener]. If the test file is run directly,
 /// this returns [_globalDeclarer] (and sets it up on the first call).
 Declarer get _declarer {
-  var declarer = Zone.current[#test.declarer];
+  var declarer = Declarer.current;
   if (declarer != null) return declarer;
   if (_globalDeclarer != null) return _globalDeclarer;
 
@@ -55,7 +55,7 @@ Declarer get _declarer {
         // TODO(nweiz): Use a different environment if VM environment starts
         // import dart:io before cross-platform libraries exist.
         const VMEnvironment(),
-        _globalDeclarer.tests,
+        _globalDeclarer.build(),
         path: p.prettyUri(Uri.base),
         platform: TestPlatform.vm,
         os: currentOSGuess);

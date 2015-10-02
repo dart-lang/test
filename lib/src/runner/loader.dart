@@ -14,7 +14,9 @@ import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/invoker.dart';
+import '../backend/group.dart';
 import '../backend/metadata.dart';
+import '../backend/suite_entry.dart';
 import '../backend/test_platform.dart';
 import '../util/dart.dart' as dart;
 import '../util/io.dart';
@@ -219,16 +221,14 @@ void main(_, Map message) {
             asyncError.stackTrace);
       } else {
         assert(response["type"] == "success");
-        completer.complete(response["tests"]);
+        completer.complete(response["entries"]);
       }
     });
 
     try {
-      var suite = new RunnerSuite(const VMEnvironment(),
-          (await completer.future).map((test) {
-        var testMetadata = new Metadata.deserialize(test['metadata']);
-        return new IsolateTest(test['name'], testMetadata, test['sendPort']);
-      }),
+      var suite = new RunnerSuite(
+          const VMEnvironment(),
+          _deserializeEntries(await completer.future),
           metadata: metadata,
           path: path,
           platform: TestPlatform.vm,
@@ -239,6 +239,19 @@ void main(_, Map message) {
     } finally {
       subscription.cancel();
     }
+  }
+
+  /// Deserializes [entries] into concrete [SuiteEntry] subclasses.
+  Iterable<SuiteEntry> _deserializeEntries(List<Map> entries) {
+    return entries.map((entry) {
+      var metadata = new Metadata.deserialize(entry['metadata']);
+      if (entry['type'] == 'group') {
+        return new Group(
+            entry['name'], metadata, _deserializeEntries(entry['entries']));
+      } else {
+        return new IsolateTest(entry['name'], metadata, entry['sendPort']);
+      }
+    });
   }
 
   /// Closes the loader and releases all resources allocated by it.

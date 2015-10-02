@@ -61,7 +61,7 @@ class Throws extends Matcher {
         var reason;
         if (trace != null) {
         var stackTrace = terseChain(trace,
-            verbose: Invoker.current.metadata.verboseTrace);
+            verbose: Invoker.current.liveTest.test.metadata.verboseTrace);
           stackTrace = "  ${stackTrace.toString().replaceAll("\n", "\n  ")}";
           reason = "Actual exception trace:\n$stackTrace";
         }

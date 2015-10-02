@@ -38,24 +38,27 @@ void main() {
     _liveTest = null;
   });
 
-  test("sends a list of available tests on startup", () async {
+  test("sends a list of available tests and groups on startup", () async {
     var response = await (await _spawnIsolate(_successfulTests)).first;
     expect(response, containsPair("type", "success"));
-    expect(response, contains("tests"));
+    expect(response, contains("entries"));
 
-    var tests = response["tests"];
+    var tests = response["entries"];
     expect(tests, hasLength(3));
     expect(tests[0], containsPair("name", "successful 1"));
     expect(tests[1], containsPair("name", "successful 2"));
-    expect(tests[2], containsPair("name", "successful 3"));
+    expect(tests[2], containsPair("type", "group"));
+    expect(tests[2], containsPair("name", "successful"));
+    expect(tests[2], contains("entries"));
+    expect(tests[2]["entries"][0], containsPair("name", "successful 3"));
   });
 
   test("waits for a returned future sending a response", () async {
     var response = await (await _spawnIsolate(_asyncTests)).first;
     expect(response, containsPair("type", "success"));
-    expect(response, contains("tests"));
+    expect(response, contains("entries"));
 
-    var tests = response["tests"];
+    var tests = response["entries"];
     expect(tests, hasLength(3));
     expect(tests[0], containsPair("name", "successful 1"));
     expect(tests[1], containsPair("name", "successful 2"));
@@ -263,7 +266,8 @@ Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) async {
   var response = await (await _spawnIsolate(entryPoint)).first;
   expect(response, containsPair("type", "success"));
 
-  var testMap = response["tests"].first;
+  var testMap = response["entries"].first;
+  expect(testMap, containsPair("type", "test"));
   var metadata = new Metadata.deserialize(testMap["metadata"]);
   var test = new IsolateTest(testMap["name"], metadata, testMap["sendPort"]);
   var suite = new Suite([test]);
@@ -308,7 +312,7 @@ void _successfulTests(SendPort sendPort) {
   IsolateListener.start(sendPort, new Metadata(), () => () {
     test("successful 1", () {});
     test("successful 2", () {});
-    test("successful 3", () {});
+    group("successful", () => test("3", () {}));
   });
 }
 

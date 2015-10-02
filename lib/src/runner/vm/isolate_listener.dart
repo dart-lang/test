@@ -10,8 +10,10 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../../backend/declarer.dart';
+import '../../backend/group.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
+import '../../backend/suite_entry.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
@@ -71,13 +73,14 @@ class IsolateListener {
       return;
     }
 
-    var declarer = new Declarer();
+    var declarer = new Declarer(metadata);
     try {
-      await runZoned(() => new Future.sync(main), zoneValues: {
-        #test.declarer: declarer
-      }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
-        sendPort.send({"type": "print", "line": line});
-      }));
+      await declarer.declare(() {
+        return runZoned(() => new Future.sync(main),
+            zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
+          sendPort.send({"type": "print", "line": line});
+        }));
+      });
     } catch (error, stackTrace) {
       sendPort.send({
         "type": "error",
@@ -86,7 +89,7 @@ class IsolateListener {
       return;
     }
 
-    var suite = new Suite(declarer.tests,
+    var suite = new Suite(declarer.build(),
         platform: TestPlatform.vm, os: currentOS, metadata: metadata);
     new IsolateListener._(suite)._listen(sendPort);
   }
@@ -103,26 +106,38 @@ class IsolateListener {
   /// Send information about [_suite] across [sendPort] and start listening for
   /// commands to run the tests.
   void _listen(SendPort sendPort) {
-    var tests = [];
-    for (var i = 0; i < _suite.tests.length; i++) {
-      var test = _suite.tests[i];
-      var receivePort = new ReceivePort();
-      tests.add({
-        "name": test.name,
-        "metadata": test.metadata.serialize(),
-        "sendPort": receivePort.sendPort
-      });
+    sendPort.send({
+      "type": "success",
+      "entries": _serializeEntries(_suite.entries)
+    });
+  }
 
+  /// Serializes [entries] into an Isolate-safe map.
+  List<Map> _serializeEntries(List<SuiteEntry> entries) {
+    return entries.map((entry) {
+      if (entry is Group) {
+        return {
+          "type": "group",
+          "name": entry.name,
+          "metadata": entry.metadata.serialize(),
+          "entries": _serializeEntries(entry.entries)
+        };
+      }
+
+      var test = entry as Test;
+      var receivePort = new ReceivePort();
       receivePort.listen((message) {
         assert(message['command'] == 'run');
         _runTest(test, message['reply']);
       });
-    }
 
-    sendPort.send({
-      "type": "success",
-      "tests": tests
-    });
+      return {
+        "type": "test",
+        "name": test.name,
+        "metadata": test.metadata.serialize(),
+        "sendPort": receivePort.sendPort
+      };
+    }).toList();
   }
 
   /// Runs [test] and sends the results across [sendPort].

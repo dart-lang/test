@@ -14,13 +14,15 @@ import 'closed_exception.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
 import 'metadata.dart';
+import 'operating_system.dart';
 import 'outstanding_callback_counter.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
+import 'test_platform.dart';
 
 /// A test in this isolate.
-class LocalTest implements Test {
+class LocalTest extends Test {
   final String name;
   final Metadata metadata;
 
@@ -36,11 +38,9 @@ class LocalTest implements Test {
     return invoker.liveTest;
   }
 
-  Test change({String name, Metadata metadata}) {
-    if (name == name && metadata == this.metadata) return this;
-    if (name == null) name = this.name;
-    if (metadata == null) metadata = this.metadata;
-    return new LocalTest(name, metadata, _body);
+  Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
+    if (!metadata.testOn.evaluate(platform, os: os)) return null;
+    return new LocalTest(name, metadata.forPlatform(platform, os: os), _body);
   }
 }
 
@@ -83,9 +83,6 @@ class Invoker {
   /// The test being run.
   LocalTest get _test => liveTest.test as LocalTest;
 
-  /// The test metadata merged with the suite metadata.
-  final Metadata metadata;
-
   /// The outstanding callback counter for the current zone.
   OutstandingCallbackCounter get _outstandingCallbacks {
     var counter = Zone.current[_counterKey];
@@ -120,8 +117,7 @@ class Invoker {
   /// This will be `null` until the test starts running.
   Timer _timeoutTimer;
 
-  Invoker._(Suite suite, LocalTest test)
-      : metadata = suite.metadata.merge(test.metadata) {
+  Invoker._(Suite suite, LocalTest test) {
     _controller = new LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete);
   }
@@ -205,7 +201,8 @@ class Invoker {
     if (liveTest.isComplete) return;
     if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-    var timeout = metadata.timeout.apply(new Duration(seconds: 30));
+    var timeout = liveTest.test.metadata.timeout
+        .apply(new Duration(seconds: 30));
     if (timeout == null) return;
     _timeoutTimer = _invokerZone.createTimer(timeout,
         Zone.current.bindCallback(() {

@@ -4,99 +4,49 @@
 
 library test.backend.group;
 
-import 'dart:async';
+import 'dart:collection';
 
-import '../utils.dart';
-import 'invoker.dart';
 import 'metadata.dart';
+import 'operating_system.dart';
+import 'suite_entry.dart';
+import 'test.dart';
+import 'test_platform.dart';
 
-/// A group contains multiple tests and subgroups.
+/// A group contains one or more tests and subgroups.
 ///
-/// A group has a description that is prepended to that of all nested tests and
-/// subgroups. It also has [setUp] and [tearDown] functions which are scoped to
-/// the tests and groups it contains.
-class Group {
-  /// The parent group, or `null` if this is the root group.
-  final Group parent;
+/// It includes metadata that applies to all contained tests.
+class Group implements SuiteEntry {
+  final String name;
 
-  /// The description of the current test group, or `null` if this is the root
-  /// group.
-  final String _description;
+  final Metadata metadata;
 
-  /// The metadata for this group, including the metadata of any parent groups.
-  Metadata get metadata {
-    if (parent == null) return _metadata;
-    return parent.metadata.merge(_metadata);
-  }
-  final Metadata _metadata;
+  /// The children of this group.
+  final List<SuiteEntry> entries;
 
-  /// The set-up functions for this group.
-  final setUps = new List<AsyncFunction>();
+  Group(this.name, this.metadata, Iterable<SuiteEntry> entries)
+      : entries = new UnmodifiableListView<SuiteEntry>(entries.toList());
 
-  /// The tear-down functions for this group.
-  final tearDowns = new List<AsyncFunction>();
-
-  /// Returns the description for this group, including the description of any
-  /// parent groups.
-  ///
-  /// If this is the root group, returns `null`.
-  String get description {
-    if (parent == null || parent.description == null) return _description;
-    return "${parent.description} $_description";
+  Group forPlatform(TestPlatform platform, {OperatingSystem os}) {
+    if (!metadata.testOn.evaluate(platform, os: os)) return null;
+    var newMetadata = metadata.forPlatform(platform, os: os);
+    var filtered = _map((entry) => entry.forPlatform(platform, os: os));
+    if (filtered.isEmpty) return null;
+    return new Group(name, newMetadata, filtered);
   }
 
-  /// Creates a new root group.
-  ///
-  /// This is the implicit group that exists outside of any calls to `group()`.
-  Group.root()
-      : this(null, null, new Metadata());
-
-  Group(this.parent, this._description, this._metadata);
-
-  /// Run the set-up functions for this and any parent groups.
-  ///
-  /// If no set-up functions are declared, this returns a [Future] that
-  /// completes immediately.
-  Future runSetUps() {
-    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
-    // stable versions.
-    if (parent != null) {
-      return parent.runSetUps().then((_) {
-        return Future.forEach(setUps, (setUp) => setUp());
-      });
-    }
-
-    return Future.forEach(setUps, (setUp) => setUp());
+  Group filter(bool callback(Test test)) {
+    var filtered = _map((entry) => entry.filter(callback));
+    if (filtered.isEmpty) return null;
+    return new Group(name, metadata, filtered);
   }
 
-  /// Run the tear-up functions for this and any parent groups.
+  /// Returns the entries of this group mapped using [callback].
   ///
-  /// If no set-up functions are declared, this returns a [Future] that
-  /// completes immediately.
-  Future runTearDowns() {
-    return Invoker.current.unclosable(() {
-      var tearDowns = [];
-      for (var group = this; group != null; group = group.parent) {
-        tearDowns.addAll(group.tearDowns.reversed);
-      }
-
-      return Future.forEach(tearDowns, _errorsDontStopTest);
-    });
-  }
-
-  /// Runs [body] with special error-handling behavior.
-  ///
-  /// Errors emitted [body] will still cause be the test to fail, but they won't
-  /// cause it to *stop*. In particular, they won't remove any outstanding
-  /// callbacks registered outside of [body].
-  Future _errorsDontStopTest(body()) {
-    var completer = new Completer();
-
-    Invoker.current.addOutstandingCallback();
-    Invoker.current.waitForOutstandingCallbacks(() {
-      new Future.sync(body).whenComplete(completer.complete);
-    }).then((_) => Invoker.current.removeOutstandingCallback());
-
-    return completer.future;
+  /// Any `null` values returned by [callback] will be removed.
+  List<SuiteEntry> _map(SuiteEntry callback(SuiteEntry entry)) {
+    return entries
+        .map((entry) => callback(entry))
+        .where((entry) => entry != null)
+        .toList();
   }
 }

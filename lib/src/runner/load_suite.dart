@@ -11,6 +11,7 @@ import 'package:stack_trace/stack_trace.dart';
 import '../../test.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
+import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
 import 'load_exception.dart';
@@ -38,6 +39,12 @@ class LoadSuite extends RunnerSuite {
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
   final Future<RunnerSuite> suite;
+
+  /// Returns the test that loads the suite.
+  ///
+  /// Load suites are guaranteed to only contain one test. This is a utility
+  /// method for accessing it directly.
+  Test get test => entries.single as Test;
 
   /// Creates a load suite named [name] on [platform].
   ///
@@ -108,7 +115,7 @@ class LoadSuite extends RunnerSuite {
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, Future<RunnerSuite> this.suite)
-      : super(const VMEnvironment(), old.tests, platform: old.platform);
+      : super(const VMEnvironment(), old.entries, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
@@ -126,7 +133,7 @@ class LoadSuite extends RunnerSuite {
   /// Rather than emitting errors through a [LiveTest], this just pipes them
   /// through the return value.
   Future<RunnerSuite> getSuite() async {
-    var liveTest = await tests.single.load(this);
+    var liveTest = await test.load(this);
     liveTest.onPrint.listen(print);
     await liveTest.run();
 

@@ -9,8 +9,10 @@ import 'dart:convert';
 import 'dart:html' hide Metadata;
 
 import '../../backend/declarer.dart';
+import '../../backend/group.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
+import '../../backend/suite_entry.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
@@ -54,14 +56,18 @@ class IframeListener {
       return;
     }
 
-    var declarer;
+    var url = Uri.parse(window.location.href);
+    var message = JSON.decode(Uri.decodeFull(url.fragment));
+    var metadata = new Metadata.deserialize(message['metadata']);
+
+    var declarer = new Declarer(metadata);
     try {
-      declarer = new Declarer();
-      await runZoned(() => new Future.sync(main), zoneValues: {
-        #test.declarer: declarer
-      }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
-        channel.sink.add({"type": "print", "line": line});
-      }));
+      await declarer.declare(() {
+        return runZoned(() => new Future.sync(main),
+            zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
+          channel.sink.add({"type": "print", "line": line});
+        }));
+      });
     } catch (error, stackTrace) {
       channel.sink.add({
         "type": "error",
@@ -70,13 +76,9 @@ class IframeListener {
       return;
     }
 
-    var url = Uri.parse(window.location.href);
-    var message = JSON.decode(Uri.decodeFull(url.fragment));
-    var metadata = new Metadata.deserialize(message['metadata']);
     var browser = TestPlatform.find(message['browser']);
-
-    var suite = new Suite(
-        declarer.tests, platform: browser, metadata: metadata);
+    var suite = new Suite(declarer.build(),
+        platform: browser, metadata: metadata);
     new IframeListener._(suite)._listen(channel);
 
     return;
@@ -125,29 +127,41 @@ class IframeListener {
   /// Send information about [_suite] across [channel] and start listening for
   /// commands to run the tests.
   void _listen(MultiChannel channel) {
-    var tests = [];
-    for (var i = 0; i < _suite.tests.length; i++) {
-      var test = _suite.tests[i];
-      var testChannel = channel.virtualChannel();
-      tests.add({
-        "name": test.name,
-        "metadata": test.metadata.serialize(),
-        "channel": testChannel.id
-      });
+    channel.sink.add({
+      "type": "success",
+      "entries": _serializeEntries(channel, _suite.entries)
+    });
+  }
 
+  /// Serializes [entries] into a JSON-safe map.
+  List<Map> _serializeEntries(MultiChannel channel, List<SuiteEntry> entries) {
+    return entries.map((entry) {
+      if (entry is Group) {
+        return {
+          "type": "group",
+          "name": entry.name,
+          "metadata": entry.metadata.serialize(),
+          "entries": _serializeEntries(channel, entry.entries)
+        };
+      }
+
+      var test = entry as Test;
+      var testChannel = channel.virtualChannel();
       testChannel.stream.listen((message) {
         assert(message['command'] == 'run');
         _runTest(test, channel.virtualChannel(message['channel']));
       });
-    }
 
-    channel.sink.add({
-      "type": "success",
-      "tests": tests
-    });
+      return {
+        "type": "test",
+        "name": test.name,
+        "metadata": test.metadata.serialize(),
+        "channel": testChannel.id
+      };
+    }).toList();
   }
 
-  /// Runs [test] and sends the results across [sendPort].
+  /// Runs [test] and sends the results across [channel].
   void _runTest(Test test, MultiChannel channel) {
     var liveTest = test.load(_suite);
 

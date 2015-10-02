@@ -6,12 +6,12 @@ library test.backend.metadata;
 
 import 'dart:collection';
 
-import '../backend/operating_system.dart';
-import '../backend/test_platform.dart';
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';
 import '../utils.dart';
+import 'operating_system.dart';
 import 'platform_selector.dart';
+import 'test_platform.dart';
 
 /// Metadata for a test or test suite.
 ///

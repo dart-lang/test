@@ -11,7 +11,9 @@ import 'package:async/async.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:pool/pool.dart';
 
+import '../../backend/group.dart';
 import '../../backend/metadata.dart';
+import '../../backend/suite_entry.dart';
 import '../../backend/test_platform.dart';
 import '../../util/cancelable_future.dart';
 import '../../util/multi_channel.dart';
@@ -241,13 +243,31 @@ class BrowserManager {
           asyncError.stackTrace);
     }
 
-    return new RunnerSuite(await _environment, response["tests"].map((test) {
-      var testMetadata = new Metadata.deserialize(test['metadata']);
-      var testChannel = suiteChannel.virtualChannel(test['channel']);
-      return new IframeTest(test['name'], testMetadata, testChannel,
-          mapper: mapper);
-    }), platform: _platform, metadata: metadata, path: path,
+    return new RunnerSuite(
+        await _environment,
+        _deserializeEntries(suiteChannel, mapper, response["entries"]),
+        platform: _platform,
+        metadata: metadata,
+        path: path,
         onClose: () => closeIframe());
+  }
+
+  /// Deserializes [entries] into concrete [SuiteEntry] subclasses.
+  Iterable<SuiteEntry> _deserializeEntries(MultiChannel suiteChannel,
+      Mapper mapper, List<Map> entries) {
+    return entries.map((entry) {
+      var metadata = new Metadata.deserialize(entry['metadata']);
+      if (entry['type'] == 'group') {
+        return new Group(
+            entry['name'],
+            metadata,
+            _deserializeEntries(suiteChannel, mapper, entry['entries']));
+      } else {
+        var testChannel = suiteChannel.virtualChannel(entry['channel']);
+        return new IframeTest(entry['name'], metadata, testChannel,
+            mapper: mapper);
+      }
+    });
   }
 
   /// An implementation of [Environment.displayPause].

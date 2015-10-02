@@ -11,9 +11,12 @@ import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
 
+import '../backend/group.dart';
+import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
+import '../backend/suite_entry.dart';
 import '../backend/test.dart';
 import 'load_suite.dart';
 import 'runner_suite.dart';
@@ -24,7 +27,7 @@ import 'runner_suite.dart';
 /// have been provided, the user should close [suiteSink] to indicate this.
 /// [run] won't terminate until [suiteSink] is closed. Suites will be run in the
 /// order they're provided to [suiteSink]. Tests within those suites will
-/// likewise be run in the order of [Suite.tests].
+/// likewise be run in the order they're declared.
 ///
 /// The current status of every test is visible via [liveTests]. [onTestStarted]
 /// can also be used to be notified when a test is about to be run.
@@ -195,55 +198,8 @@ class Engine {
         }
 
         await _runPool.withResource(() async {
-          if (_closed) return null;
-
-          // TODO(nweiz): Use a real for loop when issue 23394 is fixed.
-          await Future.forEach(suite.tests, (test) async {
-            if (_closed) return;
-
-            var liveTest = test.metadata.skip
-                ? _skippedTest(suite, test)
-                : test.load(suite);
-            _liveTests.add(liveTest);
-            _active.add(liveTest);
-
-            // If there were no active non-load tests, the current active test
-            // would have been a load test. In that case, remove it, since now we
-            // have a non-load test to add.
-            if (_active.isNotEmpty && _active.first.suite is LoadSuite) {
-              _liveTests.remove(_active.removeFirst());
-            }
-
-            liveTest.onStateChange.listen((state) {
-              if (state.status != Status.complete) return;
-              _active.remove(liveTest);
-
-              // If we're out of non-load tests, surface a load test.
-              if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-                _active.add(_activeLoadTests.first);
-                _liveTests.add(_activeLoadTests.first);
-              }
-
-              if (state.result != Result.success) {
-                _passed.remove(liveTest);
-                _failed.add(liveTest);
-              } else if (liveTest.test.metadata.skip) {
-                _skipped.add(liveTest);
-              } else {
-                _passed.add(liveTest);
-              }
-            });
-
-            _onTestStartedController.add(liveTest);
-
-            // First, schedule a microtask to ensure that [onTestStarted] fires
-            // before the first [LiveTest.onStateChange] event. Once the test
-            // finishes, use [new Future] to do a coarse-grained event loop pump
-            // to avoid starving non-microtask events.
-            await new Future.microtask(liveTest.run);
-            await new Future(() {});
-          });
-
+          if (_closed) return;
+          await _runEntries(suite, suite.entries);
           loadResource.allowRelease(() => suite.close());
         });
       }));
@@ -252,8 +208,25 @@ class Engine {
     return success;
   }
 
-  /// Returns a dummy [LiveTest] for a test marked as "skip".
-  LiveTest _skippedTest(RunnerSuite suite, Test test) {
+  /// Runs all the entries in [entries] in sequence.
+  Future _runEntries(RunnerSuite suite, List<SuiteEntry> entries) async {
+    for (var entry in entries) {
+      if (_closed) return;
+
+      if (entry.metadata.skip) {
+        await _runLiveTest(_skippedTest(suite, entry));
+      } else if (entry is Test) {
+        await _runLiveTest(entry.load(suite));
+      } else {
+        var group = entry as Group;
+        await _runEntries(suite, group.entries);
+      }
+    }
+  }
+
+  /// Returns a dummy [LiveTest] for a test or group marked as "skip".
+  LiveTest _skippedTest(RunnerSuite suite, SuiteEntry entry) {
+    var test = new LocalTest(entry.name, entry.metadata, () {});
     var controller;
     controller = new LiveTestController(suite, test, () {
       controller.setState(const State(Status.running, Result.success));
@@ -263,11 +236,53 @@ class Engine {
     return controller.liveTest;
   }
 
+  /// Runs [liveTest].
+  Future _runLiveTest(LiveTest liveTest) async {
+    _liveTests.add(liveTest);
+    _active.add(liveTest);
+
+    // If there were no active non-load tests, the current active test would
+    // have been a load test. In that case, remove it, since now we have a
+    // non-load test to add.
+    if (_active.isNotEmpty && _active.first.suite is LoadSuite) {
+      _liveTests.remove(_active.removeFirst());
+    }
+
+    liveTest.onStateChange.listen((state) {
+      if (state.status != Status.complete) return;
+      _active.remove(liveTest);
+
+      // If we're out of non-load tests, surface a load test.
+      if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
+        _active.add(_activeLoadTests.first);
+        _liveTests.add(_activeLoadTests.first);
+      }
+
+      if (state.result != Result.success) {
+        _passed.remove(liveTest);
+        _failed.add(liveTest);
+      } else if (liveTest.test.metadata.skip) {
+        _skipped.add(liveTest);
+      } else {
+        _passed.add(liveTest);
+      }
+    });
+
+    _onTestStartedController.add(liveTest);
+
+    // First, schedule a microtask to ensure that [onTestStarted] fires before
+    // the first [LiveTest.onStateChange] event. Once the test finishes, use
+    // [new Future] to do a coarse-grained event loop pump to avoid starving
+    // non-microtask events.
+    await new Future.microtask(liveTest.run);
+    await new Future(() {});
+  }
+
   /// Adds listeners for [suite].
   ///
   /// Load suites have specific logic apart from normal test suites.
   Future<RunnerSuite> _addLoadSuite(LoadSuite suite) async {
-    var liveTest = await suite.tests.single.load(suite);
+    var liveTest = await suite.test.load(suite);
 
     _activeLoadTests.add(liveTest);
 

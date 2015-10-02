@@ -66,14 +66,14 @@ void main() {
     });
 
     test("returns tests with the correct names", () {
-      expect(suite.tests, hasLength(3));
-      expect(suite.tests[0].name, equals("success"));
-      expect(suite.tests[1].name, equals("failure"));
-      expect(suite.tests[2].name, equals("error"));
+      expect(suite.entries, hasLength(3));
+      expect(suite.entries[0].name, equals("success"));
+      expect(suite.entries[1].name, equals("failure"));
+      expect(suite.entries[2].name, equals("error"));
     });
 
     test("can load and run a successful test", () {
-      var liveTest = suite.tests[0].load(suite);
+      var liveTest = suite.entries[0].load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
@@ -85,7 +85,7 @@ void main() {
     });
 
     test("can load and run a failing test", () {
-      var liveTest = suite.tests[1].load(suite);
+      var liveTest = suite.entries[1].load(suite);
       expectSingleFailure(liveTest);
       return liveTest.run().whenComplete(() => liveTest.close());
     });
@@ -118,10 +118,10 @@ Future main() {
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
     var suite = await loadSuite.getSuite();
-    expect(suite.tests, hasLength(3));
-    expect(suite.tests[0].name, equals("success"));
-    expect(suite.tests[1].name, equals("failure"));
-    expect(suite.tests[2].name, equals("error"));
+    expect(suite.entries, hasLength(3));
+    expect(suite.entries[0].name, equals("success"));
+    expect(suite.entries[1].name, equals("failure"));
+    expect(suite.entries[2].name, equals("error"));
   });
 
   test("loads a suite both in the browser and the VM", () async {
@@ -141,10 +141,10 @@ Future main() {
       expect(suites[1].path, equals(path));
 
       for (var suite in suites) {
-        expect(suite.tests, hasLength(3));
-        expect(suite.tests[0].name, equals("success"));
-        expect(suite.tests[1].name, equals("failure"));
-        expect(suite.tests[2].name, equals("error"));
+        expect(suite.entries, hasLength(3));
+        expect(suite.entries[0].name, equals("success"));
+        expect(suite.entries[1].name, equals("failure"));
+        expect(suite.entries[2].name, equals("error"));
       }
     } finally {
       await loader.close();
@@ -162,7 +162,7 @@ void main() {
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
-    var liveTest = await loadSuite.tests.single.load(loadSuite);
+    var liveTest = await loadSuite.entries.single.load(loadSuite);
     expect(liveTest.onPrint.first, completion(equals("print within test")));
     await liveTest.run();
     expectTestPassed(liveTest);

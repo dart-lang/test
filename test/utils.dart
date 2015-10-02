@@ -7,6 +7,7 @@ library test.test.utils;
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:test/src/backend/declarer.dart';
 import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
@@ -279,4 +280,10 @@ Future expectTestBlocks(test(), stopBlocking(value)) async {
   // Ensure that the outer test doesn't complete until the inner future
   // completes.
   return future;
+}
+
+/// Runs [body] with a declarer and returns the declared entries.
+List<SuiteEntry> declare(void body()) {
+  var declarer = new Declarer()..declare(body);
+  return declarer.build();
 }

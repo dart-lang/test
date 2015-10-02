@@ -8,6 +8,7 @@ import 'dart:collection';
 
 import 'metadata.dart';
 import 'operating_system.dart';
+import 'suite_entry.dart';
 import 'test.dart';
 import 'test_platform.dart';
 
@@ -32,22 +33,22 @@ class Suite {
   /// The metadata associated with this test suite.
   final Metadata metadata;
 
-  /// The tests in the test suite.
-  final List<Test> tests;
+  /// The tests and groups in this test suite.
+  final List<SuiteEntry> entries;
 
-  /// Creates a new suite containing [tests].
+  /// Creates a new suite containing [entires].
   ///
-  /// If [platform] and/or [os] are passed, [tests] and [metadata] are filtered
+  /// If [platform] and/or [os] are passed, [entries] and [metadata] are filtered
   /// to match that platform information.
   ///
   /// If [os] is passed without [platform], throws an [ArgumentError].
-  Suite(Iterable<Test> tests, {this.path, TestPlatform platform,
+  Suite(Iterable<SuiteEntry> entries, {this.path, TestPlatform platform,
           OperatingSystem os, Metadata metadata})
       : platform = platform,
         os = os,
         metadata = _filterMetadata(metadata, platform, os),
-        tests = new UnmodifiableListView<Test>(
-            _filterTests(tests, platform, os));
+        entries = new UnmodifiableListView<SuiteEntry>(
+            _filterEntries(entries, platform, os));
 
   /// Returns [metadata] filtered according to [platform] and [os].
   ///
@@ -64,29 +65,28 @@ class Suite {
     return metadata.forPlatform(platform, os: os);
   }
 
-  /// Returns [tests] filtered according to [platform] and [os].
+  /// Returns [entries] filtered according to [platform] and [os].
   ///
   /// Gracefully handles [platform] being null.
-  static List<Test> _filterTests(Iterable<Test> tests,
+  static List<SuiteEntry> _filterEntries(Iterable<SuiteEntry> entries,
       TestPlatform platform, OperatingSystem os) {
-    if (platform == null) return tests.toList();
+    if (platform == null) return entries.toList();
 
-    return tests.where((test) {
-      return test.metadata.testOn.evaluate(platform, os: os);
-    }).map((test) {
-      return test.change(metadata: test.metadata.forPlatform(platform, os: os));
-    }).toList();
+    return entries.map((entry) {
+      return entry.forPlatform(platform, os: os);
+    }).where((entry) => entry != null).toList();
   }
 
-  /// Returns a new suite with the given fields updated.
+  /// Returns a new suite with all tests matching [test] removed.
   ///
-  /// In the new suite, [metadata] and [tests] will be filtered according to
-  /// [platform] and [os].
-  Suite change({String path, Metadata metadata, Iterable<Test> tests}) {
-    if (path == null) path = this.path;
-    if (metadata == null) metadata = this.metadata;
-    if (tests == null) tests = this.tests;
-    return new Suite(tests, platform: platform, os: os, path: path,
-        metadata: metadata);
+  /// Unlike [SuiteEntry.filter], this never returns `null`. If all entries are
+  /// filtered out, it returns an empty suite.
+  Suite filter(bool callback(Test test)) {
+    var filtered = entries
+        .map((entry) => entry.filter(callback))
+        .where((entry) => entry != null)
+        .toList();
+    return new Suite(filtered,
+      platform: platform, os: os, path: path, metadata: metadata);
   }
 }

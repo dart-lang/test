@@ -159,8 +159,7 @@ class Runner {
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
         if (_config.pattern == null) return suite;
-        return suite.change(tests: suite.tests.where((test) =>
-            test.name.contains(_config.pattern)));
+        return suite.filter((test) => test.name.contains(_config.pattern));
       });
     });
   }
