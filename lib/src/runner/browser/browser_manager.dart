@@ -254,7 +254,7 @@ class BrowserManager {
 
   /// Deserializes [entries] into concrete [SuiteEntry] subclasses.
   Iterable<SuiteEntry> _deserializeEntries(MultiChannel suiteChannel,
-      Mapper mapper, List<Map> entries) {
+      StackTraceMapper mapper, List<Map> entries) {
     return entries.map((entry) {
       var metadata = new Metadata.deserialize(entry['metadata']);
       if (entry['type'] == 'group') {
