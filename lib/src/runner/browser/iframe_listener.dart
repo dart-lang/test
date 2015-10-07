@@ -12,7 +12,6 @@ import '../../backend/declarer.dart';
 import '../../backend/group.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
-import '../../backend/suite_entry.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
@@ -77,8 +76,7 @@ class IframeListener {
     }
 
     var browser = TestPlatform.find(message['browser']);
-    var suite = new Suite(declarer.build(),
-        platform: browser, metadata: metadata);
+    var suite = new Suite(declarer.build(), platform: browser);
     new IframeListener._(suite)._listen(channel);
 
     return;
@@ -129,36 +127,34 @@ class IframeListener {
   void _listen(MultiChannel channel) {
     channel.sink.add({
       "type": "success",
-      "entries": _serializeEntries(channel, _suite.entries)
+      "root": _serializeGroup(channel, _suite.group)
     });
   }
 
   /// Serializes [entries] into a JSON-safe map.
-  List<Map> _serializeEntries(MultiChannel channel, List<SuiteEntry> entries) {
-    return entries.map((entry) {
-      if (entry is Group) {
+  Map _serializeGroup(MultiChannel channel, Group group) {
+    return {
+      "type": "group",
+      "name": group.name,
+      "metadata": group.metadata.serialize(),
+      "entries": group.entries.map((entry) {
+        if (entry is Group) return _serializeGroup(channel, entry);
+
+        var test = entry as Test;
+        var testChannel = channel.virtualChannel();
+        testChannel.stream.listen((message) {
+          assert(message['command'] == 'run');
+          _runTest(test, channel.virtualChannel(message['channel']));
+        });
+
         return {
-          "type": "group",
-          "name": entry.name,
-          "metadata": entry.metadata.serialize(),
-          "entries": _serializeEntries(channel, entry.entries)
+          "type": "test",
+          "name": test.name,
+          "metadata": test.metadata.serialize(),
+          "channel": testChannel.id
         };
-      }
-
-      var test = entry as Test;
-      var testChannel = channel.virtualChannel();
-      testChannel.stream.listen((message) {
-        assert(message['command'] == 'run');
-        _runTest(test, channel.virtualChannel(message['channel']));
-      });
-
-      return {
-        "type": "test",
-        "name": test.name,
-        "metadata": test.metadata.serialize(),
-        "channel": testChannel.id
-      };
-    }).toList();
+      }).toList()
+    };
   }
 
   /// Runs [test] and sends the results across [channel].

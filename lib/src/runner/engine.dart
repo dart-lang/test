@@ -16,7 +16,7 @@ import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
-import '../backend/suite_entry.dart';
+import '../backend/group_entry.dart';
 import '../backend/test.dart';
 import 'load_suite.dart';
 import 'runner_suite.dart';
@@ -199,7 +199,7 @@ class Engine {
 
         await _runPool.withResource(() async {
           if (_closed) return;
-          await _runEntries(suite, suite.entries);
+          await _runGroup(suite, suite.group);
           loadResource.allowRelease(() => suite.close());
         });
       }));
@@ -209,24 +209,31 @@ class Engine {
   }
 
   /// Runs all the entries in [entries] in sequence.
-  Future _runEntries(RunnerSuite suite, List<SuiteEntry> entries) async {
-    for (var entry in entries) {
+  Future _runGroup(RunnerSuite suite, Group group) async {
+    if (group.metadata.skip) {
+      await _runLiveTest(_skippedTest(suite, group));
+      return;
+    }
+
+    for (var entry in group.entries) {
       if (_closed) return;
 
-      if (entry.metadata.skip) {
+      if (entry is Group) {
+        await _runGroup(suite, entry);
+      } else if (entry.metadata.skip) {
         await _runLiveTest(_skippedTest(suite, entry));
-      } else if (entry is Test) {
-        await _runLiveTest(entry.load(suite));
       } else {
-        var group = entry as Group;
-        await _runEntries(suite, group.entries);
+        var test = entry as Test;
+        await _runLiveTest(test.load(suite));
       }
     }
   }
 
   /// Returns a dummy [LiveTest] for a test or group marked as "skip".
-  LiveTest _skippedTest(RunnerSuite suite, SuiteEntry entry) {
-    var test = new LocalTest(entry.name, entry.metadata, () {});
+  LiveTest _skippedTest(RunnerSuite suite, GroupEntry entry) {
+    // The netry name will be `null` for the root group.
+    var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {});
+
     var controller;
     controller = new LiveTestController(suite, test, () {
       controller.setState(const State(Status.running, Result.success));

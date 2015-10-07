@@ -8,10 +8,9 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import '../backend/metadata.dart';
 import '../backend/operating_system.dart';
 import '../backend/suite.dart';
-import '../backend/suite_entry.dart';
+import '../backend/group.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
@@ -32,20 +31,16 @@ class RunnerSuite extends Suite {
   /// The function to call when the suite is closed.
   final AsyncFunction _onClose;
 
-  RunnerSuite(this.environment, Iterable<SuiteEntry> entries, {String path,
-          TestPlatform platform, OperatingSystem os, Metadata metadata,
-          AsyncFunction onClose})
-      : super(entries,
-          path: path, platform: platform, os: os, metadata: metadata),
+  RunnerSuite(this.environment, Group group, {String path,
+          TestPlatform platform, OperatingSystem os, AsyncFunction onClose})
+      : super(group, path: path, platform: platform, os: os),
         _onClose = onClose;
 
   RunnerSuite filter(bool callback(Test test)) {
-    var filtered = entries
-        .map((entry) => entry.filter(callback))
-        .where((entry) => entry != null)
-        .toList();
+    var filtered = group.filter(callback);
+    filtered ??= new Group.root([], metadata: metadata);
     return new RunnerSuite(environment, filtered,
-      platform: platform, os: os, path: path, metadata: metadata);
+      platform: platform, os: os, path: path);
   }
 
   /// Closes the suite and releases any resources associated with it.

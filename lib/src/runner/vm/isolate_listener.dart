@@ -13,7 +13,6 @@ import '../../backend/declarer.dart';
 import '../../backend/group.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
-import '../../backend/suite_entry.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
@@ -90,7 +89,7 @@ class IsolateListener {
     }
 
     var suite = new Suite(declarer.build(),
-        platform: TestPlatform.vm, os: currentOS, metadata: metadata);
+        platform: TestPlatform.vm, os: currentOS);
     new IsolateListener._(suite)._listen(sendPort);
   }
 
@@ -108,36 +107,34 @@ class IsolateListener {
   void _listen(SendPort sendPort) {
     sendPort.send({
       "type": "success",
-      "entries": _serializeEntries(_suite.entries)
+      "root": _serializeGroup(_suite.group)
     });
   }
 
-  /// Serializes [entries] into an Isolate-safe map.
-  List<Map> _serializeEntries(List<SuiteEntry> entries) {
-    return entries.map((entry) {
-      if (entry is Group) {
+  /// Serializes [group] into an Isolate-safe map.
+  Map _serializeGroup(Group group) {
+    return {
+      "type": "group",
+      "name": group.name,
+      "metadata": group.metadata.serialize(),
+      "entries": group.entries.map((entry) {
+        if (entry is Group) return _serializeGroup(entry);
+
+        var test = entry as Test;
+        var receivePort = new ReceivePort();
+        receivePort.listen((message) {
+          assert(message['command'] == 'run');
+          _runTest(test, message['reply']);
+        });
+
         return {
-          "type": "group",
-          "name": entry.name,
-          "metadata": entry.metadata.serialize(),
-          "entries": _serializeEntries(entry.entries)
+          "type": "test",
+          "name": test.name,
+          "metadata": test.metadata.serialize(),
+          "sendPort": receivePort.sendPort
         };
-      }
-
-      var test = entry as Test;
-      var receivePort = new ReceivePort();
-      receivePort.listen((message) {
-        assert(message['command'] == 'run');
-        _runTest(test, message['reply']);
-      });
-
-      return {
-        "type": "test",
-        "name": test.name,
-        "metadata": test.metadata.serialize(),
-        "sendPort": receivePort.sendPort
-      };
-    }).toList();
+      }).toList()
+    };
   }
 
   /// Runs [test] and sends the results across [sendPort].

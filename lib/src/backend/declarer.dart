@@ -11,7 +11,7 @@ import '../utils.dart';
 import 'group.dart';
 import 'invoker.dart';
 import 'metadata.dart';
-import 'suite_entry.dart';
+import 'group_entry.dart';
 
 /// A class that manages the state of tests as they're declared.
 ///
@@ -41,7 +41,7 @@ class Declarer {
   final _tearDowns = new List<AsyncFunction>();
 
   /// The children of this group, either tests or sub-groups.
-  final _entries = new List<SuiteEntry>();
+  final _entries = new List<GroupEntry>();
 
   /// Whether [build] has been called for this declarer.
   bool _built = false;
@@ -52,7 +52,8 @@ class Declarer {
   /// Creates a new declarer for the root group.
   ///
   /// This is the implicit group that exists outside of any calls to `group()`.
-  /// [metadata] should be the suite's metadata, if available.
+  /// If [metadata] is passed, it's used as the metadata for the implicit root
+  /// group.
   Declarer([Metadata metadata])
       : this._(null, null, metadata == null ? new Metadata() : metadata);
 
@@ -98,13 +99,13 @@ class Declarer {
 
     // Don't load the tests for a skipped group.
     if (metadata.skip) {
-      _entries.add(new Group(name, metadata, []));
+      _entries.add(new Group(name, [], metadata: metadata));
       return;
     }
 
     var declarer = new Declarer._(this, _prefix(name), metadata);
     declarer.declare(body);
-    _entries.add(new Group(declarer._name, metadata, declarer.build()));
+    _entries.add(declarer.build());
   }
 
   /// Returns [name] prefixed with this declarer's group name.
@@ -129,14 +130,14 @@ class Declarer {
     _tearDowns.add(callback);
   }
 
-  /// Finalizes and returns the tests and groups being declared.
-  List<SuiteEntry> build() {
+  /// Finalizes and returns the group being declared.
+  Group build() {
     if (_built) {
       throw new StateError("Can't call Declarer.build() more than once.");
     }
 
     _built = true;
-    return _entries.toList();
+    return new Group(_name, _entries.toList(), metadata: _metadata);
   }
 
   /// Run the set-up functions for this and any parent groups.

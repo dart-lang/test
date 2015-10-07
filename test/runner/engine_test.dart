@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/src/backend/declarer.dart';
+import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/test.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/src/runner/runner_suite.dart';
 import 'package:test/src/runner/vm/environment.dart';
@@ -24,8 +25,8 @@ void main() {
     });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), tests.take(2)),
-      new RunnerSuite(const VMEnvironment(), tests.skip(2))
+      new RunnerSuite(const VMEnvironment(), new Group.root(tests.take(2))),
+      new RunnerSuite(const VMEnvironment(), new Group.root(tests.skip(2)))
     ]);
 
     await engine.run();
@@ -48,22 +49,19 @@ void main() {
       expect(testsRun, equals(4));
     }), completes);
 
-    engine.suiteSink.add(new RunnerSuite(const VMEnvironment(), tests));
+    engine.suiteSink.add(
+        new RunnerSuite(const VMEnvironment(), new Group.root(tests)));
     engine.suiteSink.close();
   });
 
   test("emits each test before it starts running and after the previous test "
       "finished", () {
     var testsRun = 0;
-    var tests = declare(() {
+    var engine = withTests(declare(() {
       for (var i = 0; i < 3; i++) {
         test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
       }
-    });
-
-    var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), tests)
-    ]);
+    }));
 
     engine.onTestStarted.listen(expectAsync((liveTest) {
       // [testsRun] should be one less than the test currently running.
@@ -79,43 +77,34 @@ void main() {
   });
 
   test(".run() returns true if every test passes", () {
-    var tests = declare(() {
+    var engine = withTests(declare(() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
-    });
+    }));
 
-    var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), tests)
-    ]);
     expect(engine.run(), completion(isTrue));
   });
 
   test(".run() returns false if any test fails", () {
-    var tests = declare(() {
+    var engine = withTests(declare(() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
       test("failure", () => throw new TestFailure("oh no"));
-    });
+    }));
 
-    var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), tests)
-    ]);
     expect(engine.run(), completion(isFalse));
   });
 
   test(".run() returns false if any test errors", () {
-    var tests = declare(() {
+    var engine = withTests(declare(() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
       test("failure", () => throw "oh no");
-    });
+    }));
 
-    var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), tests)
-    ]);
     expect(engine.run(), completion(isFalse));
   });
 
@@ -128,13 +117,10 @@ void main() {
   group("for a skipped test", () {
     test("doesn't run the test's body", () async {
       var bodyRun = false;
-      var tests = declare(() {
+      var engine = withTests(declare(() {
         test("test", () => bodyRun = true, skip: true);
-      });
+      }));
 
-      var engine = new Engine.withSuites([
-        new RunnerSuite(const VMEnvironment(), tests)
-      ]);
       await engine.run();
       expect(bodyRun, isFalse);
     });
@@ -144,9 +130,7 @@ void main() {
         test("test", () {}, skip: true);
       });
 
-      var engine = new Engine.withSuites([
-        new RunnerSuite(const VMEnvironment(), tests)
-      ]);
+      var engine = withTests(tests);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
@@ -166,4 +150,11 @@ void main() {
       return engine.run();
     });
   });
+}
+
+/// Returns an engine that will run [tests].
+Engine withTests(List<Test> tests) {
+  return new Engine.withSuites([
+    new RunnerSuite(const VMEnvironment(), new Group.root(tests))
+  ]);
 }

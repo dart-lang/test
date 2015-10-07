@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
@@ -41,9 +42,13 @@ void main() {
   test("sends a list of available tests and groups on startup", () async {
     var response = await (await _spawnIsolate(_successfulTests)).first;
     expect(response, containsPair("type", "success"));
-    expect(response, contains("entries"));
+    expect(response, contains("root"));
 
-    var tests = response["entries"];
+    var root = response["root"];
+    expect(root, containsPair("type", "group"));
+    expect(root, containsPair("name", null));
+
+    var tests = root["entries"];
     expect(tests, hasLength(3));
     expect(tests[0], containsPair("name", "successful 1"));
     expect(tests[1], containsPair("name", "successful 2"));
@@ -56,9 +61,9 @@ void main() {
   test("waits for a returned future sending a response", () async {
     var response = await (await _spawnIsolate(_asyncTests)).first;
     expect(response, containsPair("type", "success"));
-    expect(response, contains("entries"));
+    expect(response, contains("root"));
 
-    var tests = response["entries"];
+    var tests = response["root"]["entries"];
     expect(tests, hasLength(3));
     expect(tests[0], containsPair("name", "successful 1"));
     expect(tests[1], containsPair("name", "successful 2"));
@@ -266,11 +271,11 @@ Future<LiveTest> _isolateTest(void entryPoint(SendPort sendPort)) async {
   var response = await (await _spawnIsolate(entryPoint)).first;
   expect(response, containsPair("type", "success"));
 
-  var testMap = response["entries"].first;
+  var testMap = response["root"]["entries"].first;
   expect(testMap, containsPair("type", "test"));
   var metadata = new Metadata.deserialize(testMap["metadata"]);
   var test = new IsolateTest(testMap["name"], metadata, testMap["sendPort"]);
-  var suite = new Suite([test]);
+  var suite = new Suite(new Group.root([test]));
   _liveTest = test.load(suite);
   return _liveTest;
 }

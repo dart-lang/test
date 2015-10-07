@@ -13,10 +13,8 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
-import '../backend/invoker.dart';
 import '../backend/group.dart';
 import '../backend/metadata.dart';
-import '../backend/suite_entry.dart';
 import '../backend/test_platform.dart';
 import '../util/dart.dart' as dart;
 import '../util/io.dart';
@@ -121,9 +119,10 @@ class Loader {
 
       // Don't load a skipped suite.
       if (metadata.skip) {
-        yield new LoadSuite.forSuite(new RunnerSuite(const VMEnvironment(), [
-          new LocalTest(path, metadata, () {})
-        ], path: path, platform: platform, metadata: metadata));
+        yield new LoadSuite.forSuite(new RunnerSuite(
+            const VMEnvironment(),
+            new Group.root([], metadata: metadata),
+            path: path, platform: platform));
         continue;
       }
 
@@ -221,15 +220,14 @@ void main(_, Map message) {
             asyncError.stackTrace);
       } else {
         assert(response["type"] == "success");
-        completer.complete(response["entries"]);
+        completer.complete(response["root"]);
       }
     });
 
     try {
       var suite = new RunnerSuite(
           const VMEnvironment(),
-          _deserializeEntries(await completer.future),
-          metadata: metadata,
+          _deserializeGroup(await completer.future),
           path: path,
           platform: TestPlatform.vm,
           os: currentOS,
@@ -241,17 +239,14 @@ void main(_, Map message) {
     }
   }
 
-  /// Deserializes [entries] into concrete [SuiteEntry] subclasses.
-  Iterable<SuiteEntry> _deserializeEntries(List<Map> entries) {
-    return entries.map((entry) {
-      var metadata = new Metadata.deserialize(entry['metadata']);
-      if (entry['type'] == 'group') {
-        return new Group(
-            entry['name'], metadata, _deserializeEntries(entry['entries']));
-      } else {
-        return new IsolateTest(entry['name'], metadata, entry['sendPort']);
-      }
-    });
+  /// Deserializes [group] into a concrete [Group] class.
+  Group _deserializeGroup(Map group) {
+    var metadata = new Metadata.deserialize(group['metadata']);
+    return new Group(group['name'], group['entries'].map((entry) {
+      if (entry['type'] == 'group') return _deserializeGroup(entry);
+      var testMetadata = new Metadata.deserialize(entry['metadata']);
+      return new IsolateTest(entry['name'], testMetadata, entry['sendPort']);
+    }), metadata: metadata);
   }
 
   /// Closes the loader and releases all resources allocated by it.

@@ -8,6 +8,8 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:test/src/backend/declarer.dart';
+import 'package:test/src/backend/group.dart';
+import 'package:test/src/backend/group_entry.dart';
 import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
@@ -221,7 +223,7 @@ Future pumpEventQueue([int times=20]) {
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
   var test = new LocalTest("test", new Metadata(), body);
-  var suite = new Suite([test]);
+  var suite = new Suite(new Group.root([test]));
   return test.load(suite);
 }
 
@@ -283,7 +285,7 @@ Future expectTestBlocks(test(), stopBlocking(value)) async {
 }
 
 /// Runs [body] with a declarer and returns the declared entries.
-List<SuiteEntry> declare(void body()) {
+List<GroupEntry> declare(void body()) {
   var declarer = new Declarer()..declare(body);
-  return declarer.build();
+  return declarer.build().entries;
 }

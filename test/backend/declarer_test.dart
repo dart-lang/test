@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:test/src/backend/declarer.dart';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/suite.dart';
@@ -18,7 +17,7 @@ Suite _suite;
 
 void main() {
   setUp(() {
-    _suite = new Suite([]);
+    _suite = new Suite(new Group.root([]));
   });
 
   group(".test()", () {

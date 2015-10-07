@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../../test.dart';
+import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/test.dart';
@@ -44,7 +45,7 @@ class LoadSuite extends RunnerSuite {
   ///
   /// Load suites are guaranteed to only contain one test. This is a utility
   /// method for accessing it directly.
-  Test get test => entries.single as Test;
+  Test get test => this.group.entries.single as Test;
 
   /// Creates a load suite named [name] on [platform].
   ///
@@ -107,15 +108,15 @@ class LoadSuite extends RunnerSuite {
   }
 
   LoadSuite._(String name, void body(), this.suite, {TestPlatform platform})
-      : super(const VMEnvironment(), [
+      : super(const VMEnvironment(), new Group.root([
         new LocalTest(name,
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
             body)
-      ], platform: platform);
+      ]), platform: platform);
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, Future<RunnerSuite> this.suite)
-      : super(const VMEnvironment(), old.entries, platform: old.platform);
+      : super(const VMEnvironment(), old.group, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.

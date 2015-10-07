@@ -13,7 +13,6 @@ import 'package:pool/pool.dart';
 
 import '../../backend/group.dart';
 import '../../backend/metadata.dart';
-import '../../backend/suite_entry.dart';
 import '../../backend/test_platform.dart';
 import '../../util/cancelable_future.dart';
 import '../../util/multi_channel.dart';
@@ -245,29 +244,26 @@ class BrowserManager {
 
     return new RunnerSuite(
         await _environment,
-        _deserializeEntries(suiteChannel, mapper, response["entries"]),
+        _deserializeGroup(suiteChannel, mapper, response["root"]),
         platform: _platform,
-        metadata: metadata,
         path: path,
         onClose: () => closeIframe());
   }
 
-  /// Deserializes [entries] into concrete [SuiteEntry] subclasses.
-  Iterable<SuiteEntry> _deserializeEntries(MultiChannel suiteChannel,
-      StackTraceMapper mapper, List<Map> entries) {
-    return entries.map((entry) {
-      var metadata = new Metadata.deserialize(entry['metadata']);
+  /// Deserializes [group] into a concrete [Group] class.
+  Group _deserializeGroup(MultiChannel suiteChannel,
+      StackTraceMapper mapper, Map group) {
+    var metadata = new Metadata.deserialize(group['metadata']);
+    return new Group(group['name'], group['entries'].map((entry) {
       if (entry['type'] == 'group') {
-        return new Group(
-            entry['name'],
-            metadata,
-            _deserializeEntries(suiteChannel, mapper, entry['entries']));
-      } else {
-        var testChannel = suiteChannel.virtualChannel(entry['channel']);
-        return new IframeTest(entry['name'], metadata, testChannel,
-            mapper: mapper);
+        return _deserializeGroup(suiteChannel, mapper, entry);
       }
-    });
+
+      var testMetadata = new Metadata.deserialize(entry['metadata']);
+      var testChannel = suiteChannel.virtualChannel(entry['channel']);
+      return new IframeTest(entry['name'], testMetadata, testChannel,
+          mapper: mapper);
+    }), metadata: metadata);
   }
 
   /// An implementation of [Environment.displayPause].

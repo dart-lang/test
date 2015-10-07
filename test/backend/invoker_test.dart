@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
+import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
@@ -17,7 +18,7 @@ void main() {
   var suite;
   setUp(() {
     lastState = null;
-    suite = new Suite([]);
+    suite = new Suite(new Group.root([]));
   });
 
   group("Invoker.current", () {

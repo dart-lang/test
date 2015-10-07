@@ -8,7 +8,7 @@ import 'live_test.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
 import 'suite.dart';
-import 'suite_entry.dart';
+import 'group_entry.dart';
 import 'test_platform.dart';
 
 /// A single test.
@@ -16,7 +16,7 @@ import 'test_platform.dart';
 /// A test is immutable and stateless, which means that it can't be run
 /// directly. To run one, load a live version using [Test.load] and run it using
 /// [LiveTest.run].
-abstract class Test implements SuiteEntry {
+abstract class Test implements GroupEntry {
   String get name;
 
   Metadata get metadata;
