@@ -33,8 +33,8 @@ class RunnerSuite extends Suite {
 
   RunnerSuite(this.environment, Group group, {String path,
           TestPlatform platform, OperatingSystem os, AsyncFunction onClose})
-      : super(group, path: path, platform: platform, os: os),
-        _onClose = onClose;
+      : _onClose = onClose,
+        super(group, path: path, platform: platform, os: os);
 
   RunnerSuite filter(bool callback(Test test)) {
     var filtered = group.filter(callback);
