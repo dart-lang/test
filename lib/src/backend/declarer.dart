@@ -9,9 +9,10 @@ import 'dart:async';
 import '../frontend/timeout.dart';
 import '../utils.dart';
 import 'group.dart';
+import 'group_entry.dart';
 import 'invoker.dart';
 import 'metadata.dart';
-import 'group_entry.dart';
+import 'test.dart';
 
 /// A class that manages the state of tests as they're declared.
 ///
@@ -34,11 +35,17 @@ class Declarer {
   /// and of the test suite.
   final Metadata _metadata;
 
-  /// The set-up functions for this group.
+  /// The set-up functions to run for each test in this group.
   final _setUps = new List<AsyncFunction>();
 
-  /// The tear-down functions for this group.
+  /// The tear-down functions to run for each test in this group.
   final _tearDowns = new List<AsyncFunction>();
+
+  /// The set-up functions to run once for this group.
+  final _setUpAlls = new List<AsyncFunction>();
+
+  /// The tear-down functions to run once for this group.
+  final _tearDownAlls = new List<AsyncFunction>();
 
   /// The children of this group, either tests or sub-groups.
   final _entries = new List<GroupEntry>();
@@ -67,9 +74,7 @@ class Declarer {
   /// Defines a test case with the given name and body.
   void test(String name, body(), {String testOn, Timeout timeout, skip,
       Map<String, dynamic> onPlatform}) {
-    if (_built) {
-      throw new StateError("Can't call test() once tests have begun running.");
-    }
+    _checkNotBuilt("test");
 
     var metadata = _metadata.merge(new Metadata.parse(
         testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform));
@@ -90,9 +95,7 @@ class Declarer {
   /// Creates a group of tests.
   void group(String name, void body(), {String testOn, Timeout timeout, skip,
       Map<String, dynamic> onPlatform}) {
-    if (_built) {
-      throw new StateError("Can't call group() once tests have begun running.");
-    }
+    _checkNotBuilt("group");
 
     var metadata = _metadata.merge(new Metadata.parse(
         testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform));
@@ -113,31 +116,45 @@ class Declarer {
 
   /// Registers a function to be run before each test in this group.
   void setUp(callback()) {
-    if (_built) {
-      throw new StateError("Can't call setUp() once tests have begun running.");
-    }
-
+    _checkNotBuilt("setUp");
     _setUps.add(callback);
   }
 
   /// Registers a function to be run after each test in this group.
   void tearDown(callback()) {
-    if (_built) {
-      throw new StateError(
-          "Can't call tearDown() once tests have begun running.");
-    }
-
+    _checkNotBuilt("tearDown");
     _tearDowns.add(callback);
+  }
+
+  /// Registers a function to be run once before all tests.
+  void setUpAll(callback()) {
+    _checkNotBuilt("setUpAll");
+    _setUpAlls.add(callback);
+  }
+
+  /// Registers a function to be run once after all tests.
+  void tearDownAll(callback()) {
+    _checkNotBuilt("tearDownAll");
+    _tearDownAlls.add(callback);
   }
 
   /// Finalizes and returns the group being declared.
   Group build() {
-    if (_built) {
-      throw new StateError("Can't call Declarer.build() more than once.");
-    }
+    _checkNotBuilt("build");
 
     _built = true;
-    return new Group(_name, _entries.toList(), metadata: _metadata);
+    return new Group(_name, _entries.toList(),
+        metadata: _metadata,
+        setUpAll: _setUpAll,
+        tearDownAll: _tearDownAll);
+  }
+
+  /// Throws a [StateError] if [build] has been called.
+  ///
+  /// [name] should be the name of the method being called.
+  void _checkNotBuilt(String name) {
+    if (!_built) return;
+    throw new StateError("Can't call $name() once tests have begun running.");
   }
 
   /// Run the set-up functions for this and any parent groups.
@@ -170,6 +187,26 @@ class Declarer {
       }
 
       return Future.forEach(tearDowns, _errorsDontStopTest);
+    });
+  }
+
+  /// Returns a [Test] that runs the callbacks in [_setUpAll].
+  Test get _setUpAll {
+    if (_setUpAlls.isEmpty) return null;
+
+    return new LocalTest(_prefix("(setUpAll)"), _metadata, () {
+      return Future.forEach(_setUpAlls, (setUp) => setUp());
+    });
+  }
+
+  /// Returns a [Test] that runs the callbacks in [_tearDownAll].
+  Test get _tearDownAll {
+    if (_tearDownAlls.isEmpty) return null;
+
+    return new LocalTest(_prefix("(tearDownAll)"), _metadata, () {
+      return Invoker.current.unclosable(() {
+        return Future.forEach(_tearDownAlls.reversed, _errorsDontStopTest);
+      });
     });
   }
 

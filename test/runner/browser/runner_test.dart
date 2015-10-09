@@ -211,6 +211,40 @@ void main() {
       test.shouldExit(0);
     });
 
+    test("with setUpAll", () {
+      d.file("test.dart", r"""
+          import 'package:test/test.dart';
+
+          void main() {
+            setUpAll(() => print("in setUpAll"));
+
+            test("test", () {});
+          }
+          """).create();
+
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains('+0: (setUpAll)')));
+      test.stdout.expect('in setUpAll');
+      test.shouldExit(0);
+    });
+
+    test("with tearDownAll", () {
+      d.file("test.dart", r"""
+          import 'package:test/test.dart';
+
+          void main() {
+            tearDownAll(() => print("in tearDownAll"));
+
+            test("test", () {});
+          }
+          """).create();
+
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains('+1: (tearDownAll)')));
+      test.stdout.expect('in tearDownAll');
+      test.shouldExit(0);
+    });
+
     // Regression test; this broke in 0.12.0-beta.9.
     test("on a file in a subdirectory", () {
       d.dir("dir", [d.file("test.dart", _success)]).create();

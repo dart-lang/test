@@ -1,5 +1,11 @@
 ## 0.12.5
 
+* Add `setUpAll()` and `tearDownAll()` methods that run callbacks before and
+  after all tests in a group or suite. **Note that these methods are for special
+  cases and should be avoided**—they make it very easy to accidentally introduce
+  dependencies between tests. Use `setUp()` and `tearDown()` instead if
+  possible.
+
 * Allow `setUp()` and `tearDown()` to be called multiple times within the same
   group.
 

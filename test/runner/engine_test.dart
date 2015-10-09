@@ -57,11 +57,11 @@ void main() {
   test("emits each test before it starts running and after the previous test "
       "finished", () {
     var testsRun = 0;
-    var engine = withTests(declare(() {
+    var engine = declareEngine(() {
       for (var i = 0; i < 3; i++) {
         test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
       }
-    }));
+    });
 
     engine.onTestStarted.listen(expectAsync((liveTest) {
       // [testsRun] should be one less than the test currently running.
@@ -77,33 +77,33 @@ void main() {
   });
 
   test(".run() returns true if every test passes", () {
-    var engine = withTests(declare(() {
+    var engine = declareEngine(() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
-    }));
+    });
 
     expect(engine.run(), completion(isTrue));
   });
 
   test(".run() returns false if any test fails", () {
-    var engine = withTests(declare(() {
+    var engine = declareEngine(() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
       test("failure", () => throw new TestFailure("oh no"));
-    }));
+    });
 
     expect(engine.run(), completion(isFalse));
   });
 
   test(".run() returns false if any test errors", () {
-    var engine = withTests(declare(() {
+    var engine = declareEngine(() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
       test("failure", () => throw "oh no");
-    }));
+    });
 
     expect(engine.run(), completion(isFalse));
   });
@@ -117,9 +117,9 @@ void main() {
   group("for a skipped test", () {
     test("doesn't run the test's body", () async {
       var bodyRun = false;
-      var engine = withTests(declare(() {
+      var engine = declareEngine(() {
         test("test", () => bodyRun = true, skip: true);
-      }));
+      });
 
       await engine.run();
       expect(bodyRun, isFalse);
@@ -130,7 +130,9 @@ void main() {
         test("test", () {}, skip: true);
       });
 
-      var engine = withTests(tests);
+      var engine = new Engine.withSuites([
+        new RunnerSuite(const VMEnvironment(), new Group.root(tests))
+      ]);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
@@ -150,11 +152,4 @@ void main() {
       return engine.run();
     });
   });
-}
-
-/// Returns an engine that will run [tests].
-Engine withTests(List<Test> tests) {
-  return new Engine.withSuites([
-    new RunnerSuite(const VMEnvironment(), new Group.root(tests))
-  ]);
 }

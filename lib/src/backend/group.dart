@@ -25,7 +25,18 @@ class Group implements GroupEntry {
   Group.root(Iterable<GroupEntry> entries, {Metadata metadata})
       : this(null, entries, metadata: metadata);
 
-  Group(this.name, Iterable<GroupEntry> entries, {Metadata metadata})
+  /// A test to run before all tests in the group.
+  ///
+  /// This is `null` if no `setUpAll` callbacks were declared.
+  final Test setUpAll;
+
+  /// A test to run after all tests in the group.
+  ///
+  /// This is `null` if no `tearDown` callbacks were declared.
+  final Test tearDownAll;
+
+  Group(this.name, Iterable<GroupEntry> entries, {Metadata metadata,
+          Test this.setUpAll, Test this.tearDownAll})
       : entries = new List<GroupEntry>.unmodifiable(entries),
         metadata = metadata == null ? new Metadata() : metadata;
 
@@ -34,13 +45,15 @@ class Group implements GroupEntry {
     var newMetadata = metadata.forPlatform(platform, os: os);
     var filtered = _map((entry) => entry.forPlatform(platform, os: os));
     if (filtered.isEmpty) return null;
-    return new Group(name, filtered, metadata: newMetadata);
+    return new Group(name, filtered,
+        metadata: newMetadata, setUpAll: setUpAll, tearDownAll: tearDownAll);
   }
 
   Group filter(bool callback(Test test)) {
     var filtered = _map((entry) => entry.filter(callback));
     if (filtered.isEmpty) return null;
-    return new Group(name, filtered, metadata: metadata);
+    return new Group(name, filtered,
+        metadata: metadata, setUpAll: setUpAll, tearDownAll: tearDownAll);
   }
 
   /// Returns the entries of this group mapped using [callback].

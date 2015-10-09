@@ -187,6 +187,34 @@ void setUp(callback()) => _declarer.setUp(callback);
 /// reverse of the order they were declared.
 void tearDown(callback()) => _declarer.tearDown(callback);
 
+/// Registers a function to be run once before all tests.
+///
+/// [callback] may be asynchronous; if so, it must return a [Future].
+///
+/// If this is called within a test group, [callback] will run before all tests
+/// in that group. It will be run after any [setUpAll] callbacks in parent
+/// groups or at the top level. It won't be run if none of the tests in the
+/// group are run.
+///
+/// **Note**: This function makes it very easy to accidentally introduce hidden
+/// dependencies between tests that should be isolated. In general, you should
+/// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
+/// slow.
+void setUpAll(callback()) => _declarer.setUpAll(callback);
+
+/// Registers a function to be run once after all tests.
+///
+/// If this is called within a test group, [callback] will run after all tests
+/// in that group. It will be run before any [tearDownAll] callbacks in parent
+/// groups or at the top level. It won't be run if none of the tests in the
+/// group are run.
+///
+/// **Note**: This function makes it very easy to accidentally introduce hidden
+/// dependencies between tests that should be isolated. In general, you should
+/// prefer [tearDown], and only use [tearDOwnAll] if the callback is
+/// prohibitively slow.
+void tearDownAll(callback()) => _declarer.tearDownAll(callback);
+
 /// Registers an exception that was caught for the current test.
 void registerException(error, [StackTrace stackTrace]) {
   // This will usually forward directly to [Invoker.current.handleError], but

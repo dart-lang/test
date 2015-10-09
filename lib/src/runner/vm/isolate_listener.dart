@@ -117,23 +117,31 @@ class IsolateListener {
       "type": "group",
       "name": group.name,
       "metadata": group.metadata.serialize(),
+      "setUpAll": _serializeTest(group.setUpAll),
+      "tearDownAll": _serializeTest(group.tearDownAll),
       "entries": group.entries.map((entry) {
-        if (entry is Group) return _serializeGroup(entry);
-
-        var test = entry as Test;
-        var receivePort = new ReceivePort();
-        receivePort.listen((message) {
-          assert(message['command'] == 'run');
-          _runTest(test, message['reply']);
-        });
-
-        return {
-          "type": "test",
-          "name": test.name,
-          "metadata": test.metadata.serialize(),
-          "sendPort": receivePort.sendPort
-        };
+        return entry is Group ? _serializeGroup(entry) : _serializeTest(entry);
       }).toList()
+    };
+  }
+
+  /// Serializes [test] into a JSON-safe map.
+  ///
+  /// Returns `null` if [test] is `null`.
+  Map _serializeTest(Test test) {
+    if (test == null) return null;
+
+    var receivePort = new ReceivePort();
+    receivePort.listen((message) {
+      assert(message['command'] == 'run');
+      _runTest(test, message['reply']);
+    });
+
+    return {
+      "type": "test",
+      "name": test.name,
+      "metadata": test.metadata.serialize(),
+      "sendPort": receivePort.sendPort
     };
   }
 

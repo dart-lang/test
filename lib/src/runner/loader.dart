@@ -15,6 +15,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/group.dart';
 import '../backend/metadata.dart';
+import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../util/dart.dart' as dart;
 import '../util/io.dart';
@@ -244,9 +245,21 @@ void main(_, Map message) {
     var metadata = new Metadata.deserialize(group['metadata']);
     return new Group(group['name'], group['entries'].map((entry) {
       if (entry['type'] == 'group') return _deserializeGroup(entry);
-      var testMetadata = new Metadata.deserialize(entry['metadata']);
-      return new IsolateTest(entry['name'], testMetadata, entry['sendPort']);
-    }), metadata: metadata);
+      return _deserializeTest(entry);
+    }),
+        metadata: metadata,
+        setUpAll: _deserializeTest(group['setUpAll']),
+        tearDownAll: _deserializeTest(group['tearDownAll']));
+  }
+
+  /// Deserializes [test] into a concrete [Test] class.
+  ///
+  /// Returns `null` if [test] is `null`.
+  Test _deserializeTest(Map test) {
+    if (test == null) return null;
+
+    var metadata = new Metadata.deserialize(test['metadata']);
+    return new IsolateTest(test['name'], metadata, test['sendPort']);
   }
 
   /// Closes the loader and releases all resources allocated by it.

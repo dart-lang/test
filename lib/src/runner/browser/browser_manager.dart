@@ -13,6 +13,7 @@ import 'package:pool/pool.dart';
 
 import '../../backend/group.dart';
 import '../../backend/metadata.dart';
+import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/cancelable_future.dart';
 import '../../util/multi_channel.dart';
@@ -259,11 +260,25 @@ class BrowserManager {
         return _deserializeGroup(suiteChannel, mapper, entry);
       }
 
-      var testMetadata = new Metadata.deserialize(entry['metadata']);
-      var testChannel = suiteChannel.virtualChannel(entry['channel']);
-      return new IframeTest(entry['name'], testMetadata, testChannel,
-          mapper: mapper);
-    }), metadata: metadata);
+      return _deserializeTest(suiteChannel, mapper, entry);
+    }),
+        metadata: metadata,
+        setUpAll: _deserializeTest(suiteChannel, mapper, group['setUpAll']),
+        tearDownAll:
+            _deserializeTest(suiteChannel, mapper, group['tearDownAll']));
+  }
+
+  /// Deserializes [test] into a concrete [Test] class.
+  ///
+  /// Returns `null` if [test] is `null`.
+  Test _deserializeTest(MultiChannel suiteChannel, StackTraceMapper mapper,
+      Map test) {
+    if (test == null) return null;
+
+    var metadata = new Metadata.deserialize(test['metadata']);
+    var testChannel = suiteChannel.virtualChannel(test['channel']);
+    return new IframeTest(test['name'], metadata, testChannel,
+        mapper: mapper);
   }
 
   /// An implementation of [Environment.displayPause].

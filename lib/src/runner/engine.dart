@@ -215,17 +215,34 @@ class Engine {
       return;
     }
 
-    for (var entry in group.entries) {
-      if (_closed) return;
+    var setUpAllSucceeded = true;
+    if (group.setUpAll != null) {
+      var liveTest = group.setUpAll.load(suite);
+      await _runLiveTest(liveTest, countSuccess: false);
+      setUpAllSucceeded = liveTest.state.result == Result.success;
+    }
 
-      if (entry is Group) {
-        await _runGroup(suite, entry);
-      } else if (entry.metadata.skip) {
-        await _runLiveTest(_skippedTest(suite, entry));
-      } else {
-        var test = entry as Test;
-        await _runLiveTest(test.load(suite));
+    if (!_closed && setUpAllSucceeded) {
+      for (var entry in group.entries) {
+        if (_closed) return;
+
+        if (entry is Group) {
+          await _runGroup(suite, entry);
+        } else if (entry.metadata.skip) {
+          await _runLiveTest(_skippedTest(suite, entry));
+        } else {
+          var test = entry as Test;
+          await _runLiveTest(test.load(suite));
+        }
       }
+    }
+
+    // Even if we're closed or setUpAll failed, we want to run all the teardowns
+    // to ensure that any state is properly cleaned up.
+    if (group.tearDownAll != null) {
+      var liveTest = group.tearDownAll.load(suite);
+      await _runLiveTest(liveTest, countSuccess: false);
+      if (_closed) await liveTest.close();
     }
   }
 
@@ -244,7 +261,10 @@ class Engine {
   }
 
   /// Runs [liveTest].
-  Future _runLiveTest(LiveTest liveTest) async {
+  ///
+  /// If [countSuccess] is `true` (the default), the test is put into [passed]
+  /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
+  Future _runLiveTest(LiveTest liveTest, {bool countSuccess: true}) async {
     _liveTests.add(liveTest);
     _active.add(liveTest);
 
@@ -270,8 +290,10 @@ class Engine {
         _failed.add(liveTest);
       } else if (liveTest.test.metadata.skip) {
         _skipped.add(liveTest);
-      } else {
+      } else if (countSuccess) {
         _passed.add(liveTest);
+      } else {
+        _liveTests.remove(liveTest);
       }
     });
 
@@ -342,15 +364,19 @@ class Engine {
   /// the engine indicates that no more output should be emitted.
   Future close() async {
     _closed = true;
-    if (_closedBeforeDone == null) _closedBeforeDone = true;
+    if (_closedBeforeDone != null) _closedBeforeDone = true;
     _suiteController.close();
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
     var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
-    await Future.wait(allLiveTests.map((liveTest) => liveTest.close()));
+    var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
-    var allSuites = allLiveTests.map((liveTest) => liveTest.suite).toSet();
-    await Future.wait(allSuites.map((suite) => suite.close()));
+    // Closing the load pool will close the test suites as soon as their tests
+    // are done. For browser suites this is effectively immediate since their
+    // tests shut down as soon as they're closed, but for VM suites we may need
+    // to wait for tearDowns or tearDownAlls to run.
+    futures.add(_loadPool.close());
+    await Future.wait(futures, eagerError: true);
   }
 }

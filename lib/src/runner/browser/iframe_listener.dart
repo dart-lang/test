@@ -131,29 +131,39 @@ class IframeListener {
     });
   }
 
-  /// Serializes [entries] into a JSON-safe map.
+  /// Serializes [group] into a JSON-safe map.
   Map _serializeGroup(MultiChannel channel, Group group) {
     return {
       "type": "group",
       "name": group.name,
       "metadata": group.metadata.serialize(),
+      "setUpAll": _serializeTest(channel, group.setUpAll),
+      "tearDownAll": _serializeTest(channel, group.tearDownAll),
       "entries": group.entries.map((entry) {
-        if (entry is Group) return _serializeGroup(channel, entry);
-
-        var test = entry as Test;
-        var testChannel = channel.virtualChannel();
-        testChannel.stream.listen((message) {
-          assert(message['command'] == 'run');
-          _runTest(test, channel.virtualChannel(message['channel']));
-        });
-
-        return {
-          "type": "test",
-          "name": test.name,
-          "metadata": test.metadata.serialize(),
-          "channel": testChannel.id
-        };
+        return entry is Group
+            ? _serializeGroup(channel, entry)
+            : _serializeTest(channel, entry);
       }).toList()
+    };
+  }
+
+  /// Serializes [test] into a JSON-safe map.
+  ///
+  /// Returns `null` if [test] is `null`.
+  Map _serializeTest(MultiChannel channel, Test test) {
+    if (test == null) return null;
+
+    var testChannel = channel.virtualChannel();
+    testChannel.stream.listen((message) {
+      assert(message['command'] == 'run');
+      _runTest(test, channel.virtualChannel(message['channel']));
+    });
+
+    return {
+      "type": "test",
+      "name": test.name,
+      "metadata": test.metadata.serialize(),
+      "channel": testChannel.id
     };
   }
 

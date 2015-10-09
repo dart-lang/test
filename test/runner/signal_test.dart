@@ -82,7 +82,11 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
-  tearDown(() => new File("output").writeAsStringSync("ran teardown"));
+  tearDownAll(() {
+    new File("output_all").writeAsStringSync("ran tearDownAll");
+  });
+
+  tearDown(() => new File("output").writeAsStringSync("ran tearDown"));
 
   test("test", () {
     print("running test");
@@ -95,7 +99,34 @@ void main() {
       test.stdout.expect(consumeThrough("running test"));
       signalAndQuit(test);
 
-      d.file("output", "ran teardown").validate();
+      d.file("output", "ran tearDown").validate();
+      d.file("output_all", "ran tearDownAll").validate();
+      expectTempDirEmpty();
+    });
+
+    test("waits for an active tearDownAll to finish running", () {
+      d.file("test.dart", """
+import 'dart:async';
+import 'dart:io';
+
+import 'package:test/test.dart';
+
+void main() {
+  tearDownAll(() async {
+    print("running tearDownAll");
+    await new Future.delayed(new Duration(seconds: 1));
+    new File("output").writeAsStringSync("ran tearDownAll");
+  });
+
+  test("test", () {});
+}
+""").create();
+
+      var test = _runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough("running tearDownAll"));
+      signalAndQuit(test);
+
+      d.file("output", "ran tearDownAll").validate();
       expectTempDirEmpty();
     });
 

@@ -16,7 +16,10 @@ import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
 import 'package:test/src/runner/application_exception.dart';
+import 'package:test/src/runner/engine.dart';
 import 'package:test/src/runner/load_exception.dart';
+import 'package:test/src/runner/runner_suite.dart';
+import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/src/util/remote_exception.dart';
 import 'package:test/test.dart';
 
@@ -284,8 +287,29 @@ Future expectTestBlocks(test(), stopBlocking(value)) async {
   return future;
 }
 
+/// Runs [body] with a declarer, runs all the declared tests, and asserts that
+/// they pass.
+Future expectTestsPass(void body()) async {
+  var engine = declareEngine(body);
+  var success = await engine.run();
+
+  for (var test in engine.liveTests) {
+    expectTestPassed(test);
+  }
+
+  expect(success, isTrue);
+}
+
 /// Runs [body] with a declarer and returns the declared entries.
 List<GroupEntry> declare(void body()) {
   var declarer = new Declarer()..declare(body);
   return declarer.build().entries;
+}
+
+/// Runs [body] with a declarer and returns an engine that runs those tests.
+Engine declareEngine(void body()) {
+  var declarer = new Declarer()..declare(body);
+  return new Engine.withSuites([
+    new RunnerSuite(const VMEnvironment(), declarer.build())
+  ]);
 }
