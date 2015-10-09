@@ -71,7 +71,7 @@ void main(_) {
         var dart2jsPath = p.join(sdkDir, 'bin', 'dart2js');
         if (Platform.isWindows) dart2jsPath += '.bat';
 
-        var args = ["--checked", wrapperPath, "--out=$jsPath", "--show-package-warnings"];
+        var args = ["--checked", wrapperPath, "--out=$jsPath"];
 
         if (packageRoot != null) {
           args.add("--package-root=${p.toUri(p.absolute(packageRoot))}");

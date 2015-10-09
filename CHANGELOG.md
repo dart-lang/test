@@ -7,6 +7,9 @@
   schedule out-of-band asynchronous callbacks normally rather than having them
   throw exceptions.
 
+* Don't show package warnings when compiling tests with dart2js. This was
+  accidentally enabled in 0.12.2, but was never intended.
+
 ## 0.12.4+9
 
 * If a `tearDown()` callback throws an error, outer `tearDown()` callbacks are
