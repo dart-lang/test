@@ -158,8 +158,9 @@ class Runner {
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        if (_config.pattern == null) return suite;
-        return suite.filter((test) => test.name.contains(_config.pattern));
+        return suite.filter((test) =>
+            (_config.pattern == null || test.name.contains(_config.pattern)) &&
+            (_config.tags.isEmpty || intersect(_config.tags, test.metadata.tags)));
       });
     });
   }

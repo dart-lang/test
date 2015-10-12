@@ -73,11 +73,12 @@ class Declarer {
 
   /// Defines a test case with the given name and body.
   void test(String name, body(), {String testOn, Timeout timeout, skip,
-      Map<String, dynamic> onPlatform}) {
+      Map<String, dynamic> onPlatform, List<String> tags}) {
     _checkNotBuilt("test");
 
     var metadata = _metadata.merge(new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform));
+        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
+        tags: tags));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
@@ -94,11 +95,12 @@ class Declarer {
 
   /// Creates a group of tests.
   void group(String name, void body(), {String testOn, Timeout timeout, skip,
-      Map<String, dynamic> onPlatform}) {
+      Map<String, dynamic> onPlatform, List<String> tags}) {
     _checkNotBuilt("group");
 
     var metadata = _metadata.merge(new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform));
+        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
+        tags: tags));
 
     // Don't load the tests for a skipped group.
     if (metadata.skip) {
