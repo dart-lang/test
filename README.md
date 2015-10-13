@@ -493,3 +493,10 @@ $ pub run test:test --pub-serve=8081 -p chrome
 "pub serve" is compiling test/utils_test.dart...
 00:00 +42: All tests passed!
 ```
+
+## Further Reading
+
+Check out the [API docs][api] for detailed information about all the functions
+available to tests.
+
+[api]: http://www.dartdocs.org/documentation/test/latest/index.html
