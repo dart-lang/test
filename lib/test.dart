@@ -113,9 +113,10 @@ Declarer get _declarer {
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
 void test(String description, body(), {String testOn, Timeout timeout,
-        skip, Map<String, dynamic> onPlatform}) =>
-    _declarer.test(description, body,
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform);
+        skip, Map<String, dynamic> onPlatform, String tag,
+        List<String> tags}) => _declarer.test(description, body,
+            testOn: testOn, timeout: timeout, skip: skip,
+            onPlatform: onPlatform, tags: _deconvenienceTags(tag, tags));
 
 /// Creates a group of tests.
 ///
@@ -157,9 +158,10 @@ void test(String description, body(), {String testOn, Timeout timeout,
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
 void group(String description, void body(), {String testOn, Timeout timeout,
-        skip, Map<String, dynamic> onPlatform}) =>
-    _declarer.group(description, body,
-        testOn: testOn, timeout: timeout, skip: skip);
+        skip, Map<String, dynamic> onPlatform, String tag,
+        List<String> tags}) => _declarer.group(description, body,
+            testOn: testOn, timeout: timeout, skip: skip,
+            tags: _deconvenienceTags(tag, tags));
 
 /// Registers a function to be run before tests.
 ///
@@ -220,4 +222,14 @@ void registerException(error, [StackTrace stackTrace]) {
   // This will usually forward directly to [Invoker.current.handleError], but
   // going through the zone API allows other zones to consistently see errors.
   Zone.current.handleUncaughtError(error, stackTrace);
+}
+
+List<String> _deconvenienceTags(String tag, List<String> tags) {
+  var result = const[];
+  if (tag != null || (tags != null && tags.isNotEmpty)) {
+    result = [];
+    if (tag != null) result.add(tag);
+    if (tags != null && tags.isNotEmpty) result.addAll(tags);
+  }
+  return result;
 }

@@ -77,6 +77,10 @@ class Configuration {
         help: 'Whether to emit raw JavaScript stack traces for browser tests.');
     parser.addFlag("color", defaultsTo: null,
         help: 'Whether to use terminal colors.\n(auto-detected by default)');
+    parser.addOption("tags",
+      help: 'Comma-separated list of tags to run',
+      allowMultiple: true,
+      splitCommas: true);
 
     return parser;
   })();
@@ -130,6 +134,9 @@ class Configuration {
   /// The set of platforms on which to run tests.
   final List<TestPlatform> platforms;
 
+  /// Restricts the set of tests to a set of tags
+  final List<String> tags;
+
   /// The global test metadata derived from this configuration.
   Metadata get metadata =>
       new Metadata(
@@ -169,7 +176,8 @@ class Configuration {
             orElse: () => _defaultConcurrency),
         pattern: pattern,
         platforms: options['platform'].map(TestPlatform.find),
-        paths: options.rest.isEmpty ? null : options.rest);
+        paths: options.rest.isEmpty ? null : options.rest,
+        tags: options['tags']);
   }
 
   /// Runs [parse] on the value of the option [name], and wraps any
@@ -191,7 +199,8 @@ class Configuration {
           this.verboseTrace: false, this.jsTrace: false,
           bool pauseAfterLoad: false, bool color, String packageRoot,
           String reporter, int pubServePort, int concurrency, this.pattern,
-          Iterable<TestPlatform> platforms, Iterable<String> paths})
+          Iterable<TestPlatform> platforms, Iterable<String> paths,
+          List<String> tags})
       : pauseAfterLoad = pauseAfterLoad,
         color = color == null ? canUseSpecialChars : color,
         packageRoot = packageRoot == null
@@ -206,5 +215,8 @@ class Configuration {
             : (concurrency == null ? _defaultConcurrency : concurrency),
         platforms = platforms == null ? [TestPlatform.vm] : platforms.toList(),
         paths = paths == null ? ["test"] : paths.toList(),
-        explicitPaths = paths != null;
+        explicitPaths = paths != null,
+        this.tags = tags == null
+            ? const <String>[]
+            : tags;
 }
