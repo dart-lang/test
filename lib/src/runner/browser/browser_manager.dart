@@ -15,7 +15,6 @@ import '../../backend/group.dart';
 import '../../backend/metadata.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
-import '../../util/cancelable_future.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
@@ -282,18 +281,21 @@ class BrowserManager {
   }
 
   /// An implementation of [Environment.displayPause].
-  CancelableFuture _displayPause() {
-    if (_pauseCompleter != null) return _pauseCompleter.future;
+  CancelableOperation _displayPause() {
+    if (_pauseCompleter != null) return _pauseCompleter.operation;
 
-    _pauseCompleter = new CancelableCompleter(() {
+    _pauseCompleter = new CancelableCompleter(onCancel: () {
       _channel.sink.add({"command": "resume"});
       _pauseCompleter = null;
     });
 
-    _channel.sink.add({"command": "displayPause"});
-    return _pauseCompleter.future.whenComplete(() {
+    _pauseCompleter.operation.value.whenComplete(() {
       _pauseCompleter = null;
     });
+
+    _channel.sink.add({"command": "displayPause"});
+
+    return _pauseCompleter.operation;
   }
 
   /// The callback for handling messages received from the host page.
@@ -327,5 +329,5 @@ class _BrowserEnvironment implements Environment {
   _BrowserEnvironment(this._manager, this.observatoryUrl,
       this.remoteDebuggerUrl);
 
-  CancelableFuture displayPause() => _manager._displayPause();
+  CancelableOperation displayPause() => _manager._displayPause();
 }
