@@ -12,6 +12,7 @@ import '../../test.dart';
 import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
+import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
@@ -33,7 +34,11 @@ import 'vm/environment.dart';
 /// a normal test body, this logic isn't run until [LiveTest.run] is called. The
 /// suite itself is returned by [suite] once it's avaialble, but any errors or
 /// prints will be emitted through the running [LiveTest].
-class LoadSuite extends RunnerSuite {
+class LoadSuite extends Suite implements RunnerSuite {
+  final environment = const VMEnvironment();
+  final isDebugging = false;
+  final onDebugging = new StreamController<bool>().stream;
+
   /// A future that completes to the loaded suite once the suite's test has been
   /// run and completed successfully.
   ///
@@ -108,7 +113,7 @@ class LoadSuite extends RunnerSuite {
   }
 
   LoadSuite._(String name, void body(), this.suite, {TestPlatform platform})
-      : super(const VMEnvironment(), new Group.root([
+      : super(new Group.root([
         new LocalTest(name,
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
             body)
@@ -116,7 +121,7 @@ class LoadSuite extends RunnerSuite {
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, Future<RunnerSuite> this.suite)
-      : super(const VMEnvironment(), old.group, platform: old.platform);
+      : super(old.group, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
@@ -144,4 +149,6 @@ class LoadSuite extends RunnerSuite {
     await new Future.error(error.error, error.stackTrace);
     throw 'unreachable';
   }
+
+  Future close() async {}
 }

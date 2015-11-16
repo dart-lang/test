@@ -39,6 +39,11 @@ class IframeListener {
   static Future start(Function getMain()) async {
     var channel = _postMessageChannel();
 
+    // Send periodic pings to the test runner so it can know when the suite is
+    // paused for debugging.
+    new Timer.periodic(new Duration(seconds: 1),
+        (_) => channel.sink.add({"type": "ping"}));
+
     var main;
     try {
       main = getMain();
