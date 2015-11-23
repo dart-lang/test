@@ -1,3 +1,10 @@
+## 0.12.6
+
+* Add a machine-readable JSON reporter. For details, see
+  [the protocol documentation][json-protocol].
+
+[json-protocol]: https://github.com/dart-lang/test/blob/master/json_reporter.md
+
 ## 0.12.5+2
 
 * Declare compatibility with Dart 1.14 and 1.15.

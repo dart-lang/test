@@ -15,6 +15,7 @@ import 'package:yaml/yaml.dart';
 import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/version.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 import 'utils.dart';
@@ -75,9 +76,12 @@ main(List<String> args) async {
   }
 
   if (configuration.version) {
-    if (!_printVersion()) {
+    var version = testVersion;
+    if (version == null) {
       stderr.writeln("Couldn't find version number.");
       exitCode = exit_codes.data;
+    } else {
+      print(version);
     }
     return;
   }
@@ -153,62 +157,4 @@ Usage: pub run test:test [files or directories...]
 
 ${Configuration.usage}
 """);
-}
-
-/// Prints the version number of the test package.
-///
-/// This loads the version number from the current package's lockfile. It
-/// returns true if it successfully printed the version number and false if it
-/// couldn't be loaded.
-bool _printVersion() {
-  var lockfile;
-  try {
-    lockfile = loadYaml(new File("pubspec.lock").readAsStringSync());
-  } on FormatException catch (_) {
-    return false;
-  } on IOException catch (_) {
-    return false;
-  }
-
-  if (lockfile is! Map) return false;
-  var packages = lockfile["packages"];
-  if (packages is! Map) return false;
-  var package = packages["test"];
-  if (package is! Map) return false;
-
-  var source = package["source"];
-  if (source is! String) return false;
-
-  switch (source) {
-    case "hosted":
-      var version = package["version"];
-      if (version is! String) return false;
-
-      print(version);
-      return true;
-
-    case "git":
-      var version = package["version"];
-      if (version is! String) return false;
-      var description = package["description"];
-      if (description is! Map) return false;
-      var ref = description["resolved-ref"];
-      if (ref is! String) return false;
-
-      print("$version (${ref.substring(0, 7)})");
-      return true;
-
-    case "path":
-      var version = package["version"];
-      if (version is! String) return false;
-      var description = package["description"];
-      if (description is! Map) return false;
-      var path = description["path"];
-      if (path is! String) return false;
-
-      print("$version (from $path)");
-      return true;
-
-    default: return false;
-  }
 }

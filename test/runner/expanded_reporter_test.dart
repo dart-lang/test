@@ -16,7 +16,7 @@ void main() {
   test("reports when no tests are run", () {
     d.file("test.dart", "void main() {}").create();
 
-    var test = runTest(["test.dart"], compact: true);
+    var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("No tests ran.")));
     test.shouldExit(0);
   });
@@ -68,7 +68,7 @@ void main() {
 }
 """).create();
 
-    var test = runTest(["--verbose-trace", "test.dart"], compact: true);
+    var test = runTest(["--verbose-trace", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
     test.shouldExit(1);
   });

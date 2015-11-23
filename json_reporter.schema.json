@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "An event emitted by the test package's JSON reporter",
+
+  "definitions": {
+    "Test": {
+      "required": ["id", "name", "metadata"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 0},
+        "name": {"type": "string"},
+        "metadata": {"$ref": "#/definitions/Metadata"}
+      }
+    },
+
+    "Metadata": {
+      "required": ["skip", "skipReason"],
+      "properties": {
+        "skip": {"type": "boolean"},
+        "skipReason": {
+          "oneOf": [{"type": "string"}, {"type": "null"}]
+        }
+      }
+    }
+  },
+
+  "required": ["type", "time"],
+  "properties": {
+    "time": {"type": "integer", "minimum": 0},
+    "type": {"type": "string"}
+  },
+
+  "oneOf": [
+    {
+      "title": "StartEvent",
+      "required": ["protocolVersion", "runnerVersion"],
+      "properties": {
+        "type": {"enum": ["start"]},
+        "protocolVersion": {"type": "string"},
+        "runnerVersion": {
+          "oneOf": [{"type": "string"}, {"type": "null"}]
+        }
+      }
+    },
+
+    {
+      "title": "TestStartEvent",
+      "required": ["test"],
+      "properties": {
+        "type": {"enum": ["testStart"]},
+        "test": {"$ref": "#/definitions/Test"}
+      }
+    },
+
+    {
+      "title": "PrintEvent",
+      "required": ["message"],
+      "properties": {
+        "type": {"enum": ["print"]},
+        "message": {"type": "string"}
+      }
+    },
+
+    {
+      "title": "ErrorEvent",
+      "required": ["testID", "error", "stackTrace", "isFailure"],
+      "properties": {
+        "type": {"enum": ["error"]},
+        "testID": {"type": "integer", "minimum": 0},
+        "error": {"type": "string"},
+        "stackTrace": {"type": "string"},
+        "isFailure": {"type": "boolean"}
+      }
+    },
+
+    {
+      "title": "TestDoneEvent",
+      "required": ["testID", "result", "hidden"],
+      "properties": {
+        "type": {"enum": ["testDone"]},
+        "testID": {"type": "integer", "minimum": 0},
+        "result": {"type": "string", "enum": ["success", "failure", "error"]},
+        "hidden": {"type": "boolean"}
+      }
+    },
+
+    {
+      "title": "DoneEvent",
+      "required": ["success"],
+      "properties": {
+        "type": {"enum": ["done"]},
+        "success": {"type": "boolean"}
+      }
+    },
+
+    {
+      "title": "FutureEvent",
+      "properties": {
+        "type": {
+          "not": {
+            "enum": ["start", "testStart", "print", "error", "testDone", "done"]
+          }
+        }
+      }
+    }
+  ]
+}

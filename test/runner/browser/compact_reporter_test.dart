@@ -25,12 +25,11 @@ void main() {
 """).create();
 
     var test = runTest([
-      "-r", "compact",
       "-p", "content-shell",
       "-p", "vm",
       "-j", "1",
       "test.dart"
-    ], compact: true);
+    ], reporter: "compact");
 
     test.stdout.expect(containsInOrder(["[VM]", "[Dartium Content Shell]"]));
 
