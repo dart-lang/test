@@ -10,6 +10,7 @@ import 'dart:html' hide Metadata;
 
 import '../../backend/declarer.dart';
 import '../../backend/group.dart';
+import '../../backend/live_test.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
@@ -132,36 +133,43 @@ class IframeListener {
   void _listen(MultiChannel channel) {
     channel.sink.add({
       "type": "success",
-      "root": _serializeGroup(channel, _suite.group)
+      "root": _serializeGroup(channel, _suite.group, [])
     });
   }
 
   /// Serializes [group] into a JSON-safe map.
-  Map _serializeGroup(MultiChannel channel, Group group) {
+  ///
+  /// [parents] lists the groups that contain [group].
+  Map _serializeGroup(MultiChannel channel, Group group,
+      Iterable<Group> parents) {
+    parents = parents.toList()..add(group);
     return {
       "type": "group",
       "name": group.name,
       "metadata": group.metadata.serialize(),
-      "setUpAll": _serializeTest(channel, group.setUpAll),
-      "tearDownAll": _serializeTest(channel, group.tearDownAll),
+      "setUpAll": _serializeTest(channel, group.setUpAll, parents),
+      "tearDownAll": _serializeTest(channel, group.tearDownAll, parents),
       "entries": group.entries.map((entry) {
         return entry is Group
-            ? _serializeGroup(channel, entry)
-            : _serializeTest(channel, entry);
+            ? _serializeGroup(channel, entry, parents)
+            : _serializeTest(channel, entry, parents);
       }).toList()
     };
   }
 
   /// Serializes [test] into a JSON-safe map.
   ///
-  /// Returns `null` if [test] is `null`.
-  Map _serializeTest(MultiChannel channel, Test test) {
+  /// [groups] lists the groups that contain [test]. Returns `null` if [test]
+  /// is `null`.
+  Map _serializeTest(MultiChannel channel, Test test, Iterable<Group> groups) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
     testChannel.stream.listen((message) {
       assert(message['command'] == 'run');
-      _runTest(test, channel.virtualChannel(message['channel']));
+      _runLiveTest(
+          test.load(_suite, groups: groups),
+          channel.virtualChannel(message['channel']));
     });
 
     return {
@@ -172,10 +180,8 @@ class IframeListener {
     };
   }
 
-  /// Runs [test] and sends the results across [channel].
-  void _runTest(Test test, MultiChannel channel) {
-    var liveTest = test.load(_suite);
-
+  /// Runs [liveTest] and sends the results across [channel].
+  void _runLiveTest(LiveTest liveTest, MultiChannel channel) {
     channel.stream.listen((message) {
       assert(message['command'] == 'close');
       liveTest.close();

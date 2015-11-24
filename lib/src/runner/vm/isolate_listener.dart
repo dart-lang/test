@@ -11,6 +11,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../../backend/declarer.dart';
 import '../../backend/group.dart';
+import '../../backend/live_test.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
@@ -107,20 +108,25 @@ class IsolateListener {
   void _listen(SendPort sendPort) {
     sendPort.send({
       "type": "success",
-      "root": _serializeGroup(_suite.group)
+      "root": _serializeGroup(_suite.group, [])
     });
   }
 
   /// Serializes [group] into an Isolate-safe map.
-  Map _serializeGroup(Group group) {
+  ///
+  /// [parents] lists the groups that contain [group].
+  Map _serializeGroup(Group group, Iterable<Group> parents) {
+    parents = parents.toList()..add(group);
     return {
       "type": "group",
       "name": group.name,
       "metadata": group.metadata.serialize(),
-      "setUpAll": _serializeTest(group.setUpAll),
-      "tearDownAll": _serializeTest(group.tearDownAll),
+      "setUpAll": _serializeTest(group.setUpAll, parents),
+      "tearDownAll": _serializeTest(group.tearDownAll, parents),
       "entries": group.entries.map((entry) {
-        return entry is Group ? _serializeGroup(entry) : _serializeTest(entry);
+        return entry is Group
+            ? _serializeGroup(entry, parents)
+            : _serializeTest(entry, parents);
       }).toList()
     };
   }
@@ -128,13 +134,13 @@ class IsolateListener {
   /// Serializes [test] into a JSON-safe map.
   ///
   /// Returns `null` if [test] is `null`.
-  Map _serializeTest(Test test) {
+  Map _serializeTest(Test test, Iterable<Group> groups) {
     if (test == null) return null;
 
     var receivePort = new ReceivePort();
     receivePort.listen((message) {
       assert(message['command'] == 'run');
-      _runTest(test, message['reply']);
+      _runLiveTest(test.load(_suite, groups: groups), message['reply']);
     });
 
     return {
@@ -145,10 +151,8 @@ class IsolateListener {
     };
   }
 
-  /// Runs [test] and sends the results across [sendPort].
-  void _runTest(Test test, SendPort sendPort) {
-    var liveTest = test.load(_suite);
-
+  /// Runs [liveTest] and sends the results across [sendPort].
+  void _runLiveTest(LiveTest liveTest, SendPort sendPort) {
     var receivePort = new ReceivePort();
     sendPort.send({"type": "started", "reply": receivePort.sendPort});
 

@@ -4,6 +4,7 @@
 
 library test.backend.test;
 
+import 'group.dart';
 import 'live_test.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
@@ -24,8 +25,10 @@ abstract class Test implements GroupEntry {
   /// Loads a live version of this test, which can be used to run it a single
   /// time.
   ///
-  /// [suite] is the suite within which this test is being run.
-  LiveTest load(Suite suite);
+  /// [suite] is the suite within which this test is being run. If [groups] is
+  /// passed, it's the list of groups containing this test; otherwise, it
+  /// defaults to just containing `suite.group`.
+  LiveTest load(Suite suite, {Iterable<Group> groups});
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os});
 

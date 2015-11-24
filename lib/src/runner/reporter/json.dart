@@ -7,10 +7,13 @@ library test.runner.reporter.json;
 import 'dart:async';
 import 'dart:convert';
 
+import '../../backend/group.dart';
 import '../../backend/live_test.dart';
+import '../../backend/metadata.dart';
 import '../../frontend/expect.dart';
 import '../../utils.dart';
 import '../engine.dart';
+import '../load_suite.dart';
 import '../reporter.dart';
 import '../version.dart';
 
@@ -38,7 +41,10 @@ class JsonReporter implements Reporter {
   final _subscriptions = new Set<StreamSubscription>();
 
   /// An expando that associates unique IDs with [LiveTest]s.
-  final _ids = new Map<LiveTest, int>();
+  final _liveTestIDs = new Map<LiveTest, int>();
+
+  /// An expando that associates unique IDs with [Group]s.
+  final _groupIDs = new Map<Group, int>();
 
   /// The next ID to associate with a [LiveTest].
   var _nextID = 0;
@@ -100,16 +106,20 @@ class JsonReporter implements Reporter {
       _stopwatch.start();
     }
 
+    // Don't emit groups for load suites. They're always empty and they provide
+    // unnecessary clutter.
+    var groupIDs = liveTest.suite is LoadSuite
+        ? []
+        : _idsForGroups(liveTest.groups);
+
     var id = _nextID++;
-    _ids[liveTest] = id;
+    _liveTestIDs[liveTest] = id;
     _emit("testStart", {
       "test": {
         "id": id,
         "name": liveTest.test.name, 
-        "metadata": {
-          "skip": liveTest.test.metadata.skip,
-          "skipReason": liveTest.test.metadata.skipReason
-        }
+        "groupIDs": groupIDs,
+        "metadata": _serializeMetadata(liveTest.test.metadata)
       }
     });
 
@@ -129,10 +139,42 @@ class JsonReporter implements Reporter {
     }));
   }
 
+  /// Returns a list of the IDs for all the groups in [groups].
+  ///
+  /// If a group doesn't have an ID yet, this assigns one and emits a new event
+  /// for that group.
+  List<int> _idsForGroups(Iterable<Group> groups) {
+    var parentID;
+    return groups.map((group) {
+      if (_groupIDs.containsKey(group)) {
+        parentID = _groupIDs[group];
+        return parentID;
+      }
+
+      var id = _nextID++;
+      _groupIDs[group] = id;
+
+      _emit("group", {
+        "group": {
+          "id": id,
+          "parentID": parentID,
+          "name": group.name,
+          "metadata": _serializeMetadata(group.metadata)
+        }
+      });
+      parentID = id;
+      return id;
+    }).toList();
+  }
+
+  /// Serializes [metadata] into a JSON-protocol-compatible map.
+  Map _serializeMetadata(Metadata metadata) =>
+      {"skip": metadata.skip, "skipReason": metadata.skipReason};
+
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest liveTest) {
     _emit("testDone", {
-      "testID": _ids[liveTest],
+      "testID": _liveTestIDs[liveTest],
       "result": liveTest.state.result.toString(),
       "hidden": !_engine.liveTests.contains(liveTest)
     });
@@ -141,7 +183,7 @@ class JsonReporter implements Reporter {
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     _emit("error", {
-      "testID": _ids[liveTest],
+      "testID": _liveTestIDs[liveTest],
       "error": error.toString(),
       "stackTrace": terseChain(stackTrace, verbose: _verboseTrace).toString(),
       "isFailure": error is TestFailure

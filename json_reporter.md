@@ -58,7 +58,7 @@ class, that refers to a nested object. The special type `List<...>` indicates a
 JSON list of the given type.
 
 Classes can "extend" one another, meaning that the subclass has all the
-properties of the superclass. Concrete subclasses can be distinguished by the
+attributes of the superclass. Concrete subclasses can be distinguished by the
 specific value of their `type` attribute. Classes may be abstract, indicating
 that only their subclasses will ever be used.
 
@@ -100,6 +100,29 @@ class StartEvent extends Event {
 
 A single start event is emitted before any other events. It indicates that the
 test runner has started running.
+
+### GroupEvent
+
+```
+class GroupEvent extends Event {
+  String type = "group";
+
+  /// Metadata about the group.
+  Group group;
+}
+```
+
+A group event is emitted before any `TestStartEvent`s for tests in a given
+group. This is the only event that contains the full metadata about a group;
+future events will refer to the group by its opaque ID.
+
+This includes the implicit group at the root of each suite, which has a `null`
+name. However, it does *not* include implicit groups for the virtual suites
+generated to represent loading test files.
+
+The group should be considered skipped if `group.metadata.skip` is `true`. When
+a group is skipped, a single `TestStartEvent` will be emitted for a test within
+that group that will also be skipped.
 
 ### TestStartEvent
 
@@ -215,7 +238,7 @@ class DoneEvent extends Event {
 An event indicating the result of the entire test run. This will be the final
 event emitted by the reporter.
 
-## Test Information
+## Other Classes
 
 ### Test
 
@@ -227,8 +250,11 @@ class Test {
   // The name of the test, including prefixes from any containing groups.
   String name;
 
-  // The test's metadata, including metadata from any containing groups and the
-  // test suite itself.
+  // The IDs of groups containing this test, in order from outermost to
+  // innermost.
+  List<int> groupIDs;
+
+  // The test's metadata, including metadata from any containing groups.
   Metadata metadata;
 }
 ```
@@ -236,6 +262,35 @@ class Test {
 A single test case. The test's ID is unique in the context of this test run.
 It's used elsewhere in the protocol to refer to this test without including its
 full representation.
+
+Most tests will have at least one group ID, representing the implicit root
+group. However, some may not; these should be treated as having no group
+metadata.
+
+### Group
+
+```
+class Group {
+  // An opaque ID for the group.
+  int id;
+
+  // The name of the group, including prefixes from any containing groups.
+  String? name;
+
+  // The ID of the group's parent group, unless it's the root group.
+  int? parentID;
+
+  // The group's metadata, including metadata from any containing groups.
+  Metadata metadata;
+}
+```
+
+A group containing test cases. The group's ID is unique in the context of this
+test run. It's used elsewhere in the protocol to refer to this test without
+including its full representation.
+
+The implicit group at the root of each test suite has `null` `name` and
+`parentID` attributes.
 
 ### Metadata
 

@@ -4,6 +4,7 @@
 
 library test.runner.browser.iframe_test;
 
+import '../../backend/group.dart';
 import '../../backend/live_test.dart';
 import '../../backend/live_test_controller.dart';
 import '../../backend/metadata.dart';
@@ -31,7 +32,7 @@ class IframeTest extends Test {
   IframeTest(this.name, this.metadata, this._channel, {StackTraceMapper mapper})
       : _mapper = mapper;
 
-  LiveTest load(Suite suite) {
+  LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var controller;
     var testChannel;
     controller = new LiveTestController(suite, this, () {
@@ -69,7 +70,7 @@ class IframeTest extends Test {
       // browser test needs to clean up on the file system anyway.
       testChannel.sink.close();
       if (!controller.completer.isCompleted) controller.completer.complete();
-    });
+    }, groups: groups);
     return controller.liveTest;
   }
 

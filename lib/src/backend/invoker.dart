@@ -8,6 +8,7 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
+import '../backend/group.dart';
 import '../frontend/expect.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
@@ -33,8 +34,8 @@ class LocalTest extends Test {
       : _body = body;
 
   /// Loads a single runnable instance of this test.
-  LiveTest load(Suite suite) {
-    var invoker = new Invoker._(suite, this);
+  LiveTest load(Suite suite, {Iterable<Group> groups}) {
+    var invoker = new Invoker._(suite, this, groups: groups);
     return invoker.liveTest;
   }
 
@@ -117,9 +118,9 @@ class Invoker {
   /// This will be `null` until the test starts running.
   Timer _timeoutTimer;
 
-  Invoker._(Suite suite, LocalTest test) {
+  Invoker._(Suite suite, LocalTest test, {Iterable<Group> groups}) {
     _controller = new LiveTestController(
-        suite, test, _onRun, _onCloseCompleter.complete);
+        suite, test, _onRun, _onCloseCompleter.complete, groups: groups);
   }
 
   /// Tells the invoker that there's a callback running that it should wait for

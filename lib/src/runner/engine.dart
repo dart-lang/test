@@ -205,7 +205,7 @@ class Engine {
 
         await _runPool.withResource(() async {
           if (_closed) return;
-          await _runGroup(suite, suite.group);
+          await _runGroup(suite, suite.group, []);
           loadResource.allowRelease(() => suite.close());
         });
       }));
@@ -215,45 +215,57 @@ class Engine {
   }
 
   /// Runs all the entries in [entries] in sequence.
-  Future _runGroup(RunnerSuite suite, Group group) async {
-    if (group.metadata.skip) {
-      await _runLiveTest(_skippedTest(suite, group));
-      return;
-    }
+  ///
+  /// [parents] is a list of groups that contain [group]. It may be modified,
+  /// but it's guaranteed to be in its original state once this function has
+  /// finished.
+  Future _runGroup(RunnerSuite suite, Group group, List<Group> parents) async {
+    parents.add(group);
+    try {
+      if (group.metadata.skip) {
+        await _runLiveTest(_skippedTest(suite, group, parents));
+        return;
+      }
 
-    var setUpAllSucceeded = true;
-    if (group.setUpAll != null) {
-      var liveTest = group.setUpAll.load(suite);
-      await _runLiveTest(liveTest, countSuccess: false);
-      setUpAllSucceeded = liveTest.state.result == Result.success;
-    }
+      var setUpAllSucceeded = true;
+      if (group.setUpAll != null) {
+        var liveTest = group.setUpAll.load(suite, groups: parents);
+        await _runLiveTest(liveTest, countSuccess: false);
+        setUpAllSucceeded = liveTest.state.result == Result.success;
+      }
 
-    if (!_closed && setUpAllSucceeded) {
-      for (var entry in group.entries) {
-        if (_closed) return;
+      if (!_closed && setUpAllSucceeded) {
+        for (var entry in group.entries) {
+          if (_closed) return;
 
-        if (entry is Group) {
-          await _runGroup(suite, entry);
-        } else if (entry.metadata.skip) {
-          await _runLiveTest(_skippedTest(suite, entry));
-        } else {
-          var test = entry as Test;
-          await _runLiveTest(test.load(suite));
+          if (entry is Group) {
+            await _runGroup(suite, entry, parents);
+          } else if (entry.metadata.skip) {
+            await _runLiveTest(_skippedTest(suite, entry, parents));
+          } else {
+            var test = entry as Test;
+            await _runLiveTest(test.load(suite, groups: parents));
+          }
         }
       }
-    }
 
-    // Even if we're closed or setUpAll failed, we want to run all the teardowns
-    // to ensure that any state is properly cleaned up.
-    if (group.tearDownAll != null) {
-      var liveTest = group.tearDownAll.load(suite);
-      await _runLiveTest(liveTest, countSuccess: false);
-      if (_closed) await liveTest.close();
+      // Even if we're closed or setUpAll failed, we want to run all the
+      // teardowns to ensure that any state is properly cleaned up.
+      if (group.tearDownAll != null) {
+        var liveTest = group.tearDownAll.load(suite, groups: parents);
+        await _runLiveTest(liveTest, countSuccess: false);
+        if (_closed) await liveTest.close();
+      }
+    } finally {
+      parents.remove(group);
     }
   }
 
   /// Returns a dummy [LiveTest] for a test or group marked as "skip".
-  LiveTest _skippedTest(RunnerSuite suite, GroupEntry entry) {
+  ///
+  /// [parents] is a list of groups that contain [entry].
+  LiveTest _skippedTest(RunnerSuite suite, GroupEntry entry,
+      List<Group> parents) {
     // The netry name will be `null` for the root group.
     var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {});
 
@@ -262,7 +274,7 @@ class Engine {
       controller.setState(const State(Status.running, Result.success));
       controller.setState(const State(Status.complete, Result.success));
       controller.completer.complete();
-    }, () {});
+    }, () {}, groups: parents);
     return controller.liveTest;
   }
 

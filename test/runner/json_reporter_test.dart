@@ -31,14 +31,15 @@ void main() {
       test('success 3', () {});
     """, [
       _start,
-      _testStart(0, "loading test.dart"),
+      _testStart(0, "loading test.dart", groupIDs: []),
       _testDone(0, hidden: true),
-      _testStart(1, "success 1"),
-      _testDone(1),
-      _testStart(2, "success 2"),
+      _group(1),
+      _testStart(2, "success 1"),
       _testDone(2),
-      _testStart(3, "success 3"),
+      _testStart(3, "success 2"),
       _testDone(3),
+      _testStart(4, "success 3"),
+      _testDone(4),
       _done()
     ]);
   });
@@ -50,17 +51,18 @@ void main() {
       test('failure 3', () => throw new TestFailure('oh no'));
     """, [
       _start,
-      _testStart(0, "loading test.dart"),
+      _testStart(0, "loading test.dart", groupIDs: []),
       _testDone(0, hidden: true),
-      _testStart(1, "failure 1"),
-      _error(1, "oh no", isFailure: true),
-      _testDone(1, result: "failure"),
-      _testStart(2, "failure 2"),
+      _group(1),
+      _testStart(2, "failure 1"),
       _error(2, "oh no", isFailure: true),
       _testDone(2, result: "failure"),
-      _testStart(3, "failure 3"),
+      _testStart(3, "failure 2"),
       _error(3, "oh no", isFailure: true),
       _testDone(3, result: "failure"),
+      _testStart(4, "failure 3"),
+      _error(4, "oh no", isFailure: true),
+      _testDone(4, result: "failure"),
       _done(success: false)
     ]);
   });
@@ -89,18 +91,19 @@ void main() {
       test('success 2', () {});
     """, [
       _start,
-      _testStart(0, "loading test.dart"),
+      _testStart(0, "loading test.dart", groupIDs: []),
       _testDone(0, hidden: true),
-      _testStart(1, "failure 1"),
-      _error(1, "oh no", isFailure: true),
-      _testDone(1, result: "failure"),
-      _testStart(2, "success 1"),
-      _testDone(2),
-      _testStart(3, "failure 2"),
-      _error(3, "oh no", isFailure: true),
-      _testDone(3, result: "failure"),
-      _testStart(4, "success 2"),
-      _testDone(4),
+      _group(1),
+      _testStart(2, "failure 1"),
+      _error(2, "oh no", isFailure: true),
+      _testDone(2, result: "failure"),
+      _testStart(3, "success 1"),
+      _testDone(3),
+      _testStart(4, "failure 2"),
+      _error(4, "oh no", isFailure: true),
+      _testDone(4, result: "failure"),
+      _testStart(5, "success 2"),
+      _testDone(5),
       _done(success: false)
     ]);
   });
@@ -119,15 +122,16 @@ void main() {
       test('wait', () => completer.future);
     """, [
       _start,
-      _testStart(0, "loading test.dart"),
+      _testStart(0, "loading test.dart", groupIDs: []),
       _testDone(0, hidden: true),
-      _testStart(1, "failures"),
-      _error(1, "first error"),
-      _error(1, "second error"),
-      _error(1, "third error"),
-      _testDone(1, result: "error"),
-      _testStart(2, "wait"),
-      _testDone(2),
+      _group(1),
+      _testStart(2, "failures"),
+      _error(2, "first error"),
+      _error(2, "second error"),
+      _error(2, "third error"),
+      _testDone(2, result: "error"),
+      _testStart(3, "wait"),
+      _testDone(3),
       _done(success: false)
     ]);
   });
@@ -151,18 +155,49 @@ void main() {
       });
     """, [
       _start,
-      _testStart(0, "loading test.dart"),
+      _testStart(0, "loading test.dart", groupIDs: []),
       _testDone(0, hidden: true),
-      _testStart(1, "failure"),
-      _testDone(1),
-      _testStart(2, "wait"),
-      _error(1, "oh no"),
-      _error(1,
+      _group(1),
+      _testStart(2, "failure"),
+      _testDone(2),
+      _testStart(3, "wait"),
+      _error(2, "oh no"),
+      _error(2,
           "This test failed after it had already completed. Make sure to "
             "use [expectAsync]\n"
           "or the [completes] matcher when testing async code."),
-      _testDone(2),
+      _testDone(3),
       _done(success: false)
+    ]);
+  });
+
+  test("reports each test in its proper groups", () {
+    _expectReport("""
+      group('group 1', () {
+        group('.2', () {
+          group('.3', () {
+            test('success', () {});
+          });
+        });
+
+        test('success', () {});
+        test('success', () {});
+      });
+    """, [
+      _start,
+      _testStart(0, "loading test.dart", groupIDs: []),
+      _testDone(0, hidden: true),
+      _group(1),
+      _group(2, name: "group 1", parentID: 1),
+      _group(3, name: "group 1 .2", parentID: 2),
+      _group(4, name: "group 1 .2 .3", parentID: 3),
+      _testStart(5, 'group 1 .2 .3 success', groupIDs: [1, 2, 3, 4]),
+      _testDone(5),
+      _testStart(6, 'group 1 success', groupIDs: [1, 2]),
+      _testDone(6),
+      _testStart(7, 'group 1 success', groupIDs: [1, 2]),
+      _testDone(7),
+      _done()
     ]);
   });
 
@@ -177,14 +212,15 @@ void main() {
         });
       """, [
         _start,
-        _testStart(0, "loading test.dart"),
+        _testStart(0, "loading test.dart", groupIDs: []),
         _testDone(0, hidden: true),
-        _testStart(1, 'test'),
-        _print(1, "one"),
-        _print(1, "two"),
-        _print(1, "three"),
-        _print(1, "four"),
-        _testDone(1),
+        _group(1),
+        _testStart(2, 'test'),
+        _print(2, "one"),
+        _print(2, "two"),
+        _print(2, "three"),
+        _print(2, "four"),
+        _testDone(2),
         _done()
       ]);
     });
@@ -211,16 +247,17 @@ void main() {
         });
       """, [
         _start,
-        _testStart(0, "loading test.dart"),
+        _testStart(0, "loading test.dart", groupIDs: []),
         _testDone(0, hidden: true),
-        _testStart(1, 'test'),
-        _testDone(1),
-        _testStart(2, 'wait'),
-        _print(1, "one"),
-        _print(1, "two"),
-        _print(1, "three"),
-        _print(1, "four"),
+        _group(1),
+        _testStart(2, 'test'),
         _testDone(2),
+        _testStart(3, 'wait'),
+        _print(2, "one"),
+        _print(2, "two"),
+        _print(2, "three"),
+        _print(2, "four"),
+        _testDone(3),
         _done()
       ]);
     });
@@ -251,20 +288,21 @@ void main() {
         test('wait', () => completer.future);
       """, [
         _start,
-        _testStart(0, "loading test.dart"),
+        _testStart(0, "loading test.dart", groupIDs: []),
         _testDone(0, hidden: true),
-        _testStart(1, 'test'),
-        _print(1, "one"),
-        _print(1, "two"),
-        _error(1, "first error"),
-        _print(1, "three"),
-        _print(1, "four"),
-        _error(1, "second error"),
-        _print(1, "five"),
-        _print(1, "six"),
-        _testDone(1, result: "error"),
-        _testStart(2, 'wait'),
-        _testDone(2),
+        _group(1),
+        _testStart(2, 'test'),
+        _print(2, "one"),
+        _print(2, "two"),
+        _error(2, "first error"),
+        _print(2, "three"),
+        _print(2, "four"),
+        _error(2, "second error"),
+        _print(2, "five"),
+        _print(2, "six"),
+        _testDone(2, result: "error"),
+        _testStart(3, 'wait'),
+        _testDone(3),
         _done(success: false)
       ]);
     });
@@ -278,13 +316,33 @@ void main() {
         test('skip 3', () {}, skip: true);
       """, [
         _start,
-        _testStart(0, "loading test.dart"),
+        _testStart(0, "loading test.dart", groupIDs: []),
         _testDone(0, hidden: true),
-        _testStart(1, "skip 1", skip: true),
-        _testDone(1),
-        _testStart(2, "skip 2", skip: true),
+        _group(1),
+        _testStart(2, "skip 1", skip: true),
         _testDone(2),
-        _testStart(3, "skip 3", skip: true),
+        _testStart(3, "skip 2", skip: true),
+        _testDone(3),
+        _testStart(4, "skip 3", skip: true),
+        _testDone(4),
+        _done()
+      ]);
+    });
+
+    test("reports skipped groups", () {
+      _expectReport("""
+        group('skip', () {
+          test('success 1', () {});
+          test('success 2', () {});
+          test('success 3', () {});
+        }, skip: true);
+      """, [
+        _start,
+        _testStart(0, "loading test.dart", groupIDs: []),
+        _testDone(0, hidden: true),
+        _group(1),
+        _group(2, name: "skip", parentID: 1, skip: true),
+        _testStart(3, "skip", groupIDs: [1, 2], skip: true),
         _testDone(3),
         _done()
       ]);
@@ -296,12 +354,13 @@ void main() {
         test('skip 2', () {}, skip: 'or another');
       """, [
         _start,
-        _testStart(0, "loading test.dart"),
+        _testStart(0, "loading test.dart", groupIDs: []),
         _testDone(0, hidden: true),
-        _testStart(1, "skip 1", skip: "some reason"),
-        _testDone(1),
-        _testStart(2, "skip 2", skip: "or another"),
+        _group(1),
+        _testStart(2, "skip 1", skip: "some reason"),
         _testDone(2),
+        _testStart(3, "skip 2", skip: "or another"),
+        _testDone(3),
         _done()
       ]);
     });
@@ -345,25 +404,40 @@ void _expectReport(String tests, List<Map> expected) {
   });
 }
 
+/// Returns the event emitted by the JSON reporter indicating that a group has
+/// begun running.
+///
+/// If [skip] is `true`, the group is expected to be marked as skipped without a
+/// reason. If it's a [String], the group is expected to be marked as skipped
+/// with that reason.
+Map _group(int id, {String name, int parentID, skip}) {
+  return {
+    "type": "group",
+    "group": {
+      "id": id,
+      "name": name,
+      "parentID": parentID,
+      "metadata": _metadata(skip: skip)
+    }
+  };
+}
+
 /// Returns the event emitted by the JSON reporter indicating that a test has
 /// begun running.
 ///
-/// If [skip] is `true`, the test is expected to be marked as skipped without a
+/// If [parentIDs] is passed, it's the IDs of groups containing this test. If
+/// [skip] is `true`, the test is expected to be marked as skipped without a
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
-Map _testStart(int id, String name, {skip}) {
-  var metadata;
-  if (skip == true) {
-    metadata = {"skip": true, "skipReason": null};
-  } else if (skip is String) {
-    metadata = {"skip": true, "skipReason": skip};
-  } else {
-    metadata = {"skip": false, "skipReason": null};
-  }
-
+Map _testStart(int id, String name, {Iterable<int> groupIDs, skip}) {
   return {
     "type": "testStart",
-    "test": {"id": id, "name": name, "metadata": metadata}
+    "test": {
+      "id": id,
+      "name": name,
+      "groupIDs": groupIDs ?? [1],
+      "metadata": _metadata(skip: skip)
+    }
   };
 }
 
@@ -404,4 +478,17 @@ Map _testDone(int id, {String result, bool hidden: false}) {
   return {"type": "testDone", "testID": id, "result": result, "hidden": hidden};
 }
 
+/// Returns the event emitted by the JSON reporter indicating that the entire
+/// run finished.
 Map _done({bool success: true}) => {"type": "done", "success": success};
+
+/// Returns the serialized metadata corresponding to [skip].
+Map _metadata({skip}) {
+  if (skip == true) {
+    return {"skip": true, "skipReason": null};
+  } else if (skip is String) {
+    return {"skip": true, "skipReason": skip};
+  } else {
+    return {"skip": false, "skipReason": null};
+  }
+}

@@ -12,6 +12,20 @@
       }
     },
 
+    "Group": {
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 0},
+        "parentID": {
+          "oneOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
+        },
+        "name": {
+          "oneOf": [{"type": "string"}, {"type": "null"}],
+        },
+        "metadata": {"$ref": "#/definitions/Metadata"}
+      }
+    },
+
     "Metadata": {
       "required": ["skip", "skipReason"],
       "properties": {
@@ -48,6 +62,15 @@
       "properties": {
         "type": {"enum": ["testStart"]},
         "test": {"$ref": "#/definitions/Test"}
+      }
+    },
+
+    {
+      "title": "GroupEvent",
+      "required": ["group"],
+      "properties": {
+        "type": {"enum": ["group"]},
+        "group": {"$ref": "#/definitions/Group"}
       }
     },
 
@@ -97,7 +120,9 @@
       "properties": {
         "type": {
           "not": {
-            "enum": ["start", "testStart", "print", "error", "testDone", "done"]
+            "enum": [
+              "start", "testStart", "group", "print", "error", "testDone", "done"
+            ]
           }
         }
       }
