@@ -6,6 +6,12 @@ representation of the test runner's progress. This reporter is intended for use
 by IDEs and other tools to present a custom view of the test runner's operation
 without needing to parse output intended for humans.
 
+Note that the test runner is highly asynchronous, and users of this protocol
+shouldn't make assumptions about the ordering of events beyond what's explicitly
+specified in this document. It's possible for events from multiple tests to be
+intertwined, for a single test to emit an error after it completed successfully,
+and so on.
+
 ## Usage
 
 Pass the `--reporter json` command-line flag to the test runner to activate the
