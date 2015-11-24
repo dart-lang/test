@@ -3,6 +3,8 @@
 * Add a machine-readable JSON reporter. For details, see
   [the protocol documentation][json-protocol].
 
+* Skipped groups now properly print skip messages.
+
 [json-protocol]: https://github.com/dart-lang/test/blob/master/json_reporter.md
 
 ## 0.12.5+2

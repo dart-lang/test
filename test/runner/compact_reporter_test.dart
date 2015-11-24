@@ -322,6 +322,20 @@ void main() {
           +0 ~3: All tests skipped.""");
     });
 
+    test("displays a skipped group", () {
+      _expectReport("""
+          group('skip', () {
+            test('test 1', () {});
+            test('test 2', () {});
+            test('test 3', () {});
+          }, skip: true);""",
+          """
+          +0: loading test.dart
+          +0: skip
+          +0 ~1: skip
+          +0 ~1: All tests skipped.""");
+    });
+
     test("runs skipped tests along with successful tests", () {
       _expectReport("""
           test('skip 1', () {}, skip: true);
