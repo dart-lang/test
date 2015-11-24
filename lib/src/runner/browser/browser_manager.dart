@@ -11,23 +11,27 @@ import 'package:async/async.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:pool/pool.dart';
 
+import '../../backend/group.dart';
 import '../../backend/metadata.dart';
+import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/multi_channel.dart';
+import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
 import '../environment.dart';
+import '../load_exception.dart';
 import '../runner_suite.dart';
 import 'browser.dart';
 import 'chrome.dart';
 import 'content_shell.dart';
 import 'dartium.dart';
 import 'firefox.dart';
+import 'iframe_test.dart';
 import 'internet_explorer.dart';
 import 'phantom_js.dart';
 import 'safari.dart';
-import 'suite.dart';
 
 /// A class that manages the connection to a single running browser.
 ///
@@ -176,16 +180,18 @@ class BrowserManager {
     // prematurely (e.g. via Control-C).
     var suiteVirtualChannel = _channel.virtualChannel();
     var suiteId = _suiteId++;
+    var suiteChannel;
 
     closeIframe() {
       if (_closed) return;
+      suiteChannel.sink.close();
       _channel.sink.add({
         "command": "closeSuite",
         "id": suiteId
       });
     }
 
-    return await _pool.withResource(() async {
+    var response = await _pool.withResource(() {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
@@ -193,15 +199,85 @@ class BrowserManager {
         "channel": suiteVirtualChannel.id
       });
 
-      try {
-        return await loadBrowserSuite(
-            suiteVirtualChannel, await _environment, path,
-            mapper: mapper, platform: _platform, onClose: () => closeIframe());
-      } catch (_) {
-        closeIframe();
-        rethrow;
-      }
+      // Create a nested MultiChannel because the iframe will be using a channel
+      // wrapped within the host's channel.
+      suiteChannel = new MultiChannel(
+          suiteVirtualChannel.stream, suiteVirtualChannel.sink);
+
+      var completer = new Completer();
+      suiteChannel.stream.listen((response) {
+        if (response["type"] == "print") {
+          print(response["line"]);
+        } else {
+          completer.complete(response);
+        }
+      }, onDone: () {
+        if (!completer.isCompleted) completer.complete();
+      });
+
+      return completer.future.timeout(new Duration(minutes: 1), onTimeout: () {
+        throw new LoadException(
+            path,
+            "Timed out waiting for the test suite to connect on "
+                "${_platform.name}.");
+      });
     });
+
+    if (response == null) {
+      closeIframe();
+      throw new LoadException(
+          path, "Connection closed before test suite loaded.");
+    }
+
+    if (response["type"] == "loadException") {
+      closeIframe();
+      throw new LoadException(path, response["message"]);
+    }
+
+    if (response["type"] == "error") {
+      closeIframe();
+      var asyncError = RemoteException.deserialize(response["error"]);
+      await new Future.error(
+          new LoadException(path, asyncError.error),
+          asyncError.stackTrace);
+    }
+
+    return new RunnerSuite(
+        await _environment,
+        _deserializeGroup(suiteChannel, mapper, response["root"]),
+        platform: _platform,
+        path: path,
+        onClose: () => closeIframe());
+  }
+
+  /// Deserializes [group] into a concrete [Group] class.
+  Group _deserializeGroup(MultiChannel suiteChannel,
+      StackTraceMapper mapper, Map group) {
+    var metadata = new Metadata.deserialize(group['metadata']);
+    return new Group(group['name'], group['entries'].map((entry) {
+      if (entry['type'] == 'group') {
+        return _deserializeGroup(suiteChannel, mapper, entry);
+      }
+
+      return _deserializeTest(suiteChannel, mapper, entry);
+    }),
+        metadata: metadata,
+        setUpAll: _deserializeTest(suiteChannel, mapper, group['setUpAll']),
+        tearDownAll:
+            _deserializeTest(suiteChannel, mapper, group['tearDownAll']));
+  }
+
+  /// Deserializes [test] into a concrete [Test] class.
+  ///
+  /// Returns `null` if [test] is `null`.
+  Test _deserializeTest(MultiChannel suiteChannel, StackTraceMapper mapper,
+      Map test) {
+    if (test == null) return null;
+
+    var metadata = new Metadata.deserialize(test['metadata']);
+    var testChannel = suiteChannel.virtualChannel(test['channel']);
+    return new IframeTest(test['name'], metadata, testChannel,
+        mapper: mapper);
   }
 
   /// An implementation of [Environment.displayPause].
