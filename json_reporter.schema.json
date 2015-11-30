@@ -4,10 +4,14 @@
 
   "definitions": {
     "Test": {
-      "required": ["id", "name", "metadata"],
+      "required": ["id", "name", "groupIDs", "metadata"],
       "properties": {
         "id": {"type": "integer", "minimum": 0},
         "name": {"type": "string"},
+        "groupIDs": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0}
+        },
         "metadata": {"$ref": "#/definitions/Metadata"}
       }
     },
@@ -49,7 +53,7 @@
       "required": ["protocolVersion", "runnerVersion"],
       "properties": {
         "type": {"enum": ["start"]},
-        "protocolVersion": {"type": "string"},
+        "protocolVersion": {"type": "string", "pattern": "^0\.1\."},
         "runnerVersion": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
         }
@@ -76,9 +80,10 @@
 
     {
       "title": "PrintEvent",
-      "required": ["message"],
+      "required": ["testID", "message"],
       "properties": {
         "type": {"enum": ["print"]},
+        "testID": {"type": "integer", "minimum": 0},
         "message": {"type": "string"}
       }
     },
@@ -117,6 +122,8 @@
 
     {
       "title": "FutureEvent",
+      "description":
+        "A placeholder event to allow new events to be added in the future.",
       "properties": {
         "type": {
           "not": {
