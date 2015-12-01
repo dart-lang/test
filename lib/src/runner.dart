@@ -170,8 +170,48 @@ class Runner {
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        if (_config.pattern == null) return suite;
-        return suite.filter((test) => test.name.contains(_config.pattern));
+        return suite.filter((test) {
+          // Warn if any test has tags that don't appear on the command line.
+          //
+          // TODO(nweiz): Only print this once per test, even if it's run on
+          // multiple runners.
+          //
+          // TODO(nweiz): If groups or suites are tagged, don't print this for
+          // every test they contain.
+          //
+          // TODO(nweiz): Print this as part of the test's output so it's easy
+          // to associate with the correct test.
+          var specifiedTags = _config.tags.union(_config.excludeTags);
+          var unrecognizedTags = test.metadata.tags.difference(specifiedTags);
+          if (unrecognizedTags.isNotEmpty) {
+            // Pause the reporter while we print to ensure that we don't
+            // interfere with its output.
+            _reporter.pause();
+            warn(
+                'Unknown ${pluralize('tag', unrecognizedTags.length)} '
+                '${toSentence(unrecognizedTags)} in test "${test.name}".',
+                color: _config.color);
+            _reporter.resume();
+          }
+
+          // Skip any tests that don't match the given pattern.
+          if (_config.pattern != null && !test.name.contains(_config.pattern)) {
+            return false;
+          }
+
+          // If the user provided tags, skip tests that don't match all of them.
+          if (!_config.tags.isEmpty &&
+              !test.metadata.tags.containsAll(_config.tags)) {
+            return false;
+          }
+
+          // Skip tests that do match any tags the user wants to exclude.
+          if (_config.excludeTags.intersection(test.metadata.tags).isNotEmpty) {
+            return false;
+          }
+
+          return true;
+        });
       });
     });
   }

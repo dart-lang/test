@@ -55,6 +55,7 @@ class _Parser {
     var testOn;
     var skip;
     var onPlatform;
+    var tags;
 
     for (var annotation in _annotations) {
       var pair = _resolveConstructor(
@@ -74,6 +75,9 @@ class _Parser {
       } else if (name == 'OnPlatform') {
         _assertSingle(onPlatform, 'OnPlatform', annotation);
         onPlatform = _parseOnPlatform(annotation, constructorName);
+      } else if (name == 'Tags') {
+        _assertSingle(tags, 'Tags', annotation);
+        tags = _parseTags(annotation, constructorName);
       }
     }
 
@@ -82,7 +86,8 @@ class _Parser {
         timeout: timeout,
         skip: skip != null,
         skipReason: skip is String ? skip : null,
-        onPlatform: onPlatform);
+        onPlatform: onPlatform,
+        tags: tags);
   }
 
   /// Parses a `@TestOn` annotation.
@@ -161,6 +166,19 @@ class _Parser {
 
     var args = constructor.argumentList.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
+  }
+
+  /// Parses a `@Tags` annotation.
+  ///
+  /// [annotation] is the annotation. [constructorName] is the name of the named
+  /// constructor for the annotation, if any.
+  Set<String> _parseTags(Annotation annotation, String constructorName) {
+    _assertConstructorName(constructorName, 'Tags', annotation);
+    _assertArguments(annotation.arguments, 'Tags', annotation, positional: 1);
+
+    return _parseList(annotation.arguments.arguments.first)
+        .map((tagExpression) => _parseString(tagExpression).stringValue)
+        .toSet();
   }
 
   /// Parses an `@OnPlatform` annotation.

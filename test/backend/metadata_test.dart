@@ -9,6 +9,41 @@ import 'package:test/src/frontend/skip.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group("tags", () {
+    test("parses an Iterable", () {
+      expect(new Metadata.parse(tags: ["a", "b"]).tags,
+          unorderedEquals(["a", "b"]));
+    });
+
+    test("parses a String", () {
+      expect(new Metadata.parse(tags: "a").tags, unorderedEquals(["a"]));
+    });
+
+    test("parses null", () {
+      expect(new Metadata.parse().tags, unorderedEquals([]));
+    });
+
+    test("parse refuses an invalid type", () {
+      expect(() => new Metadata.parse(tags: 1), throwsArgumentError);
+    });
+
+    test("parse refuses an invalid type in a list", () {
+      expect(() => new Metadata.parse(tags: [1]), throwsArgumentError);
+    });
+
+    test("merges tags by computing the union of the two tag sets", () {
+      var merged = new Metadata(tags: ["a", "b"])
+          .merge(new Metadata(tags: ["b", "c"]));
+      expect(merged.tags, unorderedEquals(["a", "b", "c"]));
+    });
+
+    test("serializes and deserializes tags", () {
+      var metadata = new Metadata(tags: ["a", "b"]).serialize();
+      expect(new Metadata.deserialize(metadata).tags,
+          unorderedEquals(['a', 'b']));
+    });
+  });
+
   group("onPlatform", () {
     test("parses a valid map", () {
       var metadata = new Metadata.parse(onPlatform: {

@@ -300,6 +300,56 @@ library foo;
     });
   });
 
+  group("@Tags:", () {
+    test("parses a valid annotation", () {
+      new File(_path).writeAsStringSync("@Tags(const ['a'])\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.tags, equals(["a"]));
+    });
+
+    test("ignores a constructor named Tags", () {
+      new File(_path).writeAsStringSync("@foo.Tags(const ['a'])\nlibrary foo;");
+      var metadata = parseMetadata(_path);
+      expect(metadata.tags, isEmpty);
+    });
+
+    group("throws an error for", () {
+      test("a named constructor", () {
+        new File(_path).writeAsStringSync(
+            "@Tags.name(const ['a'])\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("no argument list", () {
+        new File(_path).writeAsStringSync("@Tags\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a named argument", () {
+        new File(_path).writeAsStringSync(
+            "@Tags(tags: ['a'])\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple arguments", () {
+        new File(_path).writeAsStringSync(
+            "@Tags(const ['a'], ['b'])\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("a non-list argument", () {
+        new File(_path).writeAsStringSync("@Tags('a')\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+
+      test("multiple @Tags", () {
+        new File(_path).writeAsStringSync(
+            "@Tags(const ['a'])\n@Tags(const ['b'])\nlibrary foo;");
+        expect(() => parseMetadata(_path), throwsFormatException);
+      });
+    });
+  });
+
   group("@OnPlatform:", () {
     test("parses a valid annotation", () {
       new File(_path).writeAsStringSync("""

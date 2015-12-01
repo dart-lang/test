@@ -1,3 +1,16 @@
+## 0.12.7
+
+* Add the ability to tag tests. Tests with specific tags may be run by passing
+  the `--tags` command-line argument, or excluded by passing the
+  `--exclude-tags` parameter.
+
+  This feature is not yet complete. For now, tags are only intended to be added
+  temporarily to enable use-cases like [focusing][] on a specific test or group.
+  Further development can be followed on [the issue tracker][issue 16].
+
+[focusing]: http://jasmine.github.io/2.1/focused_specs.html
+[issue 16]: https://github.com/dart-lang/test/issues/16
+
 ## 0.12.6
 
 * Add a machine-readable JSON reporter. For details, see

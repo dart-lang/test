@@ -414,6 +414,32 @@ void main() {
 
         return _runTest(entries.single.entries.single);
       });
+
+      test("inherits group's tags", () {
+        var tests = declare(() {
+          group("outer", () {
+            group("inner", () {
+              test("with tags", () {}, tags: "d");
+            }, tags: ["b", "c"]);
+          }, tags: "a");
+        });
+
+        var outerGroup = tests.single;
+        var innerGroup = outerGroup.entries.single;
+        var testWithTags = innerGroup.entries.single;
+        expect(outerGroup.metadata.tags, unorderedEquals(["a"]));
+        expect(innerGroup.metadata.tags, unorderedEquals(["a", "b", "c"]));
+        expect(testWithTags.metadata.tags,
+            unorderedEquals(["a", "b", "c", "d"]));
+      });
+
+      test("throws on invalid tags", () {
+        expect(() {
+          declare(() {
+            group("a", () {}, tags: 1);
+          });
+        }, throwsArgumentError);
+      });
     });
 
     group(".tearDown()", () {

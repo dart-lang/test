@@ -6,6 +6,8 @@ library test.backend.metadata;
 
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
+
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';
 import '../utils.dart';
@@ -32,6 +34,9 @@ class Metadata {
 
   /// The reason the test or suite should be skipped, if given.
   final String skipReason;
+
+  /// The user-defined tags attached to the test or suite.
+  final Set<String> tags;
 
   /// Platform-specific metadata.
   ///
@@ -83,39 +88,60 @@ class Metadata {
     return result;
   }
 
+  /// Parses a user-provided [String] or [Iterable] into the value for [tags].
+  ///
+  /// Throws an [ArgumentError] if [tags] is not a [String] or an [Iterable].
+  static Set<String> _parseTags(tags) {
+    if (tags == null) return new Set();
+    if (tags is String) return new Set.from([tags]);
+    if (tags is! Iterable) {
+      throw new ArgumentError.value(tags, "tags",
+          "must be either a String or an Iterable.");
+    }
+
+    if (tags.any((tag) => tag is! String)) {
+      throw new ArgumentError.value(tags, "tags", "must contain only Strings.");
+    }
+
+    return new Set.from(tags);
+  }
+
   /// Creates new Metadata.
   ///
   /// [testOn] defaults to [PlatformSelector.all].
   Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
           this.verboseTrace: false, this.skipReason,
-          Map<PlatformSelector, Metadata> onPlatform})
+          Map<PlatformSelector, Metadata> onPlatform, Iterable<String> tags})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip,
         onPlatform = onPlatform == null
             ? const {}
-            : new UnmodifiableMapView(onPlatform);
+            : new UnmodifiableMapView(onPlatform),
+        tags = tags == null ? new Set() : new UnmodifiableSetView(tags.toSet());
 
   /// Creates a new Metadata, but with fields parsed from caller-friendly values
   /// where applicable.
   ///
   /// Throws a [FormatException] if any field is invalid.
   Metadata.parse({String testOn, Timeout timeout, skip,
-          this.verboseTrace: false, Map<String, dynamic> onPlatform})
+          this.verboseTrace: false, Map<String, dynamic> onPlatform,
+          tags})
       : testOn = testOn == null
             ? PlatformSelector.all
             : new PlatformSelector.parse(testOn),
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip != null && skip != false,
         skipReason = skip is String ? skip : null,
-        onPlatform = _parseOnPlatform(onPlatform) {
+        onPlatform = _parseOnPlatform(onPlatform),
+        tags = _parseTags(tags) {
     if (skip != null && skip is! String && skip is! bool) {
       throw new ArgumentError(
           '"skip" must be a String or a bool, was "$skip".');
     }
   }
 
-  /// Dezerializes the result of [Metadata.serialize] into a new [Metadata].
+  /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
   Metadata.deserialize(serialized)
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
@@ -124,6 +150,7 @@ class Metadata {
         skip = serialized['skip'],
         skipReason = serialized['skipReason'],
         verboseTrace = serialized['verboseTrace'],
+        tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
             value: (pair) => new Metadata.deserialize(pair.last));
@@ -147,7 +174,8 @@ class Metadata {
           skip: skip || other.skip,
           verboseTrace: verboseTrace || other.verboseTrace,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,
-          onPlatform: mergeMaps(onPlatform, other.onPlatform));
+          onPlatform: mergeMaps(onPlatform, other.onPlatform),
+          tags: tags.union(other.tags));
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change({PlatformSelector testOn, Timeout timeout, bool skip,
@@ -192,7 +220,8 @@ class Metadata {
       'skip': skip,
       'skipReason': skipReason,
       'verboseTrace': verboseTrace,
-      'onPlatform': serializedOnPlatform
+      'onPlatform': serializedOnPlatform,
+      'tags': tags.toList()
     };
   }
 
