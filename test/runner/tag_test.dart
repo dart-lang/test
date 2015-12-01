@@ -35,7 +35,7 @@ void main() {
   test("no tags", () {});
   test("a", () {}, tags: "a");
   test("b", () {}, tags: "b");
-  test("bc", () {}, tags: "b,c");
+  test("bc", () {}, tags: ["b", "c"]);
 }
 """).create();
     });
@@ -124,7 +124,7 @@ void main() {
   test("no tags", () {});
   test("a", () {}, tags: "a");
   test("b", () {}, tags: "b");
-  test("bc", () {}, tags: "b,c");
+  test("bc", () {}, tags: ["b", "c"]);
 }
 """).create();
     });

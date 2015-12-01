@@ -71,6 +71,9 @@ Usage: pub run test:test [files or directories...]
     --js-trace                 Whether to emit raw JavaScript stack traces for browser tests.
     --[no-]color               Whether to use terminal colors.
                                (auto-detected by default)
+
+-t, --tags                     Comma-separated list of tags to run
+-x, --exclude-tags             Comma-separated list of tags not to run
 """;
 
 void main() {
