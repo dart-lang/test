@@ -13,6 +13,7 @@ import 'package:path/path.dart' as p;
 import '../frontend/timeout.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
+import '../utils.dart';
 import '../util/io.dart';
 
 /// The default number of test suites to run at once.
@@ -43,6 +44,18 @@ class Configuration {
     parser.addOption("plain-name",
         abbr: 'N',
         help: 'A plain-text substring of the name of the test to run.');
+    // TODO(nweiz): Support the full platform-selector syntax for choosing which
+    // tags to run. In the shorter term, disallow non-"identifier" tags.
+    parser.addOption("tags",
+        abbr: 't',
+        help: 'Run only tests with all of the specified tags.',
+        allowMultiple: true);
+    parser.addOption("tag", hide: true, allowMultiple: true);
+    parser.addOption("exclude-tags",
+        abbr: 'x',
+        help: "Don't run tests with any of the specified tags.",
+        allowMultiple: true);
+    parser.addOption("exclude-tag", hide: true, allowMultiple: true);
     parser.addOption("platform",
         abbr: 'p',
         help: 'The platform(s) on which to run the tests.',
@@ -78,24 +91,6 @@ class Configuration {
         help: 'Whether to emit raw JavaScript stack traces for browser tests.');
     parser.addFlag("color", defaultsTo: null,
         help: 'Whether to use terminal colors.\n(auto-detected by default)');
-    parser.addOption("tags",
-        abbr: 't',
-        help: 'Comma-separated list of tags to run',
-        allowMultiple: true,
-        splitCommas: true);
-    parser.addOption("tag",
-        hide: true,
-        allowMultiple: true,
-        splitCommas: true);
-    parser.addOption("exclude-tags",
-        abbr: 'x',
-        help: 'Comma-separated list of tags not to run',
-        allowMultiple: true,
-        splitCommas: true);
-    parser.addOption("exclude-tag",
-        hide: true,
-        allowMultiple: true,
-        splitCommas: true);
 
     return parser;
   })();
@@ -180,18 +175,21 @@ class Configuration {
       pattern = options['plain-name'];
     }
 
-    var tags = new Set<String>();
+    var tags = new Set();
     tags.addAll(options['tags'] ?? []);
     tags.addAll(options['tag'] ?? []);
 
-    var excludeTags = new Set<String>();
+    var excludeTags = new Set();
     excludeTags.addAll(options['exclude-tags'] ?? []);
     excludeTags.addAll(options['exclude-tag'] ?? []);
 
     var tagIntersection = tags.intersection(excludeTags);
     if (tagIntersection.isNotEmpty) {
-      throw new FormatException('Included and excluded tag sets may not'
-          ' intersect. Found intersection: ${tagIntersection.join(', ')}');
+      throw new FormatException(
+          'The ${pluralize('tag', tagIntersection.length)} '
+          '${toSentence(tagIntersection)} '
+          '${pluralize('was', tagIntersection.length, plural: 'were')} '
+          'both included and excluded.');
     }
 
     return new Configuration(

@@ -4,14 +4,13 @@
 
 library test.frontend.tags;
 
-/// An annotation for applying a set of tags for a test suite.
+/// An annotation for applying a set of user-defined tags to a test suite.
 class Tags {
-  /// Tags applied to a test suite.
-  final tags;
+  /// The tags for the test suite.
+  Set<String> get tags => _tags.toSet();
 
-  /// Applies a set of tags to a test suite.
-  ///
-  /// [tags] is either an [Iterable] specifying one or more tags, or a [String]
-  /// specifying one tag.
-  const Tags([this.tags]);
+  final Iterable<String> _tags;
+
+  /// Applies a set of user-defined tags to a test suite.
+  const Tags(this._tags);
 }

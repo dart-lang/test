@@ -175,18 +175,10 @@ class _Parser {
   Set<String> _parseTags(Annotation annotation, String constructorName) {
     _assertConstructorName(constructorName, 'Tags', annotation);
     _assertArguments(annotation.arguments, 'Tags', annotation, positional: 1);
-    var arg = annotation.arguments.arguments.first;
-    if (arg is ListLiteral) {
-      var tagExpressions = _parseList(arg);
-      return new Set<String>.from(
-          tagExpressions.map((tagExpr) => _parseString(tagExpr).stringValue));
-    } else if (arg is StringLiteral) {
-      return new Set<String>.from([_parseString(arg).stringValue]);
-    } else {
-      throw new SourceSpanFormatException(
-          'Only String or List literal allowed as @Tags argument',
-          _spanFor(arg));
-    }
+
+    return _parseList(annotation.arguments.arguments.first)
+        .map((tagExpression) => _parseString(tagExpression).stringValue)
+        .toSet();
   }
 
   /// Parses an `@OnPlatform` annotation.

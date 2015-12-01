@@ -99,6 +99,16 @@ String toSentence(Iterable iter) {
   return "$result and ${iter.last}";
 }
 
+/// Returns [name] if [number] is 1, or the plural of [name] otherwise.
+///
+/// By default, this just adds "s" to the end of [name] to get the plural. If
+/// [plural] is passed, that's used instead.
+String pluralize(String name, int number, {String plural}) {
+  if (number == 1) return name;
+  if (plural != null) return plural;
+  return '${name}s';
+}
+
 /// Wraps [text] so that it fits within [lineLength], which defaults to 100
 /// characters.
 ///
@@ -401,10 +411,4 @@ shelf.Middleware nestingMiddleware(String beneath) {
     var pathHandler = new PathHandler()..add(beneath, handler);
     return pathHandler.handler;
   };
-}
-
-/// Returns `true` iff [a] and [b] are both not null and share at least one
-/// element.
-bool intersect(Iterable a, Iterable b) {
-  return a != null && b != null && a.any(b.contains);
 }

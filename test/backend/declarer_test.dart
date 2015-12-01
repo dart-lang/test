@@ -48,27 +48,6 @@ void main() {
       expect(tests[1].name, equals("description 2"));
       expect(tests[2].name, equals("description 3"));
     });
-
-    test("declares a test with tags", () {
-      var tests = declare(() {
-        test("tags as String", () {}, tags: "a");
-        test("tags as List", () {}, tags: ["a", "b"]);
-        test("tags as null", () {}, tags: null);
-      });
-
-      expect(tests, hasLength(3));
-      expect(tests[0].metadata.tags, unorderedEquals(["a"]));
-      expect(tests[1].metadata.tags, unorderedEquals(["a", "b"]));
-      expect(tests[2].metadata.tags, isEmpty);
-    });
-
-    test("throws on invalid tags", () {
-      expect(() {
-        declare(() {
-          test("a", () {}, tags: 1);
-        });
-      }, throwsArgumentError);
-    });
   });
 
   group(".setUp()", () {

@@ -6,6 +6,8 @@ library test.backend.metadata;
 
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
+
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';
 import '../utils.dart';
@@ -33,7 +35,7 @@ class Metadata {
   /// The reason the test or suite should be skipped, if given.
   final String skipReason;
 
-  /// A set of tags attached to a test
+  /// The user-defined tags attached to the test or suite.
   final Set<String> tags;
 
   /// Platform-specific metadata.
@@ -86,6 +88,24 @@ class Metadata {
     return result;
   }
 
+  /// Parses a user-provided [String] or [Iterable] into the value for [tags].
+  ///
+  /// Throws an [ArgumentError] if [tags] is not a [String] or an [Iterable].
+  static Set<String> _parseTags(tags) {
+    if (tags == null) return new Set();
+    if (tags is String) return new Set.from([tags]);
+    if (tags is! Iterable) {
+      throw new ArgumentError.value(tags, "tags",
+          "must be either a String or an Iterable.");
+    }
+
+    if (tags.any((tag) => tag is! String)) {
+      throw new ArgumentError.value(tags, "tags", "must contain only Strings.");
+    }
+
+    return new Set.from(tags);
+  }
+
   /// Creates new Metadata.
   ///
   /// [testOn] defaults to [PlatformSelector.all].
@@ -98,7 +118,7 @@ class Metadata {
         onPlatform = onPlatform == null
             ? const {}
             : new UnmodifiableMapView(onPlatform),
-        this.tags = _tagsFromIterable(tags);
+        tags = tags == null ? new Set() : new UnmodifiableSetView(tags.toSet());
 
   /// Creates a new Metadata, but with fields parsed from caller-friendly values
   /// where applicable.
@@ -114,7 +134,7 @@ class Metadata {
         skip = skip != null && skip != false,
         skipReason = skip is String ? skip : null,
         onPlatform = _parseOnPlatform(onPlatform),
-        this.tags = _makeSetOfTags(tags) {
+        tags = _parseTags(tags) {
     if (skip != null && skip is! String && skip is! bool) {
       throw new ArgumentError(
           '"skip" must be a String or a bool, was "$skip".');
@@ -130,7 +150,7 @@ class Metadata {
         skip = serialized['skip'],
         skipReason = serialized['skipReason'],
         verboseTrace = serialized['verboseTrace'],
-        tags = new Set<String>.from(serialized['tags']),
+        tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
             value: (pair) => new Metadata.deserialize(pair.last));
@@ -201,7 +221,7 @@ class Metadata {
       'skipReason': skipReason,
       'verboseTrace': verboseTrace,
       'onPlatform': serializedOnPlatform,
-      'tags': tags.toList(),
+      'tags': tags.toList()
     };
   }
 
@@ -216,33 +236,3 @@ class Metadata {
     };
   }
 }
-
-/// Converts [tags] to a [Set] of unique tags, unless it is already a [Set].
-///
-/// `null` becomes an empty set. [String] is split on commas.
-Set<String> _makeSetOfTags(tags) => tags != null
-  ? tags is Iterable
-    ? _tagsFromIterable(tags)
-    : tags is String
-      ? _tagsFromString(tags)
-      : throw new ArgumentError.value(tags, "tags",
-          "must be either String or Iterable")
-  : new Set<String>();
-
-Set<String> _tagsFromIterable(Iterable tags) {
-  if (tags == null) return new Set<String>();
-  for (var tag in tags) {
-    if (tag is! String) {
-      throw new ArgumentError.value(tags, "tags", "tag name must be String");
-    }
-    if (tag.isEmpty) {
-      throw new ArgumentError.value(tags, "tags",
-          "tag name must contain non-whitespace characters");
-    }
-  }
-  return tags is Set<String> ? tags : new Set<String>.from(tags);
-}
-
-Set<String> _tagsFromString(String tag) => tag.isNotEmpty
-    ? new Set<String>.from([tag])
-    : new Set<String>();

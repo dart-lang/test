@@ -50,6 +50,8 @@ Usage: pub run test:test [files or directories...]
                                Regular expression syntax is supported.
 
 -N, --plain-name               A plain-text substring of the name of the test to run.
+-t, --tags                     Run only tests with all of the specified tags.
+-x, --exclude-tags             Don't run tests with any of the specified tags.
 -p, --platform                 The platform(s) on which to run the tests.
                                $_browsers
 
@@ -71,9 +73,6 @@ Usage: pub run test:test [files or directories...]
     --js-trace                 Whether to emit raw JavaScript stack traces for browser tests.
     --[no-]color               Whether to use terminal colors.
                                (auto-detected by default)
-
--t, --tags                     Comma-separated list of tags to run
--x, --exclude-tags             Comma-separated list of tags not to run
 """;
 
 void main() {

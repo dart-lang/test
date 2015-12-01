@@ -9,47 +9,26 @@ import 'package:test/src/frontend/skip.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group("Metadata", () {
-    void expectTags(tags, expected) {
-      expect(new Metadata.parse(tags: tags).tags, unorderedEquals(expected));
-
-      if (tags == null || tags is Iterable) {
-        expect(new Metadata(tags: tags).tags, unorderedEquals(expected));
-      }
-    }
-
-    void expectTagsError(tags) {
-      expect(() => new Metadata(tags: tags), throwsArgumentError);
-      expect(() => new Metadata.parse(tags: tags), throwsArgumentError);
-    }
-
-    test("takes no tags", () {
-      expectTags(null, []);
-      expectTags("", []);
-      expectTags([], []);
+  group("tags", () {
+    test("parses an Iterable", () {
+      expect(new Metadata.parse(tags: ["a", "b"]).tags,
+          unorderedEquals(["a", "b"]));
     });
 
-    test("takes some tags as Iterable", () {
-      var tags = ["a", "b"];
-      expectTags(tags, tags);
-      expectTags(new Set.from(tags), tags);
+    test("parses a String", () {
+      expect(new Metadata.parse(tags: "a").tags, unorderedEquals(["a"]));
     });
 
-    test("takes some tags as String", () {
-      expectTags("a", ["a"]);
+    test("parses null", () {
+      expect(new Metadata.parse().tags, unorderedEquals([]));
     });
 
-    test("parse refuses bad tag types", () {
+    test("parse refuses an invalid type", () {
       expect(() => new Metadata.parse(tags: 1), throwsArgumentError);
     });
 
-    test("refuses non-String tag names", () {
-      expectTagsError([1]);
-      expectTagsError([null]);
-    });
-
-    test("refuses blank tag names", () {
-      expectTagsError([""]);
+    test("parse refuses an invalid type in a list", () {
+      expect(() => new Metadata.parse(tags: [1]), throwsArgumentError);
     });
 
     test("merges tags by computing the union of the two tag sets", () {
@@ -58,22 +37,10 @@ void main() {
       expect(merged.tags, unorderedEquals(["a", "b", "c"]));
     });
 
-    test("serializes tags to a List", () {
-      var serialized = new Metadata(tags: ["a", "b"]).serialize()['tags'];
-      expect(serialized, new isInstanceOf<List>());
-      expect(serialized, ["a", "b"]);
-    });
-
-    group('deserialize', () {
-      test('deserializes tags', () {
-        var serialized = {
-          "tags": ['a', 'b'],
-          "timeout": "none",
-          "onPlatform": [],
-        };
-        expect(new Metadata.deserialize(serialized).tags,
-            unorderedEquals(['a', 'b']));
-      });
+    test("serializes and deserializes tags", () {
+      var metadata = new Metadata(tags: ["a", "b"]).serialize();
+      expect(new Metadata.deserialize(metadata).tags,
+          unorderedEquals(['a', 'b']));
     });
   });
 

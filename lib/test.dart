@@ -94,6 +94,11 @@ Declarer get _declarer {
 /// should explain why the test is skipped; this reason will be printed instead
 /// of running the test.
 ///
+/// If [tags] is passed, it declares user-defined tags that are applied to the
+/// test. These tags can be used to select or skip the test on the command line.
+/// It can be an [Iterable] of tag names, or a [String] representing a single
+/// tag.
+///
 /// [onPlatform] allows tests to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
 /// annotation classes: [Timeout], [Skip], or lists of those. These
@@ -113,12 +118,8 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void test(String description, body(),
-        {String testOn,
-        Timeout timeout,
-        skip,
-        Map<String, dynamic> onPlatform,
-        tags}) =>
+void test(String description, body(), {String testOn, Timeout timeout, skip,
+        tags, Map<String, dynamic> onPlatform}) =>
     _declarer.test(description, body,
         testOn: testOn,
         timeout: timeout,
@@ -146,6 +147,11 @@ void test(String description, body(),
 /// should explain why the group is skipped; this reason will be printed instead
 /// of running the group's tests.
 ///
+/// If [tags] is passed, it declares user-defined tags that are applied to the
+/// group. These tags can be used to select or skip the group's tests on the
+/// command line. It can be an [Iterable] of tag names, or a [String]
+/// representing a single tag.
+///
 /// [onPlatform] allows groups to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
 /// annotation classes: [Timeout], [Skip], or lists of those. These
@@ -165,12 +171,8 @@ void test(String description, body(),
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void group(String description, void body(),
-        {String testOn,
-        Timeout timeout,
-        skip,
-        Map<String, dynamic> onPlatform,
-        tags}) =>
+void group(String description, body(), {String testOn, Timeout timeout, skip,
+        tags, Map<String, dynamic> onPlatform}) =>
     _declarer.group(description, body,
         testOn: testOn, timeout: timeout, skip: skip, tags: tags);
 
