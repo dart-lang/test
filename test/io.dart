@@ -94,18 +94,17 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
     inOrder(strings.map((string) => consumeThrough(contains(string))));
 
 /// Runs the test executable with the package root set properly.
-ScheduledProcess runTest(List args, {bool compact: false,
+ScheduledProcess runTest(List args, {String reporter,
     int concurrency, Map<String, String> environment}) {
-  if (concurrency == null) concurrency = 1;
+  reporter ??= "expanded";
+  concurrency ??= 1;
 
   var allArgs = [
     p.absolute(p.join(packageDir, 'bin/test.dart')),
     "--package-root=${p.join(packageDir, 'packages')}",
-    "--concurrency=$concurrency"
-  ];
-
-  if (!compact) allArgs.addAll(["-r", "expanded"]);
-  allArgs.addAll(args);
+    "--concurrency=$concurrency",
+    "--reporter=$reporter"
+  ]..addAll(args);
 
   if (environment == null) environment = {};
   environment.putIfAbsent("_UNITTEST_USE_COLOR", () => "false");

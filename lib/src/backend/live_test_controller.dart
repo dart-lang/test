@@ -9,6 +9,7 @@ import 'dart:collection';
 
 import 'package:stack_trace/stack_trace.dart';
 
+import 'group.dart';
 import 'live_test.dart';
 import 'state.dart';
 import 'suite.dart';
@@ -19,6 +20,8 @@ class _LiveTest extends LiveTest {
   final LiveTestController _controller;
 
   Suite get suite => _controller._suite;
+
+  List<Group> get groups => _controller._groups;
 
   Test get test => _controller._test;
 
@@ -58,6 +61,9 @@ class LiveTestController {
 
   /// The test suite that's running [this].
   final Suite _suite;
+
+  /// The groups containing [this].
+  final List<Group> _groups;
 
   /// The test that's being run.
   final Test _test;
@@ -118,9 +124,17 @@ class LiveTestController {
   /// called. It should clean up any resources that have been allocated for the
   /// test and ensure that the test finishes quickly if it's still running. It
   /// will only be called if [onRun] has been called first.
-  LiveTestController(this._suite, this._test, void onRun(), void onClose())
-      : _onRun = onRun,
-        _onClose = onClose {
+  ///
+  /// If [groups] is passed, it's used to populate the list of groups that
+  /// contain this test. Otherwise, `suite.group` is used.
+  LiveTestController(Suite suite, this._test, void onRun(), void onClose(),
+          {Iterable<Group> groups})
+      : _suite = suite,
+        _onRun = onRun,
+        _onClose = onClose,
+        _groups = groups == null
+            ? [suite.group]
+            : new List.unmodifiable(groups) {
     _liveTest = new _LiveTest(this);
   }
 

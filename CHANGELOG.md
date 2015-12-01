@@ -1,3 +1,20 @@
+## 0.12.6
+
+* Add a machine-readable JSON reporter. For details, see
+  [the protocol documentation][json-protocol].
+
+* Skipped groups now properly print skip messages.
+
+[json-protocol]: https://github.com/dart-lang/test/blob/master/json_reporter.md
+
+## 0.12.5+2
+
+* Declare compatibility with Dart 1.14 and 1.15.
+
+## 0.12.5+1
+
+* Fixed a deadlock bug when using `setUpAll()` and `tearDownAll()`.
+
 ## 0.12.5
 
 * Add `setUpAll()` and `tearDownAll()` methods that run callbacks before and

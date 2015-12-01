@@ -19,6 +19,7 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
+import 'runner/reporter/json.dart';
 import 'runner/runner_suite.dart';
 import 'util/io.dart';
 import 'utils.dart';
@@ -53,17 +54,28 @@ class Runner {
     var loader = new Loader(config);
     var engine = new Engine(concurrency: config.concurrency);
 
-    var watch = config.reporter == "compact"
-        ? CompactReporter.watch
-        : ExpandedReporter.watch;
+    var reporter;
+    switch (config.reporter) {
+      case "compact":
+      case "expanded":
+        var watch = config.reporter == "compact"
+            ? CompactReporter.watch
+            : ExpandedReporter.watch;
 
-    var reporter = watch(
-        engine,
-        color: config.color,
-        verboseTrace: config.verboseTrace,
-        printPath: config.paths.length > 1 ||
-            new Directory(config.paths.single).existsSync(),
-        printPlatform: config.platforms.length > 1);
+        reporter = watch(
+            engine,
+            color: config.color,
+            verboseTrace: config.verboseTrace,
+            printPath: config.paths.length > 1 ||
+                new Directory(config.paths.single).existsSync(),
+            printPlatform: config.platforms.length > 1);
+        break;
+
+      case "json":
+        reporter = JsonReporter.watch(engine,
+            verboseTrace: config.verboseTrace);
+        break;
+    }
 
     return new Runner._(config, loader, engine, reporter);
   }

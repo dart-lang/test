@@ -65,11 +65,12 @@ class Configuration {
     parser.addOption("reporter",
         abbr: 'r',
         help: 'The runner used to print test results.',
-        allowed: ['compact', 'expanded'],
+        allowed: ['compact', 'expanded', 'json'],
         defaultsTo: Platform.isWindows ? 'expanded' : 'compact',
         allowedHelp: {
       'compact': 'A single line, updated continuously.',
-      'expanded': 'A separate line for each update.'
+      'expanded': 'A separate line for each update.',
+      'json': 'A machine-readable format (see https://goo.gl/0HRhdZ).'
     });
     parser.addFlag("verbose-trace", negatable: false,
         help: 'Whether to emit stack traces with core library frames.');

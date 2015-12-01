@@ -16,7 +16,7 @@ void main() {
   test("reports when no tests are run", () {
     d.file("test.dart", "void main() {}").create();
 
-    var test = runTest(["test.dart"], compact: true);
+    var test = runTest(["test.dart"], reporter: "compact");
     test.stdout.expect(consumeThrough(contains("No tests ran.")));
     test.shouldExit(0);
   });
@@ -76,7 +76,7 @@ void main() {
 }
 """).create();
 
-    var test = runTest(["--verbose-trace", "test.dart"], compact: true);
+    var test = runTest(["--verbose-trace", "test.dart"], reporter: "compact");
     test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
     test.shouldExit(1);
   });
@@ -322,6 +322,20 @@ void main() {
           +0 ~3: All tests skipped.""");
     });
 
+    test("displays a skipped group", () {
+      _expectReport("""
+          group('skip', () {
+            test('test 1', () {});
+            test('test 2', () {});
+            test('test 3', () {});
+          }, skip: true);""",
+          """
+          +0: loading test.dart
+          +0: skip
+          +0 ~1: skip
+          +0 ~1: All tests skipped.""");
+    });
+
     test("runs skipped tests along with successful tests", () {
       _expectReport("""
           test('skip 1', () {}, skip: true);
@@ -406,7 +420,7 @@ $tests
 
   d.file("test.dart", dart).create();
 
-  var test = runTest(["test.dart"], compact: true);
+  var test = runTest(["test.dart"], reporter: "compact");
   test.shouldExit();
 
   schedule(() async {

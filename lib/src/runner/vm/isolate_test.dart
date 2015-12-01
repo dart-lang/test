@@ -7,6 +7,7 @@ library test.runner.vm.isolate_test;
 import 'dart:async';
 import 'dart:isolate';
 
+import '../../backend/group.dart';
 import '../../backend/live_test.dart';
 import '../../backend/live_test_controller.dart';
 import '../../backend/metadata.dart';
@@ -28,7 +29,7 @@ class IsolateTest extends Test {
 
   IsolateTest(this.name, this.metadata, this._sendPort);
 
-  LiveTest load(Suite suite) {
+  LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var controller;
 
     // We get a new send port for communicating with the live test, since
@@ -82,7 +83,7 @@ class IsolateTest extends Test {
         await controller.completer.future;
         receivePort.close();
       });
-    });
+    }, groups: groups);
     return controller.liveTest;
   }
 

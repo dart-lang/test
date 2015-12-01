@@ -44,14 +44,14 @@ class Group implements GroupEntry {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
     var newMetadata = metadata.forPlatform(platform, os: os);
     var filtered = _map((entry) => entry.forPlatform(platform, os: os));
-    if (filtered.isEmpty) return null;
+    if (filtered.isEmpty && !entries.isEmpty) return null;
     return new Group(name, filtered,
         metadata: newMetadata, setUpAll: setUpAll, tearDownAll: tearDownAll);
   }
 
   Group filter(bool callback(Test test)) {
     var filtered = _map((entry) => entry.filter(callback));
-    if (filtered.isEmpty) return null;
+    if (filtered.isEmpty && !entries.isEmpty) return null;
     return new Group(name, filtered,
         metadata: metadata, setUpAll: setUpAll, tearDownAll: tearDownAll);
   }
