@@ -77,6 +77,24 @@ class Configuration {
         help: 'Whether to emit raw JavaScript stack traces for browser tests.');
     parser.addFlag("color", defaultsTo: null,
         help: 'Whether to use terminal colors.\n(auto-detected by default)');
+    parser.addOption("tags",
+        abbr: 't',
+        help: 'Comma-separated list of tags to run',
+        allowMultiple: true,
+        splitCommas: true);
+    parser.addOption("tag",
+        hide: true,
+        allowMultiple: true,
+        splitCommas: true);
+    parser.addOption("exclude-tags",
+        abbr: 'x',
+        help: 'Comma-separated list of tags not to run',
+        allowMultiple: true,
+        splitCommas: true);
+    parser.addOption("exclude-tag",
+        hide: true,
+        allowMultiple: true,
+        splitCommas: true);
 
     return parser;
   })();
@@ -130,6 +148,12 @@ class Configuration {
   /// The set of platforms on which to run tests.
   final List<TestPlatform> platforms;
 
+  /// Restricts the set of tests to a set of tags
+  final Set<String> tags;
+
+  /// Does not run tests with tags from this set
+  final Set<String> excludeTags;
+
   /// The global test metadata derived from this configuration.
   Metadata get metadata =>
       new Metadata(
@@ -155,6 +179,20 @@ class Configuration {
       pattern = options['plain-name'];
     }
 
+    var tags = new Set<String>();
+    tags.addAll(options['tags'] ?? []);
+    tags.addAll(options['tag'] ?? []);
+
+    var excludeTags = new Set<String>();
+    excludeTags.addAll(options['exclude-tags'] ?? []);
+    excludeTags.addAll(options['exclude-tag'] ?? []);
+
+    var tagIntersection = tags.intersection(excludeTags);
+    if (tagIntersection.isNotEmpty) {
+      throw new FormatException('Included and excluded tag sets may not'
+          ' intersect. Found intersection: ${tagIntersection.join(', ')}');
+    }
+
     return new Configuration(
         help: options['help'],
         version: options['version'],
@@ -169,7 +207,9 @@ class Configuration {
             orElse: () => _defaultConcurrency),
         pattern: pattern,
         platforms: options['platform'].map(TestPlatform.find),
-        paths: options.rest.isEmpty ? null : options.rest);
+        paths: options.rest.isEmpty ? null : options.rest,
+        tags: tags,
+        excludeTags: excludeTags);
   }
 
   /// Runs [parse] on the value of the option [name], and wraps any
@@ -191,7 +231,8 @@ class Configuration {
           this.verboseTrace: false, this.jsTrace: false,
           bool pauseAfterLoad: false, bool color, String packageRoot,
           String reporter, int pubServePort, int concurrency, this.pattern,
-          Iterable<TestPlatform> platforms, Iterable<String> paths})
+          Iterable<TestPlatform> platforms, Iterable<String> paths,
+          Set<String> tags, Set<String> excludeTags})
       : pauseAfterLoad = pauseAfterLoad,
         color = color == null ? canUseSpecialChars : color,
         packageRoot = packageRoot == null
@@ -206,5 +247,7 @@ class Configuration {
             : (concurrency == null ? _defaultConcurrency : concurrency),
         platforms = platforms == null ? [TestPlatform.vm] : platforms.toList(),
         paths = paths == null ? ["test"] : paths.toList(),
-        explicitPaths = paths != null;
+        explicitPaths = paths != null,
+        this.tags = tags,
+        this.excludeTags = excludeTags;
 }

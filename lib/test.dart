@@ -25,6 +25,7 @@ export 'src/frontend/future_matchers.dart';
 export 'src/frontend/on_platform.dart';
 export 'src/frontend/prints_matcher.dart';
 export 'src/frontend/skip.dart';
+export 'src/frontend/tags.dart';
 export 'src/frontend/test_on.dart';
 export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';
@@ -112,10 +113,18 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void test(String description, body(), {String testOn, Timeout timeout,
-        skip, Map<String, dynamic> onPlatform}) =>
+void test(String description, body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        Map<String, dynamic> onPlatform,
+        tags}) =>
     _declarer.test(description, body,
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform);
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        onPlatform: onPlatform,
+        tags: tags);
 
 /// Creates a group of tests.
 ///
@@ -156,10 +165,14 @@ void test(String description, body(), {String testOn, Timeout timeout,
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void group(String description, void body(), {String testOn, Timeout timeout,
-        skip, Map<String, dynamic> onPlatform}) =>
+void group(String description, void body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        Map<String, dynamic> onPlatform,
+        tags}) =>
     _declarer.group(description, body,
-        testOn: testOn, timeout: timeout, skip: skip);
+        testOn: testOn, timeout: timeout, skip: skip, tags: tags);
 
 /// Registers a function to be run before tests.
 ///

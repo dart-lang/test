@@ -158,8 +158,23 @@ class Runner {
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        if (_config.pattern == null) return suite;
-        return suite.filter((test) => test.name.contains(_config.pattern));
+        return suite.filter((test) {
+          bool matchesNamePattern =
+              _config.pattern == null || test.name.contains(_config.pattern);
+          bool matchesTags = _config.tags.isEmpty ||
+              intersect(_config.tags, test.metadata.tags);
+          bool matchesExcludeTags =
+              intersect(_config.excludeTags, test.metadata.tags);
+
+          var specifiedTags = _config.tags.union(_config.excludeTags);
+          List unrecognizedTags = test.metadata.tags.difference(specifiedTags);
+          if (unrecognizedTags.isNotEmpty) {
+            var yellow = _config.color ? '\u001b[33m' : '';
+            stderr.writeln("\n${yellow}WARNING: unrecognized tags ${unrecognizedTags} in test '${test.name}'");
+          }
+
+          return matchesNamePattern && matchesTags && !matchesExcludeTags;
+        });
       });
     });
   }

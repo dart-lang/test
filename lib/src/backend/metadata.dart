@@ -33,6 +33,9 @@ class Metadata {
   /// The reason the test or suite should be skipped, if given.
   final String skipReason;
 
+  /// A set of tags attached to a test
+  final Set<String> tags;
+
   /// Platform-specific metadata.
   ///
   /// Each key identifies a platform, and its value identifies the specific
@@ -88,34 +91,37 @@ class Metadata {
   /// [testOn] defaults to [PlatformSelector.all].
   Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
           this.verboseTrace: false, this.skipReason,
-          Map<PlatformSelector, Metadata> onPlatform})
+          Map<PlatformSelector, Metadata> onPlatform, Iterable<String> tags})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip,
         onPlatform = onPlatform == null
             ? const {}
-            : new UnmodifiableMapView(onPlatform);
+            : new UnmodifiableMapView(onPlatform),
+        this.tags = _tagsFromIterable(tags);
 
   /// Creates a new Metadata, but with fields parsed from caller-friendly values
   /// where applicable.
   ///
   /// Throws a [FormatException] if any field is invalid.
   Metadata.parse({String testOn, Timeout timeout, skip,
-          this.verboseTrace: false, Map<String, dynamic> onPlatform})
+          this.verboseTrace: false, Map<String, dynamic> onPlatform,
+          tags})
       : testOn = testOn == null
             ? PlatformSelector.all
             : new PlatformSelector.parse(testOn),
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip != null && skip != false,
         skipReason = skip is String ? skip : null,
-        onPlatform = _parseOnPlatform(onPlatform) {
+        onPlatform = _parseOnPlatform(onPlatform),
+        this.tags = _makeSetOfTags(tags) {
     if (skip != null && skip is! String && skip is! bool) {
       throw new ArgumentError(
           '"skip" must be a String or a bool, was "$skip".');
     }
   }
 
-  /// Dezerializes the result of [Metadata.serialize] into a new [Metadata].
+  /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
   Metadata.deserialize(serialized)
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
@@ -124,6 +130,7 @@ class Metadata {
         skip = serialized['skip'],
         skipReason = serialized['skipReason'],
         verboseTrace = serialized['verboseTrace'],
+        tags = new Set<String>.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
             value: (pair) => new Metadata.deserialize(pair.last));
@@ -147,7 +154,8 @@ class Metadata {
           skip: skip || other.skip,
           verboseTrace: verboseTrace || other.verboseTrace,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,
-          onPlatform: mergeMaps(onPlatform, other.onPlatform));
+          onPlatform: mergeMaps(onPlatform, other.onPlatform),
+          tags: tags.union(other.tags));
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change({PlatformSelector testOn, Timeout timeout, bool skip,
@@ -192,7 +200,8 @@ class Metadata {
       'skip': skip,
       'skipReason': skipReason,
       'verboseTrace': verboseTrace,
-      'onPlatform': serializedOnPlatform
+      'onPlatform': serializedOnPlatform,
+      'tags': tags.toList(),
     };
   }
 
@@ -207,3 +216,33 @@ class Metadata {
     };
   }
 }
+
+/// Converts [tags] to a [Set] of unique tags, unless it is already a [Set].
+///
+/// `null` becomes an empty set. [String] is split on commas.
+Set<String> _makeSetOfTags(tags) => tags != null
+  ? tags is Iterable
+    ? _tagsFromIterable(tags)
+    : tags is String
+      ? _tagsFromString(tags)
+      : throw new ArgumentError.value(tags, "tags",
+          "must be either String or Iterable")
+  : new Set<String>();
+
+Set<String> _tagsFromIterable(Iterable tags) {
+  if (tags == null) return new Set<String>();
+  for (var tag in tags) {
+    if (tag is! String) {
+      throw new ArgumentError.value(tags, "tags", "tag name must be String");
+    }
+    if (tag.isEmpty) {
+      throw new ArgumentError.value(tags, "tags",
+          "tag name must contain non-whitespace characters");
+    }
+  }
+  return tags is Set<String> ? tags : new Set<String>.from(tags);
+}
+
+Set<String> _tagsFromString(String tag) => tag.isNotEmpty
+    ? new Set<String>.from([tag])
+    : new Set<String>();

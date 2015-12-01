@@ -403,3 +403,9 @@ shelf.Middleware nestingMiddleware(String beneath) {
     return pathHandler.handler;
   };
 }
+
+/// Returns `true` iff [a] and [b] are both not null and share at least one
+/// element.
+bool intersect(Iterable a, Iterable b) {
+  return a != null && b != null && a.any(b.contains);
+}

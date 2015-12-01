@@ -9,6 +9,74 @@ import 'package:test/src/frontend/skip.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group("Metadata", () {
+    void expectTags(tags, expected) {
+      expect(new Metadata.parse(tags: tags).tags, unorderedEquals(expected));
+
+      if (tags == null || tags is Iterable) {
+        expect(new Metadata(tags: tags).tags, unorderedEquals(expected));
+      }
+    }
+
+    void expectTagsError(tags) {
+      expect(() => new Metadata(tags: tags), throwsArgumentError);
+      expect(() => new Metadata.parse(tags: tags), throwsArgumentError);
+    }
+
+    test("takes no tags", () {
+      expectTags(null, []);
+      expectTags("", []);
+      expectTags([], []);
+    });
+
+    test("takes some tags as Iterable", () {
+      var tags = ["a", "b"];
+      expectTags(tags, tags);
+      expectTags(new Set.from(tags), tags);
+    });
+
+    test("takes some tags as String", () {
+      expectTags("a", ["a"]);
+    });
+
+    test("parse refuses bad tag types", () {
+      expect(() => new Metadata.parse(tags: 1), throwsArgumentError);
+    });
+
+    test("refuses non-String tag names", () {
+      expectTagsError([1]);
+      expectTagsError([null]);
+    });
+
+    test("refuses blank tag names", () {
+      expectTagsError([""]);
+    });
+
+    test("merges tags by computing the union of the two tag sets", () {
+      var merged = new Metadata(tags: ["a", "b"])
+          .merge(new Metadata(tags: ["b", "c"]));
+      expect(merged.tags, unorderedEquals(["a", "b", "c"]));
+    });
+
+    test("serializes tags to a List", () {
+      var serialized = new Metadata(tags: ["a", "b"]).serialize()['tags'];
+      expect(serialized, new isInstanceOf<List>());
+      expect(serialized, ["a", "b"]);
+    });
+
+    group('deserialize', () {
+      test('deserializes tags', () {
+        var serialized = {
+          "tags": ['a', 'b'],
+          "timeout": "none",
+          "onPlatform": [],
+        };
+        expect(new Metadata.deserialize(serialized).tags,
+            unorderedEquals(['a', 'b']));
+      });
+    });
+  });
+
   group("onPlatform", () {
     test("parses a valid map", () {
       var metadata = new Metadata.parse(onPlatform: {
