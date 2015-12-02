@@ -9,6 +9,10 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 
+import 'backend/group.dart';
+import 'backend/group_entry.dart';
+import 'backend/suite.dart';
+import 'backend/test.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
@@ -44,6 +48,13 @@ class Runner {
 
   /// The subscription to the stream returned by [_loadSuites].
   StreamSubscription _suiteSubscription;
+
+  /// The set of suite paths for which [_warnForUnknownTags] has already been
+  /// called.
+  ///
+  /// This is used to avoid printing duplicate warnings when a suite is loaded
+  /// on multiple platforms.
+  final _tagWarningSuites = new Set<String>();
 
   /// The memoizer for ensuring [close] only runs once.
   final _closeMemo = new AsyncMemoizer();
@@ -170,30 +181,9 @@ class Runner {
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        return suite.filter((test) {
-          // Warn if any test has tags that don't appear on the command line.
-          //
-          // TODO(nweiz): Only print this once per test, even if it's run on
-          // multiple runners.
-          //
-          // TODO(nweiz): If groups or suites are tagged, don't print this for
-          // every test they contain.
-          //
-          // TODO(nweiz): Print this as part of the test's output so it's easy
-          // to associate with the correct test.
-          var specifiedTags = _config.tags.union(_config.excludeTags);
-          var unrecognizedTags = test.metadata.tags.difference(specifiedTags);
-          if (unrecognizedTags.isNotEmpty) {
-            // Pause the reporter while we print to ensure that we don't
-            // interfere with its output.
-            _reporter.pause();
-            warn(
-                'Unknown ${pluralize('tag', unrecognizedTags.length)} '
-                '${toSentence(unrecognizedTags)} in test "${test.name}".',
-                color: _config.color);
-            _reporter.resume();
-          }
+        _warnForUnknownTags(suite);
 
+        return suite.filter((test) {
           // Skip any tests that don't match the given pattern.
           if (_config.pattern != null && !test.name.contains(_config.pattern)) {
             return false;
@@ -214,6 +204,81 @@ class Runner {
         });
       });
     });
+  }
+
+  /// Prints a warning for any unknown tags referenced in [suite] or its
+  /// children.
+  void _warnForUnknownTags(Suite suite) {
+    if (_tagWarningSuites.contains(suite.path)) return;
+    _tagWarningSuites.add(suite.path);
+
+    var unknownTags = _collectUnknownTags(suite);
+    if (unknownTags.isEmpty) return;
+
+    var yellow = _config.color ? '\u001b[33m' : '';
+    var bold = _config.color ? '\u001b[1m' : '';
+    var noColor = _config.color ? '\u001b[0m' : '';
+
+    var buffer = new StringBuffer()
+      ..write("${yellow}Warning:$noColor ")
+      ..write(unknownTags.length == 1 ? "A tag was " : "Tags were ")
+      ..write("used that ")
+      ..write(unknownTags.length == 1 ? "wasn't " : "weren't ")
+      ..writeln("specified on the command line.");
+
+    unknownTags.forEach((tag, entries) {
+      buffer.write("  $bold$tag$noColor was used in");
+
+      if (entries.length == 1) {
+        buffer.writeln(" ${_entryDescription(entries.single)}");
+        return;
+      }
+
+      buffer.write(":");
+      for (var entry in entries) {
+        buffer.write("\n    ${_entryDescription(entry)}");
+      }
+      buffer.writeln();
+    });
+
+    print(buffer.toString());
+  }
+
+  /// Collects all tags used by [suite] or its children that aren't also passed
+  /// on the command line.
+  ///
+  /// This returns a map from tag names to lists of entries that use those tags.
+  Map<String, List<GroupEntry>> _collectUnknownTags(Suite suite) {
+    var knownTags = _config.tags.union(_config.excludeTags);
+    var unknownTags = {};
+    var currentTags = new Set();
+
+    collect(entry) {
+      var newTags = new Set();
+      for (var unknownTag in entry.metadata.tags.difference(knownTags)) {
+        if (currentTags.contains(unknownTag)) continue;
+        unknownTags.putIfAbsent(unknownTag, () => []).add(entry);
+        newTags.add(unknownTag);
+      }
+
+      if (entry is! Group) return;
+
+      currentTags.addAll(newTags);
+      for (var child in entry.entries) {
+        collect(child);
+      }
+      currentTags.removeAll(newTags);
+    }
+
+    collect(suite.group);
+    return unknownTags;
+  }
+
+  /// Returns a human-readable description of [entry], including its type.
+  String _entryDescription(GroupEntry entry) {
+    if (entry is Test) return 'the test "${entry.name}"';
+    if (entry.name != null) return 'the group "${entry.name}"';
+    return 'the suite itself';
   }
 
   /// Loads each suite in [suites] in order, pausing after load for platforms
