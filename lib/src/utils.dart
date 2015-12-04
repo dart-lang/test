@@ -60,6 +60,17 @@ final OperatingSystem currentOSGuess = (() {
   return OperatingSystem.linux;
 })();
 
+/// A regular expression matching a hyphenated identifier.
+///
+/// This is like a standard Dart identifier, except that it can also contain
+/// hyphens.
+final hyphenatedIdentifier = new RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
+
+/// Like [hyphenatedIdentifier], but anchored so that it must match the entire
+/// string.
+final anchoredHyphenatedIdentifier =
+    new RegExp("^${hyphenatedIdentifier.pattern}\$");
+
 /// A pair of values.
 class Pair<E, F> {
   E first;

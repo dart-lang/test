@@ -264,6 +264,61 @@ void main() {
       test.shouldExit(0);
     });
   });
+
+  group("invalid tags", () {
+    test("are disallowed by test()", () {
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("foo", () {}, tags: "a b");
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(
+          '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
+            'b". Tags must be (optionally hyphenated) Dart identifiers.'));
+      test.shouldExit(1);
+    });
+
+    test("are disallowed by group()", () {
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          group("group", () {
+            test("foo", () {});
+          }, tags: "a b");
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(
+          '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
+            'b". Tags must be (optionally hyphenated) Dart identifiers.'));
+      test.shouldExit(1);
+    });
+
+    test("are disallowed by @Tags()", () {
+      d.file("test.dart", """
+        @Tags(const ["a b"])
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("foo", () {});
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(lines(
+          '  Failed to load "test.dart":\n'
+          '  Error on line 1, column 22: Invalid tag name. Tags must be '
+            '(optionally hyphenated) Dart identifiers.')));
+      test.shouldExit(1);
+    });
+  });
 }
 
 /// Returns a [StreamMatcher] that asserts that a test emits warnings for [tags]

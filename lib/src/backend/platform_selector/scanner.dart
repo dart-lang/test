@@ -6,6 +6,7 @@ library test.backend.platform_selector.scanner;
 
 import 'package:string_scanner/string_scanner.dart';
 
+import '../../utils.dart';
 import 'token.dart';
 
 /// A regular expression matching both whitespace and single-line comments.
@@ -19,12 +20,6 @@ final _whitespaceAndSingleLineComments =
 ///
 /// This will only match if it consumes at least one character.
 final _multiLineCommentBody = new RegExp(r"([^/*]|/[^*]|\*[^/])+");
-
-/// A regular expression matching an identifier.
-///
-/// Unlike standard Dart identifiers, platform selector identifiers may
-/// contain dashes for consistency with command-line arguments.
-final _identifier = new RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
 
 /// A scanner that converts a platform selector string into a stream of
 /// tokens.
@@ -124,7 +119,7 @@ class Scanner {
 
   /// Scans and returns an identifier token.
   Token _scanIdentifier() {
-    _scanner.expect(_identifier, name: "expression");
+    _scanner.expect(hyphenatedIdentifier, name: "expression");
     return new IdentifierToken(_scanner.lastMatch[0], _scanner.lastSpan);
   }
 

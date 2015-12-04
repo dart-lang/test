@@ -176,9 +176,15 @@ class _Parser {
     _assertConstructorName(constructorName, 'Tags', annotation);
     _assertArguments(annotation.arguments, 'Tags', annotation, positional: 1);
 
-    return _parseList(annotation.arguments.arguments.first)
-        .map((tagExpression) => _parseString(tagExpression).stringValue)
-        .toSet();
+    return _parseList(annotation.arguments.arguments.first).map((tagExpression) {
+      var name = _parseString(tagExpression).stringValue;
+      if (name.contains(anchoredHyphenatedIdentifier)) return name;
+
+      throw new SourceSpanFormatException(
+          "Invalid tag name. Tags must be (optionally hyphenated) Dart "
+            "identifiers.",
+          _spanFor(tagExpression));
+    }).toSet();
   }
 
   /// Parses an `@OnPlatform` annotation.

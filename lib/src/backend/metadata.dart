@@ -118,7 +118,11 @@ class Metadata {
         onPlatform = onPlatform == null
             ? const {}
             : new UnmodifiableMapView(onPlatform),
-        tags = tags == null ? new Set() : new UnmodifiableSetView(tags.toSet());
+        tags = tags == null
+            ? new Set()
+            : new UnmodifiableSetView(tags.toSet()) {
+    _validateTags();
+  }
 
   /// Creates a new Metadata, but with fields parsed from caller-friendly values
   /// where applicable.
@@ -139,6 +143,8 @@ class Metadata {
       throw new ArgumentError(
           '"skip" must be a String or a bool, was "$skip".');
     }
+
+    _validateTags();
   }
 
   /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
@@ -162,6 +168,22 @@ class Metadata {
     if (scaleFactor != null) return new Timeout.factor(scaleFactor);
     return new Timeout(
         new Duration(microseconds: serialized['duration']));
+  }
+
+  /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
+  /// identifiers.
+  void _validateTags() {
+    var invalidTags = tags
+        .where((tag) => !tag.contains(anchoredHyphenatedIdentifier))
+        .map((tag) => '"$tag"')
+        .toList();
+
+    if (invalidTags.isEmpty) return;
+
+    throw new ArgumentError(
+        "Invalid ${pluralize('tag', invalidTags.length)} "
+          "${toSentence(invalidTags)}. Tags must be (optionally hyphenated) "
+          "Dart identifiers.");
   }
 
   /// Return a new [Metadata] that merges [this] with [other].
