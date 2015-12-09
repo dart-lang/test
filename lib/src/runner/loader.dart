@@ -8,7 +8,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/analyzer.dart' hide Configuration;
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';

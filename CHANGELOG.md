@@ -11,6 +11,10 @@
 [focusing]: http://jasmine.github.io/2.1/focused_specs.html
 [issue 16]: https://github.com/dart-lang/test/issues/16
 
+## 0.12.6+1
+
+* Declare compatibility with `http_multi_server` 2.0.0.
+
 ## 0.12.6
 
 * Add a machine-readable JSON reporter. For details, see
