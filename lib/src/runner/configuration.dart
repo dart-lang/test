@@ -78,12 +78,13 @@ class Configuration {
     parser.addOption("reporter",
         abbr: 'r',
         help: 'The runner used to print test results.',
-        allowed: ['compact', 'expanded', 'json'],
+        allowed: ['compact', 'expanded', 'json', 'xunit'],
         defaultsTo: Platform.isWindows ? 'expanded' : 'compact',
         allowedHelp: {
       'compact': 'A single line, updated continuously.',
       'expanded': 'A separate line for each update.',
-      'json': 'A machine-readable format (see https://goo.gl/0HRhdZ).'
+      'json': 'A machine-readable format (see https://goo.gl/0HRhdZ).',
+      'xunit': 'An Xunit compatible output.'
     });
     parser.addFlag("verbose-trace", negatable: false,
         help: 'Whether to emit stack traces with core library frames.');

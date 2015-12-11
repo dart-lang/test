@@ -24,6 +24,7 @@ import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/reporter/json.dart';
+import 'runner/reporter/xunit.dart';
 import 'runner/runner_suite.dart';
 import 'util/io.dart';
 import 'utils.dart';
@@ -85,6 +86,9 @@ class Runner {
       case "json":
         reporter = JsonReporter.watch(engine,
             verboseTrace: config.verboseTrace);
+        break;
+      case "xunit":
+        reporter = XunitReporter.watch(engine);
         break;
     }
 
