@@ -13,6 +13,10 @@
 
 ## 0.12.6+1
 
+* Declare compatibility with `http_parser` 2.0.0.
+
+## 0.12.6+1
+
 * Declare compatibility with `http_multi_server` 2.0.0.
 
 ## 0.12.6
