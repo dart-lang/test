@@ -118,9 +118,13 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void test(String description, body(), {String testOn, Timeout timeout, skip,
-        tags, Map<String, dynamic> onPlatform}) =>
-    _declarer.test(description, body,
+void test(description, body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        tags,
+        Map<String, dynamic> onPlatform}) =>
+    _declarer.test(description.toString(), body,
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -171,10 +175,18 @@ void test(String description, body(), {String testOn, Timeout timeout, skip,
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void group(String description, body(), {String testOn, Timeout timeout, skip,
-        tags, Map<String, dynamic> onPlatform}) =>
-    _declarer.group(description, body,
-        testOn: testOn, timeout: timeout, skip: skip, tags: tags);
+void group(description, body(),
+    {String testOn,
+    Timeout timeout,
+    skip,
+    tags,
+    Map<String, dynamic> onPlatform}) =>
+  description == null
+      ? _declarer.group(description, body,
+          testOn: testOn, timeout: timeout, skip: skip, tags: tags)
+      : _declarer.group(description.toString(), body,
+          testOn: testOn, timeout: timeout, skip: skip, tags: tags);
+
 
 /// Registers a function to be run before tests.
 ///

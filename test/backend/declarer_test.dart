@@ -36,6 +36,15 @@ void main() {
       expect(bodyRun, isTrue);
     });
 
+    test("declares a test with an object as the description", () async {
+      var tests = declare(() {
+        test(Object, () {
+        });
+      });
+
+      expect(tests.single.name, equals("Object"));
+    });
+
     test("declares multiple tests", () {
       var tests = declare(() {
         test("description 1", () {});
@@ -275,6 +284,21 @@ void main() {
       expect(entries.single.entries, hasLength(1));
       expect(entries.single.entries.single, new isInstanceOf<Test>());
       expect(entries.single.entries.single.name, "group description");
+    });
+
+    test("tests inherit the group's description when it's not a string", () {
+      var entries = declare(() {
+        group(Object, () {
+          test("description", () {});
+        });
+      });
+
+      expect(entries, hasLength(1));
+      expect(entries.single, new isInstanceOf<Group>());
+      expect(entries.single.name, equals("Object"));
+      expect(entries.single.entries, hasLength(1));
+      expect(entries.single.entries.single, new isInstanceOf<Test>());
+      expect(entries.single.entries.single.name, "Object description");
     });
 
     test("a test's timeout factor is applied to the group's", () {
