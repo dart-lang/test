@@ -138,6 +138,12 @@ class Engine {
   /// This includes load tests, `setUpAll`, and `tearDownAll`.
   final _hidden = new Set<LiveTest>();
 
+  /// The set of tests that have been marked for restarting.
+  ///
+  /// This is always a subset of [active]. Once a test in here has finished
+  /// running, it's run again.
+  final _restarted = new Set<LiveTest>();
+
   /// The tests from [LoadSuite]s that are still running, in the order they
   /// began running.
   ///
@@ -324,6 +330,29 @@ class Engine {
     // non-microtask events.
     await new Future.microtask(liveTest.run);
     await new Future(() {});
+
+    if (!_restarted.contains(liveTest)) return;
+    await _runLiveTest(liveTest.copy(), countSuccess: countSuccess);
+    _restarted.remove(liveTest);
+  }
+
+  /// Closes [liveTest] and tells the engine to re-run it once it's done
+  /// running.
+  ///
+  /// Returns the same future as [LiveTest.close].
+  Future restartTest(LiveTest liveTest) async {
+    if (_activeLoadTests.contains(liveTest)) {
+      throw new ArgumentError("Can't restart a load test.");
+    }
+
+    if (!_active.contains(liveTest)) {
+      throw new StateError("Can't restart inactive test "
+          "\"${liveTest.test.name}\".");
+    }
+
+    _restarted.add(liveTest);
+    _active.remove(liveTest);
+    await liveTest.close();
   }
 
   /// Adds listeners for [suite].
