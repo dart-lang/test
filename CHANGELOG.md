@@ -4,6 +4,9 @@
   a breakpoint, the test runner will open an interactive console on the command
   line that can be used to restart the test.
 
+* Add support for passing any object as a description to `test()` and `group()`.
+  These objects will be converted to strings.
+
 * Add the ability to tag tests. Tests with specific tags may be run by passing
   the `--tags` command-line argument, or excluded by passing the
   `--exclude-tags` parameter.

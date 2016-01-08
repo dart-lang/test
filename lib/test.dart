@@ -78,7 +78,8 @@ Declarer get _declarer {
 
 // TODO(nweiz): This and other top-level functions should throw exceptions if
 // they're called after the declarer has finished declaring.
-/// Creates a new test case with the given description and body.
+/// Creates a new test case with the given description (converted to a string)
+/// and body.
 ///
 /// The description will be added to the descriptions of any surrounding
 /// [group]s. If [testOn] is passed, it's parsed as a [platform selector][]; the
@@ -118,9 +119,13 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void test(String description, body(), {String testOn, Timeout timeout, skip,
-        tags, Map<String, dynamic> onPlatform}) =>
-    _declarer.test(description, body,
+void test(description, body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        tags,
+        Map<String, dynamic> onPlatform}) =>
+    _declarer.test(description.toString(), body,
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -129,9 +134,9 @@ void test(String description, body(), {String testOn, Timeout timeout, skip,
 
 /// Creates a group of tests.
 ///
-/// A group's description is included in the descriptions of any tests or
-/// sub-groups it contains. [setUp] and [tearDown] are also scoped to the
-/// containing group.
+/// A group's description (converted to a string) is included in the descriptions
+/// of any tests or sub-groups it contains. [setUp] and [tearDown] are also scoped
+/// to the containing group.
 ///
 /// If [testOn] is passed, it's parsed as a [platform selector][]; the test will
 /// only be run on matching platforms.
@@ -171,9 +176,13 @@ void test(String description, body(), {String testOn, Timeout timeout, skip,
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void group(String description, body(), {String testOn, Timeout timeout, skip,
-        tags, Map<String, dynamic> onPlatform}) =>
-    _declarer.group(description, body,
+void group(description, body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        tags,
+        Map<String, dynamic> onPlatform}) =>
+    _declarer.group(description.toString(), body,
         testOn: testOn, timeout: timeout, skip: skip, tags: tags);
 
 /// Registers a function to be run before tests.
