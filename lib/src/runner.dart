@@ -16,6 +16,7 @@ import 'backend/test.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/debugger.dart';
 import 'runner/engine.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_suite.dart';
@@ -24,7 +25,6 @@ import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/reporter/json.dart';
-import 'runner/runner_suite.dart';
 import 'util/io.dart';
 import 'utils.dart';
 
@@ -55,6 +55,11 @@ class Runner {
   /// This is used to avoid printing duplicate warnings when a suite is loaded
   /// on multiple platforms.
   final _tagWarningSuites = new Set<String>();
+
+  /// The current debug operation, if any.
+  ///
+  /// This is stored so that we can cancel it when the runner is closed.
+  CancelableOperation _debugOperation;
 
   /// The memoizer for ensuring [close] only runs once.
   final _closeMemo = new AsyncMemoizer();
@@ -155,6 +160,8 @@ class Runner {
         _reporter.resume();
       });
     }
+
+    if (_debugOperation != null) await _debugOperation.cancel();
 
     if (_suiteSubscription != null) _suiteSubscription.cancel();
     _suiteSubscription = null;
@@ -290,18 +297,8 @@ class Runner {
     }
 
     _suiteSubscription = suites.asyncMap((loadSuite) async {
-      // Make the underlying suite null so that the engine doesn't start running
-      // it immediately.
-      _engine.suiteSink.add(loadSuite.changeSuite((_) => null));
-
-      var suite = await loadSuite.suite;
-      if (suite == null) return;
-
-      await _pause(suite);
-      if (_closed) return;
-
-      _engine.suiteSink.add(suite);
-      await _engine.onIdle.first;
+      _debugOperation = debug(_config, _engine, _reporter, loadSuite);
+      await _debugOperation.valueOrCancellation();
     }).listen(null);
 
     var results = await Future.wait([
@@ -309,64 +306,5 @@ class Runner {
       _engine.run()
     ]);
     return results.last;
-  }
-
-  /// Pauses the engine and the reporter so that the user can set breakpoints as
-  /// necessary.
-  ///
-  /// This is a no-op for test suites that aren't on platforms where debugging
-  /// is supported.
-  Future _pause(RunnerSuite suite) async {
-    if (suite.platform == null) return;
-    if (suite.platform == TestPlatform.vm) return;
-
-    try {
-      _reporter.pause();
-
-      var bold = _config.color ? '\u001b[1m' : '';
-      var yellow = _config.color ? '\u001b[33m' : '';
-      var noColor = _config.color ? '\u001b[0m' : '';
-      print('');
-
-      if (suite.platform.isDartVM) {
-        var url = suite.environment.observatoryUrl;
-        if (url == null) {
-          print("${yellow}Observatory URL not found. Make sure you're using "
-              "${suite.platform.name} 1.11 or later.$noColor");
-        } else {
-          print("Observatory URL: $bold$url$noColor");
-        }
-      }
-
-      if (suite.platform.isHeadless) {
-        var url = suite.environment.remoteDebuggerUrl;
-        if (url == null) {
-          print("${yellow}Remote debugger URL not found.$noColor");
-        } else {
-          print("Remote debugger URL: $bold$url$noColor");
-        }
-      }
-
-      var buffer = new StringBuffer(
-          "${bold}The test runner is paused.${noColor} ");
-      if (!suite.platform.isHeadless) {
-        buffer.write("Open the dev console in ${suite.platform} ");
-      } else {
-        buffer.write("Open the remote debugger ");
-      }
-      if (suite.platform.isDartVM) buffer.write("or the Observatory ");
-
-      buffer.write("and set breakpoints. Once you're finished, return to this "
-          "terminal and press Enter.");
-
-      print(wordWrap(buffer.toString()));
-
-      await inCompletionOrder([
-        suite.environment.displayPause(),
-        cancelableNext(stdinLines)
-      ]).first;
-    } finally {
-      _reporter.resume();
-    }
   }
 }

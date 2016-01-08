@@ -115,6 +115,9 @@ abstract class LiveTest {
     return test.name.substring(group.name.length + 1);
   }
 
+  /// Loads a copy of this [LiveTest] that's able to be run again.
+  LiveTest copy() => test.load(suite, groups: groups);
+
   /// Signals that this test should start running as soon as possible.
   ///
   /// A test may not start running immediately for various reasons specific to

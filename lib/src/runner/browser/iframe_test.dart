@@ -13,6 +13,7 @@ import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
+import '../../utils.dart';
 import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
@@ -63,13 +64,27 @@ class IframeTest extends Test {
           assert(message['type'] == 'complete');
           controller.completer.complete();
         }
+      }, onDone: () {
+        // When the test channel closes—presumably becuase the browser
+        // closed—mark the test as complete no matter what.
+        if (controller.completer.isCompleted) return;
+        controller.completer.complete();
       });
     }, () {
-      // Ignore all future messages from the test and complete it immediately.
-      // We don't need to tell it to run its tear-down because there's nothing a
-      // browser test needs to clean up on the file system anyway.
-      testChannel.sink.close();
-      if (!controller.completer.isCompleted) controller.completer.complete();
+      // If the test has finished running, just disconnect the channel.
+      if (controller.completer.isCompleted) {
+        testChannel.sink.close();
+        return;
+      }
+
+      invoke(() async {
+        // If the test is still running, send it a message telling it to shut
+        // down ASAP. This causes the [Invoker] to eagerly throw exceptions
+        // whenever the test touches it.
+        testChannel.sink.add({'command': 'close'});
+        await controller.completer.future;
+        testChannel.sink.close();
+      });
     }, groups: groups);
     return controller.liveTest;
   }

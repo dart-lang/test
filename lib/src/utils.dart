@@ -352,12 +352,17 @@ Future maybeFirst(Stream stream) {
 /// either completed or been canceled.
 CancelableOperation cancelableNext(StreamQueue queue) {
   var fork = queue.fork();
-  var completer = new CancelableCompleter(
-      onCancel: () => fork.cancel(immediate: true));
+  var canceled = false;
+  var completer = new CancelableCompleter(onCancel: () {
+    canceled = true;
+    return fork.cancel(immediate: true);
+  });
+
   completer.complete(fork.next.then((_) {
     fork.cancel();
-    return queue.next;
+    return canceled ? null : queue.next;
   }));
+
   return completer.operation;
 }
 
