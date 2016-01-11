@@ -471,6 +471,27 @@ If multiple platforms match, the configuration is applied in order from first to
 last, just as they would in nested groups. This means that for configuration
 like duration-based timeouts, the last matching value wins.
 
+## Debugging
+
+Tests can be debugged interactively using browsers' built-in development tools,
+including Observatory when you're using Dartium. Currently there's no support
+for interactively debugging command-line VM tests, but it will be added
+[in the future][issue 50].
+
+[issue 50]: https://github.com/dart-lang/test/issues/50
+
+The first step when debugging is to pass the `--pause-after-load` flag to the
+test runner. This pauses the browser after each test suite has loaded, so that
+you have time to open the development tools and set breakpoints. For Dartium,
+the test runner will print the Observatory URL for you. For PhantomJS, it will
+print the remote debugger URL. For content shell, it'll print both!
+
+Once you've set breakpoints, either click the big arrow in the middle of the web
+page or press Enter in your terminal to start the tests running. When you hit a
+breakpoint, the runner will open its own debugging console in the terminal that
+controls how tests are run. You can type "restart" there to re-run your test as
+many times as you need to figure out what's going on.
+
 ## Testing With `barback`
 
 Packages using the `barback` transformer system may need to test code that's
