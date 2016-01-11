@@ -1,5 +1,5 @@
 name: test
-version: 0.12.7-dev
+version: 0.12.7
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
@@ -34,6 +34,3 @@ dependencies:
 dev_dependencies:
   fake_async: '^0.1.2'
   scheduled_test: '^0.12.2'
-
-dependency_overrides:
-  async: {git: git://github.com/dart-lang/async.git}
