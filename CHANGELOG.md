@@ -1,5 +1,12 @@
 ## 0.12.7
 
+* Add the ability to re-run tests while debugging. When the browser is paused at
+  a breakpoint, the test runner will open an interactive console on the command
+  line that can be used to restart the test.
+
+* Add support for passing any object as a description to `test()` and `group()`.
+  These objects will be converted to strings.
+
 * Add the ability to tag tests. Tests with specific tags may be run by passing
   the `--tags` command-line argument, or excluded by passing the
   `--exclude-tags` parameter.
@@ -10,6 +17,14 @@
 
 [focusing]: http://jasmine.github.io/2.1/focused_specs.html
 [issue 16]: https://github.com/dart-lang/test/issues/16
+
+## 0.12.6+2
+
+* Declare compatibility with `http_parser` 2.0.0.
+
+## 0.12.6+1
+
+* Declare compatibility with `http_multi_server` 2.0.0.
 
 ## 0.12.6
 

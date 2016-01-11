@@ -6,15 +6,15 @@ homepage: https://github.com/dart-lang/test
 environment:
   sdk: '>=1.11.0 <1.16.0'
 dependencies:
-  analyzer: '>=0.23.0 <0.27.0'
+  analyzer: '>=0.23.0 <0.28.0'
   args: '>=0.12.1 <0.14.0'
-  async: '^1.4.0'
+  async: '^1.6.0'
   barback: '>=0.14.0 <0.16.0'
   collection: '^1.1.0'
   crypto: '^0.9.0'
   glob: '^1.0.0'
-  http_multi_server: '^1.0.0'
-  http_parser: '>=0.0.2 <2.0.0'
+  http_multi_server: '>=1.0.0 <3.0.0'
+  http_parser: '>=0.0.2 <3.0.0'
   path: '^1.2.0'
   pool: '^1.2.0'
   pub_semver: '^1.0.0'
@@ -34,3 +34,6 @@ dependencies:
 dev_dependencies:
   fake_async: '^0.1.2'
   scheduled_test: '^0.12.2'
+
+dependency_overrides:
+  async: {git: git://github.com/dart-lang/async.git}

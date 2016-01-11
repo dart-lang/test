@@ -150,6 +150,11 @@ class CompactReporter implements Reporter {
     _printedNewline = true;
     _stopwatch.stop();
 
+    // Force the next message to be printed, even if it's identical to the
+    // previous one. If the reporter was paused, text was probably printed
+    // during the pause.
+    _lastProgressMessage = null;
+
     for (var subscription in _subscriptions) {
       subscription.pause();
     }
