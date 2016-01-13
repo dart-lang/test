@@ -4,8 +4,6 @@
 
 /// The mirror matchers library provides some additional matchers that
 /// make use of `dart:mirrors`.
-library matcher.mirror_matchers;
-
 import 'dart:mirrors';
 
 import 'matcher.dart';
