@@ -121,7 +121,6 @@ void main() {
     var secondTestStarted = false;
     var firstTestFinished = false;
     var tearDownBody = expectAsync(() {
-      print("running teardown");
       expect(secondTestStarted, isFalse);
       expect(firstTestFinished, isFalse);
     });
@@ -135,14 +134,12 @@ void main() {
         tearDown(tearDownBody);
 
         test("first test", () async {
-          print("running first test");
           await firstTestCompleter.future;
           firstTestFinished = true;
         }, timeout: new Timeout(Duration.ZERO));
       });
 
       test("second test", () {
-        print("running second test");
         secondTestStarted = true;
         firstTestCompleter.complete();
       });
