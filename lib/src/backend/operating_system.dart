@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.backend.operating_system;
-
 /// An enum of all operating systems supported by Dart.
 ///
 /// This is used for selecting which operating systems a test can run on. Even

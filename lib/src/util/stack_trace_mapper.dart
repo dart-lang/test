@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.util.stack_trace_mapper;
-
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
 

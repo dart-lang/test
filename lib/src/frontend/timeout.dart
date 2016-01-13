@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.frontend.timeout;
-
 /// A class representing a modification to the default timeout for a test.
 ///
 /// By default, a test will time out after 30 seconds. With [new Timeout], that

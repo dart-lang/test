@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.backend.state;
-
 /// The state of a [LiveTest].
 ///
 /// A test's state is made up of two components, its [status] and its [result].

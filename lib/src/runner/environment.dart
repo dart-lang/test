@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.environment;
-
 import 'package:async/async.dart';
 
 /// The abstract class of environments in which test suites are

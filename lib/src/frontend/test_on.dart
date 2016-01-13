@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.frontend.test_on;
-
 /// An annotation indicating which platforms a test suite supports.
 ///
 /// For the full syntax of [expression], see [the README][].

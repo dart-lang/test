@@ -4,8 +4,6 @@
 
 // TODO(nweiz): Get rid of this when https://codereview.chromium.org/1241723003/
 // lands.
-library test.util.forkable_stream;
-
 import 'dart:async';
 
 import 'package:async/async.dart' hide ForkableStream;

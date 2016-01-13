@@ -5,8 +5,6 @@
 // TODO(nweiz): This is under lib so that it can be used by the unittest dummy
 // package. Once that package is no longer being updated, move this back into
 // bin.
-library test.executable;
-
 import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
