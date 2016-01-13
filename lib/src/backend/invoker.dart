@@ -90,6 +90,12 @@ class Invoker {
         "of a test body.");
   }
 
+  /// All the zones created by [waitForOutstandingCallbacks], in the order they
+  /// were created.
+  ///
+  /// This is used to throw timeout errors in the most recent zone.
+  final _outstandingCallbackZones = <Zone>[];
+
   /// An opaque object used as a key in the zone value map to identify
   /// [_outstandingCallbacks].
   ///
@@ -162,21 +168,30 @@ class Invoker {
   /// failed, removes all outstanding callbacks registered within [fn], and
   /// completes the returned future. It does not remove any outstanding
   /// callbacks registered outside of [fn].
+  ///
+  /// If the test times out, the *most recent* call to
+  /// [waitForOutstandingCallbacks] will treat that error as occurring within
+  /// [fn]—that is, it will complete immediately.
   Future waitForOutstandingCallbacks(fn()) {
     heartbeat();
 
+    var zone;
     var counter = new OutstandingCallbackCounter();
     runZoned(() {
       // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
       // two stable versions.
       runZoned(() {
+        zone = Zone.current;
+        _outstandingCallbackZones.add(zone);
         new Future.sync(fn).then((_) => counter.removeOutstandingCallback());
       }, onError: _handleError);
     }, zoneValues: {
       _counterKey: counter
     });
 
-    return counter.noOutstandingCallbacks;
+    return counter.noOutstandingCallbacks.whenComplete(() {
+      _outstandingCallbackZones.remove(zone);
+    });
   }
 
   /// Runs [fn] in a zone where [closed] is always `false`.
@@ -203,13 +218,14 @@ class Invoker {
     var timeout = liveTest.test.metadata.timeout
         .apply(new Duration(seconds: 30));
     if (timeout == null) return;
-    _timeoutTimer = _invokerZone.createTimer(timeout,
-        Zone.current.bindCallback(() {
-      if (liveTest.isComplete) return;
-      _handleError(
-          new TimeoutException(
-              "Test timed out after ${niceDuration(timeout)}.", timeout));
-    }));
+    _timeoutTimer = _invokerZone.createTimer(timeout, () {
+      _outstandingCallbackZones.last.run(() {
+        if (liveTest.isComplete) return;
+        _handleError(
+            new TimeoutException(
+                "Test timed out after ${niceDuration(timeout)}.", timeout));
+      });
+    });
   }
 
   /// Notifies the invoker of an asynchronous error.
@@ -249,8 +265,7 @@ class Invoker {
     Chain.capture(() {
       runZonedWithValues(() {
         _invokerZone = Zone.current;
-
-        heartbeat();
+        _outstandingCallbackZones.add(Zone.current);
 
         // Run the test asynchronously so that the "running" state change has
         // a chance to hit its event handler(s) before the test produces an

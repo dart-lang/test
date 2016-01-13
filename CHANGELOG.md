@@ -15,6 +15,8 @@
   temporarily to enable use-cases like [focusing][] on a specific test or group.
   Further development can be followed on [the issue tracker][issue 16].
 
+* Wait for a test's tear-down logic to run, even if it times out.
+
 [focusing]: http://jasmine.github.io/2.1/focused_specs.html
 [issue 16]: https://github.com/dart-lang/test/issues/16
 

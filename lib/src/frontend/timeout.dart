@@ -57,4 +57,10 @@ class Timeout {
     if (this == none) return null;
     return duration == null ? base * scaleFactor : duration;
   }
+
+  String toString() {
+    if (duration != null) return duration.toString();
+    if (scaleFactor != null) return "${scaleFactor}x";
+    return "none";
+  }
 }

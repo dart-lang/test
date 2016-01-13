@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/runner/engine.dart';
@@ -111,6 +113,42 @@ void main() {
     var engine = new Engine.withSuites([]);
     expect(engine.run(), completes);
     expect(engine.run, throwsStateError);
+  });
+
+  test("runs tearDown after a test times out", () {
+    // Declare this here so the expect is in the context of this test, rather
+    // than the inner test.
+    var secondTestStarted = false;
+    var firstTestFinished = false;
+    var tearDownBody = expectAsync(() {
+      print("running teardown");
+      expect(secondTestStarted, isFalse);
+      expect(firstTestFinished, isFalse);
+    });
+
+    var engine = declareEngine(() {
+      // This ensures that the first test doesn't actually finish until the
+      // second test runs.
+      var firstTestCompleter = new Completer();
+
+      group("group", () {
+        tearDown(tearDownBody);
+
+        test("first test", () async {
+          print("running first test");
+          await firstTestCompleter.future;
+          firstTestFinished = true;
+        }, timeout: new Timeout(Duration.ZERO));
+      });
+
+      test("second test", () {
+        print("running second test");
+        secondTestStarted = true;
+        firstTestCompleter.complete();
+      });
+    });
+
+    expect(engine.run(), completes);
   });
 
   group("for a skipped test", () {
