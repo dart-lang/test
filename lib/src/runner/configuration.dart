@@ -35,6 +35,8 @@ class Configuration {
     parser.addFlag("version", negatable: false,
         help: "Shows the package's version.");
     parser.addOption("package-root", hide: true);
+
+    parser.addSeparator("======== Selecting Tests");
     parser.addOption("name",
         abbr: 'n',
         help: 'A substring of the name of the test to run.\n'
@@ -54,6 +56,8 @@ class Configuration {
         help: "Don't run tests with any of the specified tags.",
         allowMultiple: true);
     parser.addOption("exclude-tag", hide: true, allowMultiple: true);
+
+    parser.addSeparator("======== Running Tests");
     parser.addOption("platform",
         abbr: 'p',
         help: 'The platform(s) on which to run the tests.',
@@ -73,6 +77,8 @@ class Configuration {
             'Implies --concurrency=1.\n'
             'Currently only supported for browser tests.',
         negatable: false);
+
+    parser.addSeparator("======== Output");
     parser.addOption("reporter",
         abbr: 'r',
         help: 'The runner used to print test results.',

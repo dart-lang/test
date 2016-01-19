@@ -1,3 +1,7 @@
+## 0.12.8
+
+* Organize the `--help` output into sections.
+
 ## 0.12.7
 
 * Add the ability to re-run tests while debugging. When the browser is paused at
