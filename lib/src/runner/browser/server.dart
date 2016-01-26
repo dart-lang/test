@@ -219,8 +219,8 @@ void main() {
 
     var suiteUrl;
     if (_config.pubServeUrl != null) {
-      var suitePrefix = p.withoutExtension(
-          p.relative(path, from: p.join(_root, 'test')));
+      var suitePrefix = p.toUri(p.withoutExtension(
+          p.relative(path, from: p.join(_root, 'test')))).path;
 
       var dartUrl;
       // Polymer generates a bootstrap entrypoint that wraps the entrypoint we
