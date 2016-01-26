@@ -344,27 +344,6 @@ $_usage""");
     test.shouldExit(1);
   });
 
-  test("respects top-level @Timeout declarations", () {
-    d.file("test.dart", '''
-@Timeout(const Duration(seconds: 0))
-
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test("timeout", () {});
-}
-''').create();
-
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "Test timed out after 0 seconds.",
-      "-1: Some tests failed."
-    ]));
-    test.shouldExit(1);
-  });
-
   test("respects top-level @Skip declarations", () {
     d.file("test.dart", '''
 @Skip()

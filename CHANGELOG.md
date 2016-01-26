@@ -2,6 +2,8 @@
 
 * Organize the `--help` output into sections.
 
+* Add a `--timeout` flag.
+
 ## 0.12.7
 
 * Add the ability to re-run tests while debugging. When the browser is paused at

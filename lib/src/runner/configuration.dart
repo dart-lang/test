@@ -72,9 +72,16 @@ class Configuration {
     parser.addOption("pub-serve",
         help: 'The port of a pub serve instance serving "test/".',
         valueHelp: 'port');
+
+    // Note: although we list the 30s default timeout as though it were a
+    // default value for this argument, it's actually encoded in the [Invoker]'s
+    // call to [Timeout.apply].
+    parser.addOption("timeout",
+        help: 'The default test timeout. For example: 15s, 2x, none\n'
+            '(defaults to 30s)');
     parser.addFlag("pause-after-load",
         help: 'Pauses for debugging before any tests execute.\n'
-            'Implies --concurrency=1.\n'
+            'Implies --concurrency=1 and --timeout=none.\n'
             'Currently only supported for browser tests.',
         negatable: false);
 
@@ -129,6 +136,9 @@ class Configuration {
   /// if tests should be loaded from the filesystem.
   final Uri pubServeUrl;
 
+  /// The default test timeout.
+  final Timeout timeout;
+
   /// Whether to use command-line color escapes.
   final bool color;
 
@@ -156,9 +166,7 @@ class Configuration {
 
   /// The global test metadata derived from this configuration.
   Metadata get metadata =>
-      new Metadata(
-          timeout: pauseAfterLoad ? Timeout.none : null,
-          verboseTrace: verboseTrace);
+      new Metadata(timeout: timeout, verboseTrace: verboseTrace);
 
   /// Parses the configuration from [args].
   ///
@@ -208,6 +216,9 @@ class Configuration {
         pubServePort: _wrapFormatException(options, 'pub-serve', int.parse),
         concurrency: _wrapFormatException(options, 'concurrency', int.parse,
             orElse: () => _defaultConcurrency),
+        timeout: _wrapFormatException(options, 'timeout',
+            (value) => new Timeout.parse(value),
+            orElse: () => new Timeout.factor(1)),
         pattern: pattern,
         platforms: options['platform'].map(TestPlatform.find),
         paths: options.rest.isEmpty ? null : options.rest,
@@ -233,9 +244,9 @@ class Configuration {
   Configuration({this.help: false, this.version: false,
           this.verboseTrace: false, this.jsTrace: false,
           bool pauseAfterLoad: false, bool color, String packageRoot,
-          String reporter, int pubServePort, int concurrency, this.pattern,
-          Iterable<TestPlatform> platforms, Iterable<String> paths,
-          Set<String> tags, Set<String> excludeTags})
+          String reporter, int pubServePort, int concurrency, Timeout timeout,
+          this.pattern, Iterable<TestPlatform> platforms,
+          Iterable<String> paths, Set<String> tags, Set<String> excludeTags})
       : pauseAfterLoad = pauseAfterLoad,
         color = color == null ? canUseSpecialChars : color,
         packageRoot = packageRoot == null
@@ -248,6 +259,9 @@ class Configuration {
         concurrency = pauseAfterLoad
             ? 1
             : (concurrency == null ? _defaultConcurrency : concurrency),
+        timeout = pauseAfterLoad
+            ? Timeout.none
+            : (timeout == null ? new Timeout.factor(1) : timeout),
         platforms = platforms == null ? [TestPlatform.vm] : platforms.toList(),
         paths = paths == null ? ["test"] : paths.toList(),
         explicitPaths = paths != null,
