@@ -4,10 +4,11 @@
 
   "definitions": {
     "Test": {
-      "required": ["id", "name", "groupIDs", "metadata"],
+      "required": ["id", "name", "suiteID", "groupIDs", "metadata"],
       "properties": {
         "id": {"type": "integer", "minimum": 0},
         "name": {"type": "string"},
+        "suiteID": {"type": "integer", "minimum": 0},
         "groupIDs": {
           "type": "array",
           "items": {"type": "integer", "minimum": 0}
@@ -16,15 +17,27 @@
       }
     },
 
-    "Group": {
-      "required": ["id", "name"],
+    "Suite": {
+      "required": ["id", "platform", "path"],
       "properties": {
         "id": {"type": "integer", "minimum": 0},
+        "platform": {
+          "oneOf": [{"type": "string"}, {"type": "null"}]
+        },
+        "path": {"type": "string"}
+      }
+    },
+
+    "Group": {
+      "required": ["id", "name", "suiteID"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 0},
+        "suiteID": {"type": "integer", "minimum": 0},
         "parentID": {
           "oneOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
         },
         "name": {
-          "oneOf": [{"type": "string"}, {"type": "null"}],
+          "oneOf": [{"type": "string"}, {"type": "null"}]
         },
         "metadata": {"$ref": "#/definitions/Metadata"}
       }
@@ -53,7 +66,7 @@
       "required": ["protocolVersion", "runnerVersion"],
       "properties": {
         "type": {"enum": ["start"]},
-        "protocolVersion": {"type": "string", "pattern": "^0\.1\."},
+        "protocolVersion": {"type": "string", "pattern": "^0\\.1\\."},
         "runnerVersion": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
         }
@@ -66,6 +79,15 @@
       "properties": {
         "type": {"enum": ["testStart"]},
         "test": {"$ref": "#/definitions/Test"}
+      }
+    },
+
+    {
+      "title": "SuiteEvent",
+      "required": ["suite"],
+      "properties": {
+        "type": {"enum": ["suite"]},
+        "group": {"$ref": "#/definitions/Suite"}
       }
     },
 
@@ -128,7 +150,8 @@
         "type": {
           "not": {
             "enum": [
-              "start", "testStart", "group", "print", "error", "testDone", "done"
+              "start", "testStart", "suite", "group", "print", "error",
+              "testDone", "done"
             ]
           }
         }

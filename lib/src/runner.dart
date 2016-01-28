@@ -181,8 +181,8 @@ class Runner {
       if (new File(path).existsSync()) return _loader.loadFile(path);
 
       return new Stream.fromIterable([
-        new LoadSuite("loading $path", () =>
-            throw new LoadException(path, 'Does not exist.'))
+        new LoadSuite.forLoadException(
+            new LoadException(path, 'Does not exist.'))
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {

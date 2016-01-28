@@ -1,3 +1,8 @@
+## 0.12.9
+
+* Add `SuiteEvent` to the JSON reporter, which reports data about the suites in
+  which tests are run.
+
 ## 0.12.8
 
 * Organize the `--help` output into sections.

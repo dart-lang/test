@@ -314,7 +314,8 @@ class ExpandedReporter implements Reporter {
   String _description(LiveTest liveTest) {
     var name = liveTest.test.name;
 
-    if (_printPath && liveTest.suite.path != null) {
+    if (_printPath && liveTest.suite is! LoadSuite &&
+        liveTest.suite.path != null) {
       name = "${liveTest.suite.path}: $name";
     }
 

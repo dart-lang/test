@@ -8,6 +8,7 @@ import 'dart:convert';
 import '../../backend/group.dart';
 import '../../backend/live_test.dart';
 import '../../backend/metadata.dart';
+import '../../backend/suite.dart';
 import '../../frontend/expect.dart';
 import '../../utils.dart';
 import '../engine.dart';
@@ -40,6 +41,9 @@ class JsonReporter implements Reporter {
 
   /// An expando that associates unique IDs with [LiveTest]s.
   final _liveTestIDs = new Map<LiveTest, int>();
+
+  /// An expando that associates unique IDs with [Suite]s.
+  final _suiteIDs = new Map<Suite, int>();
 
   /// An expando that associates unique IDs with [Group]s.
   final _groupIDs = new Map<Group, int>();
@@ -104,11 +108,13 @@ class JsonReporter implements Reporter {
       _stopwatch.start();
     }
 
+    var suiteID = _idForSuite(liveTest.suite);
+
     // Don't emit groups for load suites. They're always empty and they provide
     // unnecessary clutter.
     var groupIDs = liveTest.suite is LoadSuite
         ? []
-        : _idsForGroups(liveTest.groups);
+        : _idsForGroups(liveTest.groups, suiteID);
 
     var id = _nextID++;
     _liveTestIDs[liveTest] = id;
@@ -116,6 +122,7 @@ class JsonReporter implements Reporter {
       "test": {
         "id": id,
         "name": liveTest.test.name, 
+        "suiteID": suiteID,
         "groupIDs": groupIDs,
         "metadata": _serializeMetadata(liveTest.test.metadata)
       }
@@ -137,11 +144,40 @@ class JsonReporter implements Reporter {
     }));
   }
 
-  /// Returns a list of the IDs for all the groups in [groups].
+  /// Returns an ID for [suite].
+  ///
+  /// If [suite] doesn't have an ID yet, this assigns one and emits a new event
+  /// for that suite.
+  int _idForSuite(Suite suite) {
+    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite];
+
+    var id = _nextID++;
+    _suiteIDs[suite] = id;
+
+    // Give the load suite's suite the same ID, because it doesn't have any
+    // different metadata.
+    if (suite is LoadSuite) {
+      suite.suite.then((runnerSuite) {
+        if (runnerSuite != null) _suiteIDs[runnerSuite] = id;
+      });
+    }
+
+    _emit("suite", {
+      "suite": {
+        "id": id,
+        "platform": suite.platform?.identifier,
+        "path": suite.path
+      }
+    });
+    return id;
+  }
+
+  /// Returns a list of the IDs for all the groups in [groups], which are
+  /// contained in the suite identified by [suiteID].
   ///
   /// If a group doesn't have an ID yet, this assigns one and emits a new event
   /// for that group.
-  List<int> _idsForGroups(Iterable<Group> groups) {
+  List<int> _idsForGroups(Iterable<Group> groups, int suiteID) {
     var parentID;
     return groups.map((group) {
       if (_groupIDs.containsKey(group)) {
@@ -155,6 +191,7 @@ class JsonReporter implements Reporter {
       _emit("group", {
         "group": {
           "id": id,
+          "suiteID": suiteID,
           "parentID": parentID,
           "name": group.name,
           "metadata": _serializeMetadata(group.metadata)

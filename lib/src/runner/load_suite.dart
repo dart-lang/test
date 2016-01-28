@@ -64,7 +64,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
-  factory LoadSuite(String name, body(), {TestPlatform platform}) {
+  factory LoadSuite(String name, body(), {String path, TestPlatform platform}) {
     var completer = new Completer.sync();
     return new LoadSuite._(name, () {
       var invoker = Invoker.current;
@@ -96,7 +96,7 @@ class LoadSuite extends Suite implements RunnerSuite {
         completer.complete();
         invoker.removeOutstandingCallback();
       });
-    }, completer.future, platform: platform);
+    }, completer.future, path: path, platform: platform);
   }
 
   /// A utility constructor for a load suite that just throws [exception].
@@ -108,26 +108,26 @@ class LoadSuite extends Suite implements RunnerSuite {
 
     return new LoadSuite("loading ${exception.path}", () {
       return new Future.error(exception, stackTrace);
-    }, platform: platform);
+    }, path: exception.path, platform: platform);
   }
 
   /// A utility constructor for a load suite that just emits [suite].
   factory LoadSuite.forSuite(RunnerSuite suite) {
     return new LoadSuite("loading ${suite.path}", () => suite,
-        platform: suite.platform);
+        path: suite.path, platform: suite.platform);
   }
 
   LoadSuite._(String name, void body(), this._suiteAndZone,
-          {TestPlatform platform})
+          {String path, TestPlatform platform})
       : super(new Group.root([
         new LocalTest(name,
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
             body)
-      ]), platform: platform);
+      ]), path: path, platform: platform);
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
-      : super(old.group, platform: old.platform);
+      : super(old.group, path: old.path, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.

@@ -101,6 +101,21 @@ class StartEvent extends Event {
 A single start event is emitted before any other events. It indicates that the
 test runner has started running.
 
+### SuiteEvent
+
+```
+class SuiteEvent extends Event {
+  String type = "suite";
+
+  /// Metadata about the suite.
+  Suite suite;
+}
+```
+
+A suite event is emitted before any `GroupEvent`s for groups in a given test
+suite. This is the only event that contains the full metadata about a suite;
+future events will refer to the suite by its opaque ID.
+
 ### GroupEvent
 
 ```
@@ -250,6 +265,9 @@ class Test {
   // The name of the test, including prefixes from any containing groups.
   String name;
 
+  // The ID of the suite containing this test.
+  int suiteID;
+
   // The IDs of groups containing this test, in order from outermost to
   // innermost.
   List<int> groupIDs;
@@ -267,6 +285,32 @@ Most tests will have at least one group ID, representing the implicit root
 group. However, some may not; these should be treated as having no group
 metadata.
 
+### Suite
+
+```
+class Suite {
+  // An opaque ID for the group.
+  int id;
+
+  // The platform on which the suite is running.
+  String? platform;
+
+  // The path to the suite's file.
+  String path;
+}
+```
+
+A test suite corresponding to a loaded test file. The suite's ID is unique in
+the context of this test run. It's used elsewhere in the protocol to refer to
+this suite without including its full representation.
+
+A suite's platform is one of the platforms that can be passed to the
+`--platform` option, or `null` if there is no platform (for example if the file
+doesn't exist at all). Its path is relative to the root of the current package.
+
+Suites don't include their own metadata. Instead, that metadata is present on
+the root-level group.
+
 ### Group
 
 ```
@@ -277,6 +321,9 @@ class Group {
   // The name of the group, including prefixes from any containing groups.
   String? name;
 
+  // The ID of the suite containing this group.
+  int suiteID;
+
   // The ID of the group's parent group, unless it's the root group.
   int? parentID;
 
@@ -286,7 +333,7 @@ class Group {
 ```
 
 A group containing test cases. The group's ID is unique in the context of this
-test run. It's used elsewhere in the protocol to refer to this test without
+test run. It's used elsewhere in the protocol to refer to this group without
 including its full representation.
 
 The implicit group at the root of each test suite has `null` `name` and

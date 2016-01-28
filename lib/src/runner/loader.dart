@@ -130,7 +130,7 @@ class Loader {
         return platform == TestPlatform.vm
             ? _loadVmFile(path, metadata)
             : _loadBrowserFile(path, platform, metadata);
-      }, platform: platform);
+      }, path: path, platform: platform);
     }
   }
 
