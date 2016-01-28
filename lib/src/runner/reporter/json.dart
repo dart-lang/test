@@ -66,6 +66,12 @@ class JsonReporter implements Reporter {
     /// canceled.
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
+    _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
+      _emit("allSuites", {
+        "count": _engine.addedSuites.length
+      });
+    }));
+
     _emit("start", {
       "protocolVersion": "0.1.0",
       "runnerVersion": testVersion
@@ -194,7 +200,8 @@ class JsonReporter implements Reporter {
           "suiteID": suiteID,
           "parentID": parentID,
           "name": group.name,
-          "metadata": _serializeMetadata(group.metadata)
+          "metadata": _serializeMetadata(group.metadata),
+          "testCount": group.testCount
         }
       });
       parentID = id;

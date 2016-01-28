@@ -39,7 +39,8 @@
         "name": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
         },
-        "metadata": {"$ref": "#/definitions/Metadata"}
+        "metadata": {"$ref": "#/definitions/Metadata"},
+        "testCount": {"type": "integer", "minimum": 0}
       }
     },
 
@@ -79,6 +80,15 @@
       "properties": {
         "type": {"enum": ["testStart"]},
         "test": {"$ref": "#/definitions/Test"}
+      }
+    },
+
+    {
+      "title": "AllSuitesEvent",
+      "required": ["count"],
+      "properties": {
+        "type": {"enum": ["allSuites"]},
+        "count": {"type": "integer", "minimum": 0}
       }
     },
 
@@ -150,8 +160,8 @@
         "type": {
           "not": {
             "enum": [
-              "start", "testStart", "suite", "group", "print", "error",
-              "testDone", "done"
+              "start", "testStart", "allSuites", "suite", "group", "print",
+              "error", "testDone", "done"
             ]
           }
         }

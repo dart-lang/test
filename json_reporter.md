@@ -101,6 +101,22 @@ class StartEvent extends Event {
 A single start event is emitted before any other events. It indicates that the
 test runner has started running.
 
+### SuiteCountEvent
+
+```
+class AllSuitesEvent {
+  String type = "allSuites";
+
+  /// The total number of suites that will be loaded.
+  int count;
+}
+```
+
+A single suite count event is emitted once the test runner knows the total
+number of suites that will be loaded over the course of the test run. Because
+this is determined asynchronously, its position relative to other events (except
+`StartEvent`) is not guaranteed.
+
 ### SuiteEvent
 
 ```
@@ -329,6 +345,9 @@ class Group {
 
   // The group's metadata, including metadata from any containing groups.
   Metadata metadata;
+
+  // The number of tests (recursively) within this group.
+  int testCount;
 }
 ```
 

@@ -33,6 +33,15 @@ class Group implements GroupEntry {
   /// This is `null` if no `tearDown` callbacks were declared.
   final Test tearDownAll;
 
+  /// The number of tests (recursively) in this group.
+  int get testCount {
+    if (_testCount != null) return _testCount;
+    _testCount = entries.fold(0,
+        (count, entry) => count + (entry is Group ? entry.testCount : 1));
+    return _testCount;
+  }
+  int _testCount;
+
   Group(this.name, Iterable<GroupEntry> entries, {Metadata metadata,
           Test this.setUpAll, Test this.tearDownAll})
       : entries = new List<GroupEntry>.unmodifiable(entries),

@@ -95,6 +95,23 @@ class Engine {
   Sink<RunnerSuite> get suiteSink => new DelegatingSink(_suiteController.sink);
   final _suiteController = new StreamController<RunnerSuite>();
 
+  /// All the [RunnerSuite]s added to [suiteSink] so far.
+  ///
+  /// Note that if a [LoadSuite] is added, this will only contain that suite,
+  /// not the suite it loads.
+  Set<RunnerSuite> get addedSuites => new UnmodifiableSetView(_addedSuites);
+  final _addedSuites = new Set<RunnerSuite>();
+
+  /// A broadcast that emits each [RunnerSuite] as it's added to the engine via
+  /// [suiteSink].
+  ///
+  /// Note that if a [LoadSuite] is added, this will only return that suite, not
+  /// the suite it loads.
+  ///
+  /// This is guaranteed to fire after the suite is added to [addedSuites].
+  Stream<RunnerSuite> get onSuiteAdded => _onSuiteAddedController.stream;
+  final _onSuiteAddedController = new StreamController<RunnerSuite>.broadcast();
+
   /// All the currently-known tests that have run, are running, or will run.
   ///
   /// These are [LiveTest]s, representing the in-progress state of each test.
@@ -196,6 +213,9 @@ class Engine {
     _runCalled = true;
 
     _suiteController.stream.listen((suite) {
+      _addedSuites.add(suite);
+      _onSuiteAddedController.add(suite);
+
       _group.add(new Future.sync(() async {
         var loadResource = await _loadPool.request();
 
@@ -213,7 +233,10 @@ class Engine {
           loadResource.allowRelease(() => suite.close());
         });
       }));
-    }, onDone: _group.close);
+    }, onDone: () {
+      _onSuiteAddedController.close();
+      _group.close();
+    });
 
     return success;
   }
@@ -414,6 +437,7 @@ class Engine {
   Future close() async {
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
+    _onSuiteAddedController.close();
     _suiteController.close();
 
     // Close the running tests first so that we're sure to wait for them to
