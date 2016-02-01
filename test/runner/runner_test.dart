@@ -46,12 +46,16 @@ Usage: pub run test:test [files or directories...]
 
 -h, --help                     Shows this usage information.
     --version                  Shows the package's version.
+
+======== Selecting Tests
 -n, --name                     A substring of the name of the test to run.
                                Regular expression syntax is supported.
 
 -N, --plain-name               A plain-text substring of the name of the test to run.
 -t, --tags                     Run only tests with all of the specified tags.
 -x, --exclude-tags             Don't run tests with any of the specified tags.
+
+======== Running Tests
 -p, --platform                 The platform(s) on which to run the tests.
                                $_browsers
 
@@ -59,10 +63,14 @@ Usage: pub run test:test [files or directories...]
                                (defaults to $_defaultConcurrency)
 
     --pub-serve=<port>         The port of a pub serve instance serving "test/".
+    --timeout                  The default test timeout. For example: 15s, 2x, none
+                               (defaults to 30s)
+
     --pause-after-load         Pauses for debugging before any tests execute.
-                               Implies --concurrency=1.
+                               Implies --concurrency=1 and --timeout=none.
                                Currently only supported for browser tests.
 
+======== Output
 -r, --reporter                 The runner used to print test results.
 
           [compact]            A single line, updated continuously.
