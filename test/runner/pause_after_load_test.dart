@@ -241,12 +241,16 @@ void main() {
 
   test("disables timeouts", () {
     d.file("test.dart", """
+import 'dart:async';
+
 import 'package:test/test.dart';
 
 void main() {
   print('loaded test 1!');
 
-  test("success", () {}, timeout: new Timeout(Duration.ZERO));
+  test("success", () async {
+    await new Future.delayed(Duration.ZERO);
+  }, timeout: new Timeout(Duration.ZERO));
 }
 """).create();
 

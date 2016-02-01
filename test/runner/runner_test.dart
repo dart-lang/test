@@ -410,8 +410,11 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("fail", () => throw 'oh no', onPlatform: {
-    "vm": new Timeout(new Duration(seconds: 0))
+  test("fail", () async {
+    await new Future.delayed(Duration.ZERO);
+    throw 'oh no';
+  }, onPlatform: {
+    "vm": new Timeout(Duration.ZERO)
   });
 }
 ''').create();
@@ -517,7 +520,10 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("fail", () => throw 'oh no');
+  test("fail", () async {
+    await new Future.delayed(Duration.ZERO);
+    throw 'oh no';
+  });
 }
 ''').create();
 
