@@ -385,6 +385,20 @@ void main() {
     return future;
   }
 
+  /// Close all the browsers that the server currently has open.
+  ///
+  /// Note that this doesn't close the server itself. Browser tests can still be
+  /// loaded, they'll just spawn new browsers.
+  Future closeBrowsers() {
+    var managers = _browserManagers.values.toList();
+    _browserManagers.clear();
+    return Future.wait(managers.map((manager) async {
+      var result = await manager;
+      if (result.isError) return;
+      await result.asValue.value.close();
+    }));
+  }
+
   /// Closes the server and releases all its resources.
   ///
   /// Returns a [Future] that completes once the server is closed and its

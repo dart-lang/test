@@ -260,6 +260,15 @@ void main(_, Map message) {
     return new IsolateTest(test['name'], metadata, test['sendPort']);
   }
 
+  /// Close all the browsers that the loader currently has open.
+  ///
+  /// Note that this doesn't close the loader itself. Browser tests can still be
+  /// loaded, they'll just spawn new browsers.
+  Future closeBrowsers() async {
+    if (!_browserServerMemo.hasRun) return;
+    await (await _browserServer).closeBrowsers();
+  }
+
   /// Closes the loader and releases all resources allocated by it.
   Future close() {
     return _closeMemo.runOnce(() async {

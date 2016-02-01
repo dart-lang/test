@@ -166,7 +166,14 @@ class Runner {
 
     // Make sure we close the engine *before* the loader. Otherwise,
     // LoadSuites provided by the loader may get into bad states.
-    await _engine.close();
+    //
+    // We close the loader's browsers while we're closing the engine because
+    // browser tests don't store any state we care about and we want them to
+    // shut down without waiting for their tear-downs.
+    await Future.wait([
+      _loader.closeBrowsers(),
+      _engine.close()
+    ]);
     if (timer != null) timer.cancel();
     await _loader.close();
   });

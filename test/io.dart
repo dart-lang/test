@@ -96,8 +96,12 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
     inOrder(strings.map((string) => consumeThrough(contains(string))));
 
 /// Runs the test executable with the package root set properly.
+///
+/// If [forwardStdio] is true, the standard output and error from the process
+/// will be printed as part of the parent test. This is used for debugging.
 ScheduledProcess runTest(List args, {String reporter,
-    int concurrency, Map<String, String> environment}) {
+    int concurrency, Map<String, String> environment,
+    bool forwardStdio: false}) {
   reporter ??= "expanded";
   concurrency ??= 1;
 
@@ -111,9 +115,16 @@ ScheduledProcess runTest(List args, {String reporter,
   if (environment == null) environment = {};
   environment.putIfAbsent("_UNITTEST_USE_COLOR", () => "false");
 
-  return runDart(allArgs,
+  var process = runDart(allArgs,
       environment: environment,
       description: "dart bin/test.dart");
+
+  if (forwardStdio) {
+    process.stdoutStream().listen(print);
+    process.stderrStream().listen(print);
+  }
+
+  return process;
 }
 
 /// Runs Dart.

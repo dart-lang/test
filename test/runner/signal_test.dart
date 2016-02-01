@@ -252,8 +252,10 @@ void main() {
   });
 }
 
-ScheduledProcess _runTest(List<String> args) =>
-    runTest(args, environment: {"_UNITTEST_TEMP_DIR": _tempDir});
+ScheduledProcess _runTest(List<String> args, {bool forwardStdio: false}) =>
+    runTest(args,
+        environment: {"_UNITTEST_TEMP_DIR": _tempDir},
+        forwardStdio: forwardStdio);
 
 void signalAndQuit(ScheduledProcess test) {
   test.signal(ProcessSignal.SIGTERM);
