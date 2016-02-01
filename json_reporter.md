@@ -101,7 +101,7 @@ class StartEvent extends Event {
 A single start event is emitted before any other events. It indicates that the
 test runner has started running.
 
-### SuiteCountEvent
+### AllSuitesEvent
 
 ```
 class AllSuitesEvent {
