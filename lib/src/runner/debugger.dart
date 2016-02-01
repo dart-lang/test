@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import '../backend/live_test.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
 import '../utils.dart';
