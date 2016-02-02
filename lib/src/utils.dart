@@ -208,16 +208,6 @@ Map mergeMaps(Map map1, Map map2) {
   return result;
 }
 
-/// Returns a sink that maps events sent to [original] using [fn].
-StreamSink mapSink(StreamSink original, fn(event)) {
-  var controller = new StreamController(sync: true);
-  controller.stream.listen(
-      (event) => original.add(fn(event)),
-      onError: (error, stackTrace) => original.addError(error, stackTrace),
-      onDone: () => original.close());
-  return controller.sink;
-}
-
 /// Like [runZoned], but [zoneValues] are set for the callbacks in
 /// [zoneSpecification] and [onError].
 runZonedWithValues(body(), {Map zoneValues,

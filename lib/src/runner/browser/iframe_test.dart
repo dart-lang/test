@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:stream_channel/stream_channel.dart';
+
 import '../../backend/group.dart';
 import '../../backend/live_test.dart';
 import '../../backend/live_test_controller.dart';
@@ -12,7 +14,6 @@ import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../utils.dart';
-import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
 

@@ -8,8 +8,7 @@ import 'dart:html';
 import 'dart:js' as js;
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test/src/util/multi_channel.dart';
-import 'package:test/src/util/stream_channel.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 /// The iframes created for each loaded test suite, indexed by the suite id.
 final _iframes = new Map<int, IFrameElement>();
@@ -116,7 +115,8 @@ MultiChannel _connectToServer() {
   outputController.stream.listen(
       (message) => webSocket.send(JSON.encode(message)));
 
-  return new MultiChannel(inputController.stream, outputController.sink);
+  return new MultiChannel(
+      new StreamChannel(inputController.stream, outputController.sink));
 }
 
 /// Creates an iframe with `src` [url] and establishes a connection to it using

@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html' hide Metadata;
 
+import 'package:stream_channel/stream_channel.dart';
+
 import '../../backend/declarer.dart';
 import '../../backend/group.dart';
 import '../../backend/live_test.dart';
@@ -13,7 +15,6 @@ import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
-import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../utils.dart';
 
@@ -114,7 +115,8 @@ class IframeListener {
       }, window.location.origin);
     });
 
-    return new MultiChannel(inputController.stream, outputController.sink);
+    return new MultiChannel(new StreamChannel(
+        inputController.stream, outputController.sink));
   }
 
   /// Sends a message over [channel] indicating that the tests failed to load.

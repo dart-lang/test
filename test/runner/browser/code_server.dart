@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
+import 'package:http_parser/http_parser.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:scheduled_test/scheduled_server.dart';
@@ -79,7 +79,7 @@ main() async {
 
   /// Handles a WebSocket connection to the root of the server, and returns a
   /// future that will complete to the WebSocket.
-  Future<WebSocket> handleWebSocket() {
+  Future<WebSocketChannel> handleWebSocket() {
     var completer = new Completer();
     _server.handle("GET", "/", webSocketHandler(completer.complete));
     return completer.future;

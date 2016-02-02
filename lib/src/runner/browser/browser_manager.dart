@@ -8,12 +8,11 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:pool/pool.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
-import '../../util/multi_channel.dart';
 import '../../util/stack_trace_mapper.dart';
-import '../../utils.dart';
 import '../application_exception.dart';
 import '../environment.dart';
 import '../runner_suite.dart';
@@ -82,7 +81,7 @@ class BrowserManager {
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
   static Future<BrowserManager> start(TestPlatform platform, Uri url,
-      Future<CompatibleWebSocket> future, {bool debug: false}) {
+      Future<WebSocketChannel> future, {bool debug: false}) {
     var browser = _newBrowser(url, platform, debug: debug);
 
     var completer = new Completer();
@@ -134,10 +133,8 @@ class BrowserManager {
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
-  BrowserManager._(this._browser, this._platform, CompatibleWebSocket webSocket)
-      : _channel = new MultiChannel(
-          webSocket.map(JSON.decode),
-          mapSink(webSocket, JSON.encode)) {
+  BrowserManager._(this._browser, this._platform, WebSocketChannel webSocket)
+      : _channel = new MultiChannel(webSocket.transform(jsonDocument)) {
     _environment = _loadBrowserEnvironment();
     _channel.stream.listen(_onMessage, onDone: close);
   }

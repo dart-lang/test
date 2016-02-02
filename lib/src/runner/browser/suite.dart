@@ -5,15 +5,14 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import '../../backend/group.dart';
 import '../../backend/metadata.dart';
 import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
-import '../../util/multi_channel.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
-import '../../util/stream_channel.dart';
 import '../../utils.dart';
 import '../environment.dart';
 import '../load_exception.dart';
@@ -51,16 +50,18 @@ Future<RunnerSuite> loadBrowserSuite(StreamChannel channel,
   // Even though [channel] is probably a [MultiChannel] already, create a
   // nested MultiChannel because the iframe will be using a channel wrapped
   // within the host's channel.
-  var suiteChannel = new MultiChannel(channel.stream.map((message) {
-    // Whenever we get a message, no matter which child channel it's for, we the
-    // browser is still running code which means the using isn't debugging.
-    if (controller != null) {
-      timer.reset();
-      controller.setDebugging(false);
-    }
+  var suiteChannel = new MultiChannel(channel.changeStream((stream) {
+    return stream.map((message) {
+      // Whenever we get a message, no matter which child channel it's for, we the
+      // browser is still running code which means the using isn't debugging.
+      if (controller != null) {
+        timer.reset();
+        controller.setDebugging(false);
+      }
 
-    return message;
-  }), channel.sink);
+      return message;
+    });
+  }));
 
   var response = await _getResponse(suiteChannel.stream)
       .timeout(new Duration(minutes: 1), onTimeout: () {

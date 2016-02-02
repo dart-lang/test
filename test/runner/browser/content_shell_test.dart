@@ -35,7 +35,7 @@ webSocket.send("loaded!");
     var webSocket = server.handleWebSocket();
 
     schedule(() async {
-      expect(await (await webSocket).first, equals("loaded!"));
+      expect(await (await webSocket).stream.first, equals("loaded!"));
     });
   }, skip: "Failing with mysterious WebSocket issues.");
 

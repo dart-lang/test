@@ -34,7 +34,7 @@ webSocket.addEventListener("open", function() {
     var webSocket = server.handleWebSocket();
 
     schedule(() async {
-      expect(await (await webSocket).first, equals("loaded!"));
+      expect(await (await webSocket).stream.first, equals("loaded!"));
     });
   });
 
