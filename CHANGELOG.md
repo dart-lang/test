@@ -6,8 +6,8 @@
 * Add `AllSuitesEvent` to the JSON reporter, which reports the total number of
   suites that will be run.
 
-* Add `GroupEvent.testCount` to the JSON reporter, which reports the total
-  number of tests in each group.
+* Add `Group.testCount` to the JSON reporter, which reports the total number of
+  tests in each group.
 
 ## 0.12.8
 
