@@ -78,16 +78,16 @@ class Declarer {
         testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
         tags: tags));
 
-    _entries.add(new LocalTest(_prefix(name), metadata, () {
+    _entries.add(new LocalTest(_prefix(name), metadata, () async {
       // TODO(nweiz): It might be useful to throw an error here if a test starts
       // running while other tests from the same declarer are also running,
       // since they might share closurized state.
 
-      // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
-      // two stable versions.
-      return Invoker.current.waitForOutstandingCallbacks(() {
-        return _runSetUps().then((_) => body());
-      }).then((_) => _runTearDowns());
+      await Invoker.current.waitForOutstandingCallbacks(() async {
+        await _runSetUps();
+        await body();
+      });
+      await _runTearDowns();
     }));
   }
 
@@ -161,16 +161,9 @@ class Declarer {
   ///
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
-  Future _runSetUps() {
-    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
-    // stable versions.
-    if (_parent != null) {
-      return _parent._runSetUps().then((_) {
-        return Future.forEach(_setUps, (setUp) => setUp());
-      });
-    }
-
-    return Future.forEach(_setUps, (setUp) => setUp());
+  Future _runSetUps() async {
+    if (_parent != null) await _parent._runSetUps();
+    await Future.forEach(_setUps, (setUp) => setUp());
   }
 
   /// Run the tear-up functions for this and any parent groups.

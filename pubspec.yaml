@@ -4,7 +4,7 @@ author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
 environment:
-  sdk: '>=1.11.0 <1.16.0'
+  sdk: '>=1.13.0 <1.16.0'
 dependencies:
   analyzer: '>=0.23.0 <0.28.0'
   args: '>=0.12.1 <0.14.0'

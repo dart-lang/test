@@ -178,12 +178,11 @@ class Invoker {
     var zone;
     var counter = new OutstandingCallbackCounter();
     runZoned(() {
-      // TODO(nweiz): Use async/await here once issue 23497 has been fixed in
-      // two stable versions.
-      runZoned(() {
+      runZoned(() async {
         zone = Zone.current;
         _outstandingCallbackZones.add(zone);
-        new Future.sync(fn).then((_) => counter.removeOutstandingCallback());
+        await fn();
+        counter.removeOutstandingCallback();
       }, onError: _handleError);
     }, zoneValues: {
       _counterKey: counter
@@ -260,10 +259,8 @@ class Invoker {
 
     var outstandingCallbacksForBody = new OutstandingCallbackCounter();
 
-    // TODO(nweiz): Use async/await here once issue 23497 has been fixed in two
-    // stable versions.
     Chain.capture(() {
-      runZonedWithValues(() {
+      runZonedWithValues(() async {
         _invokerZone = Zone.current;
         _outstandingCallbackZones.add(Zone.current);
 
@@ -276,15 +273,15 @@ class Invoker {
         new Future(_test._body)
             .then((_) => removeOutstandingCallback());
 
-        _outstandingCallbacks.noOutstandingCallbacks.then((_) {
-          if (_timeoutTimer != null) _timeoutTimer.cancel();
-          _controller.setState(
-              new State(Status.complete, liveTest.state.result));
+        await _outstandingCallbacks.noOutstandingCallbacks;
+        if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-          // Use [Timer.run] here to avoid starving the DOM or other
-          // non-microtask events.
-          Timer.run(_controller.completer.complete);
-        });
+        _controller.setState(
+            new State(Status.complete, liveTest.state.result));
+
+        // Use [Timer.run] here to avoid starving the DOM or other
+        // non-microtask events.
+        Timer.run(_controller.completer.complete);
       }, zoneValues: {
         #test.invoker: this,
         // Use the invoker as a key so that multiple invokers can have different
