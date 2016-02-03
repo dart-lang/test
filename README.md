@@ -1,5 +1,20 @@
 `test` provides a standard way of writing and running tests in Dart.
 
+* [Writing Tests](#writing-tests)
+* [Running Tests](#running-tests)
+  * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
+  * [Platform Selector Syntax](#platform-selector-syntax)
+  * [Running Tests on Dartium](#running-tests-on-dartium)
+* [Asynchronous Tests](#asynchronous-tests)
+* [Running Tests With Custom HTML](#running-tests-with-custom-html)
+* [Configuring Tests](#configuring-tests)
+  * [Skipping Tests](#skipping-tests)
+  * [Timeouts](#timeouts)
+  * [Platform-Specific Configuration](#platform-specific-configuration)
+* [Debugging](#debugging)
+* [Testing with `barback`](#testing-with-barback)
+* [Further Reading](#further-reading)
+
 ## Writing Tests
 
 Tests are specified using the top-level [`test()`][test] function, and test
@@ -319,7 +334,7 @@ void main() {
 
 [expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync
 
-## Running Tests with Custom HTML
+## Running Tests With Custom HTML
 
 By default, the test runner will generate its own empty HTML file for browser
 tests. However, tests that need custom HTML can create their own files. These
@@ -550,3 +565,10 @@ Check out the [API docs][api] for detailed information about all the functions
 available to tests.
 
 [api]: http://www.dartdocs.org/documentation/test/latest/index.html
+
+The test runner also supports a machine-readable JSON-based reporter. This
+reporter allows the test runner to be wrapped and its progress presented in
+custom ways (for example, in an IDE). See [the protocol documentation][json] for
+more details.
+
+[json]: https://github.com/dart-lang/test/blob/master/doc/json_reporter.md
