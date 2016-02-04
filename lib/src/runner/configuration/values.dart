@@ -5,6 +5,8 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:glob/glob.dart';
+
 import '../../util/io.dart';
 
 /// The default number of test suites to run at once.
@@ -20,3 +22,8 @@ const allReporters = const ["compact", "expanded", "json"];
 final defaultReporter = inTestTests
     ? 'expanded'
     : (Platform.isWindows ? 'expanded' : 'compact');
+
+/// The default filename pattern.
+///
+/// This is stored here so that we don't have to recompile it multiple times.
+final defaultFilename = new Glob("*_test.dart");

@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
@@ -70,7 +71,14 @@ class _ConfigurationLoader {
       return TestPlatform.find(platformNode.value);
     });
 
-    // TODO(nweiz): Add support for using globs to define defaults paths to run.
+    var paths = _getList("paths", (pathNode) {
+      _validate(pathNode, "Paths must be strings.", (value) => value is String);
+      _validate(pathNode, "Paths must be relative.", p.url.isRelative);
+
+      return _parseNode(pathNode, "path", p.fromUri);
+    });
+
+    var filename = _parseValue("filename", (value) => new Glob(value));
 
     return new Configuration(
         verboseTrace: verboseTrace,
@@ -79,7 +87,9 @@ class _ConfigurationLoader {
         pubServePort: pubServePort,
         concurrency: concurrency,
         timeout: timeout,
-        platforms: platforms);
+        platforms: platforms,
+        paths: paths,
+        filename: filename);
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed
@@ -132,20 +142,31 @@ class _ConfigurationLoader {
     return node.nodes.map(forElement).toList();
   }
 
+  /// Asserts that [node] is a string, passes its value to [parse], and returns
+  /// the result.
+  ///
+  /// If [parse] throws a [FormatException], it's wrapped to include [node]'s
+  /// span.
+  _parseNode(YamlNode node, String name, parse(String value)) {
+    _validate(node, "$name must be a string.", (value) => value is String);
+
+    try {
+      return parse(node.value);
+    } on FormatException catch (error) {
+      throw new SourceSpanFormatException(
+          'Invalid $name: ${error.message}', node.span, _source);
+    }
+  }
+
   /// Asserts that [field] is a string, passes it to [parse], and returns the
   /// result.
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [field]'s
   /// span.
-  _parseValue(String field, parse(value)) {
-    var value = _getString(field);
-    if (value == null) return null;
-
-    try {
-      return parse(value);
-    } on FormatException catch (error) {
-      _error('Invalid $field: ${error.message}', field);
-    }
+  _parseValue(String field, parse(String value)) {
+    var node = _document.nodes[field];
+    if (node == null) return null;
+    return _parseNode(node, field, parse);
   }
 
   /// Throws a [SourceSpanFormatException] with [message] about [field].

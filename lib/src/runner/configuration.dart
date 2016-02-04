@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
 import '../frontend/timeout.dart';
@@ -75,6 +76,12 @@ class Configuration {
   /// Whether the load paths were passed explicitly or the default was used.
   bool get explicitPaths => _paths != null;
 
+  /// The glob matching the basename of tests to run.
+  ///
+  /// This is used to find tests within a directory.
+  Glob get filename => _filename ?? defaultFilename;
+  final Glob _filename;
+
   /// The pattern to match against test names to decide which to run, or `null`
   /// if all tests should be run.
   final Pattern pattern;
@@ -117,7 +124,7 @@ class Configuration {
           bool pauseAfterLoad, bool color, String packageRoot, String reporter,
           int pubServePort, int concurrency, Timeout timeout, this.pattern,
           Iterable<TestPlatform> platforms, Iterable<String> paths,
-          Iterable<String> tags, Iterable<String> excludeTags})
+          Glob filename, Iterable<String> tags, Iterable<String> excludeTags})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
@@ -135,8 +142,15 @@ class Configuration {
             : (timeout == null ? new Timeout.factor(1) : timeout),
         _platforms = _list(platforms),
         _paths = _list(paths),
+        _filename = filename,
         tags = tags?.toSet() ?? new Set(),
-        excludeTags = excludeTags?.toSet() ?? new Set();
+        excludeTags = excludeTags?.toSet() ?? new Set() {
+    if (_filename != null && _filename.context.style != p.style) {
+      throw new ArgumentError(
+          "filename's context must match the current operating system, was "
+              "${_filename.context.style}.");
+    }
+  }
 
   /// Returns a [input] as a list or `null`.
   ///
@@ -169,6 +183,7 @@ class Configuration {
       pattern: other.pattern ?? pattern,
       platforms: other._platforms ?? _platforms,
       paths: other._paths ?? _paths,
+      filename: other._filename ?? _filename,
       tags: other.tags.union(tags),
       excludeTags: other.excludeTags.union(excludeTags));
 }

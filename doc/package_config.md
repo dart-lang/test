@@ -23,10 +23,43 @@ platforms: [content-shell]
 These fields directly affect the behavior of the test runner. They go at the
 root of the configuration file.
 
+### `paths`
+
+This field indicates the default paths that the test runner should run. These
+paths are usually directories, although single filenames may be used as well.
+Paths must be relative, and they must be in URL format so that they're
+compatible across operating systems. This defaults to `[test]`.
+
+```yaml
+paths: [dart/test]
+
+paths:
+- test/instantaneous
+- test/fast
+- test/middling
+```
+
+### `filename`
+
+This field indicates the filename pattern that the test runner uses to find test
+files in directories. All files in directories passed on the command line (or in
+directories in [`paths`](#paths), if none are passed) whose basenames match this
+pattern will be loaded and run as tests.
+
+This supports the full [glob syntax][]. However, since it's only compared
+against a path's basename, path separators aren't especially useful. It defaults
+to `"*_test.dart"`.
+
+```yaml
+filename: "test_*.dart"
+```
+
+[glob syntax]: https://github.com/dart-lang/glob#syntax
+
 ### `platforms`
 
 This field indicates which platforms tests should run on by default. It allows
-the same paltform identifiers that can be passed to `--platform`. If multiple
+the same platform identifiers that can be passed to `--platform`. If multiple
 platforms are included, the test runner will default to running tests on all of
 them. This defaults to `[vm]`.
 

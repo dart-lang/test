@@ -231,4 +231,80 @@ transformers:
     test.stdout.expect(consumeThrough(contains("All tests passed!")));
     test.shouldExit(0);
   });
+
+  test("uses the specified paths", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "paths": ["zip", "zap"]
+    })).create();
+
+    d.dir("zip", [
+      d.file("zip_test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("success", () {});
+        }
+      """)
+    ]).create();
+
+    d.dir("zap", [
+      d.file("zip_test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("success", () {});
+        }
+      """)
+    ]).create();
+
+    d.dir("zop", [
+      d.file("zip_test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("failure", () => throw "oh no");
+        }
+      """)
+    ]).create();
+
+    var test = runTest([]);
+    test.stdout.expect(consumeThrough(contains('All tests passed!')));
+    test.shouldExit(0);
+  });
+
+  test("uses the specified filename", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "filename": "test_*.dart"
+    })).create();
+
+    d.dir("test", [
+      d.file("test_foo.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("success", () {});
+        }
+      """),
+
+      d.file("foo_test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("failure", () => throw "oh no");
+        }
+      """),
+
+      d.file("test_foo.bart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("failure", () => throw "oh no");
+        }
+      """)
+    ]).create();
+
+    var test = runTest([]);
+    test.stdout.expect(consumeThrough(contains('All tests passed!')));
+    test.shouldExit(0);
+  });
 }

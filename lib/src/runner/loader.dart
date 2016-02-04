@@ -62,8 +62,8 @@ class Loader {
 
   /// Loads all test suites in [dir].
   ///
-  /// This will load tests from files that end in "_test.dart". Any tests that
-  /// fail to load will be emitted as [LoadException]s.
+  /// This will load tests from files that match the configuration's filename
+  /// glob. Any tests that fail to load will be emitted as [LoadException]s.
   ///
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
@@ -72,7 +72,7 @@ class Loader {
         .map((entry) {
       if (entry is! File) return new Stream.fromIterable([]);
 
-      if (!entry.path.endsWith("_test.dart")) {
+      if (!_config.filename.matches(p.basename(entry.path))) {
         return new Stream.fromIterable([]);
       }
 

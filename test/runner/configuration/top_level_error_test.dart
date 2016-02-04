@@ -158,4 +158,82 @@ void main() {
     ]));
     test.shouldExit(exit_codes.data);
   });
+
+  test("rejects an invalid paths list type", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "paths": "test"
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      "paths must be a list",
+      "^^^^^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an invalid paths member type", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "paths": [12]
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      "Paths must be strings",
+      "^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an absolute path", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "paths": ["/foo"]
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      'Paths must be relative.',
+      "^^^^^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an invalid path URI", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "paths": ["[invalid]"]
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      'Invalid path: Invalid character',
+      "^^^^^^^^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an invalid filename type", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "filename": 12
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      'filename must be a string.',
+      "^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an invalid filename format", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "filename": "{foo"
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      'Invalid filename: expected ",".',
+      "^^^^^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
 }
