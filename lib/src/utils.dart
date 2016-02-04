@@ -34,6 +34,9 @@ final lineSplitter = UTF8.decoder.fuse(const LineSplitter());
 /// [Object.toString] values contain.
 final _exceptionPrefix = new RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
 
+/// A regular expression matching a single vowel.
+final _vowel = new RegExp('[aeiou]');
+
 /// Directories that are specific to OS X.
 ///
 /// This is used to try to distinguish OS X and Linux in [currentOSGuess].
@@ -117,6 +120,10 @@ String pluralize(String name, int number, {String plural}) {
   if (plural != null) return plural;
   return '${name}s';
 }
+
+/// Returns [noun] with an indefinite article ("a" or "an") added, based on
+/// whether its first letter is a vowel.
+String a(String noun) => noun.startsWith(_vowel) ? "an $noun" : "a $noun";
 
 /// Wraps [text] so that it fits within [lineLength], which defaults to 100
 /// characters.

@@ -7,6 +7,7 @@
 // bin.
 import 'dart:io';
 
+import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
 
@@ -81,6 +82,25 @@ main(List<String> args) async {
     } else {
       print(version);
     }
+    return;
+  }
+
+  try {
+    if (new File("dart_test.yaml").existsSync()) {
+      var fileConfiguration = new Configuration.load("dart_test.yaml");
+      configuration = fileConfiguration.merge(configuration);
+    }
+  } on SourceSpanFormatException catch (error) {
+    stderr.writeln(error.toString(color: configuration.color));
+    exitCode = exit_codes.data;
+    return;
+  } on FormatException catch (error) {
+    stderr.writeln(error.message);
+    exitCode = exit_codes.data;
+    return;
+  } on IOException catch (error) {
+    stderr.writeln(error.toString());
+    exitCode = exit_codes.noInput;
     return;
   }
 

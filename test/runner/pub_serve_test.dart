@@ -31,8 +31,6 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
-dependency_overrides:
-  matcher: '0.12.0-alpha.0'
 """).create();
 
     d.dir("test", [

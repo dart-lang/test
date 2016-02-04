@@ -1,0 +1,2 @@
+# Terse traces hide frames from test itself, which is bad.
+verbose_trace: true

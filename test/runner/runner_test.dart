@@ -60,11 +60,11 @@ Usage: pub run test:test [files or directories...]
                                $_browsers
 
 -j, --concurrency=<threads>    The number of concurrent test suites run.
-                               (defaults to $_defaultConcurrency)
+                               (defaults to "$_defaultConcurrency")
 
     --pub-serve=<port>         The port of a pub serve instance serving "test/".
     --timeout                  The default test timeout. For example: 15s, 2x, none
-                               (defaults to 30s)
+                               (defaults to "30s")
 
     --pause-after-load         Pauses for debugging before any tests execute.
                                Implies --concurrency=1 and --timeout=none.

@@ -42,6 +42,9 @@ final OperatingSystem currentOS = (() {
 final stdinLines = new StreamQueue(
     UTF8.decoder.fuse(const LineSplitter()).bind(stdin));
 
+/// Whether this is being run as a subprocess in the test package's own tests.
+bool inTestTests = Platform.environment["_DART_TEST_TESTING"] == "true";
+
 /// The root directory below which to nest temporary directories created by the
 /// test runner.
 ///
@@ -64,8 +67,7 @@ String libDir({String packageRoot}) {
 /// On Windows or when not printing to a terminal, only printable ASCII
 /// characters should be used.
 bool get canUseSpecialChars =>
-    Platform.operatingSystem != 'windows' &&
-    Platform.environment["_UNITTEST_USE_COLOR"] != "false";
+    Platform.operatingSystem != 'windows' && !inTestTests;
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() =>

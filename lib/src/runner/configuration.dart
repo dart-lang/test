@@ -3,165 +3,99 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
-import 'dart:math' as math;
 
-import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 
 import '../frontend/timeout.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
-import '../utils.dart';
 import '../util/io.dart';
-
-/// The default number of test suites to run at once.
-///
-/// This defaults to half the available processors, since presumably some of
-/// them will be used for the OS and other processes.
-final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
+import 'configuration/args.dart' as args;
+import 'configuration/load.dart';
+import 'configuration/values.dart';
 
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
-  /// The parser used to parse the command-line arguments.
-  static final ArgParser _parser = (() {
-    var parser = new ArgParser(allowTrailingOptions: true);
-
-    var allPlatforms = TestPlatform.all.toList();
-    if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
-    if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
-
-    parser.addFlag("help", abbr: "h", negatable: false,
-        help: "Shows this usage information.");
-    parser.addFlag("version", negatable: false,
-        help: "Shows the package's version.");
-    parser.addOption("package-root", hide: true);
-
-    parser.addSeparator("======== Selecting Tests");
-    parser.addOption("name",
-        abbr: 'n',
-        help: 'A substring of the name of the test to run.\n'
-            'Regular expression syntax is supported.');
-    parser.addOption("plain-name",
-        abbr: 'N',
-        help: 'A plain-text substring of the name of the test to run.');
-    // TODO(nweiz): Support the full platform-selector syntax for choosing which
-    // tags to run. In the shorter term, disallow non-"identifier" tags.
-    parser.addOption("tags",
-        abbr: 't',
-        help: 'Run only tests with all of the specified tags.',
-        allowMultiple: true);
-    parser.addOption("tag", hide: true, allowMultiple: true);
-    parser.addOption("exclude-tags",
-        abbr: 'x',
-        help: "Don't run tests with any of the specified tags.",
-        allowMultiple: true);
-    parser.addOption("exclude-tag", hide: true, allowMultiple: true);
-
-    parser.addSeparator("======== Running Tests");
-    parser.addOption("platform",
-        abbr: 'p',
-        help: 'The platform(s) on which to run the tests.',
-        allowed: allPlatforms.map((platform) => platform.identifier).toList(),
-        defaultsTo: 'vm',
-        allowMultiple: true);
-    parser.addOption("concurrency",
-        abbr: 'j',
-        help: 'The number of concurrent test suites run.\n'
-            '(defaults to $_defaultConcurrency)',
-        valueHelp: 'threads');
-    parser.addOption("pub-serve",
-        help: 'The port of a pub serve instance serving "test/".',
-        valueHelp: 'port');
-
-    // Note: although we list the 30s default timeout as though it were a
-    // default value for this argument, it's actually encoded in the [Invoker]'s
-    // call to [Timeout.apply].
-    parser.addOption("timeout",
-        help: 'The default test timeout. For example: 15s, 2x, none\n'
-            '(defaults to 30s)');
-    parser.addFlag("pause-after-load",
-        help: 'Pauses for debugging before any tests execute.\n'
-            'Implies --concurrency=1 and --timeout=none.\n'
-            'Currently only supported for browser tests.',
-        negatable: false);
-
-    parser.addSeparator("======== Output");
-    parser.addOption("reporter",
-        abbr: 'r',
-        help: 'The runner used to print test results.',
-        allowed: ['compact', 'expanded', 'json'],
-        defaultsTo: Platform.isWindows ? 'expanded' : 'compact',
-        allowedHelp: {
-      'compact': 'A single line, updated continuously.',
-      'expanded': 'A separate line for each update.',
-      'json': 'A machine-readable format (see https://goo.gl/0HRhdZ).'
-    });
-    parser.addFlag("verbose-trace", negatable: false,
-        help: 'Whether to emit stack traces with core library frames.');
-    parser.addFlag("js-trace", negatable: false,
-        help: 'Whether to emit raw JavaScript stack traces for browser tests.');
-    parser.addFlag("color", defaultsTo: null,
-        help: 'Whether to use terminal colors.\n(auto-detected by default)');
-
-    return parser;
-  })();
-
   /// The usage string for the command-line arguments.
-  static String get usage => _parser.usage;
+  static String get usage => args.usage;
 
   /// Whether `--help` was passed.
-  final bool help;
+  bool get help => _help ?? false;
+  final bool _help;
 
   /// Whether `--version` was passed.
-  final bool version;
+  bool get version => _version ?? false;
+  final bool _version;
 
   /// Whether stack traces should be presented as-is or folded to remove
   /// irrelevant packages.
-  final bool verboseTrace;
+  bool get verboseTrace => _verboseTrace ?? false;
+  final bool _verboseTrace;
 
   /// Whether JavaScript stack traces should be left as-is or converted to
   /// Dart-like traces.
-  final bool jsTrace;
+  bool get jsTrace => _jsTrace ?? false;
+  final bool _jsTrace;
 
   /// Whether to pause for debugging after loading each test suite.
-  final bool pauseAfterLoad;
+  bool get pauseAfterLoad => _pauseAfterLoad ?? false;
+  final bool _pauseAfterLoad;
 
   /// The package root for resolving "package:" URLs.
-  final String packageRoot;
+  String get packageRoot => _packageRoot ?? p.join(p.current, 'packages');
+  final String _packageRoot;
 
   /// The name of the reporter to use to display results.
-  final String reporter;
+  String get reporter => _reporter ?? defaultReporter;
+  final String _reporter;
 
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
   final Uri pubServeUrl;
 
   /// The default test timeout.
+  ///
+  /// When [merge]d, this combines with the other configuration's timeout using
+  /// [Timeout.merge].
   final Timeout timeout;
 
   /// Whether to use command-line color escapes.
-  final bool color;
+  bool get color => _color ?? canUseSpecialChars;
+  final bool _color;
 
   /// How many tests to run concurrently.
-  final int concurrency;
+  int get concurrency =>
+      pauseAfterLoad ? 1 : (_concurrency ?? defaultConcurrency);
+  final int _concurrency;
 
-  /// The from which to load tests.
-  final List<String> paths;
+  /// The paths from which to load tests.
+  List<String> get paths => _paths ?? ["test"];
+  final List<String> _paths;
 
   /// Whether the load paths were passed explicitly or the default was used.
-  final bool explicitPaths;
+  bool get explicitPaths => _paths != null;
 
   /// The pattern to match against test names to decide which to run, or `null`
   /// if all tests should be run.
   final Pattern pattern;
 
   /// The set of platforms on which to run tests.
-  final List<TestPlatform> platforms;
+  List<TestPlatform> get platforms => _platforms ?? [TestPlatform.vm];
+  final List<TestPlatform> _platforms;
 
-  /// Restricts the set of tests to a set of tags
+  /// Restricts the set of tests to a set of tags.
+  ///
+  /// If this is empty, it applies no restrictions.
+  ///
+  /// When [merge]d, this is unioned with the other configuration's tags.
   final Set<String> tags;
 
-  /// Does not run tests with tags from this set
+  /// Does not run tests with tags from this set.
+  ///
+  /// If this is empty, it applies no restrictions.
+  ///
+  /// When [merge]d, this is unioned with the other configuration's excluded
+  /// tags.
   final Set<String> excludeTags;
 
   /// The global test metadata derived from this configuration.
@@ -171,100 +105,70 @@ class Configuration {
   /// Parses the configuration from [args].
   ///
   /// Throws a [FormatException] if [args] are invalid.
-  factory Configuration.parse(List<String> args) {
-    var options = _parser.parse(args);
+  factory Configuration.parse(List<String> arguments) => args.parse(arguments);
 
-    var pattern;
-    if (options['name'] != null) {
-      if (options["plain-name"] != null) {
-        throw new FormatException(
-            "--name and --plain-name may not both be passed.");
-      }
+  /// Loads the configuration from [path].
+  ///
+  /// Throws an [IOException] if [path] does not exist or cannot be read. Throws
+  /// a [FormatException] if its contents are invalid.
+  factory Configuration.load(String path) => load(path);
 
-      pattern = _wrapFormatException(
-          options, 'name', (value) => new RegExp(value));
-    } else if (options['plain-name'] != null) {
-      pattern = options['plain-name'];
-    }
-
-    var tags = new Set();
-    tags.addAll(options['tags'] ?? []);
-    tags.addAll(options['tag'] ?? []);
-
-    var excludeTags = new Set();
-    excludeTags.addAll(options['exclude-tags'] ?? []);
-    excludeTags.addAll(options['exclude-tag'] ?? []);
-
-    var tagIntersection = tags.intersection(excludeTags);
-    if (tagIntersection.isNotEmpty) {
-      throw new FormatException(
-          'The ${pluralize('tag', tagIntersection.length)} '
-          '${toSentence(tagIntersection)} '
-          '${pluralize('was', tagIntersection.length, plural: 'were')} '
-          'both included and excluded.');
-    }
-
-    return new Configuration(
-        help: options['help'],
-        version: options['version'],
-        verboseTrace: options['verbose-trace'],
-        jsTrace: options['js-trace'],
-        pauseAfterLoad: options['pause-after-load'],
-        color: options['color'],
-        packageRoot: options['package-root'],
-        reporter: options['reporter'],
-        pubServePort: _wrapFormatException(options, 'pub-serve', int.parse),
-        concurrency: _wrapFormatException(options, 'concurrency', int.parse,
-            orElse: () => _defaultConcurrency),
-        timeout: _wrapFormatException(options, 'timeout',
-            (value) => new Timeout.parse(value),
-            orElse: () => new Timeout.factor(1)),
-        pattern: pattern,
-        platforms: options['platform'].map(TestPlatform.find),
-        paths: options.rest.isEmpty ? null : options.rest,
-        tags: tags,
-        excludeTags: excludeTags);
-  }
-
-  /// Runs [parse] on the value of the option [name], and wraps any
-  /// [FormatException] it throws with additional information.
-  static _wrapFormatException(ArgResults options, String name, parse(value),
-      {orElse()}) {
-    var value = options[name];
-    if (value == null) return orElse == null ? null : orElse();
-
-    try {
-      return parse(value);
-    } on FormatException catch (error) {
-      throw new FormatException('Couldn\'t parse --$name "${options[name]}": '
-          '${error.message}');
-    }
-  }
-
-  Configuration({this.help: false, this.version: false,
-          this.verboseTrace: false, this.jsTrace: false,
-          bool pauseAfterLoad: false, bool color, String packageRoot,
-          String reporter, int pubServePort, int concurrency, Timeout timeout,
-          this.pattern, Iterable<TestPlatform> platforms,
-          Iterable<String> paths, Set<String> tags, Set<String> excludeTags})
-      : pauseAfterLoad = pauseAfterLoad,
-        color = color == null ? canUseSpecialChars : color,
-        packageRoot = packageRoot == null
-            ? p.join(p.current, 'packages')
-            : packageRoot,
-        reporter = reporter == null ? 'compact' : reporter,
+  Configuration({bool help, bool version, bool verboseTrace, bool jsTrace,
+          bool pauseAfterLoad, bool color, String packageRoot, String reporter,
+          int pubServePort, int concurrency, Timeout timeout, this.pattern,
+          Iterable<TestPlatform> platforms, Iterable<String> paths,
+          Iterable<String> tags, Iterable<String> excludeTags})
+      : _help = help,
+        _version = version,
+        _verboseTrace = verboseTrace,
+        _jsTrace = jsTrace,
+        _pauseAfterLoad = pauseAfterLoad,
+        _color = color,
+        _packageRoot = packageRoot,
+        _reporter = reporter,
         pubServeUrl = pubServePort == null
             ? null
             : Uri.parse("http://localhost:$pubServePort"),
-        concurrency = pauseAfterLoad
-            ? 1
-            : (concurrency == null ? _defaultConcurrency : concurrency),
-        timeout = pauseAfterLoad
+        _concurrency = concurrency,
+        timeout = (pauseAfterLoad ?? false)
             ? Timeout.none
             : (timeout == null ? new Timeout.factor(1) : timeout),
-        platforms = platforms == null ? [TestPlatform.vm] : platforms.toList(),
-        paths = paths == null ? ["test"] : paths.toList(),
-        explicitPaths = paths != null,
-        this.tags = tags,
-        this.excludeTags = excludeTags;
+        _platforms = _list(platforms),
+        _paths = _list(paths),
+        tags = tags?.toSet() ?? new Set(),
+        excludeTags = excludeTags?.toSet() ?? new Set();
+
+  /// Returns a [input] as a list or `null`.
+  ///
+  /// If [input] is `null` or empty, this returns `null`. Otherwise, it returns
+  /// `input.toList()`.
+  static List _list(Iterable input) {
+    if (input == null) return null;
+    input = input.toList();
+    if (input.isEmpty) return null;
+    return input;
+  }
+
+  /// Merges this with [other].
+  ///
+  /// For most fields, if both configurations have values set, [other]'s value
+  /// takes precedence. However, certain fields are merged together instead.
+  /// This is indicated in those fields' documentation.
+  Configuration merge(Configuration other) => new Configuration(
+      help: other._help ?? _help,
+      version: other._version ?? _version,
+      verboseTrace: other._verboseTrace ?? _verboseTrace,
+      jsTrace: other._jsTrace ?? _jsTrace,
+      pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
+      color: other._color ?? _color,
+      packageRoot: other._packageRoot ?? _packageRoot,
+      reporter: other._reporter ?? _reporter,
+      pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
+      concurrency: other._concurrency ?? _concurrency,
+      timeout: timeout.merge(other.timeout),
+      pattern: other.pattern ?? pattern,
+      platforms: other._platforms ?? _platforms,
+      paths: other._paths ?? _paths,
+      tags: other.tags.union(tags),
+      excludeTags: other.excludeTags.union(excludeTags));
 }

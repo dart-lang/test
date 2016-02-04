@@ -102,18 +102,18 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 ScheduledProcess runTest(List args, {String reporter,
     int concurrency, Map<String, String> environment,
     bool forwardStdio: false}) {
-  reporter ??= "expanded";
   concurrency ??= 1;
 
   var allArgs = [
     p.absolute(p.join(packageDir, 'bin/test.dart')),
     "--package-root=${p.join(packageDir, 'packages')}",
-    "--concurrency=$concurrency",
-    "--reporter=$reporter"
-  ]..addAll(args);
+    "--concurrency=$concurrency"
+  ];
+  if (reporter != null) allArgs.add("--reporter=$reporter");
+  allArgs.addAll(args);
 
   if (environment == null) environment = {};
-  environment.putIfAbsent("_UNITTEST_USE_COLOR", () => "false");
+  environment.putIfAbsent("_DART_TEST_TESTING", () => "true");
 
   var process = runDart(allArgs,
       environment: environment,

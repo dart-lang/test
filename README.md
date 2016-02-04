@@ -11,6 +11,7 @@
   * [Skipping Tests](#skipping-tests)
   * [Timeouts](#timeouts)
   * [Platform-Specific Configuration](#platform-specific-configuration)
+  * [Whole-Package Configuration](#whole-package-configuration)
 * [Debugging](#debugging)
 * [Testing with `barback`](#testing-with-barback)
 * [Further Reading](#further-reading)
@@ -485,6 +486,31 @@ can also be a list of these values.
 If multiple platforms match, the configuration is applied in order from first to
 last, just as they would in nested groups. This means that for configuration
 like duration-based timeouts, the last matching value wins.
+
+### Whole-Package Configuration
+
+For configuration that applies across multiple files, or even the entire
+package, `test` supports a configuration file called `dart_test.yaml`. At its
+simplest, this file can contain the same sort of configuration that can be
+passed as command-line arguments:
+
+```yaml
+# This package's tests are very slow. Double the default timeout.
+timeout: 2x
+
+# This is a browser-only package, so test on content shell by default.
+platforms: [content-shell]
+```
+
+The configuration file sets new defaults. These defaults can still be overridden
+by command-line arguments, just like the built-in defaults. In the example
+above, you could pass `--platform chrome` to run on Chrome instead of the
+Dartium content shell.
+
+A configuration file can do much more than just set global defaults. See
+[the full documentation][package config] for more details.
+
+[package config]: https://github.com/dart-lang/test/blob/master/doc/package_config.md
 
 ## Debugging
 
