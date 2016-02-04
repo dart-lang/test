@@ -11,9 +11,7 @@ import 'package:scheduled_test/scheduled_test.dart';
 import '../io.dart';
 
 void main() {
-  useSandbox();
-
-  setUp(() {
+  useSandbox(() {
     d.file("test.dart", """
       import 'package:test/test.dart';
 
