@@ -17,6 +17,15 @@ platforms: [content-shell]
 ```
 
 * [Config Fields](#config-fields)
+  * [`paths`](#paths)
+  * [`filename`](#filename)
+  * [`platforms`](#platforms)
+  * [`concurrency`](#concurrency)
+  * [`pub_serve`](#pub_serve)
+  * [`timeout`](#timeout)
+  * [`reporter`](#reporter)
+  * [`verbose_trace`](#verbose_trace)
+  * [`js_trace`](#js_trace)
 
 ## Config Fields
 

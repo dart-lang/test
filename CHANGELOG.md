@@ -1,3 +1,7 @@
+## 0.12.10
+
+* Add support for a package-level configuration file called `dart_test.yaml`.
+
 ## 0.12.9
 
 * Add `SuiteEvent` to the JSON reporter, which reports data about the suites in
