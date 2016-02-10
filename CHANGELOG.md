@@ -1,3 +1,10 @@
+## 0.12.10+1
+
+* Temporarily remove separators from the help output. Version 0.12.8 was
+  erroneously released without an appropriate `args` constraint for the features
+  it used; this version will help ensure that users who can't use `args` 0.13.1
+  will get a working version of `test`.
+
 ## 0.12.10
 
 * Add support for a package-level configuration file called `dart_test.yaml`.
