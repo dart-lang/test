@@ -30,6 +30,7 @@ final ArgParser _parser = (() {
   // We pass null values rather than defaults to [new Configuration] so that it
   // merges properly with the config file.
 
+  parser.addSeparator("======== Selecting Tests");
   parser.addOption("name",
       abbr: 'n',
       help: 'A substring of the name of the test to run.\n'
@@ -50,6 +51,7 @@ final ArgParser _parser = (() {
       allowMultiple: true);
   parser.addOption("exclude-tag", hide: true, allowMultiple: true);
 
+  parser.addSeparator("======== Running Tests");
   parser.addOption("platform",
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.',
@@ -73,6 +75,7 @@ final ArgParser _parser = (() {
           'Currently only supported for browser tests.',
       negatable: false);
 
+  parser.addSeparator("======== Output");
   parser.addOption("reporter",
       abbr: 'r',
       help: 'The runner used to print test results.',

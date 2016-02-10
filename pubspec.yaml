@@ -1,5 +1,5 @@
 name: test
-version: 0.12.10+1
+version: 0.12.10+2
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
@@ -7,7 +7,7 @@ environment:
   sdk: '>=1.13.0 <1.16.0'
 dependencies:
   analyzer: '>=0.23.0 <0.28.0'
-  args: '>=0.12.1 <0.14.0'
+  args: '^0.13.1'
   async: '^1.6.0'
   barback: '>=0.14.0 <0.16.0'
   collection: '^1.1.0'

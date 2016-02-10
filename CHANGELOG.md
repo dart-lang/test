@@ -1,3 +1,9 @@
+## 0.12.10+2
+
+* Re-add help output separators.
+
+* Tighten the constraint on `args`.
+
 ## 0.12.10+1
 
 * Temporarily remove separators from the help output. Version 0.12.8 was
