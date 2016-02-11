@@ -29,17 +29,23 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
 
     transform.addOutput(
         new Asset.fromString(id.addExtension('.vm_test.dart'), '''
-import "package:test/src/backend/metadata.dart";
-import "package:test/src/runner/vm/isolate_listener.dart";
+          import "dart:isolate";
 
-import "${p.url.basename(id.path)}" as test;
+          import "package:stream_channel/stream_channel.dart";
 
-void main(_, Map message) {
-  var sendPort = message['reply'];
-  var metadata = new Metadata.deserialize(message['metadata']);
-  IsolateListener.start(sendPort, metadata, () => test.main);
-}
-'''));
+          import "package:test/src/runner/plugin/remote_platform_helpers.dart";
+          import "package:test/src/runner/vm/catch_isolate_errors.dart";
+
+          import "${p.url.basename(id.path)}" as test;
+
+          void main(_, SendPort message) {
+            var channel = serializeSuite(() {
+              catchIsolateErrors();
+              return test.main;
+            });
+            new IsolateChannel.connectSend(message).pipe(channel);
+          }
+        '''));
 
     transform.addOutput(
         new Asset.fromString(id.addExtension('.browser_test.dart'), '''

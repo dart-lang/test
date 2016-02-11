@@ -177,6 +177,7 @@ Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
   if (verbose) return new Chain.forTrace(stackTrace);
   return new Chain.forTrace(stackTrace).foldFrames((frame) {
     if (frame.package == 'test') return true;
+    if (frame.package == 'stream_channel') return true;
 
     // Filter out frames from our isolate bootstrap as well.
     if (frame.uri.scheme != 'file') return false;

@@ -15,8 +15,8 @@ import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
 import 'load_exception.dart';
+import 'plugin/environment.dart';
 import 'runner_suite.dart';
-import 'vm/environment.dart';
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
@@ -33,7 +33,7 @@ import 'vm/environment.dart';
 /// suite itself is returned by [suite] once it's avaialble, but any errors or
 /// prints will be emitted through the running [LiveTest].
 class LoadSuite extends Suite implements RunnerSuite {
-  final environment = const VMEnvironment();
+  final environment = const PluginEnvironment();
   final isDebugging = false;
   final onDebugging = new StreamController<bool>().stream;
 

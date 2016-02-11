@@ -11,8 +11,8 @@ import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
+import 'package:test/src/runner/plugin/environment.dart';
 import 'package:test/src/runner/runner_suite.dart';
-import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -20,7 +20,7 @@ import '../utils.dart';
 void main() {
   var innerSuite;
   setUp(() {
-    innerSuite = new RunnerSuite(const VMEnvironment(), new Group.root([]));
+    innerSuite = new RunnerSuite(const PluginEnvironment(), new Group.root([]));
   });
 
   test("running a load test causes LoadSuite.suite to emit a suite", () async {
@@ -125,7 +125,7 @@ void main() {
       expect(suite.group.entries, hasLength(1));
 
       var newInnerSuite = new RunnerSuite(
-          const VMEnvironment(), new Group.root([]));
+          const PluginEnvironment(), new Group.root([]));
       var newSuite = suite.changeSuite((suite) => newInnerSuite);
       expect(newSuite.suite, completion(equals(newInnerSuite)));
 

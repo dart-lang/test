@@ -241,6 +241,8 @@ class BrowserManager {
 class _BrowserEnvironment implements Environment {
   final BrowserManager _manager;
 
+  final supportsDebugging = true;
+
   final Uri observatoryUrl;
 
   final Uri remoteDebuggerUrl;

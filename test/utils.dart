@@ -16,8 +16,8 @@ import 'package:test/src/backend/suite.dart';
 import 'package:test/src/runner/application_exception.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/src/runner/load_exception.dart';
+import 'package:test/src/runner/plugin/environment.dart';
 import 'package:test/src/runner/runner_suite.dart';
-import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/src/util/remote_exception.dart';
 import 'package:test/test.dart';
 
@@ -308,6 +308,6 @@ List<GroupEntry> declare(void body()) {
 Engine declareEngine(void body()) {
   var declarer = new Declarer()..declare(body);
   return new Engine.withSuites([
-    new RunnerSuite(const VMEnvironment(), declarer.build())
+    new RunnerSuite(const PluginEnvironment(), declarer.build())
   ]);
 }

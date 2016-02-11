@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import '../backend/test_platform.dart';
 import '../util/io.dart';
 import '../utils.dart';
 import 'configuration.dart';
@@ -110,7 +109,7 @@ class _Debugger {
   /// suite to run.
   Future _pause() async {
     if (_suite.platform == null) return;
-    if (_suite.platform == TestPlatform.vm) return;
+    if (!_suite.environment.supportsDebugging) return;
 
     try {
       _reporter.pause();

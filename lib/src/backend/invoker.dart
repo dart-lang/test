@@ -8,6 +8,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../backend/group.dart';
 import '../frontend/expect.dart';
+import '../runner/load_suite.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
 import 'live_test.dart';
@@ -246,6 +247,14 @@ class Invoker {
     // If a test was marked as success but then had an error, that indicates
     // that it was poorly-written and could be flaky.
     if (!afterSuccess) return;
+
+    // However, users don't think of load tests as "tests", so the error isn't
+    // helpful for them.
+    //
+    // TODO(nweiz): Find a way of avoiding this error that doesn't require
+    // Invoker to refer to a class from the runner.
+    if (liveTest.suite is LoadSuite) return;
+
     _handleError(
         "This test failed after it had already completed. Make sure to use "
             "[expectAsync]\n"

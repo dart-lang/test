@@ -7,8 +7,8 @@ import 'dart:async';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/runner/engine.dart';
+import 'package:test/src/runner/plugin/environment.dart';
 import 'package:test/src/runner/runner_suite.dart';
-import 'package:test/src/runner/vm/environment.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -26,8 +26,8 @@ void main() {
     });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const VMEnvironment(), new Group.root(tests.take(2))),
-      new RunnerSuite(const VMEnvironment(), new Group.root(tests.skip(2)))
+      new RunnerSuite(const PluginEnvironment(), new Group.root(tests.take(2))),
+      new RunnerSuite(const PluginEnvironment(), new Group.root(tests.skip(2)))
     ]);
 
     await engine.run();
@@ -51,7 +51,7 @@ void main() {
     }), completes);
 
     engine.suiteSink.add(
-        new RunnerSuite(const VMEnvironment(), new Group.root(tests)));
+        new RunnerSuite(const PluginEnvironment(), new Group.root(tests)));
     engine.suiteSink.close();
   });
 
@@ -165,7 +165,7 @@ void main() {
       });
 
       var engine = new Engine.withSuites([
-        new RunnerSuite(const VMEnvironment(), new Group.root(tests))
+        new RunnerSuite(const PluginEnvironment(), new Group.root(tests))
       ]);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {

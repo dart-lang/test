@@ -10,9 +10,9 @@ import 'src/backend/declarer.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/engine.dart';
+import 'src/runner/plugin/environment.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
-import 'src/runner/vm/environment.dart';
 import 'src/utils.dart';
 
 export 'package:matcher/matcher.dart';
@@ -51,9 +51,7 @@ Declarer get _declarer {
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() async {
     var suite = new RunnerSuite(
-        // TODO(nweiz): Use a different environment if VM environment starts
-        // import dart:io before cross-platform libraries exist.
-        const VMEnvironment(),
+        const PluginEnvironment(),
         _globalDeclarer.build(),
         path: p.prettyUri(Uri.base),
         platform: TestPlatform.vm,

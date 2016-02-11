@@ -7,6 +7,9 @@ import 'package:async/async.dart';
 /// The abstract class of environments in which test suites are
 /// loaded—specifically, browsers and the Dart VM.
 abstract class Environment {
+  /// Whether this environment supports interactive debugging.
+  bool get supportsDebugging;
+
   /// The URL of the Dart VM Observatory for this environment, or `null` if this
   /// environment doesn't run the Dart VM or the URL couldn't be detected.
   Uri get observatoryUrl;
