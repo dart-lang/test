@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
@@ -11,6 +12,7 @@ import '../frontend/timeout.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
+import '../utils.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/load.dart';
 import 'configuration/values.dart';
@@ -95,7 +97,7 @@ class Configuration {
   /// If this is empty, it applies no restrictions.
   ///
   /// When [merge]d, this is unioned with the other configuration's tags.
-  final Set<String> tags;
+  final Set<String> includeTags;
 
   /// Does not run tests with tags from this set.
   ///
@@ -105,9 +107,33 @@ class Configuration {
   /// tags.
   final Set<String> excludeTags;
 
+  /// Configuration for particular tags.
+  ///
+  /// The keys are tag names, and the values are configuration for those tags.
+  /// The configuration should only contain test-level configuration fields, but
+  /// that isn't enforced.
+  final Map<String, Configuration> tags;
+
   /// The global test metadata derived from this configuration.
-  Metadata get metadata =>
-      new Metadata(timeout: timeout, verboseTrace: verboseTrace);
+  Metadata get metadata => new Metadata(
+      timeout: timeout,
+      verboseTrace: verboseTrace,
+      forTag: mapMap(tags, value: (_, config) => config.metadata));
+
+  /// The set of tags that have been declaredin any way in this configuration.
+  Set<String> get knownTags {
+    if (_knownTags != null) return _knownTags;
+
+    var known = includeTags.union(excludeTags);
+    tags.forEach((tag, config) {
+      known.add(tag);
+      known.addAll(config.knownTags);
+    });
+
+    _knownTags = new UnmodifiableSetView(known);
+    return _knownTags;
+  }
+  Set<String> _knownTags;
 
   /// Parses the configuration from [args].
   ///
@@ -124,7 +150,8 @@ class Configuration {
           bool pauseAfterLoad, bool color, String packageRoot, String reporter,
           int pubServePort, int concurrency, Timeout timeout, this.pattern,
           Iterable<TestPlatform> platforms, Iterable<String> paths,
-          Glob filename, Iterable<String> tags, Iterable<String> excludeTags})
+          Glob filename, Iterable<String> includeTags,
+          Iterable<String> excludeTags, Map<String, Configuration> tags})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
@@ -143,8 +170,9 @@ class Configuration {
         _platforms = _list(platforms),
         _paths = _list(paths),
         _filename = filename,
-        tags = tags?.toSet() ?? new Set(),
-        excludeTags = excludeTags?.toSet() ?? new Set() {
+        includeTags = includeTags?.toSet() ?? new Set(),
+        excludeTags = excludeTags?.toSet() ?? new Set(),
+        tags = tags == null ? const {} : new Map.unmodifiable(tags) {
     if (_filename != null && _filename.context.style != p.style) {
       throw new ArgumentError(
           "filename's context must match the current operating system, was "
@@ -168,22 +196,26 @@ class Configuration {
   /// For most fields, if both configurations have values set, [other]'s value
   /// takes precedence. However, certain fields are merged together instead.
   /// This is indicated in those fields' documentation.
-  Configuration merge(Configuration other) => new Configuration(
-      help: other._help ?? _help,
-      version: other._version ?? _version,
-      verboseTrace: other._verboseTrace ?? _verboseTrace,
-      jsTrace: other._jsTrace ?? _jsTrace,
-      pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
-      color: other._color ?? _color,
-      packageRoot: other._packageRoot ?? _packageRoot,
-      reporter: other._reporter ?? _reporter,
-      pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
-      concurrency: other._concurrency ?? _concurrency,
-      timeout: timeout.merge(other.timeout),
-      pattern: other.pattern ?? pattern,
-      platforms: other._platforms ?? _platforms,
-      paths: other._paths ?? _paths,
-      filename: other._filename ?? _filename,
-      tags: other.tags.union(tags),
-      excludeTags: other.excludeTags.union(excludeTags));
+  Configuration merge(Configuration other) {
+    return new Configuration(
+        help: other._help ?? _help,
+        version: other._version ?? _version,
+        verboseTrace: other._verboseTrace ?? _verboseTrace,
+        jsTrace: other._jsTrace ?? _jsTrace,
+        pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
+        color: other._color ?? _color,
+        packageRoot: other._packageRoot ?? _packageRoot,
+        reporter: other._reporter ?? _reporter,
+        pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
+        concurrency: other._concurrency ?? _concurrency,
+        timeout: timeout.merge(other.timeout),
+        pattern: other.pattern ?? pattern,
+        platforms: other._platforms ?? _platforms,
+        paths: other._paths ?? _paths,
+        filename: other._filename ?? _filename,
+        includeTags: other.includeTags.union(includeTags),
+        excludeTags: other.excludeTags.union(excludeTags),
+        tags: mergeMaps(tags, other.tags,
+            value: (config1, config2) => config1.merge(config2)));
+  }
 }

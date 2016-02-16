@@ -44,6 +44,63 @@ void main() {
     });
   });
 
+  group("constructor", () {
+    test("returns the normal metadata if there's no forTag", () {
+      var metadata = new Metadata(verboseTrace: true, tags: ['foo', 'bar']);
+      expect(metadata.verboseTrace, isTrue);
+      expect(metadata.tags, equals(['foo', 'bar']));
+    });
+
+    test("returns the normal metadata if there's no tags", () {
+      var metadata = new Metadata(verboseTrace: true,
+          forTag: {'foo': new Metadata(skip: true)});
+      expect(metadata.verboseTrace, isTrue);
+      expect(metadata.skip, isFalse);
+      expect(metadata.forTag, contains('foo'));
+      expect(metadata.forTag['foo'].skip, isTrue);
+    });
+
+    test("returns the normal metadata if forTag doesn't match tags", () {
+      var metadata = new Metadata(
+          verboseTrace: true,
+          tags: ['bar', 'baz'],
+          forTag: {'foo': new Metadata(skip: true)});
+
+      expect(metadata.verboseTrace, isTrue);
+      expect(metadata.skip, isFalse);
+      expect(metadata.tags, ['bar', 'baz']);
+      expect(metadata.forTag, contains('foo'));
+      expect(metadata.forTag['foo'].skip, isTrue);
+    });
+
+    test("resolves forTags that match tags", () {
+      var metadata = new Metadata(
+          verboseTrace: true,
+          tags: ['foo', 'bar', 'baz'],
+          forTag: {
+            'foo': new Metadata(skip: true),
+            'baz': new Metadata(timeout: Timeout.none),
+            'qux': new Metadata(skipReason: "blah")
+          });
+
+      expect(metadata.verboseTrace, isTrue);
+      expect(metadata.skip, isTrue);
+      expect(metadata.skipReason, isNull);
+      expect(metadata.timeout, equals(Timeout.none));
+      expect(metadata.tags, equals(['foo', 'bar', 'baz']));
+      expect(metadata.forTag.keys, equals(['qux']));
+    });
+
+    test("base metadata takes precedence over forTags", () {
+      var metadata = new Metadata(
+          verboseTrace: true,
+          tags: ['foo'],
+          forTag: {'foo': new Metadata(verboseTrace: false)});
+
+      expect(metadata.verboseTrace, isTrue);
+    });
+  });
+
   group("onPlatform", () {
     test("parses a valid map", () {
       var metadata = new Metadata.parse(onPlatform: {

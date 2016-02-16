@@ -178,8 +178,7 @@ void main() {
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
-          'Warning: Tags were used that weren\'t specified on the command '
-            'line.\n'
+          'Warning: Tags were used that weren\'t specified in dart_test.yaml.\n'
           '  a was used in the test "foo"\n'
           '  b was used in the test "foo"')));
       test.shouldExit(0);
@@ -197,8 +196,7 @@ void main() {
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
-          'Warning: A tag was used that wasn\'t specified on the command '
-            'line.\n'
+          'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
           '  a was used in:\n'
           '    the test "foo"\n'
           '    the test "bar"')));
@@ -219,8 +217,7 @@ void main() {
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
-          'Warning: A tag was used that wasn\'t specified on the command '
-            'line.\n'
+          'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
           '  a was used in the group "group"')));
       test.shouldExit(0);
     });
@@ -238,8 +235,7 @@ void main() {
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
-          'Warning: A tag was used that wasn\'t specified on the command '
-            'line.\n'
+          'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
           '  a was used in the suite itself')));
       test.shouldExit(0);
     });
@@ -255,8 +251,7 @@ void main() {
 
       var test = runTest(["-p", "vm,content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(lines(
-          'Warning: A tag was used that wasn\'t specified on the command '
-            'line.\n'
+          'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
           '  a was used in the test "foo"')));
       test.stdout.expect(never(startsWith("Warning:")));
       test.shouldExit(0);
@@ -324,8 +319,8 @@ void main() {
 StreamMatcher tagWarnings(List<String> tags) => inOrder(() sync* {
   yield consumeThrough(
       "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
-        "${tags.length == 1 ? "wasn't" : "weren't"} specified on the command "
-        "line.");
+        "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
+        "dart_test.yaml.");
 
   for (var tag in tags) {
     yield consumeWhile(isNot(contains(" was used in")));

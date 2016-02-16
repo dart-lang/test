@@ -1,3 +1,8 @@
+## 0.12.11
+
+* Add a `tags` field to the package configuration file that allows users to
+  provide configuration for specific tags.
+
 ## 0.12.10+2
 
 * Re-add help output separators.

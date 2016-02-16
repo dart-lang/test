@@ -156,7 +156,7 @@ Configuration parse(List<String> args) {
       pattern: pattern,
       platforms: ifParsed('platform')?.map(TestPlatform.find),
       paths: options.rest.isEmpty ? null : options.rest,
-      tags: tags,
+      includeTags: tags,
       excludeTags: excludeTags);
 }
 

@@ -12,6 +12,7 @@
   * [Timeouts](#timeouts)
   * [Platform-Specific Configuration](#platform-specific-configuration)
   * [Whole-Package Configuration](#whole-package-configuration)
+* [Tagging Tests](#tagging-tests)
 * [Debugging](#debugging)
 * [Testing with `barback`](#testing-with-barback)
 * [Further Reading](#further-reading)
@@ -486,6 +487,48 @@ can also be a list of these values.
 If multiple platforms match, the configuration is applied in order from first to
 last, just as they would in nested groups. This means that for configuration
 like duration-based timeouts, the last matching value wins.
+
+### Tagging Tests
+
+Tags are short strings that you can associate with tests, groups, and suites.
+They don't have any built-in meaning, but they're very useful nonetheless: you
+can associate your own custom configuration with them, or you can use them to
+easily filter tests so you only run the ones you need to.
+
+Tags are defined using the `@Tags` annotation for suites and the `tags` named
+parameter to `test()` and `group()`. For example:
+
+```dart
+@Tags(["browser"])
+
+import "package:test/test.dart";
+
+void main() {
+  test("successfully launches Chrome", () {
+    // ...
+  }, tags: "chrome");
+
+  test("launches two browsers at once", () {
+    // ...
+  }, tags: ["chrome", "firefox"]);
+}
+```
+
+If the test runner encounters a tag that wasn't declared in the
+[package configuration file][configuring tags], it'll print a warning, so be
+sure to include all your tags there. You can also use the file to provide
+default configuration for tags, like giving all `browser` tests twice as much
+time before they time out.
+
+[configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
+
+Tests can be filtered based on their tags by passing command line flags. The
+`--tags` or `-t` flag will cause the test runner to only run tests with the
+given tags, and the `--exclude-tags` or `-x` flag will cause it to only run
+tests *without* the given tags.
+
+Note that tags must be valid Dart identifiers, although they may also contain
+hyphens.
 
 ### Whole-Package Configuration
 

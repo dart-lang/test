@@ -3,6 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// An annotation for applying a set of user-defined tags to a test suite.
+///
+/// See [the documentation on tagging tests][tagging tests].
+///
+/// [tagging tests]: https://github.com/dart-lang/test/blob/master/README.md#tagging-tests
 class Tags {
   /// The tags for the test suite.
   Set<String> get tags => _tags.toSet();

@@ -202,8 +202,8 @@ class Runner {
           }
 
           // If the user provided tags, skip tests that don't match all of them.
-          if (!_config.tags.isEmpty &&
-              !test.metadata.tags.containsAll(_config.tags)) {
+          if (!_config.includeTags.isEmpty &&
+              !test.metadata.tags.containsAll(_config.includeTags)) {
             return false;
           }
 
@@ -236,7 +236,7 @@ class Runner {
       ..write(unknownTags.length == 1 ? "A tag was " : "Tags were ")
       ..write("used that ")
       ..write(unknownTags.length == 1 ? "wasn't " : "weren't ")
-      ..writeln("specified on the command line.");
+      ..writeln("specified in dart_test.yaml.");
 
     unknownTags.forEach((tag, entries) {
       buffer.write("  $bold$tag$noColor was used in");
@@ -261,13 +261,13 @@ class Runner {
   ///
   /// This returns a map from tag names to lists of entries that use those tags.
   Map<String, List<GroupEntry>> _collectUnknownTags(Suite suite) {
-    var knownTags = _config.tags.union(_config.excludeTags);
     var unknownTags = {};
     var currentTags = new Set();
 
     collect(entry) {
       var newTags = new Set();
-      for (var unknownTag in entry.metadata.tags.difference(knownTags)) {
+      for (var unknownTag in
+          entry.metadata.tags.difference(_config.knownTags)) {
         if (currentTags.contains(unknownTag)) continue;
         unknownTags.putIfAbsent(unknownTag, () => []).add(entry);
         newTags.add(unknownTag);

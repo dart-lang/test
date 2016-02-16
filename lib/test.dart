@@ -92,9 +92,12 @@ Declarer get _declarer {
 /// of running the test.
 ///
 /// If [tags] is passed, it declares user-defined tags that are applied to the
-/// test. These tags can be used to select or skip the test on the command line.
-/// It can be an [Iterable] of tag names, or a [String] representing a single
-/// tag.
+/// test. These tags can be used to select or skip the test on the command line,
+/// or to do bulk test configuration. All tags should be declared in the
+/// [package configuration file][configuring tags]. The parameter can be an
+/// [Iterable] of tag names, or a [String] representing a single tag.
+///
+/// [configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
 ///
 /// [onPlatform] allows tests to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
@@ -149,9 +152,12 @@ void test(description, body(),
 /// of running the group's tests.
 ///
 /// If [tags] is passed, it declares user-defined tags that are applied to the
-/// group. These tags can be used to select or skip the group's tests on the
-/// command line. It can be an [Iterable] of tag names, or a [String]
-/// representing a single tag.
+/// test. These tags can be used to select or skip the test on the command line,
+/// or to do bulk test configuration. All tags should be declared in the
+/// [package configuration file][configuring tags]. The parameter can be an
+/// [Iterable] of tag names, or a [String] representing a single tag.
+///
+/// [configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
 ///
 /// [onPlatform] allows groups to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to

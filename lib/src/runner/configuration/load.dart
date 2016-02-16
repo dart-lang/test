@@ -44,12 +44,56 @@ class _ConfigurationLoader {
   /// Used for error reporting.
   final String _source;
 
-  _ConfigurationLoader(this._document, this._source);
+  /// Whether runner configuration is allowed at this level.
+  final bool _runnerConfig;
+
+  _ConfigurationLoader(this._document, this._source, {bool runnerConfig: true})
+      : _runnerConfig = runnerConfig;
 
   /// Loads the configuration in [_document].
-  Configuration load() {
+  Configuration load() => _loadTestConfig().merge(_loadRunnerConfig());
+
+  /// Loads test configuration (but not runner configuration).
+  Configuration _loadTestConfig() {
     var verboseTrace = _getBool("verbose_trace");
     var jsTrace = _getBool("js_trace");
+
+    var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
+
+    var tags = _getMap("tags", key: (keyNode) {
+      _validate(keyNode, "tags key must be a string.",
+          (value) => value is String);
+      _validate(
+          keyNode,
+          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
+          (value) => value.contains(anchoredHyphenatedIdentifier));
+
+      return keyNode.value;
+    }, value: (valueNode) {
+      return _nestedConfig(valueNode, "tag value", runnerConfig: false);
+    });
+
+    return new Configuration(
+        verboseTrace: verboseTrace,
+        jsTrace: jsTrace,
+        timeout: timeout,
+        tags: tags);
+  }
+
+  /// Loads runner configuration (but not test configuration).
+  ///
+  /// If [_runnerConfig] is `false`, this will error if there are any
+  /// runner-level configuration fields.
+  Configuration _loadRunnerConfig() {
+    if (!_runnerConfig) {
+      _disallow("reporter");
+      _disallow("pub_serve");
+      _disallow("concurrency");
+      _disallow("platforms");
+      _disallow("paths");
+      _disallow("filename");
+      return new Configuration();
+    }
 
     var reporter = _getString("reporter");
     if (reporter != null && !allReporters.contains(reporter)) {
@@ -58,7 +102,6 @@ class _ConfigurationLoader {
 
     var pubServePort = _getInt("pub_serve");
     var concurrency = _getInt("concurrency");
-    var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
 
     var allPlatformIdentifiers =
         TestPlatform.all.map((platform) => platform.identifier).toSet();
@@ -81,12 +124,9 @@ class _ConfigurationLoader {
     var filename = _parseValue("filename", (value) => new Glob(value));
 
     return new Configuration(
-        verboseTrace: verboseTrace,
-        jsTrace: jsTrace,
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,
-        timeout: timeout,
         platforms: platforms,
         paths: paths,
         filename: filename);
@@ -142,6 +182,34 @@ class _ConfigurationLoader {
     return node.nodes.map(forElement).toList();
   }
 
+  /// Asserts that [field] is a map and runs [key] and [value] for each pair.
+  ///
+  /// Returns a map with the keys and values returned by [key] and [value]. Each
+  /// of these defaults to asserting that the value is a string.
+  Map _getMap(String field, {key(YamlNode keyNode),
+      value(YamlNode valueNode)}) {
+    var node = _getNode(field, "map", (value) => value is Map);
+    if (node == null) return {};
+
+    key ??= (keyNode) {
+      _validate(keyNode, "$field keys must be strings.",
+          (value) => value is String);
+
+      return keyNode.value;
+    };
+
+    value ??= (valueNode) {
+      _validate(valueNode, "$field values must be strings.",
+          (value) => value is String);
+
+      return valueNode.value;
+    };
+
+    return mapMap(node.nodes,
+        key: (keyNode, _) => key(keyNode),
+        value: (_, valueNode) => value(valueNode));
+  }
+
   /// Asserts that [node] is a string, passes its value to [parse], and returns
   /// the result.
   ///
@@ -167,6 +235,27 @@ class _ConfigurationLoader {
     var node = _document.nodes[field];
     if (node == null) return null;
     return _parseNode(node, field, parse);
+  }
+
+  /// Parses a nested configuration document.
+  ///
+  /// [name] is the name of the field, which is used for error-handling.
+  /// [runnerConfig] controls whether runner configuration is allowed in the
+  /// nested configuration. It defaults to [_runnerConfig].
+  Configuration _nestedConfig(YamlNode node, String name,
+      {bool runnerConfig}) {
+    if (node == null || node.value == null) return new Configuration();
+
+    _validate(node, "$name must be a map.", (value) => value is Map);
+    var loader = new _ConfigurationLoader(node, _source,
+        runnerConfig: runnerConfig ?? _runnerConfig);
+    return loader.load();
+  }
+
+  /// Throws an error if a field named [field] exists at this level.
+  void _disallow(String field) {
+    if (!_document.containsKey(field)) return;
+    _error("$field isn't supported here.", field);
   }
 
   /// Throws a [SourceSpanFormatException] with [message] about [field].

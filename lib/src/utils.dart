@@ -202,16 +202,36 @@ List flatten(Iterable nested) {
   return result;
 }
 
+/// Creates a new map from [map] with new keys and values.
+///
+/// The return values of [key] are used as the keys and the return values of
+/// [value] are used as the values for the new map.
+///
+/// [key] defaults to returning the original key and [value] defaults to
+/// returning the original value.
+Map mapMap(Map map, {key(key, value), value(key, value)}) {
+  if (key == null) key = (key, _) => key;
+  if (value == null) value = (_, value) => value;
+
+  var result = {};
+  map.forEach((mapKey, mapValue) {
+    result[key(mapKey, mapValue)] = value(mapKey, mapValue);
+  });
+  return result;
+}
+
 /// Returns a new map with all values in both [map1] and [map2].
 ///
-/// If there are conflicting keys, [map2]'s value wins.
-Map mergeMaps(Map map1, Map map2) {
-  var result = {};
-  map1.forEach((key, value) {
-    result[key] = value;
-  });
+/// If there are conflicting keys, [value] is used to merge them. If it's
+/// not passed, [map2]'s value wins.
+Map mergeMaps(Map map1, Map map2, {value(value1, value2)}) {
+  var result = new Map.from(map1);
   map2.forEach((key, value) {
-    result[key] = value;
+    if (value == null || !result.containsKey(key)) {
+      result[key] = value;
+    } else {
+      result[key] = value(result[key], value);
+    }
   });
   return result;
 }

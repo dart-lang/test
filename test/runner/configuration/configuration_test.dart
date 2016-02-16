@@ -138,39 +138,39 @@ void main() {
     group("for tags", () {
       test("if neither is defined, preserves the default", () {
         var merged = new Configuration().merge(new Configuration());
-        expect(merged.tags, isEmpty);
+        expect(merged.includeTags, isEmpty);
         expect(merged.excludeTags, isEmpty);
       });
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new Configuration(
-                tags: ["foo", "bar"],
+                includeTags: ["foo", "bar"],
                 excludeTags: ["baz", "bang"])
             .merge(new Configuration());
 
-        expect(merged.tags, unorderedEquals(["foo", "bar"]));
+        expect(merged.includeTags, unorderedEquals(["foo", "bar"]));
         expect(merged.excludeTags, unorderedEquals(["baz", "bang"]));
       });
 
       test("if only the new configuration's is defined, uses it", () {
         var merged = new Configuration().merge(new Configuration(
-            tags: ["foo", "bar"],
+            includeTags: ["foo", "bar"],
             excludeTags: ["baz", "bang"]));
 
-        expect(merged.tags, unorderedEquals(["foo", "bar"]));
+        expect(merged.includeTags, unorderedEquals(["foo", "bar"]));
         expect(merged.excludeTags, unorderedEquals(["baz", "bang"]));
       });
 
       test("if both are defined, unions them", () {
         var older = new Configuration(
-            tags: ["foo", "bar"],
+            includeTags: ["foo", "bar"],
             excludeTags: ["baz", "bang"]);
         var newer = new Configuration(
-            tags: ["bar", "blip"],
+            includeTags: ["bar", "blip"],
             excludeTags: ["bang", "qux"]);
         var merged = older.merge(newer);
 
-        expect(merged.tags, unorderedEquals(["foo", "bar", "blip"]));
+        expect(merged.includeTags, unorderedEquals(["foo", "bar", "blip"]));
         expect(merged.excludeTags, unorderedEquals(["baz", "bang", "qux"]));
       });
     });

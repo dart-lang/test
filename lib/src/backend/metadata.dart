@@ -42,6 +42,16 @@ class Metadata {
   /// metadata for that platform. These can be applied by calling [forPlatform].
   final Map<PlatformSelector, Metadata> onPlatform;
 
+  /// Metadata that applies only when specific tags are applied.
+  ///
+  /// Tag-specific metadata is applied when merging this with other metadata.
+  /// Note that unlike [onPlatform], the base metadata takes precedence over any
+  /// tag-specific metadata.
+  ///
+  /// This is guaranteed not to have any keys that appear in [tags]; those are
+  /// resolved when the metadata is constructed.
+  final Map<String, Metadata> forTag;
+
   /// Parses a user-provided map into the value for [onPlatform].
   static Map<PlatformSelector, Metadata> _parseOnPlatform(
       Map<String, dynamic> onPlatform) {
@@ -107,18 +117,66 @@ class Metadata {
   /// Creates new Metadata.
   ///
   /// [testOn] defaults to [PlatformSelector.all].
-  Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
-          this.verboseTrace: false, this.skipReason,
-          Map<PlatformSelector, Metadata> onPlatform, Iterable<String> tags})
+  ///
+  /// If [forTag] contains metadata for any tags in [tags], that metadata is
+  /// included inline in the returned value. The values directly passed to the
+  /// constructor take precedence over tag-specific metadata.
+  factory Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
+          bool verboseTrace: false, String skipReason, Iterable<String> tags,
+          Map<PlatformSelector, Metadata> onPlatform,
+          Map<String, Metadata> forTag}) {
+    // If there's no tag-specific metadata, or if none of it applies, just
+    // return the metadata as-is.
+    if (forTag == null || tags == null || !tags.any(forTag.containsKey)) {
+      return new Metadata._(
+          testOn: testOn,
+          timeout: timeout,
+          skip: skip,
+          verboseTrace: verboseTrace,
+          skipReason: skipReason,
+          tags: tags,
+          onPlatform: onPlatform,
+          forTag: forTag);
+    }
+
+    // Otherwise, resolve the tag-specific components. Doing this eagerly means
+    // we only have to resolve suite- or group-level tags once, rather than
+    // doing it for every test individually.
+    forTag = new Map.from(forTag);
+    var merged = tags.fold(new Metadata._(), (merged, tag) {
+      var tagMetadata = forTag.remove(tag);
+      return tagMetadata == null ? merged : merged.merge(tagMetadata);
+    });
+
+    return merged.merge(new Metadata._(
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        verboseTrace: verboseTrace,
+        skipReason: skipReason,
+        tags: tags,
+        onPlatform: onPlatform,
+        forTag: forTag));
+  }
+
+  /// Creates new Metadata.
+  ///
+  /// Unlike [new Metadata], this assumes [forTag] is already resolved.
+  Metadata._({PlatformSelector testOn, Timeout timeout, bool skip: false,
+          this.verboseTrace: false, this.skipReason, Iterable<String> tags,
+          Map<PlatformSelector, Metadata> onPlatform,
+          Map<String, Metadata> forTag})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip,
+        tags = new UnmodifiableSetView(
+            tags == null ? new Set() : tags.toSet()),
         onPlatform = onPlatform == null
             ? const {}
             : new UnmodifiableMapView(onPlatform),
-        tags = tags == null
-            ? new Set()
-            : new UnmodifiableSetView(tags.toSet()) {
+        forTag = forTag == null
+            ? const {}
+            : new UnmodifiableMapView(forTag) {
     _validateTags();
   }
 
@@ -136,7 +194,8 @@ class Metadata {
         skip = skip != null && skip != false,
         skipReason = skip is String ? skip : null,
         onPlatform = _parseOnPlatform(onPlatform),
-        tags = _parseTags(tags) {
+        tags = _parseTags(tags),
+        forTag = const {} {
     if (skip != null && skip is! String && skip is! bool) {
       throw new ArgumentError(
           '"skip" must be a String or a bool, was "$skip".');
@@ -157,7 +216,9 @@ class Metadata {
         tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
-            value: (pair) => new Metadata.deserialize(pair.last));
+            value: (pair) => new Metadata.deserialize(pair.last)),
+        forTag = mapMap(serialized['forTag'],
+            value: (_, nested) => new Metadata.deserialize(nested));
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
   static _deserializeTimeout(serialized) {
@@ -186,16 +247,21 @@ class Metadata {
 
   /// Return a new [Metadata] that merges [this] with [other].
   ///
-  /// If the two [Metadata]s have conflicting properties, [other] wins.
+  /// If the two [Metadata]s have conflicting properties, [other] wins. If
+  /// either has a [forTag] metadata for one of the other's tags, that metadata
+  /// is merged as well.
   Metadata merge(Metadata other) =>
       new Metadata(
           testOn: testOn.intersect(other.testOn),
           timeout: timeout.merge(other.timeout),
           skip: skip || other.skip,
-          verboseTrace: verboseTrace || other.verboseTrace,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,
-          onPlatform: mergeMaps(onPlatform, other.onPlatform),
-          tags: tags.union(other.tags));
+          verboseTrace: verboseTrace || other.verboseTrace,
+          tags: tags.union(other.tags),
+          onPlatform: mergeMaps(onPlatform, other.onPlatform,
+              value: (metadata1, metadata2) => metadata1.merge(metadata2)),
+          forTag: mergeMaps(forTag, other.forTag,
+              value: (metadata1, metadata2) => metadata1.merge(metadata2)));
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change({PlatformSelector testOn, Timeout timeout, bool skip,
@@ -240,8 +306,9 @@ class Metadata {
       'skip': skip,
       'skipReason': skipReason,
       'verboseTrace': verboseTrace,
+      'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
-      'tags': tags.toList()
+      'forTag': mapMap(forTag, value: (_, metadata) => metadata.serialize())
     };
   }
 
