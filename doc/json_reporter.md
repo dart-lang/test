@@ -322,7 +322,8 @@ this suite without including its full representation.
 
 A suite's platform is one of the platforms that can be passed to the
 `--platform` option, or `null` if there is no platform (for example if the file
-doesn't exist at all). Its path is relative to the root of the current package.
+doesn't exist at all). Its path is either absolute or relative to the root of
+the current package.
 
 Suites don't include their own metadata. Instead, that metadata is present on
 the root-level group.
