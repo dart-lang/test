@@ -9,9 +9,9 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../utils.dart';
-import '../../frontend/timeout.dart';
 import '../../backend/test_platform.dart';
+import '../../frontend/timeout.dart';
+import '../../utils.dart';
 import '../configuration.dart';
 import 'values.dart';
 

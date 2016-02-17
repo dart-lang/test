@@ -8,9 +8,9 @@ import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
-import '../frontend/timeout.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
+import '../frontend/timeout.dart';
 import '../util/io.dart';
 import '../utils.dart';
 import 'configuration/args.dart' as args;

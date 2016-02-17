@@ -6,7 +6,6 @@
 
 import 'dart:convert';
 
-import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';

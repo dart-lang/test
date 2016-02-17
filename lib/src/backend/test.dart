@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'group.dart';
+import 'group_entry.dart';
 import 'live_test.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
 import 'suite.dart';
-import 'group_entry.dart';
 import 'test_platform.dart';
 
 /// A single test.

@@ -6,9 +6,9 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
+import '../backend/group.dart';
 import '../backend/operating_system.dart';
 import '../backend/suite.dart';
-import '../backend/group.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';

@@ -4,8 +4,8 @@
 
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/test_platform.dart';
-import 'package:test/src/frontend/timeout.dart';
 import 'package:test/src/frontend/skip.dart';
+import 'package:test/src/frontend/timeout.dart';
 import 'package:test/test.dart';
 
 void main() {

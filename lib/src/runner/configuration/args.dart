@@ -6,8 +6,8 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 
-import '../../frontend/timeout.dart';
 import '../../backend/test_platform.dart';
+import '../../frontend/timeout.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import 'values.dart';

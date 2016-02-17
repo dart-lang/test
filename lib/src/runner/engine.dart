@@ -10,11 +10,11 @@ import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
 
 import '../backend/group.dart';
+import '../backend/group_entry.dart';
 import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
-import '../backend/group_entry.dart';
 import '../backend/test.dart';
 import 'load_suite.dart';
 import 'runner_suite.dart';

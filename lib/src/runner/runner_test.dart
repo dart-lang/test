@@ -13,8 +13,8 @@ import '../backend/state.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
-import '../utils.dart';
 import '../util/remote_exception.dart';
+import '../utils.dart';
 
 typedef StackTrace _MapTrace(StackTrace trace);
 
