@@ -40,7 +40,7 @@ void main() {
         'Failed to load "test.dart": dart2js failed.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'chrome');
 
     test("a test file throws", () {
       d.file("test.dart", "void main() => throw 'oh no';").create();
@@ -51,7 +51,7 @@ void main() {
         'Failed to load "test.dart": oh no'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'chrome');
 
     test("a test file doesn't have a main defined", () {
       d.file("test.dart", "void foo() {}").create();
@@ -62,7 +62,7 @@ void main() {
         'Failed to load "test.dart": No top-level main() function defined.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'chrome');
 
     test("a test file has a non-function main", () {
       d.file("test.dart", "int main;").create();
@@ -73,7 +73,7 @@ void main() {
         'Failed to load "test.dart": Top-level main getter is not a function.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'chrome');
 
     test("a test file has a main with arguments", () {
       d.file("test.dart", "void main(arg) {}").create();
@@ -84,7 +84,7 @@ void main() {
         'Failed to load "test.dart": Top-level main() function takes arguments.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'chrome');
 
     test("a custom HTML file has no script tag", () {
       d.file("test.dart", "void main() {}").create();
@@ -104,7 +104,7 @@ void main() {
             '<script src="packages/test/dart.js"></script>.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("a custom HTML file has no link", () {
       d.file("test.dart", "void main() {}").create();
@@ -124,7 +124,7 @@ void main() {
             '<link rel="x-dart-test"> in test.html, found 0.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("a custom HTML file has too many links", () {
       d.file("test.dart", "void main() {}").create();
@@ -146,7 +146,7 @@ void main() {
             '<link rel="x-dart-test"> in test.html, found 2.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("a custom HTML file has no href in the link", () {
       d.file("test.dart", "void main() {}").create();
@@ -167,7 +167,7 @@ void main() {
             'test.html to have an "href" attribute.'
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("a custom HTML file has an invalid test URL", () {
       d.file("test.dart", "void main() {}").create();
@@ -187,7 +187,7 @@ void main() {
         'Failed to load "test.dart": Failed to load script at '
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     // TODO(nweiz): test what happens when a test file is unreadable once issue
     // 15078 is fixed.
@@ -201,7 +201,7 @@ void main() {
       test.stdout.fork().expect(consumeThrough(contains("[Chrome] compiling")));
       test.stdout.expect(never(contains("[Dartium Content Shell] compiling")));
       test.shouldExit(0);
-    });
+    }, tags: ['chrome', 'content-shell']);
 
     test("on a browser and the VM", () {
       d.file("test.dart", _success).create();
@@ -209,7 +209,7 @@ void main() {
 
       test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("with setUpAll", () {
       d.file("test.dart", r"""
@@ -226,7 +226,7 @@ void main() {
       test.stdout.expect(consumeThrough(contains('+0: (setUpAll)')));
       test.stdout.expect('in setUpAll');
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("with tearDownAll", () {
       d.file("test.dart", r"""
@@ -243,7 +243,7 @@ void main() {
       test.stdout.expect(consumeThrough(contains('+1: (tearDownAll)')));
       test.stdout.expect('in tearDownAll');
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     // Regression test; this broke in 0.12.0-beta.9.
     test("on a file in a subdirectory", () {
@@ -252,7 +252,7 @@ void main() {
       var test = runTest(["-p", "chrome", "dir/test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'chrome');
 
     group("with a custom HTML file", () {
       setUp(() {
@@ -285,13 +285,13 @@ void main() {
         var test = runTest(["-p", "content-shell", "test.dart"]);
         test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
         test.shouldExit(0);
-      });
+      }, tags: 'content-shell');
 
       test("on Chrome", () {
         var test = runTest(["-p", "chrome", "test.dart"]);
         test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
         test.shouldExit(0);
-      });
+      }, tags: 'chrome');
 
       // Regression test for https://github.com/dart-lang/test/issues/82.
       test("ignores irrelevant link tags", () {
@@ -312,7 +312,7 @@ void main() {
         var test = runTest(["-p", "content-shell", "test.dart"]);
         test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
         test.shouldExit(0);
-      });
+      }, tags: 'content-shell');
     });
   });
 
@@ -334,7 +334,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("that fail only on the VM", () {
       d.file("test.dart", """
@@ -353,7 +353,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     group("with a custom HTML file", () {
       setUp(() {
@@ -386,13 +386,13 @@ void main() {
         var test = runTest(["-p", "content-shell", "test.dart"]);
         test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
         test.shouldExit(1);
-      });
+      }, tags: 'content-shell');
 
       test("on Chrome", () {
         var test = runTest(["-p", "chrome", "test.dart"]);
         test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
         test.shouldExit(1);
-      });
+      }, tags: 'chrome');
     });
   });
 
@@ -402,7 +402,7 @@ void main() {
     var test = runTest(["--color", "-p", "chrome", "test.dart"]);
     test.stdout.expect(consumeThrough(contains('\u001b[35m')));
     test.shouldExit(1);
-  });
+  }, tags: 'chrome');
 
   test("forwards prints from the browser test", () {
     d.file("test.dart", """
@@ -424,7 +424,7 @@ void main() {
       "world!"
     ]));
     test.shouldExit(0);
-  });
+  }, tags: 'content-shell');
 
   test("dartifies stack traces for JS-compiled tests by default", () {
     d.file("test.dart", _failure).create();
@@ -436,7 +436,7 @@ void main() {
       "dart:async/zone.dart"
     ]));
     test.shouldExit(1);
-  });
+  }, tags: 'chrome');
 
   test("doesn't dartify stack traces for JS-compiled tests with --js-trace", () {
     d.file("test.dart", _failure).create();
@@ -448,7 +448,7 @@ void main() {
     test.stdout.fork().expect(never(contains("dart:async/zone.dart")));
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
     test.shouldExit(1);
-  });
+  }, tags: 'chrome');
 
   test("respects top-level @Timeout declarations", () {
     d.file("test.dart", '''
@@ -469,7 +469,7 @@ void main() {
       "-1: Some tests failed."
     ]));
     test.shouldExit(1);
-  });
+  }, tags: 'content-shell');
 
   group("with onPlatform", () {
     test("respects matching Skips", () {
@@ -486,7 +486,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("ignores non-matching Skips", () {
       d.file("test.dart", '''
@@ -502,7 +502,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("respects matching Timeouts", () {
       d.file("test.dart", '''
@@ -526,7 +526,7 @@ void main() {
         "-1: Some tests failed."
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("ignores non-matching Timeouts", () {
       d.file("test.dart", '''
@@ -544,7 +544,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("applies matching platforms in order", () {
       d.file("test.dart", '''
@@ -570,7 +570,7 @@ void main() {
       test.stdout.fork().expect(never(contains("Skip: fourth")));
       test.stdout.expect(consumeThrough(contains("Skip: fifth")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
   });
 
   group("with an @OnPlatform annotation", () {
@@ -590,7 +590,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("~1: All tests skipped.")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("ignores non-matching Skips", () {
       d.file("test.dart", '''
@@ -608,7 +608,7 @@ void main() {
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("respects matching Timeouts", () {
       d.file("test.dart", '''
@@ -634,7 +634,7 @@ void main() {
         "-1: Some tests failed."
       ]));
       test.shouldExit(1);
-    });
+    }, tags: 'content-shell');
 
     test("ignores non-matching Timeouts", () {
       d.file("test.dart", '''
@@ -654,6 +654,6 @@ void main() {
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
   });
 }

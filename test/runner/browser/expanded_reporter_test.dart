@@ -35,5 +35,5 @@ void main() {
     test.stdout.fork().expect(consumeThrough(contains("[VM]")));
     test.stdout.expect(consumeThrough(contains("[Dartium Content Shell]")));
     test.shouldExit(0);
-  });
+  }, tags: ['content-shell']);
 }

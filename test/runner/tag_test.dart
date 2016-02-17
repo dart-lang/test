@@ -255,7 +255,7 @@ void main() {
           '  a was used in the test "foo"')));
       test.stdout.expect(never(startsWith("Warning:")));
       test.shouldExit(0);
-    });
+    }, tags: "content-shell");
   });
 
   group("invalid tags", () {

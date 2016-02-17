@@ -34,5 +34,5 @@ void main() {
     test.stdout.expect(containsInOrder(["[VM]", "[Dartium Content Shell]"]));
 
     test.shouldExit(0);
-  });
+  }, tags: 'content-shell');
 }

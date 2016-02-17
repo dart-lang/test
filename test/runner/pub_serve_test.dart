@@ -92,7 +92,7 @@ void main() {
       test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
       test.shouldExit(0);
       pub.kill();
-    });
+    }, tags: 'chrome');
 
     test("runs those tests on content shell", () {
       var pub = runPubServe();
@@ -100,7 +100,7 @@ void main() {
       test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
       test.shouldExit(0);
       pub.kill();
-    });
+    }, tags: 'content-shell');
 
     test("gracefully handles pub serve running on the wrong directory for "
         "VM tests", () {
@@ -135,7 +135,7 @@ void main() {
         test.shouldExit(1);
 
         pub.kill();
-      });
+      }, tags: 'chrome');
 
       test("when run on content shell", () {
         d.dir("web").create();
@@ -151,7 +151,7 @@ void main() {
         test.shouldExit(1);
 
         pub.kill();
-      });
+      }, tags: 'content-shell');
     });
 
     test("gracefully handles unconfigured transformers", () {
@@ -212,7 +212,7 @@ void main() {
       test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
       test.shouldExit(0);
       pub.kill();
-    });
+    }, tags: 'chrome');
 
     test("on content shell", () {
       var pub = runPubServe();
@@ -220,7 +220,7 @@ void main() {
       test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
       test.shouldExit(0);
       pub.kill();
-    });
+    }, tags: 'content-shell');
   });
 
   group("with a failing test", () {
@@ -246,7 +246,7 @@ void main() {
       ]));
       test.shouldExit(1);
       pub.kill();
-    });
+    }, tags: 'chrome');
 
     test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
         () {
@@ -265,7 +265,7 @@ void main() {
       test.shouldExit(1);
 
       pub.kill();
-    });
+    }, tags: 'chrome');
   });
 
   test("gracefully handles pub serve not running for VM tests", () {
@@ -294,7 +294,7 @@ void main() {
       'Make sure "pub serve" is running.'
     ]));
     test.shouldExit(1);
-  });
+  }, tags: 'chrome');
 
   test("gracefully handles a test file not being in test/", () {
     schedule(() {

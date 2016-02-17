@@ -33,7 +33,7 @@ void main() {
       var test = runTest(["--platform", "content-shell", "vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("runs a test suite on a matching operating system", () {
       _writeTestFile("os_test.dart", suiteTestOn: currentOS.name);
@@ -90,7 +90,7 @@ void main() {
           ["--platform", "content-shell", "browser_test.dart"]);
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("doesn't run a VM group on a browser", () {
       _writeTestFile("vm_test.dart", groupTestOn: "vm");
@@ -98,7 +98,7 @@ void main() {
       var test = runTest(["--platform", "content-shell", "vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
   });
 
   group("for test", () {
@@ -125,7 +125,7 @@ void main() {
           ["--platform", "content-shell", "browser_test.dart"]);
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
 
     test("doesn't run a VM test on a browser", () {
       _writeTestFile("vm_test.dart", testTestOn: "vm");
@@ -133,7 +133,7 @@ void main() {
       var test = runTest(["--platform", "content-shell", "vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
       test.shouldExit(0);
-    });
+    }, tags: 'content-shell');
   });
 
   group("with suite, group, and test selectors", () {

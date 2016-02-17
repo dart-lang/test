@@ -70,7 +70,7 @@ void main() {
     test.stdout.fork().expect(never(contains("dart:async/zone.dart")));
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
     test.shouldExit(1);
-  });
+  }, tags: 'chrome');
 
   test("uses the specified reporter", () {
     d.file("dart_test.yaml", JSON.encode({
@@ -210,7 +210,7 @@ transformers:
       "[Dartium Content Shell] success"
     ]));
     test.shouldExit(0);
-  });
+  }, tags: "content-shell");
 
   test("command line args take precedence", () {
     d.file("dart_test.yaml", JSON.encode({

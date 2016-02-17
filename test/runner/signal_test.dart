@@ -50,7 +50,7 @@ void main() {
       signalAndQuit(test);
 
       expectTempDirEmpty();
-    });
+    }, tags: "chrome");
 
     test("exits immediately if ^C is sent twice", () {
       d.file("test.dart", """
@@ -155,7 +155,7 @@ void main() {
       signalAndQuit(test);
 
       expectTempDirEmpty();
-    });
+    }, tags: "content-shell");
 
     test("kills a VM test immediately if ^C is sent twice", () {
       d.file("test.dart", """

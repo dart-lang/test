@@ -86,7 +86,7 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
     test.shouldExit(0);
-  });
+  }, tags: 'dartium');
 
   test("pauses the test runner for each platform until the user presses enter",
       () {
@@ -148,7 +148,7 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
     test.shouldExit(0);
-  });
+  }, tags: ['dartium', 'chrome']);
 
   test("prints a warning and doesn't pause for unsupported platforms", () {
     d.file("test.dart", """
@@ -212,7 +212,7 @@ void main() {
       "+2: All tests passed!"
     ]));
     test.shouldExit(0);
-  });
+  }, tags: 'dartium');
 
   test("stops immediately if killed while paused", () {
     d.file("test.dart", """
@@ -237,7 +237,7 @@ void main() {
     test.signal(ProcessSignal.SIGTERM);
     test.shouldExit();
     test.stderr.expect(isDone);
-  }, testOn: "!windows");
+  }, tags: 'dartium', testOn: "!windows");
 
   test("disables timeouts", () {
     d.file("test.dart", """
@@ -280,7 +280,7 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
-  });
+  }, tags: 'dartium');
 
   // Regression test for #304.
   test("supports test name patterns", () {
@@ -322,5 +322,5 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
-  });
+  }, tags: 'dartium');
 }
