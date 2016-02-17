@@ -68,7 +68,7 @@ void main() {
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
-      expect(metadata.tags, ['bar', 'baz']);
+      expect(metadata.tags, unorderedEquals(['bar', 'baz']));
       expect(metadata.forTag, contains('foo'));
       expect(metadata.forTag['foo'].skip, isTrue);
     });
@@ -87,8 +87,36 @@ void main() {
       expect(metadata.skip, isTrue);
       expect(metadata.skipReason, isNull);
       expect(metadata.timeout, equals(Timeout.none));
-      expect(metadata.tags, equals(['foo', 'bar', 'baz']));
+      expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
       expect(metadata.forTag.keys, equals(['qux']));
+    });
+
+    test("resolves forTags that adds a behavioral tag", () {
+      var metadata = new Metadata(
+          tags: ['foo'],
+          forTag: {
+            'baz': new Metadata(skip: true),
+            'bar': new Metadata(verboseTrace: true, tags: ['baz']),
+            'foo': new Metadata(tags: ['bar'])
+          });
+
+      expect(metadata.verboseTrace, isTrue);
+      expect(metadata.skip, isTrue);
+      expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
+      expect(metadata.forTag, isEmpty);
+    });
+
+    test("resolves forTags that adds circular tags", () {
+      var metadata = new Metadata(
+          tags: ['foo'],
+          forTag: {
+            'foo': new Metadata(tags: ['bar']),
+            'bar': new Metadata(tags: ['baz']),
+            'baz': new Metadata(tags: ['foo'])
+          });
+
+      expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
+      expect(metadata.forTag, isEmpty);
     });
 
     test("base metadata takes precedence over forTags", () {

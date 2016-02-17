@@ -60,6 +60,15 @@ class _ConfigurationLoader {
 
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
 
+    var addTags = _getList("add_tags", (tagNode) {
+      _validate(tagNode, "Tags must be strings.", (value) => value is String);
+      _validate(
+          tagNode,
+          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
+          (value) => value.contains(anchoredHyphenatedIdentifier));
+      return tagNode.value;
+    });
+
     var tags = _getMap("tags", key: (keyNode) {
       _validate(keyNode, "tags key must be a string.",
           (value) => value is String);
@@ -77,6 +86,7 @@ class _ConfigurationLoader {
         verboseTrace: verboseTrace,
         jsTrace: jsTrace,
         timeout: timeout,
+        addTags: addTags,
         tags: tags);
   }
 

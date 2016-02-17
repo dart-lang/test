@@ -36,6 +36,7 @@ tags:
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
 * [Configuring Tags](#configuring-tags)
+  * [`add_tags`](#add_tags)
 
 ## Test Configuration
 
@@ -218,3 +219,25 @@ If multiple tags appear at the same level, and they have conflicting
 configurations, the test runner *does not guarantee* what order they'll be
 resolved in. In practice, conflicting configuration is pretty unlikely and it's
 easy to just explicitly specify what you want on the test itself.
+
+### `add_tags`
+
+This field adds additional tags. It's technically
+[test configuration](#test-configuration), but it's usually used in more
+specific contexts. For example, when included in a tag's configuration, it can
+be used to enable tag inheritance, where adding one tag implicitly adds other as
+well. It takes a list of tag name strings.
+
+```yaml
+tags:
+  # Any test that spawns a browser.
+  browser:
+    timeout: 2x
+
+  # Tests that spawn specific browsers. These automatically get the browser tag
+  # as well.
+  chrome: {add_tags: [browser]}
+  firefox: {add_tags: [browser]}
+  safari: {add_tags: [browser]}
+  ie: {add_tags: [browser]}
+```

@@ -16,6 +16,32 @@ import '../../io.dart';
 void main() {
   useSandbox();
 
+  test("adds the specified tags", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "add_tags": ["foo", "bar"]
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {});
+      }
+    """).create();
+
+    var test = runTest(["--exclude-tag", "foo", "test.dart"]);
+    test.stdout.expect(consumeThrough(contains("No tests ran.")));
+    test.shouldExit(0);
+
+    test = runTest(["--exclude-tag", "bar", "test.dart"]);
+    test.stdout.expect(consumeThrough(contains("No tests ran.")));
+    test.shouldExit(0);
+
+    test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
+  });
+
   test("doesn't warn for tags that exist in the configuration", () {
     d.file("dart_test.yaml", JSON.encode({
       "tags": {"foo": null}
@@ -58,68 +84,133 @@ void main() {
     test.shouldExit(1);
   });
 
+  test("allows tag inheritance via add_tags", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "tags": {
+        "foo": null,
+        "bar": {"add_tags": ["foo"]}
+      }
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test 1", () {}, tags: ['bar']);
+        test("test 2", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart", "--tags", "foo"]);
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
+  });
+
   group("errors", () {
-    test("rejects an invalid tag type", () {
-      d.file("dart_test.yaml", '{"tags": {12: null}}').create();
+    group("tags", () {
+      test("rejects an invalid tag type", () {
+        d.file("dart_test.yaml", '{"tags": {12: null}}').create();
 
-      var test = runTest([]);
-      test.stderr.expect(containsInOrder([
-        "tags key must be a string",
-        "^^"
-      ]));
-      test.shouldExit(exit_codes.data);
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "tags key must be a string",
+          "^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects an invalid tag name", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "tags": {"foo bar": null}
+        })).create();
+
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
+          "^^^^^^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects an inavlid tag map", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "tags": 12
+        })).create();
+
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "tags must be a map",
+          "^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects an inavlid tag configuration", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "tags": {"foo": {"timeout": "12p"}}
+        })).create();
+
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "Invalid timeout: expected unit",
+          "^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects runner configuration", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "tags": {"foo": {"filename": "*_blorp.dart"}}
+        })).create();
+
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "filename isn't supported here.",
+          "^^^^^^^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
     });
 
-    test("rejects an invalid tag name", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "tags": {"foo bar": null}
-      })).create();
+    group("add_tags", () {
+      test("rejects an invalid list type", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "add_tags": "foo"
+        })).create();
 
-      var test = runTest([]);
-      test.stderr.expect(containsInOrder([
-        "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
-        "^^^^^^^^^"
-      ]));
-      test.shouldExit(exit_codes.data);
-    });
+        var test = runTest(["test.dart"]);
+        test.stderr.expect(containsInOrder([
+          "add_tags must be a list",
+          "^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
 
-    test("rejects an inavlid tag map", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "tags": 12
-      })).create();
+      test("rejects an invalid tag type", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "add_tags": [12]
+        })).create();
 
-      var test = runTest([]);
-      test.stderr.expect(containsInOrder([
-        "tags must be a map",
-        "^^"
-      ]));
-      test.shouldExit(exit_codes.data);
-    });
+        var test = runTest(["test.dart"]);
+        test.stderr.expect(containsInOrder([
+          "Tags must be strings",
+          "^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
 
-    test("rejects an inavlid tag configuration", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "tags": {"foo": {"timeout": "12p"}}
-      })).create();
+      test("rejects an invalid tag name", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "add_tags": ["foo bar"]
+        })).create();
 
-      var test = runTest([]);
-      test.stderr.expect(containsInOrder([
-        "Invalid timeout: expected unit",
-        "^^^^"
-      ]));
-      test.shouldExit(exit_codes.data);
-    });
-
-    test("rejects runner configuration", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "tags": {"foo": {"filename": "*_blorp.dart"}}
-      })).create();
-
-      var test = runTest([]);
-      test.stderr.expect(containsInOrder([
-        "filename isn't supported here.",
-        "^^^^^^^^^^"
-      ]));
-      test.shouldExit(exit_codes.data);
+        var test = runTest(["test.dart"]);
+        test.stderr.expect(containsInOrder([
+          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
+          "^^^^^^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
     });
   });
 }

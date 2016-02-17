@@ -114,17 +114,20 @@ class Configuration {
   /// that isn't enforced.
   final Map<String, Configuration> tags;
 
+  final Set<String> addTags;
+
   /// The global test metadata derived from this configuration.
   Metadata get metadata => new Metadata(
       timeout: timeout,
       verboseTrace: verboseTrace,
+      tags: addTags,
       forTag: mapMap(tags, value: (_, config) => config.metadata));
 
   /// The set of tags that have been declaredin any way in this configuration.
   Set<String> get knownTags {
     if (_knownTags != null) return _knownTags;
 
-    var known = includeTags.union(excludeTags);
+    var known = includeTags.union(excludeTags).union(addTags);
     tags.forEach((tag, config) {
       known.add(tag);
       known.addAll(config.knownTags);
@@ -151,7 +154,8 @@ class Configuration {
           int pubServePort, int concurrency, Timeout timeout, this.pattern,
           Iterable<TestPlatform> platforms, Iterable<String> paths,
           Glob filename, Iterable<String> includeTags,
-          Iterable<String> excludeTags, Map<String, Configuration> tags})
+          Iterable<String> excludeTags, Iterable<String> addTags,
+          Map<String, Configuration> tags})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
@@ -172,6 +176,7 @@ class Configuration {
         _filename = filename,
         includeTags = includeTags?.toSet() ?? new Set(),
         excludeTags = excludeTags?.toSet() ?? new Set(),
+        addTags = addTags?.toSet() ?? new Set(),
         tags = tags == null ? const {} : new Map.unmodifiable(tags) {
     if (_filename != null && _filename.context.style != p.style) {
       throw new ArgumentError(
@@ -215,6 +220,7 @@ class Configuration {
         filename: other._filename ?? _filename,
         includeTags: other.includeTags.union(includeTags),
         excludeTags: other.excludeTags.union(excludeTags),
+        addTags: other.addTags.union(addTags),
         tags: mergeMaps(tags, other.tags,
             value: (config1, config2) => config1.merge(config2)));
   }
