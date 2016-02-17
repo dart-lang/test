@@ -57,14 +57,18 @@ class CompilerPool {
       return withTempDir((dir) async {
         var wrapperPath = p.join(dir, "runInBrowser.dart");
         new File(wrapperPath).writeAsStringSync('''
-import "package:test/src/runner/browser/iframe_listener.dart";
+          import "package:stream_channel/stream_channel.dart";
 
-import "${p.toUri(p.absolute(dartPath))}" as test;
+          import "package:test/src/runner/plugin/remote_platform_helpers.dart";
+          import "package:test/src/runner/browser/post_message_channel.dart";
 
-void main(_) {
-  IframeListener.start(() => test.main);
-}
-''');
+          import "${p.toUri(p.absolute(dartPath))}" as test;
+
+          main(_) async {
+            var channel = serializeSuite(() => test.main, hidePrints: false);
+            postMessageChannel().pipe(channel);
+          }
+        ''');
 
         var dart2jsPath = p.join(sdkDir, 'bin', 'dart2js');
         if (Platform.isWindows) dart2jsPath += '.bat';

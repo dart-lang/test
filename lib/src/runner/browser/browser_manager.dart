@@ -15,6 +15,7 @@ import '../../backend/test_platform.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../application_exception.dart';
 import '../environment.dart';
+import '../plugin/platform_helpers.dart';
 import '../runner_suite.dart';
 import 'browser.dart';
 import 'chrome.dart';
@@ -24,7 +25,6 @@ import 'firefox.dart';
 import 'internet_explorer.dart';
 import 'phantom_js.dart';
 import 'safari.dart';
-import 'suite.dart';
 
 /// A class that manages the connection to a single running browser.
 ///
@@ -42,7 +42,7 @@ class BrowserManager {
   /// The channel used to communicate with the browser.
   ///
   /// This is connected to a page running `static/host.dart`.
-  final MultiChannel _channel;
+  MultiChannel _channel;
 
   /// A pool that ensures that limits the number of initial connections the
   /// manager will wait for at once.
@@ -57,7 +57,7 @@ class BrowserManager {
   ///
   /// This is used to ensure that the suites can be referred to consistently
   /// across the client and server.
-  int _suiteId = 0;
+  int _suiteID = 0;
 
   /// Whether the channel to the browser has closed.
   bool _closed = false;
@@ -70,6 +70,18 @@ class BrowserManager {
 
   /// The environment to attach to each suite.
   Future<_BrowserEnvironment> _environment;
+
+  /// Controllers for every suite in this browser.
+  ///
+  /// These are used to mark suites as debugging or not based on the browser's
+  /// pings.
+  final _controllers = new Set<RunnerSuiteController>();
+
+  // A timer that's reset whenever we receive a message from the browser.
+  //
+  // Because the browser stops running code when the user is actively debugging,
+  // this lets us detect whether they're debugging reasonably accurately.
+  RestartableTimer _timer;
 
   /// Starts the browser identified by [platform] and has it connect to [url].
   ///
@@ -133,8 +145,33 @@ class BrowserManager {
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
-  BrowserManager._(this._browser, this._platform, WebSocketChannel webSocket)
-      : _channel = new MultiChannel(webSocket.transform(jsonDocument)) {
+  BrowserManager._(this._browser, this._platform, WebSocketChannel webSocket) {
+    // The duration should be short enough that the debugging console is open as
+    // soon as the user is done setting breakpoints, but long enough that a test
+    // doing a lot of synchronous work doesn't trigger a false positive.
+    //
+    // Start this canceled because we don't want it to start ticking until we
+    // get some response from the iframe.
+    _timer = new RestartableTimer(new Duration(seconds: 3), () {
+      for (var controller in _controllers) {
+        controller.setDebugging(true);
+      }
+    })..cancel();
+
+    // Whenever we get a message, no matter which child channel it's for, we the
+    // know browser is still running code which means the user isn't debugging.
+    _channel = new MultiChannel(webSocket.transform(jsonDocument)
+        .changeStream((stream) {
+      return stream.map((message) {
+        _timer.reset();
+        for (var controller in _controllers) {
+          controller.setDebugging(false);
+        }
+
+        return message;
+      });
+    }));
+
     _environment = _loadBrowserEnvironment();
     _channel.stream.listen(_onMessage, onDone: close);
   }
@@ -160,38 +197,48 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> loadSuite(String path, Uri url, Metadata metadata,
+  Future<RunnerSuite> load(String path, Uri url, Metadata metadata,
       {StackTraceMapper mapper}) async {
     url = url.replace(fragment: Uri.encodeFull(JSON.encode({
       "metadata": metadata.serialize(),
       "browser": _platform.identifier
     })));
 
-    // The stream may close before emitting a value if the browser is killed
-    // prematurely (e.g. via Control-C).
-    var suiteVirtualChannel = _channel.virtualChannel();
-    var suiteId = _suiteId++;
-
+    var suiteID = _suiteID++;
+    var controller;
     closeIframe() {
       if (_closed) return;
+      _controllers.remove(controller);
       _channel.sink.add({
         "command": "closeSuite",
-        "id": suiteId
+        "id": suiteID
       });
     }
+
+    // The virtual channel will be closed when the suite is closed, in which
+    // case we should unload the iframe.
+    var suiteChannel = _channel.virtualChannel();
+    var suiteChannelID = suiteChannel.id;
+    suiteChannel = suiteChannel.transformStream(
+        new StreamTransformer.fromHandlers(handleDone: (sink) {
+          closeIframe();
+          sink.close();
+        }));
 
     return await _pool.withResource(() async {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
-        "id": suiteId,
-        "channel": suiteVirtualChannel.id
+        "id": suiteID,
+        "channel": suiteChannelID
       });
 
       try {
-        return await loadBrowserSuite(
-            suiteVirtualChannel, await _environment, path,
-            mapper: mapper, platform: _platform, onClose: () => closeIframe());
+        controller = await deserializeSuite(
+            path, _platform, metadata, await _environment, suiteChannel,
+            mapTrace: mapper?.mapStackTrace);
+        _controllers.add(controller);
+        return controller.suite;
       } catch (_) {
         closeIframe();
         rethrow;
@@ -219,6 +266,8 @@ class BrowserManager {
 
   /// The callback for handling messages received from the host page.
   void _onMessage(Map message) {
+    if (message["command"] == "ping") return;
+
     assert(message["command"] == "resume");
     if (_pauseCompleter == null) return;
     _pauseCompleter.complete();
@@ -228,8 +277,10 @@ class BrowserManager {
   /// the browser.
   Future close() => _closeMemoizer.runOnce(() {
     _closed = true;
+    _timer.cancel();
     if (_pauseCompleter != null) _pauseCompleter.complete();
     _pauseCompleter = null;
+    _controllers.clear();
     return _browser.close();
   });
   final _closeMemoizer = new AsyncMemoizer();

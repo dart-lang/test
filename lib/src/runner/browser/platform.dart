@@ -1,4 +1,4 @@
-// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -14,9 +14,9 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import '../../backend/metadata.dart';
-import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
@@ -25,22 +25,21 @@ import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import '../load_exception.dart';
+import '../plugin/platform.dart';
+import '../runner_suite.dart';
 import 'browser_manager.dart';
 import 'compiler_pool.dart';
 import 'polymer.dart';
 
-/// A server that serves JS-compiled tests to browsers.
-///
-/// A test suite may be loaded for a given file using [loadSuite].
-class BrowserServer {
+class BrowserPlatform extends PlatformPlugin {
   /// Starts the server.
   ///
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
-  static Future<BrowserServer> start(Configuration config, {String root})
+  static Future<BrowserPlatform> start(Configuration config, {String root})
       async {
     var server = new shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return new BrowserServer(server, config, root: root);
+    return new BrowserPlatform._(server, config, root: root);
   }
 
   /// The underlying server.
@@ -91,9 +90,6 @@ class BrowserServer {
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
 
-  /// The memoizer for running [close] exactly once.
-  final _closeMemo = new AsyncMemoizer();
-
   /// A map from browser identifiers to futures that will complete to the
   /// [BrowserManager]s for those browsers, or the errors that occurred when
   /// trying to load those managers.
@@ -109,9 +105,10 @@ class BrowserServer {
   /// per run, rather than once per browser per run.
   final _compileFutures = new Map<String, Future>();
 
+  /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = new Map<String, StackTraceMapper>();
 
-  BrowserServer(this._server, Configuration config, {String root})
+  BrowserPlatform._(this._server, Configuration config, {String root})
       : _root = root == null ? p.current : root,
         _config = config,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
@@ -161,15 +158,20 @@ class BrowserServer {
     var path = p.fromUri(request.url);
 
     if (path.endsWith(".browser_test.dart")) {
+      var testPath = p.basename(p.withoutExtension(p.withoutExtension(path)));
       return new shelf.Response.ok('''
-import "package:test/src/runner/browser/iframe_listener.dart";
+        import "package:stream_channel/stream_channel.dart";
 
-import "${p.basename(p.withoutExtension(p.withoutExtension(path)))}" as test;
+        import "package:test/src/runner/plugin/remote_platform_helpers.dart";
+        import "package:test/src/runner/browser/post_message_channel.dart";
 
-void main() {
-  IframeListener.start(() => test.main);
-}
-''', headers: {'Content-Type': 'application/dart'});
+        import "$testPath" as test;
+
+        void main() {
+          var channel = serializeSuite(() => test.main, hidePrints: false);
+          postMessageChannel().pipe(channel);
+        }
+      ''', headers: {'Content-Type': 'application/dart'});
     }
 
     if (path.endsWith(".html")) {
@@ -184,14 +186,14 @@ void main() {
           : 'src="$scriptBase.js"';
 
       return new shelf.Response.ok('''
-<!DOCTYPE html>
-<html>
-<head>
-  <title>${HTML_ESCAPE.convert(test)} Test</title>
-  <script $script></script>
-</head>
-</html>
-''', headers: {'Content-Type': 'text/html'});
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${HTML_ESCAPE.convert(test)} Test</title>
+          <script $script></script>
+        </head>
+        </html>
+      ''', headers: {'Content-Type': 'text/html'});
     }
 
     return new shelf.Response.notFound('Not found.');
@@ -201,7 +203,7 @@ void main() {
   ///
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<Suite> loadSuite(String path, TestPlatform browser,
+  Future<RunnerSuite> load(String path, TestPlatform browser,
       Metadata metadata) async {
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
@@ -251,11 +253,14 @@ void main() {
     var browserManager = await _browserManagerFor(browser);
     if (_closed) return null;
 
-    var suite = await browserManager.loadSuite(path, suiteUrl, metadata,
+    var suite = await browserManager.load(path, suiteUrl, metadata,
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;
   }
+
+  StreamChannel loadChannel(String path, TestPlatform platform) =>
+      throw new UnimplementedError();
 
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
@@ -389,7 +394,7 @@ void main() {
   ///
   /// Note that this doesn't close the server itself. Browser tests can still be
   /// loaded, they'll just spawn new browsers.
-  Future closeBrowsers() {
+  Future closeEphemeral() {
     var managers = _browserManagers.values.toList();
     _browserManagers.clear();
     return Future.wait(managers.map((manager) async {
@@ -403,25 +408,24 @@ void main() {
   ///
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
-  Future close() {
-    return _closeMemo.runOnce(() async {
-      var futures = _browserManagers.values.map((future) async {
-        var result = await future;
-        if (result.isError) return;
+  Future close() => _closeMemo.runOnce(() async {
+    var futures = _browserManagers.values.map((future) async {
+      var result = await future;
+      if (result.isError) return;
 
-        await result.asValue.value.close();
-      }).toList();
+      await result.asValue.value.close();
+    }).toList();
 
-      futures.add(_server.close());
-      futures.add(_compilers.close());
+    futures.add(_server.close());
+    futures.add(_compilers.close());
 
-      await Future.wait(futures);
+    await Future.wait(futures);
 
-      if (_config.pubServeUrl == null) {
-        new Directory(_compiledDir).deleteSync(recursive: true);
-      } else {
-        _http.close();
-      }
-    });
-  }
+    if (_config.pubServeUrl == null) {
+      new Directory(_compiledDir).deleteSync(recursive: true);
+    } else {
+      _http.close();
+    }
+  });
+  final _closeMemo = new AsyncMemoizer();
 }

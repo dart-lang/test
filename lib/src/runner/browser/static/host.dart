@@ -88,6 +88,11 @@ void main() {
       }
     });
 
+    // Send periodic pings to the test runner so it can know when the browser is
+    // paused for debugging.
+    new Timer.periodic(new Duration(seconds: 1),
+        (_) => serverChannel.sink.add({"command": "ping"}));
+
     var play = document.querySelector("#play");
     play.onClick.listen((_) {
       document.body.classes.remove('paused');
@@ -106,17 +111,15 @@ MultiChannel _connectToServer() {
   var currentUrl = Uri.parse(window.location.href);
   var webSocket = new WebSocket(currentUrl.queryParameters['managerUrl']);
 
-  var inputController = new StreamController(sync: true);
+  var controller = new StreamChannelController(sync: true);
   webSocket.onMessage.listen((message) {
-    inputController.add(JSON.decode(message.data));
+    controller.local.sink.add(JSON.decode(message.data));
   });
 
-  var outputController = new StreamController(sync: true);
-  outputController.stream.listen(
+  controller.local.stream.listen(
       (message) => webSocket.send(JSON.encode(message)));
 
-  return new MultiChannel(
-      new StreamChannel(inputController.stream, outputController.sink));
+  return new MultiChannel(controller.foreign);
 }
 
 /// Creates an iframe with `src` [url] and establishes a connection to it using
@@ -129,8 +132,7 @@ StreamChannel _connectToIframe(String url, int id) {
   iframe.src = url;
   document.body.children.add(iframe);
 
-  var inputController = new StreamController(sync: true);
-  var outputController = new StreamController(sync: true);
+  var controller = new StreamChannelController(sync: true);
 
   // Use this to avoid sending a message to the iframe before it's sent a
   // message to us. This ensures that no messages get dropped on the floor.
@@ -150,14 +152,24 @@ StreamChannel _connectToIframe(String url, int id) {
     if (message.data["href"] != iframe.src) return;
 
     message.stopPropagation();
-    inputController.add(message.data["data"]);
-    if (!readyCompleter.isCompleted) readyCompleter.complete();
+
+    // This message indicates that the iframe is actively listening for events.
+    if (message.data["ready"] == true) {
+      readyCompleter.complete();
+    } else {
+      controller.local.sink.add(message.data["data"]);
+    }
   });
 
-  outputController.stream.listen((message) async {
+  controller.local.stream.listen((message) async {
     await readyCompleter.future;
-    iframe.contentWindow.postMessage(message, window.location.origin);
+
+    // JSON-encode the message to work around sdk#25636, which caused the
+    // structured clone algorithm to be broken with Window.postMessage in
+    // 1.14.{0,1,2}. Once we no longer care about these Dartiums, stop encoding.
+    iframe.contentWindow.postMessage(
+        JSON.encode(message), window.location.origin);
   });
 
-  return new StreamChannel(inputController.stream, outputController.sink);
+  return controller.foreign;
 }

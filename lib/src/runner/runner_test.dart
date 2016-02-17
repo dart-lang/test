@@ -16,6 +16,8 @@ import '../backend/test_platform.dart';
 import '../utils.dart';
 import '../util/remote_exception.dart';
 
+typedef StackTrace _MapTrace(StackTrace trace);
+
 /// A test running remotely, controlled by a stream channel.
 class RunnerTest extends Test {
   final String name;
@@ -24,7 +26,10 @@ class RunnerTest extends Test {
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
 
-  RunnerTest(this.name, this.metadata, this._channel);
+  /// The function used to reformat errors' stack traces.
+  final _MapTrace _mapTrace;
+
+  RunnerTest(this.name, this.metadata, this._channel, this._mapTrace);
 
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var controller;
@@ -42,7 +47,7 @@ class RunnerTest extends Test {
         if (message['type'] == 'error') {
           var asyncError = RemoteException.deserialize(message['error']);
 
-          var stackTrace = asyncError.stackTrace;
+          var stackTrace = _mapTrace(asyncError.stackTrace);
           controller.addError(asyncError.error, stackTrace);
         } else if (message['type'] == 'state-change') {
           controller.setState(
@@ -83,6 +88,6 @@ class RunnerTest extends Test {
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
     return new RunnerTest(
-        name, metadata.forPlatform(platform, os: os), _channel);
+        name, metadata.forPlatform(platform, os: os), _channel, _mapTrace);
   }
 }

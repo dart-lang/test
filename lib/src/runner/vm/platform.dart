@@ -16,8 +16,6 @@ import '../plugin/platform.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
 class VMPlatform extends PlatformPlugin {
-  final platforms = [TestPlatform.vm];
-
   /// The test runner configuration.
   final Configuration _config;
 

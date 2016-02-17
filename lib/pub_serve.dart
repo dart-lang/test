@@ -49,14 +49,18 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
 
     transform.addOutput(
         new Asset.fromString(id.addExtension('.browser_test.dart'), '''
-import "package:test/src/runner/browser/iframe_listener.dart";
+          import "package:stream_channel/stream_channel.dart";
 
-import "${p.url.basename(id.path)}" as test;
+          import "package:test/src/runner/plugin/remote_platform_helpers.dart";
+          import "package:test/src/runner/browser/post_message_channel.dart";
 
-void main() {
-  IframeListener.start(() => test.main);
-}
-'''));
+          import "${p.url.basename(id.path)}" as test;
+
+          void main() {
+            var channel = serializeSuite(() => test.main);
+            postMessageChannel().pipe(channel);
+          }
+        '''));
 
     // If the user has their own HTML file for the test, let that take
     // precedence. Otherwise, create our own basic file.
@@ -65,14 +69,15 @@ void main() {
 
     transform.addOutput(
         new Asset.fromString(htmlId, '''
-<!DOCTYPE html>
-<html>
-<head>
-  <title>${HTML_ESCAPE.convert(id.path)} Test</title>
-  <link rel="x-dart-test" href="${HTML_ESCAPE.convert(p.url.basename(id.path))}">
-  <script src="packages/test/dart.js"></script>
-</head>
-</html>
-'''));
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>${HTML_ESCAPE.convert(id.path)} Test</title>
+            <link rel="x-dart-test"
+                  href="${HTML_ESCAPE.convert(p.url.basename(id.path))}">
+            <script src="packages/test/dart.js"></script>
+          </head>
+          </html>
+        '''));
   }
 }

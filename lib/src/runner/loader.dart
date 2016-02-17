@@ -14,7 +14,7 @@ import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
 import '../utils.dart';
-import 'browser/server.dart';
+import 'browser/platform.dart';
 import 'configuration.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
@@ -35,23 +35,13 @@ class Loader {
   /// All suites that have been created by the loader.
   final _suites = new Set<RunnerSuite>();
 
-  /// Plugins for loading test suites for various platforms.
-  ///
-  /// This includes the built-in [VMPlatform] plugin.
-  final _platformPlugins = <TestPlatform, PlatformPlugin>{};
+  /// Memoizers for platform plugins, indexed by the platforms they support.
+  final _platformPlugins = <TestPlatform, AsyncMemoizer<PlatformPlugin>>{};
 
-  /// The server that serves browser test pages.
+  /// The functions to use to load [_platformPlugins].
   ///
-  /// This is lazily initialized the first time it's accessed.
-  Future<BrowserServer> get _browserServer {
-    return _browserServerMemo.runOnce(() {
-      return BrowserServer.start(_config, root: _root);
-    });
-  }
-  final _browserServerMemo = new AsyncMemoizer<BrowserServer>();
-
-  /// The memoizer for running [close] exactly once.
-  final _closeMemo = new AsyncMemoizer();
+  /// These are passed to the plugins' async memoizers when a plugin is needed.
+  final _platformCallbacks = <TestPlatform, AsyncFunction>{};
 
   /// Creates a new loader that loads tests on platforms defined in [_config].
   ///
@@ -59,16 +49,32 @@ class Loader {
   /// defaults to the working directory.
   Loader(this._config, {String root})
       : _root = root == null ? p.current : root {
-    registerPlatformPlugin(new VMPlatform(_config));
+    registerPlatformPlugin([TestPlatform.vm], () => new VMPlatform(_config));
+    registerPlatformPlugin([
+      TestPlatform.dartium,
+      TestPlatform.contentShell,
+      TestPlatform.chrome,
+      TestPlatform.phantomJS,
+      TestPlatform.firefox,
+      TestPlatform.safari,
+      TestPlatform.internetExplorer
+    ], () => BrowserPlatform.start(_config, root: root));
   }
 
-  /// Registers [plugin] as a plugin for the platforms it defines in
-  /// [PlatformPlugin.platforms].
+  /// Registers a [PlatformPlugin] for [platforms].
+  ///
+  /// When the runner first requests that a suite be loaded for one of the given
+  /// platforms, this will call [getPlugin] to load the platform plugin. It may
+  /// return either a [PlatformPlugin] or a [Future<PlatformPlugin>]. That
+  /// plugin is then preserved and used to load all suites for all matching
+  /// platforms.
   ///
   /// This overwrites previous plugins for those platforms.
-  void registerPlatformPlugin(PlatformPlugin plugin) {
-    for (var platform in plugin.platforms) {
-      _platformPlugins[platform] = plugin;
+  void registerPlatformPlugin(Iterable<TestPlatform> platforms, getPlugin()) {
+    var memoizer = new AsyncMemoizer();
+    for (var platform in platforms) {
+      _platformPlugins[platform] = memoizer;
+      _platformCallbacks[platform] = getPlugin;
     }
   }
 
@@ -139,47 +145,41 @@ class Loader {
 
       var name = (platform.isJS ? "compiling " : "loading ") + path;
       yield new LoadSuite(name, () async {
-        var plugin = _platformPlugins[platform];
+        var memo = _platformPlugins[platform];
 
-        if (plugin != null) {
-          try {
-            return await plugin.load(path, platform, metadata);
-          } catch (error, stackTrace) {
-            if (error is LoadException) rethrow;
-            await new Future.error(new LoadException(path, error), stackTrace);
-          }
+        try {
+          var plugin = await memo.runOnce(_platformCallbacks[platform]);
+          var suite = await plugin.load(path, platform, metadata);
+          _suites.add(suite);
+          return suite;
+        } catch (error, stackTrace) {
+          if (error is LoadException) rethrow;
+          await new Future.error(new LoadException(path, error), stackTrace);
         }
-
-        assert(platform.isBrowser);
-        return _loadBrowserFile(path, platform, metadata);
       }, path: path, platform: platform);
     }
   }
 
-  /// Load the test suite at [path] in [platform].
-  ///
-  /// [metadata] is the suite-level metadata for the test.
-  Future<RunnerSuite> _loadBrowserFile(String path, TestPlatform platform,
-        Metadata metadata) async =>
-      (await _browserServer).loadSuite(path, platform, metadata);
-
-  /// Close all the browsers that the loader currently has open.
-  ///
-  /// Note that this doesn't close the loader itself. Browser tests can still be
-  /// loaded, they'll just spawn new browsers.
-  Future closeBrowsers() async {
-    if (!_browserServerMemo.hasRun) return;
-    await (await _browserServer).closeBrowsers();
+  Future closeEphemeral() async {
+    await Future.wait(_platformPlugins.values.map((memo) async {
+      if (!memo.hasRun) return;
+      await (await memo.future).closeEphemeral();
+    }));
   }
 
   /// Closes the loader and releases all resources allocated by it.
-  Future close() {
-    return _closeMemo.runOnce(() async {
-      await Future.wait(_suites.map((suite) => suite.close()));
-      _suites.clear();
+  Future close() => _closeMemo.runOnce(() async {
+    await Future.wait([
+      Future.wait(_platformPlugins.values.map((memo) async {
+        if (!memo.hasRun) return;
+        await (await memo.future).close();
+      })),
+      Future.wait(_suites.map((suite) => suite.close()))
+    ]);
 
-      if (!_browserServerMemo.hasRun) return;
-      await (await _browserServer).close();
-    });
-  }
+    _platformPlugins.clear();
+    _platformCallbacks.clear();
+    _suites.clear();
+  });
+  final _closeMemo = new AsyncMemoizer();
 }
