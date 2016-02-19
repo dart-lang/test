@@ -84,6 +84,32 @@ void main() {
     test.shouldExit(1);
   });
 
+  test("supports tag selectors", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "tags": {"foo && bar": {"timeout": "0s"}}
+    })).create();
+
+    d.file("test.dart", """
+      import 'dart:async';
+
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
+        test("test 2", () => new Future.delayed(Duration.ZERO), tags: ['bar']);
+        test("test 3", () => new Future.delayed(Duration.ZERO),
+            tags: ['foo', 'bar']);
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(containsInOrder([
+      "+2 -1: test 3",
+      "+2 -1: Some tests failed."
+    ]));
+    test.shouldExit(1);
+  });
+
   test("allows tag inheritance via add_tags", () {
     d.file("dart_test.yaml", JSON.encode({
       "tags": {
@@ -119,14 +145,14 @@ void main() {
         test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid tag name", () {
+      test("rejects an invalid tag selector", () {
         d.file("dart_test.yaml", JSON.encode({
           "tags": {"foo bar": null}
         })).create();
 
         var test = runTest([]);
         test.stderr.expect(containsInOrder([
-          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
+          "Invalid tags key: Expected end of input.",
           "^^^^^^^^^"
         ]));
         test.shouldExit(exit_codes.data);

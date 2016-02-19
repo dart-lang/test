@@ -4,6 +4,7 @@
 
 import 'dart:collection';
 
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 
 import '../frontend/skip.dart';
@@ -48,9 +49,9 @@ class Metadata {
   /// Note that unlike [onPlatform], the base metadata takes precedence over any
   /// tag-specific metadata.
   ///
-  /// This is guaranteed not to have any keys that appear in [tags]; those are
+  /// This is guaranteed not to have any keys that match [tags]; those are
   /// resolved when the metadata is constructed.
-  final Map<String, Metadata> forTag;
+  final Map<BooleanSelector, Metadata> forTag;
 
   /// Parses a user-provided map into the value for [onPlatform].
   static Map<PlatformSelector, Metadata> _parseOnPlatform(
@@ -118,37 +119,15 @@ class Metadata {
   ///
   /// [testOn] defaults to [PlatformSelector.all].
   ///
-  /// If [forTag] contains metadata for any tags in [tags], that metadata is
+  /// If [forTag] contains metadata that applies to [tags], that metadata is
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
   factory Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
           bool verboseTrace: false, String skipReason, Iterable<String> tags,
           Map<PlatformSelector, Metadata> onPlatform,
-          Map<String, Metadata> forTag}) {
-    // If there's no tag-specific metadata, or if none of it applies, just
-    // return the metadata as-is.
-    if (forTag == null || tags == null || !tags.any(forTag.containsKey)) {
-      return new Metadata._(
-          testOn: testOn,
-          timeout: timeout,
-          skip: skip,
-          verboseTrace: verboseTrace,
-          skipReason: skipReason,
-          tags: tags,
-          onPlatform: onPlatform,
-          forTag: forTag);
-    }
-
-    // Otherwise, resolve the tag-specific components. Doing this eagerly means
-    // we only have to resolve suite- or group-level tags once, rather than
-    // doing it for every test individually.
-    forTag = new Map.from(forTag);
-    var merged = tags.fold(new Metadata._(), (merged, tag) {
-      var tagMetadata = forTag.remove(tag);
-      return tagMetadata == null ? merged : merged.merge(tagMetadata);
-    });
-
-    return merged.merge(new Metadata._(
+          Map<BooleanSelector, Metadata> forTag}) {
+    // Returns metadata without forTag resolved at all.
+    _unresolved() => new Metadata._(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -156,7 +135,23 @@ class Metadata {
         skipReason: skipReason,
         tags: tags,
         onPlatform: onPlatform,
-        forTag: forTag));
+        forTag: forTag);
+
+    // If there's no tag-specific metadata, or if none of it applies, just
+    // return the metadata as-is.
+    if (forTag == null || tags == null) return _unresolved();
+
+    // Otherwise, resolve the tag-specific components. Doing this eagerly means
+    // we only have to resolve suite- or group-level tags once, rather than
+    // doing it for every test individually.
+    var empty = new Metadata._();
+    var merged = forTag.keys.toList().fold(empty, (merged, selector) {
+      if (!selector.evaluate(tags)) return merged;
+      return merged.merge(forTag.remove(selector));
+    });
+
+    if (merged == empty) return _unresolved();
+    return merged.merge(_unresolved());
   }
 
   /// Creates new Metadata.
@@ -165,7 +160,7 @@ class Metadata {
   Metadata._({PlatformSelector testOn, Timeout timeout, bool skip: false,
           this.verboseTrace: false, this.skipReason, Iterable<String> tags,
           Map<PlatformSelector, Metadata> onPlatform,
-          Map<String, Metadata> forTag})
+          Map<BooleanSelector, Metadata> forTag})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip,
@@ -218,6 +213,7 @@ class Metadata {
             key: (pair) => new PlatformSelector.parse(pair.first),
             value: (pair) => new Metadata.deserialize(pair.last)),
         forTag = mapMap(serialized['forTag'],
+            key: (key, _) => new BooleanSelector.parse(key),
             value: (_, nested) => new Metadata.deserialize(nested));
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
@@ -308,7 +304,9 @@ class Metadata {
       'verboseTrace': verboseTrace,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
-      'forTag': mapMap(forTag, value: (_, metadata) => metadata.serialize())
+      'forTag': mapMap(forTag,
+          key: (selector, _) => selector.toString(),
+          value: (_, metadata) => metadata.serialize())
     };
   }
 

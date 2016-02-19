@@ -202,15 +202,10 @@ class Runner {
           }
 
           // If the user provided tags, skip tests that don't match all of them.
-          if (!_config.includeTags.isEmpty &&
-              !test.metadata.tags.containsAll(_config.includeTags)) {
-            return false;
-          }
+          if (!_config.includeTags.evaluate(test.metadata.tags)) return false;
 
           // Skip tests that do match any tags the user wants to exclude.
-          if (_config.excludeTags.intersection(test.metadata.tags).isNotEmpty) {
-            return false;
-          }
+          if (_config.excludeTags.evaluate(test.metadata.tags)) return false;
 
           return true;
         });

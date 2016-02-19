@@ -4,6 +4,7 @@
 
 @TestOn("vm")
 
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -138,40 +139,46 @@ void main() {
     group("for tags", () {
       test("if neither is defined, preserves the default", () {
         var merged = new Configuration().merge(new Configuration());
-        expect(merged.includeTags, isEmpty);
-        expect(merged.excludeTags, isEmpty);
+        expect(merged.includeTags, equals(BooleanSelector.all));
+        expect(merged.excludeTags, equals(BooleanSelector.none));
       });
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new Configuration(
-                includeTags: ["foo", "bar"],
-                excludeTags: ["baz", "bang"])
+                includeTags: new BooleanSelector.parse("foo || bar"),
+                excludeTags: new BooleanSelector.parse("baz || bang"))
             .merge(new Configuration());
 
-        expect(merged.includeTags, unorderedEquals(["foo", "bar"]));
-        expect(merged.excludeTags, unorderedEquals(["baz", "bang"]));
+        expect(merged.includeTags,
+            equals(new BooleanSelector.parse("foo || bar")));
+        expect(merged.excludeTags,
+            equals(new BooleanSelector.parse("baz || bang")));
       });
 
       test("if only the new configuration's is defined, uses it", () {
         var merged = new Configuration().merge(new Configuration(
-            includeTags: ["foo", "bar"],
-            excludeTags: ["baz", "bang"]));
+            includeTags: new BooleanSelector.parse("foo || bar"),
+            excludeTags: new BooleanSelector.parse("baz || bang")));
 
-        expect(merged.includeTags, unorderedEquals(["foo", "bar"]));
-        expect(merged.excludeTags, unorderedEquals(["baz", "bang"]));
+        expect(merged.includeTags,
+            equals(new BooleanSelector.parse("foo || bar")));
+        expect(merged.excludeTags,
+            equals(new BooleanSelector.parse("baz || bang")));
       });
 
-      test("if both are defined, unions them", () {
+      test("if both are defined, unions or intersects them", () {
         var older = new Configuration(
-            includeTags: ["foo", "bar"],
-            excludeTags: ["baz", "bang"]);
+            includeTags: new BooleanSelector.parse("foo || bar"),
+            excludeTags: new BooleanSelector.parse("baz || bang"));
         var newer = new Configuration(
-            includeTags: ["bar", "blip"],
-            excludeTags: ["bang", "qux"]);
+            includeTags: new BooleanSelector.parse("blip"),
+            excludeTags: new BooleanSelector.parse("qux"));
         var merged = older.merge(newer);
 
-        expect(merged.includeTags, unorderedEquals(["foo", "bar", "blip"]));
-        expect(merged.excludeTags, unorderedEquals(["baz", "bang", "qux"]));
+        expect(merged.includeTags,
+            equals(new BooleanSelector.parse("(foo || bar) && blip")));
+        expect(merged.excludeTags,
+            equals(new BooleanSelector.parse("(baz || bang) || qux")));
       });
     });
 

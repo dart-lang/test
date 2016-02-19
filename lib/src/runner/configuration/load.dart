@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
@@ -69,18 +70,11 @@ class _ConfigurationLoader {
       return tagNode.value;
     });
 
-    var tags = _getMap("tags", key: (keyNode) {
-      _validate(keyNode, "tags key must be a string.",
-          (value) => value is String);
-      _validate(
-          keyNode,
-          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
-          (value) => value.contains(anchoredHyphenatedIdentifier));
-
-      return keyNode.value;
-    }, value: (valueNode) {
-      return _nestedConfig(valueNode, "tag value", runnerConfig: false);
-    });
+    var tags = _getMap("tags",
+        key: (keyNode) => _parseNode(keyNode, "tags key",
+            (value) => new BooleanSelector.parse(value)),
+        value: (valueNode) =>
+            _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
     return new Configuration(
         verboseTrace: verboseTrace,

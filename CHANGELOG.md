@@ -3,6 +3,12 @@
 * Add a `tags` field to the package configuration file that allows users to
   provide configuration for specific tags.
 
+* The `--tags` and `--exclude-tags` command-line flags now allow
+  [boolean selector syntax][]. For example, you can now pass `--tags "(chrome ||
+  firefox) && !slow"` to select quick Chrome or Firefox tests.
+
+[boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+
 ## 0.12.10+2
 
 * Re-add help output separators.

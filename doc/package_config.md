@@ -182,9 +182,9 @@ reporter: expanded
 ## Configuring Tags
 
 The `tag` field can be used to apply [test configuration](#test-configuration)
-to all tests [with a given tag][tagging tests]. It takes a map from tag names to
-configuration maps. These configuration maps are just like the top level of the
-configuration file, except that they may not contain
+to all tests [with a given tag][tagging tests] or set of tags. It takes a map
+from tag selectors to configuration maps. These configuration maps are just like
+the top level of the configuration file, except that they may not contain
 [runner configuration](#runner-configuration).
 
 [tagging tests]: https://github.com/dart-lang/test/blob/master/README.md#tagging-tests
@@ -208,6 +208,18 @@ tags:
 
   # A test that needs Ruby installed.
   ruby:
+```
+
+You can also use [boolean selector syntax][] to define configuration that
+involves multiple tags. For example:
+
+[boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+
+```yaml
+tags:
+  # Tests that invoke sub-processes tend to be a little slower.
+  ruby || python:
+    timeout: 1.5x
 ```
 
 Tag configuration is applied at whatever level the tag appears—so if a group is

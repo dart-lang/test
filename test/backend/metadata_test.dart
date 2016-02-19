@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:boolean_selector/boolean_selector.dart';
+
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/frontend/skip.dart';
@@ -52,25 +54,26 @@ void main() {
     });
 
     test("returns the normal metadata if there's no tags", () {
-      var metadata = new Metadata(verboseTrace: true,
-          forTag: {'foo': new Metadata(skip: true)});
+      var metadata = new Metadata(verboseTrace: true, forTag: {
+        new BooleanSelector.parse('foo'): new Metadata(skip: true)
+      });
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
-      expect(metadata.forTag, contains('foo'));
-      expect(metadata.forTag['foo'].skip, isTrue);
+      expect(metadata.forTag, contains(new BooleanSelector.parse('foo')));
+      expect(metadata.forTag[new BooleanSelector.parse('foo')].skip, isTrue);
     });
 
     test("returns the normal metadata if forTag doesn't match tags", () {
       var metadata = new Metadata(
           verboseTrace: true,
           tags: ['bar', 'baz'],
-          forTag: {'foo': new Metadata(skip: true)});
+          forTag: {new BooleanSelector.parse('foo'): new Metadata(skip: true)});
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
       expect(metadata.tags, unorderedEquals(['bar', 'baz']));
-      expect(metadata.forTag, contains('foo'));
-      expect(metadata.forTag['foo'].skip, isTrue);
+      expect(metadata.forTag, contains(new BooleanSelector.parse('foo')));
+      expect(metadata.forTag[new BooleanSelector.parse('foo')].skip, isTrue);
     });
 
     test("resolves forTags that match tags", () {
@@ -78,9 +81,10 @@ void main() {
           verboseTrace: true,
           tags: ['foo', 'bar', 'baz'],
           forTag: {
-            'foo': new Metadata(skip: true),
-            'baz': new Metadata(timeout: Timeout.none),
-            'qux': new Metadata(skipReason: "blah")
+            new BooleanSelector.parse('foo'): new Metadata(skip: true),
+            new BooleanSelector.parse('baz'):
+                new Metadata(timeout: Timeout.none),
+            new BooleanSelector.parse('qux'): new Metadata(skipReason: "blah")
           });
 
       expect(metadata.verboseTrace, isTrue);
@@ -88,16 +92,17 @@ void main() {
       expect(metadata.skipReason, isNull);
       expect(metadata.timeout, equals(Timeout.none));
       expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
-      expect(metadata.forTag.keys, equals(['qux']));
+      expect(metadata.forTag.keys, equals([new BooleanSelector.parse('qux')]));
     });
 
     test("resolves forTags that adds a behavioral tag", () {
       var metadata = new Metadata(
           tags: ['foo'],
           forTag: {
-            'baz': new Metadata(skip: true),
-            'bar': new Metadata(verboseTrace: true, tags: ['baz']),
-            'foo': new Metadata(tags: ['bar'])
+            new BooleanSelector.parse('baz'): new Metadata(skip: true),
+            new BooleanSelector.parse('bar'):
+                new Metadata(verboseTrace: true, tags: ['baz']),
+            new BooleanSelector.parse('foo'): new Metadata(tags: ['bar'])
           });
 
       expect(metadata.verboseTrace, isTrue);
@@ -110,9 +115,9 @@ void main() {
       var metadata = new Metadata(
           tags: ['foo'],
           forTag: {
-            'foo': new Metadata(tags: ['bar']),
-            'bar': new Metadata(tags: ['baz']),
-            'baz': new Metadata(tags: ['foo'])
+            new BooleanSelector.parse('foo'): new Metadata(tags: ['bar']),
+            new BooleanSelector.parse('bar'): new Metadata(tags: ['baz']),
+            new BooleanSelector.parse('baz'): new Metadata(tags: ['foo'])
           });
 
       expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
@@ -120,10 +125,9 @@ void main() {
     });
 
     test("base metadata takes precedence over forTags", () {
-      var metadata = new Metadata(
-          verboseTrace: true,
-          tags: ['foo'],
-          forTag: {'foo': new Metadata(verboseTrace: false)});
+      var metadata = new Metadata(verboseTrace: true, tags: ['foo'], forTag: {
+        new BooleanSelector.parse('foo'): new Metadata(verboseTrace: false)
+      });
 
       expect(metadata.verboseTrace, isTrue);
     });

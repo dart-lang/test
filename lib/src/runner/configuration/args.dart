@@ -5,10 +5,10 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:boolean_selector/boolean_selector.dart';
 
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
-import '../../utils.dart';
 import '../configuration.dart';
 import 'values.dart';
 
@@ -42,12 +42,14 @@ final ArgParser _parser = (() {
   // tags to run. In the shorter term, disallow non-"identifier" tags.
   parser.addOption("tags",
       abbr: 't',
-      help: 'Run only tests with all of the specified tags.',
+      help: 'Run only tests with all of the specified tags.\n'
+          'Supports boolean selector syntax.',
       allowMultiple: true);
   parser.addOption("tag", hide: true, allowMultiple: true);
   parser.addOption("exclude-tags",
       abbr: 'x',
-      help: "Don't run tests with any of the specified tags.",
+      help: "Don't run tests with any of the specified tags.\n"
+          "Supports boolean selector syntax.",
       allowMultiple: true);
   parser.addOption("exclude-tag", hide: true, allowMultiple: true);
 
@@ -118,22 +120,21 @@ Configuration parse(List<String> args) {
     pattern = options['plain-name'];
   }
 
-  var tags = new Set();
-  tags.addAll(options['tags'] ?? []);
-  tags.addAll(options['tag'] ?? []);
+  var includeTagSet = new Set.from(options['tags'] ?? [])
+    ..addAll(options['tag'] ?? []);
 
-  var excludeTags = new Set();
-  excludeTags.addAll(options['exclude-tags'] ?? []);
-  excludeTags.addAll(options['exclude-tag'] ?? []);
+  var includeTags = includeTagSet.fold(BooleanSelector.all, (selector, tag) {
+    var tagSelector = new BooleanSelector.parse(tag);
+    return selector.intersection(tagSelector);
+  });
 
-  var tagIntersection = tags.intersection(excludeTags);
-  if (tagIntersection.isNotEmpty) {
-    throw new FormatException(
-        'The ${pluralize('tag', tagIntersection.length)} '
-        '${toSentence(tagIntersection)} '
-        '${pluralize('was', tagIntersection.length, plural: 'were')} '
-        'both included and excluded.');
-  }
+  var excludeTagSet = new Set.from(options['exclude-tags'] ?? [])
+    ..addAll(options['exclude-tag'] ?? []);
+
+  var excludeTags = excludeTagSet.fold(BooleanSelector.none, (selector, tag) {
+    var tagSelector = new BooleanSelector.parse(tag);
+    return selector.union(tagSelector);
+  });
 
   // If the user hasn't explicitly chosen a value, we want to pass null values
   // to [new Configuration] so that it considers those fields unset when merging
@@ -156,7 +157,7 @@ Configuration parse(List<String> args) {
       pattern: pattern,
       platforms: ifParsed('platform')?.map(TestPlatform.find),
       paths: options.rest.isEmpty ? null : options.rest,
-      includeTags: tags,
+      includeTags: includeTags,
       excludeTags: excludeTags);
 }
 

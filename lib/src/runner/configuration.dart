@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
@@ -92,28 +93,28 @@ class Configuration {
   List<TestPlatform> get platforms => _platforms ?? [TestPlatform.vm];
   final List<TestPlatform> _platforms;
 
-  /// Restricts the set of tests to a set of tags.
+  /// Only run tests whose tags match this selector.
   ///
-  /// If this is empty, it applies no restrictions.
-  ///
-  /// When [merge]d, this is unioned with the other configuration's tags.
-  final Set<String> includeTags;
-
-  /// Does not run tests with tags from this set.
-  ///
-  /// If this is empty, it applies no restrictions.
-  ///
-  /// When [merge]d, this is unioned with the other configuration's excluded
+  /// When [merge]d, this is intersected with the other configuration's included
   /// tags.
-  final Set<String> excludeTags;
+  final BooleanSelector includeTags;
+
+  /// Do not run tests whose tags match this selector.
+  ///
+  /// When [merge]d, this is unioned with the other configuration's
+  /// excluded tags.
+  final BooleanSelector excludeTags;
 
   /// Configuration for particular tags.
   ///
-  /// The keys are tag names, and the values are configuration for those tags.
-  /// The configuration should only contain test-level configuration fields, but
-  /// that isn't enforced.
-  final Map<String, Configuration> tags;
+  /// The keys are tag selectors, and the values are configurations for tests
+  /// whose tags match those selectors. The configuration should only contain
+  /// test-level configuration fields, but that isn't enforced.
+  final Map<BooleanSelector, Configuration> tags;
 
+  /// Tags that are added to the tests.
+  ///
+  /// This is usually only used for scoped configuration.
   final Set<String> addTags;
 
   /// The global test metadata derived from this configuration.
@@ -127,9 +128,11 @@ class Configuration {
   Set<String> get knownTags {
     if (_knownTags != null) return _knownTags;
 
-    var known = includeTags.union(excludeTags).union(addTags);
-    tags.forEach((tag, config) {
-      known.add(tag);
+    var known = includeTags.variables.toSet()
+      ..addAll(excludeTags.variables)
+      ..addAll(addTags);
+    tags.forEach((selector, config) {
+      known.addAll(selector.variables);
       known.addAll(config.knownTags);
     });
 
@@ -153,9 +156,9 @@ class Configuration {
           bool pauseAfterLoad, bool color, String packageRoot, String reporter,
           int pubServePort, int concurrency, Timeout timeout, this.pattern,
           Iterable<TestPlatform> platforms, Iterable<String> paths,
-          Glob filename, Iterable<String> includeTags,
-          Iterable<String> excludeTags, Iterable<String> addTags,
-          Map<String, Configuration> tags})
+          Glob filename, BooleanSelector includeTags,
+          BooleanSelector excludeTags, Iterable addTags,
+          Map<BooleanSelector, Configuration> tags})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
@@ -174,8 +177,8 @@ class Configuration {
         _platforms = _list(platforms),
         _paths = _list(paths),
         _filename = filename,
-        includeTags = includeTags?.toSet() ?? new Set(),
-        excludeTags = excludeTags?.toSet() ?? new Set(),
+        includeTags = includeTags ?? BooleanSelector.all,
+        excludeTags = excludeTags ?? BooleanSelector.none,
         addTags = addTags?.toSet() ?? new Set(),
         tags = tags == null ? const {} : new Map.unmodifiable(tags) {
     if (_filename != null && _filename.context.style != p.style) {
@@ -218,8 +221,8 @@ class Configuration {
         platforms: other._platforms ?? _platforms,
         paths: other._paths ?? _paths,
         filename: other._filename ?? _filename,
-        includeTags: other.includeTags.union(includeTags),
-        excludeTags: other.excludeTags.union(excludeTags),
+        includeTags: includeTags.intersection(other.includeTags),
+        excludeTags: excludeTags.union(other.excludeTags),
         addTags: other.addTags.union(addTags),
         tags: mergeMaps(tags, other.tags,
             value: (config1, config2) => config1.merge(config2)));

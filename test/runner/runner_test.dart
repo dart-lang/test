@@ -53,7 +53,10 @@ Usage: pub run test:test [files or directories...]
 
 -N, --plain-name               A plain-text substring of the name of the test to run.
 -t, --tags                     Run only tests with all of the specified tags.
+                               Supports boolean selector syntax.
+
 -x, --exclude-tags             Don't run tests with any of the specified tags.
+                               Supports boolean selector syntax.
 
 ======== Running Tests
 -p, --platform                 The platform(s) on which to run the tests.

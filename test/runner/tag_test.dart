@@ -60,6 +60,15 @@ void main() {
       test.shouldExit(0);
     });
 
+    test("supports boolean selector syntax", () {
+      var test = runTest(["--tags=b || c", "test.dart"]);
+      test.stdout.expect(tagWarnings(['a']));
+      test.stdout.expect(consumeThrough(contains(": b")));
+      test.stdout.expect(consumeThrough(contains(": bc")));
+      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
+      test.shouldExit(0);
+    });
+
     test("prints no warnings when all tags are specified", () {
       var test = runTest(["--tags=a,b,c", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
@@ -97,6 +106,16 @@ void main() {
       test.shouldExit(0);
     });
 
+    test("supports boolean selector syntax", () {
+      var test = runTest(["--exclude-tags=b && c", "test.dart"]);
+      test.stdout.expect(tagWarnings(['a']));
+      test.stdout.expect(consumeThrough(contains(": no tags")));
+      test.stdout.expect(consumeThrough(contains(": a")));
+      test.stdout.expect(consumeThrough(contains(": b")));
+      test.stdout.expect(consumeThrough(contains("+3: All tests passed!")));
+      test.shouldExit(0);
+    });
+
     test("prints no warnings when all tags are specified", () {
       var test = runTest(["--exclude-tags=a,b,c", "test.dart"]);
       test.stdout.expect(consumeThrough(contains(": no tags")));
@@ -130,22 +149,6 @@ void main() {
     test("excludes tags specified on the group", () {
       var test = runTest(["-t", "a", "test.dart"]);
       test.stdout.expect(consumeThrough(contains(": a in")));
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
-    });
-  });
-
-  group('with --tags and --exclude-tags', () {
-    test('refuses to include and exclude the same tag simultaneously', () {
-      var test = runTest(["-t", "a,b", "-x", "a,b,c", "test.dart"]);
-      test.stderr.expect(consumeThrough(
-          contains("The tags a and b were both included and excluded.")));
-      test.shouldExit(64);
-    });
-
-    test("--exclude-tags takes precedence over --tags", () {
-      var test = runTest(["-t", "b", "-x", "c", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains(": b")));
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
     });

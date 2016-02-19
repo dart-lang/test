@@ -528,7 +528,9 @@ time before they time out.
 Tests can be filtered based on their tags by passing command line flags. The
 `--tags` or `-t` flag will cause the test runner to only run tests with the
 given tags, and the `--exclude-tags` or `-x` flag will cause it to only run
-tests *without* the given tags.
+tests *without* the given tags. These flags also support
+[boolean selector syntax][]. For example, you can pass `--tags "(chrome ||
+firefox) && !slow"` to select quick Chrome or Firefox tests.
 
 Note that tags must be valid Dart identifiers, although they may also contain
 hyphens.
