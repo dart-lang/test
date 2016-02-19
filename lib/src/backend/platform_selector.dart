@@ -2,13 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:source_span/source_span.dart';
 
 import 'operating_system.dart';
-import 'platform_selector/ast.dart';
-import 'platform_selector/evaluator.dart';
-import 'platform_selector/parser.dart';
-import 'platform_selector/visitor.dart';
 import 'test_platform.dart';
 
 /// The set of all valid variable names.
@@ -20,82 +17,53 @@ final _validVariables =
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.
 ///
-/// The syntax is mostly Dart's expression syntax restricted to boolean
-/// operations. See [the README][] for full details.
+/// This uses the [boolean selector][] syntax.
 ///
-/// [the README]: https://github.com/dart-lang/test/#platform-selector-syntax
-abstract class PlatformSelector {
+/// [boolean selector]: https://pub.dartlang.org/packages/boolean_selector
+class PlatformSelector {
   /// A selector that declares that a test can be run on all platforms.
-  ///
-  /// This isn't representable in the platform selector syntax but it is the
-  /// default selector.
-  static const all = const _AllPlatforms();
+  static const all = const PlatformSelector._(BooleanSelector.all);
+
+  /// The boolean selector used to implement this selector.
+  final BooleanSelector _inner;
 
   /// Parses [selector].
   ///
   /// This will throw a [SourceSpanFormatException] if the selector is
   /// malformed or if it uses an undefined variable.
-  factory PlatformSelector.parse(String selector) =>
-      new _PlatformSelector.parse(selector);
+  PlatformSelector.parse(String selector)
+      : _inner = new BooleanSelector.parse(selector) {
+    _inner.validate(_validVariables.contains);
+  }
+
+  const PlatformSelector._(this._inner);
 
   /// Returns whether the selector matches the given [platform] and [os].
   ///
   /// [os] defaults to [OperatingSystem.none].
-  bool evaluate(TestPlatform platform, {OperatingSystem os});
+  bool evaluate(TestPlatform platform, {OperatingSystem os}) {
+    os ??= OperatingSystem.none;
+
+    return _inner.evaluate((variable) {
+      if (variable == platform.identifier) return true;
+      if (variable == os.name) return true;
+      switch (variable) {
+        case "dart-vm": return platform.isDartVM;
+        case "browser": return platform.isBrowser;
+        case "js": return platform.isJS;
+        case "blink": return platform.isBlink;
+        case "posix": return os.isPosix;
+        default: return false;
+      }
+    });
+  }
 
   /// Returns a new [PlatformSelector] that matches only platforms matched by
   /// both [this] and [other].
-  PlatformSelector intersect(PlatformSelector other);
-}
-
-/// The concrete implementation of a [PlatformSelector] parsed from a string.
-///
-/// This is separate from [PlatformSelector] so that [_AllPlatforms] can
-/// implement [PlatformSelector] without having to implement private members.
-class _PlatformSelector implements PlatformSelector{
-  /// The parsed AST.
-  final Node _selector;
-
-  _PlatformSelector.parse(String selector)
-      : _selector = new Parser(selector).parse() {
-    _selector.accept(const _VariableValidator());
-  }
-
-  _PlatformSelector(this._selector);
-
-  bool evaluate(TestPlatform platform, {OperatingSystem os}) =>
-      _selector.accept(new Evaluator(platform, os: os));
-
-  PlatformSelector intersect(PlatformSelector other) {
+  PlatformSelector intersection(PlatformSelector other) {
     if (other == PlatformSelector.all) return this;
-    return new _PlatformSelector(new AndNode(
-        _selector, (other as _PlatformSelector)._selector));
+    return new PlatformSelector._(_inner.intersection(other._inner));
   }
 
-  String toString() => _selector.toString();
-}
-
-/// A selector that matches all platforms.
-class _AllPlatforms implements PlatformSelector {
-  const _AllPlatforms();
-
-  bool evaluate(TestPlatform platform, {OperatingSystem os}) => true;
-
-  PlatformSelector intersect(PlatformSelector other) => other;
-
-  String toString() => "*";
-}
-
-/// An AST visitor that ensures that all variables are valid.
-///
-/// This isn't done when evaluating to ensure that errors are eagerly detected,
-/// and it isn't done when parsing to avoid coupling the syntax too tightly to
-/// the semantics.
-class _VariableValidator extends RecursiveVisitor {
-  const _VariableValidator();
-
-  void visitVariable(VariableNode node) {
-    if (_validVariables.contains(node.name)) return;
-    throw new SourceSpanFormatException("Undefined variable.", node.span);
-  }
+  String toString() => _inner.toString();
 }

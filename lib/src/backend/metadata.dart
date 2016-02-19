@@ -252,7 +252,7 @@ class Metadata {
   /// is merged as well.
   Metadata merge(Metadata other) =>
       new Metadata(
-          testOn: testOn.intersect(other.testOn),
+          testOn: testOn.intersection(other.testOn),
           timeout: timeout.merge(other.timeout),
           skip: skip || other.skip,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,

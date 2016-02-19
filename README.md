@@ -3,7 +3,7 @@
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
-  * [Platform Selector Syntax](#platform-selector-syntax)
+  * [Platform Selectors](#platform-selectors)
   * [Running Tests on Dartium](#running-tests-on-dartium)
 * [Asynchronous Tests](#asynchronous-tests)
 * [Running Tests With Custom HTML](#running-tests-with-custom-html)
@@ -176,13 +176,16 @@ specifies exactly which platforms a test can run on. It can be as simple as the
 name of a platform, or a more complex Dart-like boolean expression involving
 these platform names.
 
-### Platform Selector Syntax
+### Platform Selectors
 
-Platform selectors can contain identifiers, parentheses, and operators. When
-loading a test, each identifier is set to `true` or `false` based on the current
-platform, and the test is only loaded if the platform selector returns `true`.
-The operators `||`, `&&`, `!`, and `? :` all work just like they do in Dart. The
-valid identifiers are:
+Platform selectors use the [boolean selector syntax][] defined in the
+[`boolean_selector` package][boolean_selector], which is a subset of Dart's
+expression syntax that only supports boolean operations. The following
+identifiers are defined:
+
+[boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+
+[boolean_selector]: https://pub.dartlang.org/packages/boolean_selector
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
