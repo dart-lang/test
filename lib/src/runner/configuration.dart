@@ -10,6 +10,7 @@ import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
 import '../backend/metadata.dart';
+import '../backend/platform_selector.dart';
 import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/io.dart';
@@ -40,6 +41,19 @@ class Configuration {
   /// Dart-like traces.
   bool get jsTrace => _jsTrace ?? false;
   final bool _jsTrace;
+
+  /// Whether tests should be skipped.
+  bool get skip => _skip ?? false;
+  final bool _skip;
+
+  /// The reason tests or suites should be skipped, if given.
+  final String skipReason;
+
+  /// The selector indicating which platforms the tests support.
+  ///
+  /// When [merge]d, this is intersected with the other configuration's
+  /// supported platforms.
+  final PlatformSelector testOn;
 
   /// Whether to pause for debugging after loading each test suite.
   bool get pauseAfterLoad => _pauseAfterLoad ?? false;
@@ -121,6 +135,9 @@ class Configuration {
   Metadata get metadata => new Metadata(
       timeout: timeout,
       verboseTrace: verboseTrace,
+      skip: skip,
+      skipReason: skipReason,
+      testOn: testOn,
       tags: addTags,
       forTag: mapMap(tags, value: (_, config) => config.metadata));
 
@@ -152,17 +169,35 @@ class Configuration {
   /// a [FormatException] if its contents are invalid.
   factory Configuration.load(String path) => load(path);
 
-  Configuration({bool help, bool version, bool verboseTrace, bool jsTrace,
-          bool pauseAfterLoad, bool color, String packageRoot, String reporter,
-          int pubServePort, int concurrency, Timeout timeout, this.pattern,
-          Iterable<TestPlatform> platforms, Iterable<String> paths,
-          Glob filename, BooleanSelector includeTags,
-          BooleanSelector excludeTags, Iterable addTags,
+  Configuration({
+          bool help,
+          bool version,
+          bool verboseTrace,
+          bool jsTrace,
+          bool skip,
+          this.skipReason,
+          PlatformSelector testOn,
+          bool pauseAfterLoad,
+          bool color,
+          String packageRoot,
+          String reporter,
+          int pubServePort,
+          int concurrency,
+          Timeout timeout,
+          this.pattern,
+          Iterable<TestPlatform> platforms,
+          Iterable<String> paths,
+          Glob filename,
+          BooleanSelector includeTags,
+          BooleanSelector excludeTags,
+          Iterable addTags,
           Map<BooleanSelector, Configuration> tags})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
         _jsTrace = jsTrace,
+        _skip = skip,
+        testOn = testOn ?? PlatformSelector.all,
         _pauseAfterLoad = pauseAfterLoad,
         _color = color,
         _packageRoot = packageRoot,
@@ -210,6 +245,9 @@ class Configuration {
         version: other._version ?? _version,
         verboseTrace: other._verboseTrace ?? _verboseTrace,
         jsTrace: other._jsTrace ?? _jsTrace,
+        skip: other._skip ?? _skip,
+        skipReason: other.skipReason ?? skipReason,
+        testOn: testOn.intersection(other.testOn),
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
         packageRoot: other._packageRoot ?? _packageRoot,

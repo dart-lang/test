@@ -66,4 +66,8 @@ class PlatformSelector {
   }
 
   String toString() => _inner.toString();
+
+  bool operator==(other) => other is PlatformSelector && _inner == other._inner;
+
+  int get hashCode => _inner.hashCode;
 }

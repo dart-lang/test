@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/platform_selector.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import '../../utils.dart';
@@ -59,6 +60,17 @@ class _ConfigurationLoader {
     var verboseTrace = _getBool("verbose_trace");
     var jsTrace = _getBool("js_trace");
 
+    var skip = _getValue("skip", "boolean or string",
+        (value) => value is bool || value is String);
+    var skipReason;
+    if (skip is String) {
+      skipReason = skip;
+      skip = true;
+    }
+
+    var testOn = _parseValue("test_on",
+        (value) => new PlatformSelector.parse(value));
+
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
 
     var addTags = _getList("add_tags", (tagNode) {
@@ -79,6 +91,9 @@ class _ConfigurationLoader {
     return new Configuration(
         verboseTrace: verboseTrace,
         jsTrace: jsTrace,
+        skip: skip,
+        skipReason: skipReason,
+        testOn: testOn,
         timeout: timeout,
         addTags: addTags,
         tags: tags);

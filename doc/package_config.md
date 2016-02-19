@@ -28,6 +28,8 @@ tags:
   * [`timeout`](#timeout)
   * [`verbose_trace`](#verbose_trace)
   * [`js_trace`](#js_trace)
+  * [`skip`](#skip)
+  * [`test_on`](#test_on)
 * [Runner Configuration](#runner-configuration)
   * [`paths`](#paths)
   * [`filename`](#filename)
@@ -90,6 +92,36 @@ It defaults to `false`.
 
 ```yaml
 js_trace: true
+```
+
+### `skip`
+
+This field controls whether or not tests are skipped. It's usually applied to
+[specific tags](#configuring-tags) rather than used at the top level. Like the
+`skip` parameter for [`test()`][test], it can either be a boolean indicating
+whether the tests are skipped or a string indicating the reason they're skipped.
+
+[test]: https://www.dartdocs.org/documentation/test/0.12.10+2/test/test.html
+
+```yaml
+tags:
+  chrome:
+    skip: "Our Chrome launcher is busted. See issue 1234."
+```
+
+### `test_on`
+
+This field declares which platforms a test supports. It's usually applied to
+[specific tags](#configuring-tags) rather than used at the top level. It takes a
+[platform selector][] and only allows a test to run on platforms that match the
+selector.
+
+[platform selector]: https://github.com/dart-lang/test/blob/master/README.md#platform-selectors
+
+```yaml
+tags:
+  # Internet Explorer doesn't support promises yet.
+  promises: {test_on: "browser && !ie"}
 ```
 
 ## Runner Configuration

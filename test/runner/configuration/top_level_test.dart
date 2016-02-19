@@ -72,6 +72,79 @@ void main() {
     test.shouldExit(1);
   }, tags: 'chrome');
 
+  test("skips tests with skip: true", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "skip": true
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains('All tests skipped.')));
+    test.shouldExit(0);
+  });
+
+  test("skips tests with skip: reason", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "skip": "Tests are boring."
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains('Tests are boring.')));
+    test.stdout.expect(consumeThrough(contains('All tests skipped.')));
+    test.shouldExit(0);
+  });
+
+  test("runs tests on a platform that matches test_on", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "test_on": "vm"
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains('All tests passed!')));
+    test.shouldExit(0);
+  });
+
+  test("doesn't run tests on a platform that doesn't match test_on", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "test_on": "chrome"
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains('No tests ran.')));
+    test.shouldExit(0);
+  });
+
   test("uses the specified reporter", () {
     d.file("dart_test.yaml", JSON.encode({
       "reporter": "json"

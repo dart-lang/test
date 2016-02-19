@@ -8,6 +8,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'package:test/src/backend/platform_selector.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration.dart';
 import 'package:test/src/runner/configuration/values.dart';
@@ -22,6 +23,8 @@ void main() {
         expect(merged.version, isFalse);
         expect(merged.verboseTrace, isFalse);
         expect(merged.jsTrace, isFalse);
+        expect(merged.skip, isFalse);
+        expect(merged.skipReason, isNull);
         expect(merged.pauseAfterLoad, isFalse);
         expect(merged.color, equals(canUseSpecialChars));
         expect(merged.packageRoot, equals(p.join(p.current, 'packages')));
@@ -38,6 +41,8 @@ void main() {
                 version: true,
                 verboseTrace: true,
                 jsTrace: true,
+                skip: true,
+                skipReason: "boop",
                 pauseAfterLoad: true,
                 color: true,
                 packageRoot: "root",
@@ -52,6 +57,8 @@ void main() {
         expect(merged.version, isTrue);
         expect(merged.verboseTrace, isTrue);
         expect(merged.jsTrace, isTrue);
+        expect(merged.skip, isTrue);
+        expect(merged.skipReason, equals("boop"));
         expect(merged.pauseAfterLoad, isTrue);
         expect(merged.color, isTrue);
         expect(merged.packageRoot, equals("root"));
@@ -68,6 +75,8 @@ void main() {
             version: true,
             verboseTrace: true,
             jsTrace: true,
+            skip: true,
+            skipReason: "boop",
             pauseAfterLoad: true,
             color: true,
             packageRoot: "root",
@@ -81,6 +90,8 @@ void main() {
         expect(merged.version, isTrue);
         expect(merged.verboseTrace, isTrue);
         expect(merged.jsTrace, isTrue);
+        expect(merged.skip, isTrue);
+        expect(merged.skipReason, equals("boop"));
         expect(merged.pauseAfterLoad, isTrue);
         expect(merged.color, isTrue);
         expect(merged.packageRoot, equals("root"));
@@ -98,6 +109,8 @@ void main() {
             version: false,
             verboseTrace: true,
             jsTrace: false,
+            skip: true,
+            skipReason: "foo",
             pauseAfterLoad: true,
             color: false,
             packageRoot: "root",
@@ -111,6 +124,8 @@ void main() {
             version: true,
             verboseTrace: false,
             jsTrace: true,
+            skip: true,
+            skipReason: "bar",
             pauseAfterLoad: false,
             color: true,
             packageRoot: "boot",
@@ -125,6 +140,7 @@ void main() {
         expect(merged.version, isTrue);
         expect(merged.verboseTrace, isFalse);
         expect(merged.jsTrace, isTrue);
+        expect(merged.skipReason, equals("bar"));
         expect(merged.pauseAfterLoad, isFalse);
         expect(merged.color, isTrue);
         expect(merged.packageRoot, equals("boot"));
@@ -133,6 +149,37 @@ void main() {
         expect(merged.pattern, equals("gonk"));
         expect(merged.platforms, equals([TestPlatform.dartium]));
         expect(merged.paths, equals(["blech"]));
+      });
+    });
+
+    group("for testOn", () {
+      test("if neither is defined, preserves the default", () {
+        var merged = new Configuration().merge(new Configuration());
+        expect(merged.testOn, equals(PlatformSelector.all));
+      });
+
+      test("if only the old configuration's is defined, uses it", () {
+        var merged = new Configuration(
+                testOn: new PlatformSelector.parse("chrome"))
+            .merge(new Configuration());
+        expect(merged.testOn, equals(new PlatformSelector.parse("chrome")));
+      });
+
+      test("if only the new configuration's is defined, uses it", () {
+        var merged = new Configuration()
+            .merge(new Configuration(
+                testOn: new PlatformSelector.parse("chrome")));
+        expect(merged.testOn, equals(new PlatformSelector.parse("chrome")));
+      });
+
+      test("if both are defined, intersects them", () {
+        var older = new Configuration(
+            testOn: new PlatformSelector.parse("vm"));
+        var newer = new Configuration(
+            testOn: new PlatformSelector.parse("linux"));
+        var merged = older.merge(newer);
+        expect(merged.testOn,
+            equals(new PlatformSelector.parse("vm && linux")));
       });
     });
 
