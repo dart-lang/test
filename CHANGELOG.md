@@ -1,3 +1,9 @@
+## 0.12.12
+
+* Add an `ios` platform selector variable. This variable will only be true when
+  the `test` executable itself is running on iOS, not when it's running browser
+  tests on an iOS browser.
+
 ## 0.12.11
 
 * Add a `tags` field to the package configuration file that allows users to

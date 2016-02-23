@@ -234,6 +234,10 @@ identifiers are defined:
   be `false` as well, which means that this *won't* be true if the test is
   running on an Android browser.
 
+* `ios`: Whether the test is running on iOS. If `vm` is false, this will be
+  `false` as well, which means that this *won't* be true if the test is running
+  on an iOS browser.
+
 * `posix`: Whether the test is running on a POSIX operating system. This is
   equivalent to `!windows`.
 

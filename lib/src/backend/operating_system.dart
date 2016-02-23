@@ -23,6 +23,12 @@ class OperatingSystem {
   /// won't be true when testing remotely on an Android browser.
   static const android = const OperatingSystem._("Android", "android");
 
+  /// iOS.
+  ///
+  /// Since this is the operating system the test runner is running on, this
+  /// won't be true when testing remotely on an iOS browser.
+  static const iOS = const OperatingSystem._("iOS", "ios");
+
   /// No operating system.
   ///
   /// This is used when running in the browser, or if an unrecognized operating
@@ -30,7 +36,7 @@ class OperatingSystem {
   static const none = const OperatingSystem._("none", "none");
 
   /// A list of all instances of [OperatingSystem] other than [none].
-  static const all = const [windows, macOS, linux, android];
+  static const all = const [windows, macOS, linux, android, iOS];
 
   /// Finds an operating system by its name.
   ///
@@ -48,6 +54,7 @@ class OperatingSystem {
       case "macos": return macOS;
       case "linux": return linux;
       case "android": return android;
+      case "ios": return iOS;
       default: return none;
     }
   }
