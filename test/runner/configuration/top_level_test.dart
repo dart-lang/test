@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test/src/util/io.dart';
 
 import '../../io.dart';
 
@@ -109,40 +110,108 @@ void main() {
     test.shouldExit(0);
   });
 
-  test("runs tests on a platform that matches test_on", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "test_on": "vm"
-    })).create();
+  group("test_on", () {
+    test("runs tests on a platform matching platform", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "test_on": "vm"
+      })).create();
 
-    d.file("test.dart", """
-      import 'package:test/test.dart';
+      d.file("test.dart", """
+        import 'package:test/test.dart';
 
-      void main() {
-        test("test", () {});
-      }
-    """).create();
+        void main() {
+          test("test", () {});
+        }
+      """).create();
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains('All tests passed!')));
-    test.shouldExit(0);
-  });
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains('All tests passed!')));
+      test.shouldExit(0);
+    });
 
-  test("doesn't run tests on a platform that doesn't match test_on", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "test_on": "chrome"
-    })).create();
+    test("warns about the VM when no OSes are supported", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "test_on": "chrome"
+      })).create();
 
-    d.file("test.dart", """
-      import 'package:test/test.dart';
+      d.file("test.dart", """
+        import 'package:test/test.dart';
 
-      void main() {
-        test("test", () {});
-      }
-    """).create();
+        void main() {
+          test("test", () {});
+        }
+      """).create();
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains('No tests ran.')));
-    test.shouldExit(0);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(
+          "Warning: this package doesn't support running tests on the Dart "
+            "VM.");
+      test.stdout.expect(consumeThrough(contains('No tests ran.')));
+      test.shouldExit(0);
+    });
+
+    test("warns about the OS when some OSes are supported", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "test_on": otherOS
+      })).create();
+
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {});
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(
+          "Warning: this package doesn't support running tests on "
+            "${currentOS.name}.");
+      test.stdout.expect(consumeThrough(contains('No tests ran.')));
+      test.shouldExit(0);
+    });
+
+    test("warns about browsers in general when no browsers are supported", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "test_on": "vm"
+      })).create();
+
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {});
+        }
+      """).create();
+
+      var test = runTest(["-p", "chrome", "test.dart"]);
+      test.stderr.expect(
+          "Warning: this package doesn't support running tests on browsers.");
+      test.stdout.expect(consumeThrough(contains('No tests ran.')));
+      test.shouldExit(0);
+    });
+
+    test("warns about specific browsers when specific browsers are "
+        "supported", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "test_on": "safari"
+      })).create();
+
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {});
+        }
+      """).create();
+
+      var test = runTest(["-p", "chrome,firefox,phantomjs", "test.dart"]);
+      test.stderr.expect(
+          "Warning: this package doesn't support running tests on Chrome, "
+            "Firefox, or PhantomJS.");
+      test.stdout.expect(consumeThrough(contains('No tests ran.')));
+      test.shouldExit(0);
+    });
   });
 
   test("uses the specified reporter", () {

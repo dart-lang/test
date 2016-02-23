@@ -9,25 +9,25 @@
 /// running the test runner.
 class OperatingSystem {
   /// Microsoft Windows.
-  static const windows = const OperatingSystem._("windows");
+  static const windows = const OperatingSystem._("Windows", "windows");
 
   /// Mac OS X.
-  static const macOS = const OperatingSystem._("mac-os");
+  static const macOS = const OperatingSystem._("OS X", "mac-os");
 
   /// GNU/Linux.
-  static const linux = const OperatingSystem._("linux");
+  static const linux = const OperatingSystem._("Linux", "linux");
 
   /// Android.
   ///
   /// Since this is the operating system the test runner is running on, this
   /// won't be true when testing remotely on an Android browser.
-  static const android = const OperatingSystem._("android");
+  static const android = const OperatingSystem._("Android", "android");
 
   /// No operating system.
   ///
   /// This is used when running in the browser, or if an unrecognized operating
   /// system is used. It can't be referenced by name in platform selectors.
-  static const none = const OperatingSystem._("none");
+  static const none = const OperatingSystem._("none", "none");
 
   /// A list of all instances of [OperatingSystem] other than [none].
   static const all = const [windows, macOS, linux, android];
@@ -52,13 +52,16 @@ class OperatingSystem {
     }
   }
 
-  /// The name of the operating system.
+  /// The human-friendly of the operating system.
   final String name;
+
+  /// The identifier used to look up the operating system.
+  final String identifier;
 
   /// Whether this is a POSIX-ish operating system.
   bool get isPosix => this != windows && this != none;
 
-  const OperatingSystem._(this.name);
+  const OperatingSystem._(this.name, this.identifier);
 
   String toString() => name;
 }

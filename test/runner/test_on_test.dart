@@ -13,8 +13,6 @@ import 'package:test/src/util/io.dart';
 
 import '../io.dart';
 
-final _otherOS = Platform.isWindows ? "mac-os" : "windows";
-
 void main() {
   useSandbox();
 

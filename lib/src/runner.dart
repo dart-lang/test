@@ -9,6 +9,8 @@ import 'package:async/async.dart';
 
 import 'backend/group.dart';
 import 'backend/group_entry.dart';
+import 'backend/operating_system.dart';
+import 'backend/platform_selector.dart';
 import 'backend/suite.dart';
 import 'backend/test.dart';
 import 'backend/test_platform.dart';
@@ -105,6 +107,8 @@ class Runner {
       throw new StateError("run() may not be called on a closed Runner.");
     }
 
+    _warnForUnsupportedPlatforms();
+
     var suites = _loadSuites();
 
     var success;
@@ -137,6 +141,54 @@ class Runner {
     // Explicitly check "== true" here because [Engine.run] can return `null`
     // if the engine was closed prematurely.
     return success == true;
+  }
+
+  /// Emits a warning if the user is trying to run on a platform that's
+  /// unsupported for the entire package.
+  void _warnForUnsupportedPlatforms() {
+    if (_config.testOn == PlatformSelector.all) return;
+
+    var unsupportedPlatforms = _config.platforms.where((platform) {
+      return !_config.testOn.evaluate(platform, os: currentOS);
+    }).toList();
+    if (unsupportedPlatforms.isEmpty) return;
+
+    // Human-readable names for all unsupported platforms.
+    var unsupportedNames = [];
+
+    // If the user tried to run on one or moe unsupported browsers, figure out
+    // whether we should warn about the individual browsers or whether all
+    // browsers are unsupported.
+    var unsupportedBrowsers = unsupportedPlatforms
+        .where((platform) => platform.isBrowser);
+    if (unsupportedBrowsers.isNotEmpty) {
+      var supportsAnyBrowser = TestPlatform.all
+          .where((platform) => platform.isBrowser)
+          .any((platform) => _config.testOn.evaluate(platform));
+
+      if (supportsAnyBrowser) {
+        unsupportedNames.addAll(
+            unsupportedBrowsers.map((platform) => platform.name));
+      } else {
+        unsupportedNames.add("browsers");
+      }
+    }
+
+    // If the user tried to run on the VM and it's not supported, figure out if
+    // that's because of the current OS or whether the VM is unsupported.
+    if (unsupportedPlatforms.contains(TestPlatform.vm)) {
+      var supportsAnyOS = OperatingSystem.all.any((os) =>
+          _config.testOn.evaluate(TestPlatform.vm, os: os));
+
+      if (supportsAnyOS) {
+        unsupportedNames.add(currentOS.name);
+      } else {
+        unsupportedNames.add("the Dart VM");
+      }
+    }
+
+    warn("this package doesn't support running tests on " +
+        toSentence(unsupportedNames, conjunction: "or") + ".");
   }
 
   /// Closes the runner.

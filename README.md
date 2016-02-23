@@ -176,6 +176,11 @@ specifies exactly which platforms a test can run on. It can be as simple as the
 name of a platform, or a more complex Dart-like boolean expression involving
 these platform names.
 
+You can also declare that your entire package only works on certain platforms by
+adding a [`test_on` field][test_on] to your package config file.
+
+[test_on]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#test_on
+
 ### Platform Selectors
 
 Platform selectors use the [boolean selector syntax][] defined in the

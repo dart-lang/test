@@ -103,12 +103,14 @@ String indent(String str) =>
 /// Returns a sentence fragment listing the elements of [iter].
 ///
 /// This converts each element of [iter] to a string and separates them with
-/// commas and/or "and" where appropriate.
-String toSentence(Iterable iter) {
+/// commas and/or [conjunction] where appropriate. The [conjunction] defaults to
+/// "and".
+String toSentence(Iterable iter, {String conjunction}) {
   if (iter.length == 1) return iter.first.toString();
+
   var result = iter.take(iter.length - 1).join(", ");
   if (iter.length > 2) result += ",";
-  return "$result and ${iter.last}";
+  return "$result ${conjunction ?? 'and'} ${iter.last}";
 }
 
 /// Returns [name] if [number] is 1, or the plural of [name] otherwise.

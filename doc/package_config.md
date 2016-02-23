@@ -111,10 +111,10 @@ tags:
 
 ### `test_on`
 
-This field declares which platforms a test supports. It's usually applied to
-[specific tags](#configuring-tags) rather than used at the top level. It takes a
-[platform selector][] and only allows a test to run on platforms that match the
-selector.
+This field declares which platforms a test supports. It takes a
+[platform selector][] and only allows tests to run on platforms that match the
+selector. It's often used with [specific tags](#configuring-tags) to ensure that
+certain features will only be tested on supported platforms.
 
 [platform selector]: https://github.com/dart-lang/test/blob/master/README.md#platform-selectors
 
@@ -122,6 +122,16 @@ selector.
 tags:
   # Internet Explorer doesn't support promises yet.
   promises: {test_on: "browser && !ie"}
+```
+
+The field can also be used at the top level of the configuration file to
+indicate that the entire package only supports a particular platform. If someone
+tries to run the tests on an unsupported platform, the runner will print a
+warning and skip that platform.
+
+```yaml
+# This package uses dart:io.
+test_on: vm
 ```
 
 ## Runner Configuration

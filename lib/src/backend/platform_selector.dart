@@ -12,7 +12,7 @@ import 'test_platform.dart';
 final _validVariables =
     new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
         ..addAll(TestPlatform.all.map((platform) => platform.identifier))
-        ..addAll(OperatingSystem.all.map((os) => os.name));
+        ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.
@@ -46,7 +46,7 @@ class PlatformSelector {
 
     return _inner.evaluate((variable) {
       if (variable == platform.identifier) return true;
-      if (variable == os.name) return true;
+      if (variable == os.identifier) return true;
       switch (variable) {
         case "dart-vm": return platform.isDartVM;
         case "browser": return platform.isBrowser;

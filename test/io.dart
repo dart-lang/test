@@ -33,6 +33,9 @@ final String noSuchFileMessage = Platform.isWindows
 final _servingRegExp =
     new RegExp(r'^Serving myapp [a-z]+ on http://localhost:(\d+)$');
 
+/// An operating system name that's different than the current operating system.
+final otherOS = Platform.isWindows ? "mac-os" : "windows";
+
 /// A future that will return the port of a pub serve instance run via
 /// [runPubServe].
 ///
