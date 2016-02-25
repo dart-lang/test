@@ -20,6 +20,7 @@ import 'load_exception.dart';
 import 'load_suite.dart';
 import 'parse_metadata.dart';
 import 'plugin/environment.dart';
+import 'plugin/hack_register_platform.dart';
 import 'plugin/platform.dart';
 import 'runner_suite.dart';
 import 'vm/platform.dart';
@@ -59,6 +60,10 @@ class Loader {
       TestPlatform.safari,
       TestPlatform.internetExplorer
     ], () => BrowserPlatform.start(_config, root: root));
+
+    platformCallbacks.forEach((platform, plugin) {
+      registerPlatformPlugin([platform], plugin);
+    });
   }
 
   /// Registers a [PlatformPlugin] for [platforms].
