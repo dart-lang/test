@@ -41,7 +41,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
   suiteChannel.sink.add({
     'platform': platform.identifier,
     'metadata': metadata.serialize(),
-    'os': platform == TestPlatform.vm ? currentOS.name : null
+    'os': platform == TestPlatform.vm ? currentOS.identifier : null
   });
 
   var completer = new Completer();

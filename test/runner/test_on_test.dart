@@ -34,7 +34,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("runs a test suite on a matching operating system", () {
-      _writeTestFile("os_test.dart", suiteTestOn: currentOS.name);
+      _writeTestFile("os_test.dart", suiteTestOn: currentOS.identifier);
 
       var test = runTest(["os_test.dart"]);
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
@@ -42,7 +42,7 @@ void main() {
     });
 
     test("doesn't run a test suite on a non-matching operating system", () {
-      _writeTestFile("os_test.dart", suiteTestOn: _otherOS,
+      _writeTestFile("os_test.dart", suiteTestOn: otherOS,
           loadable: false);
 
       var test = runTest(["os_test.dart"]);
@@ -54,9 +54,9 @@ void main() {
       _writeTestFile("vm_test.dart", suiteTestOn: "vm");
       _writeTestFile("browser_test.dart",
           suiteTestOn: "browser", loadable: false);
-      _writeTestFile("this_os_test.dart", suiteTestOn: currentOS.name);
+      _writeTestFile("this_os_test.dart", suiteTestOn: currentOS.identifier);
       _writeTestFile("other_os_test.dart",
-          suiteTestOn: _otherOS, loadable: false);
+          suiteTestOn: otherOS, loadable: false);
 
       var test = runTest(["."]);
       test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
