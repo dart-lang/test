@@ -4,6 +4,10 @@
   the `test` executable itself is running on iOS, not when it's running browser
   tests on an iOS browser.
 
+## 0.12.11+1
+
+* Purely internal change.
+
 ## 0.12.11
 
 * Add a `tags` field to the package configuration file that allows users to
