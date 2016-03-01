@@ -183,7 +183,7 @@ void main() {
       });
     });
 
-    group("for tags", () {
+    group("for include and excludeTags", () {
       test("if neither is defined, preserves the default", () {
         var merged = new Configuration().merge(new Configuration());
         expect(merged.includeTags, equals(BooleanSelector.all));
@@ -226,6 +226,28 @@ void main() {
             equals(new BooleanSelector.parse("(foo || bar) && blip")));
         expect(merged.excludeTags,
             equals(new BooleanSelector.parse("(baz || bang) || qux")));
+      });
+    });
+
+    group("for tags", () {
+      test("merges each nested configuration", () {
+        var merged = new Configuration(
+          tags: {
+            new BooleanSelector.parse("foo"):
+                new Configuration(verboseTrace: true),
+            new BooleanSelector.parse("bar"): new Configuration(jsTrace: true)
+          }
+        ).merge(new Configuration(
+          tags: {
+            new BooleanSelector.parse("bar"): new Configuration(jsTrace: false),
+            new BooleanSelector.parse("baz"): new Configuration(skip: true)
+          }
+        ));
+
+        expect(merged.tags[new BooleanSelector.parse("foo")].verboseTrace,
+            isTrue);
+        expect(merged.tags[new BooleanSelector.parse("bar")].jsTrace, isFalse);
+        expect(merged.tags[new BooleanSelector.parse("baz")].skip, isTrue);
       });
     });
 
