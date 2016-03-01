@@ -500,6 +500,11 @@ If multiple platforms match, the configuration is applied in order from first to
 last, just as they would in nested groups. This means that for configuration
 like duration-based timeouts, the last matching value wins.
 
+You can also set up global platform-specific configuration using the
+[package configuration file][configuring platforms].
+
+[configuring platforms]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-platforms
+
 ### Tagging Tests
 
 Tags are short strings that you can associate with tests, groups, and suites.

@@ -38,7 +38,11 @@ tags:
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
 * [Configuring Tags](#configuring-tags)
+  * [`tags`](#tags)
   * [`add_tags`](#add_tags)
+* [Configuring Platforms](#configuring-platforms)
+  * [`on_os`](#on_os)
+  * [`on_platform`](#on_platform)
 
 ## Test Configuration
 
@@ -47,8 +51,8 @@ configuration controls how individual tests run, while
 [runner configuration](#runner-configuration) controls the test runner as a
 whole. Both types of fields may be used at the top level of a configuration
 file. However, because different tests can have different test configuration,
-only test configuration fields may be used to
-[configure tags](#configuring-tags).
+only test configuration fields may be used to [configure tags](#tags) or
+[platforms](#on_platform).
 
 ### `timeout`
 
@@ -112,11 +116,12 @@ tags:
 ### `test_on`
 
 This field declares which platforms a test supports. It takes a
-[platform selector][] and only allows tests to run on platforms that match the
-selector. It's often used with [specific tags](#configuring-tags) to ensure that
-certain features will only be tested on supported platforms.
+[platform selector][platform selectors] and only allows tests to run on
+platforms that match the selector. It's often used with
+[specific tags](#configuring-tags) to ensure that certain features will only be
+tested on supported platforms.
 
-[platform selector]: https://github.com/dart-lang/test/blob/master/README.md#platform-selectors
+[platform selectors]: https://github.com/dart-lang/test/blob/master/README.md#platform-selectors
 
 ```yaml
 tags:
@@ -223,6 +228,8 @@ reporter: expanded
 
 ## Configuring Tags
 
+### `tags`
+
 The `tag` field can be used to apply [test configuration](#test-configuration)
 to all tests [with a given tag][tagging tests] or set of tags. It takes a map
 from tag selectors to configuration maps. These configuration maps are just like
@@ -274,6 +281,8 @@ configurations, the test runner *does not guarantee* what order they'll be
 resolved in. In practice, conflicting configuration is pretty unlikely and it's
 easy to just explicitly specify what you want on the test itself.
 
+This field counts as [test configuration](#test-configuration).
+
 ### `add_tags`
 
 This field adds additional tags. It's technically
@@ -295,3 +304,63 @@ tags:
   safari: {add_tags: [browser]}
   ie: {add_tags: [browser]}
 ```
+
+## Configuring Platforms
+
+There are two different kinds of platform configuration.
+[Operating system configuration](#on_os) cares about the operating system on
+which test runner is running. It sets global configuration for the runner on
+particular OSes. [Test platform configuration](#on_platform), on the other hand,
+cares about the platform the *test* is running on (like the
+[`@OnPlatform` annotation][@OnPlatform]). It sets configuration for particular
+tests that are running on matching platforms.
+
+[@OnPlatform]: https://github.com/dart-lang/test/blob/master/README.md#platform-specific-configuration
+
+### `on_os`
+
+This field applies configuration when specific operating systems are being used.
+It takes a map from operating system identifiers (the same ones that are used in
+[platform selectors][]) to configuration maps that are applied on those
+operating systems. These configuration maps are just like the top level of the
+configuration file, and allow any fields that may be used in the context where
+`on_os` was used.
+
+```yaml
+on_os:
+  windows:
+    # Both of these are the defaults anyway, but let's be explicit about it.
+    color: false
+    runner: expanded
+
+    # My Windows machine is real slow.
+    timeout: 2x
+
+  # My Linux machine has SO MUCH RAM.
+  linux:
+    concurrency: 500
+```
+
+This field counts as [test configuration](#test-configuration). If it's used in
+a context that only allows test configuration, it may only contain test
+configuration.
+
+### `on_platform`
+
+This field applies configuration to tests that are run on specific platforms. It
+takes a map from [platform selectors][] to configuration maps that are applied
+to tests run on those platforms. These configuration maps are just like the top
+level of the configuration file, except that they may not contain
+[runner configuration](#runner-configuration).
+
+```yaml
+# Our code is kind of slow on Blink and WebKit.
+on_platform:
+  chrome || safari: {timeout: 2x}
+```
+
+**Note**: operating system names that appear in `on_platform` refer to tests
+that are run on the Dart VM under that operating system. To configure all tests
+when running on a particular operating system, use [`on_os`](#on_os) instead.
+
+This field counts as [test configuration](#test-configuration).

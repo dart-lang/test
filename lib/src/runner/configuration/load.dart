@@ -10,10 +10,12 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import '../../utils.dart';
+import '../../util/io.dart';
 import '../configuration.dart';
 import 'values.dart';
 
@@ -88,7 +90,25 @@ class _ConfigurationLoader {
         value: (valueNode) =>
             _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
-    return new Configuration(
+    var onPlatform = _getMap("on_platform",
+        key: (keyNode) => _parseNode(keyNode, "on_platform key",
+            (value) => new PlatformSelector.parse(value)),
+        value: (valueNode) =>
+            _nestedConfig(valueNode, "on_platform value", runnerConfig: false));
+
+    var onOS = _getMap("on_os", key: (keyNode) {
+      _validate(keyNode, "on_os key must be a string.",
+          (value) => value is String);
+
+      var os = OperatingSystem.find(keyNode.value);
+      if (os != null) return os;
+
+      throw new SourceSpanFormatException(
+          'Invalid on_os key: No such operating system.',
+          keyNode.span, _source);
+    }, value: (valueNode) => _nestedConfig(valueNode, "on_os value"));
+
+    var config = new Configuration(
         verboseTrace: verboseTrace,
         jsTrace: jsTrace,
         skip: skip,
@@ -96,7 +116,11 @@ class _ConfigurationLoader {
         testOn: testOn,
         timeout: timeout,
         addTags: addTags,
-        tags: tags);
+        tags: tags,
+        onPlatform: onPlatform);
+
+    var osConfig = onOS[currentOS];
+    return osConfig == null ? config : config.merge(osConfig);
   }
 
   /// Loads runner configuration (but not test configuration).

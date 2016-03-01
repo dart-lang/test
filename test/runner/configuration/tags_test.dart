@@ -171,7 +171,7 @@ void main() {
         test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an inavlid tag configuration", () {
+      test("rejects an invalid tag configuration", () {
         d.file("dart_test.yaml", JSON.encode({
           "tags": {"foo": {"timeout": "12p"}}
         })).create();

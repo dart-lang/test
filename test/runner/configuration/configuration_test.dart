@@ -263,5 +263,28 @@ void main() {
         expect(merged.timeout, equals(new Timeout(new Duration(seconds: 2))));
       });
     });
+
+    group("for onPlatform", () {
+      test("merges each nested configuration", () {
+        var merged = new Configuration(
+          onPlatform: {
+            new PlatformSelector.parse("vm"): new Configuration(verboseTrace: true),
+            new PlatformSelector.parse("chrome"): new Configuration(jsTrace: true)
+          }
+        ).merge(new Configuration(
+          onPlatform: {
+            new PlatformSelector.parse("chrome"): new Configuration(jsTrace: false),
+            new PlatformSelector.parse("firefox"): new Configuration(skip: true)
+          }
+        ));
+
+        expect(merged.onPlatform[new PlatformSelector.parse("vm")].verboseTrace,
+            isTrue);
+        expect(merged.onPlatform[new PlatformSelector.parse("chrome")].jsTrace,
+            isFalse);
+        expect(merged.onPlatform[new PlatformSelector.parse("firefox")].skip,
+            isTrue);
+      });
+    });
   });
 }

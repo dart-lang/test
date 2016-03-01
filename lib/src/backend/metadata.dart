@@ -140,6 +140,7 @@ class Metadata {
     // If there's no tag-specific metadata, or if none of it applies, just
     // return the metadata as-is.
     if (forTag == null || tags == null) return _unresolved();
+    forTag = new Map.from(forTag);
 
     // Otherwise, resolve the tag-specific components. Doing this eagerly means
     // we only have to resolve suite- or group-level tags once, rather than

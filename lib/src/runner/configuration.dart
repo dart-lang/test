@@ -139,7 +139,8 @@ class Configuration {
       skipReason: skipReason,
       testOn: testOn,
       tags: addTags,
-      forTag: mapMap(tags, value: (_, config) => config.metadata));
+      forTag: mapMap(tags, value: (_, config) => config.metadata),
+      onPlatform: mapMap(onPlatform, value: (_, config) => config.metadata));
 
   /// The set of tags that have been declaredin any way in this configuration.
   Set<String> get knownTags {
@@ -157,6 +158,13 @@ class Configuration {
     return _knownTags;
   }
   Set<String> _knownTags;
+
+  /// Configuration for particular platforms.
+  ///
+  /// The keys are platform selectors, and the values are configurations for
+  /// those platforms. These configuration should only contain test-level
+  /// configuration fields, but that isn't enforced.
+  final Map<PlatformSelector, Configuration> onPlatform;
 
   /// Parses the configuration from [args].
   ///
@@ -191,7 +199,8 @@ class Configuration {
           BooleanSelector includeTags,
           BooleanSelector excludeTags,
           Iterable addTags,
-          Map<BooleanSelector, Configuration> tags})
+          Map<BooleanSelector, Configuration> tags,
+          Map<PlatformSelector, Configuration> onPlatform})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
@@ -215,7 +224,10 @@ class Configuration {
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
         addTags = addTags?.toSet() ?? new Set(),
-        tags = tags == null ? const {} : new Map.unmodifiable(tags) {
+        tags = tags == null ? const {} : new Map.unmodifiable(tags),
+        onPlatform = onPlatform == null
+            ? const {}
+            : new Map.unmodifiable(onPlatform) {
     if (_filename != null && _filename.context.style != p.style) {
       throw new ArgumentError(
           "filename's context must match the current operating system, was "
@@ -263,6 +275,8 @@ class Configuration {
         excludeTags: excludeTags.union(other.excludeTags),
         addTags: other.addTags.union(addTags),
         tags: mergeMaps(tags, other.tags,
+            value: (config1, config2) => config1.merge(config2)),
+        onPlatform: mergeMaps(onPlatform, other.onPlatform,
             value: (config1, config2) => config1.merge(config2)));
   }
 }

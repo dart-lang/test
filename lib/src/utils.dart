@@ -228,11 +228,11 @@ Map mapMap(Map map, {key(key, value), value(key, value)}) {
 /// not passed, [map2]'s value wins.
 Map mergeMaps(Map map1, Map map2, {value(value1, value2)}) {
   var result = new Map.from(map1);
-  map2.forEach((key, value) {
+  map2.forEach((key, mapValue) {
     if (value == null || !result.containsKey(key)) {
-      result[key] = value;
+      result[key] = mapValue;
     } else {
-      result[key] = value(result[key], value);
+      result[key] = value(result[key], mapValue);
     }
   });
   return result;
