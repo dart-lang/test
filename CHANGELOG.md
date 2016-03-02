@@ -1,5 +1,11 @@
 ## 0.12.12
 
+* Add an `on_os` field to the package configuration file that allows users to
+  select different configuration for different operating systems.
+
+* Add an `on_platform` field to the package configuration file that allows users
+  to configure all tests differently depending on which platform they run on.
+
 * Add an `ios` platform selector variable. This variable will only be true when
   the `test` executable itself is running on iOS, not when it's running browser
   tests on an iOS browser.
