@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:http_parser/http_parser.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:scheduled_test/scheduled_server.dart';
