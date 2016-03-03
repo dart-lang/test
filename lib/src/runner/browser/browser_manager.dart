@@ -6,9 +6,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
