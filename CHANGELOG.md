@@ -1,3 +1,7 @@
+## 0.12.11+2
+
+* Update to `shelf_web_socket` 0.2.0.
+
 ## 0.12.11+1
 
 * Purely internal change.
