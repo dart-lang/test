@@ -180,7 +180,7 @@ void main() {
       test.shouldExit(0);
     });
 
-    test("doesn't OS-specific configuration on a non-matching OS", () {
+    test("doesn't apply OS-specific configuration on a non-matching OS", () {
       d.file("dart_test.yaml", JSON.encode({
         "on_os": {
           otherOS: {"filename": "test_*.dart"}

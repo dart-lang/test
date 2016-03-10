@@ -60,6 +60,10 @@ final ArgParser _parser = (() {
       defaultsTo: 'vm',
       allowed: allPlatforms.map((platform) => platform.identifier).toList(),
       allowMultiple: true);
+  parser.addOption("preset",
+      abbr: 'P',
+      help: 'The configuration preset(s) to use.',
+      allowMultiple: true);
   parser.addOption("concurrency",
       abbr: 'j',
       help: 'The number of concurrent test suites run.',
@@ -156,6 +160,7 @@ Configuration parse(List<String> args) {
           (value) => new Timeout.parse(value)),
       pattern: pattern,
       platforms: ifParsed('platform')?.map(TestPlatform.find),
+      chosenPresets: ifParsed('preset'),
       paths: options.rest.isEmpty ? null : options.rest,
       includeTags: includeTags,
       excludeTags: excludeTags);

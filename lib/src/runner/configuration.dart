@@ -21,6 +21,12 @@ import 'configuration/values.dart';
 
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
+  /// An empty configuration with only default values.
+  ///
+  /// Using this is slightly more efficient than manually constructing a new
+  /// configuration with no arguments.
+  static final empty = new Configuration._();
+
   /// The usage string for the command-line arguments.
   static String get usage => args.usage;
 
@@ -107,6 +113,14 @@ class Configuration {
   List<TestPlatform> get platforms => _platforms ?? [TestPlatform.vm];
   final List<TestPlatform> _platforms;
 
+  /// The set of presets to use.
+  ///
+  /// Any chosen presets for the parent configuration are added to the chosen
+  /// preset sets for child configurations as well.
+  ///
+  /// Note that the order of this set matters.
+  final Set<String> chosenPresets;
+
   /// Only run tests whose tags match this selector.
   ///
   /// When [merge]d, this is intersected with the other configuration's included
@@ -142,17 +156,21 @@ class Configuration {
       forTag: mapMap(tags, value: (_, config) => config.metadata),
       onPlatform: mapMap(onPlatform, value: (_, config) => config.metadata));
 
-  /// The set of tags that have been declaredin any way in this configuration.
+  /// The set of tags that have been declared in any way in this configuration.
   Set<String> get knownTags {
     if (_knownTags != null) return _knownTags;
 
     var known = includeTags.variables.toSet()
       ..addAll(excludeTags.variables)
       ..addAll(addTags);
-    tags.forEach((selector, config) {
+
+    for (var selector in tags.keys) {
       known.addAll(selector.variables);
-      known.addAll(config.knownTags);
-    });
+    }
+
+    for (var configuration in _children) {
+      known.addAll(configuration.knownTags);
+    }
 
     _knownTags = new UnmodifiableSetView(known);
     return _knownTags;
@@ -166,6 +184,40 @@ class Configuration {
   /// configuration fields, but that isn't enforced.
   final Map<PlatformSelector, Configuration> onPlatform;
 
+  /// Configuration presets.
+  ///
+  /// These are configurations that can be explicitly selected by the user via
+  /// the command line. Preset configuration takes precedence over the base
+  /// configuration.
+  ///
+  /// This is guaranteed not to have any keys that match [chosenPresets]; those
+  /// are resolved when the configuration is constructed.
+  final Map<String, Configuration> presets;
+
+  /// All preset names that are known to be valid.
+  ///
+  /// This includes presets that have already been resolved.
+  Set<String> get knownPresets {
+    if (_knownPresets != null) return _knownPresets;
+
+    var known = presets.keys.toSet();
+    for (var configuration in _children) {
+      known.addAll(configuration.knownPresets);
+    }
+
+    _knownPresets = new UnmodifiableSetView(known);
+    return _knownPresets;
+  }
+  Set<String> _knownPresets;
+
+  /// All child configurations of [this] that may be selected under various
+  /// circumstances.
+  Iterable<Configuration> get _children sync* {
+    yield* tags.values;
+    yield* onPlatform.values;
+    yield* presets.values;
+  }
+
   /// Parses the configuration from [args].
   ///
   /// Throws a [FormatException] if [args] are invalid.
@@ -177,7 +229,97 @@ class Configuration {
   /// a [FormatException] if its contents are invalid.
   factory Configuration.load(String path) => load(path);
 
-  Configuration({
+  factory Configuration({
+      bool help,
+      bool version,
+      bool verboseTrace,
+      bool jsTrace,
+      bool skip,
+      String skipReason,
+      PlatformSelector testOn,
+      bool pauseAfterLoad,
+      bool color,
+      String packageRoot,
+      String reporter,
+      int pubServePort,
+      int concurrency,
+      Timeout timeout,
+      Pattern pattern,
+      Iterable<TestPlatform> platforms,
+      Iterable<String> paths,
+      Glob filename,
+      Iterable<String> chosenPresets,
+      BooleanSelector includeTags,
+      BooleanSelector excludeTags,
+      Iterable addTags,
+      Map<BooleanSelector, Configuration> tags,
+      Map<PlatformSelector, Configuration> onPlatform,
+      Map<String, Configuration> presets}) {
+    _unresolved() => new Configuration._(
+        help: help,
+        version: version,
+        verboseTrace: verboseTrace,
+        jsTrace: jsTrace,
+        skip: skip,
+        skipReason: skipReason,
+        testOn: testOn,
+        pauseAfterLoad: pauseAfterLoad,
+        color: color,
+        packageRoot: packageRoot,
+        reporter: reporter,
+        pubServePort: pubServePort,
+        concurrency: concurrency,
+        timeout: timeout,
+        pattern: pattern,
+        platforms: platforms,
+        paths: paths,
+        filename: filename,
+        chosenPresets: chosenPresets,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
+        addTags: addTags,
+
+        // Make sure we pass [chosenPresets] to the child configurations as
+        // well. This ensures that 
+        tags: _withChosenPresets(tags, chosenPresets),
+        onPlatform: _withChosenPresets(onPlatform, chosenPresets),
+        presets: _withChosenPresets(presets, chosenPresets));
+
+    if (chosenPresets == null) return _unresolved();
+    chosenPresets = new Set.from(chosenPresets);
+
+    if (presets == null) return _unresolved();
+    presets = new Map.from(presets);
+
+    var knownPresets = presets.keys.toSet();
+
+    var merged = chosenPresets.fold(Configuration.empty, (merged, preset) {
+      if (!presets.containsKey(preset)) return merged;
+      return merged.merge(presets.remove(preset));
+    });
+
+    var result = merged == Configuration.empty
+        ? _unresolved()
+        : _unresolved().merge(merged);
+
+    // Make sure the configuration knows about presets that were selected and
+    // thus removed from [presets].
+    result._knownPresets = result.knownPresets.union(knownPresets);
+
+    return result;
+  }
+
+  static Map<Object, Configuration> _withChosenPresets(
+      Map<Object, Configuration> map, Set<String> chosenPresets) {
+    if (map == null || chosenPresets == null) return map;
+    return mapMap(map, value: (_, config) => config.change(
+        chosenPresets: config.chosenPresets.union(chosenPresets)));
+  }
+
+  /// Creates new Configuration.
+  ///
+  /// Unlike [new Configuration], this assumes [presets] is already resolved.
+  Configuration._({
           bool help,
           bool version,
           bool verboseTrace,
@@ -196,11 +338,13 @@ class Configuration {
           Iterable<TestPlatform> platforms,
           Iterable<String> paths,
           Glob filename,
+          Iterable<String> chosenPresets,
           BooleanSelector includeTags,
           BooleanSelector excludeTags,
           Iterable addTags,
           Map<BooleanSelector, Configuration> tags,
-          Map<PlatformSelector, Configuration> onPlatform})
+          Map<PlatformSelector, Configuration> onPlatform,
+          Map<String, Configuration> presets})
       : _help = help,
         _version = version,
         _verboseTrace = verboseTrace,
@@ -221,13 +365,13 @@ class Configuration {
         _platforms = _list(platforms),
         _paths = _list(paths),
         _filename = filename,
+        chosenPresets = new Set.from(chosenPresets ?? []),
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
-        addTags = addTags?.toSet() ?? new Set(),
-        tags = tags == null ? const {} : new Map.unmodifiable(tags),
-        onPlatform = onPlatform == null
-            ? const {}
-            : new Map.unmodifiable(onPlatform) {
+        addTags = new UnmodifiableSetView(addTags?.toSet() ?? new Set()),
+        tags = _map(tags),
+        onPlatform = _map(onPlatform),
+        presets = _map(presets) {
     if (_filename != null && _filename.context.style != p.style) {
       throw new ArgumentError(
           "filename's context must match the current operating system, was "
@@ -235,15 +379,21 @@ class Configuration {
     }
   }
 
-  /// Returns a [input] as a list or `null`.
+  /// Returns a [input] as an unmodifiable list or `null`.
   ///
   /// If [input] is `null` or empty, this returns `null`. Otherwise, it returns
   /// `input.toList()`.
   static List _list(Iterable input) {
     if (input == null) return null;
-    input = input.toList();
+    input = new List.unmodifiable(input);
     if (input.isEmpty) return null;
     return input;
+  }
+
+  /// Returns an modifiable copy of [input] or an empty unmodifiable map.
+  static Map _map(Map input) {
+    if (input == null) return const {};
+    return new Map.unmodifiable(input);
   }
 
   /// Merges this with [other].
@@ -252,7 +402,10 @@ class Configuration {
   /// takes precedence. However, certain fields are merged together instead.
   /// This is indicated in those fields' documentation.
   Configuration merge(Configuration other) {
-    return new Configuration(
+    if (this == Configuration.empty) return other;
+    if (other == Configuration.empty) return this;
+
+    var result = new Configuration(
         help: other._help ?? _help,
         version: other._version ?? _version,
         verboseTrace: other._verboseTrace ?? _verboseTrace,
@@ -271,12 +424,84 @@ class Configuration {
         platforms: other._platforms ?? _platforms,
         paths: other._paths ?? _paths,
         filename: other._filename ?? _filename,
+        chosenPresets: chosenPresets.union(other.chosenPresets),
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
         addTags: other.addTags.union(addTags),
-        tags: mergeMaps(tags, other.tags,
-            value: (config1, config2) => config1.merge(config2)),
-        onPlatform: mergeMaps(onPlatform, other.onPlatform,
-            value: (config1, config2) => config1.merge(config2)));
+        tags: _mergeConfigMaps(tags, other.tags),
+        onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
+        presets: _mergeConfigMaps(presets, other.presets));
+
+    // Make sure the merged config preserves any presets that were chosen and
+    // discarded.
+    result._knownPresets = knownPresets.union(other.knownPresets);
+    return result;
   }
+
+  /// Returns a copy of this configuration with the given fields updated.
+  ///
+  /// Note that unlike [merge], this has no merging behavior—the old value is
+  /// always replaced by the new one.
+  Configuration change({
+      bool help,
+      bool version,
+      bool verboseTrace,
+      bool jsTrace,
+      bool skip,
+      String skipReason,
+      PlatformSelector testOn,
+      bool pauseAfterLoad,
+      bool color,
+      String packageRoot,
+      String reporter,
+      int pubServePort,
+      int concurrency,
+      Timeout timeout,
+      Pattern pattern,
+      Iterable<TestPlatform> platforms,
+      Iterable<String> paths,
+      Glob filename,
+      Iterable<String> chosenPresets,
+      BooleanSelector includeTags,
+      BooleanSelector excludeTags,
+      Iterable addTags,
+      Map<BooleanSelector, Configuration> tags,
+      Map<PlatformSelector, Configuration> onPlatform,
+      Map<String, Configuration> presets}) {
+    return new Configuration(
+        help: help ?? _help,
+        version: version ?? _version,
+        verboseTrace: verboseTrace ?? _verboseTrace,
+        jsTrace: jsTrace ?? _jsTrace,
+        skip: skip ?? _skip,
+        skipReason: skipReason ?? this.skipReason,
+        testOn: testOn ?? this.testOn,
+        pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
+        color: color ?? _color,
+        packageRoot: packageRoot ?? _packageRoot,
+        reporter: reporter ?? _reporter,
+        pubServePort: pubServePort ?? pubServeUrl?.port,
+        concurrency: concurrency ?? _concurrency,
+        timeout: timeout ?? this.timeout,
+        pattern: pattern ?? this.pattern,
+        platforms: platforms ?? _platforms,
+        paths: paths ?? _paths,
+        filename: filename ?? _filename,
+        chosenPresets: chosenPresets ?? this.chosenPresets,
+        includeTags: includeTags ?? this.includeTags,
+        excludeTags: excludeTags ?? this.excludeTags,
+        addTags: addTags ?? this.addTags,
+        tags: tags ?? this.tags,
+        onPlatform: onPlatform ?? this.onPlatform,
+        presets: presets ?? this.presets);
+  }
+
+  /// Merges two maps whose values are [Configuration]s.
+  ///
+  /// Any overlapping keys in the maps have their configurations merged in the
+  /// returned map.
+  Map<Object, Configuration> _mergeConfigMaps(Map<Object, Configuration> map1,
+          Map<Object, Configuration> map2) =>
+      mergeMaps(map1, map2,
+          value: (config1, config2) => config1.merge(config2));
 }

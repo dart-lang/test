@@ -43,6 +43,9 @@ tags:
 * [Configuring Platforms](#configuring-platforms)
   * [`on_os`](#on_os)
   * [`on_platform`](#on_platform)
+* [Configuration Presets](#configuration-presets)
+  * [`presets`](#presets)
+  * [`add_preset`](#add_preset)
 
 ## Test Configuration
 
@@ -288,8 +291,8 @@ This field counts as [test configuration](#test-configuration).
 This field adds additional tags. It's technically
 [test configuration](#test-configuration), but it's usually used in more
 specific contexts. For example, when included in a tag's configuration, it can
-be used to enable tag inheritance, where adding one tag implicitly adds other as
-well. It takes a list of tag name strings.
+be used to enable tag inheritance, where adding one tag implicitly adds another
+as well. It takes a list of tag name strings.
 
 ```yaml
 tags:
@@ -364,3 +367,71 @@ that are run on the Dart VM under that operating system. To configure all tests
 when running on a particular operating system, use [`on_os`](#on_os) instead.
 
 This field counts as [test configuration](#test-configuration).
+
+## Configuration Presets
+
+*Presets* are collections of configuration that can be explicitly selected on
+the command-line. They're useful for quickly selecting options that are
+frequently used together, for providing special configuration for continuous
+integration systems, and for defining more complex logic than can be expressed
+directly using command-line arguments.
+
+Presets can be selected on the command line using the `--preset` or `-P` flag.
+Any number of presets can be selected this way; if they conflict, the last one
+selected wins. Only presets that are defined in the configuration file may be
+selected.
+
+### `presets`
+
+This field defines which presets are available to select. It takes a map from
+preset names to configuration maps that are applied when those presets are
+selected. These configuration maps are just like the top level of the
+configuration file, and allow any fields that may be used in the context where
+`presets` was used.
+
+```yaml
+presets:
+  # Use this when you need completely un-munged stack traces.
+  debug:
+    verbose_trace: false
+    js_trace: true
+
+  # Shortcut for running only browser tests.
+  browser:
+    paths:
+    - test/runner/browser
+    - test/runner/pub_serve_test.dart
+```
+
+The `presets` field counts as [test configuration](#test-configuration). It can
+be useful to use it in combination with other fields for advanced preset
+behavior.
+
+```yaml
+tags:
+  chrome:
+    skip: "Our Chrome launcher is busted. See issue 1234."
+
+    # Pass -P force to verify that the launcher is still busted.
+    presets: {force: {skip: false}}
+```
+
+### `add_presets`
+
+This field selects additional presets. It's technically
+[runner configuration](#runner-configuration), but it's usually used in more
+specific contexts. For example, when included in a preset's configuration, it
+can be used to enable preset inheritance, where selecting one preset implicitly
+selects another as well. It takes a list of preset name strings.
+
+```yaml
+presets:
+  # Shortcut for running only browser tests.
+  browser:
+    paths: [test/runner/browser]
+
+  # Shortcut for running only Chrome tests.
+  chrome:
+    filename: "chrome_*_test.dart"
+    add_presets: [browser]
+```

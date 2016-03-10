@@ -1,5 +1,10 @@
 ## 0.12.12
 
+* Add support for [test presets][]. These are defined using the `presets` field
+  in the package configuration file. They can be selected by passing `--preset`
+  or `-P`, or by using the `add_presets` field in the package configuration
+  file.
+
 * Add an `on_os` field to the package configuration file that allows users to
   select different configuration for different operating systems.
 
@@ -9,6 +14,8 @@
 * Add an `ios` platform selector variable. This variable will only be true when
   the `test` executable itself is running on iOS, not when it's running browser
   tests on an iOS browser.
+
+[test presets]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuration-presets
 
 ## 0.12.11+2
 

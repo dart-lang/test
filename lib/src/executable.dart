@@ -104,6 +104,17 @@ main(List<String> args) async {
     return;
   }
 
+  var undefinedPresets =
+      configuration.chosenPresets
+          .where((preset) => !configuration.knownPresets.contains(preset))
+          .toList();
+  if (undefinedPresets.isNotEmpty) {
+    _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
+        "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
+    exitCode = exit_codes.usage;
+    return;
+  }
+
   if (configuration.pubServeUrl != null && !_usesTransformer) {
     stderr.write('''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
@@ -169,7 +180,7 @@ void _printUsage([String error]) {
     output = stderr;
   }
 
-  output.write("""$message
+  output.write("""${wordWrap(message)}
 
 Usage: pub run test:test [files or directories...]
 

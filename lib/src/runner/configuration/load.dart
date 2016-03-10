@@ -27,7 +27,7 @@ Configuration load(String path) {
   var source = new File(path).readAsStringSync();
   var document = loadYamlNode(source, sourceUrl: p.toUri(path));
 
-  if (document.value == null) return new Configuration();
+  if (document.value == null) return Configuration.empty;
 
   if (document is! Map) {
     throw new SourceSpanFormatException(
@@ -75,14 +75,8 @@ class _ConfigurationLoader {
 
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
 
-    var addTags = _getList("add_tags", (tagNode) {
-      _validate(tagNode, "Tags must be strings.", (value) => value is String);
-      _validate(
-          tagNode,
-          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
-          (value) => value.contains(anchoredHyphenatedIdentifier));
-      return tagNode.value;
-    });
+    var addTags = _getList("add_tags",
+        (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
 
     var tags = _getMap("tags",
         key: (keyNode) => _parseNode(keyNode, "tags key",
@@ -108,6 +102,10 @@ class _ConfigurationLoader {
           keyNode.span, _source);
     }, value: (valueNode) => _nestedConfig(valueNode, "on_os value"));
 
+    var presets = _getMap("presets",
+        key: (keyNode) => _parseIdentifierLike(keyNode, "presets key"),
+        value: (valueNode) => _nestedConfig(valueNode, "presets value"));
+
     var config = new Configuration(
         verboseTrace: verboseTrace,
         jsTrace: jsTrace,
@@ -117,7 +115,8 @@ class _ConfigurationLoader {
         timeout: timeout,
         addTags: addTags,
         tags: tags,
-        onPlatform: onPlatform);
+        onPlatform: onPlatform,
+        presets: presets);
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -135,7 +134,8 @@ class _ConfigurationLoader {
       _disallow("platforms");
       _disallow("paths");
       _disallow("filename");
-      return new Configuration();
+      _disallow("add_presets");
+      return Configuration.empty;
     }
 
     var reporter = _getString("reporter");
@@ -166,13 +166,17 @@ class _ConfigurationLoader {
 
     var filename = _parseValue("filename", (value) => new Glob(value));
 
+    var chosenPresets = _getList("add_presets",
+        (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
+
     return new Configuration(
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,
         platforms: platforms,
         paths: paths,
-        filename: filename);
+        filename: filename,
+        chosenPresets: chosenPresets);
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed
@@ -253,6 +257,15 @@ class _ConfigurationLoader {
         value: (_, valueNode) => value(valueNode));
   }
 
+  String _parseIdentifierLike(YamlNode node, String name) {
+    _validate(node, "$name must be a string.", (value) => value is String);
+    _validate(
+        node,
+        "$name must be an (optionally hyphenated) Dart identifier.",
+        (value) => value.contains(anchoredHyphenatedIdentifier));
+    return node.value;
+  }
+
   /// Asserts that [node] is a string, passes its value to [parse], and returns
   /// the result.
   ///
@@ -287,7 +300,7 @@ class _ConfigurationLoader {
   /// nested configuration. It defaults to [_runnerConfig].
   Configuration _nestedConfig(YamlNode node, String name,
       {bool runnerConfig}) {
-    if (node == null || node.value == null) return new Configuration();
+    if (node == null || node.value == null) return Configuration.empty;
 
     _validate(node, "$name must be a map.", (value) => value is Map);
     var loader = new _ConfigurationLoader(node, _source,

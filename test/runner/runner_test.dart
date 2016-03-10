@@ -62,6 +62,7 @@ Usage: pub run test:test [files or directories...]
 -p, --platform                 The platform(s) on which to run the tests.
                                $_browsers
 
+-P, --preset                   The configuration preset(s) to use.
 -j, --concurrency=<threads>    The number of concurrent test suites run.
                                (defaults to "$_defaultConcurrency")
 

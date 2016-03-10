@@ -158,7 +158,7 @@ void main() {
         test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an inavlid tag map", () {
+      test("rejects an invalid tag map", () {
         d.file("dart_test.yaml", JSON.encode({
           "tags": 12
         })).create();
@@ -219,7 +219,7 @@ void main() {
 
         var test = runTest(["test.dart"]);
         test.stderr.expect(containsInOrder([
-          "Tags must be strings",
+          "Tag name must be a string",
           "^^"
         ]));
         test.shouldExit(exit_codes.data);
@@ -232,7 +232,7 @@ void main() {
 
         var test = runTest(["test.dart"]);
         test.stderr.expect(containsInOrder([
-          "Invalid tag. Tags must be (optionally hyphenated) Dart identifiers.",
+          "Tag name must be an (optionally hyphenated) Dart identifier.",
           "^^^^^^^^^"
         ]));
         test.shouldExit(exit_codes.data);

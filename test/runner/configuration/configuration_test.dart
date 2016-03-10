@@ -229,25 +229,43 @@ void main() {
       });
     });
 
-    group("for tags", () {
-      test("merges each nested configuration", () {
-        var merged = new Configuration(
-          tags: {
-            new BooleanSelector.parse("foo"):
-                new Configuration(verboseTrace: true),
-            new BooleanSelector.parse("bar"): new Configuration(jsTrace: true)
-          }
-        ).merge(new Configuration(
-          tags: {
-            new BooleanSelector.parse("bar"): new Configuration(jsTrace: false),
-            new BooleanSelector.parse("baz"): new Configuration(skip: true)
-          }
-        ));
+    group("for sets", () {
+      test("if neither is defined, preserves the default", () {
+        var merged = new Configuration().merge(new Configuration());
+        expect(merged.addTags, isEmpty);
+        expect(merged.chosenPresets, isEmpty);
+      });
 
-        expect(merged.tags[new BooleanSelector.parse("foo")].verboseTrace,
-            isTrue);
-        expect(merged.tags[new BooleanSelector.parse("bar")].jsTrace, isFalse);
-        expect(merged.tags[new BooleanSelector.parse("baz")].skip, isTrue);
+      test("if only the old configuration's is defined, uses it", () {
+        var merged = new Configuration(
+                addTags: new Set.from(["foo", "bar"]),
+                chosenPresets: new Set.from(["baz", "bang"]))
+            .merge(new Configuration());
+
+        expect(merged.addTags, unorderedEquals(["foo", "bar"]));
+        expect(merged.chosenPresets, equals(["baz", "bang"]));
+      });
+
+      test("if only the new configuration's is defined, uses it", () {
+        var merged = new Configuration().merge(new Configuration(
+            addTags: new Set.from(["foo", "bar"]),
+            chosenPresets: new Set.from(["baz", "bang"])));
+
+        expect(merged.addTags, unorderedEquals(["foo", "bar"]));
+        expect(merged.chosenPresets, equals(["baz", "bang"]));
+      });
+
+      test("if both are defined, unions them", () {
+        var older = new Configuration(
+            addTags: new Set.from(["foo", "bar"]),
+            chosenPresets: new Set.from(["baz", "bang"]));
+        var newer = new Configuration(
+            addTags: new Set.from(["blip"]),
+            chosenPresets: new Set.from(["qux"]));
+        var merged = older.merge(newer);
+
+        expect(merged.addTags, unorderedEquals(["foo", "bar", "blip"]));
+        expect(merged.chosenPresets, equals(["baz", "bang", "qux"]));
       });
     });
 
@@ -286,19 +304,44 @@ void main() {
       });
     });
 
-    group("for onPlatform", () {
+    group("for config maps", () {
       test("merges each nested configuration", () {
         var merged = new Configuration(
+          tags: {
+            new BooleanSelector.parse("foo"):
+                new Configuration(verboseTrace: true),
+            new BooleanSelector.parse("bar"): new Configuration(jsTrace: true)
+          },
           onPlatform: {
-            new PlatformSelector.parse("vm"): new Configuration(verboseTrace: true),
-            new PlatformSelector.parse("chrome"): new Configuration(jsTrace: true)
+            new PlatformSelector.parse("vm"):
+                new Configuration(verboseTrace: true),
+            new PlatformSelector.parse("chrome"):
+                new Configuration(jsTrace: true)
+          },
+          presets: {
+            "bang": new Configuration(verboseTrace: true),
+            "qux": new Configuration(jsTrace: true)
           }
         ).merge(new Configuration(
+          tags: {
+            new BooleanSelector.parse("bar"): new Configuration(jsTrace: false),
+            new BooleanSelector.parse("baz"): new Configuration(skip: true)
+          },
           onPlatform: {
-            new PlatformSelector.parse("chrome"): new Configuration(jsTrace: false),
+            new PlatformSelector.parse("chrome"):
+                new Configuration(jsTrace: false),
             new PlatformSelector.parse("firefox"): new Configuration(skip: true)
+          },
+          presets: {
+            "qux": new Configuration(jsTrace: false),
+            "zap": new Configuration(skip: true)
           }
         ));
+
+        expect(merged.tags[new BooleanSelector.parse("foo")].verboseTrace,
+            isTrue);
+        expect(merged.tags[new BooleanSelector.parse("bar")].jsTrace, isFalse);
+        expect(merged.tags[new BooleanSelector.parse("baz")].skip, isTrue);
 
         expect(merged.onPlatform[new PlatformSelector.parse("vm")].verboseTrace,
             isTrue);
@@ -306,6 +349,78 @@ void main() {
             isFalse);
         expect(merged.onPlatform[new PlatformSelector.parse("firefox")].skip,
             isTrue);
+
+        expect(merged.presets["bang"].verboseTrace, isTrue);
+        expect(merged.presets["qux"].jsTrace, isFalse);
+        expect(merged.presets["zap"].skip, isTrue);
+      });
+    });
+
+    group("for presets", () {
+      test("automatically resolves a matching chosen preset", () {
+        var configuration = new Configuration(
+            presets: {"foo": new Configuration(verboseTrace: true)},
+            chosenPresets: ["foo"]);
+        expect(configuration.presets, isEmpty);
+        expect(configuration.chosenPresets, equals(["foo"]));
+        expect(configuration.knownPresets, equals(["foo"]));
+        expect(configuration.verboseTrace, isTrue);
+      });
+
+      test("resolves a chosen presets in order", () {
+        var configuration = new Configuration(
+            presets: {
+              "foo": new Configuration(verboseTrace: true),
+              "bar": new Configuration(verboseTrace: false)
+            },
+            chosenPresets: ["foo", "bar"]);
+        expect(configuration.presets, isEmpty);
+        expect(configuration.chosenPresets, equals(["foo", "bar"]));
+        expect(configuration.knownPresets, unorderedEquals(["foo", "bar"]));
+        expect(configuration.verboseTrace, isFalse);
+
+        configuration = new Configuration(
+            presets: {
+              "foo": new Configuration(verboseTrace: true),
+              "bar": new Configuration(verboseTrace: false)
+            },
+            chosenPresets: ["bar", "foo"]);
+        expect(configuration.presets, isEmpty);
+        expect(configuration.chosenPresets, equals(["bar", "foo"]));
+        expect(configuration.knownPresets, unorderedEquals(["foo", "bar"]));
+        expect(configuration.verboseTrace, isTrue);
+      });
+
+      test("ignores inapplicable chosen presets", () {
+        var configuration = new Configuration(
+            presets: {},
+            chosenPresets: ["baz"]);
+        expect(configuration.presets, isEmpty);
+        expect(configuration.chosenPresets, equals(["baz"]));
+        expect(configuration.knownPresets, equals(isEmpty));
+      });
+
+      test("resolves presets through merging", () {
+        var configuration = new Configuration(presets: {
+          "foo": new Configuration(verboseTrace: true)
+        }).merge(new Configuration(chosenPresets: ["foo"]));
+
+        expect(configuration.presets, isEmpty);
+        expect(configuration.chosenPresets, equals(["foo"]));
+        expect(configuration.knownPresets, equals(["foo"]));
+        expect(configuration.verboseTrace, isTrue);
+      });
+
+      test("preserves known presets through merging", () {
+        var configuration = new Configuration(presets: {
+          "foo": new Configuration(verboseTrace: true)
+        }, chosenPresets: ["foo"])
+            .merge(new Configuration());
+
+        expect(configuration.presets, isEmpty);
+        expect(configuration.chosenPresets, equals(["foo"]));
+        expect(configuration.knownPresets, equals(["foo"]));
+        expect(configuration.verboseTrace, isTrue);
       });
     });
   });
