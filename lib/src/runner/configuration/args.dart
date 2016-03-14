@@ -34,12 +34,16 @@ final ArgParser _parser = (() {
   parser.addOption("name",
       abbr: 'n',
       help: 'A substring of the name of the test to run.\n'
-          'Regular expression syntax is supported.');
+          'Regular expression syntax is supported.\n'
+          'If passed multiple times, tests must match all substrings.',
+      allowMultiple: true,
+      splitCommas: false);
   parser.addOption("plain-name",
       abbr: 'N',
-      help: 'A plain-text substring of the name of the test to run.');
-  // TODO(nweiz): Support the full platform-selector syntax for choosing which
-  // tags to run. In the shorter term, disallow non-"identifier" tags.
+      help: 'A plain-text substring of the name of the test to run.\n'
+          'If passed multiple times, tests must match all substrings.',
+      allowMultiple: true,
+      splitCommas: false);
   parser.addOption("tags",
       abbr: 't',
       help: 'Run only tests with all of the specified tags.\n'
@@ -111,18 +115,10 @@ String get usage => _parser.usage;
 Configuration parse(List<String> args) {
   var options = _parser.parse(args);
 
-  var pattern;
-  if (options['name'] != null) {
-    if (options["plain-name"] != null) {
-      throw new FormatException(
-          "--name and --plain-name may not both be passed.");
-    }
-
-    pattern = _wrapFormatException(
-        options, 'name', (value) => new RegExp(value));
-  } else if (options['plain-name'] != null) {
-    pattern = options['plain-name'];
-  }
+  var patterns = options['name']
+      .map((value) => _wrapFormatException('name', () => new RegExp(value)))
+      .toList()
+      ..addAll(options['plain-name']);
 
   var includeTagSet = new Set.from(options['tags'] ?? [])
     ..addAll(options['tag'] ?? []);
@@ -154,11 +150,11 @@ Configuration parse(List<String> args) {
       color: ifParsed('color'),
       packageRoot: ifParsed('package-root'),
       reporter: ifParsed('reporter'),
-      pubServePort: _wrapFormatException(options, 'pub-serve', int.parse),
-      concurrency: _wrapFormatException(options, 'concurrency', int.parse),
-      timeout: _wrapFormatException(options, 'timeout',
+      pubServePort: _parseOption(options, 'pub-serve', int.parse),
+      concurrency: _parseOption(options, 'concurrency', int.parse),
+      timeout: _parseOption(options, 'timeout',
           (value) => new Timeout.parse(value)),
-      pattern: pattern,
+      patterns: patterns,
       platforms: ifParsed('platform')?.map(TestPlatform.find),
       chosenPresets: ifParsed('preset'),
       paths: options.rest.isEmpty ? null : options.rest,
@@ -168,14 +164,20 @@ Configuration parse(List<String> args) {
 
 /// Runs [parse] on the value of the option [name], and wraps any
 /// [FormatException] it throws with additional information.
-_wrapFormatException(ArgResults options, String name, parse(value)) {
+_parseOption(ArgResults options, String name, parse(value)) {
   if (!options.wasParsed(name)) return null;
 
   var value = options[name];
   if (value == null) return null;
 
+  return _wrapFormatException(name, () => parse(value));
+}
+
+/// Runs [parse], and wraps any [FormatException] it throws with additional
+/// information.
+_wrapFormatException(String name, parse()) {
   try {
-    return parse(value);
+    return parse();
   } on FormatException catch (error) {
     throw new FormatException('Couldn\'t parse --$name "${options[name]}": '
         '${error.message}');

@@ -146,6 +146,14 @@ class _ConfigurationLoader {
     var pubServePort = _getInt("pub_serve");
     var concurrency = _getInt("concurrency");
 
+    var patterns = _getList("names", (nameNode) {
+      _validate(nameNode, "Names must be strings.", (value) => value is String);
+      return _parseNode(nameNode, "name", (value) => new RegExp(value));
+    })..addAll(_getList("plain_names", (nameNode) {
+      _validate(nameNode, "Names must be strings.", (value) => value is String);
+      return nameNode.value;
+    }));
+
     var allPlatformIdentifiers =
         TestPlatform.all.map((platform) => platform.identifier).toSet();
     var platforms = _getList("platforms", (platformNode) {
@@ -173,6 +181,7 @@ class _ConfigurationLoader {
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,
+        patterns: patterns,
         platforms: platforms,
         paths: paths,
         filename: filename,

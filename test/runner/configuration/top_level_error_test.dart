@@ -42,30 +42,32 @@ void main() {
     test.shouldExit(exit_codes.data);
   });
 
-  test("rejects an invalid reporter type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "reporter": 12
-    })).create();
+  group("reporter", () {
+    test("rejects an invalid type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "reporter": 12
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "reporter must be a string",
-      "^^"
-    ]));
-    test.shouldExit(exit_codes.data);
-  });
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "reporter must be a string",
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
 
-  test("rejects an invalid reporter name", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "reporter": "non-existent"
-    })).create();
+    test("rejects an invalid name", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "reporter": "non-existent"
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      'Unknown reporter "non-existent"',
-      "^^^^^^^^^^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'Unknown reporter "non-existent"',
+        "^^^^^^^^^^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 
   test("rejects an invalid pub serve port", () {
@@ -94,146 +96,223 @@ void main() {
     test.shouldExit(exit_codes.data);
   });
 
-  test("rejects an invalid timeout type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "timeout": 12
-    })).create();
+  group("timeout", () {
+    test("rejects an invalid type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "timeout": 12
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "timeout must be a string",
-      "^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "timeout must be a string",
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid format", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "timeout": "12p"
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "Invalid timeout: expected unit",
+        "^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 
-  test("rejects an invalid timeout format", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "timeout": "12p"
-    })).create();
+  group("names", () {
+    test("rejects an invalid list type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "names": "vm"
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "Invalid timeout: expected unit",
-      "^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "names must be a list",
+        "^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid member type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "names": [12]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "Names must be strings",
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid RegExp", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "names": ["(foo"]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'Invalid name: Unterminated group(foo',
+        "^^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 
-  test("rejects an invalid platforms list type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "platforms": "vm"
-    })).create();
+  group("plain_names", () {
+    test("rejects an invalid list type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "plain_names": "vm"
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "platforms must be a list",
-      "^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "plain_names must be a list",
+        "^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid member type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "plain_names": [12]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "Names must be strings",
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 
-  test("rejects an invalid platforms member type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "platforms": [12]
-    })).create();
+  group("platforms", () {
+    test("rejects an invalid list type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "platforms": "vm"
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "Platforms must be strings",
-      "^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "platforms must be a list",
+        "^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid member type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "platforms": [12]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "Platforms must be strings",
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid member name", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "platforms": ["foo"]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'Unknown platform "foo"',
+        "^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 
-  test("rejects an invalid platforms member name", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "platforms": ["foo"]
-    })).create();
+  group("paths", () {
+    test("rejects an invalid list type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "paths": "test"
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      'Unknown platform "foo"',
-      "^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "paths must be a list",
+        "^^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid member type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "paths": [12]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        "Paths must be strings",
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an absolute path", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "paths": ["/foo"]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'Paths must be relative.',
+        "^^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
+
+    test("rejects an invalid URI", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "paths": ["[invalid]"]
+      })).create();
+
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'Invalid path: Invalid character',
+        "^^^^^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 
-  test("rejects an invalid paths list type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "paths": "test"
-    })).create();
+  group("filename", () {
+    test("rejects an invalid type", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "filename": 12
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "paths must be a list",
-      "^^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
-  });
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'filename must be a string.',
+        "^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
 
-  test("rejects an invalid paths member type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "paths": [12]
-    })).create();
+    test("rejects an invalid format", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "filename": "{foo"
+      })).create();
 
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      "Paths must be strings",
-      "^^"
-    ]));
-    test.shouldExit(exit_codes.data);
-  });
-
-  test("rejects an absolute path", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "paths": ["/foo"]
-    })).create();
-
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      'Paths must be relative.',
-      "^^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
-  });
-
-  test("rejects an invalid path URI", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "paths": ["[invalid]"]
-    })).create();
-
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      'Invalid path: Invalid character',
-      "^^^^^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
-  });
-
-  test("rejects an invalid filename type", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "filename": 12
-    })).create();
-
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      'filename must be a string.',
-      "^^"
-    ]));
-    test.shouldExit(exit_codes.data);
-  });
-
-  test("rejects an invalid filename format", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "filename": "{foo"
-    })).create();
-
-    var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder([
-      'Invalid filename: expected ",".',
-      "^^^^^^"
-    ]));
-    test.shouldExit(exit_codes.data);
+      var test = runTest(["test.dart"]);
+      test.stderr.expect(containsInOrder([
+        'Invalid filename: expected ",".',
+        "^^^^^^"
+      ]));
+      test.shouldExit(exit_codes.data);
+    });
   });
 }

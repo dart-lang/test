@@ -30,7 +30,6 @@ void main() {
         expect(merged.packageRoot, equals(p.join(p.current, 'packages')));
         expect(merged.reporter, equals(defaultReporter));
         expect(merged.pubServeUrl, isNull);
-        expect(merged.pattern, isNull);
         expect(merged.platforms, equals([TestPlatform.vm]));
         expect(merged.paths, equals(["test"]));
       });
@@ -48,7 +47,6 @@ void main() {
                 packageRoot: "root",
                 reporter: "json",
                 pubServePort: 1234,
-                pattern: "foo",
                 platforms: [TestPlatform.chrome],
                 paths: ["bar"])
             .merge(new Configuration());
@@ -64,7 +62,6 @@ void main() {
         expect(merged.packageRoot, equals("root"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
-        expect(merged.pattern, equals("foo"));
         expect(merged.platforms, equals([TestPlatform.chrome]));
         expect(merged.paths, equals(["bar"]));
       });
@@ -82,7 +79,6 @@ void main() {
             packageRoot: "root",
             reporter: "json",
             pubServePort: 1234,
-            pattern: "foo",
             platforms: [TestPlatform.chrome],
             paths: ["bar"]));
 
@@ -97,7 +93,6 @@ void main() {
         expect(merged.packageRoot, equals("root"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
-        expect(merged.pattern, equals("foo"));
         expect(merged.platforms, equals([TestPlatform.chrome]));
         expect(merged.paths, equals(["bar"]));
       });
@@ -116,7 +111,6 @@ void main() {
             packageRoot: "root",
             reporter: "json",
             pubServePort: 1234,
-            pattern: "foo",
             platforms: [TestPlatform.chrome],
             paths: ["bar"]);
         var newer = new Configuration(
@@ -131,7 +125,6 @@ void main() {
             packageRoot: "boot",
             reporter: "compact",
             pubServePort: 5678,
-            pattern: "gonk",
             platforms: [TestPlatform.dartium],
             paths: ["blech"]);
         var merged = older.merge(newer);
@@ -146,7 +139,6 @@ void main() {
         expect(merged.packageRoot, equals("boot"));
         expect(merged.reporter, equals("compact"));
         expect(merged.pubServeUrl.port, equals(5678));
-        expect(merged.pattern, equals("gonk"));
         expect(merged.platforms, equals([TestPlatform.dartium]));
         expect(merged.paths, equals(["blech"]));
       });
@@ -234,38 +226,46 @@ void main() {
         var merged = new Configuration().merge(new Configuration());
         expect(merged.addTags, isEmpty);
         expect(merged.chosenPresets, isEmpty);
+        expect(merged.patterns, isEmpty);
       });
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new Configuration(
-                addTags: new Set.from(["foo", "bar"]),
-                chosenPresets: new Set.from(["baz", "bang"]))
+                addTags: ["foo", "bar"],
+                chosenPresets: ["baz", "bang"],
+                patterns: ["beep", "boop"])
             .merge(new Configuration());
 
         expect(merged.addTags, unorderedEquals(["foo", "bar"]));
         expect(merged.chosenPresets, equals(["baz", "bang"]));
+        expect(merged.patterns, equals(["beep", "boop"]));
       });
 
       test("if only the new configuration's is defined, uses it", () {
         var merged = new Configuration().merge(new Configuration(
-            addTags: new Set.from(["foo", "bar"]),
-            chosenPresets: new Set.from(["baz", "bang"])));
+            addTags: ["foo", "bar"],
+            chosenPresets: ["baz", "bang"],
+            patterns: ["beep", "boop"]));
 
         expect(merged.addTags, unorderedEquals(["foo", "bar"]));
         expect(merged.chosenPresets, equals(["baz", "bang"]));
+        expect(merged.patterns, equals(["beep", "boop"]));
       });
 
       test("if both are defined, unions them", () {
         var older = new Configuration(
-            addTags: new Set.from(["foo", "bar"]),
-            chosenPresets: new Set.from(["baz", "bang"]));
+            addTags: ["foo", "bar"],
+            chosenPresets: ["baz", "bang"],
+            patterns: ["beep", "boop"]);
         var newer = new Configuration(
-            addTags: new Set.from(["blip"]),
-            chosenPresets: new Set.from(["qux"]));
+            addTags: ["blip"],
+            chosenPresets: ["qux"],
+            patterns: ["bonk"]);
         var merged = older.merge(newer);
 
         expect(merged.addTags, unorderedEquals(["foo", "bar", "blip"]));
         expect(merged.chosenPresets, equals(["baz", "bang", "qux"]));
+        expect(merged.patterns, unorderedEquals(["beep", "boop", "bonk"]));
       });
     });
 

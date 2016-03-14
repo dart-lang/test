@@ -105,9 +105,11 @@ class Configuration {
   Glob get filename => _filename ?? defaultFilename;
   final Glob _filename;
 
-  /// The pattern to match against test names to decide which to run, or `null`
+  /// The patterns to match against test names to decide which to run, or `null`
   /// if all tests should be run.
-  final Pattern pattern;
+  ///
+  /// All patterns must match in order for a test to be run.
+  final Set<Pattern> patterns;
 
   /// The set of platforms on which to run tests.
   List<TestPlatform> get platforms => _platforms ?? [TestPlatform.vm];
@@ -244,7 +246,7 @@ class Configuration {
       int pubServePort,
       int concurrency,
       Timeout timeout,
-      Pattern pattern,
+      Iterable<Pattern> patterns,
       Iterable<TestPlatform> platforms,
       Iterable<String> paths,
       Glob filename,
@@ -270,7 +272,7 @@ class Configuration {
         pubServePort: pubServePort,
         concurrency: concurrency,
         timeout: timeout,
-        pattern: pattern,
+        patterns: patterns,
         platforms: platforms,
         paths: paths,
         filename: filename,
@@ -334,7 +336,7 @@ class Configuration {
           int pubServePort,
           int concurrency,
           Timeout timeout,
-          this.pattern,
+          Iterable<Pattern> patterns,
           Iterable<TestPlatform> platforms,
           Iterable<String> paths,
           Glob filename,
@@ -362,10 +364,12 @@ class Configuration {
         timeout = (pauseAfterLoad ?? false)
             ? Timeout.none
             : (timeout == null ? new Timeout.factor(1) : timeout),
+        patterns = new UnmodifiableSetView(patterns?.toSet() ?? new Set()),
         _platforms = _list(platforms),
         _paths = _list(paths),
         _filename = filename,
-        chosenPresets = new Set.from(chosenPresets ?? []),
+        chosenPresets = new UnmodifiableSetView(
+            chosenPresets?.toSet() ?? new Set()),
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
         addTags = new UnmodifiableSetView(addTags?.toSet() ?? new Set()),
@@ -420,7 +424,7 @@ class Configuration {
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
         timeout: timeout.merge(other.timeout),
-        pattern: other.pattern ?? pattern,
+        patterns: patterns.union(other.patterns),
         platforms: other._platforms ?? _platforms,
         paths: other._paths ?? _paths,
         filename: other._filename ?? _filename,
@@ -457,7 +461,7 @@ class Configuration {
       int pubServePort,
       int concurrency,
       Timeout timeout,
-      Pattern pattern,
+      Iterable<Pattern> patterns,
       Iterable<TestPlatform> platforms,
       Iterable<String> paths,
       Glob filename,
@@ -483,7 +487,7 @@ class Configuration {
         pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,
         timeout: timeout ?? this.timeout,
-        pattern: pattern ?? this.pattern,
+        patterns: patterns ?? this.patterns,
         platforms: platforms ?? _platforms,
         paths: paths ?? _paths,
         filename: filename ?? _filename,

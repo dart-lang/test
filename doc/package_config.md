@@ -33,6 +33,8 @@ tags:
 * [Runner Configuration](#runner-configuration)
   * [`paths`](#paths)
   * [`filename`](#filename)
+  * [`names`](#names)
+  * [`plain_names`](#plain_names)
   * [`platforms`](#platforms)
   * [`concurrency`](#concurrency)
   * [`pub_serve`](#pub_serve)
@@ -180,6 +182,44 @@ filename: "test_*.dart"
 ```
 
 [glob syntax]: https://github.com/dart-lang/glob#syntax
+
+### `names`
+
+This field restricts the tests run by the runner to those whose names match the
+given regular expressions. A test's name must match *all* regular expressions in
+`names`, as well as containing all strings in [`plain_names`](#plain_names), in
+order to be run.
+
+This is usually used in a [preset](#configuration-presets) to make it possible
+to quickly select a given set of tests.
+
+```yaml
+presets:
+  # Pass "-P chrome" to run only Chrome tests.
+  chrome:
+    names:
+    - "^browser:"
+    - "[Cc]hrome"
+```
+
+### `plain_names`
+
+This field restricts the tests run by the runner to those whose names contain
+the given strings. A test's name must contain *all* strings in `plain_names`, as
+well as matching all regular expressions in [`names`](#names), in order to be
+run.
+
+This is usually used in a [preset](#configuration-presets) to make it possible
+to quickly select a given set of tests.
+
+```yaml
+presets:
+  # Pass "-P ie" to run only Internet Explorer tests.
+  ie:
+    plain_names:
+    - "IE"
+    - "Internet Explorer"
+```
 
 ### `platforms`
 

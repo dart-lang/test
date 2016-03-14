@@ -374,6 +374,53 @@ transformers:
     test.shouldExit(0);
   });
 
+
+  test("uses the specified regexp names", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "names": ["z[ia]p", "a"]
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("zip", () {});
+        test("zap", () {});
+        test("zop", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(containsInOrder([
+      "+0: zap",
+      "+1: All tests passed!"
+    ]));
+    test.shouldExit(0);
+  });
+
+  test("uses the specified plain names", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "names": ["z", "a"]
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("zip", () {});
+        test("zap", () {});
+        test("zop", () {});
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(containsInOrder([
+      "+0: zap",
+      "+1: All tests passed!"
+    ]));
+    test.shouldExit(0);
+  });
+
   test("uses the specified paths", () {
     d.file("dart_test.yaml", JSON.encode({
       "paths": ["zip", "zap"]

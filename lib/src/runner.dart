@@ -126,16 +126,13 @@ class Runner {
     if (_closed) return false;
 
     if (_engine.passed.length == 0 && _engine.failed.length == 0 &&
-        _engine.skipped.length == 0 && _config.pattern != null) {
-      var message = 'No tests match ';
+        _engine.skipped.length == 0 && _config.patterns.isNotEmpty) {
+      var patterns = toSentence(_config.patterns.map(
+          (pattern) => pattern is RegExp
+              ? 'regular expression "${pattern.pattern}"'
+              : '"$pattern"'))
 
-      if (_config.pattern is RegExp) {
-        var pattern = (_config.pattern as RegExp).pattern;
-        message += 'regular expression "$pattern".';
-      } else {
-        message += '"${_config.pattern}".';
-      }
-      throw new ApplicationException(message);
+      throw new ApplicationException('No tests match $patterns.');
     }
 
     // Explicitly check "== true" here because [Engine.run] can return `null`
@@ -232,7 +229,7 @@ class Runner {
 
   /// Return a stream of [LoadSuite]s in [_config.paths].
   ///
-  /// Only tests that match [_config.pattern] will be included in the
+  /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
     return mergeStreams(_config.paths.map((path) {
@@ -248,8 +245,8 @@ class Runner {
         _warnForUnknownTags(suite);
 
         return suite.filter((test) {
-          // Skip any tests that don't match the given pattern.
-          if (_config.pattern != null && !test.name.contains(_config.pattern)) {
+          // Skip any tests that don't match all the given patterns.
+          if (!_config.patterns.every(test.name.contains)) {
             return false;
           }
 

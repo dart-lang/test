@@ -50,8 +50,11 @@ Usage: pub run test:test [files or directories...]
 ======== Selecting Tests
 -n, --name                     A substring of the name of the test to run.
                                Regular expression syntax is supported.
+                               If passed multiple times, tests must match all substrings.
 
 -N, --plain-name               A plain-text substring of the name of the test to run.
+                               If passed multiple times, tests must match all substrings.
+
 -t, --tags                     Run only tests with all of the specified tags.
                                Supports boolean selector syntax.
 
@@ -560,116 +563,11 @@ void main() {
     });
   });
 
-  group("flags:", () {
-    test("with the --color flag, uses colors", () {
-      d.file("test.dart", _failure).create();
-      var test = runTest(["--color", "test.dart"]);
-      // This is the color code for red.
-      test.stdout.expect(consumeThrough(contains("\u001b[31m")));
-      test.shouldExit();
-    });
-
-    group("with the --name flag,", () {
-      test("selects tests with matching names", () {
-        d.file("test.dart", """
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test("selected 1", () {});
-  test("nope", () => throw new TestFailure("oh no"));
-  test("selected 2", () {});
-}
-""").create();
-
-        var test = runTest(["--name", "selected", "test.dart"]);
-        test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-        test.shouldExit(0);
-      });
-
-      test("supports RegExp syntax", () {
-        d.file("test.dart", """
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test("test 1", () {});
-  test("test 2", () => throw new TestFailure("oh no"));
-  test("test 3", () {});
-}
-""").create();
-
-        var test = runTest(["--name", "test [13]", "test.dart"]);
-        test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-        test.shouldExit(0);
-      });
-
-      test("produces an error when no tests match", () {
-        d.file("test.dart", _success).create();
-
-        var test = runTest(["--name", "no match", "test.dart"]);
-        test.stderr.expect(consumeThrough(
-            contains('No tests match regular expression "no match".')));
-        test.shouldExit(exit_codes.data);
-      });
-
-      test("doesn't filter out load exceptions", () {
-        var test = runTest(["--name", "name", "file"]);
-        test.stdout.expect(containsInOrder([
-          '-1: loading file',
-          '  Failed to load "file": Does not exist.'
-        ]));
-        test.shouldExit(1);
-      });
-    });
-
-    group("with the --plain-name flag,", () {
-      test("selects tests with matching names", () {
-        d.file("test.dart", """
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test("selected 1", () {});
-  test("nope", () => throw new TestFailure("oh no"));
-  test("selected 2", () {});
-}
-""").create();
-
-        var test = runTest(["--plain-name", "selected", "test.dart"]);
-        test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-        test.shouldExit(0);
-      });
-
-      test("doesn't support RegExp syntax", () {
-        d.file("test.dart", """
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test("test 1", () => throw new TestFailure("oh no"));
-  test("test 2", () => throw new TestFailure("oh no"));
-  test("test [12]", () {});
-}
-""").create();
-
-        var test = runTest(["--plain-name", "test [12]", "test.dart"]);
-        test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-        test.shouldExit(0);
-      });
-
-      test("produces an error when no tests match", () {
-        d.file("test.dart", _success).create();
-
-        var test = runTest(["--plain-name", "no match", "test.dart"]);
-        test.stderr.expect(
-            consumeThrough(contains('No tests match "no match".')));
-        test.shouldExit(exit_codes.data);
-      });
-    });
+  test("with the --color flag, uses colors", () {
+    d.file("test.dart", _failure).create();
+    var test = runTest(["--color", "test.dart"]);
+    // This is the color code for red.
+    test.stdout.expect(consumeThrough(contains("\u001b[31m")));
+    test.shouldExit();
   });
 }

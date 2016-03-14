@@ -1,3 +1,12 @@
+## 0.12.13
+
+* The `--name` and `--plain-name` arguments may be passed more than once, and
+  may be passed together. A test must match all name constraints in order to be
+  run.
+
+* Add `names` and `plain_names` fields to the package configuration file. These
+  allow users to control which tests are run for the given presets.
+
 ## 0.12.12
 
 * Add support for [test presets][]. These are defined using the `presets` field
