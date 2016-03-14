@@ -66,7 +66,7 @@ class Configuration {
   final bool _pauseAfterLoad;
 
   /// The package root for resolving "package:" URLs.
-  String get packageRoot => _packageRoot ?? p.join(p.current, 'packages');
+  String get packageRoot => _packageRoot ?? p.fromUri(Platform.packageRoot);
   final String _packageRoot;
 
   /// The name of the reporter to use to display results.
