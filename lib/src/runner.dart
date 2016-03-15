@@ -130,7 +130,7 @@ class Runner {
       var patterns = toSentence(_config.patterns.map(
           (pattern) => pattern is RegExp
               ? 'regular expression "${pattern.pattern}"'
-              : '"$pattern"'))
+              : '"$pattern"'));
 
       throw new ApplicationException('No tests match $patterns.');
     }

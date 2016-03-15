@@ -112,74 +112,86 @@ String get usage => _parser.usage;
 /// Parses the configuration from [args].
 ///
 /// Throws a [FormatException] if [args] are invalid.
-Configuration parse(List<String> args) {
-  var options = _parser.parse(args);
+Configuration parse(List<String> args) => new _Parser(args).parse();
 
-  var patterns = options['name']
-      .map((value) => _wrapFormatException('name', () => new RegExp(value)))
-      .toList()
-      ..addAll(options['plain-name']);
+/// A class for parsing an argument list.
+///
+/// This is used to provide access to the arg results across helper methods.
+class _Parser {
+  /// The parsed options.
+  final ArgResults _options;
 
-  var includeTagSet = new Set.from(options['tags'] ?? [])
-    ..addAll(options['tag'] ?? []);
+  _Parser(List<String> args) : _options = _parser.parse(args);
 
-  var includeTags = includeTagSet.fold(BooleanSelector.all, (selector, tag) {
-    var tagSelector = new BooleanSelector.parse(tag);
-    return selector.intersection(tagSelector);
-  });
+  /// Returns the parsed configuration.
+  Configuration parse() {
+    var patterns = _options['name']
+        .map((value) => _wrapFormatException('name', () => new RegExp(value)))
+        .toList()
+        ..addAll(_options['plain-name']);
 
-  var excludeTagSet = new Set.from(options['exclude-tags'] ?? [])
-    ..addAll(options['exclude-tag'] ?? []);
+    var includeTagSet = new Set.from(_options['tags'] ?? [])
+      ..addAll(_options['tag'] ?? []);
 
-  var excludeTags = excludeTagSet.fold(BooleanSelector.none, (selector, tag) {
-    var tagSelector = new BooleanSelector.parse(tag);
-    return selector.union(tagSelector);
-  });
+    var includeTags = includeTagSet.fold(BooleanSelector.all, (selector, tag) {
+      var tagSelector = new BooleanSelector.parse(tag);
+      return selector.intersection(tagSelector);
+    });
 
-  // If the user hasn't explicitly chosen a value, we want to pass null values
-  // to [new Configuration] so that it considers those fields unset when merging
-  // with configuration from the config file.
-  ifParsed(name) => options.wasParsed(name) ? options[name] : null;
+    var excludeTagSet = new Set.from(_options['exclude-tags'] ?? [])
+      ..addAll(_options['exclude-tag'] ?? []);
 
-  return new Configuration(
-      help: ifParsed('help'),
-      version: ifParsed('version'),
-      verboseTrace: ifParsed('verbose-trace'),
-      jsTrace: ifParsed('js-trace'),
-      pauseAfterLoad: ifParsed('pause-after-load'),
-      color: ifParsed('color'),
-      packageRoot: ifParsed('package-root'),
-      reporter: ifParsed('reporter'),
-      pubServePort: _parseOption(options, 'pub-serve', int.parse),
-      concurrency: _parseOption(options, 'concurrency', int.parse),
-      timeout: _parseOption(options, 'timeout',
-          (value) => new Timeout.parse(value)),
-      patterns: patterns,
-      platforms: ifParsed('platform')?.map(TestPlatform.find),
-      chosenPresets: ifParsed('preset'),
-      paths: options.rest.isEmpty ? null : options.rest,
-      includeTags: includeTags,
-      excludeTags: excludeTags);
-}
+    var excludeTags = excludeTagSet.fold(BooleanSelector.none, (selector, tag) {
+      var tagSelector = new BooleanSelector.parse(tag);
+      return selector.union(tagSelector);
+    });
 
-/// Runs [parse] on the value of the option [name], and wraps any
-/// [FormatException] it throws with additional information.
-_parseOption(ArgResults options, String name, parse(value)) {
-  if (!options.wasParsed(name)) return null;
+    return new Configuration(
+        help: _ifParsed('help'),
+        version: _ifParsed('version'),
+        verboseTrace: _ifParsed('verbose-trace'),
+        jsTrace: _ifParsed('js-trace'),
+        pauseAfterLoad: _ifParsed('pause-after-load'),
+        color: _ifParsed('color'),
+        packageRoot: _ifParsed('package-root'),
+        reporter: _ifParsed('reporter'),
+        pubServePort: _parseOption('pub-serve', int.parse),
+        concurrency: _parseOption('concurrency', int.parse),
+        timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
+        patterns: patterns,
+        platforms: _ifParsed('platform')?.map(TestPlatform.find),
+        chosenPresets: _ifParsed('preset'),
+        paths: _options.rest.isEmpty ? null : _options.rest,
+        includeTags: includeTags,
+        excludeTags: excludeTags);
+  }
 
-  var value = options[name];
-  if (value == null) return null;
+  /// Returns the parsed option for [name], or `null` if none was parsed.
+  ///
+  /// If the user hasn't explicitly chosen a value, we want to pass null values
+  /// to [new Configuration] so that it considers those fields unset when
+  /// merging with configuration from the config file.
+  _ifParsed(String name) => _options.wasParsed(name) ? _options[name] : null;
 
-  return _wrapFormatException(name, () => parse(value));
-}
+  /// Runs [parse] on the value of the option [name], and wraps any
+  /// [FormatException] it throws with additional information.
+  _parseOption(String name, parse(value)) {
+    if (!_options.wasParsed(name)) return null;
 
-/// Runs [parse], and wraps any [FormatException] it throws with additional
-/// information.
-_wrapFormatException(String name, parse()) {
-  try {
-    return parse();
-  } on FormatException catch (error) {
-    throw new FormatException('Couldn\'t parse --$name "${options[name]}": '
-        '${error.message}');
+    var value = _options[name];
+    if (value == null) return null;
+
+    return _wrapFormatException(name, () => parse(value));
+  }
+
+  /// Runs [parse], and wraps any [FormatException] it throws with additional
+  /// information.
+  _wrapFormatException(String name, parse()) {
+    try {
+      return parse();
+    } on FormatException catch (error) {
+      throw new FormatException('Couldn\'t parse --$name "${_options[name]}": '
+          '${error.message}');
+    }
   }
 }
