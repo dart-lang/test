@@ -42,94 +42,145 @@ void main() {
     test.shouldExit(0);
   });
 
-  test("doesn't warn for tags that exist in the configuration", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "tags": {"foo": null}
-    })).create();
+  group("tags", () {
+    test("doesn't warn for tags that exist in the configuration", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "tags": {"foo": null}
+      })).create();
 
-    d.file("test.dart", """
-      import 'package:test/test.dart';
+      d.file("test.dart", """
+        import 'package:test/test.dart';
 
-      void main() {
-        test("test", () {});
-      }
-    """).create();
+        void main() {
+          test("test", () {});
+        }
+      """).create();
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(never(contains("Warning: Tags were used")));
-    test.shouldExit(0);
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(never(contains("Warning: Tags were used")));
+      test.shouldExit(0);
+    });
+
+    test("applies tag-specific configuration only to matching tests", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "tags": {"foo": {"timeout": "0s"}}
+      })).create();
+
+      d.file("test.dart", """
+        import 'dart:async';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
+          test("test 2", () => new Future.delayed(Duration.ZERO));
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "-1: test 1",
+        "+1 -1: Some tests failed."
+      ]));
+      test.shouldExit(1);
+    });
+
+    test("supports tag selectors", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "tags": {"foo && bar": {"timeout": "0s"}}
+      })).create();
+
+      d.file("test.dart", """
+        import 'dart:async';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
+          test("test 2", () => new Future.delayed(Duration.ZERO), tags: ['bar']);
+          test("test 3", () => new Future.delayed(Duration.ZERO),
+              tags: ['foo', 'bar']);
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "+2 -1: test 3",
+        "+2 -1: Some tests failed."
+      ]));
+      test.shouldExit(1);
+    });
+
+    test("allows tag inheritance via add_tags", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "tags": {
+          "foo": null,
+          "bar": {"add_tags": ["foo"]}
+        }
+      })).create();
+
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test 1", () {}, tags: ['bar']);
+          test("test 2", () {});
+        }
+      """).create();
+
+      var test = runTest(["test.dart", "--tags", "foo"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
+    });
   });
 
-  test("applies tag-specific configuration only to matching tests", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "tags": {"foo": {"timeout": "0s"}}
-    })).create();
+  group("include_tags and exclude_tags", () {
+    test("only runs tests with the included tags", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "include_tags": "foo && bar"
+      })).create();
 
-    d.file("test.dart", """
-      import 'dart:async';
+      d.file("test.dart", """
+        import 'package:test/test.dart';
 
-      import 'package:test/test.dart';
+        void main() {
+          test("zip", () {}, tags: "foo");
+          test("zap", () {}, tags: "bar");
+          test("zop", () {}, tags: ["foo", "bar"]);
+        }
+      """).create();
 
-      void main() {
-        test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
-        test("test 2", () => new Future.delayed(Duration.ZERO));
-      }
-    """).create();
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "+0: zop",
+        "+1: All tests passed!"
+      ]));
+      test.shouldExit(0);
+    });
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "-1: test 1",
-      "+1 -1: Some tests failed."
-    ]));
-    test.shouldExit(1);
-  });
+    test("doesn't run tests with the excluded tags", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "exclude_tags": "foo && bar"
+      })).create();
 
-  test("supports tag selectors", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "tags": {"foo && bar": {"timeout": "0s"}}
-    })).create();
+      d.file("test.dart", """
+        import 'package:test/test.dart';
 
-    d.file("test.dart", """
-      import 'dart:async';
+        void main() {
+          test("zip", () {}, tags: "foo");
+          test("zap", () {}, tags: "bar");
+          test("zop", () {}, tags: ["foo", "bar"]);
+        }
+      """).create();
 
-      import 'package:test/test.dart';
-
-      void main() {
-        test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
-        test("test 2", () => new Future.delayed(Duration.ZERO), tags: ['bar']);
-        test("test 3", () => new Future.delayed(Duration.ZERO),
-            tags: ['foo', 'bar']);
-      }
-    """).create();
-
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "+2 -1: test 3",
-      "+2 -1: Some tests failed."
-    ]));
-    test.shouldExit(1);
-  });
-
-  test("allows tag inheritance via add_tags", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "tags": {
-        "foo": null,
-        "bar": {"add_tags": ["foo"]}
-      }
-    })).create();
-
-    d.file("test.dart", """
-      import 'package:test/test.dart';
-
-      void main() {
-        test("test 1", () {}, tags: ['bar']);
-        test("test 2", () {});
-      }
-    """).create();
-
-    var test = runTest(["test.dart", "--tags", "foo"]);
-    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-    test.shouldExit(0);
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "+0: zip",
+        "+1: zap",
+        "+2: All tests passed!"
+      ]));
+      test.shouldExit(0);
+    });
   });
 
   group("errors", () {
@@ -233,6 +284,62 @@ void main() {
         var test = runTest(["test.dart"]);
         test.stderr.expect(containsInOrder([
           "Tag name must be an (optionally hyphenated) Dart identifier.",
+          "^^^^^^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+    });
+
+    group("include_tags", () {
+      test("rejects an invalid type", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "include_tags": 12
+        })).create();
+
+        var test = runTest(["test.dart"]);
+        test.stderr.expect(containsInOrder([
+          "include_tags must be a string",
+          "^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects an invalid selector", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "include_tags": "foo bar"
+        })).create();
+
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "Invalid include_tags: Expected end of input.",
+          "^^^^^^^^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+    });
+
+    group("exclude_tags", () {
+      test("rejects an invalid type", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "exclude_tags": 12
+        })).create();
+
+        var test = runTest(["test.dart"]);
+        test.stderr.expect(containsInOrder([
+          "exclude_tags must be a string",
+          "^^"
+        ]));
+        test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects an invalid selector", () {
+        d.file("dart_test.yaml", JSON.encode({
+          "exclude_tags": "foo bar"
+        })).create();
+
+        var test = runTest([]);
+        test.stderr.expect(containsInOrder([
+          "Invalid exclude_tags: Expected end of input.",
           "^^^^^^^^^"
         ]));
         test.shouldExit(exit_codes.data);

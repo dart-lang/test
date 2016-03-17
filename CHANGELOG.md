@@ -5,7 +5,10 @@
   run.
 
 * Add `names` and `plain_names` fields to the package configuration file. These
-  allow users to control which tests are run for the given presets.
+  allow presets to control which tests are run based on their names.
+
+* Add `include_tags` and `exclude_tags` fields to the package configuration
+  file. These allow presets to control which tests are run based on their tags.
 
 ## 0.12.12
 

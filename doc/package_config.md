@@ -35,6 +35,8 @@ tags:
   * [`filename`](#filename)
   * [`names`](#names)
   * [`plain_names`](#plain_names)
+  * [`include_tags`](#include_tags)
+  * [`exclude_tags`](#exclude_tags)
   * [`platforms`](#platforms)
   * [`concurrency`](#concurrency)
   * [`pub_serve`](#pub_serve)
@@ -185,8 +187,8 @@ filename: "test_*.dart"
 
 ### `names`
 
-This field restricts the tests run by the runner to those whose names match the
-given regular expressions. A test's name must match *all* regular expressions in
+This field causes the runner to only run tests whose names match the given
+regular expressions. A test's name must match *all* regular expressions in
 `names`, as well as containing all strings in [`plain_names`](#plain_names), in
 order to be run.
 
@@ -204,10 +206,9 @@ presets:
 
 ### `plain_names`
 
-This field restricts the tests run by the runner to those whose names contain
-the given strings. A test's name must contain *all* strings in `plain_names`, as
-well as matching all regular expressions in [`names`](#names), in order to be
-run.
+This field causes the runner to only run tests whose names contain the given
+strings. A test's name must contain *all* strings in `plain_names`, as well as
+matching all regular expressions in [`names`](#names), in order to be run.
 
 This is usually used in a [preset](#configuration-presets) to make it possible
 to quickly select a given set of tests.
@@ -219,6 +220,40 @@ presets:
     plain_names:
     - "IE"
     - "Internet Explorer"
+```
+
+### `include_tags`
+
+This field causes the runner to only run tests whose tags match the given
+[boolean selector][]. If both `include_tags` and [`exclude_tags`](#exclude_tags)
+are used, the exclusions take precedence.
+
+[boolean selector]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+
+This is usually used in a [preset](#configuration-preset) to make it possible to
+quickly select a set of tests.
+
+```yaml
+presets:
+  # Pass "-P windowless" to run tests that don't open browser windows.
+  windowless:
+    include_tags: !browser || content-shell
+```
+
+### `exclude_tags`
+
+This field causes the runner not to run tests whose tags match the given
+[boolean selector][]. If both [`include_tags`](#include_tags) and `exclude_tags`
+are used, the exclusions take precedence.
+
+This is usually used in a [preset](#configuration-preset) to make it possible to
+quickly select a set of tests.
+
+```yaml
+presets:
+  # Pass "-P windowless" to run tests that don't open browser windows.
+  windowless:
+    exclude_tags: browser && !content-shell
 ```
 
 ### `platforms`

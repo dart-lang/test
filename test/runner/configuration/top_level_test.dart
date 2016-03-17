@@ -374,7 +374,6 @@ transformers:
     test.shouldExit(0);
   });
 
-
   test("uses the specified regexp names", () {
     d.file("dart_test.yaml", JSON.encode({
       "names": ["z[ia]p", "a"]

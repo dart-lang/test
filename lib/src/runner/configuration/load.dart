@@ -177,6 +177,9 @@ class _ConfigurationLoader {
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
 
+    var includeTags = _parseBooleanSelector("include_tags");
+    var excludeTags = _parseBooleanSelector("exclude_tags");
+
     return new Configuration(
         reporter: reporter,
         pubServePort: pubServePort,
@@ -185,7 +188,9 @@ class _ConfigurationLoader {
         platforms: platforms,
         paths: paths,
         filename: filename,
-        chosenPresets: chosenPresets);
+        chosenPresets: chosenPresets,
+        includeTags: includeTags,
+        excludeTags: excludeTags);
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed
@@ -266,6 +271,8 @@ class _ConfigurationLoader {
         value: (_, valueNode) => value(valueNode));
   }
 
+  /// Verifies that [node]'s value is an optionally hyphenated Dart identifier,
+  /// and returns it
   String _parseIdentifierLike(YamlNode node, String name) {
     _validate(node, "$name must be a string.", (value) => value is String);
     _validate(
@@ -274,6 +281,10 @@ class _ConfigurationLoader {
         (value) => value.contains(anchoredHyphenatedIdentifier));
     return node.value;
   }
+
+  /// Parses [node]'s value as a boolean selector.
+  BooleanSelector _parseBooleanSelector(String name) =>
+      _parseValue(name, (value) => new BooleanSelector.parse(value));
 
   /// Asserts that [node] is a string, passes its value to [parse], and returns
   /// the result.
