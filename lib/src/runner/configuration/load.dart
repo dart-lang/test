@@ -135,6 +135,8 @@ class _ConfigurationLoader {
       _disallow("paths");
       _disallow("filename");
       _disallow("add_presets");
+      _disallow("include_tags");
+      _disallow("exclude_tags");
       return Configuration.empty;
     }
 
