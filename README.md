@@ -124,12 +124,11 @@ void main() {
 
 ## Running Tests
 
-A single test file can be run just using `pub run test:test path/to/test.dart`
-(on Dart 1.10, this can be shortened to `pub run test path/to/test.dart`).
+A single test file can be run just using `pub run test path/to/test.dart`.
 
 ![Single file being run via pub run"](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
 
-Many tests can be run at a time using `pub run test:test path/to/dir`.
+Many tests can be run at a time using `pub run test path/to/dir`.
 
 ![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/image/test2.gif)
 
@@ -142,11 +141,11 @@ file. If you don't pass any paths, it will run all the test files in your
 `test/` directory, making it easy to test your entire application at once.
 
 By default, tests are run in the Dart VM, but you can run them in the browser as
-well by passing `pub run test:test -p chrome path/to/test.dart`.
-`test` will take care of starting the browser and loading the tests, and all
-the results will be reported on the command line just like for VM tests. In
-fact, you can even run tests on both platforms with a single command: `pub run
-test:test -p "chrome,vm" path/to/test.dart`.
+well by passing `pub run test -p chrome path/to/test.dart`. `test` will take
+care of starting the browser and loading the tests, and all the results will be
+reported on the command line just like for VM tests. In fact, you can even run
+tests on both platforms with a single command: `pub run test -p "chrome,vm"
+path/to/test.dart`.
 
 ### Restricting Tests to Certain Platforms
 
@@ -638,10 +637,10 @@ Build completed successfully
 ```
 
 In this case, the port is `8081`. In another terminal, pass this port to
-`--pub-serve` and otherwise invoke `pub run test:test` as normal:
+`--pub-serve` and otherwise invoke `pub run test` as normal:
 
 ```shell
-$ pub run test:test --pub-serve=8081 -p chrome
+$ pub run test --pub-serve=8081 -p chrome
 "pub serve" is compiling test/my_app_test.dart...
 "pub serve" is compiling test/utils_test.dart...
 00:00 +42: All tests passed!

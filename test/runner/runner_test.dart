@@ -42,7 +42,7 @@ final _browsers =
         (Platform.isWindows ? ", ie" : "") + "]";
 
 final _usage = """
-Usage: pub run test:test [files or directories...]
+Usage: pub run test [files or directories...]
 
 -h, --help                     Shows this usage information.
     --version                  Shows the package's version.
