@@ -39,6 +39,7 @@ tags:
   * [`exclude_tags`](#exclude_tags)
   * [`platforms`](#platforms)
   * [`concurrency`](#concurrency)
+  * [`pause_after_load`](#pause_after_load)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
 * [Configuring Tags](#configuring-tags)
@@ -281,6 +282,24 @@ If it's set to 1, only one test suite will run at a time.
 
 ```yaml
 concurrency: 3
+```
+
+### `pause_after_load`
+
+This field indicates that the test runner should pause for debugging after each
+test suite is loaded but before its tests are executed. If it's set,
+[`concurrency`](#concurrency) is automatically set to 1 and
+[`timeout`](#timeout) is automatically set to `none`.
+
+This is usually used in a [preset](#configuration-presets).
+
+```yaml
+presets:
+  # Pass "-P debug" to enable debugging configuration
+  debug:
+    pause_after_load: true
+    exclude_tags: undebuggable
+    reporter: expanded
 ```
 
 ### `pub_serve`

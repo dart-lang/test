@@ -10,6 +10,9 @@
 * Add `include_tags` and `exclude_tags` fields to the package configuration
   file. These allow presets to control which tests are run based on their tags.
 
+* Add a `pause_after_load` field to the package configuration file. This allows
+  presets to enable debugging mode.
+
 ## 0.12.12
 
 * Add support for [test presets][]. These are defined using the `presets` field

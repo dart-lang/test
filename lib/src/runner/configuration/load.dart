@@ -128,6 +128,7 @@ class _ConfigurationLoader {
   /// runner-level configuration fields.
   Configuration _loadRunnerConfig() {
     if (!_runnerConfig) {
+      _disallow("pause_after_load");
       _disallow("reporter");
       _disallow("pub_serve");
       _disallow("concurrency");
@@ -139,6 +140,8 @@ class _ConfigurationLoader {
       _disallow("exclude_tags");
       return Configuration.empty;
     }
+
+    var pauseAfterLoad = _getBool("pause_after_load");
 
     var reporter = _getString("reporter");
     if (reporter != null && !allReporters.contains(reporter)) {
@@ -183,6 +186,7 @@ class _ConfigurationLoader {
     var excludeTags = _parseBooleanSelector("exclude_tags");
 
     return new Configuration(
+        pauseAfterLoad: pauseAfterLoad,
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,

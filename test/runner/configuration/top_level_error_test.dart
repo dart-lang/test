@@ -15,6 +15,19 @@ import '../../io.dart';
 void main() {
   useSandbox();
 
+  test("rejects an invalid pause_after_load", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "pause_after_load": "flup"
+    })).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(containsInOrder([
+      "pause_after_load must be a boolean",
+      "^^^^^^"
+    ]));
+    test.shouldExit(exit_codes.data);
+  });
+
   test("rejects an invalid verbose_trace", () {
     d.file("dart_test.yaml", JSON.encode({
       "verbose_trace": "flup"

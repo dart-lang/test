@@ -4,6 +4,7 @@
 
 @TestOn("vm")
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
@@ -32,6 +33,51 @@ void main() {
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
   });
+
+  test("pauses the test runner after a suite loads with pause_after_load: true",
+      () {
+    d.file("dart_test.yaml", JSON.encode({
+      "pause_after_load": true
+    })).create();
+
+    d.file("test.dart", """
+import 'package:test/test.dart';
+
+void main() {
+  print('loaded test!');
+
+  test("success", () {});
+}
+""").create();
+
+    var test = runTest(["-p", "content-shell", "test.dart"]);
+    test.stdout.expect(consumeThrough("loaded test!"));
+    test.stdout.expect(inOrder([
+      "",
+      startsWith("Observatory URL: "),
+      startsWith("Remote debugger URL: "),
+      "The test runner is paused. Open the remote debugger or the Observatory "
+          "and set breakpoints. Once",
+      "you're finished, return to this terminal and press Enter."
+    ]));
+
+    schedule(() async {
+      var nextLineFired = false;
+      test.stdout.next().then(expectAsync((line) {
+        expect(line, contains("+0: success"));
+        nextLineFired = true;
+      }));
+
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await new Future.delayed(new Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
+    });
+
+    test.writeLine('');
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
+  }, tags: 'content-shell');
 
   test("includes the full stack with verbose_trace: true", () {
     d.file("dart_test.yaml", JSON.encode({
