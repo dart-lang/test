@@ -132,6 +132,8 @@ class _ConfigurationLoader {
       _disallow("reporter");
       _disallow("pub_serve");
       _disallow("concurrency");
+      _disallow("names");
+      _disallow("plain_names");
       _disallow("platforms");
       _disallow("paths");
       _disallow("filename");
