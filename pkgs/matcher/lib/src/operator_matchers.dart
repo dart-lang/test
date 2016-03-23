@@ -90,24 +90,8 @@ class _AnyOf extends Matcher {
       description.addAll('(', ' or ', ')', _matchers);
 }
 
-List<Matcher> _wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
-  Iterable<Matcher> matchers;
-  if (arg0 is List) {
-    if (arg1 != null ||
-        arg2 != null ||
-        arg3 != null ||
-        arg4 != null ||
-        arg5 != null ||
-        arg6 != null) {
-      throw new ArgumentError('If arg0 is a List, all other arguments must be'
-          ' null.');
-    }
-
-    matchers = arg0;
-  } else {
-    matchers =
-        [arg0, arg1, arg2, arg3, arg4, arg5, arg6].where((e) => e != null);
-  }
-
-  return matchers.map((e) => wrapMatcher(e)).toList();
-}
+List<Matcher> _wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6) =>
+    [arg0, arg1, arg2, arg3, arg4, arg5, arg6]
+        .where((e) => e != null)
+        .map((e) => wrapMatcher(e))
+        .toList();

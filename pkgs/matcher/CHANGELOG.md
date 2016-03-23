@@ -1,3 +1,7 @@
+## 0.11.4+5
+
+* Fix all strong-mode warnings.
+
 ## 0.11.4+4
 
 * Deprecate the name parameter to `isInstanceOf`. All language implementations
