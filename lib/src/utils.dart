@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:async/async.dart' hide StreamQueue;
-import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stack_trace/stack_trace.dart';
@@ -428,15 +427,13 @@ void invoke(fn()) {
 ///
 /// [seed] is passed to [math.Random]; [urlSafe] and [addLineSeparator] are
 /// passed to [CryptoUtils.bytesToBase64].
-String randomBase64(int bytes, {int seed, bool urlSafe: false,
-    bool addLineSeparator: false}) {
+String randomBase64(int bytes, {int seed}) {
   var random = new math.Random(seed);
   var data = [];
   for (var i = 0; i < bytes; i++) {
     data.add(random.nextInt(256));
   }
-  return CryptoUtils.bytesToBase64(data,
-      urlSafe: urlSafe, addLineSeparator: addLineSeparator);
+  return BASE64.encode(data);
 }
 
 /// Returns middleware that nests all requests beneath the URL prefix [beneath].

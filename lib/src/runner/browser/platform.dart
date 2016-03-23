@@ -49,7 +49,7 @@ class BrowserPlatform extends PlatformPlugin {
   ///
   /// This is used to ensure that other users on the same system can't snoop
   /// on data being served through this server.
-  final _secret = randomBase64(24, urlSafe: true);
+  final _secret = Uri.encodeComponent(randomBase64(24));
 
   /// The URL for this server.
   Uri get url => _server.url.resolve(_secret + "/");
