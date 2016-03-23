@@ -21,9 +21,12 @@ import 'values.dart';
 
 /// Loads configuration information from a YAML file at [path].
 ///
+/// If [global] is `true`, this restricts the configuration file to only rules
+/// that are supported globally.
+///
 /// Throws a [FormatException] if the configuration is invalid, and a
 /// [FileSystemException] if it can't be read.
-Configuration load(String path) {
+Configuration load(String path, {bool global: false}) {
   var source = new File(path).readAsStringSync();
   var document = loadYamlNode(source, sourceUrl: p.toUri(path));
 
@@ -34,7 +37,7 @@ Configuration load(String path) {
         "The configuration must be a YAML map.", document.span, source);
   }
 
-  var loader = new _ConfigurationLoader(document, source);
+  var loader = new _ConfigurationLoader(document, source, global: global);
   return loader.load();
 }
 
@@ -48,41 +51,29 @@ class _ConfigurationLoader {
   /// Used for error reporting.
   final String _source;
 
+  /// Whether this is parsing the global configuration file.
+  final bool _global;
+
   /// Whether runner configuration is allowed at this level.
   final bool _runnerConfig;
 
-  _ConfigurationLoader(this._document, this._source, {bool runnerConfig: true})
-      : _runnerConfig = runnerConfig;
+  _ConfigurationLoader(this._document, this._source, {bool global: false,
+          bool runnerConfig: true})
+      : _global = global,
+        _runnerConfig = runnerConfig;
 
   /// Loads the configuration in [_document].
-  Configuration load() => _loadTestConfig().merge(_loadRunnerConfig());
+  Configuration load() => _loadGlobalTestConfig()
+      .merge(_loadLocalTestConfig())
+      .merge(_loadGlobalRunnerConfig())
+      .merge(_loadLocalRunnerConfig());
 
-  /// Loads test configuration (but not runner configuration).
-  Configuration _loadTestConfig() {
+  /// Loads test configuration that's allowed in the global configuration file.
+  Configuration _loadGlobalTestConfig() {
     var verboseTrace = _getBool("verbose_trace");
     var jsTrace = _getBool("js_trace");
 
-    var skip = _getValue("skip", "boolean or string",
-        (value) => value is bool || value is String);
-    var skipReason;
-    if (skip is String) {
-      skipReason = skip;
-      skip = true;
-    }
-
-    var testOn = _parseValue("test_on",
-        (value) => new PlatformSelector.parse(value));
-
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
-
-    var addTags = _getList("add_tags",
-        (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
-
-    var tags = _getMap("tags",
-        key: (keyNode) => _parseNode(keyNode, "tags key",
-            (value) => new BooleanSelector.parse(value)),
-        value: (valueNode) =>
-            _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
     var onPlatform = _getMap("on_platform",
         key: (keyNode) => _parseNode(keyNode, "on_platform key",
@@ -109,12 +100,7 @@ class _ConfigurationLoader {
     var config = new Configuration(
         verboseTrace: verboseTrace,
         jsTrace: jsTrace,
-        skip: skip,
-        skipReason: skipReason,
-        testOn: testOn,
         timeout: timeout,
-        addTags: addTags,
-        tags: tags,
         onPlatform: onPlatform,
         presets: presets);
 
@@ -122,24 +108,62 @@ class _ConfigurationLoader {
     return osConfig == null ? config : config.merge(osConfig);
   }
 
-  /// Loads runner configuration (but not test configuration).
+  /// Loads test configuration that's not allowed in the global configuration
+  /// file.
+  ///
+  /// If [_global] is `true`, this will error if there are any local test-level
+  /// configuration fields.
+  Configuration _loadLocalTestConfig() {
+    if (_global) {
+      _disallow("skip");
+      _disallow("test_on");
+      _disallow("add_tags");
+      _disallow("tags");
+      return Configuration.empty;
+    }
+
+    var skip = _getValue("skip", "boolean or string",
+        (value) => value is bool || value is String);
+    var skipReason;
+    if (skip is String) {
+      skipReason = skip;
+      skip = true;
+    }
+
+    var testOn = _parseValue("test_on",
+        (value) => new PlatformSelector.parse(value));
+
+    var addTags = _getList("add_tags",
+        (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
+
+    var tags = _getMap("tags",
+        key: (keyNode) => _parseNode(keyNode, "tags key",
+            (value) => new BooleanSelector.parse(value)),
+        value: (valueNode) =>
+            _nestedConfig(valueNode, "tag value", runnerConfig: false));
+
+    return new Configuration(
+        skip: skip,
+        skipReason: skipReason,
+        testOn: testOn,
+        addTags: addTags,
+        tags: tags);
+  }
+
+  /// Loads runner configuration that's allowed in the global configuration
+  /// file.
   ///
   /// If [_runnerConfig] is `false`, this will error if there are any
   /// runner-level configuration fields.
-  Configuration _loadRunnerConfig() {
+  Configuration _loadGlobalRunnerConfig() {
     if (!_runnerConfig) {
       _disallow("pause_after_load");
       _disallow("reporter");
-      _disallow("pub_serve");
       _disallow("concurrency");
       _disallow("names");
       _disallow("plain_names");
       _disallow("platforms");
-      _disallow("paths");
-      _disallow("filename");
       _disallow("add_presets");
-      _disallow("include_tags");
-      _disallow("exclude_tags");
       return Configuration.empty;
     }
 
@@ -150,16 +174,7 @@ class _ConfigurationLoader {
       _error('Unknown reporter "$reporter".', "reporter");
     }
 
-    var pubServePort = _getInt("pub_serve");
     var concurrency = _getInt("concurrency");
-
-    var patterns = _getList("names", (nameNode) {
-      _validate(nameNode, "Names must be strings.", (value) => value is String);
-      return _parseNode(nameNode, "name", (value) => new RegExp(value));
-    })..addAll(_getList("plain_names", (nameNode) {
-      _validate(nameNode, "Names must be strings.", (value) => value is String);
-      return nameNode.value;
-    }));
 
     var allPlatformIdentifiers =
         TestPlatform.all.map((platform) => platform.identifier).toSet();
@@ -172,6 +187,44 @@ class _ConfigurationLoader {
       return TestPlatform.find(platformNode.value);
     });
 
+    var chosenPresets = _getList("add_presets",
+        (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
+
+    return new Configuration(
+        pauseAfterLoad: pauseAfterLoad,
+        reporter: reporter,
+        concurrency: concurrency,
+        platforms: platforms,
+        chosenPresets: chosenPresets);
+  }
+
+  /// Loads runner configuration that's not allowed in the global configuration
+  /// file.
+  ///
+  /// If [_runnerConfig] is `false` or if [_global] is `true`, this will error
+  /// if there are any local test-level configuration fields.
+  Configuration _loadLocalRunnerConfig() {
+    if (!_runnerConfig || _global) {
+      _disallow("pub_serve");
+      _disallow("names");
+      _disallow("plain_names");
+      _disallow("paths");
+      _disallow("filename");
+      _disallow("include_tags");
+      _disallow("exclude_tags");
+      return Configuration.empty;
+    }
+
+    var pubServePort = _getInt("pub_serve");
+
+    var patterns = _getList("names", (nameNode) {
+      _validate(nameNode, "Names must be strings.", (value) => value is String);
+      return _parseNode(nameNode, "name", (value) => new RegExp(value));
+    })..addAll(_getList("plain_names", (nameNode) {
+      _validate(nameNode, "Names must be strings.", (value) => value is String);
+      return nameNode.value;
+    }));
+
     var paths = _getList("paths", (pathNode) {
       _validate(pathNode, "Paths must be strings.", (value) => value is String);
       _validate(pathNode, "Paths must be relative.", p.url.isRelative);
@@ -181,22 +234,14 @@ class _ConfigurationLoader {
 
     var filename = _parseValue("filename", (value) => new Glob(value));
 
-    var chosenPresets = _getList("add_presets",
-        (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
-
     var includeTags = _parseBooleanSelector("include_tags");
     var excludeTags = _parseBooleanSelector("exclude_tags");
 
     return new Configuration(
-        pauseAfterLoad: pauseAfterLoad,
-        reporter: reporter,
         pubServePort: pubServePort,
-        concurrency: concurrency,
         patterns: patterns,
-        platforms: platforms,
         paths: paths,
         filename: filename,
-        chosenPresets: chosenPresets,
         includeTags: includeTags,
         excludeTags: excludeTags);
   }
@@ -332,6 +377,7 @@ class _ConfigurationLoader {
 
     _validate(node, "$name must be a map.", (value) => value is Map);
     var loader = new _ConfigurationLoader(node, _source,
+        global: _global,
         runnerConfig: runnerConfig ?? _runnerConfig);
     return loader.load();
   }
@@ -339,7 +385,12 @@ class _ConfigurationLoader {
   /// Throws an error if a field named [field] exists at this level.
   void _disallow(String field) {
     if (!_document.containsKey(field)) return;
-    _error("$field isn't supported here.", field);
+
+    throw new SourceSpanFormatException(
+        "$field isn't supported here.",
+        // We need the key as a [YamlNode] to get its span.
+        _document.nodes.keys.firstWhere((key) => key.value == field).span,
+        _source);
   }
 
   /// Throws a [SourceSpanFormatException] with [message] about [field].

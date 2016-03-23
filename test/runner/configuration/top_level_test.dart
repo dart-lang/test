@@ -92,7 +92,7 @@ void main() {
       }
     """).create();
 
-    var test = runTest(["test.dart"], reporter: "compact");
+    var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
     test.shouldExit(1);
   });

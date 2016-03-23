@@ -7,6 +7,7 @@
 // bin.
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
@@ -59,6 +60,17 @@ bool get _usesTransformer {
   });
 }
 
+/// Returns the path to the global test configuration file.
+final String _globalConfigPath = (){
+  if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
+    return Platform.environment['DART_TEST_CONFIG'];
+  } else if (Platform.operatingSystem == 'windows') {
+    return p.join(Platform.environment['LOCALAPPDATA'], 'DartTest.yaml');
+  } else {
+    return '${Platform.environment['HOME']}/.dart_test.yaml';
+  }
+}();
+
 main(List<String> args) async {
   var configuration;
   try {
@@ -86,10 +98,18 @@ main(List<String> args) async {
   }
 
   try {
-    if (new File("dart_test.yaml").existsSync()) {
-      var fileConfiguration = new Configuration.load("dart_test.yaml");
-      configuration = fileConfiguration.merge(configuration);
+    var fileConfiguration = Configuration.empty;
+    if (new File(_globalConfigPath).existsSync()) {
+      fileConfiguration = fileConfiguration.merge(
+          new Configuration.load(_globalConfigPath, global: true));
     }
+
+    if (new File("dart_test.yaml").existsSync()) {
+      fileConfiguration = fileConfiguration.merge(
+          new Configuration.load("dart_test.yaml"));
+    }
+
+    configuration = fileConfiguration.merge(configuration);
   } on SourceSpanFormatException catch (error) {
     stderr.writeln(error.toString(color: configuration.color));
     exitCode = exit_codes.data;

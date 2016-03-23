@@ -227,9 +227,13 @@ class Configuration {
 
   /// Loads the configuration from [path].
   ///
+  /// If [global] is `true`, this restricts the configuration file to only rules
+  /// that are supported globally.
+  ///
   /// Throws an [IOException] if [path] does not exist or cannot be read. Throws
   /// a [FormatException] if its contents are invalid.
-  factory Configuration.load(String path) => load(path);
+  factory Configuration.load(String path, {bool global: false}) =>
+      load(path, global: global);
 
   factory Configuration({
       bool help,

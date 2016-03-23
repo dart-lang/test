@@ -1,5 +1,10 @@
 ## 0.12.13
 
+* Add support for a global configuration file. On Windows, this file defaults to
+  `%LOCALAPPDATA%\DartTest.yaml`. On Unix, it defaults to `~/.dart_test.yaml`.
+  It can also be explicitly set using the `DART_TEST_CONFIG` environment
+  variable. See [the configuration documentation][global config] for details.
+
 * The `--name` and `--plain-name` arguments may be passed more than once, and
   may be passed together. A test must match all name constraints in order to be
   run.
@@ -12,6 +17,8 @@
 
 * Add a `pause_after_load` field to the package configuration file. This allows
   presets to enable debugging mode.
+
+[global config]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#global-configuration
 
 ## 0.12.12
 
