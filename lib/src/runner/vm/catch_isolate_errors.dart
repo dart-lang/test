@@ -11,11 +11,11 @@ import 'package:stack_trace/stack_trace.dart';
 /// caught below) and report them to the parent isolate.
 void catchIsolateErrors() {
   var errorPort = new ReceivePort();
-  // Aet errors non-fatal because otherwise they'll be double-printed.
+  // Treat errors non-fatal because otherwise they'll be double-printed.
   Isolate.current.setErrorsFatal(false);
   Isolate.current.addErrorListener(errorPort.sendPort);
   errorPort.listen((message) {
-    // Masquerade as an IsoalteSpawnException because that's what this would
+    // Masquerade as an IsolateSpawnException because that's what this would
     // be if the error had been detected statically.
     var error = new IsolateSpawnException(message[0]);
     var stackTrace =
