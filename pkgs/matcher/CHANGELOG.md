@@ -1,3 +1,8 @@
+## 0.11.4+6
+
+* Fix a bug introduced in 0.11.4+5 in which operator matchers broke when taking
+  lists of matchers.
+
 ## 0.11.4+5
 
 * Fix all strong-mode warnings.
