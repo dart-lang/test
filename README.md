@@ -178,7 +178,7 @@ these platform names.
 You can also declare that your entire package only works on certain platforms by
 adding a [`test_on` field][test_on] to your package config file.
 
-[test_on]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#test_on
+[test_on]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#test_on
 
 ### Platform Selectors
 
@@ -502,7 +502,7 @@ like duration-based timeouts, the last matching value wins.
 You can also set up global platform-specific configuration using the
 [package configuration file][configuring platforms].
 
-[configuring platforms]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-platforms
+[configuring platforms]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#configuring-platforms
 
 ### Tagging Tests
 
@@ -536,7 +536,7 @@ sure to include all your tags there. You can also use the file to provide
 default configuration for tags, like giving all `browser` tests twice as much
 time before they time out.
 
-[configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
+[configuring tags]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#configuring-tags
 
 Tests can be filtered based on their tags by passing command line flags. The
 `--tags` or `-t` flag will cause the test runner to only run tests with the
@@ -571,7 +571,7 @@ Dartium content shell.
 A configuration file can do much more than just set global defaults. See
 [the full documentation][package config] for more details.
 
-[package config]: https://github.com/dart-lang/test/blob/master/doc/package_config.md
+[package config]: https://github.com/dart-lang/test/blob/master/doc/configuration.md
 
 ## Debugging
 
