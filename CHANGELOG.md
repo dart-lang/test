@@ -1,3 +1,7 @@
+##0.11.6+2
+
+* Fix all strong mode warnings.
+
 ##0.11.6+1
 
 * Give tests more time to start running.

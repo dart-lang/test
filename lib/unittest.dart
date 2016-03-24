@@ -267,6 +267,8 @@ void handleExternalError(e, String message, [stackTrace]) {
   }
 }
 
+typedef bool _TestFilter(InternalTestCase arg);
+
 /// Remove any tests that match [testFilter].
 ///
 /// [testFilter] can be a predicate function, a [RegExp], or a [String]. If it's
@@ -276,13 +278,13 @@ void handleExternalError(e, String message, [stackTrace]) {
 /// This is different from enabling or disabling tests in that it removes the
 /// tests completely.
 void filterTests(testFilter) {
-  var filterFunction;
+  _TestFilter filterFunction;
   if (testFilter is String) {
     var re = new RegExp(testFilter);
     filterFunction = (t) => re.hasMatch(t.description);
   } else if (testFilter is RegExp) {
     filterFunction = (t) => testFilter.hasMatch(t.description);
-  } else if (testFilter is Function) {
+  } else if (testFilter is _TestFilter) {
     filterFunction = testFilter;
   }
   environment.testCases.retainWhere(filterFunction);
