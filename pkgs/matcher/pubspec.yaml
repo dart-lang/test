@@ -1,8 +1,5 @@
 name: matcher
-
-# This version should really be 0.12.1-dev, but test depends on matcher <0.12.1,
-# so we're using + instead.
-version: 0.12.0+dev
+version: 0.12.0+2
 author: Dart Team <misc@dartlang.org>
 description: Support for specifying test expectations
 homepage: https://github.com/dart-lang/matcher
