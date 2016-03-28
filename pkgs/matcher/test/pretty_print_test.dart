@@ -120,7 +120,7 @@ void main() {
     });
 
     test("that's recursive", () {
-      var list = [1, 2, 3];
+      var list = <dynamic>[1, 2, 3];
       list.add(list);
       expect(prettyPrint(list), equals("[1, 2, 3, (recursive)]"));
     });

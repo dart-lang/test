@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:collection';
-
 import 'package:test/test.dart';
 
 void shouldFail(value, Matcher matcher, expected) {
@@ -43,25 +41,12 @@ class HasPrice extends CustomMatcher {
   featureValueOf(actual) => actual.price;
 }
 
-class SimpleIterable extends IterableBase<int> {
+class SimpleIterable extends Iterable<int> {
   final int count;
 
   SimpleIterable(this.count);
 
-  bool contains(int val) => count < val ? false : true;
-
-  bool any(bool f(element)) {
-    for (var i = 0; i <= count; i++) {
-      if (f(i)) return true;
-    }
-    return false;
-  }
-
-  String toString() => "<[$count]>";
-
-  Iterator get iterator {
-    return new _SimpleIterator(count);
-  }
+  Iterator<int> get iterator => new _SimpleIterator(count);
 }
 
 class _SimpleIterator implements Iterator<int> {
