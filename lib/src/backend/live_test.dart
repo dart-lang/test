@@ -11,9 +11,9 @@ import 'test.dart';
 
 /// A runnable instance of a test.
 ///
-/// This is distinct from [Test] in order to keep [Test]. Running a test
-/// requires state, and [LiveTest] provides a view of the state of the test as
-/// it runs.
+/// This is distinct from [Test] in order to keep [Test] immutable. Running a
+/// test requires state, and [LiveTest] provides a view of the state of the test
+/// as it runs.
 ///
 /// If the state changes, [state] will be updated before [onStateChange] fires.
 /// Likewise, if an error is caught, it will be added to [errors] before being
