@@ -163,27 +163,15 @@ final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
 /// Returns [str] without any color codes.
 String withoutColors(String str) => str.replaceAll(_colorCode, '');
 
-/// A regular expression matching the path to a temporary file used to start an
-/// isolate.
-///
-/// These paths aren't relevant and are removed from stack traces.
-final _isolatePath =
-    new RegExp(r"/test_[A-Za-z0-9]{6}/runInIsolate\.dart$");
-
 /// Returns [stackTrace] converted to a [Chain] with all irrelevant frames
 /// folded together.
 ///
 /// If [verbose] is `true`, returns the chain for [stackTrace] unmodified.
 Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
   if (verbose) return new Chain.forTrace(stackTrace);
-  return new Chain.forTrace(stackTrace).foldFrames((frame) {
-    if (frame.package == 'test') return true;
-    if (frame.package == 'stream_channel') return true;
-
-    // Filter out frames from our isolate bootstrap as well.
-    if (frame.uri.scheme != 'file') return false;
-    return frame.uri.path.contains(_isolatePath);
-  }, terse: true);
+  return new Chain.forTrace(stackTrace).foldFrames((frame) =>
+      frame.package == 'test' || frame.package == 'stream_channel',
+      terse: true);
 }
 
 /// Flattens nested [Iterable]s inside an [Iterable] into a single [List]
