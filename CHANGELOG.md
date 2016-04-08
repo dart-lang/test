@@ -1,3 +1,8 @@
+##0.11.6+4
+
+* Fix some strong mode warnings we missed in the `vm_config.dart` and
+  `html_config.dart` libraries.
+
 ##0.11.6+3
 
 * Fix a bug introduced in 0.11.6+2 in which operator matchers broke when taking
