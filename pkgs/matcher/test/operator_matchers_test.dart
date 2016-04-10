@@ -3,8 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
-import 'package:test/test.dart'
-    show test, group, expect, throwsArgumentError;
+import 'package:test/test.dart' show test, expect, throwsArgumentError;
 
 import 'test_utils.dart';
 
