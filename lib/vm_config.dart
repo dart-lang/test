@@ -20,8 +20,8 @@ class VMConfiguration extends SimpleConfiguration {
   bool useColor;
 
   VMConfiguration()
-      : super(),
-        useColor = stdioType(stdout) == StdioType.TERMINAL;
+      : useColor = stdioType(stdout) == StdioType.TERMINAL,
+        super();
 
   String formatResult(TestCase testCase) {
     String result = super.formatResult(testCase);

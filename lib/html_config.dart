@@ -140,7 +140,7 @@ class HtmlConfiguration extends SimpleConfiguration {
   void onInit() {
     // For Dart internal tests, we want to turn off stack frame
     // filtering, which we do with this meta-header.
-    var meta = querySelector('meta[name="dart.unittest"]');
+    MetaElement meta = querySelector('meta[name="dart.unittest"]');
     filterStacks =
         meta == null ? true : !meta.content.contains('full-stack-traces');
     _installHandlers();
