@@ -357,6 +357,33 @@ A number of APIs from `matcher` have been into `test`, including: `completes`,
 
 * `completion` argument `id` renamed to `description`.
 
+##0.11.6+4
+
+* Fix some strong mode warnings we missed in the `vm_config.dart` and
+  `html_config.dart` libraries.
+
+##0.11.6+3
+
+* Fix a bug introduced in 0.11.6+2 in which operator matchers broke when taking
+  lists of matchers.
+
+##0.11.6+2
+
+* Fix all strong mode warnings.
+
+##0.11.6+1
+
+* Give tests more time to start running.
+
+##0.11.6
+
+* Merge in the last `0.11.x` release of `matcher` to allow projects to use both
+  `test` and `unittest` without conflicts.
+
+* Fix running individual tests with `HtmlIndividualConfiguration` when the test
+  name contains URI-escaped values and is provided with the `group` query
+  parameter.
+
 ##0.11.5+1
 
 * Internal code cleanups and documentation improvements.
