@@ -147,12 +147,6 @@ class Engine {
   List<LiveTest> get active => new UnmodifiableListView(_active);
   final _active = new QueueList<LiveTest>();
 
-  /// The set of tests that have completed successfully but shouldn't be
-  /// displayed by the reporter.
-  ///
-  /// This includes load tests, `setUpAll`, and `tearDownAll`.
-  final _hidden = new Set<LiveTest>();
-
   /// The set of tests that have been marked for restarting.
   ///
   /// This is always a subset of [active]. Once a test in here has finished
@@ -339,7 +333,6 @@ class Engine {
         _passed.add(liveTest);
       } else {
         _liveTests.remove(liveTest);
-        _hidden.add(liveTest);
       }
     });
 
@@ -408,12 +401,9 @@ class Engine {
       }
 
       // Surface the load test if it fails so that the user can see the failure.
-      if (state.result == Result.success) {
-        _hidden.add(liveTest);
-      } else {
-        _failed.add(liveTest);
-        _liveTests.add(liveTest);
-      }
+      if (state.result == Result.success) return;
+      _failed.add(liveTest);
+      _liveTests.add(liveTest);
     });
 
     // Run the test immediately. We don't want loading to be blocked on suites
@@ -442,9 +432,7 @@ class Engine {
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
-    var allLiveTests = liveTests.toSet()
-      ..addAll(_activeLoadTests)
-      ..addAll(_hidden);
+    var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
     // Closing the load pool will close the test suites as soon as their tests
