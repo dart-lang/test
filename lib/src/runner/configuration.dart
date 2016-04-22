@@ -92,6 +92,27 @@ class Configuration {
       pauseAfterLoad ? 1 : (_concurrency ?? defaultConcurrency);
   final int _concurrency;
 
+  /// The index of the current shard, if sharding is in use, or `null` if it's
+  /// not.
+  ///
+  /// Sharding is a technique that allows the Google internal test framework to
+  /// easily split a test run across multiple workers without requiring the
+  /// tests to be modified by the user. When sharding is in use, the runner gets
+  /// a shard index (this field) and a total number of shards, and is expected
+  /// to provide the following guarantees:
+  ///
+  /// * Running the same invocation of the runner, with the same shard index and
+  ///   total shards, will run the same set of tests.
+  /// * Across all shards, each test must be run exactly once.
+  ///
+  /// In addition, tests should be balanced across shards as much as possible.
+  final int shardIndex;
+
+  /// The total number of shards, if sharding is in use, or `null` if it's not.
+  ///
+  /// See [shardIndex] for details.
+  final int totalShards;
+
   /// The paths from which to load tests.
   List<String> get paths => _paths ?? ["test"];
   final List<String> _paths;
@@ -249,6 +270,8 @@ class Configuration {
       String reporter,
       int pubServePort,
       int concurrency,
+      int shardIndex,
+      int totalShards,
       Timeout timeout,
       Iterable<Pattern> patterns,
       Iterable<TestPlatform> platforms,
@@ -275,6 +298,8 @@ class Configuration {
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,
+        shardIndex: shardIndex,
+        totalShards: totalShards,
         timeout: timeout,
         patterns: patterns,
         platforms: platforms,
@@ -339,6 +364,8 @@ class Configuration {
           String reporter,
           int pubServePort,
           int concurrency,
+          this.shardIndex,
+          this.totalShards,
           Timeout timeout,
           Iterable<Pattern> patterns,
           Iterable<TestPlatform> platforms,
@@ -385,6 +412,14 @@ class Configuration {
           "filename's context must match the current operating system, was "
               "${_filename.context.style}.");
     }
+
+    if ((shardIndex == null) != (totalShards == null)) {
+      throw new ArgumentError(
+          "shardIndex and totalShards may only be passed together.");
+    } else if (shardIndex != null) {
+      RangeError.checkValueInInterval(
+          shardIndex, 0, totalShards - 1, "shardIndex");
+    }
   }
 
   /// Returns a [input] as an unmodifiable list or `null`.
@@ -427,6 +462,8 @@ class Configuration {
         reporter: other._reporter ?? _reporter,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
+        shardIndex: other.shardIndex ?? shardIndex,
+        totalShards: other.totalShards ?? totalShards,
         timeout: timeout.merge(other.timeout),
         patterns: patterns.union(other.patterns),
         platforms: other._platforms ?? _platforms,
@@ -464,6 +501,8 @@ class Configuration {
       String reporter,
       int pubServePort,
       int concurrency,
+      int shardIndex,
+      int totalShards,
       Timeout timeout,
       Iterable<Pattern> patterns,
       Iterable<TestPlatform> platforms,
@@ -490,6 +529,8 @@ class Configuration {
         reporter: reporter ?? _reporter,
         pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,
+        shardIndex: shardIndex ?? this.shardIndex,
+        totalShards: totalShards ?? this.totalShards,
         timeout: timeout ?? this.timeout,
         patterns: patterns ?? this.patterns,
         platforms: platforms ?? _platforms,

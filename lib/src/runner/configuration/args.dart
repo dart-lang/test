@@ -85,6 +85,12 @@ final ArgParser _parser = (() {
           'Currently only supported for browser tests.',
       negatable: false);
 
+  // These are used by the internal Google test runner, so they're hidden from
+  // the --help output but still supported as stable API surface. See
+  // [Configuration.shardIndex] for details on their semantics.
+  parser.addOption("shard-index", hide: true);
+  parser.addOption("total-shards", hide: true);
+
   parser.addSeparator("======== Output");
   parser.addOption("reporter",
       abbr: 'r',
@@ -146,6 +152,20 @@ class _Parser {
       return selector.union(tagSelector);
     });
 
+    var shardIndex = _parseOption('shard-index', int.parse);
+    var totalShards = _parseOption('total-shards', int.parse);
+    if ((shardIndex == null) != (totalShards == null)) {
+      throw new FormatException(
+          "--shard-index and --total-shards may only be passed together.");
+    } else if (shardIndex != null) {
+      if (shardIndex < 0) {
+        throw new FormatException("--shard-index may not be negative.");
+      } else if (shardIndex >= totalShards) {
+        throw new FormatException(
+            "--shard-index must be less than --total-shards.");
+      }
+    }
+
     return new Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -157,6 +177,8 @@ class _Parser {
         reporter: _ifParsed('reporter'),
         pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),
+        shardIndex: shardIndex,
+        totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
         platforms: _ifParsed('platform')?.map(TestPlatform.find),

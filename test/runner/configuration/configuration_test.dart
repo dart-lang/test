@@ -27,6 +27,8 @@ void main() {
         expect(merged.skipReason, isNull);
         expect(merged.pauseAfterLoad, isFalse);
         expect(merged.color, equals(canUseSpecialChars));
+        expect(merged.shardIndex, isNull);
+        expect(merged.totalShards, isNull);
         expect(merged.packageRoot, equals(p.join(p.current, 'packages')));
         expect(merged.reporter, equals(defaultReporter));
         expect(merged.pubServeUrl, isNull);
@@ -44,6 +46,8 @@ void main() {
                 skipReason: "boop",
                 pauseAfterLoad: true,
                 color: true,
+                shardIndex: 3,
+                totalShards: 10,
                 packageRoot: "root",
                 reporter: "json",
                 pubServePort: 1234,
@@ -59,6 +63,8 @@ void main() {
         expect(merged.skipReason, equals("boop"));
         expect(merged.pauseAfterLoad, isTrue);
         expect(merged.color, isTrue);
+        expect(merged.shardIndex, equals(3));
+        expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("root"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
@@ -76,6 +82,8 @@ void main() {
             skipReason: "boop",
             pauseAfterLoad: true,
             color: true,
+            shardIndex: 3,
+            totalShards: 10,
             packageRoot: "root",
             reporter: "json",
             pubServePort: 1234,
@@ -90,6 +98,8 @@ void main() {
         expect(merged.skipReason, equals("boop"));
         expect(merged.pauseAfterLoad, isTrue);
         expect(merged.color, isTrue);
+        expect(merged.shardIndex, equals(3));
+        expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("root"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
@@ -108,6 +118,8 @@ void main() {
             skipReason: "foo",
             pauseAfterLoad: true,
             color: false,
+            shardIndex: 2,
+            totalShards: 4,
             packageRoot: "root",
             reporter: "json",
             pubServePort: 1234,
@@ -122,6 +134,8 @@ void main() {
             skipReason: "bar",
             pauseAfterLoad: false,
             color: true,
+            shardIndex: 3,
+            totalShards: 10,
             packageRoot: "boot",
             reporter: "compact",
             pubServePort: 5678,
@@ -136,6 +150,8 @@ void main() {
         expect(merged.skipReason, equals("bar"));
         expect(merged.pauseAfterLoad, isFalse);
         expect(merged.color, isTrue);
+        expect(merged.shardIndex, equals(3));
+        expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("boot"));
         expect(merged.reporter, equals("compact"));
         expect(merged.pubServeUrl.port, equals(5678));

@@ -244,7 +244,7 @@ class Runner {
       return loadSuite.changeSuite((suite) {
         _warnForUnknownTags(suite);
 
-        return suite.filter((test) {
+        return _shardSuite(suite.filter((test) {
           // Skip any tests that don't match all the given patterns.
           if (!_config.patterns.every(test.name.contains)) {
             return false;
@@ -257,7 +257,7 @@ class Runner {
           if (_config.excludeTags.evaluate(test.metadata.tags)) return false;
 
           return true;
-        });
+        }));
       });
     });
   }
@@ -335,6 +335,29 @@ class Runner {
     if (entry is Test) return 'the test "${entry.name}"';
     if (entry.name != null) return 'the group "${entry.name}"';
     return 'the suite itself';
+  }
+
+  /// If sharding is enabled, filters [suite] to only include the tests that
+  /// should be run in this shard.
+  ///
+  /// We just take a slice of the tests in each suite corresponding to the shard
+  /// index. This makes the tests pretty tests across shards, and since the
+  /// tests are continuous, makes us more likely to be able to re-use
+  /// `setUpAll()` logic.
+  Suite _shardSuite(Suite suite) {
+    if (_config.totalShards == null) return suite;
+
+    var shardSize = suite.group.testCount / _config.totalShards;
+    var shardStart = (shardSize * _config.shardIndex).round();
+    var shardEnd = (shardSize * (_config.shardIndex + 1)).round();
+
+    var count = -1;
+    var filtered = suite.filter((test) {
+      count++;
+      return count >= shardStart && count < shardEnd;
+    });
+
+    return filtered;
   }
 
   /// Loads each suite in [suites] in order, pausing after load for platforms
