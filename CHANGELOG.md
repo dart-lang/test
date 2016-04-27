@@ -1,3 +1,7 @@
+## 0.12.13+1
+
+* Declare support for version 1.17 of the Dart SDK.
+
 ## 0.12.13
 
 * Add support for a global configuration file. On Windows, this file defaults to
