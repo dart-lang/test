@@ -140,6 +140,12 @@ The test runner considers any file that ends with `_test.dart` to be a test
 file. If you don't pass any paths, it will run all the test files in your
 `test/` directory, making it easy to test your entire application at once.
 
+You can select specific tests cases to run by name using `pub run test -n "test
+name"`. The string is interpreted as a regular expression, and only tests whose
+description (including any group descriptions) match that regular expression
+will be run. You can also use the `-N` flag to run tests whose names contain a
+plain-text string.
+
 By default, tests are run in the Dart VM, but you can run them in the browser as
 well by passing `pub run test -p chrome path/to/test.dart`. `test` will take
 care of starting the browser and loading the tests, and all the results will be
