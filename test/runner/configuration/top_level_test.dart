@@ -334,7 +334,7 @@ transformers:
     test.stdout.expect(consumeThrough(contains('+1: All tests passed!')));
     test.shouldExit(0);
     pub.kill();
-  });
+  }, tags: 'pub');
 
   test("uses the specified concurrency", () {
     d.file("dart_test.yaml", JSON.encode({

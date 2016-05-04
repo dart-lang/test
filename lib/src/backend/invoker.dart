@@ -279,6 +279,9 @@ class Invoker {
         // handled, we can end up with [onError] callbacks firing before the
         // corresponding [onStateChange], which violates the timing
         // guarantees.
+        //
+        // Using [new Future] also avoids starving the DOM or other
+        // microtask-level events.
         new Future(_test._body)
             .then((_) => removeOutstandingCallback());
 
@@ -288,9 +291,7 @@ class Invoker {
         _controller.setState(
             new State(Status.complete, liveTest.state.result));
 
-        // Use [Timer.run] here to avoid starving the DOM or other
-        // non-microtask events.
-        Timer.run(_controller.completer.complete);
+        _controller.completer.complete();
       }, zoneValues: {
         #test.invoker: this,
         // Use the invoker as a key so that multiple invokers can have different

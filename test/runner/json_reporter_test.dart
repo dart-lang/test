@@ -413,7 +413,7 @@ void _expectReport(String tests, List<Map> expected) {
     var stdoutLines = await test.stdoutStream().toList();
 
     expect(stdoutLines.length, equals(expected.length),
-        reason: "Expected $stdoutLines to match $expected.");
+        reason: "Expected $stdoutLines to match ${JSON.encode(expected)}.");
 
     // TODO(nweiz): validate each event against the JSON schema when
     // patefacio/json_schema#4 is merged.

@@ -16,6 +16,9 @@ import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
 import '../backend/state.dart';
 import '../backend/test.dart';
+import '../util/iterable_set.dart';
+import 'live_suite.dart';
+import 'live_suite_controller.dart';
 import 'load_suite.dart';
 import 'runner_suite.dart';
 
@@ -102,8 +105,8 @@ class Engine {
   Set<RunnerSuite> get addedSuites => new UnmodifiableSetView(_addedSuites);
   final _addedSuites = new Set<RunnerSuite>();
 
-  /// A broadcast that emits each [RunnerSuite] as it's added to the engine via
-  /// [suiteSink].
+  /// A broadcast stream that emits each [RunnerSuite] as it's added to the
+  /// engine via [suiteSink].
   ///
   /// Note that if a [LoadSuite] is added, this will only return that suite, not
   /// the suite it loads.
@@ -112,7 +115,26 @@ class Engine {
   Stream<RunnerSuite> get onSuiteAdded => _onSuiteAddedController.stream;
   final _onSuiteAddedController = new StreamController<RunnerSuite>.broadcast();
 
-  /// All the currently-known tests that have run, are running, or will run.
+  /// All the currently-known suites that have run or are running.
+  ///
+  /// These are [LiveSuite]s, representing the in-progress state of each suite
+  /// as its component tests are being run.
+  ///
+  /// Note that unlike [addedSuites], for suites that are loaded using
+  /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
+  /// be in this set.
+  Set<LiveSuite> get liveSuites => new UnmodifiableSetView(_liveSuites);
+  final _liveSuites = new Set<LiveSuite>();
+
+  /// A broadcast stream that emits each [LiveSuite] as it's loaded.
+  ///
+  /// Note that unlike [onSuiteAdded], for suites that are loaded using
+  /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
+  /// be emitted by this stream.
+  Stream<LiveSuite> get onSuiteStarted => _onSuiteStartedController.stream;
+  final _onSuiteStartedController = new StreamController<LiveSuite>.broadcast();
+
+  /// All the currently-known tests that have run or are running.
   ///
   /// These are [LiveTest]s, representing the in-progress state of each test.
   /// Tests that have not yet begun running are marked [Status.pending]; tests
@@ -122,26 +144,27 @@ class Engine {
   /// [skipped], [failed], and [active].
   ///
   /// [LiveTest.run] must not be called on these tests.
-  List<LiveTest> get liveTests => new UnmodifiableListView(_liveTests);
-  final _liveTests = new List<LiveTest>();
+  Set<LiveTest> get liveTests => new UnionSet.from(
+      [passed, skipped, failed, new IterableSet(active)],
+      disjoint: true);
 
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
   /// This is guaranteed to fire before [LiveTest.onStateChange] first fires.
-  Stream<LiveTest> get onTestStarted => _onTestStartedController.stream;
-  final _onTestStartedController = new StreamController<LiveTest>.broadcast();
+  Stream<LiveTest> get onTestStarted => _onTestStartedGroup.stream;
+  final _onTestStartedGroup = new StreamGroup<LiveTest>.broadcast();
 
   /// The set of tests that have completed and been marked as passing.
-  Set<LiveTest> get passed => new UnmodifiableSetView(_passed);
-  final _passed = new Set<LiveTest>();
+  Set<LiveTest> get passed => _passedGroup.set;
+  final _passedGroup = new UnionSetController<LiveTest>(disjoint: true);
 
   /// The set of tests that have completed and been marked as skipped.
-  Set<LiveTest> get skipped => new UnmodifiableSetView(_skipped);
-  final _skipped = new Set<LiveTest>();
+  Set<LiveTest> get skipped => _skippedGroup.set;
+  final _skippedGroup = new UnionSetController<LiveTest>(disjoint: true);
 
   /// The set of tests that have completed and been marked as failing or error.
-  Set<LiveTest> get failed => new UnmodifiableSetView(_failed);
-  final _failed = new Set<LiveTest>();
+  Set<LiveTest> get failed => _failedGroup.set;
+  final _failedGroup = new UnionSetController<LiveTest>(disjoint: true);
 
   /// The tests that are still running, in the order they begain running.
   List<LiveTest> get active => new UnmodifiableListView(_active);
@@ -177,6 +200,8 @@ class Engine {
             ? (concurrency == null ? 2 : concurrency * 2)
             : maxSuites) {
     _group.future.then((_) {
+      _onTestStartedGroup.close();
+      _onSuiteStartedController.close();
       if (_closedBeforeDone == null) _closedBeforeDone = false;
     }).catchError((_) {
       // Don't top-level errors. They'll be thrown via [success] anyway.
@@ -213,18 +238,23 @@ class Engine {
       _group.add(new Future.sync(() async {
         var loadResource = await _loadPool.request();
 
+        var controller;
         if (suite is LoadSuite) {
-          suite = await _addLoadSuite(suite);
-          if (suite == null) {
+          controller = await _addLoadSuite(suite);
+          if (controller == null) {
             loadResource.release();
             return;
           }
+        } else {
+          controller = new LiveSuiteController(suite);
         }
+
+        _addLiveSuite(controller.liveSuite);
 
         await _runPool.withResource(() async {
           if (_closed) return;
-          await _runGroup(suite, suite.group, []);
-          loadResource.allowRelease(() => suite.close());
+          await _runGroup(controller, controller.liveSuite.suite.group, []);
+          loadResource.allowRelease(() => controller.close());
         });
       }));
     }, onDone: () {
@@ -235,23 +265,26 @@ class Engine {
     return success;
   }
 
-  /// Runs all the entries in [entries] in sequence.
+  /// Runs all the entries in [group] in sequence.
   ///
+  /// [suiteController] is the controller fo the suite that contains [group].
   /// [parents] is a list of groups that contain [group]. It may be modified,
   /// but it's guaranteed to be in its original state once this function has
   /// finished.
-  Future _runGroup(RunnerSuite suite, Group group, List<Group> parents) async {
+  Future _runGroup(LiveSuiteController suiteController, Group group,
+      List<Group> parents) async {
     parents.add(group);
     try {
       if (group.metadata.skip) {
-        await _runLiveTest(_skippedTest(suite, group, parents));
+        await _runSkippedTest(suiteController, group, parents);
         return;
       }
 
       var setUpAllSucceeded = true;
       if (group.setUpAll != null) {
-        var liveTest = group.setUpAll.load(suite, groups: parents);
-        await _runLiveTest(liveTest, countSuccess: false);
+        var liveTest = group.setUpAll.load(suiteController.liveSuite.suite,
+            groups: parents);
+        await _runLiveTest(suiteController, liveTest, countSuccess: false);
         setUpAllSucceeded = liveTest.state.result == Result.success;
       }
 
@@ -260,12 +293,14 @@ class Engine {
           if (_closed) return;
 
           if (entry is Group) {
-            await _runGroup(suite, entry, parents);
+            await _runGroup(suiteController, entry, parents);
           } else if (entry.metadata.skip) {
-            await _runLiveTest(_skippedTest(suite, entry, parents));
+            await _runSkippedTest(suiteController, entry, parents);
           } else {
             var test = entry as Test;
-            await _runLiveTest(test.load(suite, groups: parents));
+            await _runLiveTest(
+                suiteController,
+                test.load(suiteController.liveSuite.suite, groups: parents));
           }
         }
       }
@@ -273,8 +308,9 @@ class Engine {
       // Even if we're closed or setUpAll failed, we want to run all the
       // teardowns to ensure that any state is properly cleaned up.
       if (group.tearDownAll != null) {
-        var liveTest = group.tearDownAll.load(suite, groups: parents);
-        await _runLiveTest(liveTest, countSuccess: false);
+        var liveTest = group.tearDownAll.load(suiteController.liveSuite.suite,
+            groups: parents);
+        await _runLiveTest(suiteController, liveTest, countSuccess: false);
         if (_closed) await liveTest.close();
       }
     } finally {
@@ -282,37 +318,18 @@ class Engine {
     }
   }
 
-  /// Returns a dummy [LiveTest] for a test or group marked as "skip".
-  ///
-  /// [parents] is a list of groups that contain [entry].
-  LiveTest _skippedTest(RunnerSuite suite, GroupEntry entry,
-      List<Group> parents) {
-    // The netry name will be `null` for the root group.
-    var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {});
-
-    var controller;
-    controller = new LiveTestController(suite, test, () {
-      controller.setState(const State(Status.running, Result.success));
-      controller.setState(const State(Status.complete, Result.success));
-      controller.completer.complete();
-    }, () {}, groups: parents);
-    return controller.liveTest;
-  }
-
-  /// Runs [liveTest].
+  /// Runs [liveTest] using [suiteController].
   ///
   /// If [countSuccess] is `true` (the default), the test is put into [passed]
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
-  Future _runLiveTest(LiveTest liveTest, {bool countSuccess: true}) async {
-    _liveTests.add(liveTest);
+  Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
+      {bool countSuccess: true}) async {
     _active.add(liveTest);
 
     // If there were no active non-load tests, the current active test would
     // have been a load test. In that case, remove it, since now we have a
     // non-load test to add.
-    if (_active.isNotEmpty && _active.first.suite is LoadSuite) {
-      _liveTests.remove(_active.removeFirst());
-    }
+    if (_active.first.suite is LoadSuite) _active.removeFirst();
 
     liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
@@ -321,33 +338,43 @@ class Engine {
       // If we're out of non-load tests, surface a load test.
       if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
         _active.add(_activeLoadTests.first);
-        _liveTests.add(_activeLoadTests.first);
-      }
-
-      if (state.result != Result.success) {
-        _passed.remove(liveTest);
-        _failed.add(liveTest);
-      } else if (liveTest.test.metadata.skip) {
-        _skipped.add(liveTest);
-      } else if (countSuccess) {
-        _passed.add(liveTest);
-      } else {
-        _liveTests.remove(liveTest);
       }
     });
 
-    _onTestStartedController.add(liveTest);
+    suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
 
-    // First, schedule a microtask to ensure that [onTestStarted] fires before
-    // the first [LiveTest.onStateChange] event. Once the test finishes, use
-    // [new Future] to do a coarse-grained event loop pump to avoid starving
-    // non-microtask events.
+    // Schedule a microtask to ensure that [onTestStarted] fires before the
+    // first [LiveTest.onStateChange] event.
     await new Future.microtask(liveTest.run);
+
+    // Once the test finishes, use [new Future] to do a coarse-grained event
+    // loop pump to avoid starving non-microtask events.
     await new Future(() {});
 
     if (!_restarted.contains(liveTest)) return;
-    await _runLiveTest(liveTest.copy(), countSuccess: countSuccess);
+    await _runLiveTest(suiteController, liveTest.copy(),
+        countSuccess: countSuccess);
     _restarted.remove(liveTest);
+  }
+
+  /// Runs a dummy [LiveTest] for a test or group marked as "skip".
+  ///
+  /// [suiteController] is the controller for the suite that contains [entry].
+  /// [parents] is a list of groups that contain [entry].
+  Future _runSkippedTest(LiveSuiteController suiteController, GroupEntry entry,
+      List<Group> parents) {
+    // The netry name will be `null` for the root group.
+    var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {});
+
+    var controller;
+    controller = new LiveTestController(
+        suiteController.liveSuite.suite, test, () {
+      controller.setState(const State(Status.running, Result.success));
+      controller.setState(const State(Status.complete, Result.success));
+      controller.completer.complete();
+    }, () {}, groups: parents);
+
+    return _runLiveTest(suiteController, controller.liveTest);
   }
 
   /// Closes [liveTest] and tells the engine to re-run it once it's done
@@ -369,19 +396,18 @@ class Engine {
     await liveTest.close();
   }
 
-  /// Adds listeners for [suite].
+  /// Runs [suite] and returns the [LiveSuiteController] for the suite it loads.
   ///
-  /// Load suites have specific logic apart from normal test suites.
-  Future<RunnerSuite> _addLoadSuite(LoadSuite suite) async {
-    var liveTest = await suite.test.load(suite);
+  /// Returns `null` if the suite fails to load.
+  Future<LiveSuiteController> _addLoadSuite(LoadSuite suite) async {
+    var controller = new LiveSuiteController(suite);
+    _addLiveSuite(controller.liveSuite);
 
+    var liveTest = await suite.test.load(suite);
     _activeLoadTests.add(liveTest);
 
     // Only surface the load test if there are no other tests currently running.
-    if (_active.isEmpty) {
-      _liveTests.add(liveTest);
-      _active.add(liveTest);
-    }
+    if (_active.isEmpty) _active.add(liveTest);
 
     liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
@@ -392,26 +418,43 @@ class Engine {
       // load test.
       if (_active.isNotEmpty && _active.first.suite == suite) {
         _active.remove(liveTest);
-        _liveTests.remove(liveTest);
-
-        if (_activeLoadTests.isNotEmpty) {
-          _active.add(_activeLoadTests.last);
-          _liveTests.add(_activeLoadTests.last);
-        }
+        if (_activeLoadTests.isNotEmpty) _active.add(_activeLoadTests.last);
       }
-
-      // Surface the load test if it fails so that the user can see the failure.
-      if (state.result == Result.success) return;
-      _failed.add(liveTest);
-      _liveTests.add(liveTest);
     });
 
-    // Run the test immediately. We don't want loading to be blocked on suites
-    // that are already running.
-    _onTestStartedController.add(liveTest);
-    await liveTest.run();
+    controller.reportLiveTest(liveTest, countSuccess: false);
+    controller.noMoreLiveTests();
 
-    return suite.suite;
+    // Schedule a microtask to ensure that [onTestStarted] fires before the
+    // first [LiveTest.onStateChange] event.
+    new Future.microtask(liveTest.run);
+
+    var innerSuite = await suite.suite;
+    if (innerSuite == null) return null;
+
+    var innerController = new LiveSuiteController(innerSuite);
+    innerController.liveSuite.onClose.then((_) {
+      // When the main suite is closed, close the load suite and its test as
+      // well. This doesn't release any resources, but it does close streams
+      // which indicates that the load test won't experience an error in the
+      // future.
+      liveTest.close();
+      controller.close();
+    });
+
+    return innerController;
+  }
+
+  /// Add [liveSuite] and the information it exposes to the engine's
+  /// informational streams and collections.
+  void _addLiveSuite(LiveSuite liveSuite) {
+    _liveSuites.add(liveSuite);
+    _onSuiteStartedController.add(liveSuite);
+
+    _onTestStartedGroup.add(liveSuite.onTestStarted);
+    _passedGroup.add(liveSuite.passed);
+    _skippedGroup.add(liveSuite.skipped);
+    _failedGroup.add(liveSuite.failed);
   }
 
   /// Signals that the caller is done paying attention to test results and the

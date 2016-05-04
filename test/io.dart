@@ -7,6 +7,7 @@
 library test.test.io;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -15,6 +16,7 @@ import 'package:scheduled_test/scheduled_process.dart';
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/util/io.dart';
+import 'package:yaml/yaml.dart';
 
 /// The path to the root directory of the `test` package.
 final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
