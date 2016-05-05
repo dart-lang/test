@@ -11,5 +11,6 @@ export 'src/iterable_matchers.dart';
 export 'src/map_matchers.dart';
 export 'src/numeric_matchers.dart';
 export 'src/operator_matchers.dart';
+export 'src/order_matchers.dart';
 export 'src/string_matchers.dart';
 export 'src/util.dart';
