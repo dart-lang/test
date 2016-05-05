@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/mirror_matchers.dart';
-import 'package:test/test.dart' show test;
+import 'package:test/test.dart';
 
 import 'test_utils.dart';
 
