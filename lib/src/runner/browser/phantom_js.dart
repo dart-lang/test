@@ -40,7 +40,7 @@ class PhantomJS extends Browser {
   final Future<Uri> remoteDebuggerUrl;
 
   factory PhantomJS(url, {String executable, bool debug: false}) {
-    var remoteDebuggerCompleter = new Completer.sync();
+    var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new PhantomJS._(() async {
       if (executable == null) {
         executable = Platform.isWindows ? "phantomjs.exe" : "phantomjs";
@@ -52,7 +52,7 @@ class PhantomJS extends Browser {
 
       var port = debug ? await getUnsafeUnusedPort() : null;
 
-      var args = [];
+      var args = <String>[];
       if (debug) {
         args.addAll([
           "--remote-debugger-port=$port",

@@ -28,12 +28,12 @@ class ContentShell extends Browser {
   final Future<Uri> remoteDebuggerUrl;
 
   factory ContentShell(url, {String executable, bool debug: false}) {
-    var observatoryCompleter = new Completer.sync();
-    var remoteDebuggerCompleter = new Completer.sync();
+    var observatoryCompleter = new Completer<Uri>.sync();
+    var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new ContentShell._(() {
       if (executable == null) executable = _defaultExecutable();
 
-      tryPort([port]) async {
+      var tryPort = ([int port]) async {
         var args = ["--dump-render-tree", url.toString()];
         if (port != null) args.add("--remote-debugging-port=$port");
 
@@ -88,10 +88,10 @@ class ContentShell extends Browser {
 
         stderr.cancel();
         return process;
-      }
+      };
 
       if (!debug) return tryPort();
-      return getUnusedPort(tryPort);
+      return getUnusedPort/*<Future<Process>>*/(tryPort);
     }, observatoryCompleter.future, remoteDebuggerCompleter.future);
   }
 

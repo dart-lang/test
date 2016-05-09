@@ -232,7 +232,7 @@ class Runner {
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return mergeStreams(_config.paths.map((path) {
+    return StreamGroup.merge(_config.paths.map((path) {
       if (new Directory(path).existsSync()) return _loader.loadDir(path);
       if (new File(path).existsSync()) return _loader.loadFile(path);
 
@@ -246,7 +246,8 @@ class Runner {
 
         return _shardSuite(suite.filter((test) {
           // Skip any tests that don't match all the given patterns.
-          if (!_config.patterns.every(test.name.contains)) {
+          if (!_config.patterns
+              .every((pattern) => test.name.contains(pattern))) {
             return false;
           }
 
@@ -305,11 +306,11 @@ class Runner {
   ///
   /// This returns a map from tag names to lists of entries that use those tags.
   Map<String, List<GroupEntry>> _collectUnknownTags(Suite suite) {
-    var unknownTags = {};
-    var currentTags = new Set();
+    var unknownTags = <String, List<GroupEntry>>{};
+    var currentTags = new Set<String>();
 
     collect(entry) {
-      var newTags = new Set();
+      var newTags = new Set<String>();
       for (var unknownTag in
           entry.metadata.tags.difference(_config.knownTags)) {
         if (currentTags.contains(unknownTag)) continue;

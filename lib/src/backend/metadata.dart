@@ -58,7 +58,7 @@ class Metadata {
       Map<String, dynamic> onPlatform) {
     if (onPlatform == null) return {};
 
-    var result = {};
+    var result = <PlatformSelector, Metadata>{};
     onPlatform.forEach((platform, metadata) {
       if (metadata is Timeout || metadata is Skip) {
         metadata = [metadata];

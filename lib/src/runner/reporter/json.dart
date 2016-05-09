@@ -184,7 +184,7 @@ class JsonReporter implements Reporter {
   /// If a group doesn't have an ID yet, this assigns one and emits a new event
   /// for that group.
   List<int> _idsForGroups(Iterable<Group> groups, int suiteID) {
-    var parentID;
+    int parentID;
     return groups.map((group) {
       if (_groupIDs.containsKey(group)) {
         parentID = _groupIDs[group];

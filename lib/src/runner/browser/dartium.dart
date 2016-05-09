@@ -28,7 +28,7 @@ class Dartium extends Browser {
   final Future<Uri> observatoryUrl;
 
   factory Dartium(url, {String executable, bool debug: false}) {
-    var completer = new Completer.sync();
+    var completer = new Completer<Uri>.sync();
     return new Dartium._(() async {
       if (executable == null) executable = _defaultExecutable();
 
@@ -113,7 +113,7 @@ class Dartium extends Browser {
   /// the Observatory instance that actually contains an isolate, and returning
   /// the corresponding URI.
   static Future<Uri> _getObservatoryUrl(Stream<List<int>> stdout) async {
-    var urlQueue = new StreamQueue(lineSplitter.bind(stdout).map((line) {
+    var urlQueue = new StreamQueue<Uri>(lineSplitter.bind(stdout).map((line) {
       var match = _observatoryRegExp.firstMatch(line);
       return match == null ? null : Uri.parse(match[1]);
     }).where((line) => line != null));
@@ -122,7 +122,7 @@ class Dartium extends Browser {
       urlQueue.next,
       urlQueue.next,
       urlQueue.next
-    ].map(_checkObservatoryUrl);
+    ].map((future) => _checkObservatoryUrl(future));
 
     urlQueue.cancel();
 
@@ -130,8 +130,8 @@ class Dartium extends Browser {
     /// check whether it's actually connected to an isolate, indicating that
     /// it's the observatory for the main page. Once we find the one that is, we
     /// cancel the other requests and return it.
-    return inCompletionOrder(operations)
-        .firstWhere((url) => url != null, defaultValue: () => null);
+    return (await inCompletionOrder(operations)
+        .firstWhere((url) => url != null, defaultValue: () => null)) as Uri;
   }
 
   /// If the URL returned by [future] corresponds to the correct Observatory
@@ -142,7 +142,7 @@ class Dartium extends Browser {
   static CancelableOperation<Uri> _checkObservatoryUrl(Future<Uri> future) {
     var webSocket;
     var canceled = false;
-    var completer = new CancelableCompleter(onCancel: () {
+    var completer = new CancelableCompleter<Uri>(onCancel: () {
       canceled = true;
       if (webSocket != null) webSocket.close();
     });

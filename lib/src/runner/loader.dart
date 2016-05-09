@@ -76,7 +76,7 @@ class Loader {
   ///
   /// This overwrites previous plugins for those platforms.
   void registerPlatformPlugin(Iterable<TestPlatform> platforms, getPlugin()) {
-    var memoizer = new AsyncMemoizer();
+    var memoizer = new AsyncMemoizer<PlatformPlugin>();
     for (var platform in platforms) {
       _platformPlugins[platform] = memoizer;
       _platformCallbacks[platform] = getPlugin;
@@ -91,7 +91,7 @@ class Loader {
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
   Stream<LoadSuite> loadDir(String dir) {
-    return mergeStreams(new Directory(dir).listSync(recursive: true)
+    return StreamGroup.merge(new Directory(dir).listSync(recursive: true)
         .map((entry) {
       if (entry is! File) return new Stream.fromIterable([]);
 

@@ -65,7 +65,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
   factory LoadSuite(String name, body(), {String path, TestPlatform platform}) {
-    var completer = new Completer.sync();
+    var completer = new Completer<Pair<RunnerSuite, Zone>>.sync();
     return new LoadSuite._(name, () {
       var invoker = Invoker.current;
       invoker.addOutstandingCallback();
@@ -129,6 +129,11 @@ class LoadSuite extends Suite implements RunnerSuite {
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
       : super(old.group, path: old.path, platform: old.platform);
 
+  /// A constructor used by [filter].
+  LoadSuite._filtered(LoadSuite old, Group filtered)
+      : _suiteAndZone = old._suiteAndZone,
+        super(old.group, path: old.path, platform: old.platform);
+
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
   ///
@@ -159,6 +164,12 @@ class LoadSuite extends Suite implements RunnerSuite {
     var error = liveTest.errors.first;
     await new Future.error(error.error, error.stackTrace);
     throw 'unreachable';
+  }
+
+  LoadSuite filter(bool callback(Test test)) {
+    var filtered = this.group.filter(callback);
+    if (filtered == null) filtered = new Group.root([], metadata: metadata);
+    return new LoadSuite._filtered(this, filtered);
   }
 
   Future close() async {}

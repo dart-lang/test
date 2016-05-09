@@ -163,8 +163,8 @@ String libraryPath(Symbol libraryName, {String packageRoot}) {
 ///
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
-Future getUnusedPort(tryPort(int port)) {
-  var value;
+Future/*<T>*/ getUnusedPort/*<T>*/(/*=T*/ tryPort(int port)) {
+  var/*=T*/ value;
   return Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());
     return value == null;

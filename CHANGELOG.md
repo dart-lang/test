@@ -1,3 +1,7 @@
+## 0.12.13+2
+
+* Fix all strong-mode errors and warnings.
+
 ## 0.12.13+1
 
 * Declare support for version 1.17 of the Dart SDK.

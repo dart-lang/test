@@ -7,6 +7,7 @@
 // bin.
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -28,7 +29,7 @@ import 'utils.dart';
 /// terminates the program immediately.
 final _signals = Platform.isWindows
     ? ProcessSignal.SIGINT.watch()
-    : mergeStreams([
+    : StreamGroup.merge([
         ProcessSignal.SIGTERM.watch(),
         ProcessSignal.SIGINT.watch()
       ]);

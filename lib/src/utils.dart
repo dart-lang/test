@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:async/async.dart' hide StreamQueue;
 import 'package:path/path.dart' as p;
@@ -193,28 +194,26 @@ List flatten(Iterable nested) {
 
 /// Creates a new map from [map] with new keys and values.
 ///
-/// The return values of [key] are used as the keys and the return values of
-/// [value] are used as the values for the new map.
-///
-/// [key] defaults to returning the original key and [value] defaults to
-/// returning the original value.
-Map mapMap(Map map, {key(key, value), value(key, value)}) {
-  if (key == null) key = (key, _) => key;
-  if (value == null) value = (_, value) => value;
+/// The return values of [keyFn] are used as the keys and the return values of
+/// [valueFn] are used as the values for the new map.
+Map/*<K2, V2>*/ mapMap/*<K1, V1, K2, V2>*/(Map/*<K1, V1>*/ map,
+    {/*=K2*/ key(/*=K1*/ key, /*=V1*/ value),
+    /*=V2*/ value(/*=K1*/ key, /*=V1*/ value)}) {
+  key ??= (key, _) => key as dynamic/*=K2*/;
+  value ??= (_, value) => value as dynamic/*=V2*/;
 
-  var result = {};
-  map.forEach((mapKey, mapValue) {
-    result[key(mapKey, mapValue)] = value(mapKey, mapValue);
-  });
-  return result;
+  return new Map.fromIterable(map.keys,
+      key: (mapKey) => key(mapKey as dynamic/*=K1*/, map[mapKey]),
+      value: (mapKey) => value(mapKey as dynamic/*=K1*/, map[mapKey]));
 }
 
 /// Returns a new map with all values in both [map1] and [map2].
 ///
 /// If there are conflicting keys, [value] is used to merge them. If it's
 /// not passed, [map2]'s value wins.
-Map mergeMaps(Map map1, Map map2, {value(value1, value2)}) {
-  var result = new Map.from(map1);
+Map/*<K, V>*/ mergeMaps/*<K, V>*/(Map/*<K, V>*/ map1, Map/*<K, V>*/ map2,
+    {/*=V*/ value(/*=V*/ value1, /*=V*/ value2)}) {
+  var result = new Map/*<K, V>*/.from(map1);
   map2.forEach((key, mapValue) {
     if (value == null || !result.containsKey(key)) {
       result[key] = mapValue;
@@ -295,41 +294,6 @@ String niceDuration(Duration duration) {
   return buffer.toString();
 }
 
-/// Merges [streams] into a single stream that emits events from all sources.
-Stream mergeStreams(Iterable<Stream> streamIter) {
-  var streams = streamIter.toList();
-
-  var subscriptions = new Set();
-  var controller;
-  controller = new StreamController(sync: true, onListen: () {
-    for (var stream in streams) {
-      var subscription;
-      subscription = stream.listen(
-          controller.add,
-          onError: controller.addError,
-          onDone: () {
-        subscriptions.remove(subscription);
-        if (subscriptions.isEmpty) controller.close();
-      });
-      subscriptions.add(subscription);
-    }
-  }, onPause: () {
-    for (var subscription in subscriptions) {
-      subscription.pause();
-    }
-  }, onResume: () {
-    for (var subscription in subscriptions) {
-      subscription.resume();
-    }
-  }, onCancel: () {
-    for (var subscription in subscriptions) {
-      subscription.cancel();
-    }
-  });
-
-  return controller.stream;
-}
-
 /// Returns the first value [stream] emits, or `null` if [stream] closes before
 /// emitting a value.
 Future maybeFirst(Stream stream) {
@@ -376,14 +340,16 @@ CancelableOperation cancelableNext(StreamQueue queue) {
 ///
 /// If the subscription is canceled, any pending operations are canceled as
 /// well.
-Stream inCompletionOrder(Iterable<CancelableOperation> operations) {
+Stream/*<T>*/ inCompletionOrder/*<T>*/(
+    Iterable<CancelableOperation/*<T>*/> operations) {
   var operationSet = operations.toSet();
-  var controller = new StreamController(sync: true, onCancel: () {
+  var controller = new StreamController/*<T>*/(sync: true, onCancel: () {
     return Future.wait(operationSet.map((operation) => operation.cancel()));
   });
 
   for (var operation in operationSet) {
-    operation.value.then(controller.add).catchError(controller.addError)
+    operation.value.then((value) => controller.add(value))
+        .catchError(controller.addError)
         .whenComplete(() {
       operationSet.remove(operation);
       if (operationSet.isEmpty) controller.close();
@@ -417,9 +383,9 @@ void invoke(fn()) {
 /// passed to [CryptoUtils.bytesToBase64].
 String randomBase64(int bytes, {int seed}) {
   var random = new math.Random(seed);
-  var data = [];
+  var data = new Uint8List(bytes);
   for (var i = 0; i < bytes; i++) {
-    data.add(random.nextInt(256));
+    data[i] = random.nextInt(256);
   }
   return BASE64.encode(data);
 }

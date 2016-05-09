@@ -290,8 +290,9 @@ class _ConfigurationLoader {
   /// contains.
   ///
   /// Returns a list of values returned by [forElement].
-  List _getList(String field, forElement(YamlNode elementNode)) {
-    var node = _getNode(field, "list", (value) => value is List);
+  List/*<T>*/ _getList/*<T>*/(String field,
+      /*=T*/ forElement(YamlNode elementNode)) {
+    var node = _getNode(field, "list", (value) => value is List) as YamlList;
     if (node == null) return [];
     return node.nodes.map(forElement).toList();
   }
@@ -300,23 +301,23 @@ class _ConfigurationLoader {
   ///
   /// Returns a map with the keys and values returned by [key] and [value]. Each
   /// of these defaults to asserting that the value is a string.
-  Map _getMap(String field, {key(YamlNode keyNode),
-      value(YamlNode valueNode)}) {
-    var node = _getNode(field, "map", (value) => value is Map);
+  Map/*<K, V>*/ _getMap/*<K, V>*/(String field, {/*=K*/ key(YamlNode keyNode),
+      /*=V*/ value(YamlNode valueNode)}) {
+    var node = _getNode(field, "map", (value) => value is Map) as YamlMap;
     if (node == null) return {};
 
     key ??= (keyNode) {
       _validate(keyNode, "$field keys must be strings.",
           (value) => value is String);
 
-      return keyNode.value;
+      return keyNode.value as dynamic/*=K*/;
     };
 
     value ??= (valueNode) {
       _validate(valueNode, "$field values must be strings.",
           (value) => value is String);
 
-      return valueNode.value;
+      return valueNode.value as dynamic/*=V*/;
     };
 
     return mapMap(node.nodes,
@@ -344,7 +345,8 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [node]'s
   /// span.
-  _parseNode(YamlNode node, String name, parse(String value)) {
+  /*=T*/ _parseNode/*<T>*/(YamlNode node, String name,
+      /*=T*/ parse(String value)) {
     _validate(node, "$name must be a string.", (value) => value is String);
 
     try {
@@ -360,7 +362,7 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [field]'s
   /// span.
-  _parseValue(String field, parse(String value)) {
+  /*=T*/ _parseValue/*<T>*/(String field, /*=T*/ parse(String value)) {
     var node = _document.nodes[field];
     if (node == null) return null;
     return _parseNode(node, field, parse);

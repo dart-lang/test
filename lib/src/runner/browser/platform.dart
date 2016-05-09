@@ -15,6 +15,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
@@ -282,7 +283,7 @@ class BrowserPlatform extends PlatformPlugin {
           ? dartUrl.replace(path: dartUrl.path + '.js.map')
           : dartUrl;
 
-      var response;
+      HttpClientResponse response;
       try {
         var request = await _http.getUrl(url);
         response = await request.close();
@@ -370,7 +371,7 @@ class BrowserPlatform extends PlatformPlugin {
     var manager = _browserManagers[platform];
     if (manager != null) return Result.release(manager);
 
-    var completer = new Completer.sync();
+    var completer = new Completer<WebSocketChannel>.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
     var hostUrl = (_config.pubServeUrl == null ? url : _config.pubServeUrl)

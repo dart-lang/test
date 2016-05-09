@@ -280,7 +280,7 @@ class Configuration {
       Iterable<String> chosenPresets,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
-      Iterable addTags,
+      Iterable<String> addTags,
       Map<BooleanSelector, Configuration> tags,
       Map<PlatformSelector, Configuration> onPlatform,
       Map<String, Configuration> presets}) {
@@ -374,7 +374,7 @@ class Configuration {
           Iterable<String> chosenPresets,
           BooleanSelector includeTags,
           BooleanSelector excludeTags,
-          Iterable addTags,
+          Iterable<String> addTags,
           Map<BooleanSelector, Configuration> tags,
           Map<PlatformSelector, Configuration> onPlatform,
           Map<String, Configuration> presets})
@@ -426,16 +426,16 @@ class Configuration {
   ///
   /// If [input] is `null` or empty, this returns `null`. Otherwise, it returns
   /// `input.toList()`.
-  static List _list(Iterable input) {
+  static List/*<T>*/ _list/*<T>*/(Iterable/*<T>*/ input) {
     if (input == null) return null;
-    input = new List.unmodifiable(input);
-    if (input.isEmpty) return null;
-    return input;
+    var list = new List/*<T>*/.unmodifiable(input);
+    if (list.isEmpty) return null;
+    return list;
   }
 
-  /// Returns an modifiable copy of [input] or an empty unmodifiable map.
-  static Map _map(Map input) {
-    if (input == null) return const {};
+  /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
+  static Map/*<K, V>*/ _map/*<K, V>*/(Map/*<K, V>*/ input) {
+    if (input == null || input.isEmpty) return const {};
     return new Map.unmodifiable(input);
   }
 
@@ -511,7 +511,7 @@ class Configuration {
       Iterable<String> chosenPresets,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
-      Iterable addTags,
+      Iterable<String> addTags,
       Map<BooleanSelector, Configuration> tags,
       Map<PlatformSelector, Configuration> onPlatform,
       Map<String, Configuration> presets}) {

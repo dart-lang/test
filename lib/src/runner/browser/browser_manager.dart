@@ -96,7 +96,7 @@ class BrowserManager {
       Future<WebSocketChannel> future, {bool debug: false}) {
     var browser = _newBrowser(url, platform, debug: debug);
 
-    var completer = new Completer();
+    var completer = new Completer<BrowserManager>();
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.

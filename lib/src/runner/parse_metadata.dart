@@ -41,19 +41,22 @@ class _Parser {
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
     _prefixes = directives.map((directive) {
-      if (directive is! ImportDirective) return null;
-      if (directive.prefix == null) return null;
-      return directive.prefix.name;
+      if (directive is ImportDirective) {
+        if (directive.prefix == null) return null;
+        return directive.prefix.name;
+      } else {
+        return null;
+      }
     }).where((prefix) => prefix != null).toSet();
   }
 
   /// Parses the metadata.
   Metadata parse() {
-    var timeout;
-    var testOn;
+    Timeout timeout;
+    PlatformSelector testOn;
     var skip;
-    var onPlatform;
-    var tags;
+    Map<PlatformSelector, Metadata> onPlatform;
+    Set<String> tags;
 
     for (var annotation in _annotations) {
       var pair = _resolveConstructor(
@@ -255,14 +258,13 @@ class _Parser {
     _parseConstructor(expression, 'Duration');
 
     var constructor = expression as InstanceCreationExpression;
-    var values = _assertArguments(
+    var valueExpressions = _assertArguments(
         constructor.argumentList, 'Duration', constructor, named: [
       'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds'
     ]);
 
-    for (var key in values.keys.toList()) {
-      if (values.containsKey(key)) values[key] = _parseInt(values[key]);
-    }
+    var values = mapMap(valueExpressions,
+        value: (_, value) => _parseInt(value));
 
     return new Duration(
         days: values["days"] == null ? 0 : values["days"],
@@ -393,13 +395,15 @@ class _Parser {
     }
 
     var actualNamed = arguments.arguments
-        .where((arg) => arg is NamedExpression).toList();
+        .where((arg) => arg is NamedExpression)
+        .map((arg) => arg as NamedExpression)
+        .toList();
     if (!actualNamed.isEmpty && named.isEmpty) {
       throw new SourceSpanFormatException(
           "$name doesn't take named arguments.", _spanFor(actualNamed.first));
     }
 
-    var namedValues = {};
+    var namedValues = <String, Expression>{};
     for (var argument in actualNamed) {
       var argumentName = argument.name.label.name;
       if (!named.contains(argumentName)) {
@@ -458,10 +462,11 @@ class _Parser {
   ///
   /// By default, returns [Expression] keys and values. These can be overridden
   /// with the [key] and [value] parameters.
-  Map _parseMap(Expression expression, {key(Expression expression),
-      value(Expression expression)}) {
-    if (key == null) key = (expression) => expression;
-    if (value == null) value = (expression) => expression;
+  Map/*<K, V>*/ _parseMap/*<K, V>*/(Expression expression,
+      {/*=K*/ key(Expression expression),
+      /*=V*/ value(Expression expression)}) {
+    if (key == null) key = (expression) => expression as dynamic/*=K*/;
+    if (value == null) value = (expression) => expression as dynamic/*=V*/;
 
     if (expression is! MapLiteral) {
       throw new SourceSpanFormatException(

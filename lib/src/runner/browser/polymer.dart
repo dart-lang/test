@@ -4,11 +4,12 @@
 
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
-/// Whether the package being tested uses the Polymer transforemrs at all.
+/// Whether the package being tested uses the Polymer transformers at all.
 ///
 /// This will be `null` until [_initialize] is called.
 bool _usesPolymer;
@@ -80,8 +81,10 @@ void _initialize() {
 
       var configuration = transformer.values.single;
 
-      var entrypoints = configuration["entry_points"];
-      if (entrypoints != null) _entrypoints = entrypoints.toSet();
+      var entrypoints = configuration["entry_points"] as List;
+      if (entrypoints != null) {
+        _entrypoints = DelegatingSet.typed(entrypoints.toSet());
+      }
 
       _includes = _parseGlobField(configuration, r"$includes");
       _excludes = _parseGlobField(configuration, r"$excludes");

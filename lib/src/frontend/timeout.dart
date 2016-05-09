@@ -89,7 +89,7 @@ class Timeout {
 
     // Parse time units until none are left. The condition is in the middle of
     // the loop because we've already parsed the first number.
-    var microseconds = 0;
+    var microseconds = 0.0;
     while (true) {
       scanner.expect(_unit, name: "unit");
       microseconds += _microsecondsFor(number, scanner.lastMatch[0]);

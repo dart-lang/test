@@ -113,9 +113,10 @@ class _Deserializer {
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
     var metadata = new Metadata.deserialize(group['metadata']);
-    return new Group(group['name'], group['entries'].map((entry) {
-      if (entry['type'] == 'group') return deserializeGroup(entry);
-      return _deserializeTest(entry);
+    return new Group(group['name'], (group['entries'] as List).map((entry) {
+      var map = entry as Map;
+      if (map['type'] == 'group') return deserializeGroup(map);
+      return _deserializeTest(map);
     }),
         metadata: metadata,
         setUpAll: _deserializeTest(group['setUpAll']),

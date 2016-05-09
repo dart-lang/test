@@ -85,7 +85,7 @@ abstract class LiveTest {
   Stream<AsyncError> get onError;
 
   /// A stream that emits lines printed by the test.
-  Stream<String> onPrint;
+  Stream<String> get onPrint;
 
   /// A [Future] that completes once the test is complete.
   ///

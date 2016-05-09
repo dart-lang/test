@@ -65,7 +65,7 @@ Declarer get _declarer {
 
     var success = await engine.run();
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
-    if (success) return;
+    if (success) return null;
     print('');
     new Future.error("Dummy exception to set exit code.");
   });

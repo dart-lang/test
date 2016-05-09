@@ -131,10 +131,11 @@ class _Parser {
 
   /// Returns the parsed configuration.
   Configuration parse() {
-    var patterns = _options['name']
-        .map((value) => _wrapFormatException('name', () => new RegExp(value)))
+    var patterns = (_options['name'] as List<String>)
+        .map/*<Pattern>*/(
+            (value) => _wrapFormatException('name', () => new RegExp(value)))
         .toList()
-        ..addAll(_options['plain-name']);
+        ..addAll(_options['plain-name'] as List<String>);
 
     var includeTagSet = new Set.from(_options['tags'] ?? [])
       ..addAll(_options['tag'] ?? []);
@@ -181,8 +182,9 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
-        platforms: _ifParsed('platform')?.map(TestPlatform.find),
-        chosenPresets: _ifParsed('preset'),
+        platforms: (_ifParsed('platform') as List<String>)
+            ?.map(TestPlatform.find),
+        chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,
         excludeTags: excludeTags);
@@ -197,18 +199,18 @@ class _Parser {
 
   /// Runs [parse] on the value of the option [name], and wraps any
   /// [FormatException] it throws with additional information.
-  _parseOption(String name, parse(value)) {
+  /*=T*/ _parseOption/*<T>*/(String name, /*=T*/ parse(String value)) {
     if (!_options.wasParsed(name)) return null;
 
     var value = _options[name];
     if (value == null) return null;
 
-    return _wrapFormatException(name, () => parse(value));
+    return _wrapFormatException(name, () => parse(value as String));
   }
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.
-  _wrapFormatException(String name, parse()) {
+  /*=T*/ _wrapFormatException/*<T>*/(String name, /*=T*/ parse()) {
     try {
       return parse();
     } on FormatException catch (error) {
