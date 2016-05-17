@@ -36,8 +36,8 @@ abstract class LiveSuite {
   /// complete, but it's possible for a test to continue running even after it's
   /// been marked complete—see [LiveTest.isComplete] for details.
   ///
-  /// The [onComplete] future can be used to determine when the suite and its
-  /// tests are guaranteed to emit no more events.
+  /// The [onClose] future can be used to determine when the suite and its tests
+  /// are guaranteed to emit no more events.
   Future get onComplete;
 
   /// Whether the suite has been closed.
