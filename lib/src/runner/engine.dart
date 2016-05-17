@@ -254,6 +254,7 @@ class Engine {
         await _runPool.withResource(() async {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
+          controller.noMoreLiveTests();
           loadResource.allowRelease(() => controller.close());
         });
       }));
