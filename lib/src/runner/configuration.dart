@@ -311,7 +311,8 @@ class Configuration {
         addTags: addTags,
 
         // Make sure we pass [chosenPresets] to the child configurations as
-        // well. This ensures that 
+        // well. This ensures that tags and platforms can have preset-specific
+        // behavior.
         tags: _withChosenPresets(tags, chosenPresets),
         onPlatform: _withChosenPresets(onPlatform, chosenPresets),
         presets: _withChosenPresets(presets, chosenPresets));
