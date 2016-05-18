@@ -379,8 +379,7 @@ void invoke(fn()) {
 
 /// Returns a random base64 string containing [bytes] bytes of data.
 ///
-/// [seed] is passed to [math.Random]; [urlSafe] and [addLineSeparator] are
-/// passed to [CryptoUtils.bytesToBase64].
+/// [seed] is passed to [math.Random].
 String randomBase64(int bytes, {int seed}) {
   var random = new math.Random(seed);
   var data = new Uint8List(bytes);
