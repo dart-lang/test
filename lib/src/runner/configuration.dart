@@ -5,7 +5,7 @@
 import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:collection/collection.dart';
+import 'package:collection/collection.dart' hide mapMap, mergeMaps;
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
