@@ -5,7 +5,7 @@
 import 'dart:collection';
 
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:collection/collection.dart' hide mapMap, mergeMaps;
+import 'package:collection/collection.dart';
 
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';

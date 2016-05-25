@@ -192,38 +192,6 @@ List flatten(Iterable nested) {
   return result;
 }
 
-/// Creates a new map from [map] with new keys and values.
-///
-/// The return values of [keyFn] are used as the keys and the return values of
-/// [valueFn] are used as the values for the new map.
-Map/*<K2, V2>*/ mapMap/*<K1, V1, K2, V2>*/(Map/*<K1, V1>*/ map,
-    {/*=K2*/ key(/*=K1*/ key, /*=V1*/ value),
-    /*=V2*/ value(/*=K1*/ key, /*=V1*/ value)}) {
-  key ??= (key, _) => key as dynamic/*=K2*/;
-  value ??= (_, value) => value as dynamic/*=V2*/;
-
-  return new Map.fromIterable(map.keys,
-      key: (mapKey) => key(mapKey as dynamic/*=K1*/, map[mapKey]),
-      value: (mapKey) => value(mapKey as dynamic/*=K1*/, map[mapKey]));
-}
-
-/// Returns a new map with all values in both [map1] and [map2].
-///
-/// If there are conflicting keys, [value] is used to merge them. If it's
-/// not passed, [map2]'s value wins.
-Map/*<K, V>*/ mergeMaps/*<K, V>*/(Map/*<K, V>*/ map1, Map/*<K, V>*/ map2,
-    {/*=V*/ value(/*=V*/ value1, /*=V*/ value2)}) {
-  var result = new Map/*<K, V>*/.from(map1);
-  map2.forEach((key, mapValue) {
-    if (value == null || !result.containsKey(key)) {
-      result[key] = mapValue;
-    } else {
-      result[key] = value(result[key], mapValue);
-    }
-  });
-  return result;
-}
-
 /// Like [runZoned], but [zoneValues] are set for the callbacks in
 /// [zoneSpecification] and [onError].
 runZonedWithValues(body(), {Map zoneValues,

@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';

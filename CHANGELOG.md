@@ -1,3 +1,7 @@
+## 0.12.13+5
+
+* Use the latest `collection` package.
+
 ## 0.12.13+4
 
 * Compatibility with an upcoming release of the `collection` package.
