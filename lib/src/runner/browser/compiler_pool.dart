@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
 import '../../util/io.dart';
+import '../configuration.dart';
 import '../load_exception.dart';
 
 /// A pool of `dart2js` instances.
@@ -20,8 +21,8 @@ class CompilerPool {
   /// The internal pool that controls the number of process running at once.
   final Pool _pool;
 
-  /// Whether to enable colors on dart2js.
-  final bool _color;
+  /// The test runner configuration.
+  final Configuration _config;
 
   /// The currently-active dart2js processes.
   final _processes = new Set<Process>();
@@ -32,15 +33,10 @@ class CompilerPool {
   /// The memoizer for running [close] exactly once.
   final _closeMemo = new AsyncMemoizer();
 
-  /// Creates a compiler pool that runs up to [concurrency] instances of
-  /// `dart2js` at once.
-  ///
-  /// If [concurrency] isn't provided, it defaults to 4.
-  ///
-  /// If [color] is true, `dart2js` will be run with colors enabled.
-  CompilerPool({int concurrency, bool color: false})
-      : _pool = new Pool(concurrency == null ? 4 : concurrency),
-        _color = color;
+  /// Creates a compiler pool that multiple instances of `dart2js` at once.
+  CompilerPool(Configuration config)
+      : _pool = new Pool(config.concurrency),
+        _config = config;
 
   /// Compile the Dart code at [dartPath] to [jsPath].
   ///
@@ -70,16 +66,17 @@ class CompilerPool {
           }
         ''');
 
-        var dart2jsPath = p.join(sdkDir, 'bin', 'dart2js');
+        var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
 
-        var args = ["--checked", wrapperPath, "--out=$jsPath"];
+        var args = ["--checked", wrapperPath, "--out=$jsPath"]
+          ..addAll(_config.dart2jsArgs);
 
         if (packageRoot != null) {
           args.add("--package-root=${p.toUri(p.absolute(packageRoot))}");
         }
 
-        if (_color) args.add("--enable-diagnostic-colors");
+        if (_config.color) args.add("--enable-diagnostic-colors");
 
         var process = await Process.start(dart2jsPath, args);
         if (_closed) {

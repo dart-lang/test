@@ -85,12 +85,6 @@ final ArgParser _parser = (() {
           'Currently only supported for browser tests.',
       negatable: false);
 
-  // These are used by the internal Google test runner, so they're hidden from
-  // the --help output but still supported as stable API surface. See
-  // [Configuration.shardIndex] for details on their semantics.
-  parser.addOption("shard-index", hide: true);
-  parser.addOption("total-shards", hide: true);
-
   parser.addSeparator("======== Output");
   parser.addOption("reporter",
       abbr: 'r',
@@ -108,6 +102,21 @@ final ArgParser _parser = (() {
       help: 'Whether to emit raw JavaScript stack traces for browser tests.');
   parser.addFlag("color",
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
+
+  /// The following options are used only by the internal Google test runner.
+  /// They're hidden and not supported as stable API surface outside Google.
+
+  parser.addOption("dart2js-path",
+      help: 'The path to the dart2js executable.', hide: true);
+  parser.addOption("dart2js-args",
+      help: 'Extra arguments to pass to dart2js.',
+      allowMultiple: true, hide: true);
+  parser.addOption("total-shards",
+      help: 'The total number of invocations of the test runner being run.',
+      hide: true);
+  parser.addOption("shard-index",
+      help: 'The index of this test runner invocation (of --total-shards).',
+      hide: true);
 
   return parser;
 })();
@@ -175,6 +184,8 @@ class _Parser {
         pauseAfterLoad: _ifParsed('pause-after-load'),
         color: _ifParsed('color'),
         packageRoot: _ifParsed('package-root'),
+        dart2jsPath: _ifParsed('dart2js-path'),
+        dart2jsArgs: _ifParsed('dart2js-args') as List<String>,
         reporter: _ifParsed('reporter'),
         pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),

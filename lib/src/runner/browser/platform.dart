@@ -114,7 +114,7 @@ class BrowserPlatform extends PlatformPlugin {
         _config = config,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
         _http = config.pubServeUrl == null ? null : new HttpClient(),
-        _compilers = new CompilerPool(color: config.color) {
+        _compilers = new CompilerPool(config) {
     var cascade = new shelf.Cascade()
         .add(_webSocketHandler.handler);
 

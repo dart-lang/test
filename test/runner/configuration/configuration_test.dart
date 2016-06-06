@@ -30,6 +30,7 @@ void main() {
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
         expect(merged.packageRoot, equals(p.join(p.current, 'packages')));
+        expect(merged.dart2jsPath, equals(p.join(sdkDir, 'bin', 'dart2js')));
         expect(merged.reporter, equals(defaultReporter));
         expect(merged.pubServeUrl, isNull);
         expect(merged.platforms, equals([TestPlatform.vm]));
@@ -49,6 +50,7 @@ void main() {
                 shardIndex: 3,
                 totalShards: 10,
                 packageRoot: "root",
+                dart2jsPath: "/tmp/dart2js",
                 reporter: "json",
                 pubServePort: 1234,
                 platforms: [TestPlatform.chrome],
@@ -66,6 +68,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("root"));
+        expect(merged.dart2jsPath, equals("/tmp/dart2js"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
         expect(merged.platforms, equals([TestPlatform.chrome]));
@@ -85,6 +88,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             packageRoot: "root",
+            dart2jsPath: "/tmp/dart2js",
             reporter: "json",
             pubServePort: 1234,
             platforms: [TestPlatform.chrome],
@@ -101,6 +105,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("root"));
+        expect(merged.dart2jsPath, equals("/tmp/dart2js"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
         expect(merged.platforms, equals([TestPlatform.chrome]));
@@ -121,6 +126,7 @@ void main() {
             shardIndex: 2,
             totalShards: 4,
             packageRoot: "root",
+            dart2jsPath: "/tmp/dart2js",
             reporter: "json",
             pubServePort: 1234,
             platforms: [TestPlatform.chrome],
@@ -137,6 +143,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             packageRoot: "boot",
+            dart2jsPath: "../dart2js",
             reporter: "compact",
             pubServePort: 5678,
             platforms: [TestPlatform.dartium],
@@ -153,6 +160,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("boot"));
+        expect(merged.dart2jsPath, equals("../dart2js"));
         expect(merged.reporter, equals("compact"));
         expect(merged.pubServeUrl.port, equals(5678));
         expect(merged.platforms, equals([TestPlatform.dartium]));
@@ -317,6 +325,32 @@ void main() {
             timeout: new Timeout(new Duration(seconds: 2)));
         var merged = older.merge(newer);
         expect(merged.timeout, equals(new Timeout(new Duration(seconds: 2))));
+      });
+    });
+
+    group("for dart2jsArgs", () {
+      test("if neither is defined, preserves the default", () {
+        var merged = new Configuration().merge(new Configuration());
+        expect(merged.dart2jsArgs, isEmpty);
+      });
+
+      test("if only the old configuration's is defined, uses it", () {
+        var merged = new Configuration(dart2jsArgs: ["--foo", "--bar"])
+            .merge(new Configuration());
+        expect(merged.dart2jsArgs, equals(["--foo", "--bar"]));
+      });
+
+      test("if only the new configuration's is defined, uses it", () {
+        var merged = new Configuration()
+            .merge(new Configuration(dart2jsArgs: ["--foo", "--bar"]));
+        expect(merged.dart2jsArgs, equals(["--foo", "--bar"]));
+      });
+
+      test("if both are defined, concatenates them", () {
+        var older = new Configuration(dart2jsArgs: ["--foo", "--bar"]);
+        var newer = new Configuration(dart2jsArgs: ["--baz"]);
+        var merged = older.merge(newer);
+        expect(merged.dart2jsArgs, equals(["--foo", "--bar", "--baz"]));
       });
     });
 

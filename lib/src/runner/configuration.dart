@@ -68,6 +68,13 @@ class Configuration {
   String get packageRoot => _packageRoot ?? p.join(p.current, 'packages');
   final String _packageRoot;
 
+  /// The path to dart2js.
+  String get dart2jsPath => _dart2jsPath ?? p.join(sdkDir, 'bin', 'dart2js');
+  final String _dart2jsPath;
+
+  /// Additional arguments to pass to dart2js.
+  final List<String> dart2jsArgs;
+
   /// The name of the reporter to use to display results.
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
@@ -266,6 +273,8 @@ class Configuration {
       bool pauseAfterLoad,
       bool color,
       String packageRoot,
+      String dart2jsPath,
+      Iterable<String> dart2jsArgs,
       String reporter,
       int pubServePort,
       int concurrency,
@@ -294,6 +303,8 @@ class Configuration {
         pauseAfterLoad: pauseAfterLoad,
         color: color,
         packageRoot: packageRoot,
+        dart2jsPath: dart2jsPath,
+        dart2jsArgs: dart2jsArgs,
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,
@@ -361,6 +372,8 @@ class Configuration {
           bool pauseAfterLoad,
           bool color,
           String packageRoot,
+          String dart2jsPath,
+          Iterable<String> dart2jsArgs,
           String reporter,
           int pubServePort,
           int concurrency,
@@ -387,6 +400,8 @@ class Configuration {
         _pauseAfterLoad = pauseAfterLoad,
         _color = color,
         _packageRoot = packageRoot,
+        _dart2jsPath = dart2jsPath,
+        dart2jsArgs = dart2jsArgs?.toList() ?? [],
         _reporter = reporter,
         pubServeUrl = pubServePort == null
             ? null
@@ -459,6 +474,8 @@ class Configuration {
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
         packageRoot: other._packageRoot ?? _packageRoot,
+        dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
+        dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
         reporter: other._reporter ?? _reporter,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
@@ -498,6 +515,8 @@ class Configuration {
       bool pauseAfterLoad,
       bool color,
       String packageRoot,
+      String dart2jsPath,
+      Iterable<String> dart2jsArgs,
       String reporter,
       int pubServePort,
       int concurrency,
@@ -526,6 +545,8 @@ class Configuration {
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,
         packageRoot: packageRoot ?? _packageRoot,
+        dart2jsPath: dart2jsPath ?? _dart2jsPath,
+        dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         reporter: reporter ?? _reporter,
         pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,
