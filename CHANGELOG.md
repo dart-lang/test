@@ -1,3 +1,7 @@
+## 0.12.13+6
+
+* Declare support for version 1.18 of the Dart SDK.
+
 ## 0.12.13+5
 
 * Use the latest `collection` package.
