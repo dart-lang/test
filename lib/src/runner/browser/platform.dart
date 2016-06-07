@@ -271,7 +271,6 @@ class BrowserPlatform extends PlatformPlugin {
     var jsPath =
         p.join(_config.precompiledPath, p.relative(path, from: _root)) +
             ".browser_test.dart.js";
-    print("does $jsPath exist? ${new File(jsPath).existsSync()}");
     return new File(jsPath).existsSync();
   }
 
