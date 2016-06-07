@@ -14,6 +14,10 @@ import '../../util/io.dart';
 import '../configuration.dart';
 import '../load_exception.dart';
 
+/// A regular expression matching the first status line printed by dart2js.
+final _dart2jsStatus =
+    new RegExp(r"^Dart file \(.*\) compiled to JavaScript: .*\n?");
+
 /// A pool of `dart2js` instances.
 ///
 /// This limits the number of compiler instances running concurrently.
@@ -102,7 +106,8 @@ class CompilerPool {
         _processes.remove(process);
         if (_closed) return;
 
-        if (buffer.isNotEmpty) print(buffer);
+        var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
+        if (output.isNotEmpty) print(output);
 
         if (exitCode != 0) throw new LoadException(dartPath, "dart2js failed.");
 
