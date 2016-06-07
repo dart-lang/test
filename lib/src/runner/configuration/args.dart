@@ -118,6 +118,13 @@ final ArgParser _parser = (() {
       help: 'The index of this test runner invocation (of --total-shards).',
       hide: true);
 
+  // If we're running test/dir/my_test.dart, we'll look for
+  // test/dir/my_test.dart.browser_test.dart.js in the precompiled directory.
+  parser.addOption("precompiled",
+      help: 'The path to a mirror of the package directory containing '
+          'precompiled JS.',
+      hide: true);
+
   return parser;
 })();
 
@@ -186,6 +193,7 @@ class _Parser {
         packageRoot: _ifParsed('package-root'),
         dart2jsPath: _ifParsed('dart2js-path'),
         dart2jsArgs: _ifParsed('dart2js-args') as List<String>,
+        precompiledPath: _ifParsed('precompiled'),
         reporter: _ifParsed('reporter'),
         pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),

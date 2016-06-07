@@ -75,6 +75,12 @@ class Configuration {
   /// Additional arguments to pass to dart2js.
   final List<String> dart2jsArgs;
 
+  /// The path to a mirror of this package containing precompiled JS.
+  ///
+  /// This is used by the internal Google test runner so that test compilation
+  /// can more effectively make use of Google's build tools.
+  final String precompiledPath;
+
   /// The name of the reporter to use to display results.
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
@@ -275,6 +281,7 @@ class Configuration {
       String packageRoot,
       String dart2jsPath,
       Iterable<String> dart2jsArgs,
+      String precompiledPath,
       String reporter,
       int pubServePort,
       int concurrency,
@@ -305,6 +312,7 @@ class Configuration {
         packageRoot: packageRoot,
         dart2jsPath: dart2jsPath,
         dart2jsArgs: dart2jsArgs,
+        precompiledPath: precompiledPath,
         reporter: reporter,
         pubServePort: pubServePort,
         concurrency: concurrency,
@@ -374,6 +382,7 @@ class Configuration {
           String packageRoot,
           String dart2jsPath,
           Iterable<String> dart2jsArgs,
+          this.precompiledPath,
           String reporter,
           int pubServePort,
           int concurrency,
@@ -476,6 +485,7 @@ class Configuration {
         packageRoot: other._packageRoot ?? _packageRoot,
         dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
+        precompiledPath: other.precompiledPath ?? precompiledPath,
         reporter: other._reporter ?? _reporter,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
@@ -517,6 +527,7 @@ class Configuration {
       String packageRoot,
       String dart2jsPath,
       Iterable<String> dart2jsArgs,
+      String precompiledPath,
       String reporter,
       int pubServePort,
       int concurrency,
@@ -547,6 +558,7 @@ class Configuration {
         packageRoot: packageRoot ?? _packageRoot,
         dart2jsPath: dart2jsPath ?? _dart2jsPath,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
+        precompiledPath: precompiledPath ?? this.precompiledPath,
         reporter: reporter ?? _reporter,
         pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,

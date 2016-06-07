@@ -124,6 +124,10 @@ class BrowserPlatform extends PlatformPlugin {
           .add(_jsHandler.handler)
           .add(createStaticHandler(_root))
           .add(_wrapperHandler);
+
+      if (config.precompiledPath != null) {
+        cascade = cascade.add(createStaticHandler(config.precompiledPath));
+      }
     }
 
     var pipeline = new shelf.Pipeline()
@@ -242,7 +246,7 @@ class BrowserPlatform extends PlatformPlugin {
       await _pubServeSuite(path, dartUrl, browser);
       suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
-      if (browser.isJS) await _compileSuite(path);
+      if (browser.isJS && !_precompiled(path)) await _compileSuite(path);
       if (_closed) return null;
       suiteUrl = url.resolveUri(p.toUri(
           p.withoutExtension(p.relative(path, from: _root)) + ".html"));
@@ -258,6 +262,17 @@ class BrowserPlatform extends PlatformPlugin {
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;
+  }
+
+  /// Returns whether the test at [path] has precompiled JS available underneath
+  /// `_config.precompiledPath`.
+  bool _precompiled(String path) {
+    if (_config.precompiledPath == null) return false;
+    var jsPath =
+        p.join(_config.precompiledPath, p.relative(path, from: _root)) +
+            ".browser_test.dart.js";
+    print("does $jsPath exist? ${new File(jsPath).existsSync()}");
+    return new File(jsPath).existsSync();
   }
 
   StreamChannel loadChannel(String path, TestPlatform platform) =>

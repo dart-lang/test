@@ -31,6 +31,7 @@ void main() {
         expect(merged.totalShards, isNull);
         expect(merged.packageRoot, equals(p.join(p.current, 'packages')));
         expect(merged.dart2jsPath, equals(p.join(sdkDir, 'bin', 'dart2js')));
+        expect(merged.precompiledPath, isNull);
         expect(merged.reporter, equals(defaultReporter));
         expect(merged.pubServeUrl, isNull);
         expect(merged.platforms, equals([TestPlatform.vm]));
@@ -51,6 +52,7 @@ void main() {
                 totalShards: 10,
                 packageRoot: "root",
                 dart2jsPath: "/tmp/dart2js",
+                precompiledPath: "/tmp/js",
                 reporter: "json",
                 pubServePort: 1234,
                 platforms: [TestPlatform.chrome],
@@ -69,6 +71,7 @@ void main() {
         expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("root"));
         expect(merged.dart2jsPath, equals("/tmp/dart2js"));
+        expect(merged.precompiledPath, equals("/tmp/js"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
         expect(merged.platforms, equals([TestPlatform.chrome]));
@@ -89,6 +92,7 @@ void main() {
             totalShards: 10,
             packageRoot: "root",
             dart2jsPath: "/tmp/dart2js",
+            precompiledPath: "/tmp/js",
             reporter: "json",
             pubServePort: 1234,
             platforms: [TestPlatform.chrome],
@@ -106,6 +110,7 @@ void main() {
         expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("root"));
         expect(merged.dart2jsPath, equals("/tmp/dart2js"));
+        expect(merged.precompiledPath, equals("/tmp/js"));
         expect(merged.reporter, equals("json"));
         expect(merged.pubServeUrl.port, equals(1234));
         expect(merged.platforms, equals([TestPlatform.chrome]));
@@ -127,6 +132,7 @@ void main() {
             totalShards: 4,
             packageRoot: "root",
             dart2jsPath: "/tmp/dart2js",
+            precompiledPath: "/tmp/js",
             reporter: "json",
             pubServePort: 1234,
             platforms: [TestPlatform.chrome],
@@ -144,6 +150,7 @@ void main() {
             totalShards: 10,
             packageRoot: "boot",
             dart2jsPath: "../dart2js",
+            precompiledPath: "../js",
             reporter: "compact",
             pubServePort: 5678,
             platforms: [TestPlatform.dartium],
@@ -161,6 +168,7 @@ void main() {
         expect(merged.totalShards, equals(10));
         expect(merged.packageRoot, equals("boot"));
         expect(merged.dart2jsPath, equals("../dart2js"));
+        expect(merged.precompiledPath, equals("../js"));
         expect(merged.reporter, equals("compact"));
         expect(merged.pubServeUrl.port, equals(5678));
         expect(merged.platforms, equals([TestPlatform.dartium]));
