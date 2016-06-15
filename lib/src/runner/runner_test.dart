@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../backend/group.dart';
@@ -22,6 +23,7 @@ typedef StackTrace _MapTrace(StackTrace trace);
 class RunnerTest extends Test {
   final String name;
   final Metadata metadata;
+  final Trace trace;
 
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
@@ -29,7 +31,13 @@ class RunnerTest extends Test {
   /// The function used to reformat errors' stack traces.
   final _MapTrace _mapTrace;
 
-  RunnerTest(this.name, this.metadata, this._channel, this._mapTrace);
+  RunnerTest(this.name, this.metadata, Trace trace, this._channel,
+      _MapTrace mapTrace)
+      : trace = trace == null ? null : new Trace.from(mapTrace(trace)),
+        _mapTrace = mapTrace;
+
+  RunnerTest._(this.name, this.metadata, this.trace, this._channel,
+      this._mapTrace);
 
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var controller;
@@ -87,7 +95,11 @@ class RunnerTest extends Test {
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new RunnerTest(
-        name, metadata.forPlatform(platform, os: os), _channel, _mapTrace);
+    return new RunnerTest._(
+        name,
+        metadata.forPlatform(platform, os: os),
+        trace,
+        _channel,
+        _mapTrace);
   }
 }

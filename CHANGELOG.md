@@ -1,3 +1,7 @@
+## 0.12.14
+
+* Add test and group location information to the JSON reporter.
+
 ## 0.12.13+5
 
 * Declare support for version 1.18 of the Dart SDK.

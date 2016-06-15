@@ -6,6 +6,7 @@
 
 import 'dart:convert';
 
+import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -36,11 +37,11 @@ void main() {
       _testStart(1, "loading test.dart", groupIDs: []),
       _testDone(1, hidden: true),
       _group(2, testCount: 3),
-      _testStart(3, "success 1"),
+      _testStart(3, "success 1", line: 6, column: 7),
       _testDone(3),
-      _testStart(4, "success 2"),
+      _testStart(4, "success 2", line: 7, column: 7),
       _testDone(4),
-      _testStart(5, "success 3"),
+      _testStart(5, "success 3", line: 8, column: 7),
       _testDone(5),
       _done()
     ]);
@@ -58,13 +59,13 @@ void main() {
       _testStart(1, "loading test.dart", groupIDs: []),
       _testDone(1, hidden: true),
       _group(2, testCount: 3),
-      _testStart(3, "failure 1"),
+      _testStart(3, "failure 1", line: 6, column: 7),
       _error(3, "oh no", isFailure: true),
       _testDone(3, result: "failure"),
-      _testStart(4, "failure 2"),
+      _testStart(4, "failure 2", line: 7, column: 7),
       _error(4, "oh no", isFailure: true),
       _testDone(4, result: "failure"),
-      _testStart(5, "failure 3"),
+      _testStart(5, "failure 3", line: 8, column: 7),
       _error(5, "oh no", isFailure: true),
       _testDone(5, result: "failure"),
       _done(success: false)
@@ -100,15 +101,15 @@ void main() {
       _testStart(1, "loading test.dart", groupIDs: []),
       _testDone(1, hidden: true),
       _group(2, testCount: 4),
-      _testStart(3, "failure 1"),
+      _testStart(3, "failure 1", line: 6, column: 7),
       _error(3, "oh no", isFailure: true),
       _testDone(3, result: "failure"),
-      _testStart(4, "success 1"),
+      _testStart(4, "success 1", line: 7, column: 7),
       _testDone(4),
-      _testStart(5, "failure 2"),
+      _testStart(5, "failure 2", line: 8, column: 7),
       _error(5, "oh no", isFailure: true),
       _testDone(5, result: "failure"),
-      _testStart(6, "success 2"),
+      _testStart(6, "success 2", line: 9, column: 7),
       _testDone(6),
       _done(success: false)
     ]);
@@ -133,12 +134,12 @@ void main() {
       _testStart(1, "loading test.dart", groupIDs: []),
       _testDone(1, hidden: true),
       _group(2, testCount: 2),
-      _testStart(3, "failures"),
+      _testStart(3, "failures", line: 9, column: 7),
       _error(3, "first error"),
       _error(3, "second error"),
       _error(3, "third error"),
       _testDone(3, result: "error"),
-      _testStart(4, "wait"),
+      _testStart(4, "wait", line: 15, column: 7),
       _testDone(4),
       _done(success: false)
     ]);
@@ -168,9 +169,9 @@ void main() {
       _testStart(1, "loading test.dart", groupIDs: []),
       _testDone(1, hidden: true),
       _group(2, testCount: 2),
-      _testStart(3, "failure"),
+      _testStart(3, "failure", line: 11, column: 7),
       _testDone(3),
-      _testStart(4, "wait"),
+      _testStart(4, "wait", line: 17, column: 7),
       _error(3, "oh no"),
       _error(3,
           "This test failed after it had already completed. Make sure to "
@@ -200,14 +201,16 @@ void main() {
       _testStart(1, "loading test.dart", groupIDs: []),
       _testDone(1, hidden: true),
       _group(2, testCount: 3),
-      _group(3, name: "group 1", parentID: 2, testCount: 3),
-      _group(4, name: "group 1 .2", parentID: 3),
-      _group(5, name: "group 1 .2 .3", parentID: 4),
-      _testStart(6, 'group 1 .2 .3 success', groupIDs: [2, 3, 4, 5]),
+      _group(3,
+          name: "group 1", parentID: 2, testCount: 3, line: 6, column: 7),
+      _group(4, name: "group 1 .2", parentID: 3, line: 7, column: 9),
+      _group(5, name: "group 1 .2 .3", parentID: 4, line: 8, column: 11),
+      _testStart(6, 'group 1 .2 .3 success',
+          groupIDs: [2, 3, 4, 5], line: 9, column: 13),
       _testDone(6),
-      _testStart(7, 'group 1 success', groupIDs: [2, 3]),
+      _testStart(7, 'group 1 success', groupIDs: [2, 3], line: 13, column: 9),
       _testDone(7),
-      _testStart(8, 'group 1 success', groupIDs: [2, 3]),
+      _testStart(8, 'group 1 success', groupIDs: [2, 3], line: 14, column: 9),
       _testDone(8),
       _done()
     ]);
@@ -229,7 +232,7 @@ void main() {
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
         _group(2),
-        _testStart(3, 'test'),
+        _testStart(3, 'test', line: 6, column: 9),
         _print(3, "one"),
         _print(3, "two"),
         _print(3, "three"),
@@ -266,9 +269,9 @@ void main() {
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
         _group(2, testCount: 2),
-        _testStart(3, 'test'),
+        _testStart(3, 'test', line: 10, column: 9),
         _testDone(3),
-        _testStart(4, 'wait'),
+        _testStart(4, 'wait', line: 20, column: 9),
         _print(3, "one"),
         _print(3, "two"),
         _print(3, "three"),
@@ -309,7 +312,7 @@ void main() {
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
         _group(2, testCount: 2),
-        _testStart(3, 'test'),
+        _testStart(3, 'test', line: 9, column: 9),
         _print(3, "one"),
         _print(3, "two"),
         _error(3, "first error"),
@@ -319,7 +322,7 @@ void main() {
         _print(3, "five"),
         _print(3, "six"),
         _testDone(3, result: "error"),
-        _testStart(4, 'wait'),
+        _testStart(4, 'wait', line: 27, column: 9),
         _testDone(4),
         _done(success: false)
       ]);
@@ -339,11 +342,11 @@ void main() {
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
         _group(2, testCount: 3),
-        _testStart(3, "skip 1", skip: true),
+        _testStart(3, "skip 1", skip: true, line: 6, column: 9),
         _testDone(3),
-        _testStart(4, "skip 2", skip: true),
+        _testStart(4, "skip 2", skip: true, line: 7, column: 9),
         _testDone(4),
-        _testStart(5, "skip 3", skip: true),
+        _testStart(5, "skip 3", skip: true, line: 8, column: 9),
         _testDone(5),
         _done()
       ]);
@@ -363,8 +366,10 @@ void main() {
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
         _group(2, testCount: 0),
-        _group(3, name: "skip", parentID: 2, skip: true, testCount: 0),
-        _testStart(4, "skip", groupIDs: [2, 3], skip: true),
+        _group(3, name: "skip", parentID: 2, skip: true, testCount: 0,
+            line: 6, column: 9),
+        _testStart(4, "skip", groupIDs: [2, 3], skip: true,
+            line: 6, column: 9),
         _testDone(4),
         _done()
       ]);
@@ -381,32 +386,110 @@ void main() {
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
         _group(2, testCount: 2),
-        _testStart(3, "skip 1", skip: "some reason"),
+        _testStart(3, "skip 1", skip: "some reason", line: 6, column: 9),
         _testDone(3),
-        _testStart(4, "skip 2", skip: "or another"),
+        _testStart(4, "skip 2", skip: "or another", line: 7, column: 9),
         _testDone(4),
         _done()
       ]);
     });
   });
+
+  group("reports line and column numbers for", () {
+    test("the first call to setUpAll()", () {
+      _expectReport("""
+        setUpAll(() {});
+        setUpAll(() {});
+        setUpAll(() {});
+        test('success', () {});
+      """, [
+        _start,
+        _allSuites(),
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+        _group(2, testCount: 1),
+        _testStart(3, "(setUpAll)", line: 6, column: 9),
+        _testDone(3, hidden: true),
+        _testStart(4, "success", line: 9, column: 9),
+        _testDone(4),
+        _done()
+      ]);
+    });
+
+    test("the first call to tearDownAll()", () {
+      _expectReport("""
+        tearDownAll(() {});
+        tearDownAll(() {});
+        tearDownAll(() {});
+        test('success', () {});
+      """, [
+        _start,
+        _allSuites(),
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+        _group(2, testCount: 1),
+        _testStart(3, "success", line: 9, column: 9),
+        _testDone(3),
+        _testStart(4, "(tearDownAll)", line: 6, column: 9),
+        _testDone(4, hidden: true),
+        _done()
+      ]);
+    });
+
+    test("a test compiled to JS", () {
+      _expectReport("""
+        test('success', () {});
+      """, [
+        _start,
+        _allSuites(),
+        _suite(0, platform: "chrome"),
+        _testStart(1, "compiling test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+        _group(2, testCount: 1),
+        _testStart(3, "success", line: 6, column: 9),
+        _testDone(3),
+        _done()
+      ], args: ["-p", "chrome"]);
+    }, tags: ["chrome"]);
+  });
+
+  
+  test("doesn't report line and column information for a test compiled to JS "
+      "with --js-trace", () {
+    _expectReport("""
+      test('success', () {});
+    """, [
+      _start,
+      _allSuites(),
+      _suite(0, platform: "chrome"),
+      _testStart(1, "compiling test.dart", groupIDs: []),
+      _testDone(1, hidden: true),
+      _group(2, testCount: 1),
+      _testStart(3, "success"),
+      _testDone(3),
+      _done()
+    ], args: ["-p", "chrome", "--js-trace"]);
+  }, tags: ["chrome"]);
 }
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
 /// [expected].
-void _expectReport(String tests, List<Map> expected) {
+void _expectReport(String tests, List<Map> expected, {List<String> args}) {
   var dart = """
     import 'dart:async';
 
     import 'package:test/test.dart';
 
     void main() {
-    $tests
+$tests
     }
   """;
 
   d.file("test.dart", dart).create();
 
-  var test = runTest(["test.dart"], reporter: "json");
+  var test = runTest(["test.dart"]..addAll(args ?? []), reporter: "json");
   test.shouldExit();
 
   schedule(() async {
@@ -464,7 +547,12 @@ Map _suite(int id, {String platform, String path}) {
 /// The [testCount] parameter indicates the number of tests in the group. It
 /// defaults to 1.
 Map _group(int id, {String name, int suiteID, int parentID, skip,
-    int testCount}) {
+    int testCount, int line, int column}) {
+  if ((line == null) != (column == null)) {
+    throw new ArgumentError(
+        "line and column must either both be null or both be passed");
+  }
+
   return {
     "type": "group",
     "group": {
@@ -473,7 +561,11 @@ Map _group(int id, {String name, int suiteID, int parentID, skip,
       "suiteID": suiteID ?? 0,
       "parentID": parentID,
       "metadata": _metadata(skip: skip),
-      "testCount": testCount ?? 1
+      "testCount": testCount ?? 1,
+      "line": line,
+      "column": column,
+      "url": 
+          line == null ? null : p.toUri(p.join(sandbox, "test.dart")).toString()
     }
   };
 }
@@ -486,7 +578,12 @@ Map _group(int id, {String name, int suiteID, int parentID, skip,
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
 Map _testStart(int id, String name, {int suiteID, Iterable<int> groupIDs,
-    skip}) {
+    int line, int column, skip}) {
+  if ((line == null) != (column == null)) {
+    throw new ArgumentError(
+        "line and column must either both be null or both be passed");
+  }
+
   return {
     "type": "testStart",
     "test": {
@@ -494,7 +591,11 @@ Map _testStart(int id, String name, {int suiteID, Iterable<int> groupIDs,
       "name": name,
       "suiteID": suiteID ?? 0,
       "groupIDs": groupIDs ?? [2],
-      "metadata": _metadata(skip: skip)
+      "metadata": _metadata(skip: skip),
+      "line": line,
+      "column": column,
+      "url":
+          line == null ? null : p.toUri(p.join(sandbox, "test.dart")).toString()
     }
   };
 }

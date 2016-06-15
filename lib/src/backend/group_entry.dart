@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:stack_trace/stack_trace.dart';
+
 import 'metadata.dart';
 import 'operating_system.dart';
 import 'test.dart';
@@ -18,6 +20,10 @@ abstract class GroupEntry {
   /// The metadata for the entry, including the metadata from any containing
   /// [Group]s.
   Metadata get metadata;
+
+  /// The stack trace for the call to `test()` or `group()` that defined this
+  /// entry, or `null` if the entry was defined in a different way.
+  Trace get trace;
 
   /// Returns a copy of [this] with all platform-specific metadata resolved.
   ///

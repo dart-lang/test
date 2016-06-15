@@ -70,8 +70,8 @@ bool get canUseSpecialChars =>
     Platform.operatingSystem != 'windows' && !inTestTests;
 
 /// Creates a temporary directory and returns its path.
-String createTempDir() =>
-    new Directory(_tempDir).createTempSync('dart_test_').path;
+String createTempDir() => new Directory(_tempDir)
+    .createTempSync('dart_test_').resolveSymbolicLinksSync();
 
 /// Creates a temporary directory and passes its path to [fn].
 ///

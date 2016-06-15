@@ -89,7 +89,7 @@ class Runner {
 
       case "json":
         reporter = JsonReporter.watch(engine,
-            verboseTrace: config.verboseTrace);
+            verboseTrace: config.verboseTrace, jsLocations: !config.jsTrace);
         break;
     }
 

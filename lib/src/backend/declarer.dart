@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:stack_trace/stack_trace.dart';
+
 import '../frontend/timeout.dart';
 import '../utils.dart';
 import 'group.dart';
@@ -33,6 +35,9 @@ class Declarer {
   /// and of the test suite.
   final Metadata _metadata;
 
+  /// The stack trace for this group.
+  final Trace _trace;
+
   /// The set-up functions to run for each test in this group.
   final _setUps = new List<AsyncFunction>();
 
@@ -42,8 +47,21 @@ class Declarer {
   /// The set-up functions to run once for this group.
   final _setUpAlls = new List<AsyncFunction>();
 
+  /// The trace for the first call to [setUpAll].
+  ///
+  /// All [setUpAll]s are run in a single logical test, so they can only have
+  /// one trace. The first trace is most often correct, since the first
+  /// [setUpAll] is always run and the rest are only run if that one succeeds.
+  Trace _setUpAllTrace;
+
   /// The tear-down functions to run once for this group.
   final _tearDownAlls = new List<AsyncFunction>();
+
+  /// The trace for the first call to [tearDownAll].
+  ///
+  /// All [tearDownAll]s are run in a single logical test, so they can only have
+  /// one trace. The first trace matches [_setUpAllTrace].
+  Trace _tearDownAllTrace;
 
   /// The children of this group, either tests or sub-groups.
   final _entries = new List<GroupEntry>();
@@ -60,9 +78,9 @@ class Declarer {
   /// If [metadata] is passed, it's used as the metadata for the implicit root
   /// group.
   Declarer([Metadata metadata])
-      : this._(null, null, metadata == null ? new Metadata() : metadata);
+      : this._(null, null, metadata == null ? new Metadata() : metadata, null);
 
-  Declarer._(this._parent, this._name, this._metadata);
+  Declarer._(this._parent, this._name, this._metadata, this._trace);
 
   /// Runs [body] with this declarer as [Declarer.current].
   ///
@@ -88,7 +106,7 @@ class Declarer {
         await body();
       });
       await _runTearDowns();
-    }));
+    }, trace: new Trace.current(2)));
   }
 
   /// Creates a group of tests.
@@ -99,14 +117,15 @@ class Declarer {
     var metadata = _metadata.merge(new Metadata.parse(
         testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
         tags: tags));
+    var trace = new Trace.current(2);
 
     // Don't load the tests for a skipped group.
     if (metadata.skip) {
-      _entries.add(new Group(name, [], metadata: metadata));
+      _entries.add(new Group(name, [], metadata: metadata, trace: trace));
       return;
     }
 
-    var declarer = new Declarer._(this, _prefix(name), metadata);
+    var declarer = new Declarer._(this, _prefix(name), metadata, trace);
     declarer.declare(body);
     _entries.add(declarer.build());
   }
@@ -129,12 +148,14 @@ class Declarer {
   /// Registers a function to be run once before all tests.
   void setUpAll(callback()) {
     _checkNotBuilt("setUpAll");
+    _setUpAllTrace ??= new Trace.current(2);
     _setUpAlls.add(callback);
   }
 
   /// Registers a function to be run once after all tests.
   void tearDownAll(callback()) {
     _checkNotBuilt("tearDownAll");
+    _tearDownAllTrace ??= new Trace.current(2);
     _tearDownAlls.add(callback);
   }
 
@@ -145,6 +166,7 @@ class Declarer {
     _built = true;
     return new Group(_name, _entries.toList(),
         metadata: _metadata,
+        trace: _trace,
         setUpAll: _setUpAll,
         tearDownAll: _tearDownAll);
   }
@@ -189,7 +211,7 @@ class Declarer {
 
     return new LocalTest(_prefix("(setUpAll)"), _metadata, () {
       return Future.forEach(_setUpAlls, (setUp) => setUp());
-    });
+    }, trace: _setUpAllTrace);
   }
 
   /// Returns a [Test] that runs the callbacks in [_tearDownAll].
@@ -200,7 +222,7 @@ class Declarer {
       return Invoker.current.unclosable(() {
         return Future.forEach(_tearDownAlls.reversed, _errorsDontStopTest);
       });
-    });
+    }, trace: _tearDownAllTrace);
   }
 
   /// Runs [body] with special error-handling behavior.

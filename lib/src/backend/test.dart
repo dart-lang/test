@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:stack_trace/stack_trace.dart';
+
 import 'group.dart';
 import 'group_entry.dart';
 import 'live_test.dart';
@@ -19,6 +21,8 @@ abstract class Test implements GroupEntry {
   String get name;
 
   Metadata get metadata;
+
+  Trace get trace;
 
   /// Loads a live version of this test, which can be used to run it a single
   /// time.

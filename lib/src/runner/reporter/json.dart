@@ -6,9 +6,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import '../../backend/group.dart';
+import '../../backend/group_entry.dart';
 import '../../backend/live_test.dart';
 import '../../backend/metadata.dart';
 import '../../backend/suite.dart';
+import '../../backend/test_platform.dart';
 import '../../frontend/expect.dart';
 import '../../utils.dart';
 import '../engine.dart';
@@ -20,6 +22,9 @@ import '../version.dart';
 class JsonReporter implements Reporter {
   /// Whether to use verbose stack traces.
   final bool _verboseTrace;
+
+  /// Whether to emit location information for JS tests.
+  final bool _jsLocations;
 
   /// The engine used to run the tests.
   final Engine _engine;
@@ -53,13 +58,19 @@ class JsonReporter implements Reporter {
 
   /// Watches the tests run by [engine] and prints their results as JSON.
   ///
-  /// If [verboseTrace] is `true`, this will print core library frames.
-  static JsonReporter watch(Engine engine, {bool verboseTrace: false}) {
-    return new JsonReporter._(engine, verboseTrace: verboseTrace);
+  /// If [verboseTrace] is `true`, this will print core library frames. If
+  /// [jsLocations] is `false`, this will not emit location information for JS
+  /// tests.
+  static JsonReporter watch(Engine engine, {bool verboseTrace: false,
+      bool jsLocations: true}) {
+    return new JsonReporter._(engine,
+        verboseTrace: verboseTrace, jsLocations: jsLocations);
   }
 
-  JsonReporter._(this._engine, {bool verboseTrace: false})
-      : _verboseTrace = verboseTrace {
+  JsonReporter._(this._engine, {bool verboseTrace: false,
+      bool jsLocations: true})
+      : _verboseTrace = verboseTrace,
+        _jsLocations = jsLocations {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -120,18 +131,18 @@ class JsonReporter implements Reporter {
     // unnecessary clutter.
     var groupIDs = liveTest.suite is LoadSuite
         ? []
-        : _idsForGroups(liveTest.groups, suiteID);
+        : _idsForGroups(liveTest.groups, liveTest.suite);
 
     var id = _nextID++;
     _liveTestIDs[liveTest] = id;
     _emit("testStart", {
-      "test": {
+      "test": _addFrameInfo({
         "id": id,
         "name": liveTest.test.name, 
         "suiteID": suiteID,
         "groupIDs": groupIDs,
         "metadata": _serializeMetadata(liveTest.test.metadata)
-      }
+      }, liveTest.test, liveTest.suite.platform)
     });
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -183,7 +194,7 @@ class JsonReporter implements Reporter {
   ///
   /// If a group doesn't have an ID yet, this assigns one and emits a new event
   /// for that group.
-  List<int> _idsForGroups(Iterable<Group> groups, int suiteID) {
+  List<int> _idsForGroups(Iterable<Group> groups, Suite suite) {
     int parentID;
     return groups.map((group) {
       if (_groupIDs.containsKey(group)) {
@@ -195,14 +206,14 @@ class JsonReporter implements Reporter {
       _groupIDs[group] = id;
 
       _emit("group", {
-        "group": {
+        "group": _addFrameInfo({
           "id": id,
-          "suiteID": suiteID,
+          "suiteID": _idForSuite(suite),
           "parentID": parentID,
           "name": group.name,
           "metadata": _serializeMetadata(group.metadata),
           "testCount": group.testCount
-        }
+        }, group, suite.platform)
       });
       parentID = id;
       return id;
@@ -248,5 +259,20 @@ class JsonReporter implements Reporter {
     attributes["type"] = type;
     attributes["time"] = _stopwatch.elapsed.inMilliseconds;
     print(JSON.encode(attributes));
+  }
+
+  /// Modifies [map] to include line, column, and URL information from the first
+  /// frame of [entry.trace].
+  ///
+  /// Returns [map].
+  Map<String, dynamic> _addFrameInfo(Map<String, dynamic> map,
+      GroupEntry entry, TestPlatform platform) {
+    var frame = entry.trace?.frames?.first;
+    if (!_jsLocations && platform.isJS) frame = null;
+
+    map["line"] = frame?.line;
+    map["column"] = frame?.column;
+    map["url"] = frame?.uri?.toString();
+    return map;
   }
 }

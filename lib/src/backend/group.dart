@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:stack_trace/stack_trace.dart';
+
 import 'group_entry.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
@@ -15,6 +17,8 @@ class Group implements GroupEntry {
   final String name;
 
   final Metadata metadata;
+
+  final Trace trace;
 
   /// The children of this group.
   final List<GroupEntry> entries;
@@ -43,7 +47,7 @@ class Group implements GroupEntry {
   int _testCount;
 
   Group(this.name, Iterable<GroupEntry> entries, {Metadata metadata,
-          Test this.setUpAll, Test this.tearDownAll})
+          this.trace, Test this.setUpAll, Test this.tearDownAll})
       : entries = new List<GroupEntry>.unmodifiable(entries),
         metadata = metadata == null ? new Metadata() : metadata;
 
@@ -53,14 +57,20 @@ class Group implements GroupEntry {
     var filtered = _map((entry) => entry.forPlatform(platform, os: os));
     if (filtered.isEmpty && !entries.isEmpty) return null;
     return new Group(name, filtered,
-        metadata: newMetadata, setUpAll: setUpAll, tearDownAll: tearDownAll);
+        metadata: newMetadata,
+        trace: trace,
+        setUpAll: setUpAll,
+        tearDownAll: tearDownAll);
   }
 
   Group filter(bool callback(Test test)) {
     var filtered = _map((entry) => entry.filter(callback));
     if (filtered.isEmpty && !entries.isEmpty) return null;
     return new Group(name, filtered,
-        metadata: metadata, setUpAll: setUpAll, tearDownAll: tearDownAll);
+        metadata: metadata,
+        trace: trace,
+        setUpAll: setUpAll,
+        tearDownAll: tearDownAll);
   }
 
   /// Returns the entries of this group mapped using [callback].

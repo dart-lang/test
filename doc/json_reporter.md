@@ -290,6 +290,15 @@ class Test {
 
   // The test's metadata, including metadata from any containing groups.
   Metadata metadata;
+
+  // The (1-based) line on which the test was defined, or `null`.
+  int line;
+
+  // The (1-based) column on which the test was defined, or `null`.
+  int column;
+
+  // The URL for the file in which the test was defined, or `null`.
+  String url;
 }
 ```
 
@@ -300,6 +309,11 @@ full representation.
 Most tests will have at least one group ID, representing the implicit root
 group. However, some may not; these should be treated as having no group
 metadata.
+
+The `line`, `column`, and `url` fields indicate the location the `test()`
+function was called to create this test. They're treated as a unit: they'll
+either all be `null` or they'll all be non-`null`. The URL is always absolute,
+and may be a `package:` URL.
 
 ### Suite
 
@@ -349,6 +363,15 @@ class Group {
 
   // The number of tests (recursively) within this group.
   int testCount;
+
+  // The (1-based) line on which the group was defined, or `null`.
+  int line;
+
+  // The (1-based) column on which the group was defined, or `null`.
+  int column;
+
+  // The URL for the file in which the group was defined, or `null`.
+  String url;
 }
 ```
 
@@ -358,6 +381,11 @@ including its full representation.
 
 The implicit group at the root of each test suite has `null` `name` and
 `parentID` attributes.
+
+The `line`, `column`, and `url` fields indicate the location the `group()`
+function was called to create this group. They're treated as a unit: they'll
+either all be `null` or they'll all be non-`null`. The URL is always absolute,
+and may be a `package:` URL.
 
 ### Metadata
 

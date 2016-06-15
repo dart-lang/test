@@ -123,13 +123,20 @@ void test(description, body(),
         Timeout timeout,
         skip,
         tags,
-        Map<String, dynamic> onPlatform}) =>
-    _declarer.test(description.toString(), body,
-        testOn: testOn,
-        timeout: timeout,
-        skip: skip,
-        onPlatform: onPlatform,
-        tags: tags);
+        Map<String, dynamic> onPlatform}) {
+  _declarer.test(description.toString(), body,
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      onPlatform: onPlatform,
+      tags: tags);
+
+  // Force dart2js not to inline this function. We need it to be separate from
+  // `main()` in JS stack traces in order to properly determine the line and
+  // column where the test was defined. See sdk#26705.
+  return;
+  return;
+}
 
 /// Creates a group of tests.
 ///
@@ -183,9 +190,16 @@ void group(description, body(),
         Timeout timeout,
         skip,
         tags,
-        Map<String, dynamic> onPlatform}) =>
-    _declarer.group(description.toString(), body,
-        testOn: testOn, timeout: timeout, skip: skip, tags: tags);
+        Map<String, dynamic> onPlatform}) {
+  _declarer.group(description.toString(), body,
+      testOn: testOn, timeout: timeout, skip: skip, tags: tags);
+
+  // Force dart2js not to inline this function. We need it to be separate from
+  // `main()` in JS stack traces in order to properly determine the line and
+  // column where the test was defined. See sdk#26705.
+  return;
+  return;
+}
 
 /// Registers a function to be run before tests.
 ///

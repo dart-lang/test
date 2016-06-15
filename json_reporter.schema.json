@@ -3,17 +3,50 @@
   "description": "An event emitted by the test package's JSON reporter",
 
   "definitions": {
-    "Test": {
-      "required": ["id", "name", "suiteID", "groupIDs", "metadata"],
+    "GroupEntry": {
+      "required": [
+        "id",
+        "suiteID",
+        "metadata",
+        "line",
+        "column",
+        "url"
+      ],
       "properties": {
         "id": {"type": "integer", "minimum": 0},
-        "name": {"type": "string"},
         "suiteID": {"type": "integer", "minimum": 0},
+        "metadata": {"$ref": "#/definitions/Metadata"}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "line": {"type": "integer", "minimum": 1},
+            "column": {"type": "integer", "minimum": 1},
+            "url": {"type": "string", "format": "uri"}
+          }
+        },
+        {
+          "properties": {
+            "line": {"type": "null"},
+            "column": {"type": "null"},
+            "url": {"type": "null"}
+          }
+        }
+      ]
+    },
+
+    "Test": {
+      "allOf": [{"$ref": "#/definitions/GroupEntry"}],
+      "required": [
+        "name",
+        "groupIDs"
+      ],
+      "properties": {
+        "name": {"type": "string"},
         "groupIDs": {
           "type": "array",
           "items": {"type": "integer", "minimum": 0}
-        },
-        "metadata": {"$ref": "#/definitions/Metadata"}
+        }
       }
     },
 
@@ -29,17 +62,15 @@
     },
 
     "Group": {
-      "required": ["id", "name", "suiteID"],
+      "allOf": [{"$ref": "#/definitions/GroupEntry"}],
+      "required": ["name"],
       "properties": {
-        "id": {"type": "integer", "minimum": 0},
-        "suiteID": {"type": "integer", "minimum": 0},
         "parentID": {
           "oneOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
         },
         "name": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
         },
-        "metadata": {"$ref": "#/definitions/Metadata"},
         "testCount": {"type": "integer", "minimum": 0}
       }
     },

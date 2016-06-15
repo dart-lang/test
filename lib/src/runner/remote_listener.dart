@@ -125,6 +125,7 @@ class RemoteListener {
       "type": "group",
       "name": group.name,
       "metadata": group.metadata.serialize(),
+      "trace": group.trace?.toString(),
       "setUpAll": _serializeTest(channel, group.setUpAll, parents),
       "tearDownAll": _serializeTest(channel, group.tearDownAll, parents),
       "entries": group.entries.map((entry) {
@@ -154,6 +155,7 @@ class RemoteListener {
       "type": "test",
       "name": test.name,
       "metadata": test.metadata.serialize(),
+      "trace": test.trace?.toString(),
       "channel": testChannel.id
     };
   }

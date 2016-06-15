@@ -25,11 +25,12 @@ import 'test_platform.dart';
 class LocalTest extends Test {
   final String name;
   final Metadata metadata;
+  final Trace trace;
 
   /// The test body.
   final AsyncFunction _body;
 
-  LocalTest(this.name, this.metadata, body())
+  LocalTest(this.name, this.metadata, body(), {this.trace})
       : _body = body;
 
   /// Loads a single runnable instance of this test.
@@ -40,7 +41,8 @@ class LocalTest extends Test {
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new LocalTest(name, metadata.forPlatform(platform, os: os), _body);
+    return new LocalTest(name, metadata.forPlatform(platform, os: os), _body,
+        trace: trace);
   }
 }
 

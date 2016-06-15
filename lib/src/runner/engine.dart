@@ -365,7 +365,8 @@ class Engine {
   Future _runSkippedTest(LiveSuiteController suiteController, GroupEntry entry,
       List<Group> parents) {
     // The netry name will be `null` for the root group.
-    var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {});
+    var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {},
+        trace: entry.trace);
 
     var controller;
     controller = new LiveTestController(

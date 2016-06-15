@@ -119,6 +119,7 @@ class _Deserializer {
       return _deserializeTest(map);
     }),
         metadata: metadata,
+        trace: group['trace'] == null ? null : new Trace.parse(group['trace']),
         setUpAll: _deserializeTest(group['setUpAll']),
         tearDownAll: _deserializeTest(group['tearDownAll']));
   }
@@ -130,7 +131,9 @@ class _Deserializer {
     if (test == null) return null;
 
     var metadata = new Metadata.deserialize(test['metadata']);
+    var trace = test['trace'] == null ? null : new Trace.parse(test['trace']);
     var testChannel = _channel.virtualChannel(test['channel']);
-    return new RunnerTest(test['name'], metadata, testChannel, _mapTrace);
+    return new RunnerTest(
+        test['name'], metadata, trace, testChannel, _mapTrace);
   }
 }
