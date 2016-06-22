@@ -1,3 +1,7 @@
+## 0.12.14+1
+
+* Narrow the constraint on `yaml`.
+
 ## 0.12.14
 
 * Add test and group location information to the JSON reporter.
