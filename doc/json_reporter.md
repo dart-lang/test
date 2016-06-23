@@ -151,9 +151,10 @@ This includes the implicit group at the root of each suite, which has a `null`
 name. However, it does *not* include implicit groups for the virtual suites
 generated to represent loading test files.
 
-The group should be considered skipped if `group.metadata.skip` is `true`. When
-a group is skipped, a single `TestStartEvent` will be emitted for a test within
-that group that will also be skipped.
+If the group is skipped, a single `TestStartEvent` will be emitted for a test
+within the group, followed by a `TestDoneEvent` marked as skipped. The
+`group.metadata.skip` field should *not* be considered authoritative for
+determining whether a group is skipped.
 
 ### TestStartEvent
 
@@ -170,7 +171,9 @@ An event emitted when a test begins running. This is the only event that
 contains the full metadata about a test; future events will refer to the test by
 its opaque ID.
 
-The test should be considered skipped if `test.metadata.skip` is `true`.
+If the test is skipped, its `TestDoneEvent` will have `skipped` set to `true`.
+The `test.metadata.skip` field should *not* be considered authoritative for
+determining whether a test is skipped.
 
 ### PrintEvent
 
@@ -230,6 +233,9 @@ class TestDoneEvent extends Event {
 
   // Whether the test's result should be hidden.
   bool hidden;
+
+  // Whether the test (or some part of it) was skipped.
+  bool skipped;
 }
 ```
 
@@ -400,3 +406,6 @@ class Metadata {
 ```
 
 The metadata attached to a test by a user.
+
+Note that the `skip` field should not be considered authoritative. A test may be
+skipped even if `skip` is set to `false`.

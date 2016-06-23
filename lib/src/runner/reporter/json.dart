@@ -9,6 +9,7 @@ import '../../backend/group.dart';
 import '../../backend/group_entry.dart';
 import '../../backend/live_test.dart';
 import '../../backend/metadata.dart';
+import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/expect.dart';
@@ -228,7 +229,11 @@ class JsonReporter implements Reporter {
   void _onComplete(LiveTest liveTest) {
     _emit("testDone", {
       "testID": _liveTestIDs[liveTest],
-      "result": liveTest.state.result.toString(),
+      // For backwards-compatibility, report skipped tests as successes.
+      "result": liveTest.state.result == Result.skipped
+          ? "success"
+          : liveTest.state.result.toString(),
+      "skipped": liveTest.state.result == Result.skipped,
       "hidden": !_engine.liveTests.contains(liveTest)
     });
   }

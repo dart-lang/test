@@ -165,12 +165,13 @@
 
     {
       "title": "TestDoneEvent",
-      "required": ["testID", "result", "hidden"],
+      "required": ["testID", "result", "hidden", "skipped"],
       "properties": {
         "type": {"enum": ["testDone"]},
         "testID": {"type": "integer", "minimum": 0},
         "result": {"type": "string", "enum": ["success", "failure", "error"]},
-        "hidden": {"type": "boolean"}
+        "hidden": {"type": "boolean"},
+        "skipped": {"type": "boolean"}
       }
     },
 

@@ -234,8 +234,8 @@ class Invoker {
   void _handleError(error, [StackTrace stackTrace]) {
     if (stackTrace == null) stackTrace = new Chain.current();
 
-    var afterSuccess = liveTest.isComplete &&
-        liveTest.state.result == Result.success;
+    // Store this here because it'll change when we set the state below.
+    var shouldBeDone = liveTest.state.shouldBeDone;
 
     if (error is! TestFailure) {
       _controller.setState(const State(Status.complete, Result.error));
@@ -246,9 +246,9 @@ class Invoker {
     _controller.addError(error, stackTrace);
     removeAllOutstandingCallbacks();
 
-    // If a test was marked as success but then had an error, that indicates
+    // If a test was supposed to be done but then had an error, that indicates
     // that it was poorly-written and could be flaky.
-    if (!afterSuccess) return;
+    if (!shouldBeDone) return;
 
     // However, users don't think of load tests as "tests", so the error isn't
     // helpful for them.

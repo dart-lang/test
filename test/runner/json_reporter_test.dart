@@ -343,11 +343,11 @@ void main() {
         _testDone(1, hidden: true),
         _group(2, testCount: 3),
         _testStart(3, "skip 1", skip: true, line: 6, column: 9),
-        _testDone(3),
+        _testDone(3, skipped: true),
         _testStart(4, "skip 2", skip: true, line: 7, column: 9),
-        _testDone(4),
+        _testDone(4, skipped: true),
         _testStart(5, "skip 3", skip: true, line: 8, column: 9),
-        _testDone(5),
+        _testDone(5, skipped: true),
         _done()
       ]);
     });
@@ -370,7 +370,7 @@ void main() {
             line: 6, column: 9),
         _testStart(4, "skip", groupIDs: [2, 3], skip: true,
             line: 6, column: 9),
-        _testDone(4),
+        _testDone(4, skipped: true),
         _done()
       ]);
     });
@@ -387,9 +387,9 @@ void main() {
         _testDone(1, hidden: true),
         _group(2, testCount: 2),
         _testStart(3, "skip 1", skip: "some reason", line: 6, column: 9),
-        _testDone(3),
+        _testDone(3, skipped: true),
         _testStart(4, "skip 2", skip: "or another", line: 7, column: 9),
-        _testDone(4),
+        _testDone(4, skipped: true),
         _done()
       ]);
     });
@@ -631,10 +631,18 @@ Map _error(int id, String error, {bool isFailure: false}) {
 /// `"success"`.
 ///
 /// The [hidden] parameter indicates whether the test should not be displayed
-/// after finishing.
-Map _testDone(int id, {String result, bool hidden: false}) {
+/// after finishing. The [skipped] parameter indicates whether the test was
+/// skipped.
+Map _testDone(int id, {String result, bool hidden: false,
+    bool skipped: false}) {
   result ??= "success";
-  return {"type": "testDone", "testID": id, "result": result, "hidden": hidden};
+  return {
+    "type": "testDone",
+    "testID": id,
+    "result": result,
+    "hidden": hidden,
+    "skipped": skipped
+  };
 }
 
 /// Returns the event emitted by the JSON reporter indicating that the entire

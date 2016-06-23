@@ -121,11 +121,11 @@ class LiveSuiteController {
       if (state.status != Status.complete) return;
       _active = null;
 
-      if (state.result != Result.success) {
+      if (state.result == Result.skipped) {
+        _skipped.add(liveTest);
+      } else if (state.result != Result.success) {
         _passed.remove(liveTest);
         _failed.add(liveTest);
-      } else if (liveTest.test.metadata.skip) {
-        _skipped.add(liveTest);
       } else if (countSuccess) {
         _passed.add(liveTest);
       }

@@ -172,13 +172,17 @@ void main() {
         expect(liveTest, same(engine.liveTests.single));
         expect(liveTest.test.name, equals(tests.single.name));
 
-        var first = true;
+        var i = 0;
         liveTest.onStateChange.listen(expectAsync((state) {
-          expect(state, equals(first
-              ? const State(Status.running, Result.success)
-              : const State(Status.complete, Result.success)));
-          first = false;
-        }, count: 2));
+          if (i == 0) {
+            expect(state, equals(const State(Status.running, Result.success)));
+          } else if (i == 1) {
+            expect(state, equals(const State(Status.running, Result.skipped)));
+          } else if (i == 2) {
+            expect(state, equals(const State(Status.complete, Result.skipped)));
+          }
+          i++;
+        }, count: 3));
 
         expect(liveTest.onComplete, completes);
       }));

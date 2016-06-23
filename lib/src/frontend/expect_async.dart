@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import '../backend/invoker.dart';
-import '../backend/state.dart';
 import 'expect.dart';
 
 /// An object used to detect unpassed arguments.
@@ -170,8 +169,7 @@ class _ExpectedFunction {
     // pass it to the invoker anyway.
     try {
       _actualCalls++;
-      if (_invoker.liveTest.isComplete &&
-          _invoker.liveTest.state.result == Result.success) {
+      if (_invoker.liveTest.state.shouldBeDone) {
         throw 'Callback ${_id}called ($_actualCalls) after test case '
               '${_invoker.liveTest.test.name} had already completed.$_reason';
       } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {

@@ -212,7 +212,7 @@ class CompactReporter implements Reporter {
   void _onStateChange(LiveTest liveTest, State state) {
     if (state.status != Status.complete) return;
 
-    if (liveTest.test.metadata.skip &&
+    if (state.result == Result.skipped &&
         liveTest.test.metadata.skipReason != null) {
       _progressLine(_description(liveTest));
       print('');

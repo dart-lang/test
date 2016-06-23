@@ -73,7 +73,7 @@ class Engine {
   /// previous suites to be unloaded in the order they completed.
   final Pool _loadPool;
 
-  /// Whether all tests passed.
+  /// Whether all tests passed or were skipped.
   ///
   /// This fires once all tests have completed and [suiteSink] has been closed.
   /// This will be `null` if [close] was called before all the tests finished
@@ -81,8 +81,7 @@ class Engine {
   Future<bool> get success async {
     await _group.future;
     if (_closedBeforeDone) return null;
-    return liveTests.every((liveTest) =>
-        liveTest.state.result == Result.success);
+    return liveTests.every((liveTest) => liveTest.state.result.isPassing);
   }
 
   /// A group of futures for each test suite.
@@ -286,7 +285,7 @@ class Engine {
         var liveTest = group.setUpAll.load(suiteController.liveSuite.suite,
             groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
-        setUpAllSucceeded = liveTest.state.result == Result.success;
+        setUpAllSucceeded = liveTest.state.result.isPassing;
       }
 
       if (!_closed && setUpAllSucceeded) {
@@ -372,7 +371,8 @@ class Engine {
     controller = new LiveTestController(
         suiteController.liveSuite.suite, test, () {
       controller.setState(const State(Status.running, Result.success));
-      controller.setState(const State(Status.complete, Result.success));
+      controller.setState(const State(Status.running, Result.skipped));
+      controller.setState(const State(Status.complete, Result.skipped));
       controller.completer.complete();
     }, () {}, groups: parents);
 

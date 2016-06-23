@@ -17,6 +17,14 @@ class State {
   /// [Result.success] since the test hasn't yet had a chance to fail.
   final Result result;
 
+  /// Whether a test in this state is expected to be done running code.
+  ///
+  /// If [status] is [Status.complete] and [result] doesn't indicate an error, a
+  /// properly-written test case should not be running any more code. However,
+  /// it may have started asynchronous processes without notifying the test
+  /// runner.
+  bool get shouldBeDone => status == Status.complete && result.isPassing;
+
   const State(this.status, this.result);
 
   bool operator==(other) => other is State && status == other.status &&
@@ -74,6 +82,12 @@ class Result {
   /// Note that this doesn't mean that the test won't fail in the future.
   static const success = const Result._("success");
 
+  /// The test, or some part of it, has been skipped.
+  ///
+  /// This implies that the test hasn't failed *yet*. However, it this doesn't
+  /// mean that the test won't fail in the future.
+  static const skipped = const Result._("skipped");
+
   /// The test has failed.
   ///
   /// A failure is specifically caused by a [TestFailure] being thrown; any
@@ -88,9 +102,22 @@ class Result {
   /// The name of the result.
   final String name;
 
+  /// Whether this is a passing result.
+  ///
+  /// A test is considered to have passed if it's a success or if it was
+  /// skipped.
+  bool get isPassing => this == success || this == skipped;
+
+  /// Whether this is a failing result.
+  ///
+  /// A test is considered to have failed if it experiences a failure or an
+  /// error.
+  bool get isFailing => !isPassing;
+
   factory Result.parse(String name) {
     switch (name) {
       case "success": return Result.success;
+      case "skipped": return Result.skipped;
       case "failure": return Result.failure;
       case "error": return Result.error;
       default:
