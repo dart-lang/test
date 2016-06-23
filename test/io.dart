@@ -7,7 +7,6 @@
 library test.test.io;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -16,7 +15,6 @@ import 'package:scheduled_test/scheduled_process.dart';
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/util/io.dart';
-import 'package:yaml/yaml.dart';
 
 /// The path to the root directory of the `test` package.
 final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
@@ -104,7 +102,7 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 ///
 /// If [forwardStdio] is true, the standard output and error from the process
 /// will be printed as part of the parent test. This is used for debugging.
-ScheduledProcess runTest(List args, {String reporter,
+ScheduledProcess runTest(List<String> args, {String reporter,
     int concurrency, Map<String, String> environment,
     bool forwardStdio: false}) {
   concurrency ??= 1;
@@ -133,7 +131,7 @@ ScheduledProcess runTest(List args, {String reporter,
 }
 
 /// Runs Dart.
-ScheduledProcess runDart(List args, {Map<String, String> environment,
+ScheduledProcess runDart(List<String> args, {Map<String, String> environment,
     String description}) {
   var allArgs = Platform.executableArguments.map((arg) {
     // The package root might be relative, so we need to make it absolute if
@@ -163,7 +161,7 @@ ScheduledProcess runPub(List args, {Map<String, String> environment}) {
 ///
 /// This returns assigns [_pubServePort] to a future that will complete to the
 /// port of the "pub serve" instance.
-ScheduledProcess runPubServe({List args, String workingDirectory,
+ScheduledProcess runPubServe({List<String> args, String workingDirectory,
     Map<String, String> environment}) {
   _pubServePortCompleter = new Completer();
   currentSchedule.onComplete.schedule(() => _pubServePortCompleter = null);

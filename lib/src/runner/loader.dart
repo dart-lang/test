@@ -30,9 +30,6 @@ class Loader {
   /// The test runner configuration.
   final Configuration _config;
 
-  /// The root directory that will be served for browser tests.
-  final String _root;
-
   /// All suites that have been created by the loader.
   final _suites = new Set<RunnerSuite>();
 
@@ -48,8 +45,7 @@ class Loader {
   ///
   /// [root] is the root directory that will be served for browser tests. It
   /// defaults to the working directory.
-  Loader(this._config, {String root})
-      : _root = root == null ? p.current : root {
+  Loader(this._config, {String root}) {
     registerPlatformPlugin([TestPlatform.vm], () => new VMPlatform(_config));
     registerPlatformPlugin([
       TestPlatform.dartium,

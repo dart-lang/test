@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
 
@@ -39,8 +38,7 @@ final OperatingSystem currentOS = (() {
 })();
 
 /// A queue of lines of standard input.
-final stdinLines = new StreamQueue(
-    UTF8.decoder.fuse(const LineSplitter()).bind(stdin));
+final stdinLines = new StreamQueue(lineSplitter.bind(stdin));
 
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment["_DART_TEST_TESTING"] == "true";

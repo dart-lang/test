@@ -27,8 +27,12 @@ typedef AsyncFunction();
 /// A typedef for a zero-argument callback function.
 typedef void Callback();
 
-/// A converter that decodes bytes using UTF-8 and splits them on newlines.
-final lineSplitter = UTF8.decoder.fuse(const LineSplitter());
+/// A transformer that decodes bytes using UTF-8 and splits them on newlines.
+final lineSplitter = new StreamTransformer<List<int>, String>(
+    (stream, cancelOnError) => stream
+        .transform(UTF8.decoder)
+        .transform(const LineSplitter())
+        .listen(null, cancelOnError: cancelOnError));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
