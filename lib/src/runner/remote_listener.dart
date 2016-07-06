@@ -183,9 +183,13 @@ class RemoteListener {
       });
     });
 
-    liveTest.onPrint.listen((line) {
-      if (_printZone != null) _printZone.print(line);
-      channel.sink.add({"type": "print", "line": line});
+    liveTest.onMessage.listen((message) {
+      if (_printZone != null) _printZone.print(message.text);
+      channel.sink.add({
+        "type": "message",
+        "message-type": message.type.name,
+        "text": message.text
+      });
     });
 
     liveTest.run().then((_) => channel.sink.add({"type": "complete"}));

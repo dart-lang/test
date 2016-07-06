@@ -6,13 +6,14 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../backend/group.dart';
 import '../frontend/expect.dart';
 import '../runner/load_suite.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
+import 'group.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
+import 'message.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
 import 'outstanding_callback_counter.dart';
@@ -302,7 +303,8 @@ class Invoker {
         _closableKey: true
       },
           zoneSpecification: new ZoneSpecification(
-              print: (self, parent, zone, line) => _controller.print(line)),
+              print: (self, parent, zone, line) =>
+                  _controller.message(new Message.print(line))),
           onError: _handleError);
     });
   }

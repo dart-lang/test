@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import '../../backend/live_test.dart';
+import '../../backend/message.dart';
 import '../../backend/state.dart';
 import '../../utils.dart';
 import '../engine.dart';
@@ -184,9 +185,11 @@ class ExpandedReporter implements Reporter {
     _subscriptions.add(liveTest.onError.listen((error) =>
         _onError(liveTest, error.error, error.stackTrace)));
 
-    _subscriptions.add(liveTest.onPrint.listen((line) {
+    _subscriptions.add(liveTest.onMessage.listen((message) {
       _progressLine(_description(liveTest));
-      print(line);
+      var text = message.text;
+      if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
+      print(text);
     }));
   }
 
@@ -194,13 +197,9 @@ class ExpandedReporter implements Reporter {
   void _onStateChange(LiveTest liveTest, State state) {
     if (state.status != Status.complete) return;
 
-    if (state.result == Result.skipped &&
-        liveTest.test.metadata.skipReason != null) {
-      print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
-          '$_noColor'));
-    } else if (_engine.active.isNotEmpty) {
-      // If any tests are running, display the name of the oldest active
-      // test.
+    // If any tests are running, display the name of the oldest active
+    // test.
+    if (_engine.active.isNotEmpty) {
       _progressLine(_description(_engine.active.first));
     }
   }

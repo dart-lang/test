@@ -14,6 +14,7 @@ import '../backend/group_entry.dart';
 import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
+import '../backend/message.dart';
 import '../backend/state.dart';
 import '../backend/test.dart';
 import '../util/iterable_set.dart';
@@ -372,6 +373,12 @@ class Engine {
         suiteController.liveSuite.suite, test, () {
       controller.setState(const State(Status.running, Result.success));
       controller.setState(const State(Status.running, Result.skipped));
+
+      if (entry.metadata.skipReason != null) {
+        controller.message(
+            new Message.skip("Skip: ${entry.metadata.skipReason}"));
+      }
+
       controller.setState(const State(Status.complete, Result.skipped));
       controller.completer.complete();
     }, () {}, groups: parents);

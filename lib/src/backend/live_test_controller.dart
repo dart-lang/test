@@ -9,6 +9,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import 'group.dart';
 import 'live_test.dart';
+import 'message.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
@@ -32,7 +33,7 @@ class _LiveTest extends LiveTest {
 
   Stream<AsyncError> get onError => _controller._onErrorController.stream;
 
-  Stream<String> get onPrint => _controller._onPrintController.stream;
+  Stream<Message> get onMessage => _controller._onMessageController.stream;
 
   Future get onComplete => _controller.completer.future;
 
@@ -94,11 +95,12 @@ class LiveTestController {
   final _onErrorController = new StreamController<AsyncError>
       .broadcast(sync: true);
 
-  /// The controller for [LiveTest.onPrint].
+  /// The controller for [LiveTest.onMessage].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onPrintController = new StreamController<String>.broadcast(sync: true);
+  final _onMessageController =
+      new StreamController<Message>.broadcast(sync: true);
 
   /// The completer for [LiveTest.onComplete];
   final completer = new Completer();
@@ -162,14 +164,14 @@ class LiveTestController {
     _onStateChangeController.add(newState);
   }
 
-  /// Emits a line printed by the test over [LiveTest.onPrint].
-  void print(String line) {
-    if (_onPrintController.hasListener) {
-      _onPrintController.add(line);
+  /// Emits message over [LiveTest.onMessage].
+  void message(Message message) {
+    if (_onMessageController.hasListener) {
+      _onMessageController.add(message);
     } else {
-      // Make sure all prints get surfaced one way or another to aid in
+      // Make sure all messages get surfaced one way or another to aid in
       // debugging.
-      Zone.ROOT.print(line);
+      Zone.ROOT.print(message.text);
     }
   }
 

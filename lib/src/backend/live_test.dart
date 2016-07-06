@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'group.dart';
+import 'message.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
@@ -84,8 +85,8 @@ abstract class LiveTest {
   /// will be [Chain]s.
   Stream<AsyncError> get onError;
 
-  /// A stream that emits lines printed by the test.
-  Stream<String> get onPrint;
+  /// A stream that emits messages produced by the test.
+  Stream<Message> get onMessage;
 
   /// A [Future] that completes once the test is complete.
   ///

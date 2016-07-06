@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:fake_async/fake_async.dart';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/invoker.dart';
+import 'package:test/src/backend/message.dart';
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
@@ -380,8 +381,12 @@ void main() {
         return new Future(() => print("world!"));
       }).load(suite);
 
-      expect(liveTest.onPrint.take(2).toList(),
-          completion(equals(["Hello,", "world!"])));
+      expect(liveTest.onMessage.take(2).toList().then((messages) {
+        expect(messages[0].type, equals(MessageType.print));
+        expect(messages[0].text, equals("Hello,"));
+        expect(messages[1].type, equals(MessageType.print));
+        expect(messages[1].text, equals("world!"));
+      }), completes);
 
       return liveTest.run();
     }, prints(isEmpty));

@@ -142,12 +142,13 @@
     },
 
     {
-      "title": "PrintEvent",
-      "required": ["testID", "message"],
+      "title": "MessageEvent",
+      "required": ["testID", "message", "type"],
       "properties": {
         "type": {"enum": ["print"]},
         "testID": {"type": "integer", "minimum": 0},
-        "message": {"type": "string"}
+        "message": {"type": "string"},
+        "messageType": {"type": "string", "enum": ["print", "skip"]}
       }
     },
 

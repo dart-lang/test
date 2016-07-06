@@ -153,7 +153,8 @@ void main() {
     var loadSuite = suites.first;
 
     var liveTest = await loadSuite.group.entries.single.load(loadSuite);
-    expect(liveTest.onPrint.first, completion(equals("print within test")));
+    expect(liveTest.onMessage.first.then((message) => message.text),
+        completion(equals("print within test")));
     await liveTest.run();
     expectTestPassed(liveTest);
   });

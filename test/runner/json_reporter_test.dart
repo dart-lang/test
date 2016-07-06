@@ -387,8 +387,10 @@ void main() {
         _testDone(1, hidden: true),
         _group(2, testCount: 2),
         _testStart(3, "skip 1", skip: "some reason", line: 6, column: 9),
+        _print(3, "Skip: some reason", type: "skip"),
         _testDone(3, skipped: true),
         _testStart(4, "skip 2", skip: "or another", line: 7, column: 9),
+        _print(4, "Skip: or another", type: "skip"),
         _testDone(4, skipped: true),
         _done()
       ]);
@@ -602,11 +604,12 @@ Map _testStart(int id, String name, {int suiteID, Iterable<int> groupIDs,
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// printed [message].
-Map _print(int id, String message) {
+Map _print(int id, String message, {String type}) {
   return {
     "type": "print",
     "testID": id,
-    "message": message
+    "message": message,
+    "messageType": type ?? "print"
   };
 }
 

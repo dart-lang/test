@@ -154,10 +154,11 @@ class JsonReporter implements Reporter {
     _subscriptions.add(liveTest.onError.listen((error) =>
         _onError(liveTest, error.error, error.stackTrace)));
 
-    _subscriptions.add(liveTest.onPrint.listen((line) {
+    _subscriptions.add(liveTest.onMessage.listen((message) {
       _emit("print", {
         "testID": id,
-        "message": line
+        "messageType": message.type.name,
+        "message": message.text
       });
     }));
   }

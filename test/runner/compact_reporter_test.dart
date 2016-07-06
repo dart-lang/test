@@ -395,13 +395,13 @@ void main() {
           """
           +0: loading test.dart
           +0: skip 1
-          +0 ~1: skip 1
             Skip: some reason
 
+          +0 ~1: skip 1
           +0 ~1: skip 2
-          +0 ~2: skip 2
             Skip: or another
 
+          +0 ~2: skip 2
           +0 ~2: All tests skipped.""");
     });
   });

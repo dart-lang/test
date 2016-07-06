@@ -153,8 +153,8 @@ generated to represent loading test files.
 
 If the group is skipped, a single `TestStartEvent` will be emitted for a test
 within the group, followed by a `TestDoneEvent` marked as skipped. The
-`group.metadata.skip` field should *not* be considered authoritative for
-determining whether a group is skipped.
+`group.metadata` field should *not* be used for determining whether a group is
+skipped.
 
 ### TestStartEvent
 
@@ -172,25 +172,35 @@ contains the full metadata about a test; future events will refer to the test by
 its opaque ID.
 
 If the test is skipped, its `TestDoneEvent` will have `skipped` set to `true`.
-The `test.metadata.skip` field should *not* be considered authoritative for
-determining whether a test is skipped.
+The `test.metadata` should *not* be used for determining whether a test is
+skipped.
 
-### PrintEvent
+### MessageEvent
 
 ```
-class PrintEvent extends Event {
+class MessageEvent extends Event {
   String type = "print";
 
   // The ID of the test that printed a message.
   int testID;
+
+  // The type of message being printed.
+  String messageType;
 
   // The message that was printed.
   String message;
 }
 ```
 
-A `PrintEvent` indicates that a test called `print()` and wishes to display
-output.
+A `MessageEvent` indicates that a test emitted a message that should be
+displayed to the user. The `messageType` field indicates the precise type of
+this message. Different message types should be visually distinguishable.
+
+A message of type "print" comes from a user explicitly calling `print()`.
+
+A message of type "skip" comes from a test, or a section of a test, being
+skipped. A skip message shouldn't be considered the authoritative source that a
+test was skipped; the `TestDoneEvent.skipped` field should be used instead.
 
 ### ErrorEvent
 
@@ -294,9 +304,6 @@ class Test {
   // innermost.
   List<int> groupIDs;
 
-  // The test's metadata, including metadata from any containing groups.
-  Metadata metadata;
-
   // The (1-based) line on which the test was defined, or `null`.
   int line;
 
@@ -305,6 +312,9 @@ class Test {
 
   // The URL for the file in which the test was defined, or `null`.
   String url;
+
+  // This field is deprecated and should not be used.
+  Metadata metadata;
 }
 ```
 
@@ -345,9 +355,6 @@ A suite's platform is one of the platforms that can be passed to the
 doesn't exist at all). Its path is either absolute or relative to the root of
 the current package.
 
-Suites don't include their own metadata. Instead, that metadata is present on
-the root-level group.
-
 ### Group
 
 ```
@@ -364,9 +371,6 @@ class Group {
   // The ID of the group's parent group, unless it's the root group.
   int? parentID;
 
-  // The group's metadata, including metadata from any containing groups.
-  Metadata metadata;
-
   // The number of tests (recursively) within this group.
   int testCount;
 
@@ -378,6 +382,9 @@ class Group {
 
   // The URL for the file in which the group was defined, or `null`.
   String url;
+
+  // This field is deprecated and should not be used.
+  Metadata metadata;
 }
 ```
 
@@ -397,15 +404,9 @@ and may be a `package:` URL.
 
 ```
 class Metadata {
-  // Whether the test case will be skipped by the test runner.
   bool skip;
-
-  // The reason the test case is skipped, if the user provided it.
   String? skipReason;
 }
 ```
 
-The metadata attached to a test by a user.
-
-Note that the `skip` field should not be considered authoritative. A test may be
-skipped even if `skip` is set to `false`.
+The metadata class is deprecated and should not be used.

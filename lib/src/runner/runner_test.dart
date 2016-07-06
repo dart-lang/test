@@ -8,6 +8,7 @@ import 'package:stream_channel/stream_channel.dart';
 import '../backend/group.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
+import '../backend/message.dart';
 import '../backend/metadata.dart';
 import '../backend/operating_system.dart';
 import '../backend/state.dart';
@@ -62,8 +63,10 @@ class RunnerTest extends Test {
               new State(
                   new Status.parse(message['status']),
                   new Result.parse(message['result'])));
-        } else if (message['type'] == 'print') {
-          controller.print(message['line']);
+        } else if (message['type'] == 'message') {
+          controller.message(new Message(
+              new MessageType.parse(message['message-type']),
+              message['text']));
         } else {
           assert(message['type'] == 'complete');
           controller.completer.complete();

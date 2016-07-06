@@ -156,7 +156,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// through the return value.
   Future<RunnerSuite> getSuite() async {
     var liveTest = await test.load(this);
-    liveTest.onPrint.listen(print);
+    liveTest.onMessage.listen((message) => print(message.text));
     await liveTest.run();
 
     if (liveTest.errors.isEmpty) return await suite;

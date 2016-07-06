@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import '../../backend/live_test.dart';
+import '../../backend/message.dart';
 import '../../backend/state.dart';
 import '../../utils.dart';
 import '../../utils.dart' as utils;
@@ -199,12 +200,14 @@ class CompactReporter implements Reporter {
     _subscriptions.add(liveTest.onError.listen((error) =>
         _onError(liveTest, error.error, error.stackTrace)));
 
-    _subscriptions.add(liveTest.onPrint.listen((line) {
+    _subscriptions.add(liveTest.onMessage.listen((message) {
       _progressLine(_description(liveTest), truncate: false);
       if (!_printedNewline) print('');
       _printedNewline = true;
 
-      print(line);
+      var text = message.text;
+      if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
+      print(text);
     }));
   }
 
@@ -212,20 +215,12 @@ class CompactReporter implements Reporter {
   void _onStateChange(LiveTest liveTest, State state) {
     if (state.status != Status.complete) return;
 
-    if (state.result == Result.skipped &&
-        liveTest.test.metadata.skipReason != null) {
+    // Always display the name of the oldest active test, unless testing
+    // is finished in which case display the last test to complete.
+    if (_engine.active.isEmpty) {
       _progressLine(_description(liveTest));
-      print('');
-      print(indent('${_yellow}Skip: ${liveTest.test.metadata.skipReason}'
-          '$_noColor'));
     } else {
-      // Always display the name of the oldest active test, unless testing
-      // is finished in which case display the last test to complete.
-      if (_engine.active.isEmpty) {
-        _progressLine(_description(liveTest));
-      } else {
-        _progressLine(_description(_engine.active.first));
-      }
+      _progressLine(_description(_engine.active.first));
     }
   }
 
