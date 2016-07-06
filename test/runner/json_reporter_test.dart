@@ -365,12 +365,18 @@ void main() {
         _suite(0),
         _testStart(1, "loading test.dart", groupIDs: []),
         _testDone(1, hidden: true),
-        _group(2, testCount: 0),
-        _group(3, name: "skip", parentID: 2, skip: true, testCount: 0,
+        _group(2, testCount: 3),
+        _group(3, name: "skip", parentID: 2, skip: true, testCount: 3,
             line: 6, column: 9),
-        _testStart(4, "skip", groupIDs: [2, 3], skip: true,
-            line: 6, column: 9),
+        _testStart(4, "skip success 1", groupIDs: [2, 3], skip: true,
+            line: 7, column: 11),
         _testDone(4, skipped: true),
+        _testStart(5, "skip success 2", groupIDs: [2, 3], skip: true,
+            line: 8, column: 11),
+        _testDone(5, skipped: true),
+        _testStart(6, "skip success 3", groupIDs: [2, 3], skip: true,
+            line: 9, column: 11),
+        _testDone(6, skipped: true),
         _done()
       ]);
     });
@@ -394,6 +400,25 @@ void main() {
         _testDone(4, skipped: true),
         _done()
       ]);
+    });
+
+    test("runs skipped tests with --run-skipped", () {
+      _expectReport("""
+        test('skip 1', () {}, skip: 'some reason');
+        test('skip 2', () {}, skip: 'or another');
+      """, [
+        _start,
+         _allSuites(),
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+        _group(2, testCount: 2),
+        _testStart(3, "skip 1", line: 6, column: 9),
+        _testDone(3),
+        _testStart(4, "skip 2", line: 7, column: 9),
+        _testDone(4),
+        _done()
+      ], args: ["--run-skipped"]);
     });
   });
 

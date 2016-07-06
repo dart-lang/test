@@ -10,6 +10,7 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 
 import '../backend/group.dart';
+import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
@@ -136,10 +137,12 @@ class Loader {
       var metadata = suiteMetadata.forPlatform(platform, os: currentOS);
 
       // Don't load a skipped suite.
-      if (metadata.skip) {
+      if (metadata.skip && !_config.runSkipped) {
         yield new LoadSuite.forSuite(new RunnerSuite(
             const PluginEnvironment(),
-            new Group.root([], metadata: metadata),
+            new Group.root(
+                [new LocalTest("(suite)", metadata, () {})],
+                metadata: metadata),
             path: path, platform: platform));
         continue;
       }

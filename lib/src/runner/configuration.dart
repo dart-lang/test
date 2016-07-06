@@ -54,6 +54,10 @@ class Configuration {
   /// The reason tests or suites should be skipped, if given.
   final String skipReason;
 
+  /// Whether skipped tests should be run.
+  bool get runSkipped => _runSkipped ?? false;
+  final bool _runSkipped;
+
   /// The selector indicating which platforms the tests support.
   ///
   /// When [merge]d, this is intersected with the other configuration's
@@ -275,6 +279,7 @@ class Configuration {
       bool jsTrace,
       bool skip,
       String skipReason,
+      bool runSkipped,
       PlatformSelector testOn,
       bool pauseAfterLoad,
       bool color,
@@ -306,6 +311,7 @@ class Configuration {
         jsTrace: jsTrace,
         skip: skip,
         skipReason: skipReason,
+        runSkipped: runSkipped,
         testOn: testOn,
         pauseAfterLoad: pauseAfterLoad,
         color: color,
@@ -376,6 +382,7 @@ class Configuration {
           bool jsTrace,
           bool skip,
           this.skipReason,
+          bool runSkipped,
           PlatformSelector testOn,
           bool pauseAfterLoad,
           bool color,
@@ -405,6 +412,7 @@ class Configuration {
         _verboseTrace = verboseTrace,
         _jsTrace = jsTrace,
         _skip = skip,
+        _runSkipped = runSkipped,
         testOn = testOn ?? PlatformSelector.all,
         _pauseAfterLoad = pauseAfterLoad,
         _color = color,
@@ -479,6 +487,7 @@ class Configuration {
         jsTrace: other._jsTrace ?? _jsTrace,
         skip: other._skip ?? _skip,
         skipReason: other.skipReason ?? skipReason,
+        runSkipped: other._runSkipped ?? _runSkipped,
         testOn: testOn.intersection(other.testOn),
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
@@ -521,6 +530,7 @@ class Configuration {
       bool jsTrace,
       bool skip,
       String skipReason,
+      bool runSkipped,
       PlatformSelector testOn,
       bool pauseAfterLoad,
       bool color,
@@ -552,6 +562,7 @@ class Configuration {
         jsTrace: jsTrace ?? _jsTrace,
         skip: skip ?? _skip,
         skipReason: skipReason ?? this.skipReason,
+        runSkipped: runSkipped ?? _runSkipped,
         testOn: testOn ?? this.testOn,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,

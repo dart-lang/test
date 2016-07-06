@@ -259,8 +259,10 @@ void main() {
             test('test 3', () {});
           }, skip: true);""",
           """
-          +0: skip
-          +0 ~1: All tests skipped.""");
+          +0: skip test 1
+          +0 ~1: skip test 2
+          +0 ~2: skip test 3
+          +0 ~3: All tests skipped.""");
     });
 
     test("runs skipped tests along with successful tests", () {
@@ -314,10 +316,21 @@ void main() {
             Skip: or another
           +0 ~2: All tests skipped.""");
     });
+
+    test("runs skipped tests with --run-skipped", () {
+      _expectReport("""
+          test('skip 1', () {}, skip: 'some reason');
+          test('skip 2', () {}, skip: 'or another');""",
+          """
+          +0: skip 1
+          +1: skip 2
+          +2: All tests passed!""",
+          args: ["--run-skipped"]);
+    });
   });
 }
 
-void _expectReport(String tests, String expected) {
+void _expectReport(String tests, String expected, {List<String> args}) {
   var dart = """
 import 'dart:async';
 
@@ -330,7 +343,7 @@ $tests
 
   d.file("test.dart", dart).create();
 
-  var test = runTest(["test.dart"]);
+  var test = runTest(["test.dart"]..addAll(args ?? []));
   test.shouldExit();
 
   schedule(() async {

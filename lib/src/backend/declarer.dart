@@ -119,12 +119,6 @@ class Declarer {
         tags: tags));
     var trace = new Trace.current(2);
 
-    // Don't load the tests for a skipped group.
-    if (metadata.skip) {
-      _entries.add(new Group(name, [], metadata: metadata, trace: trace));
-      return;
-    }
-
     var declarer = new Declarer._(this, _prefix(name), metadata, trace);
     declarer.declare(body);
     _entries.add(declarer.build());

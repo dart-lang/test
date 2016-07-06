@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
+import 'package:test/src/runner/configuration.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/src/runner/plugin/environment.dart';
 import 'package:test/src/runner/runner_suite.dart';
@@ -159,6 +160,16 @@ void main() {
       expect(bodyRun, isFalse);
     });
 
+    test("runs the test's body with --run-skipped", () async {
+      var bodyRun = false;
+      var engine = declareEngine(() {
+        test("test", () => bodyRun = true, skip: true);
+      }, runSkipped: true);
+
+      await engine.run();
+      expect(bodyRun, isTrue);
+    });
+
     test("exposes a LiveTest that emits the correct states", () {
       var tests = declare(() {
         test("test", () {}, skip: true);
@@ -171,6 +182,65 @@ void main() {
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
         expect(liveTest.test.name, equals(tests.single.name));
+
+        var i = 0;
+        liveTest.onStateChange.listen(expectAsync((state) {
+          if (i == 0) {
+            expect(state, equals(const State(Status.running, Result.success)));
+          } else if (i == 1) {
+            expect(state, equals(const State(Status.running, Result.skipped)));
+          } else if (i == 2) {
+            expect(state, equals(const State(Status.complete, Result.skipped)));
+          }
+          i++;
+        }, count: 3));
+
+        expect(liveTest.onComplete, completes);
+      }));
+
+      return engine.run();
+    });
+  });
+
+  group("for a skipped group", () {
+    test("doesn't run a test in the group", () async {
+      var bodyRun = false;
+      var engine = declareEngine(() {
+        group("group", () {
+          test("test", () => bodyRun = true);
+        }, skip: true);
+      });
+
+      await engine.run();
+      expect(bodyRun, isFalse);
+    });
+
+    test("runs tests in the group with --run-skipped", () async {
+      var bodyRun = false;
+      var engine = declareEngine(() {
+        group("group", () {
+          test("test", () => bodyRun = true);
+        }, skip: true);
+      }, runSkipped: true);
+
+      await engine.run();
+      expect(bodyRun, isTrue);
+    });
+
+    test("exposes a LiveTest that emits the correct states", () {
+      var entries = declare(() {
+        group("group", () {
+          test("test", () => bodyRun = true);
+        }, skip: true);
+      });
+
+      var engine = new Engine.withSuites([
+        new RunnerSuite(const PluginEnvironment(), new Group.root(entries))
+      ]);
+
+      engine.onTestStarted.listen(expectAsync((liveTest) {
+        expect(liveTest, same(engine.liveTests.single));
+        expect(liveTest.test.name, equals("group test"));
 
         var i = 0;
         liveTest.onStateChange.listen(expectAsync((state) {

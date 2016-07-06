@@ -68,7 +68,9 @@ class Runner {
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) {
     var loader = new Loader(config);
-    var engine = new Engine(concurrency: config.concurrency);
+    var engine = new Engine(
+        concurrency: config.concurrency,
+        runSkipped: config.runSkipped);
 
     var reporter;
     switch (config.reporter) {
@@ -89,7 +91,9 @@ class Runner {
 
       case "json":
         reporter = JsonReporter.watch(engine,
-            verboseTrace: config.verboseTrace, jsLocations: !config.jsTrace);
+            verboseTrace: config.verboseTrace,
+            jsLocations: !config.jsTrace,
+            runSkipped: config.runSkipped);
         break;
     }
 

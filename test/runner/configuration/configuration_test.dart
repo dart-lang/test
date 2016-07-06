@@ -25,6 +25,7 @@ void main() {
         expect(merged.jsTrace, isFalse);
         expect(merged.skip, isFalse);
         expect(merged.skipReason, isNull);
+        expect(merged.runSkipped, isFalse);
         expect(merged.pauseAfterLoad, isFalse);
         expect(merged.color, equals(canUseSpecialChars));
         expect(merged.shardIndex, isNull);
@@ -46,6 +47,7 @@ void main() {
                 jsTrace: true,
                 skip: true,
                 skipReason: "boop",
+                runSkipped: true,
                 pauseAfterLoad: true,
                 color: true,
                 shardIndex: 3,
@@ -65,6 +67,7 @@ void main() {
         expect(merged.jsTrace, isTrue);
         expect(merged.skip, isTrue);
         expect(merged.skipReason, equals("boop"));
+        expect(merged.runSkipped, isTrue);
         expect(merged.pauseAfterLoad, isTrue);
         expect(merged.color, isTrue);
         expect(merged.shardIndex, equals(3));
@@ -86,6 +89,7 @@ void main() {
             jsTrace: true,
             skip: true,
             skipReason: "boop",
+            runSkipped: true,
             pauseAfterLoad: true,
             color: true,
             shardIndex: 3,
@@ -104,6 +108,7 @@ void main() {
         expect(merged.jsTrace, isTrue);
         expect(merged.skip, isTrue);
         expect(merged.skipReason, equals("boop"));
+        expect(merged.runSkipped, isTrue);
         expect(merged.pauseAfterLoad, isTrue);
         expect(merged.color, isTrue);
         expect(merged.shardIndex, equals(3));
@@ -126,6 +131,7 @@ void main() {
             jsTrace: false,
             skip: true,
             skipReason: "foo",
+            runSkipped: true,
             pauseAfterLoad: true,
             color: false,
             shardIndex: 2,
@@ -144,6 +150,7 @@ void main() {
             jsTrace: true,
             skip: true,
             skipReason: "bar",
+            runSkipped: false,
             pauseAfterLoad: false,
             color: true,
             shardIndex: 3,
@@ -162,6 +169,7 @@ void main() {
         expect(merged.verboseTrace, isFalse);
         expect(merged.jsTrace, isTrue);
         expect(merged.skipReason, equals("bar"));
+        expect(merged.runSkipped, isFalse);
         expect(merged.pauseAfterLoad, isFalse);
         expect(merged.color, isTrue);
         expect(merged.shardIndex, equals(3));

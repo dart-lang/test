@@ -40,6 +40,7 @@ tags:
   * [`platforms`](#platforms)
   * [`concurrency`](#concurrency)
   * [`pause_after_load`](#pause_after_load)
+  * [`run_skipped`](#run_skipped)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
 * [Configuring Tags](#configuring-tags)
@@ -325,6 +326,21 @@ presets:
     pause_after_load: true
     exclude_tags: undebuggable
     reporter: expanded
+```
+
+### `run_skipped`
+
+This field indicates that the test runner should run tests even if they're
+marked as skipped.
+
+This is usually used in a [preset](#configuration-presets).
+
+```yaml
+presets:
+  # Pass "-P all" to run all tests
+  debug:
+    run_skipped: true
+    paths: ["test/", "extra_test/"]
 ```
 
 ### `pub_serve`

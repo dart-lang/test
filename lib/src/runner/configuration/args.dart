@@ -56,6 +56,8 @@ final ArgParser _parser = (() {
           "Supports boolean selector syntax.",
       allowMultiple: true);
   parser.addOption("exclude-tag", hide: true, allowMultiple: true);
+  parser.addFlag("run-skipped",
+      help: 'Run skipped tests instead of skipping them.');
 
   parser.addSeparator("======== Running Tests");
   parser.addOption("platform",
@@ -203,6 +205,7 @@ class _Parser {
         patterns: patterns,
         platforms: (_ifParsed('platform') as List<String>)
             ?.map(TestPlatform.find),
+        runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,

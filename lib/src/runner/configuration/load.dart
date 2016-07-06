@@ -169,6 +169,7 @@ class _ConfigurationLoader {
     }
 
     var pauseAfterLoad = _getBool("pause_after_load");
+    var runSkipped = _getBool("run_skipped");
 
     var reporter = _getString("reporter");
     if (reporter != null && !allReporters.contains(reporter)) {
@@ -193,6 +194,7 @@ class _ConfigurationLoader {
 
     return new Configuration(
         pauseAfterLoad: pauseAfterLoad,
+        runSkipped: runSkipped,
         reporter: reporter,
         concurrency: concurrency,
         platforms: platforms,

@@ -61,6 +61,8 @@ Usage: pub run test [files or directories...]
 -x, --exclude-tags             Don't run tests with any of the specified tags.
                                Supports boolean selector syntax.
 
+    --[no-]run-skipped         Run skipped tests instead of skipping them.
+
 ======== Running Tests
 -p, --platform                 The platform(s) on which to run the tests.
                                $_browsers
@@ -359,22 +361,32 @@ $_usage""");
     test.shouldExit(1);
   });
 
-  test("respects top-level @Skip declarations", () {
-    d.file("test.dart", '''
-@Skip()
+  group("with a top-level @Skip declaration", () {
+    setUp(() {
+      d.file("test.dart", '''
+        @Skip()
 
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("fail", () => throw 'oh no');
-}
-''').create();
+        void main() {
+          test("success", () {});
+        }
+      ''').create();
+    });
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
-    test.shouldExit(0);
+    test("skips all tests", () {
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
+      test.shouldExit(0);
+    });
+
+    test("runs all tests with --run-skipped", () {
+      var test = runTest(["--run-skipped", "test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
+    });
   });
 
   group("with onPlatform", () {

@@ -27,6 +27,9 @@ class JsonReporter implements Reporter {
   /// Whether to emit location information for JS tests.
   final bool _jsLocations;
 
+  /// Whether skipped tests are run anyway.
+  final bool _runSkipped;
+
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -63,15 +66,18 @@ class JsonReporter implements Reporter {
   /// [jsLocations] is `false`, this will not emit location information for JS
   /// tests.
   static JsonReporter watch(Engine engine, {bool verboseTrace: false,
-      bool jsLocations: true}) {
+      bool jsLocations: true, bool runSkipped: false}) {
     return new JsonReporter._(engine,
-        verboseTrace: verboseTrace, jsLocations: jsLocations);
+        verboseTrace: verboseTrace,
+        jsLocations: jsLocations,
+        runSkipped: runSkipped);
   }
 
   JsonReporter._(this._engine, {bool verboseTrace: false,
-      bool jsLocations: true})
+      bool jsLocations: true, bool runSkipped: false})
       : _verboseTrace = verboseTrace,
-        _jsLocations = jsLocations {
+        _jsLocations = jsLocations,
+        _runSkipped = runSkipped {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -223,8 +229,9 @@ class JsonReporter implements Reporter {
   }
 
   /// Serializes [metadata] into a JSON-protocol-compatible map.
-  Map _serializeMetadata(Metadata metadata) =>
-      {"skip": metadata.skip, "skipReason": metadata.skipReason};
+  Map _serializeMetadata(Metadata metadata) => _runSkipped
+      ? {"skip": false, "skipReason": null}
+      : {"skip": metadata.skip, "skipReason": metadata.skipReason};
 
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest liveTest) {

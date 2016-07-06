@@ -3,6 +3,9 @@
 * Add a `skip` parameter to `expect()`. Marking a single expect as skipped will
   cause the test itself to be marked as skipped.
 
+* Add a `--run-skipped` parameter and `run_skipped` configuration field that
+  cause tests to be run even if they're marked as skipped.
+
 ## 0.12.14+1
 
 * Narrow the constraint on `yaml`.

@@ -10,7 +10,6 @@ import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
 
 import '../backend/group.dart';
-import '../backend/group_entry.dart';
 import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
@@ -52,6 +51,9 @@ import 'runner_suite.dart';
 /// Load tests will always be emitted through [onTestStarted] so users can watch
 /// their event streams once they start running.
 class Engine {
+  /// Whether to run skipped tests.
+  final bool _runSkipped;
+
   /// Whether [run] has been called yet.
   var _runCalled = false;
 
@@ -189,16 +191,18 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
+  // TODO(nweiz): Use interface libraries to take a Configuration even when
+  // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
   /// [concurrency] controls how many suites are run at once, and defaults to 1.
   /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
-  /// four times [concurrency].
-  Engine({int concurrency, int maxSuites})
-      : _runPool = new Pool(concurrency == null ? 1 : concurrency),
-        _loadPool = new Pool(maxSuites == null
-            ? (concurrency == null ? 2 : concurrency * 2)
-            : maxSuites) {
+  /// four times [concurrency]. If [runSkipped] is `true`, skipped tests will be
+  /// run as though they weren't skipped.
+  Engine({int concurrency, int maxSuites, bool runSkipped: false})
+      : _runPool = new Pool(concurrency ?? 1),
+        _loadPool = new Pool(maxSuites ?? (concurrency ?? 1) * 2),
+        _runSkipped = runSkipped {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
@@ -210,11 +214,14 @@ class Engine {
 
   /// Creates an [Engine] that will run all tests in [suites].
   ///
-  /// [concurrency] controls how many suites are run at once. An engine
-  /// constructed this way will automatically close its [suiteSink], meaning
-  /// that no further suites may be provided.
-  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency}) {
-    var engine = new Engine(concurrency: concurrency);
+  /// An engine constructed this way will automatically close its [suiteSink],
+  /// meaning that no further suites may be provided.
+  ///
+  /// [concurrency] controls how many suites are run at once. If [runSkipped] is
+  /// `true`, skipped tests will be run as though they weren't skipped.
+  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency,
+      bool runSkipped: false}) {
+    var engine = new Engine(concurrency: concurrency, runSkipped: runSkipped);
     for (var suite in suites) engine.suiteSink.add(suite);
     engine.suiteSink.close();
     return engine;
@@ -276,13 +283,9 @@ class Engine {
       List<Group> parents) async {
     parents.add(group);
     try {
-      if (group.metadata.skip) {
-        await _runSkippedTest(suiteController, group, parents);
-        return;
-      }
-
+      var skipGroup = !_runSkipped && group.metadata.skip;
       var setUpAllSucceeded = true;
-      if (group.setUpAll != null) {
+      if (!skipGroup && group.setUpAll != null) {
         var liveTest = group.setUpAll.load(suiteController.liveSuite.suite,
             groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
@@ -295,7 +298,7 @@ class Engine {
 
           if (entry is Group) {
             await _runGroup(suiteController, entry, parents);
-          } else if (entry.metadata.skip) {
+          } else if (!_runSkipped && entry.metadata.skip) {
             await _runSkippedTest(suiteController, entry, parents);
           } else {
             var test = entry as Test;
@@ -308,7 +311,7 @@ class Engine {
 
       // Even if we're closed or setUpAll failed, we want to run all the
       // teardowns to ensure that any state is properly cleaned up.
-      if (group.tearDownAll != null) {
+      if (!skipGroup && group.tearDownAll != null) {
         var liveTest = group.tearDownAll.load(suiteController.liveSuite.suite,
             groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
@@ -358,25 +361,24 @@ class Engine {
     _restarted.remove(liveTest);
   }
 
-  /// Runs a dummy [LiveTest] for a test or group marked as "skip".
+  /// Runs a dummy [LiveTest] for a test marked as "skip".
   ///
-  /// [suiteController] is the controller for the suite that contains [entry].
-  /// [parents] is a list of groups that contain [entry].
-  Future _runSkippedTest(LiveSuiteController suiteController, GroupEntry entry,
+  /// [suiteController] is the controller for the suite that contains [test].
+  /// [parents] is a list of groups that contain [test].
+  Future _runSkippedTest(LiveSuiteController suiteController, Test test,
       List<Group> parents) {
-    // The netry name will be `null` for the root group.
-    var test = new LocalTest(entry.name ?? "(suite)", entry.metadata, () {},
-        trace: entry.trace);
+    var skipped = new LocalTest(test.name, test.metadata, () {},
+        trace: test.trace);
 
     var controller;
     controller = new LiveTestController(
-        suiteController.liveSuite.suite, test, () {
+        suiteController.liveSuite.suite, skipped, () {
       controller.setState(const State(Status.running, Result.success));
       controller.setState(const State(Status.running, Result.skipped));
 
-      if (entry.metadata.skipReason != null) {
+      if (skipped.metadata.skipReason != null) {
         controller.message(
-            new Message.skip("Skip: ${entry.metadata.skipReason}"));
+            new Message.skip("Skip: ${skipped.metadata.skipReason}"));
       }
 
       controller.setState(const State(Status.complete, Result.skipped));

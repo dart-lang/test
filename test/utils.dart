@@ -305,9 +305,9 @@ List<GroupEntry> declare(void body()) {
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
-Engine declareEngine(void body()) {
+Engine declareEngine(void body(), {bool runSkipped: false}) {
   var declarer = new Declarer()..declare(body);
   return new Engine.withSuites([
     new RunnerSuite(const PluginEnvironment(), declarer.build())
-  ]);
+  ], runSkipped: runSkipped);
 }

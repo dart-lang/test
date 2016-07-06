@@ -79,6 +79,25 @@ void main() {
     test.shouldExit(0);
   }, tags: 'content-shell');
 
+  test("runs skipped tests with run_skipped: true", () {
+    d.file("dart_test.yaml", JSON.encode({
+      "run_skipped": true
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("skip", () => print("In test!"), skip: true);
+      }
+    """).create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains("In test!")));
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
+  });
+
   test("includes the full stack with verbose_trace: true", () {
     d.file("dart_test.yaml", JSON.encode({
       "verbose_trace": true
