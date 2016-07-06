@@ -32,18 +32,45 @@ typedef String ErrorFormatter(
 ///
 /// If the assertion fails a [TestFailure] is thrown.
 ///
+/// If [skip] is a String or `true`, the assertion is skipped. The arguments are
+/// still evaluated, but [actual] is not verified to match [matcher]. If
+/// [actual] is a [Future], the test won't complete until the future emits a
+/// value.
+///
+/// If [skip] is a string, it should explain why the assertion is skipped; this
+/// reason will be printed when running the test.
+///
 /// In some cases extra diagnostic info can be produced on failure (for
 /// example, stack traces on mismatched exceptions). To enable these,
 /// [verbose] should be specified as `true`.
 void expect(actual, matcher,
-    {String reason, bool verbose: false, ErrorFormatter formatter}) {
+    {String reason, skip, bool verbose: false, ErrorFormatter formatter}) {
   if (Invoker.current == null) {
     throw new StateError("expect() may only be called within a test.");
   }
 
   if (Invoker.current.closed) throw new ClosedException();
 
+  if (skip != null && skip is! bool && skip is! String) {
+    throw new ArgumentError.value(skip, "skip", "must be a bool or a String");
+  }
+
   matcher = wrapMatcher(matcher);
+  if (skip != null && skip != false) {
+    String message;
+    if (skip is String) {
+      message = "Skip expect: $skip";
+    } else if (reason != null) {
+      message = "Skip expect ($reason).";
+    } else {
+      var description = new StringDescription().addDescriptionOf(matcher);
+      message = "Skip expect ($description).";
+    }
+
+    Invoker.current.skip(message);
+    return;
+  }
+
   var matchState = {};
   try {
     if (matcher.matches(actual, matchState)) return;

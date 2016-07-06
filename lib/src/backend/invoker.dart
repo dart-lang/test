@@ -231,6 +231,27 @@ class Invoker {
     });
   }
 
+  /// Marks the current test as skipped.
+  ///
+  /// If passed, [message] is emitted as a skip message.
+  ///
+  /// Note that this *does not* mark the test as complete. That is, it sets
+  /// the result to [Result.skipped], but doesn't change the state.
+  void skip([String message]) {
+    if (liveTest.state.shouldBeDone) {
+      // Set the state explicitly so we don't get an extra error about the test
+      // failing after being complete.
+      _controller.setState(const State(Status.complete, Result.error));
+      throw "This test was marked as skipped after it had already completed. "
+               "Make sure to use\n"
+            "[expectAsync] or the [completes] matcher when testing async code.";
+    }
+
+    if (message != null) _controller.message(new Message.skip(message));
+    // TODO: error if the test is already complete.
+    _controller.setState(const State(Status.pending, Result.skipped));
+  }
+
   /// Notifies the invoker of an asynchronous error.
   void _handleError(error, [StackTrace stackTrace]) {
     if (stackTrace == null) stackTrace = new Chain.current();

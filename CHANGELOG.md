@@ -1,3 +1,8 @@
+## 0.12.15
+
+* Add a `skip` parameter to `expect()`. Marking a single expect as skipped will
+  cause the test itself to be marked as skipped.
+
 ## 0.12.14+1
 
 * Narrow the constraint on `yaml`.
