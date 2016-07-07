@@ -1,3 +1,7 @@
+## 0.12.15+1
+
+* Declare support for version 1.19 of the Dart SDK.
+
 ## 0.12.15
 
 * Add a `skip` parameter to `expect()`. Marking a single expect as skipped will
