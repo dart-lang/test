@@ -68,10 +68,6 @@ class Configuration {
   bool get pauseAfterLoad => _pauseAfterLoad ?? false;
   final bool _pauseAfterLoad;
 
-  /// The package root for resolving "package:" URLs.
-  String get packageRoot => _packageRoot ?? p.join(p.current, 'packages');
-  final String _packageRoot;
-
   /// The path to dart2js.
   String get dart2jsPath => _dart2jsPath ?? p.join(sdkDir, 'bin', 'dart2js');
   final String _dart2jsPath;
@@ -283,7 +279,6 @@ class Configuration {
       PlatformSelector testOn,
       bool pauseAfterLoad,
       bool color,
-      String packageRoot,
       String dart2jsPath,
       Iterable<String> dart2jsArgs,
       String precompiledPath,
@@ -315,7 +310,6 @@ class Configuration {
         testOn: testOn,
         pauseAfterLoad: pauseAfterLoad,
         color: color,
-        packageRoot: packageRoot,
         dart2jsPath: dart2jsPath,
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
@@ -386,7 +380,6 @@ class Configuration {
           PlatformSelector testOn,
           bool pauseAfterLoad,
           bool color,
-          String packageRoot,
           String dart2jsPath,
           Iterable<String> dart2jsArgs,
           this.precompiledPath,
@@ -416,7 +409,6 @@ class Configuration {
         testOn = testOn ?? PlatformSelector.all,
         _pauseAfterLoad = pauseAfterLoad,
         _color = color,
-        _packageRoot = packageRoot,
         _dart2jsPath = dart2jsPath,
         dart2jsArgs = dart2jsArgs?.toList() ?? [],
         _reporter = reporter,
@@ -491,7 +483,6 @@ class Configuration {
         testOn: testOn.intersection(other.testOn),
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
-        packageRoot: other._packageRoot ?? _packageRoot,
         dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
         precompiledPath: other.precompiledPath ?? precompiledPath,
@@ -534,7 +525,6 @@ class Configuration {
       PlatformSelector testOn,
       bool pauseAfterLoad,
       bool color,
-      String packageRoot,
       String dart2jsPath,
       Iterable<String> dart2jsArgs,
       String precompiledPath,
@@ -566,7 +556,6 @@ class Configuration {
         testOn: testOn ?? this.testOn,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,
-        packageRoot: packageRoot ?? _packageRoot,
         dart2jsPath: dart2jsPath ?? _dart2jsPath,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         precompiledPath: precompiledPath ?? this.precompiledPath,

@@ -30,7 +30,6 @@ void main() {
         expect(merged.color, equals(canUseSpecialChars));
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
-        expect(merged.packageRoot, equals(p.join(p.current, 'packages')));
         expect(merged.dart2jsPath, equals(p.join(sdkDir, 'bin', 'dart2js')));
         expect(merged.precompiledPath, isNull);
         expect(merged.reporter, equals(defaultReporter));
@@ -52,7 +51,6 @@ void main() {
                 color: true,
                 shardIndex: 3,
                 totalShards: 10,
-                packageRoot: "root",
                 dart2jsPath: "/tmp/dart2js",
                 precompiledPath: "/tmp/js",
                 reporter: "json",
@@ -72,7 +70,6 @@ void main() {
         expect(merged.color, isTrue);
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
-        expect(merged.packageRoot, equals("root"));
         expect(merged.dart2jsPath, equals("/tmp/dart2js"));
         expect(merged.precompiledPath, equals("/tmp/js"));
         expect(merged.reporter, equals("json"));
@@ -94,7 +91,6 @@ void main() {
             color: true,
             shardIndex: 3,
             totalShards: 10,
-            packageRoot: "root",
             dart2jsPath: "/tmp/dart2js",
             precompiledPath: "/tmp/js",
             reporter: "json",
@@ -113,7 +109,6 @@ void main() {
         expect(merged.color, isTrue);
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
-        expect(merged.packageRoot, equals("root"));
         expect(merged.dart2jsPath, equals("/tmp/dart2js"));
         expect(merged.precompiledPath, equals("/tmp/js"));
         expect(merged.reporter, equals("json"));
@@ -136,7 +131,6 @@ void main() {
             color: false,
             shardIndex: 2,
             totalShards: 4,
-            packageRoot: "root",
             dart2jsPath: "/tmp/dart2js",
             precompiledPath: "/tmp/js",
             reporter: "json",
@@ -155,7 +149,6 @@ void main() {
             color: true,
             shardIndex: 3,
             totalShards: 10,
-            packageRoot: "boot",
             dart2jsPath: "../dart2js",
             precompiledPath: "../js",
             reporter: "compact",
@@ -174,7 +167,6 @@ void main() {
         expect(merged.color, isTrue);
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
-        expect(merged.packageRoot, equals("boot"));
         expect(merged.dart2jsPath, equals("../dart2js"));
         expect(merged.precompiledPath, equals("../js"));
         expect(merged.reporter, equals("compact"));

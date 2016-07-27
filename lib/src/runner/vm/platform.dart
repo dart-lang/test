@@ -69,7 +69,7 @@ class VMPlatform extends PlatformPlugin {
           });
           new IsolateChannel.connectSend(message).pipe(channel);
         }
-      ''', message, packageRoot: p.toUri(_config.packageRoot), checked: true);
+      ''', message, checked: true);
     }
 
     var url = _config.pubServeUrl.resolveUri(

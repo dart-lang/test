@@ -24,7 +24,6 @@ final ArgParser _parser = (() {
       help: "Shows this usage information.");
   parser.addFlag("version", negatable: false,
       help: "Shows the package's version.");
-  parser.addOption("package-root", hide: true);
 
   // Note that defaultsTo declarations here are only for documentation purposes.
   // We pass null values rather than defaults to [new Configuration] so that it
@@ -192,7 +191,6 @@ class _Parser {
         jsTrace: _ifParsed('js-trace'),
         pauseAfterLoad: _ifParsed('pause-after-load'),
         color: _ifParsed('color'),
-        packageRoot: _ifParsed('package-root'),
         dart2jsPath: _ifParsed('dart2js-path'),
         dart2jsArgs: _ifParsed('dart2js-args') as List<String>,
         precompiledPath: _ifParsed('precompiled'),

@@ -16,18 +16,13 @@ import 'string_literal_iterator.dart';
 /// they will be resolved in the same context as the host isolate. [message] is
 /// passed to the [main] method of the code being run; the caller is responsible
 /// for using this to establish communication with the isolate.
-///
-/// [packageRoot] controls the package root of the isolate. It may be either a
-/// [String] or a [Uri].
-Future<Isolate> runInIsolate(String code, message, {packageRoot,
-    bool checked}) async {
-  if (packageRoot is String) packageRoot = Uri.parse(packageRoot);
-
+Future<Isolate> runInIsolate(String code, message, {bool checked}) async {
   return await Isolate.spawnUri(
       Uri.parse('data:application/dart;charset=utf-8,' + Uri.encodeFull(code)),
       [],
       message,
-      packageRoot: packageRoot,
+      packageRoot: await Isolate.packageRoot,
+      packageConfig: await Isolate.packageConfig,
       checked: checked);
 }
 

@@ -34,11 +34,9 @@ void main() {
 """;
 
 void main() {
-  setUp(() {
+  setUp(() async {
     _sandbox = createTempDir();
-    _loader = new Loader(new Configuration(
-            platforms: [TestPlatform.chrome],
-            packageRoot: p.join(packageDir, 'packages')),
+    _loader = new Loader(new Configuration(platforms: [TestPlatform.chrome]),
         root: _sandbox);
     /// TODO(nweiz): Use scheduled_test for this once it's compatible with this
     /// version of test.
@@ -127,9 +125,7 @@ Future main() {
 
   test("loads a suite both in the browser and the VM", () async {
     var loader = new Loader(
-        new Configuration(
-            platforms: [TestPlatform.vm, TestPlatform.chrome],
-            packageRoot: p.join(packageDir, 'packages')),
+        new Configuration(platforms: [TestPlatform.vm, TestPlatform.chrome]),
         root: _sandbox);
     var path = p.join(_sandbox, 'a_test.dart');
 

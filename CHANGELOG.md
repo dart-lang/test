@@ -1,3 +1,7 @@
+## 0.12.15+2
+
+* Support running without a `packages/` directory.
+
 ## 0.12.15+1
 
 * Declare support for version 1.19 of the Dart SDK.

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
@@ -44,13 +45,11 @@ class CompilerPool {
 
   /// Compile the Dart code at [dartPath] to [jsPath].
   ///
-  /// This wraps the Dart code in the standard browser-testing wrapper. If
-  /// [packageRoot] is provided, it's used as the package root for the
-  /// compilation.
+  /// This wraps the Dart code in the standard browser-testing wrapper.
   ///
   /// The returned [Future] will complete once the `dart2js` process completes
   /// *and* all its output has been printed to the command line.
-  Future compile(String dartPath, String jsPath, {String packageRoot}) {
+  Future compile(String dartPath, String jsPath) {
     return _pool.withResource(() {
       if (_closed) return null;
 
@@ -73,12 +72,12 @@ class CompilerPool {
         var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
 
-        var args = ["--checked", wrapperPath, "--out=$jsPath"]
-          ..addAll(_config.dart2jsArgs);
-
-        if (packageRoot != null) {
-          args.add("--package-root=${p.toUri(p.absolute(packageRoot))}");
-        }
+        var args = [
+          "--checked",
+          wrapperPath,
+          "--out=$jsPath",
+          await PackageResolver.current.processArgument
+        ]..addAll(_config.dart2jsArgs);
 
         if (_config.color) args.add("--enable-diagnostic-colors");
 

@@ -8,7 +8,9 @@ library test.test.io;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_process.dart';
@@ -17,7 +19,7 @@ import 'package:scheduled_test/scheduled_test.dart';
 import 'package:test/src/util/io.dart';
 
 /// The path to the root directory of the `test` package.
-final String packageDir = p.dirname(p.dirname(libraryPath(#test.test.io)));
+final Future<String> packageDir = PackageResolver.current.packagePath('test');
 
 /// The path to the `pub` executable in the current Dart SDK.
 final _pubPath = p.absolute(p.join(
@@ -108,8 +110,7 @@ ScheduledProcess runTest(List<String> args, {String reporter,
   concurrency ??= 1;
 
   var allArgs = [
-    p.absolute(p.join(packageDir, 'bin/test.dart')),
-    "--package-root=${p.join(packageDir, 'packages')}",
+    packageDir.then((dir) => p.absolute(p.join(dir, 'bin/test.dart'))),
     "--concurrency=$concurrency"
   ];
   if (reporter != null) allArgs.add("--reporter=$reporter");
@@ -133,13 +134,12 @@ ScheduledProcess runTest(List<String> args, {String reporter,
 /// Runs Dart.
 ScheduledProcess runDart(List<String> args, {Map<String, String> environment,
     String description}) {
-  var allArgs = Platform.executableArguments.map((arg) {
-    // The package root might be relative, so we need to make it absolute if
-    // we're going to run in a different working directory.
-    if (!arg.startsWith("--package-root=")) return arg;
-    return "--package-root=" +
-        p.absolute(p.fromUri(arg.substring("--package-root=".length)));
-  }).toList()..addAll(args);
+  var allArgs = Platform.executableArguments
+      .where((arg) =>
+          !arg.startsWith("--package-root=") && !arg.startsWith("--packages="))
+      .toList()
+      ..add(PackageResolver.current.processArgument)
+      ..addAll(args);
 
   return new ScheduledProcess.start(
       p.absolute(Platform.resolvedExecutable), allArgs,

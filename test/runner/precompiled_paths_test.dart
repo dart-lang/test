@@ -7,6 +7,7 @@
 
 import 'dart:io';
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_process.dart';
@@ -39,7 +40,7 @@ void main() {
     d.dir("precompiled", []).create();
 
     var dart2js = new ScheduledProcess.start(p.join(sdkDir, 'bin', 'dart2js'), [
-      "--package-root=${p.join(p.current, 'packages')}",
+      PackageResolver.current.processArgument,
       "to_precompile.dart",
       "--out=precompiled/test.dart.browser_test.dart.js"
     ], workingDirectory: sandbox);

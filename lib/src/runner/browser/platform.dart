@@ -8,12 +8,14 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -120,7 +122,7 @@ class BrowserPlatform extends PlatformPlugin {
 
     if (_config.pubServeUrl == null) {
       cascade = cascade
-          .add(_createPackagesHandler())
+          .add(packagesDirHandler())
           .add(_jsHandler.handler)
           .add(createStaticHandler(_root))
           .add(_wrapperHandler);
@@ -131,31 +133,10 @@ class BrowserPlatform extends PlatformPlugin {
     }
 
     var pipeline = new shelf.Pipeline()
-      .addMiddleware(nestingMiddleware(_secret))
-      .addHandler(cascade.handler);
+        .addMiddleware(nestingMiddleware(_secret))
+        .addHandler(cascade.handler);
 
     _server.mount(pipeline);
-  }
-
-  /// Returns a handler that serves the contents of the "packages/" directory
-  /// for any URL that contains "packages/".
-  ///
-  /// This is a factory so it can wrap a static handler.
-  shelf.Handler _createPackagesHandler() {
-    var staticHandler =
-      createStaticHandler(_config.packageRoot, serveFilesOutsidePath: true);
-
-    return (request) {
-      var segments = p.url.split(request.url.path);
-
-      for (var i = 0; i < segments.length; i++) {
-        if (segments[i] != "packages") continue;
-        return staticHandler(
-            request.change(path: p.url.joinAll(segments.take(i + 1))));
-      }
-
-      return new shelf.Response.notFound("Not found.");
-    };
   }
 
   /// A handler that serves wrapper files used to bootstrap tests.
@@ -317,7 +298,8 @@ class BrowserPlatform extends PlatformPlugin {
           _mappers[path] = new StackTraceMapper(
               await UTF8.decodeStream(response),
               mapUrl: url,
-              packageRoot: _config.pubServeUrl.resolve('packages'),
+              packageResolver: new SyncPackageResolver.root(
+                  _config.pubServeUrl.resolve('packages')),
               sdkRoot: _config.pubServeUrl.resolve('packages/\$sdk'));
           return;
         }
@@ -349,8 +331,7 @@ class BrowserPlatform extends PlatformPlugin {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
 
-      await _compilers.compile(dartPath, jsPath,
-          packageRoot: _config.packageRoot);
+      await _compilers.compile(dartPath, jsPath);
       if (_closed) return;
 
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
@@ -373,7 +354,7 @@ class BrowserPlatform extends PlatformPlugin {
       _mappers[dartPath] = new StackTraceMapper(
           new File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
-          packageRoot: p.toUri(_config.packageRoot),
+          packageResolver: await PackageResolver.current.asSync,
           sdkRoot: p.toUri(sdkDir));
     });
   }

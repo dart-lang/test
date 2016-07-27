@@ -4,13 +4,11 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
-import '../runner/application_exception.dart';
 import '../util/stream_queue.dart';
 import '../utils.dart';
 
@@ -51,12 +49,6 @@ bool inTestTests = Platform.environment["_DART_TEST_TESTING"] == "true";
 final _tempDir = Platform.environment.containsKey("_UNITTEST_TEMP_DIR")
     ? Platform.environment["_UNITTEST_TEMP_DIR"]
     : Directory.systemTemp.path;
-
-/// The path to the `lib` directory of the `test` package.
-String libDir({String packageRoot}) {
-  var pathToIo = libraryPath(#test.util.io, packageRoot: packageRoot);
-  return p.dirname(p.dirname(p.dirname(pathToIo)));
-}
 
 // TODO(nweiz): Make this check [stdioType] once that works within "pub run".
 /// Whether "special" strings such as Unicode characters or color escapes are
@@ -122,34 +114,6 @@ void warn(String message, {bool color}) {
       ? "\u001b[33mWarning:\u001b[0m"
       : "Warning:";
   stderr.writeln(wordWrap("$header $message\n"));
-}
-
-/// Returns the package root at [root].
-///
-/// If [override] is passed, that's used. If the package root doesn't exist, an
-/// [ApplicationException] is thrown.
-String packageRootFor(String root, [String override]) {
-  if (root == null) root = p.current;
-  var packageRoot = override == null ? p.join(root, 'packages') : override;
-
-  if (!new Directory(packageRoot).existsSync()) {
-    throw new ApplicationException(
-        "Directory ${p.prettyUri(p.toUri(packageRoot))} does not exist.");
-  }
-
-  return packageRoot;
-}
-
-/// The library name must be globally unique, or the wrong library path may be
-/// returned.
-String libraryPath(Symbol libraryName, {String packageRoot}) {
-  var lib = currentMirrorSystem().findLibrary(libraryName);
-  if (lib.uri.scheme != 'package') return p.fromUri(lib.uri);
-
-  // TODO(nweiz): is there a way to avoid assuming this is being run next to a
-  // packages directory?.
-  if (packageRoot == null) packageRoot = p.absolute('packages');
-  return p.join(packageRoot, p.fromUri(lib.uri.path));
 }
 
 /// Repeatedly finds a probably-unused port on localhost and passes it to

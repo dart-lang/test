@@ -33,10 +33,10 @@ void main() {
 """;
 
 void main() {
-  setUp(() {
+  setUp(() async {
     _sandbox = createTempDir();
     _loader = new Loader(
-        new Configuration(packageRoot: p.join(packageDir, 'packages')),
+        new Configuration(),
         root: _sandbox);
   });
 

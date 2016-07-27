@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
 
@@ -10,19 +11,20 @@ class StackTraceMapper {
   /// The parsed source map.
   final Mapping _mapping;
 
-  /// The URI of the package root, as passed to dart2js.
-  final Uri _packageRoot;
+  /// The package resolution information passed to dart2js.
+  final SyncPackageResolver _packageResolver;
 
   /// The URI of the SDK root from which dart2js loaded its sources.
   final Uri _sdkRoot;
 
-  StackTraceMapper(String contents, {Uri mapUrl, Uri packageRoot, Uri sdkRoot})
+  StackTraceMapper(String contents, {Uri mapUrl,
+        SyncPackageResolver packageResolver, Uri sdkRoot})
     : _mapping = parse(contents, mapUrl: mapUrl),
-      _packageRoot = packageRoot,
+      _packageResolver = packageResolver,
       _sdkRoot = sdkRoot;
 
   /// Converts [trace] into a Dart stack trace.
   StackTrace mapStackTrace(StackTrace trace) =>
       mapper.mapStackTrace(_mapping, trace,
-          packageRoot: _packageRoot, sdkRoot: _sdkRoot);
+          packageResolver: _packageResolver, sdkRoot: _sdkRoot);
 }
