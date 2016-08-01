@@ -69,6 +69,9 @@ class Declarer {
   /// Whether [build] has been called for this declarer.
   bool _built = false;
 
+  /// Whether a solo test or solo group has been encountered.
+  bool _soloSeen = false;
+
   /// The current zone-scoped declarer.
   static Declarer get current => Zone.current[#test.declarer];
 
@@ -88,12 +91,25 @@ class Declarer {
   declare(body()) => runZoned(body, zoneValues: {#test.declarer: this});
 
   /// Defines a test case with the given name and body.
-  void test(String name, body(), {String testOn, Timeout timeout, skip,
-      Map<String, dynamic> onPlatform, tags}) {
+  void test(String name, body(),
+      {String testOn,
+      Timeout timeout,
+      skip,
+      solo,
+      Map<String, dynamic> onPlatform,
+      tags}) {
     _checkNotBuilt("test");
 
+    if (solo) {
+      _soloSeen = true;
+    }
+
     var metadata = _metadata.merge(new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        solo: solo,
+        onPlatform: onPlatform,
         tags: tags));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
@@ -110,18 +126,34 @@ class Declarer {
   }
 
   /// Creates a group of tests.
-  void group(String name, void body(), {String testOn, Timeout timeout, skip,
-      Map<String, dynamic> onPlatform, tags}) {
+  void group(String name, void body(),
+      {String testOn,
+      Timeout timeout,
+      skip,
+      solo,
+      Map<String, dynamic> onPlatform,
+      tags}) {
     _checkNotBuilt("group");
 
+    if (solo) {
+      _soloSeen = true;
+    }
+
     var metadata = _metadata.merge(new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        solo: solo,
+        onPlatform: onPlatform,
         tags: tags));
     var trace = new Trace.current(2);
 
     var declarer = new Declarer._(this, _prefix(name), metadata, trace);
     declarer.declare(body);
-    _entries.add(declarer.build());
+    if (declarer._soloSeen) {
+      _soloSeen = true;
+    }
+    _entries.add(declarer.build(soloSeenInParent: _soloSeen));
   }
 
   /// Returns [name] prefixed with this declarer's group name.
@@ -154,8 +186,12 @@ class Declarer {
   }
 
   /// Finalizes and returns the group being declared.
-  Group build() {
+  Group build({bool soloSeenInParent: false}) {
     _checkNotBuilt("build");
+
+    if (_soloSeen || soloSeenInParent) {
+      _skipNonSoloEntries(_entries);
+    }
 
     _built = true;
     return new Group(_name, _entries.toList(),
@@ -163,6 +199,16 @@ class Declarer {
         trace: _trace,
         setUpAll: _setUpAll,
         tearDownAll: _tearDownAll);
+  }
+
+  void _skipNonSoloEntries(List<GroupEntry> entries) {
+    entries.where((entry) => !entry.metadata.solo).forEach((entry) {
+      if (entry is Group) {
+        _skipNonSoloEntries(entry.entries);
+      } else {
+        entry.metadata.skip = true;
+      }
+    });
   }
 
   /// Throws a [StateError] if [build] has been called.

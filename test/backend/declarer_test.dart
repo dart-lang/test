@@ -581,6 +581,224 @@ void main() {
       });
     });
   });
+
+  group(".solo_test()", () {
+    test("skips all other tests", () {
+      var tests = declare(() {
+        test("description 1", () {});
+        solo_test("description 2", () {});
+      });
+
+      var notSkippedTests = tests.where((t) => !t.metadata.skip).toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(notSkippedTests.single.name, equals("description 2"));
+    });
+
+    test("does not skip other solo tests", () {
+      var tests = declare(() {
+        test("description 1", () {});
+        solo_test("description 2", () {});
+        test("description 3", () {});
+        solo_test("description 4", () {});
+      });
+
+      var notSkippedTests = tests.where((t) => !t.metadata.skip).toList();
+      expect(notSkippedTests, hasLength(2));
+      expect(notSkippedTests[0].name, equals("description 2"));
+      expect(notSkippedTests[1].name, equals("description 4"));
+    });
+
+    test("skips tests declared alongside containing group", () {
+      var tests = declare(() {
+        test("description 1", () {});
+        group("group 1", () {
+          solo_test("description 2", () {});
+        });
+        test("description 3", () {});
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(notSkippedTests.single.name, equals("group 1 description 2"));
+    });
+
+    test("skips tests declared in groups declared alongside test", () {
+      var tests = declare(() {
+        group("group 1", () {
+          test("description 1", () {});
+        });
+        solo_test("description 2", () {});
+        group("group 2", () {
+          test("description 3", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(notSkippedTests.first.name, equals("description 2"));
+    });
+
+    test("skips tests declared in groups declared alongside containing group",
+        () {
+      var tests = declare(() {
+        group("group 1", () {
+          test("description 1", () {});
+        });
+        group("group 2", () {
+          solo_test("description 2", () {});
+        });
+        group("group 3", () {
+          test("description 3", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(notSkippedTests.single.name, equals("group 2 description 2"));
+    });
+  });
+
+  group(".solo_group()", () {
+    test("skips all other tests", () {
+      var tests = declare(() {
+        test("description 1", () {});
+        solo_group("group 1", () {
+          test("description 2", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(notSkippedTests.single.name, equals("group 1 description 2"));
+    });
+
+    test("does not skip other solo groups", () {
+      var tests = declare(() {
+        group("group 1", () {
+          test("description 1", () {});
+        });
+        solo_group("group 2", () {
+          test("description 2", () {});
+        });
+        group("group 3", () {
+          test("description 3", () {});
+        });
+        solo_group("group 4", () {
+          test("description 4", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(2));
+      expect(notSkippedTests[0].name, equals("group 2 description 2"));
+      expect(notSkippedTests[1].name, equals("group 4 description 4"));
+    });
+
+    test("skips tests declared in groups declared alongside solo group", () {
+      var tests = declare(() {
+        group("group 1", () {
+          test("description 1", () {});
+        });
+        solo_group("group 2", () {
+          test("description 2", () {});
+        });
+        group("group 3", () {
+          test("description 3", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(notSkippedTests.first.name, equals("group 2 description 2"));
+    });
+
+    test("skips tests declared in groups declared alongside containing group",
+        () {
+      var tests = declare(() {
+        group("group 1", () {
+          test("description 1", () {});
+        });
+        group("group 2", () {
+          solo_group("group 3", () {
+            test("description 2", () {});
+          });
+        });
+        group("group 4", () {
+          test("description 3", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(1));
+      expect(
+          notSkippedTests.single.name, equals("group 2 group 3 description 2"));
+    });
+
+    test("does not skip tests in other solo groups", () {
+      var tests = declare(() {
+        solo_group("group 1", () {
+          test("description 1", () {});
+        });
+        group("group 2", () {
+          test("description 2", () {});
+          solo_group("group 3", () {
+            test("description 3", () {});
+          });
+          solo_group("group 4", () {
+            test("description 4", () {});
+            solo_group("group 5", () {
+              test("description 5", () {});
+            });
+          });
+        });
+        group("group 6", () {
+          test("description 6", () {});
+        });
+      });
+
+      var notSkippedTests = tests
+          .fold(<GroupEntry>[], _flattenEntries)
+          .where((e) => !e.metadata.skip)
+          .toList();
+      expect(notSkippedTests, hasLength(4));
+      expect(notSkippedTests[0].name, equals("group 1 description 1"));
+      expect(notSkippedTests[1].name, equals("group 2 group 3 description 3"));
+      expect(notSkippedTests[2].name, equals("group 2 group 4 description 4"));
+      expect(notSkippedTests[3].name,
+          equals("group 2 group 4 group 5 description 5"));
+    });
+  });
+}
+
+List<GroupEntry> _flattenEntries(List memo, dynamic entry) {
+  var result = new List.from(memo);
+  if (entry is Group) {
+    result.addAll(entry.entries.fold(<GroupEntry>[], _flattenEntries));
+  } else {
+    result.add(entry);
+  }
+  return result;
 }
 
 /// Runs [test].

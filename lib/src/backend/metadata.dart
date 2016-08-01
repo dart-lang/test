@@ -26,7 +26,10 @@ class Metadata {
   final Timeout timeout;
 
   /// Whether the test or suite should be skipped.
-  final bool skip;
+  bool skip;
+
+  /// Whether this is a solo test or suite.
+  bool solo;
 
   /// Whether to use verbose stack traces.
   final bool verboseTrace;
@@ -123,14 +126,15 @@ class Metadata {
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
   factory Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
-          bool verboseTrace: false, String skipReason, Iterable<String> tags,
-          Map<PlatformSelector, Metadata> onPlatform,
+          bool solo: false, bool verboseTrace: false, String skipReason,
+          Iterable<String> tags, Map<PlatformSelector, Metadata> onPlatform,
           Map<BooleanSelector, Metadata> forTag}) {
     // Returns metadata without forTag resolved at all.
     _unresolved() => new Metadata._(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
+        solo: solo,
         verboseTrace: verboseTrace,
         skipReason: skipReason,
         tags: tags,
@@ -160,8 +164,8 @@ class Metadata {
   ///
   /// Unlike [new Metadata], this assumes [forTag] is already resolved.
   Metadata._({PlatformSelector testOn, Timeout timeout, bool skip: false,
-          this.verboseTrace: false, this.skipReason, Iterable<String> tags,
-          Map<PlatformSelector, Metadata> onPlatform,
+          this.solo: false, this.verboseTrace: false, this.skipReason,
+          Iterable<String> tags, Map<PlatformSelector, Metadata> onPlatform,
           Map<BooleanSelector, Metadata> forTag})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
@@ -181,7 +185,7 @@ class Metadata {
   /// where applicable.
   ///
   /// Throws a [FormatException] if any field is invalid.
-  Metadata.parse({String testOn, Timeout timeout, skip,
+  Metadata.parse({String testOn, Timeout timeout, skip, solo,
           this.verboseTrace: false, Map<String, dynamic> onPlatform,
           tags})
       : testOn = testOn == null
@@ -190,6 +194,7 @@ class Metadata {
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         skip = skip != null && skip != false,
         skipReason = skip is String ? skip : null,
+        solo = solo != null && solo != false,
         onPlatform = _parseOnPlatform(onPlatform),
         tags = _parseTags(tags),
         forTag = const {} {
@@ -209,6 +214,7 @@ class Metadata {
         timeout = _deserializeTimeout(serialized['timeout']),
         skip = serialized['skip'],
         skipReason = serialized['skipReason'],
+        solo = serialized['solo'],
         verboseTrace = serialized['verboseTrace'],
         tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
@@ -254,6 +260,7 @@ class Metadata {
           timeout: timeout.merge(other.timeout),
           skip: skip || other.skip,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,
+          solo: solo || other.solo,
           verboseTrace: verboseTrace || other.verboseTrace,
           tags: tags.union(other.tags),
           onPlatform: mergeMaps(onPlatform, other.onPlatform,
@@ -263,16 +270,17 @@ class Metadata {
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change({PlatformSelector testOn, Timeout timeout, bool skip,
-      bool verboseTrace, String skipReason,
+      bool solo, bool verboseTrace, String skipReason,
       Map<PlatformSelector, Metadata> onPlatform}) {
     if (testOn == null) testOn = this.testOn;
     if (timeout == null) timeout = this.timeout;
     if (skip == null) skip = this.skip;
+    if (solo == null) solo = this.solo;
     if (verboseTrace == null) verboseTrace = this.verboseTrace;
     if (skipReason == null) skipReason = this.skipReason;
     if (onPlatform == null) onPlatform = this.onPlatform;
     return new Metadata(testOn: testOn, timeout: timeout, skip: skip,
-        verboseTrace: verboseTrace, skipReason: skipReason,
+        solo: solo, verboseTrace: verboseTrace, skipReason: skipReason,
         onPlatform: onPlatform);
   }
 
@@ -303,6 +311,7 @@ class Metadata {
       'timeout': _serializeTimeout(timeout),
       'skip': skip,
       'skipReason': skipReason,
+      'solo': solo,
       'verboseTrace': verboseTrace,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
