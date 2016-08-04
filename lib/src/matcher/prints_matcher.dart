@@ -6,11 +6,11 @@ library unittest.matcher.prints_matcher;
 
 import 'dart:async';
 
-import 'description.dart';
+import 'package:matcher/matcher.dart'
+    show Matcher, Description, StringDescription, wrapMatcher;
+
 import 'expect.dart';
-import 'interfaces.dart';
 import 'future_matchers.dart';
-import 'util.dart';
 
 /// Matches a [Function] that prints text that matches [matcher].
 ///

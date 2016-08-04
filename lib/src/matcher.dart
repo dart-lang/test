@@ -5,18 +5,10 @@
 /// Support for specifying test expectations, such as for unit tests.
 library unittest.matcher;
 
-export 'matcher/core_matchers.dart';
-export 'matcher/description.dart';
-export 'matcher/error_matchers.dart';
+export 'package:matcher/matcher.dart';
+
 export 'matcher/expect.dart';
 export 'matcher/future_matchers.dart';
-export 'matcher/interfaces.dart';
-export 'matcher/iterable_matchers.dart';
-export 'matcher/map_matchers.dart';
-export 'matcher/numeric_matchers.dart';
-export 'matcher/operator_matchers.dart';
 export 'matcher/prints_matcher.dart';
-export 'matcher/string_matchers.dart';
 export 'matcher/throws_matcher.dart';
 export 'matcher/throws_matchers.dart';
-export 'matcher/util.dart';

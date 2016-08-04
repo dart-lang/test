@@ -4,9 +4,7 @@
 
 library unittest.matcher.pretty_print;
 
-import 'description.dart';
-import 'interfaces.dart';
-import 'util.dart';
+import 'package:matcher/matcher.dart' show Matcher, StringDescription, escape;
 
 /// Returns a pretty-printed representation of [object].
 ///

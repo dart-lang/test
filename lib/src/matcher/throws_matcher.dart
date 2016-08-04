@@ -6,9 +6,10 @@ library unittest.matcher.throws_matcher;
 
 import 'dart:async';
 
+import 'package:matcher/matcher.dart'
+    show Matcher, Description, wrapMatcher, addStateInfo;
+
 import 'expect.dart';
-import 'interfaces.dart';
-import 'util.dart';
 
 /// This can be used to match two kinds of objects:
 ///

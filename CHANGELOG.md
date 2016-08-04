@@ -1,3 +1,8 @@
+##0.11.7
+
+* Use `matcher` package classes where possible to allow test helpers that can
+  target both `unittest` and `test` packages.
+
 ##0.11.6+4
 
 * Fix some strong mode warnings we missed in the `vm_config.dart` and

@@ -6,9 +6,9 @@ library unittest.matcher.future_matchers;
 
 import 'dart:async';
 
+import 'package:matcher/matcher.dart' show Description, Matcher, wrapMatcher;
+
 import 'expect.dart';
-import 'interfaces.dart';
-import 'util.dart';
 
 /// Matches a [Future] that completes successfully with a value.
 ///
