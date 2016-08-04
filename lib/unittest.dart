@@ -11,7 +11,7 @@ import 'src/configuration.dart';
 import 'src/expected_function.dart';
 import 'src/group_context.dart';
 import 'src/internal_test_case.dart';
-import 'src/matcher.dart' show TestFailure, wrapAsync;
+import 'src/matcher.dart' show wrapAsync;
 import 'src/test_case.dart';
 import 'src/test_environment.dart';
 
