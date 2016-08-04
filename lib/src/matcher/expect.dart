@@ -4,10 +4,8 @@
 
 library unittest.matcher.expect;
 
-import 'core_matchers.dart';
-import 'description.dart';
-import 'interfaces.dart';
-import 'util.dart';
+import 'package:matcher/matcher.dart'
+    show Matcher, StringDescription, wrapMatcher;
 
 /// The objects thrown by the default failure handler.
 class TestFailure extends Error {

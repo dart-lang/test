@@ -4,8 +4,21 @@
 
 library unittest.matcher.throws_matchers;
 
-import 'error_matchers.dart';
-import 'interfaces.dart';
+import 'package:matcher/matcher.dart'
+    show
+        Matcher,
+        isArgumentError,
+        isConcurrentModificationError,
+        isCyclicInitializationError,
+        isNullThrownError,
+        isException,
+        isFormatException,
+        isNoSuchMethodError,
+        isRangeError,
+        isStateError,
+        isUnimplementedError,
+        isUnsupportedError;
+
 import 'throws_matcher.dart';
 
 /// A matcher for functions that throw ArgumentError.

@@ -5,7 +5,6 @@
 library unittest.matcher.escape_test;
 
 import 'package:unittest/unittest.dart';
-import 'package:unittest/src/matcher/util.dart';
 
 void main() {
   group('escaping should work with', () {
