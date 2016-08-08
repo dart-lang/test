@@ -1,3 +1,8 @@
+## 0.12.15+3
+
+* Move `nestingMiddleware` to `lib/src/util/path_handler.dart` to enable a
+  cleaner separation between test-runner files and test writing files.
+
 ## 0.12.15+2
 
 * Support running without a `packages/` directory.
