@@ -47,6 +47,14 @@ class PathHandler {
   }
 }
 
+/// Returns middleware that nests all requests beneath the URL prefix [beneath].
+shelf.Middleware nestingMiddleware(String beneath) {
+  return (handler) {
+    var pathHandler = new PathHandler()..add(beneath, handler);
+    return pathHandler.handler;
+  };
+}
+
 /// A trie node.
 class _Node {
   shelf.Handler handler;

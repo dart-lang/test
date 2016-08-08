@@ -9,11 +9,9 @@ import 'dart:typed_data';
 
 import 'package:async/async.dart' hide StreamQueue;
 import 'package:path/path.dart' as p;
-import 'package:shelf/shelf.dart' as shelf;
 import 'package:stack_trace/stack_trace.dart';
 
 import 'backend/operating_system.dart';
-import 'util/path_handler.dart';
 import 'util/stream_queue.dart';
 
 /// The maximum console line length.
@@ -359,12 +357,4 @@ String randomBase64(int bytes, {int seed}) {
     data[i] = random.nextInt(256);
   }
   return BASE64.encode(data);
-}
-
-/// Returns middleware that nests all requests beneath the URL prefix [beneath].
-shelf.Middleware nestingMiddleware(String beneath) {
-  return (handler) {
-    var pathHandler = new PathHandler()..add(beneath, handler);
-    return pathHandler.handler;
-  };
 }
