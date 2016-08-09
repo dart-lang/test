@@ -133,7 +133,7 @@ class BrowserPlatform extends PlatformPlugin {
     }
 
     var pipeline = new shelf.Pipeline()
-        .addMiddleware(nestingMiddleware(_secret))
+        .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
     _server.mount(pipeline);

@@ -13,7 +13,14 @@ class PathHandler {
   /// The shelf handler.
   shelf.Handler get handler => _onRequest;
 
-  PathHandler();
+  /// Returns middleware that nests all requests beneath the URL prefix
+  /// [beneath].
+  static shelf.Middleware nestedIn(String beneath) {
+    return (handler) {
+      var pathHandler = new PathHandler()..add(beneath, handler);
+      return pathHandler.handler;
+    };
+  }
 
   /// Routes requests at or under [path] to [handler].
   ///
@@ -45,14 +52,6 @@ class PathHandler {
     return handler(request.change(
         path: p.url.joinAll(components.take(handlerIndex + 1))));
   }
-}
-
-/// Returns middleware that nests all requests beneath the URL prefix [beneath].
-shelf.Middleware nestingMiddleware(String beneath) {
-  return (handler) {
-    var pathHandler = new PathHandler()..add(beneath, handler);
-    return pathHandler.handler;
-  };
 }
 
 /// A trie node.
