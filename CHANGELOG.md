@@ -1,3 +1,7 @@
+## 0.12.15+4
+
+* Widen version constraint on `analyzer`.
+
 ## 0.12.15+3
 
 * Move `nestingMiddleware` to `lib/src/util/path_handler.dart` to enable a
