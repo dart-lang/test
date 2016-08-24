@@ -1,3 +1,7 @@
+## 0.12.15+6
+
+* Fix a broken link in the `--help` documentation.
+
 ## 0.12.15+5
 
 * Internal-only change.

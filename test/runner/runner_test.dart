@@ -84,7 +84,7 @@ Usage: pub run test [files or directories...]
 
           [compact]            A single line, updated continuously.
           [expanded]           A separate line for each update.
-          [json]               A machine-readable format (see https://goo.gl/0HRhdZ).
+          [json]               A machine-readable format (see https://goo.gl/gBsV1a).
 
     --verbose-trace            Whether to emit stack traces with core library frames.
     --js-trace                 Whether to emit raw JavaScript stack traces for browser tests.

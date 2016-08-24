@@ -95,7 +95,7 @@ final ArgParser _parser = (() {
       allowedHelp: {
     'compact': 'A single line, updated continuously.',
     'expanded': 'A separate line for each update.',
-    'json': 'A machine-readable format (see https://goo.gl/0HRhdZ).'
+    'json': 'A machine-readable format (see https://goo.gl/gBsV1a).'
   });
   parser.addFlag("verbose-trace", negatable: false,
       help: 'Whether to emit stack traces with core library frames.');
