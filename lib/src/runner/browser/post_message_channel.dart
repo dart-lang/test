@@ -20,8 +20,13 @@ StreamChannel postMessageChannel() {
     if (message.origin != window.location.origin) return;
     message.stopPropagation();
 
-    // See host.dart for why we have to explicitly decode here.
-    controller.local.sink.add(JSON.decode(message.data));
+    var data = message.data;
+    if (data is String) {
+      // See host.dart for why we have to explicitly decode here.
+      data = JSON.decode(data);
+    }
+
+    controller.local.sink.add(data);
   });
 
   controller.local.stream.listen((data) {
