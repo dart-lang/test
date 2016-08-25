@@ -13,7 +13,6 @@ import 'package:stream_channel/stream_channel.dart';
 /// The iframes created for each loaded test suite, indexed by the suite id.
 final _iframes = new Map<int, IFrameElement>();
 
-// TODO(nweiz): test this once we can run browser tests.
 /// Code that runs in the browser and loads test suites at the server's behest.
 ///
 /// One instance of this runs for each browser. When the server tells it to load
@@ -164,11 +163,7 @@ StreamChannel _connectToIframe(String url, int id) {
   controller.local.stream.listen((message) async {
     await readyCompleter.future;
 
-    // JSON-encode the message to work around sdk#25636, which caused the
-    // structured clone algorithm to be broken with Window.postMessage in
-    // 1.14.{0,1,2}. Once we no longer care about these Dartiums, stop encoding.
-    iframe.contentWindow.postMessage(
-        JSON.encode(message), window.location.origin);
+    iframe.contentWindow.postMessage(message, window.location.origin);
   });
 
   return controller.foreign;
