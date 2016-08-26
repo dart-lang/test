@@ -279,11 +279,11 @@ void main() {
       });
 
       expect(entries, hasLength(1));
-      expect(entries.single, new isInstanceOf<Group>());
-      expect(entries.single.name, equals("group"));
-      expect(entries.single.entries, hasLength(1));
-      expect(entries.single.entries.single, new isInstanceOf<Test>());
-      expect(entries.single.entries.single.name, "group description");
+      var testGroup = entries.single as Group;
+      expect(testGroup.name, equals("group"));
+      expect(testGroup.entries, hasLength(1));
+      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single.name, "group description");
     });
 
     test("tests inherit the group's description when it's not a string", () {
@@ -294,11 +294,11 @@ void main() {
       });
 
       expect(entries, hasLength(1));
-      expect(entries.single, new isInstanceOf<Group>());
-      expect(entries.single.name, equals("Object"));
-      expect(entries.single.entries, hasLength(1));
-      expect(entries.single.entries.single, new isInstanceOf<Test>());
-      expect(entries.single.entries.single.name, "Object description");
+      var testGroup = entries.single as Group;
+      expect(testGroup.name, equals("Object"));
+      expect(testGroup.entries, hasLength(1));
+      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single.name, "Object description");
     });
 
     test("a test's timeout factor is applied to the group's", () {
@@ -310,11 +310,11 @@ void main() {
       });
 
       expect(entries, hasLength(1));
-      expect(entries.single, new isInstanceOf<Group>());
-      expect(entries.single.metadata.timeout.scaleFactor, equals(2));
-      expect(entries.single.entries, hasLength(1));
-      expect(entries.single.entries.single, new isInstanceOf<Test>());
-      expect(entries.single.entries.single.metadata.timeout.scaleFactor,
+      var testGroup = entries.single as Group;
+      expect(testGroup.metadata.timeout.scaleFactor, equals(2));
+      expect(testGroup.entries, hasLength(1));
+      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single.metadata.timeout.scaleFactor,
           equals(6));
     });
 
@@ -327,12 +327,12 @@ void main() {
       });
 
       expect(entries, hasLength(1));
-      expect(entries.single, new isInstanceOf<Group>());
-      expect(entries.single.metadata.timeout.duration,
+      var testGroup = entries.single as Group;
+      expect(testGroup.metadata.timeout.duration,
           equals(new Duration(seconds: 10)));
-      expect(entries.single.entries, hasLength(1));
-      expect(entries.single.entries.single, new isInstanceOf<Test>());
-      expect(entries.single.entries.single.metadata.timeout.duration,
+      expect(testGroup.entries, hasLength(1));
+      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single.metadata.timeout.duration,
           equals(new Duration(seconds: 20)));
     });
 
@@ -345,12 +345,12 @@ void main() {
       });
 
       expect(entries, hasLength(1));
-      expect(entries.single, new isInstanceOf<Group>());
-      expect(entries.single.metadata.timeout.duration,
+      var testGroup = entries.single as Group;
+      expect(testGroup.metadata.timeout.duration,
           equals(new Duration(seconds: 10)));
-      expect(entries.single.entries, hasLength(1));
-      expect(entries.single.entries.single, new isInstanceOf<Test>());
-      expect(entries.single.entries.single.metadata.timeout.duration,
+      expect(testGroup.entries, hasLength(1));
+      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single.metadata.timeout.duration,
           equals(new Duration(seconds: 15)));
     });
 
@@ -373,7 +373,7 @@ void main() {
           }, max: 1));
         });
 
-        await _runTest(entries[0].entries.single);
+        await _runTest((entries[0] as Group).entries.single);
         await _runTest(entries[1]);
       });
 
@@ -411,7 +411,9 @@ void main() {
           });
         });
 
-        return _runTest(entries.single.entries.single.entries.single);
+        var middleGroup = entries.single as Group;
+        var innerGroup = middleGroup.entries.single as Group;
+        return _runTest(innerGroup.entries.single);
       });
 
       test("handles Futures when chained", () {
@@ -436,7 +438,8 @@ void main() {
           });
         });
 
-        return _runTest(entries.single.entries.single);
+        var innerGroup = entries.single as Group;
+        return _runTest(innerGroup.entries.single);
       });
 
       test("inherits group's tags", () {
@@ -448,8 +451,8 @@ void main() {
           }, tags: "a");
         });
 
-        var outerGroup = tests.single;
-        var innerGroup = outerGroup.entries.single;
+        var outerGroup = tests.single as Group;
+        var innerGroup = outerGroup.entries.single as Group;
         var testWithTags = innerGroup.entries.single;
         expect(outerGroup.metadata.tags, unorderedEquals(["a"]));
         expect(innerGroup.metadata.tags, unorderedEquals(["a", "b", "c"]));
@@ -485,7 +488,8 @@ void main() {
           }, max: 1));
         });
 
-        await _runTest(entries[0].entries.single);
+        var testGroup = entries[0] as Group;
+        await _runTest(testGroup.entries.single);
         expect(tearDownRun, isTrue);
         await _runTest(entries[1]);
         expect(tearDownRun, isFalse);
@@ -525,7 +529,9 @@ void main() {
           });
         });
 
-        await _runTest(entries.single.entries.single.entries.single);
+        var middleGroup = entries.single as Group;
+        var innerGroup = middleGroup.entries.single as Group;
+        await _runTest(innerGroup.entries.single);
         expect(innerTearDownRun, isTrue);
         expect(middleTearDownRun, isTrue);
         expect(outerTearDownRun, isTrue);
@@ -553,7 +559,8 @@ void main() {
           });
         });
 
-        await _runTest(entries.single.entries.single);
+        var innerGroup = entries.single as Group;
+        await _runTest(innerGroup.entries.single);
         expect(innerTearDownRun, isTrue);
         expect(outerTearDownRun, isTrue);
       });
@@ -576,7 +583,8 @@ void main() {
           });
         });
 
-        await _runTest(entries.single.entries.single, shouldFail: true);
+        var innerGroup = entries.single as Group;
+        await _runTest(innerGroup.entries.single, shouldFail: true);
         expect(outerTearDownRun, isTrue);
       });
     });
