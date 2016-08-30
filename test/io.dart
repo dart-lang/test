@@ -8,7 +8,6 @@ library test.test.io;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
@@ -134,12 +133,11 @@ ScheduledProcess runTest(List<String> args, {String reporter,
 /// Runs Dart.
 ScheduledProcess runDart(List<String> args, {Map<String, String> environment,
     String description}) {
-  var allArgs = Platform.executableArguments
-      .where((arg) =>
-          !arg.startsWith("--package-root=") && !arg.startsWith("--packages="))
-      .toList()
-      ..add(PackageResolver.current.processArgument)
-      ..addAll(args);
+  var allArgs = <Object>[]
+    ..addAll(Platform.executableArguments.where((arg) =>
+        !arg.startsWith("--package-root=") && !arg.startsWith("--packages=")))
+    ..add(PackageResolver.current.processArgument)
+    ..addAll(args);
 
   return new ScheduledProcess.start(
       p.absolute(Platform.resolvedExecutable), allArgs,
