@@ -262,18 +262,26 @@ class Metadata {
               value: (metadata1, metadata2) => metadata1.merge(metadata2)));
 
   /// Returns a copy of [this] with the given fields changed.
-  Metadata change({PlatformSelector testOn, Timeout timeout, bool skip,
-      bool verboseTrace, String skipReason,
-      Map<PlatformSelector, Metadata> onPlatform}) {
-    if (testOn == null) testOn = this.testOn;
-    if (timeout == null) timeout = this.timeout;
-    if (skip == null) skip = this.skip;
-    if (verboseTrace == null) verboseTrace = this.verboseTrace;
-    if (skipReason == null) skipReason = this.skipReason;
-    if (onPlatform == null) onPlatform = this.onPlatform;
+  Metadata change(
+      {PlatformSelector testOn,
+      Timeout timeout,
+      bool skip,
+      bool verboseTrace,
+      String skipReason,
+      Map<PlatformSelector, Metadata> onPlatform,
+      Set<String> tags,
+      Map<BooleanSelector, Metadata> forTag}) {
+    testOn ??= this.testOn;
+    timeout ??= this.timeout;
+    skip ??= this.skip;
+    verboseTrace ??= this.verboseTrace;
+    skipReason ??= this.skipReason;
+    onPlatform ??= this.onPlatform;
+    tags ??= this.tags;
+    forTag ??= this.forTag;
     return new Metadata(testOn: testOn, timeout: timeout, skip: skip,
         verboseTrace: verboseTrace, skipReason: skipReason,
-        onPlatform: onPlatform);
+        onPlatform: onPlatform, tags: tags, forTag: forTag);
   }
 
   /// Returns a copy of [this] with all platform-specific metadata from
