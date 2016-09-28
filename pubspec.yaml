@@ -14,6 +14,7 @@ dependencies:
   collection: '^1.8.0'
   glob: '^1.0.0'
   http_multi_server: '>=1.0.0 <3.0.0'
+  matcher: '^0.12.0'
   package_resolver: '^1.0.0'
   path: '^1.2.0'
   pool: '^1.2.0'
@@ -30,10 +31,6 @@ dependencies:
   string_scanner: '>=0.1.1 <2.0.0'
   web_socket_channel: '^1.0.0'
   yaml: '^2.0.0'
-
-  # Use a tight version constraint to ensure that a constraint on matcher
-  # properly constrains all features it provides.
-  matcher: '>=0.12.0 <0.12.1'
 dev_dependencies:
   fake_async: '^0.1.2'
   scheduled_test: '^0.12.5'
