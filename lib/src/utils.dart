@@ -248,7 +248,7 @@ String truncate(String text, int maxLength) {
 /// Returns a human-friendly representation of [duration].
 String niceDuration(Duration duration) {
   var minutes = duration.inMinutes;
-  var seconds = duration.inSeconds % 59;
+  var seconds = duration.inSeconds % 60;
   var decaseconds = (duration.inMilliseconds % 1000) ~/ 100;
 
   var buffer = new StringBuffer();
