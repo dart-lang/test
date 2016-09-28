@@ -225,7 +225,7 @@ class BrowserManager {
           sink.close();
         }));
 
-    return await _pool.withResource(() async {
+    return await _pool.withResource/*<Future<RunnerSuite>>*/(() async {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
