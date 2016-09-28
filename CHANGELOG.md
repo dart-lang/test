@@ -1,3 +1,8 @@
+## 0.12.15+7
+
+* Fix a bug where tags would be dropped when `on_platform` was defined in a
+  config file.
+
 ## 0.12.15+6
 
 * Fix a broken link in the `--help` documentation.

@@ -5,6 +5,7 @@
 import 'package:boolean_selector/boolean_selector.dart';
 
 import 'package:test/src/backend/metadata.dart';
+import 'package:test/src/backend/platform_selector.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/frontend/skip.dart';
 import 'package:test/src/frontend/timeout.dart';
@@ -184,6 +185,32 @@ void main() {
       expect(() {
         new Metadata.parse(onPlatform: {"chrome": [new Skip(), new Skip()]});
       }, throwsArgumentError);
+    });
+  });
+
+  group("change", () {
+    test("preserves all fields if no parameters are passed", () {
+      var metadata = new Metadata(
+          testOn: new PlatformSelector.parse("linux"),
+          timeout: new Timeout.factor(2),
+          skip: true,
+          skipReason: "just because",
+          verboseTrace: true,
+          tags: ["foo", "bar"],
+          onPlatform: {
+            new PlatformSelector.parse("mac-os"): new Metadata(skip: false)
+          },
+          forTag: {
+            new BooleanSelector.parse("slow"):
+                new Metadata(timeout: new Timeout.factor(4))
+          });
+      expect(metadata.serialize(), equals(metadata.change().serialize()));
+    });
+
+    test("updates a changed field", () {
+      var metadata = new Metadata(timeout: new Timeout.factor(2));
+      expect(metadata.change(timeout: new Timeout.factor(3)).timeout,
+          equals(new Timeout.factor(3)));
     });
   });
 }
