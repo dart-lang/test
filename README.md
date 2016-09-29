@@ -521,7 +521,7 @@ Tags are defined using the `@Tags` annotation for suites and the `tags` named
 parameter to `test()` and `group()`. For example:
 
 ```dart
-@Tags(["browser"])
+@Tags(const ["browser"])
 
 import "package:test/test.dart";
 
