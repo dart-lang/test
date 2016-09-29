@@ -34,11 +34,11 @@ import 'utils.dart';
 /// the other, as well as printing out tests with a [CompactReporter] or an
 /// [ExpandedReporter].
 class Runner {
-  /// The configuration for the runner.
-  final Configuration _config;
+  /// The test runner configuration.
+  final _config = Configuration.current;
 
   /// The loader that loads the test suites from the filesystem.
-  final Loader _loader;
+  final _loader = new Loader();
 
   /// The engine that runs the test suites.
   final Engine _engine;
@@ -66,21 +66,15 @@ class Runner {
   bool get _closed => _closeMemo.hasRun;
 
   /// Creates a new runner based on [configuration].
-  factory Runner(Configuration config) {
-    var loader = new Loader(config);
+  factory Runner(Configuration config) => config.asCurrent(() {
     var engine = new Engine(
         concurrency: config.concurrency,
         runSkipped: config.runSkipped);
 
     var reporter;
     switch (config.reporter) {
-      case "compact":
       case "expanded":
-        var watch = config.reporter == "compact"
-            ? CompactReporter.watch
-            : ExpandedReporter.watch;
-
-        reporter = watch(
+        reporter = ExpandedReporter.watch(
             engine,
             color: config.color,
             verboseTrace: config.verboseTrace,
@@ -89,24 +83,25 @@ class Runner {
             printPlatform: config.platforms.length > 1);
         break;
 
+      case "compact":
+        reporter = CompactReporter.watch(engine);
+        break;
+
       case "json":
-        reporter = JsonReporter.watch(engine,
-            verboseTrace: config.verboseTrace,
-            jsLocations: !config.jsTrace,
-            runSkipped: config.runSkipped);
+        reporter = JsonReporter.watch(engine);
         break;
     }
 
-    return new Runner._(config, loader, engine, reporter);
-  }
+    return new Runner._(engine, reporter);
+  });
 
-  Runner._(this._config, this._loader, this._engine, this._reporter);
+  Runner._(this._engine, this._reporter);
 
   /// Starts the runner.
   ///
   /// This starts running tests and printing their progress. It returns whether
   /// or not they ran successfully.
-  Future<bool> run() async {
+  Future<bool> run() => _config.asCurrent(() async {
     if (_closed) {
       throw new StateError("run() may not be called on a closed Runner.");
     }
@@ -142,7 +137,7 @@ class Runner {
     // Explicitly check "== true" here because [Engine.run] can return `null`
     // if the engine was closed prematurely.
     return success == true;
-  }
+  });
 
   /// Emits a warning if the user is trying to run on a platform that's
   /// unsupported for the entire package.
@@ -374,7 +369,7 @@ class Runner {
     }
 
     _suiteSubscription = suites.asyncMap((loadSuite) async {
-      _debugOperation = debug(_config, _engine, _reporter, loadSuite);
+      _debugOperation = debug(_engine, _reporter, loadSuite);
       await _debugOperation.valueOrCancellation();
     }).listen(null);
 

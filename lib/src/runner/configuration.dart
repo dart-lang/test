@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
@@ -17,6 +18,9 @@ import '../util/io.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/load.dart';
 import 'configuration/values.dart';
+
+/// The key used to look up [Configuration.current] in a zone.
+final _currentKey = new Object();
 
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
@@ -253,6 +257,13 @@ class Configuration {
     yield* presets.values;
   }
 
+  /// Returns the current configuration, or a default configuration if no
+  /// current configuration is set.
+  ///
+  /// The current configuration is set using [asCurrent].
+  static Configuration get current =>
+      Zone.current[_currentKey] ?? new Configuration();
+
   /// Parses the configuration from [args].
   ///
   /// Throws a [FormatException] if [args] are invalid.
@@ -462,6 +473,13 @@ class Configuration {
     if (input == null || input.isEmpty) return const {};
     return new Map.unmodifiable(input);
   }
+
+  /// Runs [body] with [this] as [Configuration.current].
+  ///
+  /// This is zone-scoped, so [this] will be the current configuration in any
+  /// asynchronous callbacks transitively created by [body].
+  /*=T*/ asCurrent/*<T>*/(/*=T*/ body()) =>
+      runZoned(body, zoneValues: {_currentKey: this});
 
   /// Merges this with [other].
   ///

@@ -95,6 +95,8 @@ class ExpandedReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = new Set<StreamSubscription>();
 
+  // TODO(nweiz): Get configuration from [Configuration.current] once we have
+  // cross-platform imports.
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   ///

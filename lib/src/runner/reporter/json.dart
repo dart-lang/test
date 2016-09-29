@@ -14,6 +14,7 @@ import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/expect.dart';
 import '../../utils.dart';
+import '../configuration.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
@@ -21,14 +22,8 @@ import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
-  /// Whether to use verbose stack traces.
-  final bool _verboseTrace;
-
-  /// Whether to emit location information for JS tests.
-  final bool _jsLocations;
-
-  /// Whether skipped tests are run anyway.
-  final bool _runSkipped;
+  /// The test runner configuration.
+  final _config = Configuration.current;
 
   /// The engine used to run the tests.
   final Engine _engine;
@@ -61,23 +56,9 @@ class JsonReporter implements Reporter {
   var _nextID = 0;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  ///
-  /// If [verboseTrace] is `true`, this will print core library frames. If
-  /// [jsLocations] is `false`, this will not emit location information for JS
-  /// tests.
-  static JsonReporter watch(Engine engine, {bool verboseTrace: false,
-      bool jsLocations: true, bool runSkipped: false}) {
-    return new JsonReporter._(engine,
-        verboseTrace: verboseTrace,
-        jsLocations: jsLocations,
-        runSkipped: runSkipped);
-  }
+  static JsonReporter watch(Engine engine) => new JsonReporter._(engine);
 
-  JsonReporter._(this._engine, {bool verboseTrace: false,
-      bool jsLocations: true, bool runSkipped: false})
-      : _verboseTrace = verboseTrace,
-        _jsLocations = jsLocations,
-        _runSkipped = runSkipped {
+  JsonReporter._(this._engine) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -229,7 +210,7 @@ class JsonReporter implements Reporter {
   }
 
   /// Serializes [metadata] into a JSON-protocol-compatible map.
-  Map _serializeMetadata(Metadata metadata) => _runSkipped
+  Map _serializeMetadata(Metadata metadata) => _config.runSkipped
       ? {"skip": false, "skipReason": null}
       : {"skip": metadata.skip, "skipReason": metadata.skipReason};
 
@@ -251,7 +232,8 @@ class JsonReporter implements Reporter {
     _emit("error", {
       "testID": _liveTestIDs[liveTest],
       "error": error.toString(),
-      "stackTrace": terseChain(stackTrace, verbose: _verboseTrace).toString(),
+      "stackTrace": terseChain(stackTrace, verbose: _config.verboseTrace)
+          .toString(),
       "isFailure": error is TestFailure
     });
   }
@@ -281,7 +263,7 @@ class JsonReporter implements Reporter {
   Map<String, dynamic> _addFrameInfo(Map<String, dynamic> map,
       GroupEntry entry, TestPlatform platform) {
     var frame = entry.trace?.frames?.first;
-    if (!_jsLocations && platform.isJS) frame = null;
+    if (_config.jsTrace && platform.isJS) frame = null;
 
     map["line"] = frame?.line;
     map["column"] = frame?.column;

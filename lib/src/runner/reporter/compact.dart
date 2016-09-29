@@ -11,6 +11,7 @@ import '../../backend/message.dart';
 import '../../backend/state.dart';
 import '../../utils.dart';
 import '../../utils.dart' as utils;
+import '../configuration.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
@@ -24,44 +25,38 @@ const _lineLength = 100;
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
 class CompactReporter implements Reporter {
-  /// Whether the reporter should emit terminal color escapes.
-  final bool _color;
+  final _config = Configuration.current;
 
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  final String _green;
+  String get _green => _config.color ? '\u001b[32m' : '';
 
   /// The terminal escape for red text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  final String _red;
+  String get _red => _config.color ? '\u001b[31m' : '';
 
   /// The terminal escape for yellow text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _yellow;
+  String get _yellow => _config.color ? '\u001b[33m' : '';
 
   /// The terminal escape for gray text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _gray;
+  String get _gray => _config.color ? '\u001b[1;30m' : '';
 
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _bold;
+  String get _bold => _config.color ? '\u001b[1m' : '';
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
-  final String _noColor;
+  String get _noColor => _config.color ? '\u001b[0m' : '';
 
-  /// Whether to use verbose stack traces.
-  final bool _verboseTrace;
+  /// Whether the path to each test's suite should be printed.
+  final bool _printPath = Configuration.current.paths.length > 1 ||
+      new Directory(Configuration.current.paths.single).existsSync();
 
   /// The engine used to run the tests.
   final Engine _engine;
-
-  /// Whether the path to each test's suite should be printed.
-  final bool _printPath;
-
-  /// Whether the platform each test is running on should be printed.
-  final bool _printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
@@ -105,35 +100,10 @@ class CompactReporter implements Reporter {
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
-  ///
-  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
-  /// won't. If [verboseTrace] is `true`, this will print core library frames.
-  /// If [printPath] is `true`, this will print the path name as part of the
-  /// test description. Likewise, if [printPlatform] is `true`, this will print
-  /// the platform as part of the test description.
-  static CompactReporter watch(Engine engine, {bool color: true,
-      bool verboseTrace: false, bool printPath: true,
-      bool printPlatform: true}) {
-    return new CompactReporter._(
-        engine,
-        color: color,
-        verboseTrace: verboseTrace,
-        printPath: printPath,
-        printPlatform: printPlatform);
-  }
+  static CompactReporter watch(Engine engine) =>
+      new CompactReporter._(engine);
 
-  CompactReporter._(this._engine, {bool color: true, bool verboseTrace: false,
-          bool printPath: true, bool printPlatform: true})
-      : _verboseTrace = verboseTrace,
-        _printPath = printPath,
-        _printPlatform = printPlatform,
-        _color = color,
-        _green = color ? '\u001b[32m' : '',
-        _red = color ? '\u001b[31m' : '',
-        _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[1;30m' : '',
-        _bold = color ? '\u001b[1m' : '',
-        _noColor = color ? '\u001b[0m' : '' {
+  CompactReporter._(this._engine) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -234,12 +204,12 @@ class CompactReporter implements Reporter {
 
     if (error is! LoadException) {
       print(indent(error.toString()));
-      var chain = terseChain(stackTrace, verbose: _verboseTrace);
+      var chain = terseChain(stackTrace, verbose: _config.verboseTrace);
       print(indent(chain.toString()));
       return;
     }
 
-    print(indent(error.toString(color: _color)));
+    print(indent(error.toString(color: _config.color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IOException &&
@@ -380,7 +350,7 @@ class CompactReporter implements Reporter {
       name = "${liveTest.suite.path}: $name";
     }
 
-    if (_printPlatform && liveTest.suite.platform != null) {
+    if (_config.platforms.length > 1 && liveTest.suite.platform != null) {
       name = "[${liveTest.suite.platform.name}] $name";
     }
 

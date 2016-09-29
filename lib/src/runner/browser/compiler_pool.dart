@@ -23,11 +23,11 @@ final _dart2jsStatus =
 ///
 /// This limits the number of compiler instances running concurrently.
 class CompilerPool {
+  /// The test runner configuration.
+  final _config = Configuration.current;
+
   /// The internal pool that controls the number of process running at once.
   final Pool _pool;
-
-  /// The test runner configuration.
-  final Configuration _config;
 
   /// The currently-active dart2js processes.
   final _processes = new Set<Process>();
@@ -39,9 +39,7 @@ class CompilerPool {
   final _closeMemo = new AsyncMemoizer();
 
   /// Creates a compiler pool that multiple instances of `dart2js` at once.
-  CompilerPool(Configuration config)
-      : _pool = new Pool(config.concurrency),
-        _config = config;
+  CompilerPool() : _pool = new Pool(Configuration.current.concurrency);
 
   /// Compile the Dart code at [dartPath] to [jsPath].
   ///
