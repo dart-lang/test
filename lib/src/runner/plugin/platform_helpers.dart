@@ -13,6 +13,7 @@ import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
+import '../configuration.dart';
 import '../environment.dart';
 import '../load_exception.dart';
 import '../runner_suite.dart';
@@ -41,7 +42,8 @@ Future<RunnerSuiteController> deserializeSuite(String path,
   suiteChannel.sink.add({
     'platform': platform.identifier,
     'metadata': metadata.serialize(),
-    'os': platform == TestPlatform.vm ? currentOS.identifier : null
+    'os': platform == TestPlatform.vm ? currentOS.identifier : null,
+    'collectTraces': Configuration.current.reporter == 'json'
   });
 
   var completer = new Completer();
