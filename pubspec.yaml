@@ -6,7 +6,7 @@ homepage: https://github.com/dart-lang/test
 environment:
   sdk: '>=1.14.0 <2.0.0'
 dependencies:
-  analyzer: '>=0.23.0 <0.29.0'
+  analyzer: '>=0.28.0 <0.29.0'
   args: '^0.13.1'
   async: '^1.8.0'
   barback: '>=0.14.0 <0.16.0'
