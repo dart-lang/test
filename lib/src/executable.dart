@@ -73,7 +73,7 @@ final String _globalConfigPath = (){
 }();
 
 main(List<String> args) async {
-  var configuration;
+  Configuration configuration;
   try {
     configuration = new Configuration.parse(args);
   } on FormatException catch (error) {

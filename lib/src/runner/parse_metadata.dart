@@ -299,8 +299,8 @@ class _Parser {
     // prefixes. The analyzer parses "new x.y()" as prefix "x", annotation "y",
     // and named constructor null. It parses "new x.y.z()" as prefix "x",
     // annotation "y", and named constructor "z".
-    var className;
-    var namedConstructor;
+    String className;
+    String namedConstructor;
     if (identifier is PrefixedIdentifier &&
         !_prefixes.contains(identifier.prefix.name) &&
         constructorName == null) {
