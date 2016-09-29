@@ -35,9 +35,7 @@ void main() {
 void main() {
   setUp(() async {
     _sandbox = createTempDir();
-    _loader = new Loader(
-        new Configuration(),
-        root: _sandbox);
+    _loader = new Loader(root: _sandbox);
   });
 
   tearDown(() {

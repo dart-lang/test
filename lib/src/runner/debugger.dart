@@ -24,8 +24,8 @@ import 'runner_suite.dart';
 /// Returns a [CancelableOperation] that will complete once the suite has
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
-CancelableOperation debug(Configuration config, Engine engine,
-    Reporter reporter, LoadSuite loadSuite) {
+CancelableOperation debug(Engine engine, Reporter reporter,
+    LoadSuite loadSuite) {
   var debugger;
   var canceled = false;
   return new CancelableOperation.fromFuture(() async {
@@ -36,7 +36,7 @@ CancelableOperation debug(Configuration config, Engine engine,
     var suite = await loadSuite.suite;
     if (canceled || suite == null) return;
 
-    debugger = new _Debugger(config, engine, reporter, suite);
+    debugger = new _Debugger(engine, reporter, suite);
     await debugger.run();
   }(), onCancel: () {
     canceled = true;
@@ -49,8 +49,8 @@ CancelableOperation debug(Configuration config, Engine engine,
 // breakpoints.
 /// A debugger for a single test suite.
 class _Debugger {
-  /// The user configuration for the test runner.
-  final Configuration _config;
+  /// The test runner configuration.
+  final _config = Configuration.current;
 
   /// The engine that will run the suite.
   final Engine _engine;
@@ -73,9 +73,8 @@ class _Debugger {
   /// Whether [close] has been called.
   bool _closed = false;
 
-  _Debugger(Configuration config, this._engine, this._reporter, this._suite)
-      : _config = config,
-        _console = new Console(color: config.color) {
+  _Debugger(this._engine, this._reporter, this._suite)
+      : _console = new Console(color: Configuration.current.color) {
     _console.registerCommand(
         "restart", "Restart the current test after it finishes running.",
         _restartTest);

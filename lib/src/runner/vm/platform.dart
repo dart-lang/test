@@ -17,9 +17,9 @@ import '../plugin/platform.dart';
 /// A platform that loads tests in isolates spawned within this Dart process.
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
-  final Configuration _config;
+  final _config = Configuration.current;
 
-  VMPlatform(this._config);
+  VMPlatform();
 
   StreamChannel loadChannel(String path, TestPlatform platform) {
     assert(platform == TestPlatform.vm);

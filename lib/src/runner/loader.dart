@@ -29,7 +29,7 @@ import 'vm/platform.dart';
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
   /// The test runner configuration.
-  final Configuration _config;
+  final _config = Configuration.current;
 
   /// All suites that have been created by the loader.
   final _suites = new Set<RunnerSuite>();
@@ -42,12 +42,13 @@ class Loader {
   /// These are passed to the plugins' async memoizers when a plugin is needed.
   final _platformCallbacks = <TestPlatform, AsyncFunction>{};
 
-  /// Creates a new loader that loads tests on platforms defined in [_config].
+  /// Creates a new loader that loads tests on platforms defined in
+  /// [Configuration.current].
   ///
   /// [root] is the root directory that will be served for browser tests. It
   /// defaults to the working directory.
-  Loader(this._config, {String root}) {
-    registerPlatformPlugin([TestPlatform.vm], () => new VMPlatform(_config));
+  Loader({String root}) {
+    registerPlatformPlugin([TestPlatform.vm], () => new VMPlatform());
     registerPlatformPlugin([
       TestPlatform.dartium,
       TestPlatform.contentShell,
@@ -56,7 +57,7 @@ class Loader {
       TestPlatform.firefox,
       TestPlatform.safari,
       TestPlatform.internetExplorer
-    ], () => BrowserPlatform.start(_config, root: root));
+    ], () => BrowserPlatform.start(root: root));
 
     platformCallbacks.forEach((platform, plugin) {
       registerPlatformPlugin([platform], plugin);
@@ -110,7 +111,9 @@ class Loader {
   /// [RunnerSuite]s defined in the file.
   ///
   /// This will emit a [LoadException] if the file fails to load.
-  Stream<LoadSuite> loadFile(String path) async* {
+  Stream<LoadSuite> loadFile(String path) =>
+      // Ensure that the right config is current when invoking platform plugins.
+      _config.asCurrent(() async* {
     var suiteMetadata;
     try {
       suiteMetadata = parseMetadata(path);
@@ -162,7 +165,7 @@ class Loader {
         }
       }, path: path, platform: platform);
     }
-  }
+  });
 
   Future closeEphemeral() async {
     await Future.wait(_platformPlugins.values.map((memo) async {

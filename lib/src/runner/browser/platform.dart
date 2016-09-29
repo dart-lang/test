@@ -39,11 +39,14 @@ class BrowserPlatform extends PlatformPlugin {
   ///
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
-  static Future<BrowserPlatform> start(Configuration config, {String root})
+  static Future<BrowserPlatform> start({String root})
       async {
     var server = new shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return new BrowserPlatform._(server, config, root: root);
+    return new BrowserPlatform._(server, root: root);
   }
+
+  /// The test runner configuration.
+  final _config = Configuration.current;
 
   /// The underlying server.
   final shelf.Server _server;
@@ -56,9 +59,6 @@ class BrowserPlatform extends PlatformPlugin {
 
   /// The URL for this server.
   Uri get url => _server.url.resolve(_secret + "/");
-
-  /// The test runner configuration.
-  Configuration _config;
 
   /// A [OneOffHandler] for servicing WebSocket connections for
   /// [BrowserManager]s.
@@ -111,12 +111,15 @@ class BrowserPlatform extends PlatformPlugin {
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = new Map<String, StackTraceMapper>();
 
-  BrowserPlatform._(this._server, Configuration config, {String root})
+  BrowserPlatform._(this._server, {String root})
       : _root = root == null ? p.current : root,
-        _config = config,
-        _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
-        _http = config.pubServeUrl == null ? null : new HttpClient(),
-        _compilers = new CompilerPool(config) {
+        _compiledDir = Configuration.current.pubServeUrl == null
+             ? createTempDir()
+             : null,
+        _http = Configuration.current.pubServeUrl == null
+             ? null
+             : new HttpClient(),
+        _compilers = new CompilerPool() {
     var cascade = new shelf.Cascade()
         .add(_webSocketHandler.handler);
 
@@ -127,8 +130,8 @@ class BrowserPlatform extends PlatformPlugin {
           .add(createStaticHandler(_root))
           .add(_wrapperHandler);
 
-      if (config.precompiledPath != null) {
-        cascade = cascade.add(createStaticHandler(config.precompiledPath));
+      if (_config.precompiledPath != null) {
+        cascade = cascade.add(createStaticHandler(_config.precompiledPath));
       }
     }
 
