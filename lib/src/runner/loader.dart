@@ -88,7 +88,13 @@ class Loader {
   ///
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
-  Stream<LoadSuite> loadDir(String dir) {
+  ///
+  /// If [platforms] is passed, these suites will only be loaded on those
+  /// platforms. It must be a subset of the current configuration's platforms.
+  /// Note that the suites aren't guaranteed to be loaded on all platforms in
+  /// [platforms]: their `@TestOn` declarations are still respected.
+  Stream<LoadSuite> loadDir(String dir, {Iterable<TestPlatform> platforms}) {
+    platforms = _validatePlatformSubset(platforms);
     return StreamGroup.merge(new Directory(dir).listSync(recursive: true)
         .map((entry) {
       if (entry is! File) return new Stream.fromIterable([]);
@@ -110,10 +116,17 @@ class Loader {
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
   ///
+  /// If [platforms] is passed, these suites will only be loaded on those
+  /// platforms. It must be a subset of the current configuration's platforms.
+  /// Note that the suites aren't guaranteed to be loaded on all platforms in
+  /// [platforms]: their `@TestOn` declarations are still respected.
+  ///
   /// This will emit a [LoadException] if the file fails to load.
-  Stream<LoadSuite> loadFile(String path) =>
+  Stream<LoadSuite> loadFile(String path, {Iterable<TestPlatform> platforms}) =>
       // Ensure that the right config is current when invoking platform plugins.
       _config.asCurrent(() async* {
+    platforms = _validatePlatformSubset(platforms);
+
     var suiteMetadata;
     try {
       suiteMetadata = parseMetadata(path);
@@ -134,7 +147,7 @@ class Loader {
       return;
     }
 
-    for (var platform in _config.platforms) {
+    for (var platform in platforms ?? _config.platforms) {
       if (!suiteMetadata.testOn.evaluate(platform, os: currentOS)) continue;
 
       var metadata = suiteMetadata.forPlatform(platform, os: currentOS);
@@ -166,6 +179,18 @@ class Loader {
       }, path: path, platform: platform);
     }
   });
+
+  /// Asserts that [platforms] is a subset of [_config.platforms], and returns
+  /// it as a set.
+  ///
+  /// Returns `null` if [platforms] is `null`.
+  Set<TestPlatform> _validatePlatformSubset(Iterable<TestPlatform> platforms) {
+    if (platforms == null) return null;
+    platforms = platforms.toSet();
+    if (platforms.every(_config.platforms.contains)) return platforms;
+    throw new ArgumentError.value(platforms, 'platforms',
+        "must be a subset of ${_config.platforms}.");
+  }
 
   Future closeEphemeral() async {
     await Future.wait(_platformPlugins.values.map((memo) async {
