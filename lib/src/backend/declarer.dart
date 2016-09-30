@@ -85,7 +85,7 @@ class Declarer {
   /// entries built by the declarer. Note that this can be noticeably slow when
   /// thousands of tests are being declared (see #457).
   Declarer({Metadata metadata, bool collectTraces: false})
-      : this._(null, null, metadata? ?? new Metadata(), collectTraces, null);
+      : this._(null, null, metadata ?? new Metadata(), collectTraces, null);
 
   Declarer._(this._parent, this._name, this._metadata, this._collectTraces,
       this._trace);
