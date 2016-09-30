@@ -1,3 +1,8 @@
+## 0.12.15+8
+
+* Make test suites with thousands of tests load much faster on the VM (and
+  possibly other platforms).
+
 ## 0.12.15+7
 
 * Fix a bug where tags would be dropped when `on_platform` was defined in a

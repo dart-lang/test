@@ -69,7 +69,9 @@ class RemoteListener {
 
       var message = await channel.stream.first;
       var metadata = new Metadata.deserialize(message['metadata']);
-      var declarer = new Declarer(metadata);
+      var declarer = new Declarer(
+          metadata: metadata,
+          collectTraces: message['collectTraces']);
       await declarer.declare(main);
 
       var os = message['os'] == null

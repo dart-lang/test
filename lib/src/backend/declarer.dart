@@ -38,6 +38,9 @@ class Declarer {
   /// The stack trace for this group.
   final Trace _trace;
 
+  /// Whether to collect stack traces for [GroupEntry]s.
+  final bool _collectTraces;
+
   /// The set-up functions to run for each test in this group.
   final _setUps = new List<AsyncFunction>();
 
@@ -77,10 +80,15 @@ class Declarer {
   /// This is the implicit group that exists outside of any calls to `group()`.
   /// If [metadata] is passed, it's used as the metadata for the implicit root
   /// group.
-  Declarer([Metadata metadata])
-      : this._(null, null, metadata == null ? new Metadata() : metadata, null);
+  ///
+  /// If [collectTraces] is `true`, this will set [GroupEntry.trace] for all
+  /// entries built by the declarer. Note that this can be noticeably slow when
+  /// thousands of tests are being declared (see #457).
+  Declarer({Metadata metadata, bool collectTraces: false})
+      : this._(null, null, metadata? ?? new Metadata(), collectTraces, null);
 
-  Declarer._(this._parent, this._name, this._metadata, this._trace);
+  Declarer._(this._parent, this._name, this._metadata, this._collectTraces,
+      this._trace);
 
   /// Runs [body] with this declarer as [Declarer.current].
   ///
@@ -106,7 +114,7 @@ class Declarer {
         await body();
       });
       await _runTearDowns();
-    }, trace: new Trace.current(2)));
+    }, trace: _collectTraces ? new Trace.current(2) : null));
   }
 
   /// Creates a group of tests.
@@ -117,9 +125,10 @@ class Declarer {
     var metadata = _metadata.merge(new Metadata.parse(
         testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
         tags: tags));
-    var trace = new Trace.current(2);
+    var trace = _collectTraces ? new Trace.current(2) : null;
 
-    var declarer = new Declarer._(this, _prefix(name), metadata, trace);
+    var declarer = new Declarer._(
+        this, _prefix(name), metadata, _collectTraces, trace);
     declarer.declare(body);
     _entries.add(declarer.build());
   }
@@ -142,14 +151,14 @@ class Declarer {
   /// Registers a function to be run once before all tests.
   void setUpAll(callback()) {
     _checkNotBuilt("setUpAll");
-    _setUpAllTrace ??= new Trace.current(2);
+    if (_collectTraces) _setUpAllTrace ??= new Trace.current(2);
     _setUpAlls.add(callback);
   }
 
   /// Registers a function to be run once after all tests.
   void tearDownAll(callback()) {
     _checkNotBuilt("tearDownAll");
-    _tearDownAllTrace ??= new Trace.current(2);
+    if (_collectTraces) _tearDownAllTrace ??= new Trace.current(2);
     _tearDownAlls.add(callback);
   }
 
