@@ -252,10 +252,9 @@ write `@TestOn("browser && !chrome")`.
 ### Running Tests on Dartium
 
 Tests can be run on [Dartium][] by passing the `-p dartium` flag. If you're
-using the Dart Editor, the test runner will be able to find Dartium
-automatically. On Mac OS, you can also [install it using Homebrew][homebrew].
-Otherwise, make sure there's an executable called `dartium` (on Mac OS or Linux)
-or `dartium.exe` (on Windows) on your system path.
+using Mac OS, you can [install Dartium using Homebrew][homebrew]. Otherwise,
+make sure there's an executable called `dartium` (on Mac OS or Linux) or
+`dartium.exe` (on Windows) on your system path.
 
 [Dartium]: https://www.dartlang.org/tools/dartium/
 [homebrew]: https://github.com/dart-lang/homebrew-dart
