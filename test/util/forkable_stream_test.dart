@@ -287,19 +287,19 @@ void main() {
       var sub2 = fork1.listen(null);
       expect(controller.hasListener, isTrue);
 
-      expect(sub1.cancel(), isNull);
+      expect(sub1.cancel(), completion(isNull));
       await flushMicrotasks();
       expect(controller.hasListener, isTrue);
 
-      expect(sub2.cancel(), isNull);
+      expect(sub2.cancel(), completion(isNull));
       await flushMicrotasks();
       expect(controller.hasListener, isTrue);
 
-      expect(fork2.listen(null).cancel(), isNull);
+      expect(fork2.listen(null).cancel(), completion(isNull));
       await flushMicrotasks();
       expect(controller.hasListener, isTrue);
 
-      expect(fork3.listen(null).cancel(), isNull);
+      expect(fork3.listen(null).cancel(), completion(isNull));
       await flushMicrotasks();
       expect(controller.hasListener, isTrue);
 
