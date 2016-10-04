@@ -12,11 +12,9 @@ class PluginEnvironment implements Environment {
 
   const PluginEnvironment();
 
-  Uri get observatoryUrl => throw new UnsupportedError(
-      "PluginEnvironment.observatoryUrl is not supported.");
+  Uri get observatoryUrl => null;
 
-  Uri get remoteDebuggerUrl => throw new UnsupportedError(
-      "PluginEnvironment.remoteDebuggerUrl is not supported.");
+  Uri get remoteDebuggerUrl => null;
 
   CancelableOperation displayPause() =>
       throw new UnsupportedError(

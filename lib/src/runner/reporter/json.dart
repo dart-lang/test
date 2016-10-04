@@ -164,7 +164,17 @@ class JsonReporter implements Reporter {
     // different metadata.
     if (suite is LoadSuite) {
       suite.suite.then((runnerSuite) {
-        if (runnerSuite != null) _suiteIDs[runnerSuite] = id;
+        _suiteIDs[runnerSuite] = id;
+        if (!_config.pauseAfterLoad) return;
+
+        // TODO(nweiz): test this when we have a library for communicating with
+        // the Chrome remote debugger, or when we have VM debug support.
+        _emit("debug", {
+          "suiteID": id,
+          "observatory": runnerSuite.environment.observatoryUrl?.toString(),
+          "remoteDebugger":
+              runnerSuite.environment.remoteDebuggerUrl?.toString(),
+        });
       });
     }
 
