@@ -1,3 +1,7 @@
+## 0.12.15+9
+
+* Widen version constraint on `analyzer`.
+
 ## 0.12.15+8
 
 * Make test suites with thousands of tests load much faster on the VM (and
