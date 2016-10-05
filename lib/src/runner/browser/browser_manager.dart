@@ -133,7 +133,7 @@ class BrowserManager {
       case TestPlatform.dartium: return new Dartium(url, debug: debug);
       case TestPlatform.contentShell:
         return new ContentShell(url, debug: debug);
-      case TestPlatform.chrome: return new Chrome(url);
+      case TestPlatform.chrome: return new Chrome(url, debug: debug);
       case TestPlatform.phantomJS: return new PhantomJS(url, debug: debug);
       case TestPlatform.firefox: return new Firefox(url);
       case TestPlatform.safari: return new Safari(url);
