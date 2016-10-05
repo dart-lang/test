@@ -5,10 +5,20 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
-import 'dart:js' as js;
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:js/js.dart';
+
+/// A class defined in content shell, used to control its behavior.
+@JS()
+class _TestRunner {
+  external void waitUntilDone();
+}
+
+/// Returns the current content shell runner, or `null` if none exists.
+@JS()
+external _TestRunner get testRunner;
 
 /// The iframes created for each loaded test suite, indexed by the suite id.
 final _iframes = new Map<int, IFrameElement>();
@@ -67,8 +77,7 @@ final _iframes = new Map<int, IFrameElement>();
 void main() {
   // This tells content_shell not to close immediately after the page has
   // rendered.
-  var testRunner = js.context['testRunner'];
-  if (testRunner != null) testRunner.callMethod('waitUntilDone', []);
+  testRunner?.waitUntilDone();
 
   runZoned(() {
     var serverChannel = _connectToServer();
