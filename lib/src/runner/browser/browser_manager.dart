@@ -178,15 +178,8 @@ class BrowserManager {
 
   /// Loads [_BrowserEnvironment].
   Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
-    var observatoryUrl;
-    if (_platform.isDartVM) observatoryUrl = await _browser.observatoryUrl;
-
-    var remoteDebuggerUrl;
-    if (_platform.isHeadless) {
-      remoteDebuggerUrl = await _browser.remoteDebuggerUrl;
-    }
-
-    return new _BrowserEnvironment(this, observatoryUrl, remoteDebuggerUrl);
+    return new _BrowserEnvironment(this, await _browser.observatoryUrl,
+        await _browser.remoteDebuggerUrl);
   }
 
   /// Tells the browser the load a test suite from the URL [url].

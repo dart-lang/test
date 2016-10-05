@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import '../../util/io.dart';
@@ -56,7 +55,7 @@ class ContentShell extends Browser {
         // Before we can consider content_shell started successfully, we have to
         // make sure it's not expired and that the remote debugging port worked.
         // Any errors from this will always come before the "Running without
-        // renderer sanxbox" message.
+        // renderer sandbox" message.
         while (await stderr.moveNext() &&
             !stderr.current.endsWith("Running without renderer sandbox")) {
           if (stderr.current == "[dartToStderr]: Dartium build has expired") {
@@ -81,7 +80,7 @@ class ContentShell extends Browser {
 
         if (port != null) {
           remoteDebuggerCompleter.complete(
-              _getRemoteDebuggerUrl(Uri.parse("http://localhost:$port")));
+              getRemoteDebuggerUrl(Uri.parse("http://localhost:$port")));
         } else {
           remoteDebuggerCompleter.complete(null);
         }
@@ -93,25 +92,6 @@ class ContentShell extends Browser {
       if (!debug) return tryPort();
       return getUnusedPort/*<Future<Process>>*/(tryPort);
     }, observatoryCompleter.future, remoteDebuggerCompleter.future);
-  }
-
-  /// Returns the full URL of the remote debugger for the host page.
-  ///
-  /// This takes the base remote debugger URL (which points to a browser-wide
-  /// page) and uses its JSON API to find the resolved URL for debugging the
-  /// host page.
-  static Future<Uri> _getRemoteDebuggerUrl(Uri base) async {
-    try {
-      var client = new HttpClient();
-      var request = await client.getUrl(base.resolve("/json/list"));
-      var response = await request.close();
-      var json = await JSON.fuse(UTF8).decoder.bind(response).single as List;
-      return base.resolve(json.first["devtoolsFrontendUrl"]);
-    } catch (_) {
-      // If we fail to talk to the remote debugger protocol, give up and return
-      // the raw URL rather than crashing.
-      return base;
-    }
   }
 
   ContentShell._(Future<Process> startBrowser(), this.observatoryUrl,
