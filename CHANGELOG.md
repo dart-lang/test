@@ -1,3 +1,7 @@
+## 0.12.16
+
+* Allow tools to interact with browser debuggers using the JSON reporter.
+
 ## 0.12.15+12
 
 * Fix a race condition that could cause the runner to stall for up to three
