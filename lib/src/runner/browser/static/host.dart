@@ -31,7 +31,11 @@ class _JSApi {
   /// the "play" button.
   external Function get resume;
 
-  external factory _JSApi({void resume()});
+  /// Causes the test runner to restart the current test once it finishes
+  /// running.
+  external Function get restartCurrent;
+
+  external factory _JSApi({void resume(), void restartCurrent()});
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
@@ -135,6 +139,8 @@ void main() {
     _jsApi = new _JSApi(resume: allowInterop(() {
       if (!document.body.classes.remove('paused')) return;
       serverChannel.sink.add({"command": "resume"});
+    }), restartCurrent: allowInterop(() {
+      serverChannel.sink.add({"command": "restart"});
     }));
   }, onError: (error, stackTrace) {
     print("$error\n${new Trace.from(stackTrace).terse}");

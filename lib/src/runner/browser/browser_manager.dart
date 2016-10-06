@@ -68,6 +68,9 @@ class BrowserManager {
   /// screen.
   CancelableCompleter _pauseCompleter;
 
+  /// The controller for [_BrowserEnvironment.onRestart].
+  final _onRestartController = new StreamController();
+
   /// The environment to attach to each suite.
   Future<_BrowserEnvironment> _environment;
 
@@ -179,7 +182,7 @@ class BrowserManager {
   /// Loads [_BrowserEnvironment].
   Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
     return new _BrowserEnvironment(this, await _browser.observatoryUrl,
-        await _browser.remoteDebuggerUrl);
+        await _browser.remoteDebuggerUrl, _onRestartController.stream);
   }
 
   /// Tells the browser the load a test suite from the URL [url].
@@ -259,11 +262,22 @@ class BrowserManager {
 
   /// The callback for handling messages received from the host page.
   void _onMessage(Map message) {
-    if (message["command"] == "ping") return;
+    switch (message["command"]) {
+      case "ping": break;
 
-    assert(message["command"] == "resume");
-    if (_pauseCompleter == null) return;
-    _pauseCompleter.complete();
+      case "restart":
+        _onRestartController.add(null);
+        break;
+
+      case "resume":
+        if (_pauseCompleter != null) _pauseCompleter.complete();
+        break;
+
+      default:
+        // Unreachable.
+        assert(false);
+        break;
+    }
   }
 
   /// Closes the manager and releases any resources it owns, including closing
@@ -291,8 +305,10 @@ class _BrowserEnvironment implements Environment {
 
   final Uri remoteDebuggerUrl;
 
+  final Stream onRestart;
+
   _BrowserEnvironment(this._manager, this.observatoryUrl,
-      this.remoteDebuggerUrl);
+      this.remoteDebuggerUrl, this.onRestart);
 
   CancelableOperation displayPause() => _manager._displayPause();
 }

@@ -73,6 +73,9 @@ class _Debugger {
   /// The subscription to [_suite.onDebugging].
   StreamSubscription<bool> _onDebuggingSubscription;
 
+  /// The subscription to [_suite.environment.onRestart].
+  StreamSubscription _onRestartSubscription;
+
   /// Whether [close] has been called.
   bool _closed = false;
 
@@ -90,6 +93,10 @@ class _Debugger {
       } else {
         _onNotDebugging();
       }
+    });
+
+    _onRestartSubscription = _suite.environment.onRestart.listen((_) {
+      _restartTest();
     });
   }
 
@@ -189,6 +196,7 @@ class _Debugger {
 
   /// Restarts the current test.
   void _restartTest() {
+    if (_engine.active.isEmpty) return;
     var liveTest = _engine.active.single;
     _engine.restartTest(liveTest);
     if (!_json) {
@@ -201,6 +209,7 @@ class _Debugger {
   void close() {
     _closed = true;
     _onDebuggingSubscription.cancel();
+    _onRestartSubscription.cancel();
     _console.stop();
   }
 }
