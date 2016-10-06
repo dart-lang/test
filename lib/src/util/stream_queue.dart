@@ -7,7 +7,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import "package:async/async.dart" hide ForkableStream, StreamQueue;
+import "package:async/async.dart" hide StreamQueue;
 
 import "forkable_stream.dart";
 
