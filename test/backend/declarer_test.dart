@@ -354,6 +354,12 @@ void main() {
           equals(new Duration(seconds: 15)));
     });
 
+    test("disallows asynchronous groups", () async {
+      declare(() {
+        expect(() => group("group", () async {}), throwsArgumentError);
+      });
+    });
+
     group(".setUp()", () {
       test("is scoped to the group", () async {
         var setUpRun = false;

@@ -129,7 +129,13 @@ class Declarer {
 
     var declarer = new Declarer._(
         this, _prefix(name), metadata, _collectTraces, trace);
-    declarer.declare(body);
+    declarer.declare(() {
+      // Cast to dynamic to avoid the analyzer complaining about us using the
+      // result of a void method.
+      var result = (body as dynamic)();
+      if (result is! Future) return;
+      throw new ArgumentError("Groups may not be async.");
+    });
     _entries.add(declarer.build());
   }
 
