@@ -48,3 +48,10 @@ All files in the project must start with the following header.
 Contributions made by corporations are covered by a different agreement than the
 one above, the
 [Software Grant and Corporate Contributor License Agreement](https://developers.google.com/open-source/cla/corporate).
+
+### Package architecture
+
+For details on the architecture of this package, see
+[this document][architecture].
+
+[architecture]: https://github.com/dart-lang/test/tree/master/doc/architecture.md
