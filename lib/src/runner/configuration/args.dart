@@ -120,10 +120,10 @@ final ArgParser _parser = (() {
       hide: true);
 
   // If we're running test/dir/my_test.dart, we'll look for
-  // test/dir/my_test.dart.browser_test.dart.js in the precompiled directory.
+  // test/dir/my_test.dart.html in the precompiled directory.
   parser.addOption("precompiled",
-      help: 'The path to a mirror of the package directory containing '
-          'precompiled JS.',
+      help: 'The path to a mirror of the package directory containing HTML '
+          'that points to precompiled JS.',
       hide: true);
 
   return parser;

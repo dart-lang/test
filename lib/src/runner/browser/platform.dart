@@ -127,12 +127,15 @@ class BrowserPlatform extends PlatformPlugin {
       cascade = cascade
           .add(packagesDirHandler())
           .add(_jsHandler.handler)
-          .add(createStaticHandler(_root))
-          .add(_wrapperHandler);
+          .add(createStaticHandler(_root));
 
+      // Add this before the wrapper handler so that its HTML takes precedence
+      // over the test runner's.
       if (_config.precompiledPath != null) {
         cascade = cascade.add(createStaticHandler(_config.precompiledPath));
       }
+
+      cascade = cascade.add(_wrapperHandler);
     }
 
     var pipeline = new shelf.Pipeline()
@@ -248,14 +251,14 @@ class BrowserPlatform extends PlatformPlugin {
     return suite;
   }
 
-  /// Returns whether the test at [path] has precompiled JS available underneath
-  /// `_config.precompiledPath`.
+  /// Returns whether the test at [path] has precompiled HTML available
+  /// underneath `_config.precompiledPath`.
   bool _precompiled(String path) {
     if (_config.precompiledPath == null) return false;
-    var jsPath =
-        p.join(_config.precompiledPath, p.relative(path, from: _root)) +
-            ".browser_test.dart.js";
-    return new File(jsPath).existsSync();
+    var htmlPath = p.join(
+        _config.precompiledPath,
+        p.relative(p.withoutExtension(path) + ".html", from: _root));
+    return new File(htmlPath).existsSync();
   }
 
   StreamChannel loadChannel(String path, TestPlatform platform) =>

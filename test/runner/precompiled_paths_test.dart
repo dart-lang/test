@@ -37,7 +37,17 @@ void main() {
       }
     """).create();
 
-    d.dir("precompiled", []).create();
+    d.dir("precompiled", [
+      d.file("test.html", """
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>test Test</title>
+          <script src="test.dart.browser_test.dart.js"></script>
+        </head>
+        </html>
+      """)
+    ]).create();
 
     var dart2js = new ScheduledProcess.start(p.join(sdkDir, 'bin', 'dart2js'), [
       PackageResolver.current.processArgument,
