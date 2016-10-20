@@ -1,3 +1,7 @@
+## 0.12.15+11
+
+* Make test iframes visible when debugging.
+
 ## 0.12.15+10
 
 * Throw a better error if a group body is asynchronous.

@@ -599,6 +599,12 @@ breakpoint, the runner will open its own debugging console in the terminal that
 controls how tests are run. You can type "restart" there to re-run your test as
 many times as you need to figure out what's going on.
 
+Normally, browser tests are run in hidden iframes. However, when debugging, the
+iframe for the current test suite is expanded to fill the browser window so you
+can see and interact with any HTML it renders. Note that the Dart animation may
+still be visible behind the iframe; to hide it, just add a `background-color` to
+the page's HTML.
+
 ## Testing With `barback`
 
 Packages using the `barback` transformer system may need to test code that's
