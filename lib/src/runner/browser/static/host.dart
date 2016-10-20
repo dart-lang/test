@@ -23,6 +23,9 @@ external _TestRunner get testRunner;
 /// The iframes created for each loaded test suite, indexed by the suite id.
 final _iframes = new Map<int, IFrameElement>();
 
+/// The URL for the current page.
+final _currentUrl = Uri.parse(window.location.href);
+
 /// Code that runs in the browser and loads test suites at the server's behest.
 ///
 /// One instance of this runs for each browser. When the server tells it to load
@@ -79,6 +82,10 @@ void main() {
   // rendered.
   testRunner?.waitUntilDone();
 
+  if (_currentUrl.queryParameters['debug'] == 'true') {
+    document.body.classes.add('debug');
+  }
+
   runZoned(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
@@ -116,8 +123,7 @@ void main() {
 MultiChannel _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
-  var currentUrl = Uri.parse(window.location.href);
-  var webSocket = new WebSocket(currentUrl.queryParameters['managerUrl']);
+  var webSocket = new WebSocket(_currentUrl.queryParameters['managerUrl']);
 
   var controller = new StreamChannelController(sync: true);
   webSocket.onMessage.listen((message) {

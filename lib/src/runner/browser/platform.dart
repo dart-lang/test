@@ -374,7 +374,10 @@ class BrowserPlatform extends PlatformPlugin {
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
     var hostUrl = (_config.pubServeUrl == null ? url : _config.pubServeUrl)
         .resolve('packages/test/src/runner/browser/static/index.html')
-        .replace(queryParameters: {'managerUrl': webSocketUrl.toString()});
+        .replace(queryParameters: {
+          'managerUrl': webSocketUrl.toString(),
+          'debug': _config.pauseAfterLoad.toString()
+        });
 
     var future = BrowserManager.start(platform, hostUrl, completer.future,
         debug: _config.pauseAfterLoad);
