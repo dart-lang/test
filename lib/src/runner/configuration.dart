@@ -79,7 +79,8 @@ class Configuration {
   /// Additional arguments to pass to dart2js.
   final List<String> dart2jsArgs;
 
-  /// The path to a mirror of this package containing precompiled JS.
+  /// The path to a mirror of this package containing HTML that points to
+  /// precompiled JS.
   ///
   /// This is used by the internal Google test runner so that test compilation
   /// can more effectively make use of Google's build tools.
