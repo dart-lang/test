@@ -28,13 +28,15 @@ thought of as frontend functions as well.
 [frontend]: https://github.com/dart-lang/test/tree/master/lib/src/frontend
 
 The frontend communicates with the backend using zone-scoped getters.
-[`Invoker.current`][Invoker] provides matchers access to the current test case,
-for example to control when it completes. Structural functions use
-[`Declarer.current`][Declarer] to gradually build up an in-memory representation
-of a test suite. The runner is in charge of setting up these variables, but the
-frontend never communicates with the runner directly.
+[`Invoker.current`][Invoker] provides access to the current test case to
+built-in matchers like [`completion()`][completion], for example to control when
+it completes. Structural functions use [`Declarer.current`][Declarer] to
+gradually build up an in-memory representation of a test suite. The runner is in
+charge of setting up these variables, but the frontend never communicates with
+the runner directly.
 
 [Invoker]: https://github.com/dart-lang/test/blob/master/lib/src/backend/invoker.dart
+[completion]: https://www.dartdocs.org/documentation/test/latest/test/completion.html
 [Declarer]: https://github.com/dart-lang/test/blob/master/lib/src/backend/declarer.dart
 
 ### Backend
@@ -81,7 +83,7 @@ When the user first invokes `pub run test`, the command-line arguments and
 various components necessary for a test run, and connects them to one another.
 It's also in charge of handling certain `Configuration` flags.
 
-[configuration file]: https://github.com/dart-lang/test/blob/master/doc/configuration.md
+[configuration files]: https://github.com/dart-lang/test/blob/master/doc/configuration.md
 [Configuration]: https://github.com/dart-lang/test/tree/master/lib/src/runner/configuration.dart
 [Runner]: https://github.com/dart-lang/test/tree/master/lib/src/runner.dart
 
@@ -207,6 +209,9 @@ controlled by its own [`BrowserManager`][BrowserManager], which uses
 `WebSocket`s to communicate with Dart code running in the main frame—also known
 as [the host][host].
 
+[BrowserManager]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/browser_manager.dart
+[host]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/static/host.dart
+
 Each browser is spawned with a tab pointing to
 `packages/test/src/runner/browser/static/index.html`, the host page. The host's
 code then opens a `WebSocket` connection to a dynamically-generated URL. This
@@ -222,12 +227,10 @@ through the `WebSocket` connection, again using [`MultiChannel`][MultiChannel],
 so that the `BrowserManager` has a direct line to the iframe where the tests are
 defined.
 
+[Window.postMessage]: https://api.dartlang.org/stable/latest/dart-html/Window/postMessage.html
+
 From this point forward the process is similar to `VMPlatform`. The iframe
 serializes its test suite using [`serializeSuite()`][remote platform helpers],
 and the `BrowserManager` deserializes it using
-[`deserializeSuite()`][platform helpers]. It's then passed out to the `Loader`
+[`deserializeSuite()`][platform helpers]. It's then forwarded to the `Loader`
 via the `BrowserPlatform`.
-
-[BrowserPlatform]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/browser_manager.dart
-[host]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/static/host.dart
-[Window.postMessage]: https://api.dartlang.org/stable/latest/dart-html/Window/postMessage.html
