@@ -163,7 +163,7 @@ class BrowserManager {
     _channel = new MultiChannel(webSocket.transform(jsonDocument)
         .changeStream((stream) {
       return stream.map((message) {
-        _timer.reset();
+        if (!_closed) _timer.reset();
         for (var controller in _controllers) {
           controller.setDebugging(false);
         }

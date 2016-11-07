@@ -1,3 +1,8 @@
+## 0.12.15+12
+
+* Fix a race condition that could cause the runner to stall for up to three
+  seconds after completing.
+
 ## 0.12.15+11
 
 * Make test iframes visible when debugging.
