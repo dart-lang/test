@@ -14,6 +14,7 @@ import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
 import 'package:test/src/runner/application_exception.dart';
+import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/plugin/environment.dart';
@@ -308,6 +309,13 @@ List<GroupEntry> declare(void body()) {
 Engine declareEngine(void body(), {bool runSkipped: false}) {
   var declarer = new Declarer()..declare(body);
   return new Engine.withSuites([
-    new RunnerSuite(const PluginEnvironment(), declarer.build())
-  ], runSkipped: runSkipped);
+    new RunnerSuite(
+        const PluginEnvironment(),
+        new SuiteConfiguration(runSkipped: runSkipped),
+        declarer.build())
+  ]);
 }
+
+/// Returns a [RunnerSuite] with a default environment and configuration.
+RunnerSuite runnerSuite(Group root) =>
+    new RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty, root);

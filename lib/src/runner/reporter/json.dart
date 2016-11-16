@@ -15,16 +15,15 @@ import '../../backend/test_platform.dart';
 import '../../frontend/expect.dart';
 import '../../utils.dart';
 import '../configuration.dart';
+import '../configuration/suite.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import '../runner_suite.dart';
 import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
-  /// The test runner configuration.
-  final _config = Configuration.current;
-
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -121,15 +120,16 @@ class JsonReporter implements Reporter {
         ? []
         : _idsForGroups(liveTest.groups, liveTest.suite);
 
+    var suiteConfig = _configFor(liveTest.suite);
     var id = _nextID++;
     _liveTestIDs[liveTest] = id;
     _emit("testStart", {
-      "test": _addFrameInfo({
+      "test": _addFrameInfo(suiteConfig, {
         "id": id,
         "name": liveTest.test.name, 
         "suiteID": suiteID,
         "groupIDs": groupIDs,
-        "metadata": _serializeMetadata(liveTest.test.metadata)
+        "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
       }, liveTest.test, liveTest.suite.platform)
     });
 
@@ -194,13 +194,14 @@ class JsonReporter implements Reporter {
       var id = _nextID++;
       _groupIDs[group] = id;
 
+      var suiteConfig = _configFor(suite);
       _emit("group", {
-        "group": _addFrameInfo({
+        "group": _addFrameInfo(suiteConfig, {
           "id": id,
           "suiteID": _idForSuite(suite),
           "parentID": parentID,
           "name": group.name,
-          "metadata": _serializeMetadata(group.metadata),
+          "metadata": _serializeMetadata(suiteConfig, group.metadata),
           "testCount": group.testCount
         }, group, suite.platform)
       });
@@ -210,9 +211,10 @@ class JsonReporter implements Reporter {
   }
 
   /// Serializes [metadata] into a JSON-protocol-compatible map.
-  Map _serializeMetadata(Metadata metadata) => _config.runSkipped
-      ? {"skip": false, "skipReason": null}
-      : {"skip": metadata.skip, "skipReason": metadata.skipReason};
+  Map _serializeMetadata(SuiteConfiguration suiteConfig, Metadata metadata) =>
+      suiteConfig.runSkipped
+          ? {"skip": false, "skipReason": null}
+          : {"skip": metadata.skip, "skipReason": metadata.skipReason};
 
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest liveTest) {
@@ -232,7 +234,8 @@ class JsonReporter implements Reporter {
     _emit("error", {
       "testID": _liveTestIDs[liveTest],
       "error": error.toString(),
-      "stackTrace": terseChain(stackTrace, verbose: _config.verboseTrace)
+      "stackTrace":
+          terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace)
           .toString(),
       "isFailure": error is TestFailure
     });
@@ -249,6 +252,13 @@ class JsonReporter implements Reporter {
     _emit("done", {"success": success});
   }
 
+  /// Returns the configuration for [suite].
+  ///
+  /// If [suite] is a [RunnerSuite], this returns [RunnerSuite.config].
+  /// Otherwise, it returns [SuiteConfiguration.empty].
+  SuiteConfiguration _configFor(Suite suite) =>
+      suite is RunnerSuite ? suite.config : SuiteConfiguration.empty;
+
   /// Emits an event with the given type and attributes.
   void _emit(String type, Map attributes) {
     attributes["type"] = type;
@@ -260,10 +270,10 @@ class JsonReporter implements Reporter {
   /// frame of [entry.trace].
   ///
   /// Returns [map].
-  Map<String, dynamic> _addFrameInfo(Map<String, dynamic> map,
-      GroupEntry entry, TestPlatform platform) {
+  Map<String, dynamic> _addFrameInfo(SuiteConfiguration suiteConfig,
+      Map<String, dynamic> map, GroupEntry entry, TestPlatform platform) {
     var frame = entry.trace?.frames?.first;
-    if (_config.jsTrace && platform.isJS) frame = null;
+    if (suiteConfig.jsTrace && platform.isJS) frame = null;
 
     map["line"] = frame?.line;
     map["column"] = frame?.column;

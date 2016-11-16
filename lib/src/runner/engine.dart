@@ -51,9 +51,6 @@ import 'runner_suite.dart';
 /// Load tests will always be emitted through [onTestStarted] so users can watch
 /// their event streams once they start running.
 class Engine {
-  /// Whether to run skipped tests.
-  final bool _runSkipped;
-
   /// Whether [run] has been called yet.
   var _runCalled = false;
 
@@ -197,12 +194,10 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are run at once, and defaults to 1.
   /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
-  /// four times [concurrency]. If [runSkipped] is `true`, skipped tests will be
-  /// run as though they weren't skipped.
-  Engine({int concurrency, int maxSuites, bool runSkipped: false})
+  /// four times [concurrency].
+  Engine({int concurrency, int maxSuites})
       : _runPool = new Pool(concurrency ?? 1),
-        _loadPool = new Pool(maxSuites ?? (concurrency ?? 1) * 2),
-        _runSkipped = runSkipped {
+        _loadPool = new Pool(maxSuites ?? (concurrency ?? 1) * 2) {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
@@ -219,9 +214,8 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
-  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency,
-      bool runSkipped: false}) {
-    var engine = new Engine(concurrency: concurrency, runSkipped: runSkipped);
+  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency}) {
+    var engine = new Engine(concurrency: concurrency);
     for (var suite in suites) engine.suiteSink.add(suite);
     engine.suiteSink.close();
     return engine;
@@ -283,7 +277,8 @@ class Engine {
       List<Group> parents) async {
     parents.add(group);
     try {
-      var skipGroup = !_runSkipped && group.metadata.skip;
+      var suiteConfig = suiteController.liveSuite.suite.config;
+      var skipGroup = !suiteConfig.runSkipped && group.metadata.skip;
       var setUpAllSucceeded = true;
       if (!skipGroup && group.setUpAll != null) {
         var liveTest = group.setUpAll.load(suiteController.liveSuite.suite,
@@ -298,7 +293,7 @@ class Engine {
 
           if (entry is Group) {
             await _runGroup(suiteController, entry, parents);
-          } else if (!_runSkipped && entry.metadata.skip) {
+          } else if (!suiteConfig.runSkipped && entry.metadata.skip) {
             await _runSkippedTest(suiteController, entry, parents);
           } else {
             var test = entry as Test;

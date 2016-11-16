@@ -8,6 +8,7 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
+import '../configuration/suite.dart';
 import '../environment.dart';
 import '../runner_suite.dart';
 import 'environment.dart';
@@ -45,7 +46,7 @@ abstract class PlatformPlugin {
   StreamChannel loadChannel(String path, TestPlatform platform);
 
   /// Loads the runner suite for the test file at [path] using [platform], with
-  /// [metadata] parsed from the test file's top-level annotations.
+  /// [suiteConfig] encoding the suite-specific configuration.
   ///
   /// By default, this just calls [loadChannel] and passes its result to
   /// [deserializeSuite]. However, it can be overridden to provide more
@@ -56,12 +57,12 @@ abstract class PlatformPlugin {
   /// [deserializeSuite] in `platform_helpers.dart` to obtain a
   /// [RunnerSuiteController].
   Future<RunnerSuite> load(String path, TestPlatform platform,
-      Metadata metadata) async {
+      SuiteConfiguration suiteConfig) async {
     // loadChannel may throw an exception. That's fine; it will cause the
     // LoadSuite to emit an error, which will be presented to the user.
     var channel = loadChannel(path, platform);
     var controller = await deserializeSuite(
-        path, platform, metadata, new PluginEnvironment(), channel);
+        path, platform, suiteConfig, new PluginEnvironment(), channel);
     return controller.suite;
   }
 

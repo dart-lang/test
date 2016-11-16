@@ -53,9 +53,6 @@ class ExpandedReporter implements Reporter {
   /// this is Windows or not outputting to a terminal.
   final String _noColor;
 
-  /// Whether to use verbose stack traces.
-  final bool _verboseTrace;
-
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -101,25 +98,21 @@ class ExpandedReporter implements Reporter {
   /// terminal.
   ///
   /// If [color] is `true`, this will use terminal colors; if it's `false`, it
-  /// won't. If [verboseTrace] is `true`, this will print core library frames.
-  /// If [printPath] is `true`, this will print the path name as part of the
-  /// test description. Likewise, if [printPlatform] is `true`, this will print
-  /// the platform as part of the test description.
+  /// won't. If [printPath] is `true`, this will print the path name as part of
+  /// the test description. Likewise, if [printPlatform] is `true`, this will
+  /// print the platform as part of the test description.
   static ExpandedReporter watch(Engine engine, {bool color: true,
-      bool verboseTrace: false, bool printPath: true,
-      bool printPlatform: true}) {
+      bool printPath: true, bool printPlatform: true}) {
     return new ExpandedReporter._(
         engine,
         color: color,
-        verboseTrace: verboseTrace,
         printPath: printPath,
         printPlatform: printPlatform);
   }
 
-  ExpandedReporter._(this._engine, {bool color: true, bool verboseTrace: false,
-          bool printPath: true, bool printPlatform: true})
-      : _verboseTrace = verboseTrace,
-        _printPath = printPath,
+  ExpandedReporter._(this._engine, {bool color: true, bool printPath: true,
+      bool printPlatform: true})
+      : _printPath = printPath,
         _printPlatform = printPlatform,
         _color = color,
         _green = color ? '\u001b[32m' : '',
@@ -214,7 +207,8 @@ class ExpandedReporter implements Reporter {
 
     if (error is! LoadException) {
       print(indent(error.toString()));
-      var chain = terseChain(stackTrace, verbose: _verboseTrace);
+      var chain = terseChain(stackTrace,
+          verbose: liveTest.test.metadata.verboseTrace);
       print(indent(chain.toString()));
       return;
     }

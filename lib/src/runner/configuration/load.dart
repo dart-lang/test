@@ -18,6 +18,7 @@ import '../../frontend/timeout.dart';
 import '../../utils.dart';
 import '../../util/io.dart';
 import '../configuration.dart';
+import '../configuration/suite.dart';
 import 'values.dart';
 
 /// Loads configuration information from a YAML file at [path].
@@ -99,11 +100,12 @@ class _ConfigurationLoader {
         value: (valueNode) => _nestedConfig(valueNode, "presets value"));
 
     var config = new Configuration(
-        verboseTrace: verboseTrace,
-        jsTrace: jsTrace,
-        timeout: timeout,
-        onPlatform: onPlatform,
-        presets: presets);
+            verboseTrace: verboseTrace,
+            jsTrace: jsTrace,
+            timeout: timeout,
+            presets: presets)
+        .merge(_extractPresets/*<PlatformSelector>*/(onPlatform,
+            (map) => new Configuration(onPlatform: map)));
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -144,11 +146,12 @@ class _ConfigurationLoader {
             _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
     return new Configuration(
-        skip: skip,
-        skipReason: skipReason,
-        testOn: testOn,
-        addTags: addTags,
-        tags: tags);
+            skip: skip,
+            skipReason: skipReason,
+            testOn: testOn,
+            addTags: addTags)
+        .merge(_extractPresets/*<BooleanSelector>*/(tags,
+            (map) => new Configuration(tags: map)));
   }
 
   /// Loads runner configuration that's allowed in the global configuration
@@ -385,6 +388,40 @@ class _ConfigurationLoader {
         global: _global,
         runnerConfig: runnerConfig ?? _runnerConfig);
     return loader.load();
+  }
+
+  /// Takes a map that contains [Configuration]s and extracts any
+  /// preset-specific configuration into a parent [Configuration].
+  ///
+  /// This is needed because parameters to [new Configuration] such as
+  /// `onPlatform` take maps to [SuiteConfiguration]s. [SuiteConfiguration]
+  /// doesn't support preset-specific configuration, so this extracts the preset
+  /// logic into a parent [Configuration], leaving only maps to
+  /// [SuiteConfiguration]s. The [create] function is used to construct
+  /// [Configuration]s from the resolved maps.
+  Configuration _extractPresets/*<T>*/(
+      Map/*<T, Configuration>*/ map,
+      Configuration create(Map/*<T, SuiteConfiguration>*/ map)) {
+    if (map.isEmpty) return Configuration.empty;
+
+    var base = /*<T, SuiteConfiguration>*/{};
+    var presets = /*<String, Map<T, SuiteConfiguration>>*/{};
+    map.forEach((key, config) {
+      base[key] = config.suiteDefaults;
+      config.presets.forEach((preset, presetConfig) {
+        presets.putIfAbsent(preset, () => {})[key] = presetConfig.suiteDefaults;
+      });
+    });
+
+    if (presets.isEmpty) {
+      return base.isEmpty ? Configuration.empty : create(base);
+    } else {
+      var newPresets =
+          mapMap/*<String, Map<T, SuiteConfiguration>, String, Configuration>*/(
+              presets,
+              value: (_, map) => create(map));
+      return create(base).change(presets: newPresets);
+    }
   }
 
   /// Throws an error if a field named [field] exists at this level.

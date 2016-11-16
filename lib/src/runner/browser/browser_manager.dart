@@ -10,10 +10,10 @@ import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../application_exception.dart';
+import '../configuration/suite.dart';
 import '../environment.dart';
 import '../plugin/platform_helpers.dart';
 import '../runner_suite.dart';
@@ -193,14 +193,14 @@ class BrowserManager {
   ///
   /// [url] should be an HTML page with a reference to the JS-compiled test
   /// suite. [path] is the path of the original test suite file, which is used
-  /// for reporting. [metadata] is the parsed metadata for the test suite.
+  /// for reporting. [suiteConfig] is the configuration for the test suite.
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> load(String path, Uri url, Metadata metadata,
+  Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
       {StackTraceMapper mapper}) async {
     url = url.replace(fragment: Uri.encodeFull(JSON.encode({
-      "metadata": metadata.serialize(),
+      "metadata": suiteConfig.metadata.serialize(),
       "browser": _platform.identifier
     })));
 
@@ -235,7 +235,7 @@ class BrowserManager {
 
       try {
         controller = await deserializeSuite(
-            path, _platform, metadata, await _environment, suiteChannel,
+            path, _platform, suiteConfig, await _environment, suiteChannel,
             mapTrace: mapper?.mapStackTrace);
         _controllers.add(controller);
         return controller.suite;
