@@ -457,10 +457,8 @@ class Configuration {
     if (chosenPresets.isEmpty || presets.isEmpty) return this;
 
     var newPresets = new Map<String, Configuration>.from(presets);
-    var merged = chosenPresets.fold(empty, (merged, preset) {
-      if (!newPresets.containsKey(preset)) return merged;
-      return merged.merge(newPresets.remove(preset));
-    });
+    var merged = chosenPresets.fold(empty, (merged, preset) =>
+        merged.merge(newPresets.remove(preset) ?? Configuration.empty));
 
     if (merged == empty) return this;
     var result = this.change(presets: newPresets).merge(merged);
