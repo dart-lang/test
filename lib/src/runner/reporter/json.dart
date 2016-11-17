@@ -24,6 +24,9 @@ import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
+  /// The global configuration that applies to this reporter.
+  final Configuration _config;
+
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -57,7 +60,7 @@ class JsonReporter implements Reporter {
   /// Watches the tests run by [engine] and prints their results as JSON.
   static JsonReporter watch(Engine engine) => new JsonReporter._(engine);
 
-  JsonReporter._(this._engine) {
+  JsonReporter._(this._engine) : _config = Configuration.current {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or

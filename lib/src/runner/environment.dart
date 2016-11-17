@@ -20,8 +20,8 @@ abstract class Environment {
   /// enabled.
   Uri get remoteDebuggerUrl;
 
-  /// Emits a `null` event whenever the user tells the environment to restart
-  /// the current test once it's finished.
+  /// A broadcast stream that emits a `null` event whenever the user tells the
+  /// environment to restart the current test once it's finished.
   ///
   /// Never emits an error, and never closes.
   Stream get onRestart;

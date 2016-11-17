@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../backend/metadata.dart';
 import '../../backend/test_platform.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';

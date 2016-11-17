@@ -384,7 +384,7 @@ class Runner {
     var results = await Future.wait([
       _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
       _engine.run()
-    ]);
+    ], eagerError: true);
     return results.last;
   }
 }

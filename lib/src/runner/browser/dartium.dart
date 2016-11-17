@@ -67,6 +67,7 @@ class Dartium extends Browser {
               return null;
             }
           }
+          stderr.cancel();
         } else {
           observatoryCompleter.complete(null);
         }

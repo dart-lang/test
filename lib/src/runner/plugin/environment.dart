@@ -11,7 +11,7 @@ import '../environment.dart';
 /// The default environment for platform plugins.
 class PluginEnvironment implements Environment {
   final supportsDebugging = false;
-  Stream get onRestart => new StreamController().stream;
+  Stream get onRestart => new StreamController.broadcast().stream;
 
   const PluginEnvironment();
 
