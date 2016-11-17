@@ -128,7 +128,22 @@
       "required": ["suite"],
       "properties": {
         "type": {"enum": ["suite"]},
-        "group": {"$ref": "#/definitions/Suite"}
+        "suite": {"$ref": "#/definitions/Suite"}
+      }
+    },
+
+    {
+      "title": "DebugEvent",
+      "required": ["suiteID"],
+      "properties": {
+        "type": {"enum": ["debug"]},
+        "suiteID": {"type": "integer", "minimum": 0},
+        "observatory": {
+          "oneOf": [{"type": "string", "format": "uri"}, {"type": "null"}]
+        },
+        "remoteDebugger": {
+          "oneOf": [{"type": "string", "format": "uri"}, {"type": "null"}]
+        }
       }
     },
 
@@ -194,7 +209,7 @@
           "not": {
             "enum": [
               "start", "testStart", "allSuites", "suite", "group", "print",
-              "error", "testDone", "done"
+              "error", "testDone", "done", "debug"
             ]
           }
         }

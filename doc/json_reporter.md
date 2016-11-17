@@ -132,6 +132,36 @@ A suite event is emitted before any `GroupEvent`s for groups in a given test
 suite. This is the only event that contains the full metadata about a suite;
 future events will refer to the suite by its opaque ID.
 
+### DebugEvent
+
+```
+class DebugEvent extends Event {
+  String type = "debug";
+
+  /// The suite for which debug information is reported.
+  int suiteID;
+
+  /// The HTTP URL for the Dart Observatory, or `null` if the Observatory isn't
+  /// available for this suite.
+  String observatory;
+
+  /// The HTTP URL for the remote debugger for this suite's host page, or `null`
+  /// if no remote debugger is available for this suite.
+  String remoteDebugger;
+}
+```
+
+A debug event is emitted after (although not necessarily directly after) a
+`SuiteEvent`, and includes information about how to debug that suite. It's only
+emitted if the `--pause-after-load` flag is passed to the test runner.
+
+Note that the `remoteDebugger` URL refers to a remote debugger whose protocol
+may differ based on the browser the suite is running on. You can tell which
+protocol is in use by the `Suite.platform` field for the suite with the given
+ID. Since the same browser instance is used for multiple suites, different
+suites may have the same `host` URL, although only one suite at a time will be
+active when `--pause-after-load` is passed.
+
 ### GroupEvent
 
 ```
@@ -410,3 +440,33 @@ class Metadata {
 ```
 
 The metadata class is deprecated and should not be used.
+
+## Remote Debugger APIs
+
+When running browser tests with `--pause-after-load`, the test package embeds a
+few APIs in the JavaScript context of the host page. These allow tools to
+control the debugging process in the same way a user might do from the command
+line. They can be accessed by connecting to the remote debugger using the
+[`DebugEvent.remoteDebugger`](#DebugEvent) URL.
+
+All APIs are defined as methods on the top-level `dartTest` object. The
+following methods are available:
+
+### `resume()`
+
+Calling `resume()` when the test runner is paused causes it to resume running
+tests. If the test runner is not paused, it won't do anything. When
+`--pause-after-load` is passed, the test runner will pause after loading each
+suite but before any tests are run.
+
+This gives external tools a chance to use the remote debugger protocol to set
+breakpoints before tests have begun executing. They can start the test runner
+with `--pause-after-load`, connect to the remote debugger using the
+[`DebugEvent.remoteDebugger`](#DebugEvent) URL, set breakpoints, then call
+`dartTest.resume()` in the host frame when they're finished.
+
+### `restartCurrent()`
+
+Calling `restartCurrent()` when the test runner is running a test causes it to
+re-run that test once it completes its current run. It's intended to be called
+when the browser is paused, as at a breakpoint.

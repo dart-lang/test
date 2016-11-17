@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:async/async.dart';
 
 /// The abstract class of environments in which test suites are
@@ -17,6 +19,12 @@ abstract class Environment {
   /// The URL of the remote debugger for this environment, or `null` if it isn't
   /// enabled.
   Uri get remoteDebuggerUrl;
+
+  /// Emits a `null` event whenever the user tells the environment to restart
+  /// the current test once it's finished.
+  ///
+  /// Never emits an error, and never closes.
+  Stream get onRestart;
 
   /// Displays information indicating that the test runner is paused.
   ///

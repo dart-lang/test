@@ -25,18 +25,15 @@ abstract class Browser {
 
   /// The Observatory URL for this browser.
   ///
-  /// This will throw an [UnsupportedError] for browsers that aren't running the
-  /// Dart VM, and return `null` if the Observatory URL can't be found.
-  Future<Uri> get observatoryUrl =>
-      throw new UnsupportedError("$name doesn't support Observatory.");
+  /// This will return `null` for browsers that aren't running the Dart VM, or
+  /// if the Observatory URL can't be found.
+  Future<Uri> get observatoryUrl => null;
 
   /// The remote debugger URL for this browser.
   ///
-  /// This will throw an [UnsupportedError] for browsers that don't support
-  /// remote debugging, and return `null` if the remote debugging URL can't be
-  /// found.
-  Future<Uri> get remoteDebuggerUrl =>
-      throw new UnsupportedError("$name doesn't support remote debugging.");
+  /// This will return `null` for browsers that don't support remote debugging,
+  /// or if the remote debugging URL can't be found.
+  Future<Uri> get remoteDebuggerUrl => null;
 
   /// The underlying process.
   ///

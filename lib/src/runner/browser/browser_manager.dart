@@ -68,6 +68,9 @@ class BrowserManager {
   /// screen.
   CancelableCompleter _pauseCompleter;
 
+  /// The controller for [_BrowserEnvironment.onRestart].
+  final _onRestartController = new StreamController();
+
   /// The environment to attach to each suite.
   Future<_BrowserEnvironment> _environment;
 
@@ -133,7 +136,7 @@ class BrowserManager {
       case TestPlatform.dartium: return new Dartium(url, debug: debug);
       case TestPlatform.contentShell:
         return new ContentShell(url, debug: debug);
-      case TestPlatform.chrome: return new Chrome(url);
+      case TestPlatform.chrome: return new Chrome(url, debug: debug);
       case TestPlatform.phantomJS: return new PhantomJS(url, debug: debug);
       case TestPlatform.firefox: return new Firefox(url);
       case TestPlatform.safari: return new Safari(url);
@@ -178,15 +181,8 @@ class BrowserManager {
 
   /// Loads [_BrowserEnvironment].
   Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
-    var observatoryUrl;
-    if (_platform.isDartVM) observatoryUrl = await _browser.observatoryUrl;
-
-    var remoteDebuggerUrl;
-    if (_platform.isHeadless) {
-      remoteDebuggerUrl = await _browser.remoteDebuggerUrl;
-    }
-
-    return new _BrowserEnvironment(this, observatoryUrl, remoteDebuggerUrl);
+    return new _BrowserEnvironment(this, await _browser.observatoryUrl,
+        await _browser.remoteDebuggerUrl, _onRestartController.stream);
   }
 
   /// Tells the browser the load a test suite from the URL [url].
@@ -266,11 +262,22 @@ class BrowserManager {
 
   /// The callback for handling messages received from the host page.
   void _onMessage(Map message) {
-    if (message["command"] == "ping") return;
+    switch (message["command"]) {
+      case "ping": break;
 
-    assert(message["command"] == "resume");
-    if (_pauseCompleter == null) return;
-    _pauseCompleter.complete();
+      case "restart":
+        _onRestartController.add(null);
+        break;
+
+      case "resume":
+        if (_pauseCompleter != null) _pauseCompleter.complete();
+        break;
+
+      default:
+        // Unreachable.
+        assert(false);
+        break;
+    }
   }
 
   /// Closes the manager and releases any resources it owns, including closing
@@ -298,8 +305,10 @@ class _BrowserEnvironment implements Environment {
 
   final Uri remoteDebuggerUrl;
 
+  final Stream onRestart;
+
   _BrowserEnvironment(this._manager, this.observatoryUrl,
-      this.remoteDebuggerUrl);
+      this.remoteDebuggerUrl, this.onRestart);
 
   CancelableOperation displayPause() => _manager._displayPause();
 }

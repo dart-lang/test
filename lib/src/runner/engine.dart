@@ -73,6 +73,18 @@ class Engine {
   /// previous suites to be unloaded in the order they completed.
   final Pool _loadPool;
 
+  /// A completer that will complete when [this] is unpaused.
+  ///
+  /// If [this] isn't paused, [_pauseCompleter] is `null`.
+  Completer _pauseCompleter;
+
+  /// A future that completes once [this] is unpaused.
+  ///
+  /// If [this] isn't paused, this completes immediately.
+  Future get _onUnpaused => _pauseCompleter == null
+      ? new Future.value()
+      : _pauseCompleter.future;
+
   /// Whether all tests passed or were skipped.
   ///
   /// This fires once all tests have completed and [suiteSink] has been closed.
@@ -86,6 +98,9 @@ class Engine {
 
   /// A group of futures for each test suite.
   final _group = new FutureGroup();
+
+  /// All of the engine's stream subscriptions.
+  final _subscriptions = new Set<StreamSubscription>();
 
   /// A sink used to pass [RunnerSuite]s in to the engine to run.
   ///
@@ -232,7 +247,8 @@ class Engine {
     }
     _runCalled = true;
 
-    _suiteController.stream.listen((suite) {
+    StreamSubscription subscription;
+    subscription = _suiteController.stream.listen((suite) {
       _addedSuites.add(suite);
       _onSuiteAddedController.add(suite);
 
@@ -241,6 +257,7 @@ class Engine {
 
         var controller;
         if (suite is LoadSuite) {
+          await _onUnpaused;
           controller = await _addLoadSuite(suite);
           if (controller == null) {
             loadResource.release();
@@ -260,9 +277,11 @@ class Engine {
         });
       }));
     }, onDone: () {
+      _subscriptions.remove(subscription);
       _onSuiteAddedController.close();
       _group.close();
     });
+    _subscriptions.add(subscription);
 
     return success;
   }
@@ -323,6 +342,7 @@ class Engine {
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
   Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
       {bool countSuccess: true}) async {
+    await _onUnpaused;
     _active.add(liveTest);
 
     // If there were no active non-load tests, the current active test would
@@ -330,7 +350,8 @@ class Engine {
     // non-load test to add.
     if (_active.first.suite is LoadSuite) _active.removeFirst();
 
-    liveTest.onStateChange.listen((state) {
+    StreamSubscription subscription;
+    subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _active.remove(liveTest);
 
@@ -338,7 +359,10 @@ class Engine {
       if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
         _active.add(_activeLoadTests.first);
       }
+    }, onDone: () {
+      _subscriptions.remove(subscription);
     });
+    _subscriptions.add(subscription);
 
     suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
 
@@ -361,7 +385,8 @@ class Engine {
   /// [suiteController] is the controller for the suite that contains [test].
   /// [parents] is a list of groups that contain [test].
   Future _runSkippedTest(LiveSuiteController suiteController, Test test,
-      List<Group> parents) {
+      List<Group> parents) async {
+    await _onUnpaused;
     var skipped = new LocalTest(test.name, test.metadata, () {},
         trace: test.trace);
 
@@ -380,7 +405,7 @@ class Engine {
       controller.completer.complete();
     }, () {}, groups: parents);
 
-    return _runLiveTest(suiteController, controller.liveTest);
+    return await _runLiveTest(suiteController, controller.liveTest);
   }
 
   /// Closes [liveTest] and tells the engine to re-run it once it's done
@@ -415,7 +440,8 @@ class Engine {
     // Only surface the load test if there are no other tests currently running.
     if (_active.isEmpty) _active.add(liveTest);
 
-    liveTest.onStateChange.listen((state) {
+    StreamSubscription subscription;
+    subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _activeLoadTests.remove(liveTest);
 
@@ -426,7 +452,10 @@ class Engine {
         _active.remove(liveTest);
         if (_activeLoadTests.isNotEmpty) _active.add(_activeLoadTests.last);
       }
+    }, onDone: () {
+      _subscriptions.remove(subscription);
     });
+    _subscriptions.add(subscription);
 
     controller.reportLiveTest(liveTest, countSuccess: false);
     controller.noMoreLiveTests();
@@ -461,6 +490,30 @@ class Engine {
     _passedGroup.add(liveSuite.passed);
     _skippedGroup.add(liveSuite.skipped);
     _failedGroup.add(liveSuite.failed);
+  }
+
+  /// Pauses the engine.
+  ///
+  /// This pauses all streams and keeps any new suites from being loaded or
+  /// tests from being run until [resume] is called.
+  ///
+  /// This does nothing if the engine is already paused. Pauses are *not*
+  /// cumulative.
+  void pause() {
+    if (_pauseCompleter != null) return;
+    _pauseCompleter = new Completer();
+    for (var subscription in _subscriptions) {
+      subscription.pause();
+    }
+  }
+
+  void resume() {
+    if (_pauseCompleter == null) return;
+    _pauseCompleter.complete();
+    _pauseCompleter = null;
+    for (var subscription in _subscriptions) {
+      subscription.resume();
+    }
   }
 
   /// Signals that the caller is done paying attention to test results and the

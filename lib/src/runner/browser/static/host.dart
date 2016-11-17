@@ -20,6 +20,28 @@ class _TestRunner {
 @JS()
 external _TestRunner get testRunner;
 
+/// A class that exposes the test API to JS.
+///
+/// These are exposed so that tools like IDEs can interact with them via remote
+/// debugging.
+@JS()
+@anonymous
+class _JSApi {
+  /// Causes the test runner to resume running, as though the user had clicked
+  /// the "play" button.
+  external Function get resume;
+
+  /// Causes the test runner to restart the current test once it finishes
+  /// running.
+  external Function get restartCurrent;
+
+  external factory _JSApi({void resume(), void restartCurrent()});
+}
+
+/// Sets the top-level `dartTest` object so that it's visible to JS.
+@JS("dartTest")
+external set _jsApi(_JSApi api);
+
 /// The iframes created for each loaded test suite, indexed by the suite id.
 final _iframes = new Map<int, IFrameElement>();
 
@@ -110,9 +132,16 @@ void main() {
 
     var play = document.querySelector("#play");
     play.onClick.listen((_) {
-      document.body.classes.remove('paused');
+      if (!document.body.classes.remove('paused')) return;
       serverChannel.sink.add({"command": "resume"});
     });
+
+    _jsApi = new _JSApi(resume: allowInterop(() {
+      if (!document.body.classes.remove('paused')) return;
+      serverChannel.sink.add({"command": "resume"});
+    }), restartCurrent: allowInterop(() {
+      serverChannel.sink.add({"command": "restart"});
+    }));
   }, onError: (error, stackTrace) {
     print("$error\n${new Trace.from(stackTrace).terse}");
   });

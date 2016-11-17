@@ -27,38 +27,70 @@ class Dartium extends Browser {
 
   final Future<Uri> observatoryUrl;
 
+  final Future<Uri> remoteDebuggerUrl;
+
   factory Dartium(url, {String executable, bool debug: false}) {
-    var completer = new Completer<Uri>.sync();
+    var observatoryCompleter = new Completer<Uri>.sync();
+    var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new Dartium._(() async {
       if (executable == null) executable = _defaultExecutable();
 
-      var dir = createTempDir();
-      var process = await Process.start(executable, [
-        "--user-data-dir=$dir",
-        url.toString(),
-        "--disable-extensions",
-        "--disable-popup-blocking",
-        "--bwsi",
-        "--no-first-run",
-        "--no-default-browser-check",
-        "--disable-default-apps",
-        "--disable-translate"
-      ], environment: {"DART_FLAGS": "--checked"});
+      var tryPort = ([int port]) async {
+        var dir = createTempDir();
+        var args = [
+          "--user-data-dir=$dir", url.toString(), "--disable-extensions",
+          "--disable-popup-blocking", "--bwsi", "--no-first-run",
+          "--no-default-browser-check", "--disable-default-apps",
+          "--disable-translate"
+        ];
+        if (port != null) args.add("--remote-debugging-port=$port");
 
-      if (debug) {
-        completer.complete(_getObservatoryUrl(process.stdout));
-      } else {
-        completer.complete(null);
-      }
+        var process = await Process.start(executable, args,
+            environment: {"DART_FLAGS": "--checked"});
 
-      process.exitCode
-          .then((_) => new Directory(dir).deleteSync(recursive: true));
+        if (debug) {
+          observatoryCompleter.complete(_getObservatoryUrl(process.stdout));
 
-      return process;
-    }, completer.future);
+          var stderr = new StreamIterator(lineSplitter.bind(process.stderr));
+
+          // Before we can consider Dartium started successfully, we have to
+          // make sure the remote debugging port worked. Any errors from this
+          // will always come before the "Running without renderer sandbox"
+          // message.
+          while (await stderr.moveNext() &&
+              !stderr.current.endsWith("Running without renderer sandbox")) {
+            if (stderr.current.contains("bind() returned an error")) {
+              // If we failed to bind to the port, return null to tell
+              // getUnusedPort to try another one.
+              stderr.cancel();
+              process.kill();
+              return null;
+            }
+          }
+        } else {
+          observatoryCompleter.complete(null);
+        }
+
+        if (port != null) {
+          remoteDebuggerCompleter.complete(
+              getRemoteDebuggerUrl(Uri.parse("http://localhost:$port")));
+        } else {
+          remoteDebuggerCompleter.complete(null);
+        }
+
+        process.exitCode
+            .then((_) => new Directory(dir).deleteSync(recursive: true));
+
+        return process;
+      };
+
+      if (!debug) return tryPort();
+      return getUnusedPort/*<Future<Process>>*/(tryPort);
+    }, observatoryCompleter.future, remoteDebuggerCompleter.future);
   }
 
-  Dartium._(Future<Process> startBrowser(), this.observatoryUrl)
+  Dartium._(Future<Process> startBrowser(), this.observatoryUrl,
+          this.remoteDebuggerUrl)
       : super(startBrowser);
 
   /// Starts a new instance of Dartium open to the given [url], which may be a

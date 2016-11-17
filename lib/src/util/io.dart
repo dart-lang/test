@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -143,4 +144,23 @@ Future<int> getUnsafeUnusedPort() async {
   var port = socket.port;
   await socket.close();
   return port;
+}
+
+/// Returns the full URL of the Chrome remote debugger for the main page.
+///
+/// This takes the [base] remote debugger URL (which points to a browser-wide
+/// page) and uses its JSON API to find the resolved URL for debugging the host
+/// page.
+Future<Uri> getRemoteDebuggerUrl(Uri base) async {
+  try {
+    var client = new HttpClient();
+    var request = await client.getUrl(base.resolve("/json/list"));
+    var response = await request.close();
+    var json = await JSON.fuse(UTF8).decoder.bind(response).single as List;
+    return base.resolve(json.first["devtoolsFrontendUrl"]);
+  } catch (_) {
+    // If we fail to talk to the remote debugger protocol, give up and return
+    // the raw URL rather than crashing.
+    return base;
+  }
 }
