@@ -45,6 +45,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
     'platform': platform.identifier,
     'metadata': suiteConfig.metadata.serialize(),
     'os': platform == TestPlatform.vm ? currentOS.identifier : null,
+    'path': path,
     'collectTraces': Configuration.current.reporter == 'json'
   });
 

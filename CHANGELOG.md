@@ -1,3 +1,8 @@
+## 0.12.18
+
+* Add the `spawnHybridUri()` and `spawnHybridCode()` functions, which allow
+  browser tests to run code on the VM.
+
 ## 0.12.17+3
 
 * Internal changes only.

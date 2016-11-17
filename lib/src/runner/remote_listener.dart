@@ -78,7 +78,8 @@ class RemoteListener {
           ? null
           : OperatingSystem.find(message['os']);
       var platform = TestPlatform.find(message['platform']);
-      var suite = new Suite(declarer.build(), platform: platform, os: os);
+      var suite = new Suite(declarer.build(),
+          platform: platform, os: os, path: message['path']);
       new RemoteListener._(suite, printZone)._listen(channel);
     }, onError: (error, stackTrace) {
       _sendError(channel, error, stackTrace);
@@ -194,6 +195,8 @@ class RemoteListener {
       });
     });
 
-    liveTest.run().then((_) => channel.sink.add({"type": "complete"}));
+    runZoned(() {
+      liveTest.run().then((_) => channel.sink.add({"type": "complete"}));
+    }, zoneValues: {#test.runner.test_channel: channel});
   }
 }
