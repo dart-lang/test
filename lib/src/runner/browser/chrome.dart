@@ -70,6 +70,7 @@ class Chrome extends Browser {
               return null;
             }
           }
+          stderr.cancel();
         }
 
         if (port != null) {

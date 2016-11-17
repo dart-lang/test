@@ -104,7 +104,7 @@ class BrowserPlatform extends PlatformPlugin {
   /// A cascade of handlers for suites' precompiled paths.
   ///
   /// This is `null` if there are no precompiled suites yet.
-  shelf.Cacade _precompiledCascade;
+  shelf.Cascade _precompiledCascade;
 
   /// The precompiled paths that have handlers in [_precompiledHandler].
   final _precompiledPaths = new Set<String>();

@@ -69,7 +69,7 @@ class BrowserManager {
   CancelableCompleter _pauseCompleter;
 
   /// The controller for [_BrowserEnvironment.onRestart].
-  final _onRestartController = new StreamController();
+  final _onRestartController = new StreamController.broadcast();
 
   /// The environment to attach to each suite.
   Future<_BrowserEnvironment> _environment;

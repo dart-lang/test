@@ -43,6 +43,8 @@ CancelableOperation debug(Engine engine, Reporter reporter,
     await debugger.run();
   }(), onCancel: () {
     canceled = true;
+    // Make sure the load test finishes so the engine can close.
+    engine.resume();
     if (debugger != null) debugger.close();
   });
 }
