@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration.dart';
+import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
@@ -49,7 +50,8 @@ void main() {
       /// TODO(nweiz): Use scheduled_test for this once it's compatible with
       /// this version of test.
       new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
-      var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+      var suites = await _loader
+          .loadFile(p.join(_sandbox, 'a_test.dart'), SuiteConfiguration.empty)
           .toList();
       expect(suites, hasLength(1));
       var loadSuite = suites.first;
@@ -90,19 +92,22 @@ void main() {
   group(".loadDir()", () {
     test("ignores non-Dart files", () {
       new File(p.join(_sandbox, 'a_test.txt')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox).toList(), completion(isEmpty));
+      expect(_loader.loadDir(_sandbox, SuiteConfiguration.empty).toList(),
+          completion(isEmpty));
     });
 
     test("ignores files in packages/ directories", () {
       var dir = p.join(_sandbox, 'packages');
       new Directory(dir).createSync();
       new File(p.join(dir, 'a_test.dart')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox).toList(), completion(isEmpty));
+      expect(_loader.loadDir(_sandbox, SuiteConfiguration.empty).toList(),
+          completion(isEmpty));
     });
 
     test("ignores files that don't end in _test.dart", () {
       new File(p.join(_sandbox, 'test.dart')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox).toList(), completion(isEmpty));
+      expect(_loader.loadDir(_sandbox, SuiteConfiguration.empty).toList(),
+          completion(isEmpty));
     });
 
     group("with suites loaded from a directory", () {
@@ -117,7 +122,7 @@ void main() {
         new File(p.join(_sandbox, 'dir/sub_test.dart'))
             .writeAsStringSync(_tests);
 
-        suites = await _loader.loadDir(_sandbox)
+        suites = await _loader.loadDir(_sandbox, SuiteConfiguration.empty)
             .asyncMap((loadSuite) => loadSuite.getSuite())
             .toList();
       });
@@ -145,7 +150,8 @@ void main() {
   print('print within test');
 }
 """);
-    var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+    var suites = await _loader
+        .loadFile(p.join(_sandbox, 'a_test.dart'), SuiteConfiguration.empty)
         .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;

@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'src/backend/declarer.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
+import 'src/runner/configuration/suite.dart';
 import 'src/runner/engine.dart';
 import 'src/runner/plugin/environment.dart';
 import 'src/runner/reporter/expanded.dart';
@@ -52,6 +53,7 @@ Declarer get _declarer {
   scheduleMicrotask(() async {
     var suite = new RunnerSuite(
         const PluginEnvironment(),
+        SuiteConfiguration.empty,
         _globalDeclarer.build(),
         path: p.prettyUri(Uri.base),
         platform: TestPlatform.vm,

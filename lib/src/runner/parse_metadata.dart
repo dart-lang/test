@@ -86,7 +86,7 @@ class _Parser {
     return new Metadata(
         testOn: testOn,
         timeout: timeout,
-        skip: skip != null,
+        skip: skip == null ? null : true,
         skipReason: skip is String ? skip : null,
         onPlatform: onPlatform,
         tags: tags);

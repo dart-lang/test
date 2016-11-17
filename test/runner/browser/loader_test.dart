@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration.dart';
+import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
@@ -33,11 +34,13 @@ void main() {
 }
 """;
 
+/// A configuration that loads suites on Chrome.
+final _chrome = new SuiteConfiguration(platforms: [TestPlatform.chrome]);
+
 void main() {
   setUp(() async {
     _sandbox = createTempDir();
-    _loader = new Configuration(platforms: [TestPlatform.chrome])
-        .asCurrent(() => new Loader(root: _sandbox));
+    _loader = new Loader(root: _sandbox);
     /// TODO(nweiz): Use scheduled_test for this once it's compatible with this
     /// version of test.
     new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
@@ -51,7 +54,8 @@ void main() {
   group(".loadFile()", () {
     var suite;
     setUp(() async {
-      var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+      var suites = await _loader
+          .loadFile(p.join(_sandbox, 'a_test.dart'), _chrome)
           .toList();
 
       expect(suites, hasLength(1));
@@ -112,7 +116,8 @@ Future main() {
 }
 """);
 
-    var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+    var suites = await _loader
+        .loadFile(p.join(_sandbox, 'a_test.dart'), _chrome)
         .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
@@ -124,27 +129,22 @@ Future main() {
   });
 
   test("loads a suite both in the browser and the VM", () async {
-    var loader = new Configuration(
-            platforms: [TestPlatform.vm, TestPlatform.chrome])
-        .asCurrent(() => new Loader(root: _sandbox));
     var path = p.join(_sandbox, 'a_test.dart');
 
-    try {
-      var suites = await loader.loadFile(path)
-          .asyncMap((loadSuite) => loadSuite.getSuite()).toList();
-      expect(suites[0].platform, equals(TestPlatform.vm));
-      expect(suites[0].path, equals(path));
-      expect(suites[1].platform, equals(TestPlatform.chrome));
-      expect(suites[1].path, equals(path));
+    var suites = await _loader
+        .loadFile(path, new SuiteConfiguration(
+            platforms: [TestPlatform.vm, TestPlatform.chrome]))
+        .asyncMap((loadSuite) => loadSuite.getSuite()).toList();
+    expect(suites[0].platform, equals(TestPlatform.vm));
+    expect(suites[0].path, equals(path));
+    expect(suites[1].platform, equals(TestPlatform.chrome));
+    expect(suites[1].path, equals(path));
 
-      for (var suite in suites) {
-        expect(suite.group.entries, hasLength(3));
-        expect(suite.group.entries[0].name, equals("success"));
-        expect(suite.group.entries[1].name, equals("failure"));
-        expect(suite.group.entries[2].name, equals("error"));
-      }
-    } finally {
-      await loader.close();
+    for (var suite in suites) {
+      expect(suite.group.entries, hasLength(3));
+      expect(suite.group.entries[0].name, equals("success"));
+      expect(suite.group.entries[1].name, equals("failure"));
+      expect(suite.group.entries[2].name, equals("error"));
     }
   });
 
@@ -154,7 +154,8 @@ void main() {
   print('print within test');
 }
 """);
-    var suites = await _loader.loadFile(p.join(_sandbox, 'a_test.dart'))
+    var suites = await _loader
+        .loadFile(p.join(_sandbox, 'a_test.dart'), _chrome)
         .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;

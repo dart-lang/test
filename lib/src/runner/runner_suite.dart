@@ -12,6 +12,7 @@ import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
+import 'configuration/suite.dart';
 import 'environment.dart';
 
 /// A suite produced and consumed by the test runner that has runner-specific
@@ -29,6 +30,9 @@ class RunnerSuite extends Suite {
   /// The environment in which this suite runs.
   Environment get environment => _controller._environment;
 
+  /// The configuration for this suite.
+  SuiteConfiguration get config => _controller._config;
+
   /// Whether the suite is paused for debugging.
   ///
   /// When using a dev inspector, this may also mean that the entire browser is
@@ -43,9 +47,10 @@ class RunnerSuite extends Suite {
 
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode.
-  factory RunnerSuite(Environment environment, Group group, {String path,
-      TestPlatform platform, OperatingSystem os, AsyncFunction onClose}) {
-    var controller = new RunnerSuiteController(environment, group,
+  factory RunnerSuite(Environment environment, SuiteConfiguration config,
+      Group group, {String path, TestPlatform platform, OperatingSystem os,
+      AsyncFunction onClose}) {
+    var controller = new RunnerSuiteController(environment, config, group,
         path: path, platform: platform, os: os, onClose: onClose);
     return controller.suite;
   }
@@ -73,6 +78,9 @@ class RunnerSuiteController {
   /// The backing value for [suite.environment].
   final Environment _environment;
 
+  /// The configuration for this suite.
+  final SuiteConfiguration _config;
+
   /// The function to call when the suite is closed.
   final AsyncFunction _onClose;
 
@@ -82,8 +90,9 @@ class RunnerSuiteController {
   /// The controller for [suite.onDebugging].
   final _onDebuggingController = new StreamController<bool>.broadcast();
 
-  RunnerSuiteController(this._environment, Group group, {String path,
-          TestPlatform platform, OperatingSystem os, AsyncFunction onClose})
+  RunnerSuiteController(this._environment, this._config, Group group,
+          {String path, TestPlatform platform,
+          OperatingSystem os, AsyncFunction onClose})
       : _onClose = onClose {
     _suite = new RunnerSuite._(this, group, path, platform, os);
   }

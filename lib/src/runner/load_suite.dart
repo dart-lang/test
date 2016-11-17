@@ -14,6 +14,7 @@ import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
+import 'configuration/suite.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
@@ -34,6 +35,7 @@ import 'runner_suite.dart';
 /// prints will be emitted through the running [LiveTest].
 class LoadSuite extends Suite implements RunnerSuite {
   final environment = const PluginEnvironment();
+  final SuiteConfiguration config;
   final isDebugging = false;
   final onDebugging = new StreamController<bool>().stream;
 
@@ -64,9 +66,10 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
-  factory LoadSuite(String name, body(), {String path, TestPlatform platform}) {
+  factory LoadSuite(String name, SuiteConfiguration config, body(),
+      {String path, TestPlatform platform}) {
     var completer = new Completer<Pair<RunnerSuite, Zone>>.sync();
-    return new LoadSuite._(name, () {
+    return new LoadSuite._(name, config, () {
       var invoker = Invoker.current;
       invoker.addOutstandingCallback();
 
@@ -103,21 +106,25 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// The suite's name will be based on [exception]'s path.
   factory LoadSuite.forLoadException(LoadException exception,
-      {StackTrace stackTrace, TestPlatform platform}) {
+      SuiteConfiguration config, {StackTrace stackTrace,
+      TestPlatform platform}) {
     if (stackTrace == null) stackTrace = new Trace.current();
 
-    return new LoadSuite("loading ${exception.path}", () {
-      return new Future.error(exception, stackTrace);
-    }, path: exception.path, platform: platform);
+    return new LoadSuite(
+        "loading ${exception.path}",
+        config ?? SuiteConfiguration.empty,
+        () => new Future.error(exception, stackTrace),
+        path: exception.path,
+        platform: platform);
   }
 
   /// A utility constructor for a load suite that just emits [suite].
   factory LoadSuite.forSuite(RunnerSuite suite) {
-    return new LoadSuite("loading ${suite.path}", () => suite,
+    return new LoadSuite("loading ${suite.path}", suite.config, () => suite,
         path: suite.path, platform: suite.platform);
   }
 
-  LoadSuite._(String name, void body(), this._suiteAndZone,
+  LoadSuite._(String name, this.config, void body(), this._suiteAndZone,
           {String path, TestPlatform platform})
       : super(new Group.root([
         new LocalTest(name,
@@ -127,11 +134,13 @@ class LoadSuite extends Suite implements RunnerSuite {
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
-      : super(old.group, path: old.path, platform: old.platform);
+      : config = old.config,
+        super(old.group, path: old.path, platform: old.platform);
 
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
-      : _suiteAndZone = old._suiteAndZone,
+      : config = old.config,
+        _suiteAndZone = old._suiteAndZone,
         super(old.group, path: old.path, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that

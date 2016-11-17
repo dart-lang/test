@@ -14,6 +14,7 @@ import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
 import '../configuration.dart';
+import '../configuration/suite.dart';
 import '../environment.dart';
 import '../load_exception.dart';
 import '../runner_suite.dart';
@@ -32,8 +33,9 @@ typedef StackTrace _MapTrace(StackTrace trace);
 /// If [mapTrace] is passed, it will be used to adjust stack traces for any
 /// errors emitted by tests.
 Future<RunnerSuiteController> deserializeSuite(String path,
-    TestPlatform platform, Metadata metadata, Environment environment,
-    StreamChannel channel, {StackTrace mapTrace(StackTrace trace)}) async {
+    TestPlatform platform, SuiteConfiguration suiteConfig,
+    Environment environment, StreamChannel channel,
+    {StackTrace mapTrace(StackTrace trace)}) async {
   if (mapTrace == null) mapTrace = (trace) => trace;
 
   var disconnector = new Disconnector();
@@ -41,7 +43,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
 
   suiteChannel.sink.add({
     'platform': platform.identifier,
-    'metadata': metadata.serialize(),
+    'metadata': suiteConfig.metadata.serialize(),
     'os': platform == TestPlatform.vm ? currentOS.identifier : null,
     'collectTraces': Configuration.current.reporter == 'json'
   });
@@ -95,6 +97,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
 
   return new RunnerSuiteController(
       environment,
+      suiteConfig,
       await completer.future,
       path: path,
       platform: platform,

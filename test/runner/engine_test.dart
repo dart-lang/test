@@ -27,8 +27,8 @@ void main() {
     });
 
     var engine = new Engine.withSuites([
-      new RunnerSuite(const PluginEnvironment(), new Group.root(tests.take(2))),
-      new RunnerSuite(const PluginEnvironment(), new Group.root(tests.skip(2)))
+      runnerSuite(new Group.root(tests.take(2))),
+      runnerSuite(new Group.root(tests.skip(2)))
     ]);
 
     await engine.run();
@@ -51,8 +51,7 @@ void main() {
       expect(testsRun, equals(4));
     }), completes);
 
-    engine.suiteSink.add(
-        new RunnerSuite(const PluginEnvironment(), new Group.root(tests)));
+    engine.suiteSink.add(runnerSuite(new Group.root(tests)));
     engine.suiteSink.close();
   });
 
@@ -175,9 +174,7 @@ void main() {
         test("test", () {}, skip: true);
       });
 
-      var engine = new Engine.withSuites([
-        new RunnerSuite(const PluginEnvironment(), new Group.root(tests))
-      ]);
+      var engine = new Engine.withSuites([runnerSuite(new Group.root(tests))]);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
@@ -234,9 +231,8 @@ void main() {
         }, skip: true);
       });
 
-      var engine = new Engine.withSuites([
-        new RunnerSuite(const PluginEnvironment(), new Group.root(entries))
-      ]);
+      var engine = new Engine.withSuites(
+          [runnerSuite(new Group.root(entries))]);
 
       engine.onTestStarted.listen(expectAsync((liveTest) {
         expect(liveTest, same(engine.liveTests.single));

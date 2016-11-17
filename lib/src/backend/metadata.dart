@@ -19,6 +19,12 @@ import 'test_platform.dart';
 /// This metadata comes from declarations on the test itself; it doesn't include
 /// configuration from the user.
 class Metadata {
+  /// Empty metadata with only default values.
+  ///
+  /// Using this is slightly more efficient than manually constructing a new
+  /// metadata with no arguments.
+  static final empty = new Metadata._();
+
   /// The selector indicating which platforms the suite supports.
   final PlatformSelector testOn;
 
@@ -26,13 +32,15 @@ class Metadata {
   final Timeout timeout;
 
   /// Whether the test or suite should be skipped.
-  final bool skip;
-
-  /// Whether to use verbose stack traces.
-  final bool verboseTrace;
+  bool get skip => _skip ?? false;
+  final bool _skip;
 
   /// The reason the test or suite should be skipped, if given.
   final String skipReason;
+
+  /// Whether to use verbose stack traces.
+  bool get verboseTrace => _verboseTrace ?? false;
+  final bool _verboseTrace;
 
   /// The user-defined tags attached to the test or suite.
   final Set<String> tags;
@@ -122,8 +130,8 @@ class Metadata {
   /// If [forTag] contains metadata that applies to [tags], that metadata is
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
-  factory Metadata({PlatformSelector testOn, Timeout timeout, bool skip: false,
-          bool verboseTrace: false, String skipReason, Iterable<String> tags,
+  factory Metadata({PlatformSelector testOn, Timeout timeout, bool skip,
+          bool verboseTrace, String skipReason, Iterable<String> tags,
           Map<PlatformSelector, Metadata> onPlatform,
           Map<BooleanSelector, Metadata> forTag}) {
     // Returns metadata without forTag resolved at all.
@@ -159,13 +167,14 @@ class Metadata {
   /// Creates new Metadata.
   ///
   /// Unlike [new Metadata], this assumes [forTag] is already resolved.
-  Metadata._({PlatformSelector testOn, Timeout timeout, bool skip: false,
-          this.verboseTrace: false, this.skipReason, Iterable<String> tags,
+  Metadata._({PlatformSelector testOn, Timeout timeout, bool skip,
+          this.skipReason, bool verboseTrace, Iterable<String> tags,
           Map<PlatformSelector, Metadata> onPlatform,
           Map<BooleanSelector, Metadata> forTag})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
-        skip = skip,
+        _skip = skip,
+        _verboseTrace = verboseTrace,
         tags = new UnmodifiableSetView(
             tags == null ? new Set() : tags.toSet()),
         onPlatform = onPlatform == null
@@ -182,13 +191,14 @@ class Metadata {
   ///
   /// Throws a [FormatException] if any field is invalid.
   Metadata.parse({String testOn, Timeout timeout, skip,
-          this.verboseTrace: false, Map<String, dynamic> onPlatform,
+          bool verboseTrace, Map<String, dynamic> onPlatform,
           tags})
       : testOn = testOn == null
             ? PlatformSelector.all
             : new PlatformSelector.parse(testOn),
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
-        skip = skip != null && skip != false,
+        _skip = skip == null ? null : skip != false,
+        _verboseTrace = verboseTrace,
         skipReason = skip is String ? skip : null,
         onPlatform = _parseOnPlatform(onPlatform),
         tags = _parseTags(tags),
@@ -207,9 +217,9 @@ class Metadata {
             ? PlatformSelector.all
             : new PlatformSelector.parse(serialized['testOn']),
         timeout = _deserializeTimeout(serialized['timeout']),
-        skip = serialized['skip'],
+        _skip = serialized['skip'],
         skipReason = serialized['skipReason'],
-        verboseTrace = serialized['verboseTrace'],
+        _verboseTrace = serialized['verboseTrace'],
         tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
@@ -252,9 +262,9 @@ class Metadata {
       new Metadata(
           testOn: testOn.intersection(other.testOn),
           timeout: timeout.merge(other.timeout),
-          skip: skip || other.skip,
+          skip: other._skip ?? _skip ,
           skipReason: other.skipReason == null ? skipReason : other.skipReason,
-          verboseTrace: verboseTrace || other.verboseTrace,
+          verboseTrace: other._verboseTrace ?? _verboseTrace,
           tags: tags.union(other.tags),
           onPlatform: mergeMaps(onPlatform, other.onPlatform,
               value: (metadata1, metadata2) => metadata1.merge(metadata2)),
@@ -273,8 +283,8 @@ class Metadata {
       Map<BooleanSelector, Metadata> forTag}) {
     testOn ??= this.testOn;
     timeout ??= this.timeout;
-    skip ??= this.skip;
-    verboseTrace ??= this.verboseTrace;
+    skip ??= this._skip;
+    verboseTrace ??= this._verboseTrace;
     skipReason ??= this.skipReason;
     onPlatform ??= this.onPlatform;
     tags ??= this.tags;
