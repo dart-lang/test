@@ -8,6 +8,7 @@ import 'dart:async';
 
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/test.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/load_exception.dart';
@@ -30,7 +31,7 @@ void main() {
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(equals(innerSuite)));
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     await liveTest.run();
     expectTestPassed(liveTest);
   });
@@ -41,7 +42,7 @@ void main() {
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(equals(innerSuite)));
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     await liveTest.run();
     expectTestPassed(liveTest);
   });
@@ -52,7 +53,7 @@ void main() {
         () => completer.future);
     expect(suite.group.entries, hasLength(1));
 
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     expect(liveTest.run(), completes);
     await new Future.delayed(Duration.ZERO);
     expect(liveTest.state.status, equals(Status.running));
@@ -70,7 +71,7 @@ void main() {
 
     expect(suite.suite, completion(isNull));
 
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     await liveTest.run();
     expectTestFailed(liveTest, "error");
   });
@@ -80,7 +81,7 @@ void main() {
         () => new Completer().future);
     expect(suite.group.entries, hasLength(1));
 
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     expect(liveTest.run(), completes);
     await new Future.delayed(Duration.ZERO);
     expect(liveTest.state.status, equals(Status.running));
@@ -97,7 +98,7 @@ void main() {
 
     expect(suite.suite, completion(isNull));
 
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     await liveTest.run();
     expect(liveTest.state.status, equals(Status.complete));
     expect(liveTest.state.result, equals(Result.error));
@@ -111,7 +112,7 @@ void main() {
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(equals(innerSuite)));
-    var liveTest = await suite.group.entries.single.load(suite);
+    var liveTest = await (suite.group.entries.single as Test).load(suite);
     await liveTest.run();
     expectTestPassed(liveTest);
   });
@@ -138,7 +139,7 @@ void main() {
       var newSuite = suite.changeSuite((suite) => newInnerSuite);
       expect(newSuite.suite, completion(equals(newInnerSuite)));
 
-      var liveTest = await suite.group.entries.single.load(suite);
+      var liveTest = await (suite.group.entries.single as Test).load(suite);
       await liveTest.run();
       expectTestPassed(liveTest);
     });
@@ -150,7 +151,7 @@ void main() {
       var newSuite = suite.changeSuite(expectAsync((_) {}, count: 0));
       expect(newSuite.suite, completion(isNull));
 
-      var liveTest = await suite.group.entries.single.load(suite);
+      var liveTest = await (suite.group.entries.single as Test).load(suite);
       await liveTest.run();
       expectTestPassed(liveTest);
     });
