@@ -4,13 +4,9 @@
 
 @TestOn("vm")
 
-import 'dart:io';
-import 'dart:math' as math;
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
 
 import '../io.dart';
 

@@ -5,14 +5,11 @@
 @TestOn("vm")
 
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:test/src/backend/platform_selector.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration/suite.dart';
-import 'package:test/src/runner/configuration/values.dart';
-import 'package:test/src/util/io.dart';
 
 void main() {
   group("merge", () {

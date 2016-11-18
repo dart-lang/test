@@ -5,13 +5,10 @@
 @TestOn("vm")
 @Tags(const ["chrome"])
 
-import 'dart:io';
-
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_process.dart';
-import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
 
 import 'package:test/src/util/io.dart';

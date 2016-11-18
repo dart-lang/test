@@ -10,13 +10,11 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test_platform.dart';
-import 'package:test/src/runner/configuration.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
-import '../../io.dart';
 import '../../utils.dart';
 
 Loader _loader;

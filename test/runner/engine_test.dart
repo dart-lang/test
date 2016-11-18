@@ -6,10 +6,7 @@ import 'dart:async';
 
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
-import 'package:test/src/runner/configuration.dart';
 import 'package:test/src/runner/engine.dart';
-import 'package:test/src/runner/plugin/environment.dart';
-import 'package:test/src/runner/runner_suite.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
