@@ -9,6 +9,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/src/backend/state.dart';
+import 'package:test/src/backend/test.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
@@ -158,7 +159,8 @@ void main() {
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
-    var liveTest = await loadSuite.group.entries.single.load(loadSuite);
+    var liveTest =
+        await (loadSuite.group.entries.single as Test).load(loadSuite);
     expect(liveTest.onMessage.first.then((message) => message.text),
         completion(equals("print within test")));
     await liveTest.run();
