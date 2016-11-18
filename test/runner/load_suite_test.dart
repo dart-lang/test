@@ -12,8 +12,6 @@ import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
-import 'package:test/src/runner/plugin/environment.dart';
-import 'package:test/src/runner/runner_suite.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
