@@ -13,7 +13,7 @@ import "package:test/test.dart";
 main() {
   group("source stream", () {
     test("is listened to on first request, paused between requests", () async {
-      var controller = new StreamController();
+      var controller = new StreamController<int>();
       var events = new StreamQueue<int>(controller.stream);
       await flushMicrotasks();
       expect(controller.hasListener, isFalse);
@@ -151,7 +151,7 @@ main() {
       var skip4 = events.skip(1);
       var index = 0;
       // Check that futures complete in order.
-      sequence(expectedValue, sequenceIndex) => (value) {
+      sequence(expectedValue, sequenceIndex) => (int value) {
         expect(value, expectedValue);
         expect(index, sequenceIndex);
         index++;
@@ -289,7 +289,7 @@ main() {
 
     test("forwards to underlying stream", () async {
       var cancel = new Completer();
-      var controller = new StreamController(onCancel: () => cancel.future);
+      var controller = new StreamController<int>(onCancel: () => cancel.future);
       var events = new StreamQueue<int>(controller.stream);
       expect(controller.hasListener, isFalse);
       var next = events.next;
@@ -348,14 +348,14 @@ main() {
     test("cancels underlying subscription when called before any event",
         () async {
       var cancelFuture = new Future.value(42);
-      var controller = new StreamController(onCancel: () => cancelFuture);
+      var controller = new StreamController<int>(onCancel: () => cancelFuture);
       var events = new StreamQueue<int>(controller.stream);
       expect(await events.cancel(), 42);
     });
 
     test("cancels underlying subscription, returns result", () async {
       var cancelFuture = new Future.value(42);
-      var controller = new StreamController(onCancel: () => cancelFuture);
+      var controller = new StreamController<int>(onCancel: () => cancelFuture);
       var events = new StreamQueue<int>(controller.stream);
       controller.add(1);
       expect(await events.next, 1);
@@ -374,7 +374,7 @@ main() {
       });
 
       test("cancels the underlying subscription immediately", () async {
-        var controller = new StreamController();
+        var controller = new StreamController<int>();
         controller.add(1);
 
         var events = new StreamQueue<int>(controller.stream);
@@ -388,7 +388,8 @@ main() {
       test("cancels the underlying subscription when called before any event",
           () async {
         var cancelFuture = new Future.value(42);
-        var controller = new StreamController(onCancel: () => cancelFuture);
+        var controller =
+            new StreamController<int>(onCancel: () => cancelFuture);
 
         var events = new StreamQueue<int>(controller.stream);
         expect(await events.cancel(immediate: true), 42);
@@ -405,7 +406,7 @@ main() {
 
       test("returns the result of closing the underlying subscription",
           () async {
-        var controller = new StreamController(
+        var controller = new StreamController<int>(
             onCancel: () => new Future.value(42));
         var events = new StreamQueue<int>(controller.stream);
         expect(await events.cancel(immediate: true), 42);
@@ -414,7 +415,7 @@ main() {
       test("listens and then cancels a stream that hasn't been listened to yet",
           () async {
         var wasListened = false;
-        var controller = new StreamController(
+        var controller = new StreamController<int>(
             onListen: () => wasListened = true);
         var events = new StreamQueue<int>(controller.stream);
         expect(wasListened, isFalse);
@@ -470,7 +471,7 @@ main() {
     });
 
     test("true when data event", () async {
-      var controller = new StreamController();
+      var controller = new StreamController<int>();
       var events = new StreamQueue<int>(controller.stream);
 
       var hasNext;
@@ -484,7 +485,7 @@ main() {
     });
 
     test("true when error event", () async {
-      var controller = new StreamController();
+      var controller = new StreamController<int>();
       var events = new StreamQueue<int>(controller.stream);
 
       var hasNext;
@@ -868,7 +869,7 @@ main() {
 
       test("the underlying stream is only canceled once all forks are canceled",
           () async {
-        var controller = new StreamController();
+        var controller = new StreamController<int>();
         var queue1 = new StreamQueue<int>(controller.stream);
         var queue2 = queue1.fork();
 
@@ -938,7 +939,7 @@ main() {
 
         test("the underlying stream is only canceled once all forks are "
             "canceled", () async {
-          var controller = new StreamController();
+          var controller = new StreamController<int>();
           var queue1 = new StreamQueue<int>(controller.stream);
           var queue2 = queue1.fork();
 
@@ -963,7 +964,7 @@ main() {
     group("pausing:", () {
       test("the underlying stream is only implicitly paused when no forks are "
           "awaiting input", () async {
-        var controller = new StreamController();
+        var controller = new StreamController<int>();
         var queue1 = new StreamQueue<int>(controller.stream);
         var queue2 = queue1.fork();
 
@@ -1019,7 +1020,7 @@ main() {
 
       test("the underlying stream is only paused when all forks are paused",
           () async {
-        var controller = new StreamController();
+        var controller = new StreamController<int>();
         var queue1 = new StreamQueue<int>(controller.stream);
         var queue2 = queue1.fork();
 
@@ -1112,7 +1113,7 @@ Stream<int> createStream() async* {
 }
 
 Stream<int> createErrorStream() {
-  StreamController controller = new StreamController<int>();
+  var controller = new StreamController<int>();
   () async {
     controller.add(1);
     await flushMicrotasks();

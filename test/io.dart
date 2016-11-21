@@ -103,7 +103,7 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 ///
 /// If [forwardStdio] is true, the standard output and error from the process
 /// will be printed as part of the parent test. This is used for debugging.
-ScheduledProcess runTest(List<String> args, {String reporter,
+ScheduledProcess runTest(List args, {String reporter,
     int concurrency, Map<String, String> environment,
     bool forwardStdio: false}) {
   concurrency ??= 1;

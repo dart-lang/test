@@ -80,7 +80,7 @@ main() async {
   /// Handles a WebSocket connection to the root of the server, and returns a
   /// future that will complete to the WebSocket.
   Future<WebSocketChannel> handleWebSocket() {
-    var completer = new Completer();
+    var completer = new Completer<WebSocketChannel>();
     _server.handle("GET", "/", webSocketHandler(completer.complete));
     return completer.future;
   }
