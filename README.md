@@ -343,7 +343,7 @@ void main() {
   test("Stream.fromIterable() emits the values in the iterable", () {
     var stream = new Stream.fromIterable([1, 2, 3]);
 
-    stream.listen(expectAsync((number) {
+    stream.listen(expectAsync1((number) {
       expect(number, inInclusiveRange(1, 3));
     }, count: 3));
   });

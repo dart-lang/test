@@ -33,7 +33,7 @@ void main() {
       var liveTest = _localTest(() {
         invoker = Invoker.current;
       }).load(suite);
-      liveTest.onError.listen(expectAsync((_) {}, count: 0));
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
       await liveTest.run();
       expect(invoker.liveTest, equals(liveTest));
@@ -51,7 +51,7 @@ void main() {
           completer.complete(Invoker.current);
         });
       }).load(suite);
-      liveTest.onError.listen(expectAsync((_) {}, count: 0));
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
       expect(liveTest.run(), completes);
       var invoker = await completer.future;
@@ -67,7 +67,7 @@ void main() {
       liveTest = _localTest(() {
         stateInTest = liveTest.state;
       }).load(suite);
-      liveTest.onError.listen(expectAsync((_) {}, count: 0));
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
       expect(liveTest.state.status, equals(Status.pending));
       expect(liveTest.state.result, equals(Result.success));
@@ -88,10 +88,10 @@ void main() {
 
     test("onStateChange fires for each state change", () {
       var liveTest = _localTest(() {}).load(suite);
-      liveTest.onError.listen(expectAsync((_) {}, count: 0));
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
       var first = true;
-      liveTest.onStateChange.listen(expectAsync((state) {
+      liveTest.onStateChange.listen(expectAsync1((state) {
         if (first) {
           expect(state.status, equals(Status.running));
           first = false;
@@ -368,7 +368,7 @@ void main() {
       });
     }).load(suite);
 
-    liveTest.onError.listen(expectAsync((_) {}, count: 0));
+    liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
     await liveTest.run();
     expect(outstandingCallbackRemoved, isTrue);
@@ -488,7 +488,7 @@ void main() {
         () async {
       var callbackRun = false;
       await Invoker.current.waitForOutstandingCallbacks(() {
-        pumpEventQueue().then(expectAsync((_) {
+        pumpEventQueue().then(expectAsync1((_) {
           callbackRun = true;
         }));
       });

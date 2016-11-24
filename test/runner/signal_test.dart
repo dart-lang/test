@@ -234,7 +234,7 @@ void main() {
 
     await new Future.delayed(new Duration(seconds: 1));
     try {
-      expectAsync(() {});
+      expectAsync0(() {});
     } catch (_) {
       expectAsyncThrewError = true;
     }

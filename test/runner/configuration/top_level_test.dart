@@ -63,7 +63,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+0: success"));
         nextLineFired = true;
       }));

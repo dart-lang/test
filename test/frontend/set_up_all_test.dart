@@ -204,7 +204,7 @@ void main() {
 
   test("isn't run for a skipped group", () async {
     // Declare this in the outer test so if it runs, the outer test will fail.
-    var shouldNotRun = expectAsync(() {}, count: 0);
+    var shouldNotRun = expectAsync0(() {}, count: 0);
 
     var engine = declareEngine(() {
       group("skipped", () {
@@ -279,7 +279,7 @@ void main() {
 
     test("doesn't run tests in the group", () async {
       // Declare this in the outer test so if it runs, the outer test will fail.
-      var shouldNotRun = expectAsync(() {}, count: 0);
+      var shouldNotRun = expectAsync0(() {}, count: 0);
 
       var engine = declareEngine(() {
         setUpAll(() => throw "error");
@@ -292,7 +292,7 @@ void main() {
 
     test("doesn't run inner groups", () async {
       // Declare this in the outer test so if it runs, the outer test will fail.
-      var shouldNotRun = expectAsync(() {}, count: 0);
+      var shouldNotRun = expectAsync0(() {}, count: 0);
 
       var engine = declareEngine(() {
         setUpAll(() => throw "error");
@@ -307,7 +307,7 @@ void main() {
 
     test("doesn't run further setUpAlls", () async {
       // Declare this in the outer test so if it runs, the outer test will fail.
-      var shouldNotRun = expectAsync(() {}, count: 0);
+      var shouldNotRun = expectAsync0(() {}, count: 0);
 
       var engine = declareEngine(() {
         setUpAll(() => throw "error");

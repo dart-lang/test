@@ -1,4 +1,2 @@
 analyzer:
   strong-mode: true
-  exclude:
-    - test/**/*.dart

@@ -16,7 +16,7 @@ void main() {
     var testsRun = 0;
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
-        test("test ${i + 1}", expectAsync(() {
+        test("test ${i + 1}", expectAsync0(() {
           expect(testsRun, equals(i));
           testsRun++;
         }, max: 1));
@@ -36,7 +36,7 @@ void main() {
     var testsRun = 0;
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
-        test("test ${i + 1}", expectAsync(() {
+        test("test ${i + 1}", expectAsync0(() {
           expect(testsRun, equals(i));
           testsRun++;
         }, max: 1));
@@ -57,11 +57,11 @@ void main() {
     var testsRun = 0;
     var engine = declareEngine(() {
       for (var i = 0; i < 3; i++) {
-        test("test ${i + 1}", expectAsync(() => testsRun++, max: 1));
+        test("test ${i + 1}", expectAsync0(() => testsRun++, max: 1));
       }
     });
 
-    engine.onTestStarted.listen(expectAsync((liveTest) {
+    engine.onTestStarted.listen(expectAsync1((liveTest) {
       // [testsRun] should be one less than the test currently running.
       expect(liveTest.test.name, equals("test ${testsRun + 1}"));
 
@@ -117,7 +117,7 @@ void main() {
     // than the inner test.
     var secondTestStarted = false;
     var firstTestFinished = false;
-    var tearDownBody = expectAsync(() {
+    var tearDownBody = expectAsync0(() {
       expect(secondTestStarted, isFalse);
       expect(firstTestFinished, isFalse);
     });
@@ -173,12 +173,12 @@ void main() {
 
       var engine = new Engine.withSuites([runnerSuite(new Group.root(tests))]);
 
-      engine.onTestStarted.listen(expectAsync((liveTest) {
+      engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
         expect(liveTest.test.name, equals(tests.single.name));
 
         var i = 0;
-        liveTest.onStateChange.listen(expectAsync((state) {
+        liveTest.onStateChange.listen(expectAsync1((state) {
           if (i == 0) {
             expect(state, equals(const State(Status.running, Result.success)));
           } else if (i == 1) {
@@ -231,12 +231,12 @@ void main() {
       var engine = new Engine.withSuites(
           [runnerSuite(new Group.root(entries))]);
 
-      engine.onTestStarted.listen(expectAsync((liveTest) {
+      engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
         expect(liveTest.test.name, equals("group test"));
 
         var i = 0;
-        liveTest.onStateChange.listen(expectAsync((state) {
+        liveTest.onStateChange.listen(expectAsync1((state) {
           if (i == 0) {
             expect(state, equals(const State(Status.running, Result.success)));
           } else if (i == 1) {

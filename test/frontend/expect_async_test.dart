@@ -14,7 +14,7 @@ void main() {
     test("0", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync(() {
+        expectAsync0(() {
           callbackRun = true;
         })();
       });
@@ -26,7 +26,7 @@ void main() {
     test("1", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync((arg) {
+        expectAsync1((arg) {
           expect(arg, equals(1));
           callbackRun = true;
         })(1);
@@ -39,7 +39,7 @@ void main() {
     test("2", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync((arg1, arg2) {
+        expectAsync2((arg1, arg2) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           callbackRun = true;
@@ -53,7 +53,7 @@ void main() {
     test("3", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync((arg1, arg2, arg3) {
+        expectAsync3((arg1, arg2, arg3) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           expect(arg3, equals(3));
@@ -68,7 +68,7 @@ void main() {
     test("4", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync((arg1, arg2, arg3, arg4) {
+        expectAsync4((arg1, arg2, arg3, arg4) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           expect(arg3, equals(3));
@@ -84,7 +84,7 @@ void main() {
     test("5", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync((arg1, arg2, arg3, arg4, arg5) {
+        expectAsync5((arg1, arg2, arg3, arg4, arg5) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           expect(arg3, equals(3));
@@ -101,7 +101,7 @@ void main() {
     test("6", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync((arg1, arg2, arg3, arg4, arg5, arg6) {
+        expectAsync6((arg1, arg2, arg3, arg4, arg5, arg6) {
           expect(arg1, equals(1));
           expect(arg2, equals(2));
           expect(arg3, equals(3));
@@ -121,7 +121,7 @@ void main() {
     test("allows them to be passed", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync(([arg = 1]) {
+        expectAsync1(([arg = 1]) {
           expect(arg, equals(2));
           callbackRun = true;
         })(2);
@@ -134,7 +134,7 @@ void main() {
     test("allows them not to be passed", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync(([arg = 1]) {
+        expectAsync1(([arg = 1]) {
           expect(arg, equals(1));
           callbackRun = true;
         })();
@@ -153,13 +153,13 @@ void main() {
   group("by default", () {
     test("won't allow the test to complete until it's called", () {
       return expectTestBlocks(
-          () => expectAsync(() {}),
+          () => expectAsync0(() {}),
           (callback) => callback());
     });
 
     test("may only be called once", () async {
       var liveTest = await runTestBody(() {
-        var callback = expectAsync(() {});
+        var callback = expectAsync0(() {});
         callback();
         callback();
       });
@@ -175,7 +175,7 @@ void main() {
       var liveTest;
       var future;
       liveTest = createTest(() {
-        var callback = expectAsync(() {}, count: 3);
+        var callback = expectAsync0(() {}, count: 3);
 
         future = new Future.sync(() async {
           await pumpEventQueue();
@@ -201,7 +201,7 @@ void main() {
 
     test("will throw an error if it's called more than that many times", () async {
       var liveTest = await runTestBody(() {
-        var callback = expectAsync(() {}, count: 3);
+        var callback = expectAsync0(() {}, count: 3);
         callback();
         callback();
         callback();
@@ -214,12 +214,12 @@ void main() {
 
     group("0,", () {
       test("won't block the test's completion", () {
-        expectAsync(() {}, count: 0);
+        expectAsync0(() {}, count: 0);
       });
 
       test("will throw an error if it's ever called", () async {
         var liveTest = await runTestBody(() {
-          expectAsync(() {}, count: 0)();
+          expectAsync0(() {}, count: 0)();
         });
 
         expectTestFailed(
@@ -230,21 +230,21 @@ void main() {
 
   group("with max", () {
     test("will allow the callback to be called that many times", () {
-      var callback = expectAsync(() {}, max: 3);
+      var callback = expectAsync0(() {}, max: 3);
       callback();
       callback();
       callback();
     });
 
     test("will allow the callback to be called fewer than that many times", () {
-      var callback = expectAsync(() {}, max: 3);
+      var callback = expectAsync0(() {}, max: 3);
       callback();
     });
 
     test("will throw an error if it's called more than that many times",
         () async {
       var liveTest = await runTestBody(() {
-        var callback = expectAsync(() {}, max: 3);
+        var callback = expectAsync0(() {}, max: 3);
         callback();
         callback();
         callback();
@@ -256,7 +256,7 @@ void main() {
     });
 
     test("-1, will allow the callback to be called any number of times", () {
-      var callback = expectAsync(() {}, max: -1);
+      var callback = expectAsync0(() {}, max: -1);
       for (var i = 0; i < 20; i++) {
         callback();
       }
@@ -264,7 +264,7 @@ void main() {
   });
 
   test("will throw an error if max is less than count", () {
-    expect(() => expectAsync(() {}, max: 1, count: 2),
+    expect(() => expectAsync0(() {}, max: 1, count: 2),
         throwsArgumentError);
   });
 
@@ -275,7 +275,7 @@ void main() {
       var future;
       liveTest = createTest(() {
         var done = false;
-        var callback = expectAsyncUntil(() {}, () => done);
+        var callback = expectAsyncUntil0(() {}, () => done);
 
         future = new Future.sync(() async {
           await pumpEventQueue();
@@ -297,7 +297,7 @@ void main() {
 
     test("doesn't call isDone until after the callback is called", () {
       var callbackRun = false;
-      expectAsyncUntil(() => callbackRun = true, () {
+      expectAsyncUntil0(() => callbackRun = true, () {
         expect(callbackRun, isTrue);
         return true;
       })();
@@ -307,7 +307,7 @@ void main() {
   group("with errors", () {
     test("reports them to the current test", () async {
       var liveTest = await runTestBody(() {
-        expectAsync(() => throw new TestFailure('oh no'))();
+        expectAsync0(() => throw new TestFailure('oh no'))();
       });
 
       expectTestFailed(liveTest, 'oh no');
@@ -318,7 +318,7 @@ void main() {
       var caughtError = false;
       var liveTest = await runTestBody(() {
         try {
-          returnValue = expectAsync(() => throw new TestFailure('oh no'))();
+          returnValue = expectAsync0(() => throw new TestFailure('oh no'))();
         } on TestFailure catch (_) {
           caughtError = true;
         }

@@ -213,7 +213,7 @@ void main() {
         var queue4Fired = false;
         var queue5Fired = false;
 
-        queue5.next.then(expectAsync((_) {
+        queue5.next.then(expectAsync1((_) {
           queue5Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue2Fired, isTrue);
@@ -221,7 +221,7 @@ void main() {
           expect(queue4Fired, isTrue);
         }));
 
-        queue1.next.then(expectAsync((_) {
+        queue1.next.then(expectAsync1((_) {
           queue1Fired = true;
           expect(queue2Fired, isFalse);
           expect(queue3Fired, isFalse);
@@ -229,7 +229,7 @@ void main() {
           expect(queue5Fired, isFalse);
         }));
 
-        queue4.next.then(expectAsync((_) {
+        queue4.next.then(expectAsync1((_) {
           queue4Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue2Fired, isTrue);
@@ -237,7 +237,7 @@ void main() {
           expect(queue5Fired, isFalse);
         }));
 
-        queue2.next.then(expectAsync((_) {
+        queue2.next.then(expectAsync1((_) {
           queue2Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue3Fired, isFalse);
@@ -245,7 +245,7 @@ void main() {
           expect(queue5Fired, isFalse);
         }));
 
-        queue3.next.then(expectAsync((_) {
+        queue3.next.then(expectAsync1((_) {
           queue3Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue2Fired, isTrue);
@@ -311,7 +311,7 @@ void main() {
 
   group("modification during dispatch:", () {
     test("forking during onCancel", () {
-      controller = new StreamController<int>(onCancel: expectAsync(() {
+      controller = new StreamController<int>(onCancel: expectAsync0(() {
         expect(stream.fork().toList(), completion(isEmpty));
       }));
       stream = new ForkableStream<int>(controller.stream);
@@ -320,7 +320,7 @@ void main() {
     });
 
     test("forking during onPause", () {
-      controller = new StreamController<int>(onPause: expectAsync(() {
+      controller = new StreamController<int>(onPause: expectAsync0(() {
         stream.fork().listen(null);
       }));
       stream = new ForkableStream<int>(controller.stream);
@@ -333,9 +333,9 @@ void main() {
 
     test("forking during onData", () {
       var sub;
-      sub = stream.listen(expectAsync((value1) {
+      sub = stream.listen(expectAsync1((value1) {
         expect(value1, equals(1));
-        stream.fork().listen(expectAsync((value2) {
+        stream.fork().listen(expectAsync1((value2) {
           expect(value2, equals(2));
         }));
         sub.cancel();
@@ -347,17 +347,17 @@ void main() {
 
     test("canceling a fork during onData", () {
       var fork = stream.fork();
-      var forkSub = fork.listen(expectAsync((_) {}, count: 0));
+      var forkSub = fork.listen(expectAsync1((_) {}, count: 0));
 
-      stream.listen(expectAsync((_) => forkSub.cancel()));
+      stream.listen(expectAsync1((_) => forkSub.cancel()));
       controller.add(null);
     });
 
     test("forking during onError", () {
       var sub;
-      sub = stream.listen(null, onError: expectAsync((error1) {
+      sub = stream.listen(null, onError: expectAsync1((error1) {
         expect(error1, equals("error 1"));
-        stream.fork().listen(null, onError: expectAsync((error2) {
+        stream.fork().listen(null, onError: expectAsync1((error2) {
           expect(error2, equals("error 2"));
         }));
         sub.cancel();
@@ -369,14 +369,14 @@ void main() {
 
     test("canceling a fork during onError", () {
       var fork = stream.fork();
-      var forkSub = fork.listen(expectAsync((_) {}, count: 0));
+      var forkSub = fork.listen(expectAsync1((_) {}, count: 0));
 
-      stream.listen(null, onError: expectAsync((_) => forkSub.cancel()));
+      stream.listen(null, onError: expectAsync1((_) => forkSub.cancel()));
       controller.addError("error");
     });
 
     test("forking during onDone", () {
-      stream.listen(null, onDone: expectAsync(() {
+      stream.listen(null, onDone: expectAsync0(() {
         expect(stream.fork().toList(), completion(isEmpty));
       }));
 
@@ -385,9 +385,9 @@ void main() {
 
     test("canceling a fork during onDone", () {
       var fork = stream.fork();
-      var forkSub = fork.listen(null, onDone: expectAsync(() {}, count: 0));
+      var forkSub = fork.listen(null, onDone: expectAsync0(() {}, count: 0));
 
-      stream.listen(null, onDone: expectAsync(() => forkSub.cancel()));
+      stream.listen(null, onDone: expectAsync0(() => forkSub.cancel()));
       controller.close();
     });
   });

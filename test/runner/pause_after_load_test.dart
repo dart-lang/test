@@ -49,7 +49,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+0: test1.dart: success"));
         nextLineFired = true;
       }));
@@ -72,7 +72,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+1: test2.dart: success"));
         nextLineFired = true;
       }));
@@ -112,7 +112,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+0: [Dartium] success"));
         nextLineFired = true;
       }));
@@ -134,7 +134,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+1: [Chrome] success"));
         nextLineFired = true;
       }));
@@ -193,7 +193,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+0: [Dartium] success"));
         nextLineFired = true;
       }));
@@ -266,7 +266,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+0: success"));
         nextLineFired = true;
       }));
@@ -308,7 +308,7 @@ void main() {
 
     schedule(() async {
       var nextLineFired = false;
-      test.stdout.next().then(expectAsync((line) {
+      test.stdout.next().then(expectAsync1((line) {
         expect(line, contains("+0: success"));
         nextLineFired = true;
       }));

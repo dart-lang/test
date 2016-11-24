@@ -262,7 +262,7 @@ void main() {
 
   test("isn't run for a skipped group", () async {
     // Declare this in the outer test so if it runs, the outer test will fail.
-    var shouldNotRun = expectAsync(() {}, count: 0);
+    var shouldNotRun = expectAsync0(() {}, count: 0);
 
     var engine = declareEngine(() {
       group("skipped", () {
@@ -339,7 +339,7 @@ void main() {
     test("runs further tearDownAlls", () async {
       // Declare this in the outer test so if it doesn't runs, the outer test
       // will fail.
-      var shouldRun = expectAsync(() {});
+      var shouldRun = expectAsync0(() {});
 
       var engine = declareEngine(() {
         tearDownAll(() => throw "error");
@@ -354,7 +354,7 @@ void main() {
     test("runs outer tearDownAlls", () async {
       // Declare this in the outer test so if it doesn't runs, the outer test
       // will fail.
-      var shouldRun = expectAsync(() {});
+      var shouldRun = expectAsync0(() {});
 
       var engine = declareEngine(() {
         tearDownAll(shouldRun);

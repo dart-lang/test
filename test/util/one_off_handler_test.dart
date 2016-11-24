@@ -25,7 +25,7 @@ void main() {
   });
 
   test("passes a request to a handler only once", () async {
-    var path = handler.create(expectAsync((request) {
+    var path = handler.create(expectAsync1((request) {
       expect(request.method, equals("GET"));
       return new shelf.Response.ok("good job!");
     }));
@@ -40,17 +40,17 @@ void main() {
   });
 
   test("passes requests to the correct handlers", () async {
-    var path1 = handler.create(expectAsync((request) {
+    var path1 = handler.create(expectAsync1((request) {
       expect(request.method, equals("GET"));
       return new shelf.Response.ok("one");
     }));
 
-    var path2 = handler.create(expectAsync((request) {
+    var path2 = handler.create(expectAsync1((request) {
       expect(request.method, equals("GET"));
       return new shelf.Response.ok("two");
     }));
 
-    var path3 = handler.create(expectAsync((request) {
+    var path3 = handler.create(expectAsync1((request) {
       expect(request.method, equals("GET"));
       return new shelf.Response.ok("three");
     }));

@@ -744,7 +744,7 @@ main() {
         var queue4Fired = false;
         var queue5Fired = false;
 
-        queue5.next.then(expectAsync((_) {
+        queue5.next.then(expectAsync1((_) {
           queue5Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue2Fired, isTrue);
@@ -752,7 +752,7 @@ main() {
           expect(queue4Fired, isTrue);
         }));
 
-        queue1.next.then(expectAsync((_) {
+        queue1.next.then(expectAsync1((_) {
           queue1Fired = true;
           expect(queue2Fired, isFalse);
           expect(queue3Fired, isFalse);
@@ -760,7 +760,7 @@ main() {
           expect(queue5Fired, isFalse);
         }));
 
-        queue4.next.then(expectAsync((_) {
+        queue4.next.then(expectAsync1((_) {
           queue4Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue2Fired, isTrue);
@@ -768,7 +768,7 @@ main() {
           expect(queue5Fired, isFalse);
         }));
 
-        queue2.next.then(expectAsync((_) {
+        queue2.next.then(expectAsync1((_) {
           queue2Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue3Fired, isFalse);
@@ -776,7 +776,7 @@ main() {
           expect(queue5Fired, isFalse);
         }));
 
-        queue3.next.then(expectAsync((_) {
+        queue3.next.then(expectAsync1((_) {
           queue3Fired = true;
           expect(queue1Fired, isTrue);
           expect(queue2Fired, isTrue);
@@ -996,7 +996,7 @@ main() {
         var queue1 = new StreamQueue<int>(createStream());
         var queue2 = queue1.fork();
 
-        queue2.rest.listen(expectAsync((_) {}, count: 0)).pause();
+        queue2.rest.listen(expectAsync1((_) {}, count: 0)).pause();
 
         expect(await queue1.next, 1);
         expect(await queue1.next, 2);
@@ -1009,7 +1009,7 @@ main() {
         var queue1 = new StreamQueue<int>(createStream());
         var queue2 = queue1.fork();
 
-        queue1.rest.listen(expectAsync((_) {}, count: 0)).pause();
+        queue1.rest.listen(expectAsync1((_) {}, count: 0)).pause();
 
         expect(await queue2.next, 1);
         expect(await queue2.next, 2);

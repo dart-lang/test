@@ -1,3 +1,11 @@
+## 0.13.0
+
+* Deprecate `expectAsync` and `expectAsyncUntil`, since they currently can't be
+  made to work cleanly in strong mode. They are replaced with separate methods
+  for each number of callback arguments:
+    * `expectAsync0`, `expectAsync1`, ... `expectAsync6`, and
+    * `expectAsyncUntil0`, `expectAsyncUntil1`, ... `expectAsyncUntil6`.
+
 ## 0.12.16
 
 * Allow tools to interact with browser debuggers using the JSON reporter.
