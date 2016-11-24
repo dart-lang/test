@@ -1,4 +1,4 @@
-## 0.13.0
+## 0.12.17
 
 * Deprecate `expectAsync` and `expectAsyncUntil`, since they currently can't be
   made to work cleanly in strong mode. They are replaced with separate methods
