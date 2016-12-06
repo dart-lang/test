@@ -262,8 +262,8 @@ class Metadata {
       new Metadata(
           testOn: testOn.intersection(other.testOn),
           timeout: timeout.merge(other.timeout),
-          skip: other._skip ?? _skip ,
-          skipReason: other.skipReason == null ? skipReason : other.skipReason,
+          skip: other._skip ?? _skip,
+          skipReason: other.skipReason ?? skipReason,
           verboseTrace: other._verboseTrace ?? _verboseTrace,
           tags: tags.union(other.tags),
           onPlatform: mergeMaps(onPlatform, other.onPlatform,
@@ -319,9 +319,9 @@ class Metadata {
     return {
       'testOn': testOn == PlatformSelector.all ? null : testOn.toString(),
       'timeout': _serializeTimeout(timeout),
-      'skip': skip,
+      'skip': _skip,
       'skipReason': skipReason,
-      'verboseTrace': verboseTrace,
+      'verboseTrace': _verboseTrace,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
       'forTag': mapMap(forTag,

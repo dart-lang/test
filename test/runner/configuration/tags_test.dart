@@ -132,6 +132,30 @@ void main() {
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
       test.shouldExit(0);
     });
+
+    // Regression test for #503.
+    test("skips tests whose tags are marked as skip", () {
+      d.file("dart_test.yaml", JSON.encode({
+        "tags": {"foo": {"skip": "some reason"}}
+      })).create();
+
+      d.file("test.dart", """
+        import 'dart:async';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test 1", () => throw 'bad', tags: ['foo']);
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "some reason",
+        "All tests skipped."
+      ]));
+      test.shouldExit(0);
+    });
   });
 
   group("include_tags and exclude_tags", () {
