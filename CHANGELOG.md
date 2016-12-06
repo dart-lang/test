@@ -1,3 +1,7 @@
+## 0.12.17+1
+
+* Fix a bug where tags couldn't be marked as skipped.
+
 ## 0.12.17
 
 * Deprecate `expectAsync` and `expectAsyncUntil`, since they currently can't be
