@@ -13,7 +13,8 @@ import '../../util/io.dart';
 import '../../utils.dart';
 import 'browser.dart';
 
-final _observatoryRegExp = new RegExp(r"^Observatory listening on ([^ ]+)");
+final _observatoryRegExp =
+    new RegExp(r'Observatory listening (?:on|at) ([^ "]+)');
 
 /// A class for running an instance of Dartium.
 ///
@@ -43,31 +44,55 @@ class Dartium extends Browser {
           "--no-default-browser-check", "--disable-default-apps",
           "--disable-translate"
         ];
-        if (port != null) args.add("--remote-debugging-port=$port");
+
+        if (port != null) {
+          args.add("--remote-debugging-port=$port");
+
+          // This forces Dartium to emit logging on Windows. See sdk#28034.
+          args.add("--enable-logging=stderr");
+
+          // This flags causes Dartium to print a consistent line of output
+          // after its internal call to `bind()` has succeeded or failed. We
+          // wait for that output to determine whether the port we chose worked.
+          args.add("--vmodule=startup_browser_creator_impl=1");
+        }
 
         var process = await Process.start(executable, args,
             environment: {"DART_FLAGS": "--checked"});
 
-        if (debug) {
-          observatoryCompleter.complete(_getObservatoryUrl(process.stdout));
+        if (port != null) {
+          // Dartium on Windows prints all standard IO to stderr, so we need to
+          // look there rather than stdout for the Observatory URL.
+          Stream<List<int>> observatoryStream;
+          Stream<List<int>> logStream;
+          if (Platform.isWindows) {
+            var split = StreamSplitter.splitFrom(process.stderr);
+            observatoryStream = split.first;
+            logStream = split.last;
+          } else {
+            observatoryStream = process.stdout;
+            logStream = process.stderr;
+          }
 
-          var stderr = new StreamIterator(lineSplitter.bind(process.stderr));
+          observatoryCompleter.complete(_getObservatoryUrl(observatoryStream));
+
+          var logs = new StreamIterator(lineSplitter.bind(logStream));
 
           // Before we can consider Dartium started successfully, we have to
           // make sure the remote debugging port worked. Any errors from this
           // will always come before the "Running without renderer sandbox"
           // message.
-          while (await stderr.moveNext() &&
-              !stderr.current.endsWith("Running without renderer sandbox")) {
-            if (stderr.current.contains("bind() returned an error")) {
+          while (await logs.moveNext() &&
+              !logs.current.contains("startup_browser_creator_impl")) {
+            if (logs.current.contains("bind() returned an error")) {
               // If we failed to bind to the port, return null to tell
               // getUnusedPort to try another one.
-              stderr.cancel();
+              logs.cancel();
               process.kill();
               return null;
             }
           }
-          stderr.cancel();
+          logs.cancel();
         } else {
           observatoryCompleter.complete(null);
         }

@@ -1,3 +1,7 @@
+## 0.12.17+2
+
+* Fix Dartium debugging on Windows.
+
 ## 0.12.17+1
 
 * Fix a bug where tags couldn't be marked as skipped.
