@@ -34,6 +34,29 @@ void main() {
     test.shouldExit(0);
   });
 
+  test("loads configuration from the path passed to --configuration", () {
+    // Make sure dart_test.yaml is ignored.
+    d.file("dart_test.yaml", JSON.encode({
+      "run_skipped": true
+    })).create();
+
+    d.file("special_test.yaml", JSON.encode({
+      "skip": true
+    })).create();
+
+    d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () => throw "oh no");
+      }
+    """).create();
+
+    var test = runTest(["--configuration", "special_test.yaml", "test.dart"]);
+    test.stdout.expect(consumeThrough(contains('All tests skipped.')));
+    test.shouldExit(0);
+  });
+
   test("pauses the test runner after a suite loads with pause_after_load: true",
       () {
     d.file("dart_test.yaml", JSON.encode({
