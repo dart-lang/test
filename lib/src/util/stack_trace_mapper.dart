@@ -17,11 +17,11 @@ class StackTraceMapper {
   /// The URI of the SDK root from which dart2js loaded its sources.
   final Uri _sdkRoot;
 
-  StackTraceMapper(String contents, {Uri mapUrl,
-        SyncPackageResolver packageResolver, Uri sdkRoot})
-    : _mapping = parse(contents, mapUrl: mapUrl),
-      _packageResolver = packageResolver,
-      _sdkRoot = sdkRoot;
+  StackTraceMapper(String contents,
+      {Uri mapUrl, SyncPackageResolver packageResolver, Uri sdkRoot})
+      : _mapping = parseExtended(contents, mapUrl: mapUrl),
+        _packageResolver = packageResolver,
+        _sdkRoot = sdkRoot;
 
   /// Converts [trace] into a Dart stack trace.
   StackTrace mapStackTrace(StackTrace trace) =>

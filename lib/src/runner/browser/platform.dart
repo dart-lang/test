@@ -241,6 +241,19 @@ class BrowserPlatform extends PlatformPlugin {
       if (browser.isJS) {
         if (_precompiled(suiteConfig, path)) {
           if (_precompiledPaths.add(suiteConfig.precompiledPath)) {
+            if (!suiteConfig.jsTrace) {
+              var jsPath = p.join(suiteConfig.precompiledPath,
+                  p.relative(path + ".browser_test.dart.js", from: _root));
+
+              var sourceMapPath = '${jsPath}.map';
+              if (new File(sourceMapPath).existsSync()) {
+                _mappers[path] = new StackTraceMapper(
+                    new File(sourceMapPath).readAsStringSync(),
+                    mapUrl: p.toUri(sourceMapPath),
+                    packageResolver: await PackageResolver.current.asSync,
+                    sdkRoot: p.toUri(sdkDir));
+              }
+            }
             _precompiledCascade ??= new shelf.Cascade();
             _precompiledCascade = _precompiledCascade.add(
                 createStaticHandler(suiteConfig.precompiledPath));
