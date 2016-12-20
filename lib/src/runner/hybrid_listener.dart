@@ -52,7 +52,7 @@ void listen(AsyncFunction getMain(), List data) {
       }
 
       if (main is! Function) {
-        _sendError(channel, "Top-level hybridMain getter is not a function.");
+        _sendError(channel, "Top-level hybridMain is not a function.");
         return;
       } else if (main is! ZoneUnaryCallback && main is! ZoneBinaryCallback) {
         _sendError(channel,

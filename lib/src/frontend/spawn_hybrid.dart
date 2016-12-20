@@ -15,23 +15,29 @@ import '../utils.dart';
 
 /// A transformer that handles messages from the spawned isolate and ensures
 /// that messages sent to it are JSON-encodable.
+///
+/// The spawned isolate sends three kinds of messages. Data messages are emitted
+/// as data events, error messages are emitted as error events, and print
+/// messages are printed using `print()`.
 final _transformer = new StreamChannelTransformer(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
-      switch (message['type']) {
-        case 'data':
-          sink.add(message['data']);
+      switch (message["type"]) {
+        case "data":
+          sink.add(message["data"]);
           break;
 
-        case 'print':
-          print(message['line']);
+        case "print":
+          print(message["line"]);
           break;
 
-        case 'error':
-          var error = RemoteException.deserialize(message['error']);
+        case "error":
+          var error = RemoteException.deserialize(message["error"]);
           sink.addError(error.error, error.stackTrace);
           break;
       }
     }), new StreamSinkTransformer.fromHandlers(handleData: (message, sink) {
+      // This is called synchronously from the user's `Sink.add()` call, so if
+      // [ensureJsonEncodable] throws here they'll get a helpful stack trace.
       ensureJsonEncodable(message);
       sink.add(message);
     }));
@@ -85,17 +91,17 @@ StreamChannel spawnHybridUri(uri, {Object message}) {
     throw new ArgumentError.value(uri, "uri", "must be a Uri or a String.");
   }
 
-  String uriString;
+  String absoluteUri;
   if (parsedUrl.scheme.isEmpty) {
     var suitePath = Invoker.current.liveTest.suite.path;
-    uriString = p.url.join(
+    absoluteUri = p.url.join(
         p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
         parsedUrl.toString());
   } else {
-    uriString = uri.toString();
+    absoluteUri = uri.toString();
   }
 
-  return _spawn(uriString, message);
+  return _spawn(absoluteUri, message);
 }
 
 /// Spawns a VM isolate that runs the given [dartCode], which is loaded as the

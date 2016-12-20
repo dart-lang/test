@@ -613,8 +613,8 @@ Maybe you're testing the HTML served by your app, or maybe you're writing a
 library that communicates over WebSockets. We call tests that run code on both
 the browser and the VM **hybrid tests**.
 
-Hybrid tests use one of two functions: [`spawnHybridCode()`][spawnHybridUri] and
-[`spawnHybridUri()`][spawnHybridCode]. Both of these spawn Dart VM
+Hybrid tests use one of two functions: [`spawnHybridCode()`][spawnHybridCode] and
+[`spawnHybridUri()`][spawnHybridUri]. Both of these spawn Dart VM
 [isolates][dart:isolate] that can import `dart:io` and other VM-only libraries.
 The only difference is where the code from the isolate comes from:
 `spawnHybridCode()` takes a chunk of actual Dart code, whereas
@@ -622,8 +622,8 @@ The only difference is where the code from the isolate comes from:
 [`StreamChannel`][StreamChannel] that communicates with the hybrid isolate. For
 example:
 
-[spawnHybridUri]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridUri
 [spawnHybridCode]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridCode
+[spawnHybridUri]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridUri
 [dart:isolate]: https://api.dartlang.org/stable/latest/dart-isolate/dart-isolate-library.html
 [StreamChannel]: https://pub.dartlang.org/packages/stream_channel
 
