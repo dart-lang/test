@@ -105,7 +105,7 @@ class Declarer {
         tags: tags));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
-      var parents = [];
+      var parents = <Declarer>[];
       for (var declarer = this; declarer != null; declarer = declarer._parent) {
         parents.add(declarer);
       }
