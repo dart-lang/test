@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:analyzer/analyzer.dart';
@@ -21,15 +22,17 @@ import 'string_literal_iterator.dart';
 /// If [resolver] is passed, its package resolution strategy is used to resolve
 /// code in the spawned isolate. It defaults to [PackageResolver.current].
 Future<Isolate> runInIsolate(String code, message, {PackageResolver resolver,
-    bool checked}) async {
+    bool checked, SendPort onExit}) async {
   resolver ??= PackageResolver.current;
   return await Isolate.spawnUri(
-      Uri.parse('data:application/dart;charset=utf-8,' + Uri.encodeFull(code)),
+      new Uri.dataFromString(code,
+          mimeType: 'application/dart', encoding: UTF8),
       [],
       message,
       packageRoot: await resolver.packageRoot,
       packageConfig: await resolver.packageConfigUri,
-      checked: checked);
+      checked: checked,
+      onExit: onExit);
 }
 
 // TODO(nweiz): Move this into the analyzer once it starts using SourceSpan

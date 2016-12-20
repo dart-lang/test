@@ -14,6 +14,7 @@
   * [Whole-Package Configuration](#whole-package-configuration)
 * [Tagging Tests](#tagging-tests)
 * [Debugging](#debugging)
+* [Browser/VM Hybrid Tests](#browser-vm-hybrid-tests)
 * [Testing with `barback`](#testing-with-barback)
 * [Further Reading](#further-reading)
 
@@ -126,7 +127,7 @@ void main() {
 
 A single test file can be run just using `pub run test path/to/test.dart`.
 
-![Single file being run via pub run"](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
+![Single file being run via "pub run"](https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif)
 
 Many tests can be run at a time using `pub run test path/to/dir`.
 
@@ -604,6 +605,80 @@ iframe for the current test suite is expanded to fill the browser window so you
 can see and interact with any HTML it renders. Note that the Dart animation may
 still be visible behind the iframe; to hide it, just add a `background-color` to
 the page's HTML.
+
+## Browser/VM Hybrid Tests
+
+Code that's written for the browser often needs to talk to some kind of server.
+Maybe you're testing the HTML served by your app, or maybe you're writing a
+library that communicates over WebSockets. We call tests that run code on both
+the browser and the VM **hybrid tests**.
+
+Hybrid tests use one of two functions: [`spawnHybridCode()`][spawnHybridCode] and
+[`spawnHybridUri()`][spawnHybridUri]. Both of these spawn Dart VM
+[isolates][dart:isolate] that can import `dart:io` and other VM-only libraries.
+The only difference is where the code from the isolate comes from:
+`spawnHybridCode()` takes a chunk of actual Dart code, whereas
+`spawnHybridUri()` takes a URL. They both return a
+[`StreamChannel`][StreamChannel] that communicates with the hybrid isolate. For
+example:
+
+[spawnHybridCode]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridCode
+[spawnHybridUri]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridUri
+[dart:isolate]: https://api.dartlang.org/stable/latest/dart-isolate/dart-isolate-library.html
+[StreamChannel]: https://pub.dartlang.org/packages/stream_channel
+
+```dart
+// ## test/web_socket_server.dart
+
+// The library loaded by spawnHybridUri() can import any packages that your
+// package depends on, including those that only work on the VM.
+import "package:shelf/shelf_io.dart" as io;
+import "package:shelf_web_socket/shelf_web_socket.dart";
+import "package:stream_channel/stream_channel.dart";
+
+// Once the hybrid isolate starts, it will call the special function
+// hybridMain() with a StreamChannel that's connected to the channel
+// returned spawnHybridCode().
+hybridMain(StreamChannel channel) async {
+  // Start a WebSocket server that just sends "hello!" to its clients.
+  var server = await io.serve(webSocketHandler((webSocket) {
+    webSocket.sink.add("hello!");
+  }), 'localhost', 0);
+
+  // Send the port number of the WebSocket server to the browser test, so
+  // it knows what to connect to.
+  channel.sink.add(server.port);
+}
+
+
+// ## test/web_socket_test.dart
+
+@TestOn("browser")
+
+import "dart:html";
+
+import "package:test/test.dart";
+
+void main() {
+  test("connects to a server-side WebSocket", () async {
+    // Each spawnHybrid function returns a StreamChannel that communicates with
+    // the hybrid isolate. You can close this channel to kill the isolate.
+    var channel = spawnHybridUri("web_socket_server.dart");
+
+    // Get the port for the WebSocket server from the hybrid isolate.
+    var port = await channel.stream.first;
+
+    var socket = new WebSocket('ws://localhost:$port');
+    var message = await socket.onMessage.first;
+    expect(message.data, equals("hello!"));
+  });
+}
+```
+
+![A diagram showing a test in a browser communicating with a Dart VM isolate outside the browser.](https://raw.githubusercontent.com/dart-lang/test/master/image/hybrid.png)
+
+**Note**: If you write hybrid tests, be sure to add a dependency on the
+`stream_channel` package, since you're using its API!
 
 ## Testing With `barback`
 

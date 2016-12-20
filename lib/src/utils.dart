@@ -358,3 +358,25 @@ String randomBase64(int bytes, {int seed}) {
   }
   return BASE64.encode(data);
 }
+
+/// Throws an [ArgumentError] if [message] isn't recursively JSON-safe.
+void ensureJsonEncodable(Object message) {
+  if (message == null || message is String || message is num ||
+      message is bool) {
+    // JSON-encodable, hooray!
+  } else if (message is List) {
+    for (var element in message) {
+      ensureJsonEncodable(element);
+    }
+  } else if (message is Map) {
+    message.forEach((key, value) {
+      if (key is! String) {
+        throw new ArgumentError("$message can't be JSON-encoded.");
+      }
+
+      ensureJsonEncodable(value);
+    });
+  } else {
+    throw new ArgumentError.value("$message can't be JSON-encoded.");
+  }
+}

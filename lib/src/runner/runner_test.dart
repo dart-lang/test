@@ -17,6 +17,7 @@ import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
+import 'spawn_hybrid.dart';
 
 typedef StackTrace _MapTrace(StackTrace trace);
 
@@ -53,23 +54,37 @@ class RunnerTest extends Test {
       });
 
       testChannel.stream.listen((message) {
-        if (message['type'] == 'error') {
-          var asyncError = RemoteException.deserialize(message['error']);
+        switch (message['type']) {
+          case 'error':
+            var asyncError = RemoteException.deserialize(message['error']);
+            var stackTrace = _mapTrace(asyncError.stackTrace);
+            controller.addError(asyncError.error, stackTrace);
+            break;
 
-          var stackTrace = _mapTrace(asyncError.stackTrace);
-          controller.addError(asyncError.error, stackTrace);
-        } else if (message['type'] == 'state-change') {
-          controller.setState(
-              new State(
-                  new Status.parse(message['status']),
-                  new Result.parse(message['result'])));
-        } else if (message['type'] == 'message') {
-          controller.message(new Message(
-              new MessageType.parse(message['message-type']),
-              message['text']));
-        } else {
-          assert(message['type'] == 'complete');
-          controller.completer.complete();
+          case 'state-change':
+            controller.setState(
+                new State(
+                    new Status.parse(message['status']),
+                    new Result.parse(message['result'])));
+            break;
+
+          case 'message':
+            controller.message(new Message(
+                new MessageType.parse(message['message-type']),
+                message['text']));
+            break;
+
+          case 'complete':
+            controller.completer.complete();
+            break;
+
+          case 'spawn-hybrid-uri':
+            // When we kill the isolate that the test lives in, that will close
+            // this virtual channel and cause the spawned isolate to close as
+            // well.
+            spawnHybridUri(message['url'], message['message'])
+                .pipe(testChannel.virtualChannel(message['channel']));
+            break;
         }
       }, onDone: () {
         // When the test channel closes—presumably becuase the browser
