@@ -4,19 +4,13 @@
 
 @TestOn("vm")
 
-import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:async/async.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_process.dart';
-import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
 
-import 'package:test/src/util/io.dart';
 
 import '../io.dart';
 
@@ -301,7 +295,7 @@ void main() {
         "+2: All tests passed!"
       ]));
       test.shouldExit(0);
-    });
+    }, tags: ['content-shell']);
 
     test("allows the hybrid isolate to send errors across the stream channel",
         () {
@@ -379,7 +373,6 @@ void main() {
     });
 
     test("gracefully handles an unserializable message in the browser", () {
-      var path = p.join(sandbox, "test.dart");
       d.file("test.dart", """
         import "package:test/test.dart";
 

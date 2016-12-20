@@ -19,7 +19,7 @@ import '../utils.dart';
 /// The spawned isolate sends three kinds of messages. Data messages are emitted
 /// as data events, error messages are emitted as error events, and print
 /// messages are printed using `print()`.
-final _transformer = new StreamChannelTransformer(
+final _transformer = new StreamChannelTransformer<Object, Map>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
       switch (message["type"]) {
         case "data":

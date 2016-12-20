@@ -224,7 +224,7 @@ void main() {
     test("exposes a LiveTest that emits the correct states", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () => bodyRun = true);
+          test("test", () {});
         }, skip: true);
       });
 
