@@ -11,6 +11,7 @@ import 'package:async/async.dart' hide StreamQueue;
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
+import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
 import 'util/stream_queue.dart';
 
@@ -345,6 +346,24 @@ Stream errorStream(error, StackTrace stackTrace) {
 /// containing method to return a future.
 void invoke(fn()) {
   fn();
+}
+
+/// Runs [body] with special error-handling behavior.
+///
+/// Errors emitted [body] will still cause the current test to fail, but they
+/// won't cause it to *stop*. In particular, they won't remove any outstanding
+/// callbacks registered outside of [body].
+///
+/// This may only be called within a test.
+Future errorsDontStopTest(body()) {
+  var completer = new Completer();
+
+  Invoker.current.addOutstandingCallback();
+  Invoker.current.waitForOutstandingCallbacks(() {
+    new Future.sync(body).whenComplete(completer.complete);
+  }).then((_) => Invoker.current.removeOutstandingCallback());
+
+  return completer.future;
 }
 
 /// Returns a random base64 string containing [bytes] bytes of data.

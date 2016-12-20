@@ -288,6 +288,9 @@ Future expectTestBlocks(test(), stopBlocking(value)) async {
 
 /// Runs [body] with a declarer, runs all the declared tests, and asserts that
 /// they pass.
+///
+/// This is typically used to run multiple tests where later tests make
+/// assertions about the results of previous ones.
 Future expectTestsPass(void body()) async {
   var engine = declareEngine(body);
   var success = await engine.run();

@@ -1,5 +1,8 @@
 ## 0.12.18
 
+* Add an `addTearDown()` function, which allows tests to register additional
+  tear-down callbacks as they're running.
+
 * Add the `spawnHybridUri()` and `spawnHybridCode()` functions, which allow
   browser tests to run code on the VM.
 

@@ -126,9 +126,21 @@ class Invoker {
   /// This will be `null` until the test starts running.
   Timer _timeoutTimer;
 
+  /// The tear-down functions to run when this test finishes.
+  final _tearDowns = new List<AsyncFunction>();
+
   Invoker._(Suite suite, LocalTest test, {Iterable<Group> groups}) {
     _controller = new LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete, groups: groups);
+  }
+
+  /// Runs [callback] after this test completes.
+  ///
+  /// The [callback] may return a [Future]. Like all tear-downs, callbacks are
+  /// run in the reverse of the order they're declared.
+  void addTearDown(callback()) {
+    if (closed) throw new ClosedException();
+    _tearDowns.add(callback);
   }
 
   /// Tells the invoker that there's a callback running that it should wait for
@@ -301,13 +313,17 @@ class Invoker {
         // a chance to hit its event handler(s) before the test produces an
         // error. If an error is emitted before the first state change is
         // handled, we can end up with [onError] callbacks firing before the
-        // corresponding [onStateChange], which violates the timing
+        // corresponding [onStateChkange], which violates the timing
         // guarantees.
         //
         // Using [new Future] also avoids starving the DOM or other
         // microtask-level events.
-        new Future(_test._body)
-            .then((_) => removeOutstandingCallback());
+        new Future(() async {
+          await _test._body();
+          await unclosable(() =>
+              Future.forEach(_tearDowns.reversed, errorsDontStopTest));
+          removeOutstandingCallback();
+        });
 
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
