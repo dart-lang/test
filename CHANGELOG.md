@@ -3,6 +3,9 @@
 * Add the `spawnHybridUri()` and `spawnHybridCode()` functions, which allow
   browser tests to run code on the VM.
 
+* Fix the new `expectAsync` functions so that they don't produce analysis errors
+  when passed callbacks with optional arguments.
+
 ## 0.12.17+3
 
 * Internal changes only.
