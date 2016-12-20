@@ -301,7 +301,7 @@ void main() {
         "+2: All tests passed!"
       ]));
       test.shouldExit(0);
-    });
+    }, tags: ['content-shell']);
 
     test("allows the hybrid isolate to send errors across the stream channel",
         () {
