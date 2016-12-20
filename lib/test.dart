@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
+import 'src/backend/invoker.dart';
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/configuration/suite.dart';
@@ -228,7 +229,25 @@ void setUp(callback()) => _declarer.setUp(callback);
 ///
 /// Each callback at the top level or in a given group will be run in the
 /// reverse of the order they were declared.
+///
+/// See also [addTearDown], which adds tear-downs to a running test.
 void tearDown(callback()) => _declarer.tearDown(callback);
+
+/// Registers a function to be run after the current test.
+///
+/// This is called within a running test, and adds a tear-down only for the
+/// current test. It allows testing libraries to add cleanup logic as soon as
+/// there's something to clean up.
+///
+/// The [callback] is run before any callbacks registered with [tearDown]. Like
+/// [tearDown], the most recently registered callback is run first.
+void addTearDown(callback()) {
+  if (Invoker.current == null) {
+    throw new StateError("addTearDown() may only be called within a test.");
+  }
+
+  Invoker.current.addTearDown(callback);
+}
 
 /// Registers a function to be run once before all tests.
 ///

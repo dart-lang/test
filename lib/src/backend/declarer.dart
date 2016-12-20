@@ -105,15 +105,24 @@ class Declarer {
         tags: tags));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
-      // TODO(nweiz): It might be useful to throw an error here if a test starts
-      // running while other tests from the same declarer are also running,
-      // since they might share closurized state.
+      var parents = [];
+      for (var declarer = this; declarer != null; declarer = declarer._parent) {
+        parents.add(declarer);
+      }
+
+      // Register all tear-down functions in all declarers. Iterate through
+      // parents outside-in so that the Invoker gets the functions in the order
+      // they were declared in source.
+      for (var declarer in parents.reversed) {
+        for (var tearDown in declarer._tearDowns) {
+          Invoker.current.addTearDown(tearDown);
+        }
+      }
 
       await Invoker.current.waitForOutstandingCallbacks(() async {
         await _runSetUps();
         await body();
       });
-      await _runTearDowns();
     }, trace: _collectTraces ? new Trace.current(2) : null));
   }
 
@@ -197,23 +206,6 @@ class Declarer {
     await Future.forEach(_setUps, (setUp) => setUp());
   }
 
-  /// Run the tear-up functions for this and any parent groups.
-  ///
-  /// If no set-up functions are declared, this returns a [Future] that
-  /// completes immediately.
-  ///
-  /// This should only be called within a test.
-  Future _runTearDowns() {
-    return Invoker.current.unclosable(() {
-      var tearDowns = [];
-      for (var declarer = this; declarer != null; declarer = declarer._parent) {
-        tearDowns.addAll(declarer._tearDowns.reversed);
-      }
-
-      return Future.forEach(tearDowns, _errorsDontStopTest);
-    });
-  }
-
   /// Returns a [Test] that runs the callbacks in [_setUpAll].
   Test get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
@@ -229,24 +221,8 @@ class Declarer {
 
     return new LocalTest(_prefix("(tearDownAll)"), _metadata, () {
       return Invoker.current.unclosable(() {
-        return Future.forEach(_tearDownAlls.reversed, _errorsDontStopTest);
+        return Future.forEach(_tearDownAlls.reversed, errorsDontStopTest);
       });
     }, trace: _tearDownAllTrace);
-  }
-
-  /// Runs [body] with special error-handling behavior.
-  ///
-  /// Errors emitted [body] will still cause the current test to fail, but they
-  /// won't cause it to *stop*. In particular, they won't remove any outstanding
-  /// callbacks registered outside of [body].
-  Future _errorsDontStopTest(body()) {
-    var completer = new Completer();
-
-    Invoker.current.addOutstandingCallback();
-    Invoker.current.waitForOutstandingCallbacks(() {
-      new Future.sync(body).whenComplete(completer.complete);
-    }).then((_) => Invoker.current.removeOutstandingCallback());
-
-    return completer.future;
   }
 }
