@@ -1,3 +1,8 @@
+## 0.12.18+1
+
+* Fix the deprecated `expectAsync()` function. The deprecation caused it to
+  fail to support functions that take arguments.
+
 ## 0.12.18
 
 * Add an `addTearDown()` function, which allows tests to register additional

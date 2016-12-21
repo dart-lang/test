@@ -10,7 +10,8 @@ import 'expect.dart';
 /// An object used to detect unpassed arguments.
 const _PLACEHOLDER = const Object();
 
-// Functions used to check how many arguments a callback takes.
+// Function types returned by expectAsync# methods.
+
 typedef T Func0<T>();
 typedef T Func1<T, A>([A a]);
 typedef T Func2<T, A, B>([A a, B b]);
@@ -18,6 +19,18 @@ typedef T Func3<T, A, B, C>([A a, B b, C c]);
 typedef T Func4<T, A, B, C, D>([A a, B b, C c, D d]);
 typedef T Func5<T, A, B, C, D, E>([A a, B b, C c, D d, E e]);
 typedef T Func6<T, A, B, C, D, E, F>([A a, B b, C c, D d, E e, F f]);
+
+// Functions used to check how many arguments a callback takes. We can't use the
+// previous functions for this, because (a) {} is not a subtype of
+// ([dynamic]) -> dynamic.
+
+typedef _Func0();
+typedef _Func1(A a);
+typedef _Func2(A a, B b);
+typedef _Func3(A a, B b, C c);
+typedef _Func4(A a, B b, C c, D d);
+typedef _Func5(A a, B b, C c, D d, E e);
+typedef _Func6(A a, B b, C c, D d, E e, F f);
 
 typedef bool _IsDoneCallback();
 
@@ -128,13 +141,13 @@ class _ExpectedFunction<T> {
   /// Returns a function that has the same number of positional arguments as the
   /// wrapped function (up to a total of 6).
   Function get func {
-    if (_callback is Func6) return max6;
-    if (_callback is Func5) return max5;
-    if (_callback is Func4) return max4;
-    if (_callback is Func3) return max3;
-    if (_callback is Func2) return max2;
-    if (_callback is Func1) return max1;
-    if (_callback is Func0) return max0;
+    if (_callback is _Func6) return max6;
+    if (_callback is _Func5) return max5;
+    if (_callback is _Func4) return max4;
+    if (_callback is _Func3) return max3;
+    if (_callback is _Func2) return max2;
+    if (_callback is _Func1) return max1;
+    if (_callback is _Func0) return max0;
 
     _invoker.removeOutstandingCallback();
     throw new ArgumentError(

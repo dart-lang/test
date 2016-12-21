@@ -145,11 +145,6 @@ void main() {
     });
   });
 
-  test("doesn't support a function with 7 arguments", () {
-    expect(() => expectAsync((_1, _2, _3, _4, _5, _6, _7) {}),
-        throwsArgumentError);
-  });
-
   group("by default", () {
     test("won't allow the test to complete until it's called", () {
       return expectTestBlocks(
@@ -327,6 +322,37 @@ void main() {
       expectTestFailed(liveTest, 'oh no');
       expect(returnValue, isNull);
       expect(caughtError, isFalse);
+    });
+  });
+
+  group("old-style expectAsync()", () {
+    test("works with no arguments", () async {
+      var callbackRun = false;
+      var liveTest = await runTestBody(() {
+        expectAsync(() {
+          callbackRun = true;
+        })();
+      });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
+    });
+
+    test("works with arguments", () async {
+      var callbackRun = false;
+      var liveTest = await runTestBody(() {
+        expectAsync((arg1, arg2) {
+          callbackRun = true;
+        })(1, 2);
+      });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
+    });
+
+    test("doesn't support a function with 7 arguments", () {
+      expect(() => expectAsync((_1, _2, _3, _4, _5, _6, _7) {}),
+          throwsArgumentError);
     });
   });
 }
