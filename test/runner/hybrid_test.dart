@@ -11,10 +11,15 @@ import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
 
-
 import '../io.dart';
 
 void main() {
+  String packageRoot;
+  setUpAll(() async {
+    packageRoot = p.absolute(p.dirname(p.fromUri(
+        await Isolate.resolvePackageUri(Uri.parse("package:test/")))));
+  });
+
   useSandbox();
 
   group("spawnHybridUri():", () {
@@ -250,53 +255,6 @@ void main() {
           completion(equals({"a": "b"})));
     });
 
-    test("persists across multiple tests", () {
-      d.file("test.dart", """
-        import "dart:async";
-
-        import "package:async/async.dart";
-        import "package:stream_channel/stream_channel.dart";
-
-        import "package:test/test.dart";
-
-        void main() {
-          StreamQueue queue;
-          StreamSink sink;
-          setUpAll(() {
-            var channel = spawnHybridCode('''
-              import "package:stream_channel/stream_channel.dart";
-
-              void hybridMain(StreamChannel channel) {
-                channel.stream.listen((message) {
-                  channel.sink.add(message);
-                });
-              }
-            ''');
-            queue = new StreamQueue(channel.stream);
-            sink = channel.sink;
-          });
-
-          test("echoes a number", () {
-            expect(queue.next, completion(equals(123)));
-            sink.add(123);
-          });
-
-          test("echoes a string", () {
-            expect(queue.next, completion(equals("wow")));
-            sink.add("wow");
-          });
-        }
-      """).create();
-
-      var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: echoes a number",
-        "+1: echoes a string",
-        "+2: All tests passed!"
-      ]));
-      test.shouldExit(0);
-    }, tags: ['content-shell']);
-
     test("allows the hybrid isolate to send errors across the stream channel",
         () {
       var channel = spawnHybridCode("""
@@ -499,6 +457,88 @@ void main() {
       """);
 
       expect(channel.stream.toList(), completion(isEmpty));
+    });
+
+    test("closes the channel when the test finishes by default", () {
+      d.file("test.dart", """
+        import "package:stream_channel/stream_channel.dart";
+        import "package:test/test.dart";
+
+        import "${p.toUri(packageRoot)}/test/utils.dart";
+
+        void main() {
+          StreamChannel channel;
+          test("test 1", () {
+            channel = spawnHybridCode('''
+              import "package:stream_channel/stream_channel.dart";
+
+              void hybridMain(StreamChannel channel) {}
+            ''');
+          });
+
+          test("test 2", () async {
+            var isDone = false;
+            channel.stream.listen(null, onDone: () => isDone = true);
+            await pumpEventQueue();
+            expect(isDone, isTrue);
+          });
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "+0: test 1",
+        "+1: test 2",
+        "+2: All tests passed!"
+      ]));
+      test.shouldExit(0);
+    });
+
+    test("persists across multiple tests with stayAlive: true", () {
+      d.file("test.dart", """
+        import "dart:async";
+
+        import "package:async/async.dart";
+        import "package:stream_channel/stream_channel.dart";
+
+        import "package:test/test.dart";
+
+        void main() {
+          StreamQueue queue;
+          StreamSink sink;
+          setUpAll(() {
+            var channel = spawnHybridCode('''
+              import "package:stream_channel/stream_channel.dart";
+
+              void hybridMain(StreamChannel channel) {
+                channel.stream.listen((message) {
+                  channel.sink.add(message);
+                });
+              }
+            ''', stayAlive: true);
+            queue = new StreamQueue(channel.stream);
+            sink = channel.sink;
+          });
+
+          test("echoes a number", () {
+            expect(queue.next, completion(equals(123)));
+            sink.add(123);
+          });
+
+          test("echoes a string", () {
+            expect(queue.next, completion(equals("wow")));
+            sink.add("wow");
+          });
+        }
+      """).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(containsInOrder([
+        "+0: echoes a number",
+        "+1: echoes a string",
+        "+2: All tests passed!"
+      ]));
+      test.shouldExit(0);
     });
   });
 }

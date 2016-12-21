@@ -9,6 +9,7 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
+import '../../test.dart';
 import '../backend/invoker.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
@@ -79,9 +80,13 @@ final _transformer = new StreamChannelTransformer<Object, Map>(
 /// context, so it can't access test functions like `expect()` and
 /// `expectAsync()`.
 ///
+/// By default, the hybrid isolate is automatically killed when the test
+/// finishes running. If [stayAlive] is `true`, it won't be killed until the
+/// entire test suite finishes running.
+///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridUri(uri, {Object message}) {
+StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
   Uri parsedUrl;
   if (uri is Uri) {
     parsedUrl = uri;
@@ -101,7 +106,7 @@ StreamChannel spawnHybridUri(uri, {Object message}) {
     absoluteUri = uri.toString();
   }
 
-  return _spawn(absoluteUri, message);
+  return _spawn(absoluteUri, message, stayAlive: stayAlive);
 }
 
 /// Spawns a VM isolate that runs the given [dartCode], which is loaded as the
@@ -138,17 +143,22 @@ StreamChannel spawnHybridUri(uri, {Object message}) {
 /// context, so it can't access test functions like `expect()` and
 /// `expectAsync()`.
 ///
+/// By default, the hybrid isolate is automatically killed when the test
+/// finishes running. If [stayAlive] is `true`, it won't be killed until the
+/// entire test suite finishes running.
+///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridCode(String dartCode, {Object message}) {
+StreamChannel spawnHybridCode(String dartCode, {Object message,
+    bool stayAlive: false}) {
   var uri = new Uri.dataFromString(dartCode,
       encoding: UTF8, mimeType: 'application/dart');
-  return _spawn(uri.toString(), message);
+  return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 
 /// Like [spawnHybridUri], but doesn't take [Uri] objects and doesn't handle
 /// relative URLs.
-StreamChannel _spawn(String uri, Object message) {
+StreamChannel _spawn(String uri, Object message, {bool stayAlive: false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel;
   if (channel == null) {
     // TODO(nweiz): Link to an issue tracking support when running the test file
@@ -167,6 +177,12 @@ StreamChannel _spawn(String uri, Object message) {
     "message": message,
     "channel": isolateChannel.id
   });
+
+  if (!stayAlive) {
+    var disconnector = new Disconnector();
+    addTearDown(() => disconnector.disconnect());
+    isolateChannel = isolateChannel.transform(disconnector);
+  }
 
   return isolateChannel.transform(_transformer);
 }
