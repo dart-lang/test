@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
+import '../backend/test_platform.dart';
 import '../util/io.dart';
 import '../utils.dart';
 import 'configuration.dart';
@@ -72,6 +73,10 @@ class _Debugger {
   /// overlap with the reporter's reporting.
   final Console _console;
 
+  /// A completer that's used to manually unpause the test if the debugger is
+  /// closed.
+  final _pauseCompleter = new CancelableCompleter();
+
   /// The subscription to [_suite.onDebugging].
   StreamSubscription<bool> _onDebuggingSubscription;
 
@@ -89,14 +94,6 @@ class _Debugger {
         "restart", "Restart the current test after it finishes running.",
         _restartTest);
 
-    _onDebuggingSubscription = _suite.onDebugging.listen((debugging) {
-      if (debugging) {
-        _onDebugging();
-      } else {
-        _onNotDebugging();
-      }
-    });
-
     _onRestartSubscription = _suite.environment.onRestart.listen((_) {
       _restartTest();
     });
@@ -110,6 +107,16 @@ class _Debugger {
     try {
       await _pause();
       if (_closed) return;
+
+      // Wait to subscribe to the debugging stream because we don't want to open
+      // up the debugging console before any tests are run.
+      _onDebuggingSubscription = _suite.onDebugging.listen((debugging) {
+        if (debugging) {
+          _onDebugging();
+        } else {
+          _onNotDebugging();
+        }
+      });
 
       _engine.resume();
       await _engine.onIdle.first;
@@ -143,7 +150,7 @@ class _Debugger {
           }
         }
 
-        if (_suite.platform.isHeadless) {
+        if (_suite.platform.isHeadless && _suite.platform != TestPlatform.vm) {
           var url = _suite.environment.remoteDebuggerUrl;
           if (url == null) {
             print("${yellow}Remote debugger URL not found.$noColor");
@@ -154,12 +161,16 @@ class _Debugger {
 
         var buffer = new StringBuffer(
             "${bold}The test runner is paused.${noColor} ");
-        if (!_suite.platform.isHeadless) {
-          buffer.write("Open the dev console in ${_suite.platform} ");
+        if (_suite.platform == TestPlatform.vm) {
+          buffer.write("Open the Observatory ");
         } else {
-          buffer.write("Open the remote debugger ");
+          if (!_suite.platform.isHeadless) {
+            buffer.write("Open the dev console in ${_suite.platform} ");
+          } else {
+            buffer.write("Open the remote debugger ");
+          }
+          if (_suite.platform.isDartVM) buffer.write("or the Observatory ");
         }
-        if (_suite.platform.isDartVM) buffer.write("or the Observatory ");
 
         buffer.write("and set breakpoints. Once you're finished, return to "
             "this terminal and press Enter.");
@@ -169,7 +180,8 @@ class _Debugger {
 
       await inCompletionOrder([
         _suite.environment.displayPause(),
-        cancelableNext(stdinLines)
+        cancelableNext(stdinLines),
+        _pauseCompleter.operation,
       ]).first;
     } finally {
       if (!_json) _reporter.resume();
@@ -209,8 +221,9 @@ class _Debugger {
 
   /// Closes the debugger and releases its resources.
   void close() {
+    _pauseCompleter.complete();
     _closed = true;
-    _onDebuggingSubscription.cancel();
+    _onDebuggingSubscription?.cancel();
     _onRestartSubscription.cancel();
     _console.stop();
   }

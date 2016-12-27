@@ -1,3 +1,7 @@
+## 0.12.19
+
+* Add support for debugging VM tests.
+
 ## 0.12.18+1
 
 * Fix the deprecated `expectAsync()` function. The deprecation caused it to

@@ -18,33 +18,32 @@ void main() {
 
   test("pauses the test runner for each file until the user presses enter", () {
     d.file("test1.dart", """
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  print('loaded test 1!');
+      void main() {
+        print('loaded test 1!');
 
-  test("success", () {});
-}
-""").create();
+        test("success", () {});
+      }
+    """).create();
 
     d.file("test2.dart", """
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  print('loaded test 2!');
+      void main() {
+        print('loaded test 2!');
 
-  test("success", () {});
-}
-""").create();
+        test("success", () {});
+      }
+    """).create();
 
-    var test = runTest(
-        ["--pause-after-load", "-p", "dartium", "test1.dart", "test2.dart"]);
+    var test = runTest(["--pause-after-load", "test1.dart", "test2.dart"]);
     test.stdout.expect(consumeThrough("loaded test 1!"));
     test.stdout.expect(consumeThrough(inOrder([
       startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
+      "The test runner is paused. Open the Observatory and set breakpoints. "
+        "Once you're finished, return to",
+      "this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -65,9 +64,9 @@ void main() {
     test.stdout.expect(consumeThrough("loaded test 2!"));
     test.stdout.expect(consumeThrough(inOrder([
       startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
+      "The test runner is paused. Open the Observatory and set breakpoints. "
+        "Once you're finished, return to",
+      "this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -86,34 +85,34 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
     test.shouldExit(0);
-  }, tags: 'dartium');
+  });
 
   test("pauses the test runner for each platform until the user presses enter",
       () {
     d.file("test.dart", """
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  print('loaded test!');
+      void main() {
+        print('loaded test!');
 
-  test("success", () {});
-}
-""").create();
+        test("success", () {});
+      }
+    """).create();
 
     var test = runTest(
-        ["--pause-after-load", "-p", "dartium", "-p", "chrome", "test.dart"]);
+        ["--pause-after-load", "-p", "vm", "-p", "dartium", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
       startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
+      "The test runner is paused. Open the Observatory and set breakpoints. "
+        "Once you're finished, return to",
+      "this terminal and press Enter."
     ])));
 
     schedule(() async {
       var nextLineFired = false;
       test.stdout.next().then(expectAsync1((line) {
-        expect(line, contains("+0: [Dartium] success"));
+        expect(line, contains("+0: [VM] success"));
         nextLineFired = true;
       }));
 
@@ -127,8 +126,8 @@ void main() {
 
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
-      "The test runner is paused. Open the dev console in Chrome and set "
-          "breakpoints. Once you're finished,",
+      "The test runner is paused. Open the remote debugger or the Observatory "
+        "and set breakpoints. Once you're finished,",
       "return to this terminal and press Enter."
     ])));
 
@@ -148,120 +147,55 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
     test.shouldExit(0);
-  }, tags: ['dartium', 'chrome']);
-
-  test("prints a warning and doesn't pause for unsupported platforms", () {
-    d.file("test.dart", """
-import 'package:test/test.dart';
-
-void main() {
-  test("success", () {});
-}
-""").create();
-
-    var test = runTest(
-        ["--pause-after-load", "-p", "vm", "test.dart"]);
-    test.stderr.expect(
-        "Warning: Debugging is currently unsupported on the Dart VM.");
-    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-    test.shouldExit(0);
-  });
-
-  test("can mix supported and unsupported platforms", () {
-    d.file("test.dart", """
-import 'package:test/test.dart';
-
-void main() {
-  print('loaded test!');
-
-  test("success", () {});
-}
-""").create();
-
-    var test = runTest(
-        ["--pause-after-load", "-p", "dartium", "-p", "vm", "test.dart"]);
-    test.stderr.expect(
-        "Warning: Debugging is currently unsupported on the Dart VM.");
-
-    test.stdout.expect(consumeThrough("loaded test!"));
-    test.stdout.expect(consumeThrough(inOrder([
-      startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
-    ])));
-
-    schedule(() async {
-      var nextLineFired = false;
-      test.stdout.next().then(expectAsync1((line) {
-        expect(line, contains("+0: [Dartium] success"));
-        nextLineFired = true;
-      }));
-
-      // Wait a little bit to be sure that the tests don't start running without
-      // our input.
-      await new Future.delayed(new Duration(seconds: 2));
-      expect(nextLineFired, isFalse);
-    });
-
-    test.writeLine('');
-
-    test.stdout.expect(containsInOrder([
-      "loaded test!",
-      "+1: [VM] success",
-      "+2: All tests passed!"
-    ]));
-    test.shouldExit(0);
   }, tags: 'dartium');
 
   test("stops immediately if killed while paused", () {
     d.file("test.dart", """
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  print('loaded test!');
+      void main() {
+        print('loaded test!');
 
-  test("success", () {});
-}
-""").create();
+        test("success", () {});
+      }
+    """).create();
 
-    var test = runTest(["--pause-after-load", "-p", "dartium", "test.dart"]);
+    var test = runTest(["--pause-after-load", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
       startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
+      "The test runner is paused. Open the Observatory and set breakpoints. "
+        "Once you're finished, return to",
+      "this terminal and press Enter."
     ])));
 
     test.signal(ProcessSignal.SIGTERM);
     test.shouldExit();
     test.stderr.expect(isDone);
-  }, tags: 'dartium', testOn: "!windows");
+  }, testOn: "!windows");
 
   test("disables timeouts", () {
     d.file("test.dart", """
-import 'dart:async';
+      import 'dart:async';
 
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  print('loaded test 1!');
+      void main() {
+        print('loaded test 1!');
 
-  test("success", () async {
-    await new Future.delayed(Duration.ZERO);
-  }, timeout: new Timeout(Duration.ZERO));
-}
-""").create();
+        test("success", () async {
+          await new Future.delayed(Duration.ZERO);
+        }, timeout: new Timeout(Duration.ZERO));
+      }
+    """).create();
 
-    var test = runTest(
-        ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
+    var test = runTest(["--pause-after-load", "-n", "success", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test 1!"));
     test.stdout.expect(consumeThrough(inOrder([
       startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
+      "The test runner is paused. Open the Observatory and set breakpoints. "
+        "Once you're finished, return to",
+      "this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -280,30 +214,29 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
-  }, tags: 'dartium');
+  });
 
   // Regression test for #304.
   test("supports test name patterns", () {
     d.file("test.dart", """
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  print('loaded test 1!');
+      void main() {
+        print('loaded test 1!');
 
-  test("failure 1", () {});
-  test("success", () {});
-  test("failure 2", () {});
-}
-""").create();
+        test("failure 1", () {});
+        test("success", () {});
+        test("failure 2", () {});
+      }
+    """).create();
 
-    var test = runTest(
-        ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
+    var test = runTest(["--pause-after-load", "-n", "success", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test 1!"));
     test.stdout.expect(consumeThrough(inOrder([
       startsWith("Observatory URL: "),
-      "The test runner is paused. Open the dev console in Dartium or the "
-          "Observatory and set breakpoints.",
-      "Once you're finished, return to this terminal and press Enter."
+      "The test runner is paused. Open the Observatory and set breakpoints. "
+        "Once you're finished, return to",
+      "this terminal and press Enter."
     ])));
 
     schedule(() async {
@@ -322,5 +255,104 @@ void main() {
     test.writeLine('');
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
-  }, tags: 'dartium');
+  });
+
+  group("for a browser", () {
+    test("pauses the test runner for each file until the user presses enter", () {
+      d.file("test1.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          print('loaded test 1!');
+
+          test("success", () {});
+        }
+      """).create();
+
+      d.file("test2.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          print('loaded test 2!');
+
+          test("success", () {});
+        }
+      """).create();
+
+      var test = runTest(
+          ["--pause-after-load", "-p", "dartium", "test1.dart", "test2.dart"]);
+      test.stdout.expect(consumeThrough("loaded test 1!"));
+      test.stdout.expect(consumeThrough(inOrder([
+        startsWith("Observatory URL: "),
+        "The test runner is paused. Open the dev console in Dartium or the "
+            "Observatory and set breakpoints.",
+        "Once you're finished, return to this terminal and press Enter."
+      ])));
+
+      schedule(() async {
+        var nextLineFired = false;
+        test.stdout.next().then(expectAsync1((line) {
+          expect(line, contains("+0: test1.dart: success"));
+          nextLineFired = true;
+        }));
+
+        // Wait a little bit to be sure that the tests don't start running without
+        // our input.
+        await new Future.delayed(new Duration(seconds: 2));
+        expect(nextLineFired, isFalse);
+      });
+
+      test.writeLine('');
+
+      test.stdout.expect(consumeThrough("loaded test 2!"));
+      test.stdout.expect(consumeThrough(inOrder([
+        startsWith("Observatory URL: "),
+        "The test runner is paused. Open the dev console in Dartium or the "
+            "Observatory and set breakpoints.",
+        "Once you're finished, return to this terminal and press Enter."
+      ])));
+
+      schedule(() async {
+        var nextLineFired = false;
+        test.stdout.next().then(expectAsync1((line) {
+          expect(line, contains("+1: test2.dart: success"));
+          nextLineFired = true;
+        }));
+
+        // Wait a little bit to be sure that the tests don't start running without
+        // our input.
+        await new Future.delayed(new Duration(seconds: 2));
+        expect(nextLineFired, isFalse);
+      });
+
+      test.writeLine('');
+      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
+      test.shouldExit(0);
+    }, tags: 'dartium');
+
+    test("stops immediately if killed while paused", () {
+      d.file("test.dart", """
+        import 'package:test/test.dart';
+
+        void main() {
+          print('loaded test!');
+
+          test("success", () {});
+        }
+      """).create();
+
+      var test = runTest(["--pause-after-load", "-p", "dartium", "test.dart"]);
+      test.stdout.expect(consumeThrough("loaded test!"));
+      test.stdout.expect(consumeThrough(inOrder([
+        startsWith("Observatory URL: "),
+        "The test runner is paused. Open the dev console in Dartium or the "
+          "Observatory and set breakpoints.",
+        "Once you're finished, return to this terminal and press Enter."
+      ])));
+
+      test.signal(ProcessSignal.SIGTERM);
+      test.shouldExit();
+      test.stderr.expect(isDone);
+    }, tags: 'dartium', testOn: "!windows");
+  });
 }

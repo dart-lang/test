@@ -10,7 +10,7 @@ class TestPlatform {
 
   /// The command-line Dart VM.
   static const TestPlatform vm =
-      const TestPlatform._("VM", "vm", isDartVM: true);
+      const TestPlatform._("VM", "vm", isDartVM: true, isHeadless: true);
 
   /// Dartium.
   static const TestPlatform dartium = const TestPlatform._("Dartium", "dartium",
