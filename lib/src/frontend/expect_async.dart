@@ -25,12 +25,12 @@ typedef T Func6<T, A, B, C, D, E, F>([A a, B b, C c, D d, E e, F f]);
 // ([dynamic]) -> dynamic.
 
 typedef _Func0();
-typedef _Func1(A a);
-typedef _Func2(A a, B b);
-typedef _Func3(A a, B b, C c);
-typedef _Func4(A a, B b, C c, D d);
-typedef _Func5(A a, B b, C c, D d, E e);
-typedef _Func6(A a, B b, C c, D d, E e, F f);
+typedef _Func1(a);
+typedef _Func2(a, b);
+typedef _Func3(a, b, c);
+typedef _Func4(a, b, c, d);
+typedef _Func5(a, b, c, d, e);
+typedef _Func6(a, b, c, d, e, f);
 
 typedef bool _IsDoneCallback();
 
