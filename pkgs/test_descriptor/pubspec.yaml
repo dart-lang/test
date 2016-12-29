@@ -1,0 +1,8 @@
+name: test_descriptor
+version: 1.0.0
+description: An API for defining and verifying directory structures.
+author: Dart Team <misc@dartlang.org>
+homepage: https://github.com/dart-lang/test_descriptor
+
+environment:
+  sdk: '>=1.8.0 <2.0.0'
