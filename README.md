@@ -581,24 +581,28 @@ A configuration file can do much more than just set global defaults. See
 
 ## Debugging
 
-Tests can be debugged interactively using browsers' built-in development tools,
-including Observatory when you're using Dartium. Currently there's no support
-for interactively debugging command-line VM tests, but it will be added
-[in the future][issue 50].
+Tests can be debugged interactively using platforms' built-in development tools.
+Tests running on browsers can use those browsers' development consoles to
+inspect the document, set breakpoints, and step through code. Those running on
+the Dart VM or Dartium can also use [the Dart Observatory][observatory]'s
+debugger.
 
-[issue 50]: https://github.com/dart-lang/test/issues/50
+[observatory]: https://dart-lang.github.io/observatory/
 
 The first step when debugging is to pass the `--pause-after-load` flag to the
-test runner. This pauses the browser after each test suite has loaded, so that
-you have time to open the development tools and set breakpoints. For Dartium,
-the test runner will print the Observatory URL for you. For PhantomJS, it will
-print the remote debugger URL. For content shell, it'll print both!
+test runner. This pauses the runner after each test suite has loaded, so that
+you have time to open the development tools and set breakpoints. For the Dart VM
+and Dartium, the test runner will print the Observatory URL for you. For
+PhantomJS, it will print the remote debugger URL. For content shell, it'll print
+both!
 
-Once you've set breakpoints, either click the big arrow in the middle of the web
-page or press Enter in your terminal to start the tests running. When you hit a
-breakpoint, the runner will open its own debugging console in the terminal that
-controls how tests are run. You can type "restart" there to re-run your test as
-many times as you need to figure out what's going on.
+Once you've set breakpoints, you can press Enter in your terminal to start the
+tests running. Some platforms also have shortcuts for this: you can start
+browser tests by clicking on the "play" button in the middle of the window, and
+you can start VM tests by unpausing the Observatory. When you hit a breakpoint,
+the runner will open its own debugging console in the terminal that controls how
+tests are run. You can type "restart" there to re-run your test as many times as
+you need to figure out what's going on.
 
 Normally, browser tests are run in hidden iframes. However, when debugging, the
 iframe for the current test suite is expanded to fill the browser window so you

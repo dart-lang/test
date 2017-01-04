@@ -3,16 +3,25 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
+import 'package:vm_service_client/vm_service_client.dart';
 
 import '../../backend/test_platform.dart';
 import '../../util/dart.dart' as dart;
 import '../configuration.dart';
+import '../configuration/suite.dart';
+import '../environment.dart';
 import '../load_exception.dart';
+import '../plugin/environment.dart';
 import '../plugin/platform.dart';
+import '../plugin/platform_helpers.dart';
+import '../runner_suite.dart';
+import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
 class VMPlatform extends PlatformPlugin {
@@ -21,29 +30,64 @@ class VMPlatform extends PlatformPlugin {
 
   VMPlatform();
 
-  StreamChannel loadChannel(String path, TestPlatform platform) {
+  StreamChannel loadChannel(String path, TestPlatform platform) =>
+      throw new UnimplementedError();
+
+  Future<RunnerSuite> load(String path, TestPlatform platform,
+      SuiteConfiguration suiteConfig) async {
     assert(platform == TestPlatform.vm);
 
-    var isolate;
-    var channel = StreamChannelCompleter.fromFuture(() async {
-      var receivePort = new ReceivePort();
+    var receivePort = new ReceivePort();
+    Isolate isolate;
+    try {
+      isolate = await _spawnIsolate(path, receivePort.sendPort);
+    } catch (error) {
+      receivePort.close();
+      rethrow;
+    }
 
-      try {
-        isolate = await _spawnIsolate(path, receivePort.sendPort);
-      } catch (error) {
-        receivePort.close();
-        rethrow;
-      }
+    VMServiceClient client;
+    var channel = new IsolateChannel.connectReceive(receivePort)
+      .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
+        // Once the connection is closed by either end, kill the isolate (and
+        // the VM service client if we have one).
+        isolate.kill();
+        client?.close();
+        sink.close();
+      }));
 
-      return new IsolateChannel.connectReceive(receivePort);
-    }());
+    if (!_config.pauseAfterLoad) {
+      var controller = await deserializeSuite(
+          path, platform, suiteConfig, new PluginEnvironment(), channel);
+      return controller.suite;
+    }
 
-    // Once the connection is closed by either end, kill the isolate.
-    return channel.transformStream(
-        new StreamTransformer.fromHandlers(handleDone: (sink) {
-          if (isolate != null) isolate.kill();
-          sink.close();
-        }));
+    // Print an empty line because the VM prints an "Observatory listening on"
+    // line and we don't want that to end up on the same line as the reporter
+    // info.
+    if (_config.reporter == 'compact') stdout.writeln();
+
+    var info = await Service.controlWebServer(enable: true);
+    var isolateID = Service.getIsolateID(isolate);
+
+    client = new VMServiceClient.connect(info.serverUri);
+    var isolateNumber = int.parse(isolateID.split("/").last);
+    var vmIsolate = (await client.getVM()).isolates
+        .firstWhere((isolate) => isolate.number == isolateNumber);
+    await vmIsolate.setName(path);
+
+    var library = (await vmIsolate.loadRunnable())
+        .libraries[p.toUri(p.absolute(path))];
+    var url = info.serverUri.resolveUri(library.observatoryUrl);
+    var environment = new VMEnvironment(url, vmIsolate);
+    var controller = await deserializeSuite(
+        path, platform, suiteConfig, environment, channel);
+
+    vmIsolate.onPauseOrResume.listen((event) {
+      controller.setDebugging(event is! VMResumeEvent);
+    });
+
+    return controller.suite;
   }
 
   /// Spawns an isolate and passes it [message].

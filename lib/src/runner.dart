@@ -371,11 +371,6 @@ class Runner {
   /// Loads each suite in [suites] in order, pausing after load for platforms
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    if (_config.suiteDefaults.platforms.contains(TestPlatform.vm)) {
-      warn("Debugging is currently unsupported on the Dart VM.",
-          color: _config.color);
-    }
-
     _suiteSubscription = suites.asyncMap((loadSuite) async {
       _debugOperation = debug(_engine, _reporter, loadSuite);
       await _debugOperation.valueOrCancellation();
