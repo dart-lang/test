@@ -5,7 +5,6 @@
 library unittest.expected_function;
 
 import '../unittest.dart';
-
 import 'internal_test_case.dart';
 
 /// An object used to detect unpassed arguments.
@@ -30,7 +29,7 @@ typedef bool _IsDoneCallback();
 ///
 /// The wrapper function is accessible via [func]. It supports up to six
 /// optional and/or required positional arguments, but no named arguments.
-class ExpectedFunction {
+class ExpectedFunction<T> {
   /// The wrapped callback.
   final Function _callback;
 
@@ -81,9 +80,8 @@ class ExpectedFunction {
       {String id, String reason, bool isDone()})
       : this._callback = callback,
         _minExpectedCalls = minExpected,
-        _maxExpectedCalls = (maxExpected == 0 && minExpected > 0)
-            ? minExpected
-            : maxExpected,
+        _maxExpectedCalls =
+            (maxExpected == 0 && minExpected > 0) ? minExpected : maxExpected,
         this._isDone = isDone,
         this._reason = reason == null ? '' : '\n$reason',
         this._testCase = currentTestCase as InternalTestCase,
@@ -99,6 +97,99 @@ class ExpectedFunction {
       _complete = false;
     } else {
       _complete = true;
+    }
+  }
+
+  /// Returns a function that has the same number of positional arguments as the
+  /// wrapped function (up to a total of 6).
+  Function get func {
+    if (_callback is _Func6) return max6;
+    if (_callback is _Func5) return max5;
+    if (_callback is _Func4) return max4;
+    if (_callback is _Func3) return max3;
+    if (_callback is _Func2) return max2;
+    if (_callback is _Func1) return max1;
+    if (_callback is _Func0) return max0;
+
+    throw new ArgumentError(
+        'The wrapped function has more than 6 required arguments');
+  }
+
+  max0() => max6();
+
+  // This indirection is critical. It ensures the returned function has an
+  // argument count of zero.
+  max1([a0 = _PLACEHOLDER]) => max6(a0);
+
+  max2([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER]) => max6(a0, a1);
+
+  max3([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER]) =>
+      max6(a0, a1, a2);
+
+  max4(
+          [a0 = _PLACEHOLDER,
+          a1 = _PLACEHOLDER,
+          a2 = _PLACEHOLDER,
+          a3 = _PLACEHOLDER]) =>
+      max6(a0, a1, a2, a3);
+
+  max5(
+          [a0 = _PLACEHOLDER,
+          a1 = _PLACEHOLDER,
+          a2 = _PLACEHOLDER,
+          a3 = _PLACEHOLDER,
+          a4 = _PLACEHOLDER]) =>
+      max6(a0, a1, a2, a3, a4);
+
+  max6(
+          [a0 = _PLACEHOLDER,
+          a1 = _PLACEHOLDER,
+          a2 = _PLACEHOLDER,
+          a3 = _PLACEHOLDER,
+          a4 = _PLACEHOLDER,
+          a5 = _PLACEHOLDER]) =>
+      _run([a0, a1, a2, a3, a4, a5].where((a) => a != _PLACEHOLDER));
+
+  /// After each time the function is run, check to see if it's complete.
+  void _afterRun() {
+    if (_complete) return;
+    if (_minExpectedCalls > 0 && _actualCalls < _minExpectedCalls) return;
+    if (_isDone != null && !_isDone()) return;
+
+    // Mark this callback as complete and remove it from the test case's
+    // oustanding callback count; if that hits zero the test is done.
+    _complete = true;
+    _testCase.markCallbackComplete();
+  }
+
+  /// Runs the wrapped function with [args] and returns its return value.
+  ///
+  /// This will pass any errors on to [_testCase] and return `null`.
+  _run(Iterable args) {
+    try {
+      _actualCalls++;
+      if (_testCase.isComplete) {
+        // Don't run the callback if the test is done. We don't throw here as
+        // this is not the current test, but we do mark the old test as having
+        // an error if it previously passed.
+        if (_testCase.result == PASS) {
+          _testCase
+              .error('Callback ${_id}called ($_actualCalls) after test case '
+                  '${_testCase.description} had already been marked as '
+                  '${_testCase.result}.$_reason');
+        }
+        return null;
+      } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {
+        throw new TestFailure('Callback ${_id}called more times than expected '
+            '($_maxExpectedCalls).$_reason');
+      }
+
+      return Function.apply(_callback, args.toList());
+    } catch (error, stackTrace) {
+      _testCase.registerException(error, stackTrace);
+      return null;
+    } finally {
+      _afterRun();
     }
   }
 
@@ -120,84 +211,5 @@ class ExpectedFunction {
     var end = toString.indexOf("'", start);
     if (end == -1) return '';
     return "${toString.substring(start, end)} ";
-  }
-
-  /// Returns a function that has the same number of positional arguments as the
-  /// wrapped function (up to a total of 6).
-  Function get func {
-    if (_callback is _Func6) return _max6;
-    if (_callback is _Func5) return _max5;
-    if (_callback is _Func4) return _max4;
-    if (_callback is _Func3) return _max3;
-    if (_callback is _Func2) return _max2;
-    if (_callback is _Func1) return _max1;
-    if (_callback is _Func0) return _max0;
-
-    throw new ArgumentError(
-        'The wrapped function has more than 6 required arguments');
-  }
-
-  // This indirection is critical. It ensures the returned function has an
-  // argument count of zero.
-  _max0() => _max6();
-
-  _max1([a0 = _PLACEHOLDER]) => _max6(a0);
-
-  _max2([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER]) => _max6(a0, a1);
-
-  _max3([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER]) =>
-      _max6(a0, a1, a2);
-
-  _max4([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER,
-      a3 = _PLACEHOLDER]) => _max6(a0, a1, a2, a3);
-
-  _max5([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER,
-      a3 = _PLACEHOLDER, a4 = _PLACEHOLDER]) => _max6(a0, a1, a2, a3, a4);
-
-  _max6([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER,
-      a3 = _PLACEHOLDER, a4 = _PLACEHOLDER, a5 = _PLACEHOLDER]) =>
-      _run([a0, a1, a2, a3, a4, a5].where((a) => a != _PLACEHOLDER));
-
-  /// Runs the wrapped function with [args] and returns its return value.
-  ///
-  /// This will pass any errors on to [_testCase] and return `null`.
-  _run(Iterable args) {
-    try {
-      _actualCalls++;
-      if (_testCase.isComplete) {
-        // Don't run the callback if the test is done. We don't throw here as
-        // this is not the current test, but we do mark the old test as having
-        // an error if it previously passed.
-        if (_testCase.result == PASS) {
-          _testCase.error(
-              'Callback ${_id}called ($_actualCalls) after test case '
-              '${_testCase.description} had already been marked as '
-              '${_testCase.result}.$_reason');
-        }
-        return null;
-      } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {
-        throw new TestFailure('Callback ${_id}called more times than expected '
-                              '($_maxExpectedCalls).$_reason');
-      }
-
-      return Function.apply(_callback, args.toList());
-    } catch (error, stackTrace) {
-      _testCase.registerException(error, stackTrace);
-      return null;
-    } finally {
-      _afterRun();
-    }
-  }
-
-  /// After each time the function is run, check to see if it's complete.
-  void _afterRun() {
-    if (_complete) return;
-    if (_minExpectedCalls > 0 && _actualCalls < _minExpectedCalls) return;
-    if (_isDone != null && !_isDone()) return;
-
-    // Mark this callback as complete and remove it from the test case's
-    // oustanding callback count; if that hits zero the test is done.
-    _complete = true;
-    _testCase.markCallbackComplete();
   }
 }
