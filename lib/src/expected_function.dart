@@ -115,25 +115,25 @@ class ExpectedFunction<T> {
         'The wrapped function has more than 6 required arguments');
   }
 
-  max0() => max6();
+  T max0() => max6();
 
   // This indirection is critical. It ensures the returned function has an
   // argument count of zero.
-  max1([a0 = _PLACEHOLDER]) => max6(a0);
+  T max1([a0 = _PLACEHOLDER]) => max6(a0);
 
-  max2([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER]) => max6(a0, a1);
+  T max2([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER]) => max6(a0, a1);
 
-  max3([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER]) =>
+  T max3([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER]) =>
       max6(a0, a1, a2);
 
-  max4(
+  T max4(
           [a0 = _PLACEHOLDER,
           a1 = _PLACEHOLDER,
           a2 = _PLACEHOLDER,
           a3 = _PLACEHOLDER]) =>
       max6(a0, a1, a2, a3);
 
-  max5(
+  T max5(
           [a0 = _PLACEHOLDER,
           a1 = _PLACEHOLDER,
           a2 = _PLACEHOLDER,
@@ -141,7 +141,7 @@ class ExpectedFunction<T> {
           a4 = _PLACEHOLDER]) =>
       max6(a0, a1, a2, a3, a4);
 
-  max6(
+  T max6(
           [a0 = _PLACEHOLDER,
           a1 = _PLACEHOLDER,
           a2 = _PLACEHOLDER,
@@ -165,7 +165,7 @@ class ExpectedFunction<T> {
   /// Runs the wrapped function with [args] and returns its return value.
   ///
   /// This will pass any errors on to [_testCase] and return `null`.
-  _run(Iterable args) {
+  T _run(Iterable args) {
     try {
       _actualCalls++;
       if (_testCase.isComplete) {
@@ -184,7 +184,7 @@ class ExpectedFunction<T> {
             '($_maxExpectedCalls).$_reason');
       }
 
-      return Function.apply(_callback, args.toList());
+      return Function.apply(_callback, args.toList()) as T;
     } catch (error, stackTrace) {
       _testCase.registerException(error, stackTrace);
       return null;
