@@ -123,8 +123,11 @@ class ExpectedFunction<T> {
 
   T max2([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER]) => max6(a0, a1);
 
-  T max3([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER, 
-            Object a2 = _PLACEHOLDER]) =>  max6(a0, a1, a2);
+  T max3(
+          [Object a0 = _PLACEHOLDER, 
+          Object a1 = _PLACEHOLDER, 
+          Object a2 = _PLACEHOLDER]) =>  
+      max6(a0, a1, a2);
 
   T max4(
           [Object a0 = _PLACEHOLDER,
