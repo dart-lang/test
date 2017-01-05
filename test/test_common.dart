@@ -22,7 +22,7 @@ class SimpleIterable extends IterableBase<int> {
 
   SimpleIterable(this.count);
 
-  bool contains(int val) => count < val ? false : true;
+  bool contains(Object val) => val is int && val <= count;
 
   bool any(bool f(element)) {
     for (var i = 0; i <= count; i++) {
@@ -33,7 +33,7 @@ class SimpleIterable extends IterableBase<int> {
 
   String toString() => "<[$count]>";
 
-  Iterator get iterator {
+  Iterator<int> get iterator {
     return new _SimpleIterator(count);
   }
 }

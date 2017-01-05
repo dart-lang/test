@@ -119,35 +119,35 @@ class ExpectedFunction<T> {
 
   // This indirection is critical. It ensures the returned function has an
   // argument count of zero.
-  T max1([a0 = _PLACEHOLDER]) => max6(a0);
+  T max1([Object a0 = _PLACEHOLDER]) => max6(a0);
 
-  T max2([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER]) => max6(a0, a1);
+  T max2([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER]) => max6(a0, a1);
 
-  T max3([a0 = _PLACEHOLDER, a1 = _PLACEHOLDER, a2 = _PLACEHOLDER]) =>
+  T max3([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER, Object a2 = _PLACEHOLDER]) =>
       max6(a0, a1, a2);
 
   T max4(
-          [a0 = _PLACEHOLDER,
-          a1 = _PLACEHOLDER,
-          a2 = _PLACEHOLDER,
-          a3 = _PLACEHOLDER]) =>
+          [Object a0 = _PLACEHOLDER,
+          Object a1 = _PLACEHOLDER,
+          Object a2 = _PLACEHOLDER,
+          Object a3 = _PLACEHOLDER]) =>
       max6(a0, a1, a2, a3);
 
   T max5(
-          [a0 = _PLACEHOLDER,
-          a1 = _PLACEHOLDER,
-          a2 = _PLACEHOLDER,
-          a3 = _PLACEHOLDER,
-          a4 = _PLACEHOLDER]) =>
+          [Object a0 = _PLACEHOLDER,
+          Object a1 = _PLACEHOLDER,
+          Object a2 = _PLACEHOLDER,
+          Object a3 = _PLACEHOLDER,
+          Object a4 = _PLACEHOLDER]) =>
       max6(a0, a1, a2, a3, a4);
 
   T max6(
-          [a0 = _PLACEHOLDER,
-          a1 = _PLACEHOLDER,
-          a2 = _PLACEHOLDER,
-          a3 = _PLACEHOLDER,
-          a4 = _PLACEHOLDER,
-          a5 = _PLACEHOLDER]) =>
+          [Object a0 = _PLACEHOLDER,
+          Object a1 = _PLACEHOLDER,
+          Object a2 = _PLACEHOLDER,
+          Object a3 = _PLACEHOLDER,
+          Object a4 = _PLACEHOLDER,
+          Object a5 = _PLACEHOLDER]) =>
       _run([a0, a1, a2, a3, a4, a5].where((a) => a != _PLACEHOLDER));
 
   /// After each time the function is run, check to see if it's complete.
