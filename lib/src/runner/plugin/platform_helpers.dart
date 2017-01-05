@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
@@ -32,6 +33,10 @@ typedef StackTrace _MapTrace(StackTrace trace);
 ///
 /// If [mapTrace] is passed, it will be used to adjust stack traces for any
 /// errors emitted by tests.
+///
+/// If [asciiSymbols] is passed, it controls whether the `symbol` package is
+/// configured to use plain ASCII or Unicode symbols. It defaults to `true` on
+/// Windows and `false` elsewhere.
 Future<RunnerSuiteController> deserializeSuite(String path,
     TestPlatform platform, SuiteConfiguration suiteConfig,
     Environment environment, StreamChannel channel,
@@ -45,6 +50,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
     'platform': platform.identifier,
     'metadata': suiteConfig.metadata.serialize(),
     'os': platform == TestPlatform.vm ? currentOS.identifier : null,
+    'asciiGlyphs': Platform.isWindows,
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json'
   });

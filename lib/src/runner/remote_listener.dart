@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
+import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import '../backend/declarer.dart';
 import '../backend/group.dart';
@@ -68,6 +69,8 @@ class RemoteListener {
       }
 
       var message = await channel.stream.first;
+
+      if (message['asciiGlyphs']) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
       var declarer = new Declarer(
           metadata: metadata,
