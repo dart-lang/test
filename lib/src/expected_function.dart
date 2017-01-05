@@ -123,8 +123,8 @@ class ExpectedFunction<T> {
 
   T max2([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER]) => max6(a0, a1);
 
-  T max3([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER, Object a2 = _PLACEHOLDER]) =>
-      max6(a0, a1, a2);
+  T max3([Object a0 = _PLACEHOLDER, Object a1 = _PLACEHOLDER, 
+            Object a2 = _PLACEHOLDER]) =>  max6(a0, a1, a2);
 
   T max4(
           [Object a0 = _PLACEHOLDER,
@@ -173,10 +173,10 @@ class ExpectedFunction<T> {
         // this is not the current test, but we do mark the old test as having
         // an error if it previously passed.
         if (_testCase.result == PASS) {
-          _testCase
-              .error('Callback ${_id}called ($_actualCalls) after test case '
-                  '${_testCase.description} had already been marked as '
-                  '${_testCase.result}.$_reason');
+          _testCase.error(
+              'Callback ${_id}called ($_actualCalls) after test case '
+              '${_testCase.description} had already been marked as '
+              '${_testCase.result}.$_reason');
         }
         return null;
       } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {
