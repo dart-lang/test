@@ -5,6 +5,7 @@
 library unittest.expected_function;
 
 import '../unittest.dart';
+
 import 'internal_test_case.dart';
 
 /// An object used to detect unpassed arguments.
@@ -80,8 +81,9 @@ class ExpectedFunction<T> {
       {String id, String reason, bool isDone()})
       : this._callback = callback,
         _minExpectedCalls = minExpected,
-        _maxExpectedCalls =
-            (maxExpected == 0 && minExpected > 0) ? minExpected : maxExpected,
+        _maxExpectedCalls = (maxExpected == 0 && minExpected > 0)
+            ? minExpected
+            : maxExpected,
         this._isDone = isDone,
         this._reason = reason == null ? '' : '\n$reason',
         this._testCase = currentTestCase as InternalTestCase,
@@ -98,6 +100,26 @@ class ExpectedFunction<T> {
     } else {
       _complete = true;
     }
+  }
+
+  /// Tries to find a reasonable name for [callback].
+  ///
+  /// If [id] is passed, uses that. Otherwise, tries to determine a name from
+  /// calling `toString`. If no name can be found, returns the empty string.
+  static String _makeCallbackId(String id, Function callback) {
+    if (id != null) return "$id ";
+
+    // If the callback is not an anonymous closure, try to get the
+    // name.
+    var toString = callback.toString();
+    var prefix = "Function '";
+    var start = toString.indexOf(prefix);
+    if (start == -1) return '';
+
+    start += prefix.length;
+    var end = toString.indexOf("'", start);
+    if (end == -1) return '';
+    return "${toString.substring(start, end)} ";
   }
 
   /// Returns a function that has the same number of positional arguments as the
@@ -153,18 +175,6 @@ class ExpectedFunction<T> {
           Object a5 = _PLACEHOLDER]) =>
       _run([a0, a1, a2, a3, a4, a5].where((a) => a != _PLACEHOLDER));
 
-  /// After each time the function is run, check to see if it's complete.
-  void _afterRun() {
-    if (_complete) return;
-    if (_minExpectedCalls > 0 && _actualCalls < _minExpectedCalls) return;
-    if (_isDone != null && !_isDone()) return;
-
-    // Mark this callback as complete and remove it from the test case's
-    // oustanding callback count; if that hits zero the test is done.
-    _complete = true;
-    _testCase.markCallbackComplete();
-  }
-
   /// Runs the wrapped function with [args] and returns its return value.
   ///
   /// This will pass any errors on to [_testCase] and return `null`.
@@ -196,23 +206,15 @@ class ExpectedFunction<T> {
     }
   }
 
-  /// Tries to find a reasonable name for [callback].
-  ///
-  /// If [id] is passed, uses that. Otherwise, tries to determine a name from
-  /// calling `toString`. If no name can be found, returns the empty string.
-  static String _makeCallbackId(String id, Function callback) {
-    if (id != null) return "$id ";
+  /// After each time the function is run, check to see if it's complete.
+  void _afterRun() {
+    if (_complete) return;
+    if (_minExpectedCalls > 0 && _actualCalls < _minExpectedCalls) return;
+    if (_isDone != null && !_isDone()) return;
 
-    // If the callback is not an anonymous closure, try to get the
-    // name.
-    var toString = callback.toString();
-    var prefix = "Function '";
-    var start = toString.indexOf(prefix);
-    if (start == -1) return '';
-
-    start += prefix.length;
-    var end = toString.indexOf("'", start);
-    if (end == -1) return '';
-    return "${toString.substring(start, end)} ";
+    // Mark this callback as complete and remove it from the test case's
+    // oustanding callback count; if that hits zero the test is done.
+    _complete = true;
+    _testCase.markCallbackComplete();
   }
 }
