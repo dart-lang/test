@@ -160,6 +160,246 @@ Function expectAsync(Function callback,
     {int count: 1, int max: 0, String id, String reason}) =>
         new ExpectedFunction(callback, count, max, id: id, reason: reason).func;
 
+// Functions used to check how many arguments a callback takes.
+typedef T Func0<T>();
+typedef T Func1<T, A>(A a);
+typedef T Func2<T, A, B>(A a, B b);
+typedef T Func3<T, A, B, C>(A a, B b, C c);
+typedef T Func4<T, A, B, C, D>(A a, B b, C c, D d);
+typedef T Func5<T, A, B, C, D, E>(A a, B b, C c, D d, E e);
+typedef T Func6<T, A, B, C, D, E, F>(A a, B b, C c, D d, E e, F f);
+
+/// Informs the framework that the given [callback] of arity 0 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with zero arguments. See also
+/// [expectAsync1], [expectAsync2], [expectAsync3], [expectAsync4],
+/// [expectAsync5], and [expectAsync6] for callbacks with different arity.
+Func0<dynamic/*=T*/ > expectAsync0/*<T>*/(dynamic/*=T*/ callback(),
+    {int count: 1, int max: 0, String id, String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max0;
+}
+
+/// Informs the framework that the given [callback] of arity 1 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with one argument. See also
+/// [expectAsync0], [expectAsync2], [expectAsync3], [expectAsync4],
+/// [expectAsync5], and [expectAsync6] for callbacks with different arity.
+Func1<dynamic/*=T*/, dynamic/*=A*/ > expectAsync1/*<T, A>*/(
+    dynamic/*=T*/ callback(dynamic/*=A*/ a),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max1;
+}
+
+/// Informs the framework that the given [callback] of arity 2 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with two arguments. See also
+/// [expectAsync0], [expectAsync1], [expectAsync3], [expectAsync4],
+/// [expectAsync5], and [expectAsync6] for callbacks with different arity.
+Func2<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/ > expectAsync2/*<T, A, B>*/(
+    dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max2;
+}
+
+/// Informs the framework that the given [callback] of arity 3 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with three arguments. See also
+/// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync4],
+/// [expectAsync5], and [expectAsync6] for callbacks with different arity.
+Func3<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/ >
+expectAsync3/*<T, A, B, C>*/(
+    dynamic/*=T*/ callback(
+        dynamic/*=A*/ a, dynamic/*=B*/ b, dynamic/*=C*/ c),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max3;
+}
+
+/// Informs the framework that the given [callback] of arity 4 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with four arguments. See also
+/// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
+/// [expectAsync5], and [expectAsync6] for callbacks with different arity.
+Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
+    dynamic/*=D*/ >
+expectAsync4/*<T, A, B, C, D>*/(
+    dynamic/*=T*/ callback(
+        dynamic/*=A*/ a, dynamic/*=B*/ b, dynamic/*=C*/ c, dynamic/*=D*/ d),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max4;
+}
+
+/// Informs the framework that the given [callback] of arity 5 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with five arguments. See also
+/// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
+/// [expectAsync4], and [expectAsync6] for callbacks with different arity.
+Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
+    dynamic/*=E*/ >
+expectAsync5/*<T, A, B, C, D, E>*/(
+    dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
+        dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max5;
+}
+
+/// Informs the framework that the given [callback] of arity 6 is expected to be
+/// called [count] number of times (by default 1).
+///
+/// Returns a wrapped function that should be used as a replacement of the
+/// original callback.
+///
+/// The test framework will wait for the callback to run the [count] times
+/// before it considers the current test to be complete.
+///
+/// [max] can be used to specify an upper bound on the number of calls; if this
+/// is exceeded the test will fail. If [max] is `0` (the default), the callback
+/// is expected to be called exactly [count] times. If [max] is `-1`, the
+/// callback is allowed to be called any number of times greater than [count].
+///
+/// Both [id] and [reason] are optional and provide extra information about the
+/// callback when debugging. [id] should be the name of the callback, while
+/// [reason] should be the reason the callback is expected to be called.
+///
+/// This method takes callbacks with six arguments. See also
+/// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
+/// [expectAsync4], and [expectAsync5] for callbacks with different arity.
+Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
+    dynamic/*=E*/, dynamic/*=F*/ >
+expectAsync6/*<T, A, B, C, D, E, F>*/(
+    dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
+        dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e, dynamic/*=F*/ f),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
+  return new ExpectedFunction/*<T>*/(callback, count, max,
+      id: id, reason: reason)
+      .max6;
+}
+
 /// Indicate that [callback] is expected to be called until [isDone] returns
 /// true.
 ///

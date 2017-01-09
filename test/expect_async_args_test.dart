@@ -17,7 +17,7 @@ void _test(message) {
     var count = 0;
     List<int> _getArgs([a = 0, b = 0, c = 0, d = 0, e = 0, f = 0]) {
       count++;
-      return [a, b, c, d, e, f];
+      return <int>[a, b, c, d, e, f];
     }
 
     test('expect async args', () {

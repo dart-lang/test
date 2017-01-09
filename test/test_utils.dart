@@ -41,7 +41,7 @@ void shouldFail(value, Matcher matcher, expected, {bool isAsync: false}) {
   }
 
   if (isAsync) {
-    Timer.run(expectAsync(afterTest));
+    Timer.run(expectAsync0(afterTest));
   } else {
     afterTest();
   }
@@ -57,7 +57,7 @@ void shouldPass(value, Matcher matcher, {bool isAsync: false}) {
     expect(_errorCount, equals(0));
   }
   if (isAsync) {
-    Timer.run(expectAsync(afterTest));
+    Timer.run(expectAsync0(afterTest));
   } else {
     afterTest();
   }
