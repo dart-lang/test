@@ -15,7 +15,9 @@
 * [Tagging Tests](#tagging-tests)
 * [Debugging](#debugging)
 * [Browser/VM Hybrid Tests](#browser-vm-hybrid-tests)
-* [Testing with `barback`](#testing-with-barback)
+* [Support for Other Packages](#support-for-other-packages)
+  * [`term_glyph`](#term_glyph)
+  * [`barback`](#barback)
 * [Further Reading](#further-reading)
 
 ## Writing Tests
@@ -684,7 +686,19 @@ void main() {
 **Note**: If you write hybrid tests, be sure to add a dependency on the
 `stream_channel` package, since you're using its API!
 
-## Testing With `barback`
+## Support for Other Packages
+
+### `term_glyph`
+
+The [`term_glyph`][term_glyph] package provides getters for Unicode glyphs with
+ASCII alternatives. `test` ensures that it's configured to produce ASCII when
+the user is running on Windows, where Unicode isn't supported. This ensures that
+testing libraries can use Unicode on POSIX operating systems without breaking
+Windows users.
+
+[term_glyph]: https://pub.dartlang.org/packages/term_glyph
+
+### `barback`
 
 Packages using the `barback` transformer system may need to test code that's
 created or modified using transformers. The test runner handles this using the
