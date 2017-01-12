@@ -19,6 +19,8 @@ class PluginEnvironment implements Environment {
 
   Uri get remoteDebuggerUrl => null;
 
+  String get isolateID => null;
+
   CancelableOperation displayPause() =>
       throw new UnsupportedError(
           "PluginEnvironment.displayPause is not supported.");

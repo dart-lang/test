@@ -95,11 +95,17 @@ class StartEvent extends Event {
 
   // The version of the test runner being used.
   String runnerVersion;
+
+  // The URL for a WebSocket server that serves a JSON-RPC 2.0 protocol for
+  // controlling the test runner during debugging.
+  String controllerUrl;
 }
 ```
 
 A single start event is emitted before any other events. It indicates that the
 test runner has started running.
+
+The `controllerUrl` is `null` if the runner isn't in debug mode.
 
 ### AllSuitesEvent
 
@@ -441,16 +447,19 @@ class Metadata {
 
 The metadata class is deprecated and should not be used.
 
-## Remote Debugger APIs
+## Controller APIs
 
-When running browser tests with `--pause-after-load`, the test package embeds a
-few APIs in the JavaScript context of the host page. These allow tools to
-control the debugging process in the same way a user might do from the command
-line. They can be accessed by connecting to the remote debugger using the
-[`DebugEvent.remoteDebugger`](#DebugEvent) URL.
+During debugging, users of the JSON API need a way to communicate with the test
+runner to tell it things like "all the breakpoints are set and the test should
+begin running". This is done through a [JSON-RPC 2.0][] API over a WebSocket
+connection. The WebSocket URL is available in
+[`StartEvent.controllerUrl`](#StartEvent).
 
-All APIs are defined as methods on the top-level `dartTest` object. The
-following methods are available:
+[JSON-RPC 2.0][]: http://www.jsonrpc.org/specification
+
+Each RPC will return a success response with a null result once the request has
+been handled. If there's no test suite currently being debugged, they'll return
+an error response with error code 1. The following RPCs are available:
 
 ### `resume()`
 
@@ -461,12 +470,12 @@ suite but before any tests are run.
 
 This gives external tools a chance to use the remote debugger protocol to set
 breakpoints before tests have begun executing. They can start the test runner
-with `--pause-after-load`, connect to the remote debugger using the
-[`DebugEvent.remoteDebugger`](#DebugEvent) URL, set breakpoints, then call
-`dartTest.resume()` in the host frame when they're finished.
+with `--pause-after-load`, connect to the controller protocol using
+[`StartEvent.controllerUrl`](#StartEvent), set breakpoints, then call `resume()`
+in when they're finished.
 
-### `restartCurrent()`
+#### `restartTest()`
 
-Calling `restartCurrent()` when the test runner is running a test causes it to
+Calling `restartTest()` when the test runner is running a test causes it to
 re-run that test once it completes its current run. It's intended to be called
 when the browser is paused, as at a breakpoint.

@@ -101,6 +101,9 @@
         "protocolVersion": {"type": "string", "pattern": "^0\\.1\\."},
         "runnerVersion": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
+        },
+        "controllerUrl": {
+          "oneOf": [{"type": "string"}, {"type": "null"}]
         }
       }
     },
@@ -140,6 +143,9 @@
         "suiteID": {"type": "integer", "minimum": 0},
         "observatory": {
           "oneOf": [{"type": "string", "format": "uri"}, {"type": "null"}]
+        },
+        "isolateID": {
+          "oneOf": [{"type": "string"}, {"type": "null"}]
         },
         "remoteDebugger": {
           "oneOf": [{"type": "string", "format": "uri"}, {"type": "null"}]

@@ -79,7 +79,7 @@ class VMPlatform extends PlatformPlugin {
     var library = (await vmIsolate.loadRunnable())
         .libraries[p.toUri(p.absolute(path))];
     var url = info.serverUri.resolveUri(library.observatoryUrl);
-    var environment = new VMEnvironment(url, vmIsolate);
+    var environment = new VMEnvironment(url, isolateID, vmIsolate);
     var controller = await deserializeSuite(
         path, platform, suiteConfig, environment, channel);
 

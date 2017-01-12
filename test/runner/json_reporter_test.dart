@@ -18,8 +18,9 @@ import '../io.dart';
 /// The first event emitted by the JSON reporter.
 final _start = {
   "type": "start",
-  "protocolVersion": "0.1.0",
-  "runnerVersion": testVersion
+  "protocolVersion": "0.1.1",
+  "runnerVersion": testVersion,
+  "controllerUrl": null,
 };
 
 void main() {

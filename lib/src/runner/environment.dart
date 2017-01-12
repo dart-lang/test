@@ -20,6 +20,10 @@ abstract class Environment {
   /// enabled.
   Uri get remoteDebuggerUrl;
 
+  /// The VM service ID of the isolate running the test, or `null` if the test
+  /// isn't running on the Dart VM or the isolate ID is unavailable.
+  String get isolateID;
+
   /// A broadcast stream that emits a `null` event whenever the user tells the
   /// environment to restart the current test once it's finished.
   ///

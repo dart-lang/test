@@ -58,9 +58,14 @@ class JsonReporter implements Reporter {
   var _nextID = 0;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine) => new JsonReporter._(engine);
+  ///
+  /// If [controllerUrl] is passed, it's emitted as the URL for IDE clients to
+  /// use to control the debugger.
+  static JsonReporter watch(Engine engine, [Uri controllerUrl]) =>
+      new JsonReporter._(engine, controllerUrl);
 
-  JsonReporter._(this._engine) : _config = Configuration.current {
+  JsonReporter._(this._engine, Uri controllerUrl)
+      : _config = Configuration.current {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -74,8 +79,9 @@ class JsonReporter implements Reporter {
     }));
 
     _emit("start", {
-      "protocolVersion": "0.1.0",
-      "runnerVersion": testVersion
+      "protocolVersion": "0.1.1",
+      "runnerVersion": testVersion,
+      "controllerUrl": controllerUrl?.toString()
     });
   }
 
@@ -174,9 +180,11 @@ class JsonReporter implements Reporter {
         // the Chrome remote debugger, or when we have VM debug support.
         _emit("debug", {
           "suiteID": id,
-          "observatory": runnerSuite.environment.observatoryUrl?.toString(),
+          "observatory": runnerSuite.environment.observatoryUrl
+              ?.removeFragment()?.toString(),
           "remoteDebugger":
               runnerSuite.environment.remoteDebuggerUrl?.toString(),
+          "isolateID": runnerSuite.environment.isolateID,
         });
       });
     }

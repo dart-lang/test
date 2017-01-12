@@ -2,6 +2,13 @@
 
 * Add support for debugging VM tests.
 
+* Add the ability to control test debugging when using the JSON reporter via
+  JSON-RPC 2.0 over WebSockets. This bumps the protocol version to 0.1.1 and
+  adds the `StartEvent.controllerUrl` and `DebugEvent.isolateID` fields.
+
+* JSON reporter users communicating with the test runner via JavaScript methods
+  in the browser is deprecated. The WebSocket API should be used instead.
+
 * Automatically configure the [`term_glyph`][term_glyph] package to use ASCII
   glyphs when the test runner is running on Windows.
 

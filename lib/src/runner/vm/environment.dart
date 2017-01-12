@@ -13,11 +13,12 @@ import '../environment.dart';
 class VMEnvironment implements Environment {
   final supportsDebugging = true;
   final Uri observatoryUrl;
+  final String isolateID;
 
   /// The VM service isolate object used to control this isolate.
   final VMIsolate _isolate;
 
-  VMEnvironment(this.observatoryUrl, this._isolate);
+  VMEnvironment(this.observatoryUrl, this.isolateID, this._isolate);
 
   Uri get remoteDebuggerUrl => null;
 
