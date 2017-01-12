@@ -95,6 +95,9 @@ class StartEvent extends Event {
 
   // The version of the test runner being used.
   String runnerVersion;
+
+  // The ID of the isolate in which the runner is running.
+  String isolateID;
 }
 ```
 
@@ -145,6 +148,10 @@ class DebugEvent extends Event {
   /// available for this suite.
   String observatory;
 
+  /// The ID for the isolate in which this suite is running, or `null` if the VM
+  /// service isn't in use for this suite.
+  String isolateID;
+
   /// The HTTP URL for the remote debugger for this suite's host page, or `null`
   /// if no remote debugger is available for this suite.
   String remoteDebugger;
@@ -154,6 +161,12 @@ class DebugEvent extends Event {
 A debug event is emitted after (although not necessarily directly after) a
 `SuiteEvent`, and includes information about how to debug that suite. It's only
 emitted if the `--pause-after-load` flag is passed to the test runner.
+
+The `isolateID` parameter is only set when the test runner has spawned an
+isolate for the suite in question, which it currently does only for the
+command-line VM. If the remote debugger connects to the
+[VM service protocol][VM service], it can use this ID to determine which isolate
+contains the current test suite.
 
 Note that the `remoteDebugger` URL refers to a remote debugger whose protocol
 may differ based on the browser the suite is running on. You can tell which
@@ -443,6 +456,35 @@ The metadata class is deprecated and should not be used.
 
 ## Remote Debugger APIs
 
+During debugging, users of the JSON API need a way to communicate with the test
+runner to tell it when all the breakpoints are set and the test should begin
+running. The mechanism for this depends on the platform in question.
+
+### Dart VM
+
+When running tests on the command-line Dart VM, the test package exposes APIs as
+[service protocol extensions][registerExtension]. These can be called just like
+built-in [VM service][] RPCs by connecting to the VM service through a WebSocket
+connection to the [`DebugEvent.observatory`](#DebugEvent) URL. The `isolateId`
+parameter should match [`RunnerEvent.isolateID`](#RunnerEvent).
+
+[registerExtension]: https://api.dartlang.org/stable/latest/dart-developer/registerExtension.html
+[VM service]: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md
+
+The exception to this is resuming the test, which is done by calling the
+built-in [`resume`][resume] RPC for the test isolate. Once the isolate is no
+longer paused, the test runner will start running tests automatically.
+
+[resume]: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md#resume
+
+#### `ext.test.restartCurrent`
+
+Calling the `ext.test.restartCurrent` RPC when the test runner is running a test
+causes it to re-run that test once it completes its current run. It's intended
+to be called when the runner is paused, as at a breakpoint.
+
+### Browser
+
 When running browser tests with `--pause-after-load`, the test package embeds a
 few APIs in the JavaScript context of the host page. These allow tools to
 control the debugging process in the same way a user might do from the command
@@ -452,7 +494,7 @@ line. They can be accessed by connecting to the remote debugger using the
 All APIs are defined as methods on the top-level `dartTest` object. The
 following methods are available:
 
-### `resume()`
+#### `resume()`
 
 Calling `resume()` when the test runner is paused causes it to resume running
 tests. If the test runner is not paused, it won't do anything. When
@@ -465,7 +507,7 @@ with `--pause-after-load`, connect to the remote debugger using the
 [`DebugEvent.remoteDebugger`](#DebugEvent) URL, set breakpoints, then call
 `dartTest.resume()` in the host frame when they're finished.
 
-### `restartCurrent()`
+#### `restartCurrent()`
 
 Calling `restartCurrent()` when the test runner is running a test causes it to
 re-run that test once it completes its current run. It's intended to be called
