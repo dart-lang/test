@@ -182,6 +182,7 @@ class JsonReporter implements Reporter {
           "observatory": runnerSuite.environment.observatoryUrl?.toString(),
           "remoteDebugger":
               runnerSuite.environment.remoteDebuggerUrl?.toString(),
+          "isolateID": runnerSuite.environment.isolateID,
         });
       });
     }
