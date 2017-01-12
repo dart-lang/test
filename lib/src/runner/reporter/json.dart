@@ -179,7 +179,8 @@ class JsonReporter implements Reporter {
         // the Chrome remote debugger, or when we have VM debug support.
         _emit("debug", {
           "suiteID": id,
-          "observatory": runnerSuite.environment.observatoryUrl?.toString(),
+          "observatory": runnerSuite.environment.observatoryUrl
+              ?.removeFragment()?.toString(),
           "remoteDebugger":
               runnerSuite.environment.remoteDebuggerUrl?.toString(),
           "isolateID": runnerSuite.environment.isolateID,
