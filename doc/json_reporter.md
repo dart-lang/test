@@ -96,7 +96,8 @@ class StartEvent extends Event {
   // The version of the test runner being used.
   String runnerVersion;
 
-  // The ID of the isolate in which the runner is running.
+  // The ID of the isolate in which the runner is running, or `null` if the test
+  // runner isn't running in debug mode.
   String isolateID;
 }
 ```
@@ -466,7 +467,7 @@ When running tests on the command-line Dart VM, the test package exposes APIs as
 [service protocol extensions][registerExtension]. These can be called just like
 built-in [VM service][] RPCs by connecting to the VM service through a WebSocket
 connection to the [`DebugEvent.observatory`](#DebugEvent) URL. The `isolateId`
-parameter should match [`RunnerEvent.isolateID`](#RunnerEvent).
+parameter should match [`StartEvent.isolateID`](#StartEvent).
 
 [registerExtension]: https://api.dartlang.org/stable/latest/dart-developer/registerExtension.html
 [VM service]: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md
