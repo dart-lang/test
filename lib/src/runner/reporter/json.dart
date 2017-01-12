@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:isolate';
 
 import '../../backend/group.dart';
 import '../../backend/group_entry.dart';
@@ -77,10 +76,7 @@ class JsonReporter implements Reporter {
 
     _emit("start", {
       "protocolVersion": "0.1.0",
-      "runnerVersion": testVersion,
-      "isolateID": _config.pauseAfterLoad
-          ? Service.getIsolateID(Isolate.current)
-          : null
+      "runnerVersion": testVersion
     });
   }
 
