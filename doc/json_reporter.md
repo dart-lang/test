@@ -149,10 +149,6 @@ class DebugEvent extends Event {
   /// available for this suite.
   String observatory;
 
-  /// The ID for the isolate in which this suite is running, or `null` if the VM
-  /// service isn't in use for this suite.
-  String isolateID;
-
   /// The HTTP URL for the remote debugger for this suite's host page, or `null`
   /// if no remote debugger is available for this suite.
   String remoteDebugger;
@@ -162,12 +158,6 @@ class DebugEvent extends Event {
 A debug event is emitted after (although not necessarily directly after) a
 `SuiteEvent`, and includes information about how to debug that suite. It's only
 emitted if the `--pause-after-load` flag is passed to the test runner.
-
-The `isolateID` parameter is only set when the test runner has spawned an
-isolate for the suite in question, which it currently does only for the
-command-line VM. If the remote debugger connects to the
-[VM service protocol][VM service], it can use this ID to determine which isolate
-contains the current test suite.
 
 Note that the `remoteDebugger` URL refers to a remote debugger whose protocol
 may differ based on the browser the suite is running on. You can tell which
@@ -458,8 +448,12 @@ The metadata class is deprecated and should not be used.
 ## Remote Debugger APIs
 
 During debugging, users of the JSON API need a way to communicate with the test
-runner to tell it when all the breakpoints are set and the test should begin
-running. The mechanism for this depends on the platform in question.
+runner to tell it things like "all the breakpoints are set and the test should
+begin running". This is done through a [JSON-RPC 2.0][] API over a WebSocket
+connection. The WebSocket URL is available in
+[`StartEvent.controllerUrl`](#StartEvent). The following RPCs are available:
+
+[JSON-RPC 2.0][]: http://www.jsonrpc.org/specification
 
 ### Dart VM
 
