@@ -96,14 +96,16 @@ class StartEvent extends Event {
   // The version of the test runner being used.
   String runnerVersion;
 
-  // The ID of the isolate in which the runner is running, or `null` if the test
-  // runner isn't running in debug mode.
-  String isolateID;
+  // The URL for a WebSocket server that serves a JSON-RPC 2.0 protocol for
+  // controlling the test runner during debugging.
+  String controllerUrl;
 }
 ```
 
 A single start event is emitted before any other events. It indicates that the
 test runner has started running.
+
+The `controllerUrl` is `null` if the runner isn't in debug mode.
 
 ### AllSuitesEvent
 
@@ -445,7 +447,7 @@ class Metadata {
 
 The metadata class is deprecated and should not be used.
 
-## Remote Debugger APIs
+## Controller APIs
 
 During debugging, users of the JSON API need a way to communicate with the test
 runner to tell it things like "all the breakpoints are set and the test should
@@ -455,41 +457,7 @@ connection. The WebSocket URL is available in
 
 [JSON-RPC 2.0][]: http://www.jsonrpc.org/specification
 
-### Dart VM
-
-When running tests on the command-line Dart VM, the test package exposes APIs as
-[service protocol extensions][registerExtension]. These can be called just like
-built-in [VM service][] RPCs by connecting to the VM service through a WebSocket
-connection to the [`DebugEvent.observatory`](#DebugEvent) URL. The `isolateId`
-parameter should match [`StartEvent.isolateID`](#StartEvent).
-
-[registerExtension]: https://api.dartlang.org/stable/latest/dart-developer/registerExtension.html
-[VM service]: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md
-
-The exception to this is resuming the test, which is done by calling the
-built-in [`resume`][resume] RPC for the test isolate. Once the isolate is no
-longer paused, the test runner will start running tests automatically.
-
-[resume]: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md#resume
-
-#### `ext.test.restartCurrent`
-
-Calling the `ext.test.restartCurrent` RPC when the test runner is running a test
-causes it to re-run that test once it completes its current run. It's intended
-to be called when the runner is paused, as at a breakpoint.
-
-### Browser
-
-When running browser tests with `--pause-after-load`, the test package embeds a
-few APIs in the JavaScript context of the host page. These allow tools to
-control the debugging process in the same way a user might do from the command
-line. They can be accessed by connecting to the remote debugger using the
-[`DebugEvent.remoteDebugger`](#DebugEvent) URL.
-
-All APIs are defined as methods on the top-level `dartTest` object. The
-following methods are available:
-
-#### `resume()`
+### `null resume()`
 
 Calling `resume()` when the test runner is paused causes it to resume running
 tests. If the test runner is not paused, it won't do anything. When
@@ -498,9 +466,9 @@ suite but before any tests are run.
 
 This gives external tools a chance to use the remote debugger protocol to set
 breakpoints before tests have begun executing. They can start the test runner
-with `--pause-after-load`, connect to the remote debugger using the
-[`DebugEvent.remoteDebugger`](#DebugEvent) URL, set breakpoints, then call
-`dartTest.resume()` in the host frame when they're finished.
+with `--pause-after-load`, connect to the controller protocol using
+[`StartEvent.controllerUrl`](#StartEvent), set breakpoints, then call `resume()`
+in when they're finished.
 
 #### `restartCurrent()`
 

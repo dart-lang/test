@@ -102,7 +102,9 @@
         "runnerVersion": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
         },
-        "isolateID": {"type": "string"}
+        "controllerUrl": {
+          "oneOf": [{"type": "string"}, {"type": "null"}]
+        }
       }
     },
 
