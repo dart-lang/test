@@ -3,8 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:http_multi_server/http_multi_server.dart';
+import 'package:json_rpc_2/json_rpc_2.dart' as rpc;
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:shelf/shelf_io.dart' as io;
 
 import '../backend/test_platform.dart';
 import '../util/io.dart';
@@ -22,11 +27,14 @@ import 'runner_suite.dart';
 /// watching [engine], and the [config] should contain the user configuration
 /// for the test runner.
 ///
+/// If [controller] is passed, the debugger will hook into it to allow debugging
+/// to be controlled via WebSocket.
+///
 /// Returns a [CancelableOperation] that will complete once the suite has
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
 CancelableOperation debug(Engine engine, Reporter reporter,
-    LoadSuite loadSuite) {
+    LoadSuite loadSuite, [DebugController controller]) {
   var debugger;
   var canceled = false;
   return new CancelableOperation.fromFuture(() async {
@@ -41,7 +49,9 @@ CancelableOperation debug(Engine engine, Reporter reporter,
     if (canceled || suite == null) return;
 
     debugger = new _Debugger(engine, reporter, suite);
+    controller?._debugger = debugger;
     await debugger.run();
+    controller?._debugger = null;
   }(), onCancel: () {
     canceled = true;
     // Make sure the load test finishes so the engine can close.
@@ -73,8 +83,7 @@ class _Debugger {
   /// overlap with the reporter's reporting.
   final Console _console;
 
-  /// A completer that's used to manually unpause the test if the debugger is
-  /// closed.
+  /// A completer that's used to manually unpause the test.
   final _pauseCompleter = new CancelableCompleter();
 
   /// The subscription to [_suite.onDebugging].
@@ -221,10 +230,48 @@ class _Debugger {
 
   /// Closes the debugger and releases its resources.
   void close() {
-    _pauseCompleter.complete();
+    if (!_pauseCompleter.isCompleted) _pauseCompleter.complete();
     _closed = true;
     _onDebuggingSubscription?.cancel();
     _onRestartSubscription.cancel();
     _console.stop();
+  }
+}
+
+/// A singleton WebSocket server with a JSON-RPC 2.0 protocol that services RPCs
+/// that allow IDEs using the JSON reporter to control the debugger.
+class DebugController {
+  final HttpServer _server;
+
+  _Debugger _debugger;
+
+  Uri get url => Uri.parse("ws://localhost:${_server.port}");
+
+  static Future<DebugController> start() async =>
+      new DebugController._(await HttpMultiServer.loopback(0));
+
+  DebugController._(this._server) {
+    io.serveRequests(_server, webSocketHandler((webSocket) {
+      var server = new rpc.Server(webSocket);
+      server.registerMethod("resume", () {
+        _assertDebugger();
+        _debugger._pauseCompleter.complete();
+      });
+
+      server.registerMethod("restartTest", () {
+        _assertDebugger();
+        _debugger._restartTest();
+      });
+    }));
+  }
+
+  void _assertDebugger() {
+    if (_debugger != null) return;
+    throw new rpc.RpcException(1, "No suite is being debugged.");
+  }
+
+  Future close() {
+    print("closing debug controller");
+    return _server.close();
   }
 }

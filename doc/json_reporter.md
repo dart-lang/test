@@ -453,11 +453,15 @@ During debugging, users of the JSON API need a way to communicate with the test
 runner to tell it things like "all the breakpoints are set and the test should
 begin running". This is done through a [JSON-RPC 2.0][] API over a WebSocket
 connection. The WebSocket URL is available in
-[`StartEvent.controllerUrl`](#StartEvent). The following RPCs are available:
+[`StartEvent.controllerUrl`](#StartEvent).
 
 [JSON-RPC 2.0][]: http://www.jsonrpc.org/specification
 
-### `null resume()`
+Each RPC will return a success response with a null result once the request has
+been handled. If there's no test suite currently being debugged, they'll return
+an error response with error code 1. The following RPCs are available:
+
+### `resume()`
 
 Calling `resume()` when the test runner is paused causes it to resume running
 tests. If the test runner is not paused, it won't do anything. When
@@ -469,9 +473,9 @@ breakpoints before tests have begun executing. They can start the test runner
 with `--pause-after-load`, connect to the controller protocol using
 [`StartEvent.controllerUrl`](#StartEvent), set breakpoints, then call `resume()`
 in when they're finished.
+L
+#### `restartTest()`
 
-#### `restartCurrent()`
-
-Calling `restartCurrent()` when the test runner is running a test causes it to
+Calling `restartTest()` when the test runner is running a test causes it to
 re-run that test once it completes its current run. It's intended to be called
 when the browser is paused, as at a breakpoint.

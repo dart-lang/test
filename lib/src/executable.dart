@@ -157,7 +157,7 @@ transformers:
     return;
   }
 
-  var runner = new Runner(configuration);
+  var runner = await Runner.start(configuration);
 
   var signalSubscription;
   close() async {

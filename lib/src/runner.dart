@@ -46,6 +46,10 @@ class Runner {
   /// The reporter that's emitting the test runner's results.
   final Reporter _reporter;
 
+  /// The controller that controls suite debugging, or `null` if we aren't in
+  /// debug mode or we aren't using the JSON reporter.
+  final DebugController _debugController;
+
   /// The subscription to the stream returned by [_loadSuites].
   StreamSubscription _suiteSubscription;
 
@@ -66,10 +70,12 @@ class Runner {
   bool get _closed => _closeMemo.hasRun;
 
   /// Creates a new runner based on [configuration].
-  factory Runner(Configuration config) => config.asCurrent(() {
+  static Future<Runner> start(Configuration config) =>
+      config.asCurrent(() async {
     var engine = new Engine(concurrency: config.concurrency);
 
-    var reporter;
+    Reporter reporter;
+    DebugController controller;
     switch (config.reporter) {
       case "expanded":
         reporter = ExpandedReporter.watch(
@@ -85,14 +91,15 @@ class Runner {
         break;
 
       case "json":
-        reporter = JsonReporter.watch(engine);
+        if (config.pauseAfterLoad) controller = await DebugController.start();
+        reporter = JsonReporter.watch(engine, controller?.url);
         break;
     }
 
-    return new Runner._(engine, reporter);
+    return new Runner._(engine, reporter, controller);
   });
 
-  Runner._(this._engine, this._reporter);
+  Runner._(this._engine, this._reporter, this._debugController);
 
   /// Starts the runner.
   ///
@@ -207,9 +214,11 @@ class Runner {
       });
     }
 
-    if (_debugOperation != null) await _debugOperation.cancel();
+    print("in close");
+    await _debugOperation?.cancel();
+    await _debugController?.close();
 
-    if (_suiteSubscription != null) _suiteSubscription.cancel();
+    _suiteSubscription?.cancel();
     _suiteSubscription = null;
 
     // Make sure we close the engine *before* the loader. Otherwise,
@@ -372,7 +381,7 @@ class Runner {
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
     _suiteSubscription = suites.asyncMap((loadSuite) async {
-      _debugOperation = debug(_engine, _reporter, loadSuite);
+      _debugOperation = debug(_engine, _reporter, loadSuite, _debugController);
       await _debugOperation.valueOrCancellation();
     }).listen(null);
 

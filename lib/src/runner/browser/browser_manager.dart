@@ -305,7 +305,7 @@ class _BrowserEnvironment implements Environment {
 
   final Uri remoteDebuggerUrl;
 
-  final String isolateID => null;
+  final String isolateID = null;
 
   final Stream onRestart;
 
