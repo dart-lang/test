@@ -6,3 +6,12 @@ homepage: https://github.com/dart-lang/test_descriptor
 
 environment:
   sdk: '>=1.8.0 <2.0.0'
+
+dependencies:
+  async: '^1.10.0'
+  collection: '^1.5.0'
+  matcher: '^0.12.0'
+  path: '^1.0.0'
+  stack_trace: '^1.0.0'
+  test: '^0.12.19'
+  term_glyph: '^1.0.0'
