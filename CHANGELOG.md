@@ -1,6 +1,4 @@
-## 0.12.19
-
-* Add support for debugging VM tests.
+## 0.12.18+2
 
 * Automatically configure the [`term_glyph`][term_glyph] package to use ASCII
   glyphs when the test runner is running on Windows.
