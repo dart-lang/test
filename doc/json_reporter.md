@@ -154,6 +154,10 @@ class DebugEvent extends Event {
   /// The HTTP URL for the remote debugger for this suite's host page, or `null`
   /// if no remote debugger is available for this suite.
   String remoteDebugger;
+
+  /// The VM service ID of the isolate in which the suite is running, if
+  /// available.
+  String isolateID;
 }
 ```
 
