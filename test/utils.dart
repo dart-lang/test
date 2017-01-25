@@ -76,6 +76,12 @@ void expectSingleError(LiveTest liveTest) {
   }]);
 }
 
+/// Returns a matcher that matches a callback or Future that throws a
+/// [TestFailure] with the given [message].
+///
+/// [message] can be a string or a [Matcher].
+Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
+
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].

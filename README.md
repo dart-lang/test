@@ -6,6 +6,7 @@
   * [Platform Selectors](#platform-selectors)
   * [Running Tests on Dartium](#running-tests-on-dartium)
 * [Asynchronous Tests](#asynchronous-tests)
+  * [Stream Matchers](#stream-matchers)
 * [Running Tests With Custom HTML](#running-tests-with-custom-html)
 * [Configuring Tests](#configuring-tests)
   * [Skipping Tests](#skipping-tests)
@@ -14,7 +15,7 @@
   * [Whole-Package Configuration](#whole-package-configuration)
 * [Tagging Tests](#tagging-tests)
 * [Debugging](#debugging)
-* [Browser/VM Hybrid Tests](#browser-vm-hybrid-tests)
+* [Browser/VM Hybrid Tests](#browservm-hybrid-tests)
 * [Support for Other Packages](#support-for-other-packages)
   * [`term_glyph`](#term_glyph)
   * [`barback`](#barback)
@@ -355,6 +356,119 @@ void main() {
 
 [expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync
 
+### Stream Matchers
+
+The `test` package provides a suite of powerful matchers for dealing with
+[asynchronous streams][Stream]. They're expressive and composable, and make it
+easy to write complex expectations about the values emitted by a stream. For
+example:
+
+[Stream]: https://api.dartlang.org/stable/dart-async/Stream-class.html
+
+```dart
+import "dart:async";
+
+import "package:test/test.dart";
+
+void main() {
+  test("process emits status messages", () {
+    // Dummy data to mimic something that might be emitted by a process.
+    var stdoutLines = new Stream.fromIterable([
+      "Ready.",
+      "Loading took 150ms.",
+      "Succeeded!"
+    ]);
+
+    expect(stdoutLines, emitsInOrder([
+      // Values match individual events.
+      "Ready.",
+
+      // Matchers also run against individual events.
+      startsWith("Loading took"),
+
+      // Stream matchers can be nested. This asserts that one of two events are
+      // emitted after the "Loading took" line.
+      emitsAnyOf(["Succeeded!", "Failed!"]),
+
+      // By default, more events are allowed after the matcher finishes
+      // matching. This asserts instead that the stream emits a done event and
+      // nothing else.
+      emitsDone
+    ]));
+  });
+}
+```
+
+A stream matcher can also match the [`async`][async] package's
+[`StreamQueue`][StreamQueue] class, which allows events to be requested from a
+stream rather than pushed to the consumer. The matcher will consume the matched
+events, but leave the rest of the queue alone so that it can still be used by
+the test, unlike a normal `Stream` which can only have one subscriber. For
+example:
+
+[async]: https://pub.dartlang.org/packages/async
+[StreamQueue]: https://www.dartdocs.org/documentation/async/latest/async/StreamQueue-class.html
+
+```dart
+import "dart:async";
+
+import "package:async/async.dart";
+import "package:test/test.dart";
+
+void main() {
+  test("process emits a WebSocket URL", () async {
+    // Wrap the Stream in a StreamQueue so that we can request events.
+    var stdout = new StreamQueue(new Stream.fromIterable([
+      "WebSocket URL:",
+      "ws://localhost:1234/",
+      "Waiting for connection..."
+    ]));
+
+    // Ignore lines from the process until it's about to emit the URL.
+    await expect(stdout, emitsThrough("WebSocket URL:"));
+
+    // Parse the next line as a URL.
+    var url = Uri.parse(await stdout.next);
+    expect(url.host, equals('localhost'));
+
+    // You can match against the same StreamQueue multiple times.
+    await expect(stdout, emits("Waiting for connection..."));
+  });
+}
+```
+
+The following built-in stream matchers are available:
+
+* [`emits()`][emits] matches a single data event.
+* [`emitsError()`][emitsError] matches a single error event.
+* [`emitsDone`][emitsDone] matches a single done event.
+* [`mayEmit()`][mayEmit] consumes events if they match an inner matcher, without
+  requiring them to match.
+* [`mayEmitMultiple()`][mayEmitMultiple] works like `mayEmit()`, but it matches
+  events against the matcher as many times as possible.
+* [`emitsAnyOf()`][emitsAnyOf] consumes events matching one (or more) of several
+  possible matchers.
+* [`emitsInOrder()`][emitsInOrder] consumes events matching multiple matchers in
+  a row.
+* [`emitsInAnyOrder()`][emitsInAnyOrder] works like `emitsInOrder()`, but it
+  allows the matchers to match in any order.
+* [`neverEmits()`][neverEmits] matches a stream that finishes *without* matching
+  an inner matcher.
+
+You can also define your own custom stream matchers by calling
+[`new StreamMatcher()`][new StreamMatcher].
+
+[emits]: https://www.dartdocs.org/documentation/test/latest/test/emits.html
+[emitsError]: https://www.dartdocs.org/documentation/test/latest/test/emitsError.html
+[emitsDone]: https://www.dartdocs.org/documentation/test/latest/test/emitsDone.html
+[mayEmit]: https://www.dartdocs.org/documentation/test/latest/test/mayEmit.html
+[mayEmitMultiple]: https://www.dartdocs.org/documentation/test/latest/test/mayEmitMultiple.html
+[emitsAnyOf]: https://www.dartdocs.org/documentation/test/latest/test/emitsAnyOf.html
+[emitsInOrder]: https://www.dartdocs.org/documentation/test/latest/test/emitsInOrder.html
+[emitsInAnyOrder]: https://www.dartdocs.org/documentation/test/latest/test/emitsInAnyOrder.html
+[neverEmits]: https://www.dartdocs.org/documentation/test/latest/test/neverEmits.html
+[new StreamMatcher]: https://www.dartdocs.org/documentation/test/latest/test/StreamMatcher/StreamMatcher.html
+
 ## Running Tests With Custom HTML
 
 By default, the test runner will generate its own empty HTML file for browser
@@ -626,7 +740,7 @@ example:
 
 [spawnHybridCode]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridCode
 [spawnHybridUri]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridUri
-[dart:isolate]: https://api.dartlang.org/stable/latest/dart-isolate/dart-isolate-library.html
+[dart:isolate]: https://api.dartlang.org/stable/dart-isolate/dart-isolate-library.html
 [StreamChannel]: https://pub.dartlang.org/packages/stream_channel
 
 ```dart

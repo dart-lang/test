@@ -11,6 +11,7 @@ import 'package:async/async.dart' hide StreamQueue;
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
+import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
@@ -412,6 +413,19 @@ void ensureJsonEncodable(Object message) {
     throw new ArgumentError.value("$message can't be JSON-encoded.");
   }
 }
+
+/// Prepends a vertical bar to [text].
+String addBar(String text) => prefixLines(text, "${glyph.verticalLine} ",
+    first: "${glyph.downEnd} ",
+    last: "${glyph.upEnd} ",
+    single: "| ");
+
+/// Indents [text], and adds a bullet at the beginning.
+String addBullet(String text) =>
+    prefixLines(text, "  ", first: "${glyph.bullet} ");
+
+/// Converts [strings] to a bulleted list.
+String bullet(Iterable<String> strings) => strings.map(addBullet).join("\n");
 
 /// Prepends each line in [text] with [prefix].
 ///
