@@ -108,11 +108,12 @@ Future expect(actual, matcher,
     } else if (result is Future) {
       Invoker.current.addOutstandingCallback();
       return result.then((realResult) {
-        if (realResult == null) {
-          Invoker.current.removeOutstandingCallback();
-        } else {
-          fail(formatFailure(matcher, actual, realResult, reason: reason));
-        }
+        if (realResult == null) return;
+        fail(formatFailure(matcher, actual, realResult, reason: reason));
+      }).whenComplete(() {
+        // Always remove this, in case the failure is caught and handled
+        // gracefully.
+        Invoker.current.removeOutstandingCallback();
       });
     }
 
