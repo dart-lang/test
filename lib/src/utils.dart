@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:async/async.dart' hide StreamQueue;
+import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
@@ -99,9 +100,14 @@ class Pair<E, F> {
 String getErrorMessage(error) =>
   error.toString().replaceFirst(_exceptionPrefix, '');
 
-/// Indent each line in [str] by two spaces.
-String indent(String str) =>
-    str.replaceAll(new RegExp("^", multiLine: true), "  ");
+/// Indent each line in [string] by [size] spaces.
+///
+/// If [first] is passed, it's used in place of the first line's indentation and
+/// [size] defaults to `first.length`. Otherwise, [size] defaults to 2.
+String indent(String string, {int size, String first}) {
+  size ??= first == null ? 2 : first.length;
+  return prefixLines(string, " " * size, first: first);
+}
 
 /// Returns a sentence fragment listing the elements of [iter].
 ///
@@ -176,6 +182,13 @@ Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
   return new Chain.forTrace(stackTrace).foldFrames((frame) =>
       frame.package == 'test' || frame.package == 'stream_channel',
       terse: true);
+}
+
+/// Converts [stackTrace] to a [Chain] following the test's configuration.
+Chain testChain(StackTrace stackTrace) {
+  // TODO(nweiz): Follow more configuration when #527 is fixed.
+  return terseChain(stackTrace,
+      verbose: Invoker.current.liveTest.test.metadata.verboseTrace);
 }
 
 /// Flattens nested [Iterable]s inside an [Iterable] into a single [List]
@@ -399,3 +412,33 @@ void ensureJsonEncodable(Object message) {
     throw new ArgumentError.value("$message can't be JSON-encoded.");
   }
 }
+
+/// Prepends each line in [text] with [prefix].
+///
+/// If [first] or [last] is passed, the first and last lines, respectively, are
+/// prefixed with those instead. If [single] is passed, it's used if there's
+/// only a single line; otherwise, [first], [last], or [prefix] is used, in that
+/// order of precedence.
+String prefixLines(String text, String prefix, {String first, String last,
+    String single}) {
+  first ??= prefix;
+  last ??= prefix;
+  single ??= first ?? last ?? prefix;
+
+  var lines = text.split('\n');
+  if (lines.length == 1) return "$single$text";
+
+  var buffer = new StringBuffer("$first${lines.first}\n");
+  for (var line in lines.skip(1).take(lines.length - 2)) {
+    buffer.writeln("$prefix$line");
+  }
+  buffer.write("$last${lines.last}");
+  return buffer.toString();
+}
+
+/// Returns a pretty-printed representation of [value].
+///
+/// The matcher package doesn't expose its pretty-print function directly, but
+/// we can use it through StringDescription.
+String prettyPrint(value) =>
+    new StringDescription().addDescriptionOf(value).toString();

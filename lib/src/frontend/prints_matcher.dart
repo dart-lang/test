@@ -6,8 +6,9 @@ import 'dart:async';
 
 import 'package:matcher/matcher.dart';
 
+import '../utils.dart';
+import 'async_matcher.dart';
 import 'expect.dart';
-import 'future_matchers.dart';
 
 /// Matches a [Function] that prints text that matches [matcher].
 ///
@@ -17,15 +18,20 @@ import 'future_matchers.dart';
 /// the function (using [Zone] scoping) until that Future completes is matched.
 ///
 /// This only tracks text printed using the [print] function.
+///
+/// This returns an [AsyncMatcher], so [expect] won't complete until the matched
+/// function does.
 Matcher prints(matcher) => new _Prints(wrapMatcher(matcher));
 
-class _Prints extends Matcher {
+class _Prints extends AsyncMatcher {
   final Matcher _matcher;
 
   _Prints(this._matcher);
 
-  bool matches(item, Map matchState) {
-    if (item is! Function) return false;
+  // Avoid async/await so we synchronously fail if the function is
+  // synchronous.
+  /*FutureOr<String>*/ matchAsync(item) {
+    if (item is! Function) return "was not a Function";
 
     var buffer = new StringBuffer();
     var result = runZoned(item,
@@ -33,47 +39,31 @@ class _Prints extends Matcher {
       buffer.writeln(line);
     }));
 
-    if (result is! Future) {
-      var actual = buffer.toString();
-      matchState['prints.actual'] = actual;
-      return _matcher.matches(actual, matchState);
-    }
-
-    return completes.matches(result.then((_) {
-      // Re-run expect() so we get the same formatting as we would without being
-      // asynchronous.
-      expect(() {
-        var actual = buffer.toString();
-        if (actual.isEmpty) return;
-
-        // Strip off the final newline because [print] will re-add it.
-        actual = actual.substring(0, actual.length - 1);
-        print(actual);
-      }, this);
-    }), matchState);
+    return result is Future
+        ? result.then((_) => _check(buffer.toString()))
+        : _check(buffer.toString());
   }
 
   Description describe(Description description) =>
       description.add('prints ').addDescriptionOf(_matcher);
 
-  Description describeMismatch(
-      item, Description description, Map matchState, bool verbose) {
-    var actual = matchState.remove('prints.actual');
-    if (actual == null) return description;
-    if (actual.isEmpty) return description.add("printed nothing.");
+  /// Verifies that [actual] matches [_matcher] and returns a [String]
+  /// description of the failure if it doesn't.
+  String _check(String actual) {
+    var matchState = {};
+    if (_matcher.matches(actual, matchState)) return null;
 
-    description.add('printed ').addDescriptionOf(actual);
-
-    // Create a new description for the matcher because at least
-    // [_StringEqualsMatcher] replaces the previous contents of the description.
-    var innerMismatch = _matcher
-        .describeMismatch(actual, new StringDescription(), matchState, verbose)
+    var result = _matcher
+        .describeMismatch(actual, new StringDescription(), matchState, false)
         .toString();
 
-    if (innerMismatch.isNotEmpty) {
-      description.add('\n   Which: ').add(innerMismatch.toString());
+    var buffer = new StringBuffer();
+    if (actual.isEmpty) {
+      buffer.writeln('printed nothing');
+    } else {
+      buffer.writeln(indent(prettyPrint(actual),         first: 'printed '));
     }
-
-    return description;
+    if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
+    return buffer.toString().trimRight();
   }
 }

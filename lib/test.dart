@@ -19,7 +19,7 @@ import 'src/utils.dart';
 
 export 'package:matcher/matcher.dart';
 
-export 'src/frontend/expect.dart';
+export 'src/frontend/expect.dart' hide formatFailure;
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';
 export 'src/frontend/on_platform.dart';
