@@ -1,4 +1,7 @@
-## 0.12.18+2
+## 0.12.19
+
+* `expect()` now returns a Future for the asynchronous matchers `completes`,
+  `completion()`, `throws*()`, and `prints()`.
 
 * Automatically configure the [`term_glyph`][term_glyph] package to use ASCII
   glyphs when the test runner is running on Windows.
