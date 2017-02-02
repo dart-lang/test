@@ -429,6 +429,8 @@ String prefixLines(String text, String prefix, {String first, String last,
   if (lines.length == 1) return "$single$text";
 
   var buffer = new StringBuffer("$first${lines.first}\n");
+
+  // Write out all but the first and last lines with [prefix].
   for (var line in lines.skip(1).take(lines.length - 2)) {
     buffer.writeln("$prefix$line");
   }
