@@ -2,10 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:matcher/matcher.dart';
 
 import '../backend/closed_exception.dart';
 import '../backend/invoker.dart';
+import '../utils.dart';
+import 'async_matcher.dart';
 
 /// An exception thrown when a test assertion fails.
 class TestFailure {
@@ -18,6 +22,7 @@ class TestFailure {
 
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
+@Deprecated("Will be removed in 1.0.0.")
 typedef String ErrorFormatter(
     actual, Matcher matcher, String reason, Map matchState, bool verbose);
 
@@ -43,8 +48,26 @@ typedef String ErrorFormatter(
 /// In some cases extra diagnostic info can be produced on failure (for
 /// example, stack traces on mismatched exceptions). To enable these,
 /// [verbose] should be specified as `true`.
-void expect(actual, matcher,
-    {String reason, skip, bool verbose: false, ErrorFormatter formatter}) {
+///
+/// Returns a [Future] that completes when the matcher is finished running. For
+/// the [completes] and [completion] matchers, as well as [throwsA] and related
+/// matchers when they're matched against a [Future], this completes when the
+/// matched future completes. For the [prints] matcher, it completes when the
+/// future returned by the callback completes. Otherwise, it completes
+/// immediately.
+Future expect(actual, matcher,
+    {String reason,
+    skip,
+    bool verbose: false,
+    @Deprecated("Will be removed in 1.0.0.") ErrorFormatter formatter}) {
+  formatter ??= (actual, matcher, reason, matchState, verbose) {
+    var mismatchDescription = new StringDescription();
+    matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
+
+    return formatFailure(matcher, actual, mismatchDescription.toString(),
+        reason: reason);
+  };
+
   if (Invoker.current == null) {
     throw new StateError("expect() may only be called within a test.");
   }
@@ -68,19 +91,43 @@ void expect(actual, matcher,
     }
 
     Invoker.current.skip(message);
-    return;
+    return new Future.value();
+  }
+
+  if (matcher is AsyncMatcher) {
+    // Avoid async/await so that expect() throws synchronously when possible.
+    var result = matcher.matchAsync(actual);
+    expect(result, anyOf([
+      equals(null),
+      new isInstanceOf<Future>(),
+      new isInstanceOf<String>()
+    ]), reason: "matchAsync() may only return a String, a Future, or null.");
+
+    if (result is String) {
+      fail(formatFailure(matcher, actual, result, reason: reason));
+    } else if (result is Future) {
+      Invoker.current.addOutstandingCallback();
+      return result.then((realResult) {
+        if (realResult == null) return;
+        fail(formatFailure(matcher, actual, realResult, reason: reason));
+      }).whenComplete(() {
+        // Always remove this, in case the failure is caught and handled
+        // gracefully.
+        Invoker.current.removeOutstandingCallback();
+      });
+    }
+
+    return new Future.value();
   }
 
   var matchState = {};
   try {
-    if (matcher.matches(actual, matchState)) return;
+    if (matcher.matches(actual, matchState)) return new Future.value();
   } catch (e, trace) {
-    if (reason == null) {
-      reason = '${(e is String) ? e : e.toString()} at $trace';
-    }
+    reason ??= '$e at $trace';
   }
-  if (formatter == null) formatter = _defaultFailFormatter;
   fail(formatter(actual, matcher, reason, matchState, verbose));
+  return new Future.value();
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided
@@ -88,18 +135,11 @@ void expect(actual, matcher,
 void fail(String message) => throw new TestFailure(message);
 
 // The default error formatter.
-String _defaultFailFormatter(
-    actual, Matcher matcher, String reason, Map matchState, bool verbose) {
-  var description = new StringDescription();
-  description.add('Expected: ').addDescriptionOf(matcher).add('\n');
-  description.add('  Actual: ').addDescriptionOf(actual).add('\n');
-
-  var mismatchDescription = new StringDescription();
-  matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
-
-  if (mismatchDescription.length > 0) {
-    description.add('   Which: ${mismatchDescription}\n');
-  }
-  if (reason != null) description.add(reason).add('\n');
-  return description.toString();
+String formatFailure(Matcher expected, actual, String which, {String reason}) {
+  var buffer = new StringBuffer();
+  buffer.writeln(indent(prettyPrint(expected),       first: 'Expected: '));
+  buffer.writeln(indent(prettyPrint(actual),         first: '  Actual: '));
+  if (which.isNotEmpty) buffer.writeln(indent(which, first: '   Which: '));
+  if (reason != null) buffer.writeln(reason);
+  return buffer.toString();
 }

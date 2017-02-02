@@ -34,16 +34,16 @@ void main() {
       expectTestFailed(liveTest, allOf([
         startsWith(
             "Expected: prints 'Goodbye, world!\\n'\n"
-            "  ''\n"
+            "            ''\n"
             "  Actual: <"),
         endsWith(">\n"
             "   Which: printed 'Hello, world!\\n'\n"
-            "  ''\n"
-            "   Which: is different.\n"
-            "Expected: Goodbye, w ...\n"
-            "  Actual: Hello, wor ...\n"
-            "          ^\n"
-            " Differ at offset 0\n")
+            "                    ''\n"
+            "            which is different.\n"
+            "                  Expected: Goodbye, w ...\n"
+            "                    Actual: Hello, wor ...\n"
+            "                            ^\n"
+            "                   Differ at offset 0\n")
       ]));
     });
 
@@ -59,7 +59,7 @@ void main() {
             "  Actual: <"),
         endsWith(">\n"
             "   Which: printed 'Hello, world!\\n'\n"
-            "  ''\n")
+            "                    ''\n")
       ]));
     });
 
@@ -74,7 +74,7 @@ void main() {
             "Expected: prints contains 'Goodbye'\n"
             "  Actual: <"),
         endsWith(">\n"
-            "   Which: printed nothing.\n")
+            "   Which: printed nothing\n")
       ]));
     });
 
@@ -85,7 +85,8 @@ void main() {
 
       expectTestFailed(liveTest,
           "Expected: prints contains 'Goodbye'\n"
-          "  Actual: <10>\n");
+          "  Actual: <10>\n"
+          "   Which: was not a Function\n");
     });
   });
 
@@ -116,16 +117,16 @@ void main() {
       expectTestFailed(liveTest, allOf([
         startsWith(
             "Expected: prints 'Goodbye, world!\\n'\n"
-            "  ''\n"
+            "            ''\n"
             "  Actual: <"),
         contains(">\n"
             "   Which: printed 'Hello, world!\\n'\n"
-            "  ''\n"
-            "   Which: is different.\n"
-            "Expected: Goodbye, w ...\n"
-            "  Actual: Hello, wor ...\n"
-            "          ^\n"
-            " Differ at offset 0")
+            "                    ''\n"
+            "            which is different.\n"
+            "                  Expected: Goodbye, w ...\n"
+            "                    Actual: Hello, wor ...\n"
+            "                            ^\n"
+            "                   Differ at offset 0")
       ]));
     });
 
@@ -141,7 +142,7 @@ void main() {
             "  Actual: <"),
         contains(">\n"
             "   Which: printed 'Hello, world!\\n'\n"
-            "  ''")
+            "                    ''")
       ]));
     });
 
@@ -156,7 +157,7 @@ void main() {
             "Expected: prints contains 'Goodbye'\n"
             "  Actual: <"),
         contains(">\n"
-            "   Which: printed nothing.")
+            "   Which: printed nothing")
       ]));
     });
 
@@ -166,6 +167,24 @@ void main() {
         expect(() => completer.future, prints(isEmpty));
         return completer;
       }, (completer) => completer.complete());
+    });
+
+    test("blocks expect's Future", () async {
+      var completer = new Completer();
+      var fired = false;
+      expect(() {
+        scheduleMicrotask(() => print("hello!"));
+        return completer.future;
+      }, prints("hello!\n")).then((_) {
+        fired = true;
+      });
+
+      await pumpEventQueue();
+      expect(fired, isFalse);
+
+      completer.complete();
+      await pumpEventQueue();
+      expect(fired, isTrue);
     });
   });
 }

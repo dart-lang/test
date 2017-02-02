@@ -6,7 +6,8 @@ import 'dart:async';
 
 import 'package:matcher/matcher.dart';
 
-import '../backend/invoker.dart';
+import '../utils.dart';
+import 'async_matcher.dart';
 import 'expect.dart';
 
 /// Matches a [Future] that completes successfully with a value.
@@ -17,6 +18,9 @@ import 'expect.dart';
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
+///
+/// This returns an [AsyncMatcher], so [expect] won't complete until the matched
+/// future does.
 final Matcher completes = const _Completes(null);
 
 /// Matches a [Future] that completes succesfully with a value that matches
@@ -30,24 +34,41 @@ final Matcher completes = const _Completes(null);
 /// [throwsA].
 ///
 /// The [description] parameter is deprecated and shouldn't be used.
+///
+/// This returns an [AsyncMatcher], so [expect] won't complete until the matched
+/// future does.
 Matcher completion(matcher, [@deprecated String description]) =>
     new _Completes(wrapMatcher(matcher));
 
-class _Completes extends Matcher {
+class _Completes extends AsyncMatcher {
   final Matcher _matcher;
 
   const _Completes(this._matcher);
 
-  bool matches(item, Map matchState) {
-    if (item is! Future) return false;
-    Invoker.current.addOutstandingCallback();
+  // Avoid async/await so we synchronously start listening to [item].
+  /*FutureOr<String>*/ matchAsync(item) {
+    if (item is! Future) return "was not a Future";
 
-    item.then((value) {
-      if (_matcher != null) expect(value, _matcher);
-      Invoker.current.removeOutstandingCallback();
+    return item.then((value) async {
+      if (_matcher == null) return null;
+
+      String result;
+      if (_matcher is AsyncMatcher) {
+        result = await (_matcher as AsyncMatcher).matchAsync(value);
+        if (result == null) return null;
+      } else {
+        var matchState = {};
+        if (_matcher.matches(value, matchState)) return null;
+        result = _matcher
+            .describeMismatch(value, new StringDescription(), matchState, false)
+            .toString();
+      }
+
+      var buffer = new StringBuffer();
+      buffer.writeln(indent(prettyPrint(value),            first: 'emitted '));
+      if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
+      return buffer.toString().trimRight();
     });
-
-    return true;
   }
 
   Description describe(Description description) {

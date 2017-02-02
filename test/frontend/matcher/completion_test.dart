@@ -38,14 +38,15 @@ void main() {
       expectTestFailed(liveTest, "oh no");
     });
 
-    test("with a non-function", () async {
+    test("with a non-future", () async {
       var liveTest = await runTestBody(() {
         expect(10, completes);
       });
 
       expectTestFailed(liveTest,
           "Expected: completes successfully\n"
-          "  Actual: <10>\n");
+          "  Actual: <10>\n"
+          "   Which: was not a Future\n");
     });
 
     test("with a successful future", () {
@@ -81,14 +82,15 @@ void main() {
       expectTestFailed(liveTest, "oh no");
     });
 
-    test("with a non-function", () async {
+    test("with a non-future", () async {
       var liveTest = await runTestBody(() {
         expect(10, completion(equals(10)));
       });
 
       expectTestFailed(liveTest,
           "Expected: completes to a value that <10>\n"
-          "  Actual: <10>\n");
+          "  Actual: <10>\n"
+          "   Which: was not a Future\n");
     });
 
     test("with an incorrect value", () async {
@@ -96,10 +98,33 @@ void main() {
         expect(new Future.value('a'), completion(equals('b')));
       });
 
-      expectTestFailed(liveTest, startsWith(
-          "Expected: 'b'\n"
-          "  Actual: 'a'\n"
-          "   Which: is different."));;
+      expectTestFailed(liveTest, allOf([
+        startsWith(
+            "Expected: completes to a value that 'b'\n"
+            "  Actual: <"),
+        endsWith(">\n"
+            "   Which: emitted 'a'\n"
+            "            which is different.\n"
+            "                  Expected: b\n"
+            "                    Actual: a\n"
+            "                            ^\n"
+            "                   Differ at offset 0\n")
+      ]));
+    });
+
+    test("blocks expect's Future", () async {
+      var completer = new Completer();
+      var fired = false;
+      expect(completer.future, completion(equals(1))).then((_) {
+        fired = true;
+      });
+
+      await pumpEventQueue();
+      expect(fired, isFalse);
+
+      completer.complete(1);
+      await pumpEventQueue();
+      expect(fired, isTrue);
     });
   });
 }
