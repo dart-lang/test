@@ -8,6 +8,11 @@
 
 [term_glyph]: https://pub.dartlang.org/packages/term_glyph
 
+* Deprecate the `throws` matcher in favor of `throwsA()`.
+
+* Deprecate the `Throws` class. These matchers should only be constructed via
+  `throwsA()`.
+
 ## 0.12.18+1
 
 * Fix the deprecated `expectAsync()` function. The deprecation caused it to

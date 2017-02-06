@@ -9,17 +9,12 @@ import 'package:matcher/matcher.dart';
 import '../utils.dart';
 import 'async_matcher.dart';
 
-/// This can be used to match two kinds of objects:
+/// This function is deprecated.
 ///
-/// * A [Function] that throws an exception when called. The function cannot
-///   take any arguments. If you want to test that a function expecting
-///   arguments throws, wrap it in another zero-argument function that calls
-///   the one you want to test.
-///
-/// * A [Future] that completes with an exception. Note that this creates an
-///   asynchronous expectation. The call to `expect()` that includes this will
-///   return immediately and execution will continue. Later, when the future
-///   completes, the actual expectation will run.
+/// Use [throwsA] instead. We strongly recommend that you add assertions about
+/// at least the type of the error, but you can write `throwsA(anything)` to
+/// mimic the behavior of this matcher.
+@Deprecated("Will be removed in 0.13.0");
 const Matcher throws = const Throws();
 
 /// This can be used to match two kinds of objects:
@@ -39,6 +34,8 @@ const Matcher throws = const Throws();
 /// [Matcher], it will implicitly be treated as `equals(matcher)`.
 Matcher throwsA(matcher) => new Throws(wrapMatcher(matcher));
 
+/// Use the [throwsA] function instead.
+@Deprecated("Will be removed in 0.13.0")
 class Throws extends AsyncMatcher {
   final Matcher _matcher;
 
