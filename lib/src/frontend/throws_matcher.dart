@@ -14,7 +14,7 @@ import 'async_matcher.dart';
 /// Use [throwsA] instead. We strongly recommend that you add assertions about
 /// at least the type of the error, but you can write `throwsA(anything)` to
 /// mimic the behavior of this matcher.
-@Deprecated("Will be removed in 0.13.0");
+@Deprecated("Will be removed in 0.13.0")
 const Matcher throws = const Throws();
 
 /// This can be used to match two kinds of objects:
