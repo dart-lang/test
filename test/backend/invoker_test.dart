@@ -529,6 +529,31 @@ void main() {
       expect(isComplete, isFalse);
     });
   });
+
+  group("printOnFailure:", () {
+    test("doesn't print anything if the test succeeds", () {
+      expect(() async {
+        var liveTest = _localTest(() {
+          Invoker.current.printOnFailure("only on failure");
+        }).load(suite);
+        liveTest.onError.listen(expectAsync1((_) {}, count: 0));
+
+        await liveTest.run();
+      }, prints(isEmpty));
+    });
+
+    test("prints if the test fails", () {
+      expect(() async {
+        var liveTest = _localTest(() {
+          Invoker.current.printOnFailure("only on failure");
+          expect(true, isFalse);
+        }).load(suite);
+        liveTest.onError.listen(expectAsync1((_) {}, count: 1));
+
+        await liveTest.run();
+      }, prints("only on failure\n"));
+    });
+  });
 }
 
 LocalTest _localTest(body(), {Metadata metadata}) {
