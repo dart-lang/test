@@ -1,5 +1,9 @@
 ## 0.12.19
 
+* Added the `StreamMatcher` class, as well as several built-in stream matchers:
+  `emits()`, `emitsError()`, `emitsDone, mayEmit()`, `mayEmitMultiple()`,
+  `emitsAnyOf()`, `emitsInOrder()`, `emitsInAnyOrder()`, and `neverEmits()`.
+
 * `expect()` now returns a Future for the asynchronous matchers `completes`,
   `completion()`, `throws*()`, and `prints()`.
 

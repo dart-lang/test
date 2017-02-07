@@ -8,12 +8,13 @@ environment:
 dependencies:
   analyzer: '>=0.23.0 <0.30.0'
   args: '^0.13.1'
-  async: '^1.8.0'
+  async: '^1.13.0'
   barback: '>=0.14.0 <0.16.0'
   boolean_selector: '^1.0.0'
   collection: '^1.8.0'
   glob: '^1.0.0'
   http_multi_server: '>=1.0.0 <3.0.0'
+  meta: '^1.0.0'
   package_resolver: '^1.0.0'
   path: '^1.2.0'
   pool: '^1.2.0'
@@ -39,4 +40,7 @@ dev_dependencies:
   fake_async: '^0.1.2'
   http: '^0.11.0'
   js: '^0.6.0'
+  scheduled_test: '^0.12.5'
+
+dependency_overrides:
   scheduled_test: '^0.12.5'
