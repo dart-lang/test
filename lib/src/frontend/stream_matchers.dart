@@ -87,6 +87,10 @@ StreamMatcher mayEmit(matcher) {
 /// re-thrown.
 StreamMatcher emitsAnyOf(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
+  if (streamMatchers.isEmpty) {
+    throw new ArgumentError("matcher may not be empty");
+  }
+
   if (streamMatchers.length == 1) return streamMatchers.first;
   var description = "do one of the following:\n" +
       bullet(streamMatchers.map((matcher) => matcher.description));
@@ -114,7 +118,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
         try {
           result = await streamMatchers[i].matchQueue(copy);
         } catch (error, stackTrace) {
-          if (error != null) {
+          if (firstError != null) {
             firstError = error;
             firstStackTrace = stackTrace;
           }
@@ -184,8 +188,8 @@ StreamMatcher emitsInOrder(Iterable matchers) {
   }, description);
 }
 
-/// Returns a [StreamMatcher] that matches any number of
-/// events followed by events that match [matcher].
+/// Returns a [StreamMatcher] that matches any number of events followed by
+/// events that match [matcher].
 ///
 /// This consumes all events matched by [matcher], as well as all events before.
 /// If the stream emits a done event without matching [matcher], this fails and
@@ -335,7 +339,7 @@ Future<bool> _tryInAnyOrder(StreamQueue queue, Set<StreamMatcher> matchers)
     try {
       if (await matcher.matchQueue(copy) != null) return;
     } catch (error, stackTrace) {
-      if (error != null) {
+      if (firstError != null) {
         firstError = error;
         firstStackTrace = stackTrace;
       }
@@ -348,7 +352,7 @@ Future<bool> _tryInAnyOrder(StreamQueue queue, Set<StreamMatcher> matchers)
     try {
       if (!await _tryInAnyOrder(copy, rest)) return;
     } catch (error, stackTrace) {
-      if (error != null) {
+      if (firstError != null) {
         firstError = error;
         firstStackTrace = stackTrace;
       }
