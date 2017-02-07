@@ -59,6 +59,7 @@ class Invoker {
   LiveTest get liveTest => _controller.liveTest;
   LiveTestController _controller;
 
+  /// Whether the test can be closed in the current zone.
   bool get _closable => Zone.current[_closableKey];
 
   /// An opaque object used as a key in the zone value map to identify
@@ -127,7 +128,10 @@ class Invoker {
   Timer _timeoutTimer;
 
   /// The tear-down functions to run when this test finishes.
-  final _tearDowns = new List<AsyncFunction>();
+  final _tearDowns = <AsyncFunction>[];
+
+  /// Messages to print if and when this test fails.
+  final _printsOnFailure = <String>[];
 
   Invoker._(Suite suite, LocalTest test, {Iterable<Group> groups}) {
     _controller = new LiveTestController(
@@ -264,11 +268,21 @@ class Invoker {
     _controller.setState(const State(Status.pending, Result.skipped));
   }
 
+  /// Prints [message] if and when this test fails.
+  void printOnFailure(String message) {
+    message = message.trim();
+    if (liveTest.state.result.isFailing) {
+      print("\n$message");
+    } else {
+      _printsOnFailure.add(message);
+    }
+  }
+
   /// Notifies the invoker of an asynchronous error.
   void _handleError(error, [StackTrace stackTrace]) {
     if (stackTrace == null) stackTrace = new Chain.current();
 
-    // Store this here because it'll change when we set the state below.
+    // Store these here because they'll change when we set the state below.
     var shouldBeDone = liveTest.state.shouldBeDone;
 
     if (error is! TestFailure) {
@@ -279,6 +293,11 @@ class Invoker {
 
     _controller.addError(error, stackTrace);
     removeAllOutstandingCallbacks();
+
+    if (_printsOnFailure.isNotEmpty) {
+      print(_printsOnFailure.join("\n\n"));
+      _printsOnFailure.clear();
+    }
 
     // If a test was supposed to be done but then had an error, that indicates
     // that it was poorly-written and could be flaky.

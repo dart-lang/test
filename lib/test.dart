@@ -283,3 +283,11 @@ void registerException(error, [StackTrace stackTrace]) {
   // going through the zone API allows other zones to consistently see errors.
   Zone.current.handleUncaughtError(error, stackTrace);
 }
+
+/// Prints [message] if and when the current test fails.
+///
+/// This is intended for test infrastructure to provide debugging information
+/// without cluttering the output for successful tests. Note that unlike
+/// [print], each individual message passed to [printOnFailure] will be
+/// separated by a blank line.
+void printOnFailure(String message) => Invoker.current.printOnFailure(message);

@@ -3,6 +3,9 @@
 * `expect()` now returns a Future for the asynchronous matchers `completes`,
   `completion()`, `throws*()`, and `prints()`.
 
+* Add a `printOnFailure()` method for providing debugging information that's
+  only printed when a test fails.
+
 * Automatically configure the [`term_glyph`][term_glyph] package to use ASCII
   glyphs when the test runner is running on Windows.
 
