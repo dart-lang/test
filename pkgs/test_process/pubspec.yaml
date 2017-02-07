@@ -1,0 +1,11 @@
+name: test_process
+version: 1.0.0-dev
+description: A library for testing subprocesses.
+author: Dart Team <misc@dartlang.org>
+homepage: https://github.com/dart-lang/test_process
+
+environment:
+  sdk: '>=1.8.0 <2.0.0'
+
+dependencies:
+  test: "^0.12.19"
