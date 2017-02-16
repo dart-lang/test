@@ -45,6 +45,7 @@ abstract class AsyncMatcher extends Matcher {
       });
     } else if (result is String) {
       matchState[this] = result;
+      return false;
     }
 
     return true;

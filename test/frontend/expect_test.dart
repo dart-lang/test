@@ -25,4 +25,14 @@ void main() {
           throwsA("oh no"));
     });
   });
+
+  group("an async matcher that fails synchronously", () {
+    test("throws synchronously", () {
+      expect(() => expect(() {}, throws), throwsA(isTestFailure(anything)));
+    });
+
+    test("can be used with synchronous operators", () {
+      expect(() {}, isNot(throws));
+    });
+  });
 }

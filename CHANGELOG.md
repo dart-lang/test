@@ -1,3 +1,9 @@
+## 0.12.19+1
+
+* Make sure asynchronous matchers that can fail synchronously, such as
+  `throws*()` and `prints()`, can be used with synchronous matcher operators
+  like `isNot()`.
+
 ## 0.12.19
 
 * Added the `StreamMatcher` class, as well as several built-in stream matchers:
