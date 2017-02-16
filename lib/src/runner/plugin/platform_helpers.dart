@@ -57,6 +57,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
 
   var completer = new Completer();
 
+  var loadSuiteZone = Zone.current;
   handleError(error, stackTrace) {
     disconnector.disconnect();
 
@@ -64,7 +65,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
       // If we've already provided a controller, send the error to the
       // LoadSuite. This will cause the virtual load test to fail, which will
       // notify the user of the error.
-      Zone.current.handleUncaughtError(error, mapTrace(stackTrace));
+      loadSuiteZone.handleUncaughtError(error, mapTrace(stackTrace));
     } else {
       completer.completeError(error, mapTrace(stackTrace));
     }
@@ -109,7 +110,7 @@ Future<RunnerSuiteController> deserializeSuite(String path,
       path: path,
       platform: platform,
       os: currentOS,
-      onClose: disconnector.disconnect);
+      onClose: () => disconnector.disconnect().catchError(handleError));
 }
 
 /// A utility class for storing state while deserializing tests.
