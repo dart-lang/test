@@ -1,3 +1,7 @@
+## 0.12.18+2
+
+* Fix analysis errors having to do with the `expectAsync()` function.
+
 ## 0.12.18+1
 
 * Fix the deprecated `expectAsync()` function. The deprecation caused it to
