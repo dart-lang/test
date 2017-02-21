@@ -10,18 +10,18 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  group("returned Future", () {
+  group("returned Future from expectLater()", () {
     test("completes immediately for a sync matcher", () {
-      expect(expect(true, isTrue), completes);
+      expect(expectLater(true, isTrue), completes);
     });
 
     test("contains the expect failure", () {
-      expect(expect(new Future.value(true), completion(isFalse)),
+      expect(expectLater(new Future.value(true), completion(isFalse)),
           throwsA(isTestFailure(anything)));
     });
 
     test("contains an async error", () {
-      expect(expect(new Future.error("oh no"), completion(isFalse)),
+      expect(expectLater(new Future.error("oh no"), completion(isFalse)),
           throwsA("oh no"));
     });
   });
