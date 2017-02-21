@@ -28,7 +28,7 @@ class TestFailure {
 
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
-@Deprecated("Will be removed in 1.0.0.")
+@Deprecated("Will be removed in 0.13.0.")
 typedef String ErrorFormatter(
     actual, Matcher matcher, String reason, Map matchState, bool verbose);
 
@@ -63,8 +63,8 @@ typedef String ErrorFormatter(
 void expect(actual, matcher,
     {String reason,
     skip,
-    bool verbose: false,
-    @Deprecated("Will be removed in 1.0.0.") ErrorFormatter formatter}) {
+    @Deprecated("Will be removed in 0.13.0.") bool verbose: false,
+    @Deprecated("Will be removed in 0.13.0.") ErrorFormatter formatter}) {
   _expect(actual, matcher,
       reason: reason, skip: skip, verbose: verbose, formatter: formatter);
 }
@@ -164,6 +164,7 @@ Future _expect(actual, matcher,
 void fail(String message) => throw new TestFailure(message);
 
 // The default error formatter.
+@Deprecated("Will be removed in 0.13.0.")
 String formatFailure(Matcher expected, actual, String which, {String reason}) {
   var buffer = new StringBuffer();
   buffer.writeln(indent(prettyPrint(expected),       first: 'Expected: '));

@@ -6,6 +6,9 @@
   `expectLater()` function has been added that return a `Future` that completes
   when the matcher has finished running.
 
+* The `verbose` parameter to `expect()` and the `formatFailure()` function are
+  deprecated.
+
 ## 0.12.19+1
 
 * Make sure asynchronous matchers that can fail synchronously, such as
