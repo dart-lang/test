@@ -1,3 +1,11 @@
+## 0.12.20
+
+* **Breaking change:** The `expect()` method no longer returns a `Future`, since
+  this broke backwards-compatibility in cases where a void function was
+  returning an `expect()` (such as `void foo() => expect(...)`). Instead, a new
+  `expectLater()` function has been added that return a `Future` that completes
+  when the matcher has finished running.
+
 ## 0.12.19+1
 
 * Make sure asynchronous matchers that can fail synchronously, such as

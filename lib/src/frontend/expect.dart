@@ -11,6 +11,12 @@ import '../backend/invoker.dart';
 import '../utils.dart';
 import 'async_matcher.dart';
 
+/// A future that emits `null`.
+///
+/// We cache and re-use this value to avoid adding a new microtask hit for each
+/// call to `expect()`.
+final _emptyFuture = new Future.value();
+
 /// An exception thrown when a test assertion fails.
 class TestFailure {
   final String message;
@@ -49,17 +55,40 @@ typedef String ErrorFormatter(
 /// example, stack traces on mismatched exceptions). To enable these,
 /// [verbose] should be specified as `true`.
 ///
-/// Returns a [Future] that completes when the matcher is finished running. For
-/// the [completes] and [completion] matchers, as well as [throwsA] and related
-/// matchers when they're matched against a [Future], this completes when the
-/// matched future completes. For the [prints] matcher, it completes when the
-/// future returned by the callback completes. Otherwise, it completes
-/// immediately.
-Future expect(actual, matcher,
+/// Certain matchers, like [completion] and [throwsA], either match or fail
+/// asynchronously. When you use [expect] with these matchers, it ensures that
+/// the test doesn't complete until the matcher has either matched or failed. If
+/// you want to wait for the matcher to complete before continuing the test, you
+/// can call [expectLater] instead and `await` the result.
+void expect(actual, matcher,
     {String reason,
     skip,
     bool verbose: false,
     @Deprecated("Will be removed in 1.0.0.") ErrorFormatter formatter}) {
+  _expect(actual, matcher,
+      reason: reason, skip: skip, verbose: verbose, formatter: formatter);
+}
+
+/// Just like [expect], but returns a [Future] that completes when the matcher
+/// has finished matching.
+///
+/// For the [completes] and [completion] matchers, as well as [throwsA] and
+/// related matchers when they're matched against a [Future], the returned
+/// future completes when the matched future completes. For the [prints]
+/// matcher, it completes when the future returned by the callback completes.
+/// Otherwise, it completes immediately.
+///
+/// If the matcher fails asynchronously, that failure is piped to the returned
+/// future where it can be handled by user code.
+Future expectLater(actual, matcher, {String reason, skip}) =>
+    _expect(actual, matcher, reason: reason, skip: skip);
+
+/// The implementation of [expect] and [expectLater].
+Future _expect(actual, matcher,
+    {String reason,
+    skip,
+    bool verbose: false,
+    ErrorFormatter formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = new StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
@@ -91,7 +120,7 @@ Future expect(actual, matcher,
     }
 
     Invoker.current.skip(message);
-    return new Future.value();
+    return emptyFuture;
   }
 
   if (matcher is AsyncMatcher) {
@@ -117,17 +146,17 @@ Future expect(actual, matcher,
       });
     }
 
-    return new Future.value();
+    return emptyFuture;
   }
 
   var matchState = {};
   try {
-    if (matcher.matches(actual, matchState)) return new Future.value();
+    if (matcher.matches(actual, matchState)) return emptyFuture;
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
   fail(formatter(actual, matcher, reason, matchState, verbose));
-  return new Future.value();
+  return emptyFuture;
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided
