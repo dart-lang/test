@@ -120,7 +120,7 @@ Future _expect(actual, matcher,
     }
 
     Invoker.current.skip(message);
-    return emptyFuture;
+    return _emptyFuture;
   }
 
   if (matcher is AsyncMatcher) {
@@ -146,17 +146,17 @@ Future _expect(actual, matcher,
       });
     }
 
-    return emptyFuture;
+    return _emptyFuture;
   }
 
   var matchState = {};
   try {
-    if (matcher.matches(actual, matchState)) return emptyFuture;
+    if (matcher.matches(actual, matchState)) return _emptyFuture;
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
   fail(formatter(actual, matcher, reason, matchState, verbose));
-  return emptyFuture;
+  return _emptyFuture;
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided

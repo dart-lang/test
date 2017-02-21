@@ -118,7 +118,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
         try {
           result = await streamMatchers[i].matchQueue(copy);
         } catch (error, stackTrace) {
-          if (firstError != null) {
+          if (firstError == null) {
             firstError = error;
             firstStackTrace = stackTrace;
           }
@@ -339,7 +339,7 @@ Future<bool> _tryInAnyOrder(StreamQueue queue, Set<StreamMatcher> matchers)
     try {
       if (await matcher.matchQueue(copy) != null) return;
     } catch (error, stackTrace) {
-      if (firstError != null) {
+      if (firstError == null) {
         firstError = error;
         firstStackTrace = stackTrace;
       }
@@ -352,7 +352,7 @@ Future<bool> _tryInAnyOrder(StreamQueue queue, Set<StreamMatcher> matchers)
     try {
       if (!await _tryInAnyOrder(copy, rest)) return;
     } catch (error, stackTrace) {
-      if (firstError != null) {
+      if (firstError == null) {
         firstError = error;
         firstStackTrace = stackTrace;
       }
