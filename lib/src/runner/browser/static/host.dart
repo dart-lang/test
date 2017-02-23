@@ -172,8 +172,6 @@ MultiChannel _connectToServer() {
 StreamChannel _connectToIframe(String url, int id) {
   var iframe = new IFrameElement();
   _iframes[id] = iframe;
-  iframe.width = '800';
-  iframe.height = '600';
   iframe.src = url;
   document.body.children.add(iframe);
 
