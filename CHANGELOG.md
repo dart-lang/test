@@ -9,6 +9,9 @@
 * The `verbose` parameter to `expect()` and the `formatFailure()` function are
   deprecated.
 
+* iframe created for browser tests has been increased from default size of
+  300 x 150 to 800 x 600.
+
 ## 0.12.19+1
 
 * Make sure asynchronous matchers that can fail synchronously, such as
