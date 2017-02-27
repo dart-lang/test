@@ -1,3 +1,7 @@
+## 0.12.20+1
+
+* Tighten the dependency on `stream_channel` to reflect the APIs being used.
+
 ## 0.12.20
 
 * **Breaking change:** The `expect()` method no longer returns a `Future`, since
