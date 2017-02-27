@@ -1,7 +1,6 @@
-## 0.12.21
+## 0.12.20+1
 
-* iframe created for browser tests has been increased from default size of
-  300 x 150 to 1024 x 768.
+* Use a 1024 x 768 iframe for browser tests.
 
 ## 0.12.20
 
