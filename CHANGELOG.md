@@ -1,3 +1,7 @@
+## 0.12.20+1
+
+* Use a 1024 x 768 iframe for browser tests.
+
 ## 0.12.20
 
 * **Breaking change:** The `expect()` method no longer returns a `Future`, since

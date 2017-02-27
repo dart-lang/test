@@ -6,6 +6,8 @@ iframe {
   /* We would use display: none here, but then Firefox fails to properly compute
    * styles. See #274 */
   visibility: hidden;
+  width: 1024px;
+  height: 768px;
 }
 
 #play {
