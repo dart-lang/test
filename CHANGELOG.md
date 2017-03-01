@@ -1,5 +1,7 @@
 ## 0.12.20+1
 
+* Tighten the dependency on `stream_channel` to reflect the APIs being used.
+
 * Use a 1024 x 768 iframe for browser tests.
 
 ## 0.12.20
