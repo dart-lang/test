@@ -36,7 +36,7 @@ void main() {
 
       test.stdout.expect(containsInOrder([
         "Expected a declaration, but got 'invalid'",
-        '-1: compiling test.dart',
+        '-1: compiling test.dart [E]',
         'Failed to load "test.dart": dart2js failed.'
       ]));
       test.shouldExit(1);
@@ -47,7 +47,7 @@ void main() {
 
       var test = runTest(["-p", "chrome", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: compiling test.dart',
+        '-1: compiling test.dart [E]',
         'Failed to load "test.dart": oh no'
       ]));
       test.shouldExit(1);
@@ -58,7 +58,7 @@ void main() {
 
       var test = runTest(["-p", "chrome", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: compiling test.dart',
+        '-1: compiling test.dart [E]',
         'Failed to load "test.dart": No top-level main() function defined.'
       ]));
       test.shouldExit(1);
@@ -69,7 +69,7 @@ void main() {
 
       var test = runTest(["-p", "chrome", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: compiling test.dart',
+        '-1: compiling test.dart [E]',
         'Failed to load "test.dart": Top-level main getter is not a function.'
       ]));
       test.shouldExit(1);
@@ -80,7 +80,7 @@ void main() {
 
       var test = runTest(["-p", "chrome", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: compiling test.dart',
+        '-1: compiling test.dart [E]',
         'Failed to load "test.dart": Top-level main() function takes arguments.'
       ]));
       test.shouldExit(1);
@@ -99,7 +99,7 @@ void main() {
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": "test.html" must contain '
             '<script src="packages/test/dart.js"></script>.'
       ]));
@@ -119,7 +119,7 @@ void main() {
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": Expected exactly 1 '
             '<link rel="x-dart-test"> in test.html, found 0.'
       ]));
@@ -141,7 +141,7 @@ void main() {
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": Expected exactly 1 '
             '<link rel="x-dart-test"> in test.html, found 2.'
       ]));
@@ -162,7 +162,7 @@ void main() {
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": Expected <link rel="x-dart-test"> in '
             'test.html to have an "href" attribute.'
       ]));
@@ -183,7 +183,7 @@ void main() {
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": Failed to load script at '
       ]));
       test.shouldExit(1);

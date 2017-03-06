@@ -81,7 +81,7 @@ void main() {
     test("doesn't filter out load exceptions", () {
       var test = runTest(["--name", "name", "file"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading file',
+        '-1: loading file [E]',
         '  Failed to load "file": Does not exist.'
       ]));
       test.shouldExit(1);

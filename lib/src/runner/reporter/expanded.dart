@@ -86,6 +86,9 @@ class ExpandedReporter implements Reporter {
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
 
+  /// The suffix added to the last progress notification.
+  String _lastProgressSuffix;
+
   /// Whether the reporter is paused.
   var _paused = false;
 
@@ -203,7 +206,7 @@ class ExpandedReporter implements Reporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest) + " $_bold$_red[E]$_noColor");
+    _progressLine(_description(liveTest), suffix: " $_bold$_red[E]$_noColor");
 
     if (error is! LoadException) {
       print(indent(error.toString()));
@@ -248,13 +251,16 @@ class ExpandedReporter implements Reporter {
   ///
   /// [message] goes after the progress report, and may be truncated to fit the
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
-  /// color for [message].
-  void _progressLine(String message, {String color}) {
+  /// color for [message]. If [suffix] is passed, it's added to the end of
+  /// [message].
+  void _progressLine(String message, {String color, String suffix}) {
     // Print nothing if nothing has changed since the last progress line.
     if (_engine.passed.length == _lastProgressPassed &&
         _engine.skipped.length == _lastProgressSkipped &&
         _engine.failed.length == _lastProgressFailed &&
-        message == _lastProgressMessage) {
+        message == _lastProgressMessage &&
+        // Don't re-print just because a suffix was removed.
+        (suffix == null || suffix == _lastProgressSuffix)) {
       return;
     }
 
@@ -262,7 +268,9 @@ class ExpandedReporter implements Reporter {
     _lastProgressSkipped = _engine.skipped.length;
     _lastProgressFailed = _engine.failed.length;
     _lastProgressMessage = message;
+    _lastProgressSuffix = suffix;
 
+    if (suffix != null) message += suffix;
     if (color == null) color = '';
     var duration = _stopwatch.elapsed;
     var buffer = new StringBuffer();

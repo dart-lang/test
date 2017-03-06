@@ -117,7 +117,7 @@ $_usage""");
     test("a non-existent file is passed", () {
       var test = runTest(["file"]);
       test.stdout.expect(containsInOrder([
-        '-1: loading file',
+        '-1: loading file [E]',
         'Failed to load "file": Does not exist.'
       ]));
       test.shouldExit(1);
@@ -137,7 +137,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart":',
         "line 1 pos 1: unexpected token 'invalid'",
         "invalid Dart file",
@@ -153,7 +153,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart":',
         'line 1 pos 17: semicolon expected',
         'void main() {foo}',
@@ -169,7 +169,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart":',
         "line 1 pos 8: unexpected token ')'",
         "@TestOn)",
@@ -183,7 +183,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart":',
         "Error on line 1, column 8: TestOn takes 1 argument.",
         "@TestOn()",
@@ -197,7 +197,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart":',
         "Error on line 1, column 10: Undefined variable.",
         "@TestOn('zim')",
@@ -211,7 +211,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": oh no'
       ]));
       test.shouldExit(1);
@@ -222,7 +222,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": No top-level main() function defined.'
       ]));
       test.shouldExit(1);
@@ -233,7 +233,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": Top-level main getter is not a function.'
       ]));
       test.shouldExit(1);
@@ -244,7 +244,7 @@ $_usage""");
       var test = runTest(["test.dart"]);
 
       test.stdout.expect(containsInOrder([
-        '-1: loading test.dart',
+        '-1: loading test.dart [E]',
         'Failed to load "test.dart": Top-level main() function takes arguments.'
       ]));
       test.shouldExit(1);

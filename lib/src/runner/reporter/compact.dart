@@ -85,6 +85,9 @@ class CompactReporter implements Reporter {
   /// The message printed for the last progress notification.
   String _lastProgressMessage;
 
+  /// The suffix added to the last progress notification.
+  String _lastProgressSuffix;
+
   /// Whether the message printed for the last progress notification was
   /// truncated.
   bool _lastProgressTruncated;
@@ -185,6 +188,10 @@ class CompactReporter implements Reporter {
   void _onStateChange(LiveTest liveTest, State state) {
     if (state.status != Status.complete) return;
 
+    // Errors are printed in [onError]; no need to print them here as well.
+    if (state.result == Result.failure) return;
+    if (state.result == Result.error) return;
+
     // Always display the name of the oldest active test, unless testing
     // is finished in which case display the last test to complete.
     if (_engine.active.isEmpty) {
@@ -198,7 +205,8 @@ class CompactReporter implements Reporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest) + " $_bold$_red[E]$_noColor");
+    _progressLine(_description(liveTest),
+        truncate: false, suffix: " $_bold$_red[E]$_noColor");
     if (!_printedNewline) print('');
     _printedNewline = true;
 
@@ -263,8 +271,10 @@ class CompactReporter implements Reporter {
   ///
   /// [message] goes after the progress report, and may be truncated to fit the
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
-  /// color for [message].
-  bool _progressLine(String message, {String color, bool truncate: true}) {
+  /// color for [message]. If [suffix] is passed, it's added to the end of
+  /// [message].
+  bool _progressLine(String message, {String color, bool truncate: true,
+      String suffix}) {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.
@@ -272,6 +282,8 @@ class CompactReporter implements Reporter {
         _engine.skipped.length == _lastProgressSkipped &&
         _engine.failed.length == _lastProgressFailed &&
         message == _lastProgressMessage &&
+        // Don't re-print just because a suffix was removed.
+        (suffix == null || suffix == _lastProgressSuffix) &&
         // Don't re-print just because the message became re-truncated, because
         // that doesn't add information.
         (truncate || !_lastProgressTruncated) &&
@@ -287,8 +299,10 @@ class CompactReporter implements Reporter {
     _lastProgressFailed = _engine.failed.length;
     _lastProgressElapsed = elapsed;
     _lastProgressMessage = message;
+    _lastProgressSuffix = suffix;
     _lastProgressTruncated = truncate;
 
+    if (suffix != null) message += suffix;
     if (color == null) color = '';
     var duration = _stopwatch.elapsed;
     var buffer = new StringBuffer();
