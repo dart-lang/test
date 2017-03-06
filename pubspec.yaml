@@ -44,4 +44,3 @@ dev_dependencies:
 
 dependency_overrides:
   scheduled_test: '^0.12.5'
-  stack_trace: {path: ../stack_trace}
