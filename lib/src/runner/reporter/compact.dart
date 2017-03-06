@@ -198,7 +198,7 @@ class CompactReporter implements Reporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest), truncate: false);
+    _progressLine(_description(liveTest) + " $_bold$_red[E]$_noColor");
     if (!_printedNewline) print('');
     _printedNewline = true;
 

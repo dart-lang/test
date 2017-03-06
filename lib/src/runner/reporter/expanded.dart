@@ -203,7 +203,7 @@ class ExpandedReporter implements Reporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest));
+    _progressLine(_description(liveTest) + " $_bold$_red[E]$_noColor");
 
     if (error is! LoadException) {
       print(indent(error.toString()));
