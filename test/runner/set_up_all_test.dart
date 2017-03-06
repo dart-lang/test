@@ -25,7 +25,7 @@ void main() {
         """).create();
 
     var test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains("-1: (setUpAll)")));
+    test.stdout.expect(consumeThrough(contains("-1: (setUpAll) [E]")));
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
     test.shouldExit(1);
   });

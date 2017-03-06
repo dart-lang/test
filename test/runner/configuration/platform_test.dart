@@ -37,7 +37,7 @@ void main() {
 
       var test = runTest(["-p", "content-shell,vm", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        "-1: [Dartium Content Shell] test",
+        "-1: [Dartium Content Shell] test [E]",
         "+1 -1: Some tests failed."
       ]));
       test.shouldExit(1);
@@ -62,8 +62,8 @@ void main() {
 
       var test = runTest(["-p", "content-shell,vm", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        "-1: [VM] test",
-        "-2: [Dartium Content Shell] test",
+        "-1: [VM] test [E]",
+        "-2: [Dartium Content Shell] test [E]",
         "-2: Some tests failed."
       ]));
       test.shouldExit(1);

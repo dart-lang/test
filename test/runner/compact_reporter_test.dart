@@ -45,19 +45,19 @@ void main() {
         """
         +0: loading test.dart
         +0: failure 1
-        +0 -1: failure 1
+        +0 -1: failure 1 [E]
           oh no
           test.dart 6:33  main.<fn>
 
 
         +0 -1: failure 2
-        +0 -2: failure 2
+        +0 -2: failure 2 [E]
           oh no
           test.dart 7:33  main.<fn>
 
 
         +0 -2: failure 3
-        +0 -3: failure 3
+        +0 -3: failure 3 [E]
           oh no
           test.dart 8:33  main.<fn>
 
@@ -90,7 +90,7 @@ void main() {
         """
         +0: loading test.dart
         +0: failure 1
-        +0 -1: failure 1
+        +0 -1: failure 1 [E]
           oh no
           test.dart 6:33  main.<fn>
 
@@ -98,7 +98,7 @@ void main() {
         +0 -1: success 1
         +1 -1: success 1
         +1 -1: failure 2
-        +1 -2: failure 2
+        +1 -2: failure 2 [E]
           oh no
           test.dart 8:33  main.<fn>
 
@@ -123,7 +123,7 @@ void main() {
         """
         +0: loading test.dart
         +0: failures
-        +0 -1: failures
+        +0 -1: failures [E]
           first error
           test.dart 10:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
@@ -157,8 +157,7 @@ void main() {
         """
         +0: loading test.dart
         +0: really ... longer than that. No, yet longer. A little more... okay, that should do it.
-        +0 -1: really ... longer than that. No, yet longer. A little more... okay, that should do it.
-        +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
+        +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it. [E]
           oh no
           test.dart 9:18  main.<fn>
 
@@ -251,7 +250,7 @@ void main() {
         one
         two
 
-        +0 -1: test
+        +0 -1: test [E]
           first error
           test.dart 24:11  main.<fn>
 
@@ -370,7 +369,7 @@ void main() {
           """
           +0: loading test.dart
           +0: failure 1
-          +0 -1: failure 1
+          +0 -1: failure 1 [E]
             oh no
             test.dart 6:35  main.<fn>
 
@@ -380,7 +379,7 @@ void main() {
           +0 ~1 -1: success 1
           +1 ~1 -1: success 1
           +1 ~1 -1: failure 2
-          +1 ~1 -2: failure 2
+          +1 ~1 -2: failure 2 [E]
             oh no
             test.dart 9:35  main.<fn>
 

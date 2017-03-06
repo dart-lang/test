@@ -1,5 +1,5 @@
 name: test
-version: 0.12.20+1
+version: 0.12.20+2
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
@@ -44,3 +44,4 @@ dev_dependencies:
 
 dependency_overrides:
   scheduled_test: '^0.12.5'
+  stack_trace: {path: ../stack_trace}

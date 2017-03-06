@@ -110,7 +110,7 @@ void main() {
       var pub = runPubServe(args: ['web']);
       var test = runTest([_pubServeArg]);
       test.stdout.expect(containsInOrder([
-        '-1: loading ${p.join("test", "my_test.dart")}',
+        '-1: loading ${p.join("test", "my_test.dart")} [E]',
         'Failed to load "${p.join("test", "my_test.dart")}":',
         '404 Not Found',
         'Make sure "pub serve" is serving the test/ directory.'
@@ -128,7 +128,7 @@ void main() {
         var pub = runPubServe(args: ['web']);
         var test = runTest([_pubServeArg, '-p', 'chrome']);
         test.stdout.expect(containsInOrder([
-          '-1: compiling ${p.join("test", "my_test.dart")}',
+          '-1: compiling ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           '404 Not Found',
           'Make sure "pub serve" is serving the test/ directory.'
@@ -144,7 +144,7 @@ void main() {
         var pub = runPubServe(args: ['web']);
         var test = runTest([_pubServeArg, '-p', 'content-shell']);
         test.stdout.expect(containsInOrder([
-          '-1: loading ${p.join("test", "my_test.dart")}',
+          '-1: loading ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           '404 Not Found',
           'Make sure "pub serve" is serving the test/ directory.'
@@ -272,7 +272,7 @@ void main() {
   test("gracefully handles pub serve not running for VM tests", () {
     var test = runTest(['--pub-serve=54321']);
     test.stdout.expect(containsInOrder([
-      '-1: loading ${p.join("test", "my_test.dart")}',
+      '-1: loading ${p.join("test", "my_test.dart")} [E]',
       'Failed to load "${p.join("test", "my_test.dart")}":',
       'Error getting http://localhost:54321/my_test.dart.vm_test.dart: '
           'Connection refused',
@@ -288,7 +288,7 @@ void main() {
         : 'Connection refused (errno ';
 
     test.stdout.expect(containsInOrder([
-      '-1: compiling ${p.join("test", "my_test.dart")}',
+      '-1: compiling ${p.join("test", "my_test.dart")} [E]',
       'Failed to load "${p.join("test", "my_test.dart")}":',
       'Error getting http://localhost:54321/my_test.dart.browser_test.dart.js'
           '.map: $message',
@@ -305,7 +305,7 @@ void main() {
 
     var test = runTest(['--pub-serve=54321', 'my_test.dart']);
     test.stdout.expect(containsInOrder([
-      '-1: loading my_test.dart',
+      '-1: loading my_test.dart [E]',
       'Failed to load "my_test.dart": When using "pub serve", all test files '
           'must be in test/.'
     ]));

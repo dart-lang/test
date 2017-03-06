@@ -100,7 +100,7 @@ void main() {
       test.stdout.expect(containsInOrder([
         "+0: failing",
         "  Skip expect (<2>).",
-        "+0 -1: failing",
+        "+0 -1: failing [E]",
         "  Expected: <2>",
         "    Actual: <1>",
         "+0 -1: Some tests failed."

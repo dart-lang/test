@@ -1,3 +1,8 @@
+## 0.12.20+2
+
+* Print "[E]" after test failures to make them easier to identify visually and
+  via automated search.
+
 ## 0.12.20+1
 
 * Tighten the dependency on `stream_channel` to reflect the APIs being used.
