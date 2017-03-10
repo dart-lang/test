@@ -164,7 +164,9 @@ class Loader {
           return suite;
         } catch (error, stackTrace) {
           if (error is LoadException) rethrow;
-          await new Future.error(new LoadException(path, error), stackTrace);
+          await new Future.error(
+              new LoadException(path, error), stackTrace);
+          return null;
         }
       }, path: path, platform: platform);
     }

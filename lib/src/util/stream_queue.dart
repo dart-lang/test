@@ -488,7 +488,7 @@ class _TakeRequest<T> implements _EventRequest {
   final _completer = new Completer<List<T>>();
 
   /// List collecting events until enough have been seen.
-  final List _list = <T>[];
+  final _list = <T>[];
 
   /// Number of events to capture.
   ///

@@ -66,7 +66,8 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
-  factory LoadSuite(String name, SuiteConfiguration config, body(),
+  factory LoadSuite(
+      String name, SuiteConfiguration config, FutureOr<RunnerSuite> body(),
       {String path, TestPlatform platform}) {
     var completer = new Completer<Pair<RunnerSuite, Zone>>.sync();
     return new LoadSuite._(name, config, () {
