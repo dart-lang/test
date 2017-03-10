@@ -176,10 +176,10 @@ void main() {
         }, (completer) => completer.completeError('oh no'));
       });
 
-      test("blocks expect's Future", () async {
+      test("blocks expectLater's Future", () async {
         var completer = new Completer();
         var fired = false;
-        expect(completer.future, throwsArgumentError).then((_) {
+        expectLater(completer.future, throwsArgumentError).then((_) {
           fired = true;
         });
 

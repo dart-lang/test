@@ -334,9 +334,8 @@ class BrowserPlatform extends PlatformPlugin {
           _mappers[path] = new StackTraceMapper(
               await UTF8.decodeStream(response),
               mapUrl: url,
-              packageResolver: new SyncPackageResolver.root(
-                  _config.pubServeUrl.resolve('packages')),
-              sdkRoot: _config.pubServeUrl.resolve('packages/\$sdk'));
+              packageResolver: new SyncPackageResolver.root('packages'),
+              sdkRoot: 'packages/\$sdk');
           return;
         }
 
