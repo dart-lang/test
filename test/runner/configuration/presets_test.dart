@@ -177,7 +177,7 @@ void main() {
 
       var test = runTest(["-P", "bar", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        "-1: test [E]",
+        "+0 -1: test 1 [E]",
         "+1 -1: Some tests failed."
       ]));
       test.shouldExit(1);
@@ -277,7 +277,7 @@ void main() {
 
       var test = runTest(["-P", "foo", "test.dart"]);
       test.stdout.expect(containsInOrder([
-        "-1: test [E]",
+        "+0 -1: test [E]",
         "-1: Some tests failed."
       ]));
       test.shouldExit(1);

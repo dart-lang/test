@@ -169,10 +169,10 @@ void main() {
       }, (completer) => completer.complete());
     });
 
-    test("blocks expect's Future", () async {
+    test("blocks expectLater's Future", () async {
       var completer = new Completer();
       var fired = false;
-      expect(() {
+      expectLater(() {
         scheduleMicrotask(() => print("hello!"));
         return completer.future;
       }, prints("hello!\n")).then((_) {

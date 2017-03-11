@@ -1,3 +1,9 @@
+## 0.12.20+3
+
+* `--pause-after-load` no longer deadlocks with recent versions of Chrome.
+
+* Fix Dartified stack traces for JS-compiled tests run through `pub serve`.
+
 ## 0.12.20+2
 
 * Print "[E]" after test failures to make them easier to identify visually and
