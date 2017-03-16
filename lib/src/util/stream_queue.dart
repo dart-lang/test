@@ -440,7 +440,7 @@ class _NextRequest<T> implements _EventRequest {
 
   void close(Queue<Result> events) {
     var errorFuture =
-        new Future.sync(() => throw new StateError("No elements"));
+        new Future<T>.sync(() => throw new StateError("No elements"));
     _completer.complete(errorFuture);
   }
 }
