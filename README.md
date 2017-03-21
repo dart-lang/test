@@ -268,6 +268,7 @@ content-shell`. The content shell is installed along with Dartium when using
 Homebrew. Otherwise, you can downloaded it manually [from this
 page][content_shell]; if you do, make sure the executable named `content_shell`
 (on Mac OS or Linux) or `content_shell.exe` (on Windows) is on your system path.
+Note content_shell on linux requires the font packages ttf-kochi-mincho and ttf-kochi-gothic.
 
 [content_shell]: http://gsdview.appspot.com/dart-archive/channels/stable/release/latest/dartium/
 
