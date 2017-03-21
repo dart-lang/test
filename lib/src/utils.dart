@@ -14,7 +14,9 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
+import 'backend/live_test.dart';
 import 'backend/operating_system.dart';
+import 'runner/engine.dart';
 import 'util/stream_queue.dart';
 
 /// The maximum console line length.
@@ -458,3 +460,9 @@ String prefixLines(String text, String prefix, {String first, String last,
 /// we can use it through StringDescription.
 String prettyPrint(value) =>
     new StringDescription().addDescriptionOf(value).toString();
+
+/// The [LiveTest] currently being executed.
+LiveTest get liveTest => Engine.current?.liveTest;
+
+/// All the currently-known suites that have run or are running.
+Set<LiveTest> get liveTests => Engine.current?.liveTests;

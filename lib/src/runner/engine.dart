@@ -162,6 +162,8 @@ class Engine {
       [passed, skipped, failed, new IterableSet(active)],
       disjoint: true);
 
+  LiveTest get liveTest => Zone.current[#test.liveTest];
+
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
   /// This is guaranteed to fire before [LiveTest.onStateChange] first fires.
@@ -203,6 +205,9 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
+  /// The current zone-scoped engine.
+  static Engine get current => Zone.current[#test.engine];
+
   // TODO(nweiz): Use interface libraries to take a Configuration even when
   // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
@@ -242,49 +247,51 @@ class Engine {
   /// only return once all tests have finished running and [suiteSink] has been
   /// closed.
   Future<bool> run() {
-    if (_runCalled) {
-      throw new StateError("Engine.run() may not be called more than once.");
-    }
-    _runCalled = true;
+    return runZoned((){
+      if (_runCalled) {
+        throw new StateError("Engine.run() may not be called more than once.");
+      }
+      _runCalled = true;
 
-    StreamSubscription subscription;
-    subscription = _suiteController.stream.listen((suite) {
-      _addedSuites.add(suite);
-      _onSuiteAddedController.add(suite);
+      StreamSubscription subscription;
+      subscription = _suiteController.stream.listen((suite) {
+        _addedSuites.add(suite);
+        _onSuiteAddedController.add(suite);
 
-      _group.add(new Future.sync(() async {
-        var loadResource = await _loadPool.request();
+        _group.add(new Future.sync(() async {
+          var loadResource = await _loadPool.request();
 
-        var controller;
-        if (suite is LoadSuite) {
-          await _onUnpaused;
-          controller = await _addLoadSuite(suite);
-          if (controller == null) {
-            loadResource.release();
-            return;
+          var controller;
+          if (suite is LoadSuite) {
+            await _onUnpaused;
+            controller = await _addLoadSuite(suite);
+            if (controller == null) {
+              loadResource.release();
+              return;
+            }
+          } else {
+            controller = new LiveSuiteController(suite);
           }
-        } else {
-          controller = new LiveSuiteController(suite);
-        }
 
-        _addLiveSuite(controller.liveSuite);
+          _addLiveSuite(controller.liveSuite);
 
-        await _runPool.withResource(() async {
-          if (_closed) return;
-          await _runGroup(controller, controller.liveSuite.suite.group, []);
-          controller.noMoreLiveTests();
-          loadResource.allowRelease(() => controller.close());
-        });
-      }));
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-      _onSuiteAddedController.close();
-      _group.close();
-      _loadPool.close();
-    });
-    _subscriptions.add(subscription);
+          await _runPool.withResource(() async {
+            if (_closed) return;
+            await _runGroup(controller, controller.liveSuite.suite.group, []);
+            controller.noMoreLiveTests();
+            loadResource.allowRelease(() => controller.close());
+          });
+        }));
+      }, onDone: () {
+        _subscriptions.remove(subscription);
+        _onSuiteAddedController.close();
+        _group.close();
+        _loadPool.close();
+      });
+      _subscriptions.add(subscription);
 
-    return success;
+      return success;
+    }, zoneValues: {#test.engine: this});
   }
 
   /// Runs all the entries in [group] in sequence.
@@ -343,42 +350,44 @@ class Engine {
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
   Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
       {bool countSuccess: true}) async {
-    await _onUnpaused;
-    _active.add(liveTest);
+    return runZoned(() async {
+      await _onUnpaused;
+      _active.add(liveTest);
 
-    // If there were no active non-load tests, the current active test would
-    // have been a load test. In that case, remove it, since now we have a
-    // non-load test to add.
-    if (_active.first.suite is LoadSuite) _active.removeFirst();
+      // If there were no active non-load tests, the current active test would
+      // have been a load test. In that case, remove it, since now we have a
+      // non-load test to add.
+      if (_active.first.suite is LoadSuite) _active.removeFirst();
 
-    StreamSubscription subscription;
-    subscription = liveTest.onStateChange.listen((state) {
-      if (state.status != Status.complete) return;
-      _active.remove(liveTest);
+      StreamSubscription subscription;
+      subscription = liveTest.onStateChange.listen((state) {
+        if (state.status != Status.complete) return;
+        _active.remove(liveTest);
 
-      // If we're out of non-load tests, surface a load test.
-      if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-        _active.add(_activeLoadTests.first);
-      }
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-    });
-    _subscriptions.add(subscription);
+        // If we're out of non-load tests, surface a load test.
+        if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
+          _active.add(_activeLoadTests.first);
+        }
+      }, onDone: () {
+        _subscriptions.remove(subscription);
+      });
+      _subscriptions.add(subscription);
 
-    suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
+      suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
 
-    // Schedule a microtask to ensure that [onTestStarted] fires before the
-    // first [LiveTest.onStateChange] event.
-    await new Future.microtask(liveTest.run);
+      // Schedule a microtask to ensure that [onTestStarted] fires before the
+      // first [LiveTest.onStateChange] event.
+      await new Future.microtask(liveTest.run);
 
-    // Once the test finishes, use [new Future] to do a coarse-grained event
-    // loop pump to avoid starving non-microtask events.
-    await new Future(() {});
+      // Once the test finishes, use [new Future] to do a coarse-grained event
+      // loop pump to avoid starving non-microtask events.
+      await new Future(() {});
 
-    if (!_restarted.contains(liveTest)) return;
-    await _runLiveTest(suiteController, liveTest.copy(),
-        countSuccess: countSuccess);
-    _restarted.remove(liveTest);
+      if (!_restarted.contains(liveTest)) return;
+      await _runLiveTest(suiteController, liveTest.copy(),
+          countSuccess: countSuccess);
+      _restarted.remove(liveTest);
+    }, zoneValues: {#test.liveTest: liveTest});
   }
 
   /// Runs a dummy [LiveTest] for a test marked as "skip".
