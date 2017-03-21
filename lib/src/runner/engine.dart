@@ -162,6 +162,7 @@ class Engine {
       [passed, skipped, failed, new IterableSet(active)],
       disjoint: true);
 
+  /// The current zone-scoped [LiveTest].
   LiveTest get liveTest => Zone.current[#test.liveTest];
 
   /// A stream that emits each [LiveTest] as it's about to start running.
@@ -188,7 +189,7 @@ class Engine {
 
   /// The set of tests that have been marked for restarting.
   ///
-  /// This is always a subset of [active]. Once a test in here has finished
+  //scoped / This is always a subset of [active]. Once a test in here has finished
   /// running, it's run again.
   final _restarted = new Set<LiveTest>();
 
@@ -205,7 +206,7 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
-  /// The current zone-scoped engine.
+  /// The current zone-scoped [Engine].
   static Engine get current => Zone.current[#test.engine];
 
   // TODO(nweiz): Use interface libraries to take a Configuration even when
