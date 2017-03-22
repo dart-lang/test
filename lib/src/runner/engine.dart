@@ -186,7 +186,7 @@ class Engine {
 
   /// The set of tests that have been marked for restarting.
   ///
-  //scoped / This is always a subset of [active]. Once a test in here has finished
+  /// This is always a subset of [active]. Once a test in here has finished
   /// running, it's run again.
   final _restarted = new Set<LiveTest>();
 

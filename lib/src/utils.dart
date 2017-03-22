@@ -14,9 +14,7 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
-import 'backend/live_test.dart';
 import 'backend/operating_system.dart';
-import 'runner/engine.dart';
 import 'util/stream_queue.dart';
 
 /// The maximum console line length.
