@@ -13,11 +13,29 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  test("returns the correct scoped liveTest", () async {
+  test("current scoped liveTest is accessible", () async {
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
         test("test ${i + 1}", expectAsync0(() {
           expect(Invoker.current.liveTest.individualName, "test ${i + 1}");
+        }, max: 2));
+      }
+    });
+
+    var engine = new Engine.withSuites([
+      runnerSuite(new Group.root(tests.take(2))),
+      runnerSuite(new Group.root(tests.skip(2)))
+    ]);
+
+    await engine.run();
+  });
+
+  test("scoped liveTests are accessible", () async {
+    var tests = declare(() {
+      for (var i = 0; i < 4; i++) {
+        test("test ${i + 1}", expectAsync0(() {
+          expect(Engine.current.liveTests.contains(Invoker.current.liveTest),
+              isTrue);
         }, max: 2));
       }
     });
