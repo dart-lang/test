@@ -4,11 +4,11 @@
 
 import 'dart:async';
 
+import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/test.dart';
-import 'package:test/src/utils.dart';
 
 import '../utils.dart';
 
@@ -17,7 +17,7 @@ void main() {
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
         test("test ${i + 1}", expectAsync0(() {
-          expect(liveTest.individualName, "test ${i + 1}");
+          expect(Invoker.current.liveTest.individualName, "test ${i + 1}");
         }, max: 2));
       }
     });

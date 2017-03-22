@@ -460,9 +460,3 @@ String prefixLines(String text, String prefix, {String first, String last,
 /// we can use it through StringDescription.
 String prettyPrint(value) =>
     new StringDescription().addDescriptionOf(value).toString();
-
-/// The [LiveTest] currently being executed.
-LiveTest get liveTest => Engine.current?.liveTest;
-
-/// All the currently-known suites that have run or are running.
-Set<LiveTest> get liveTests => Engine.current?.liveTests;

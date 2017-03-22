@@ -162,9 +162,6 @@ class Engine {
       [passed, skipped, failed, new IterableSet(active)],
       disjoint: true);
 
-  /// The current zone-scoped [LiveTest].
-  LiveTest get liveTest => Zone.current[#test.liveTest];
-
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
   /// This is guaranteed to fire before [LiveTest.onStateChange] first fires.
@@ -351,44 +348,42 @@ class Engine {
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
   Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
       {bool countSuccess: true}) async {
-    return runZoned(() async {
-      await _onUnpaused;
-      _active.add(liveTest);
+    await _onUnpaused;
+    _active.add(liveTest);
 
-      // If there were no active non-load tests, the current active test would
-      // have been a load test. In that case, remove it, since now we have a
-      // non-load test to add.
-      if (_active.first.suite is LoadSuite) _active.removeFirst();
+    // If there were no active non-load tests, the current active test would
+    // have been a load test. In that case, remove it, since now we have a
+    // non-load test to add.
+    if (_active.first.suite is LoadSuite) _active.removeFirst();
 
-      StreamSubscription subscription;
-      subscription = liveTest.onStateChange.listen((state) {
-        if (state.status != Status.complete) return;
-        _active.remove(liveTest);
+    StreamSubscription subscription;
+    subscription = liveTest.onStateChange.listen((state) {
+      if (state.status != Status.complete) return;
+      _active.remove(liveTest);
 
-        // If we're out of non-load tests, surface a load test.
-        if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-          _active.add(_activeLoadTests.first);
-        }
-      }, onDone: () {
-        _subscriptions.remove(subscription);
-      });
-      _subscriptions.add(subscription);
+      // If we're out of non-load tests, surface a load test.
+      if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
+        _active.add(_activeLoadTests.first);
+      }
+    }, onDone: () {
+      _subscriptions.remove(subscription);
+    });
+    _subscriptions.add(subscription);
 
-      suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
+    suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
 
-      // Schedule a microtask to ensure that [onTestStarted] fires before the
-      // first [LiveTest.onStateChange] event.
-      await new Future.microtask(liveTest.run);
+    // Schedule a microtask to ensure that [onTestStarted] fires before the
+    // first [LiveTest.onStateChange] event.
+    await new Future.microtask(liveTest.run);
 
-      // Once the test finishes, use [new Future] to do a coarse-grained event
-      // loop pump to avoid starving non-microtask events.
-      await new Future(() {});
+    // Once the test finishes, use [new Future] to do a coarse-grained event
+    // loop pump to avoid starving non-microtask events.
+    await new Future(() {});
 
-      if (!_restarted.contains(liveTest)) return;
-      await _runLiveTest(suiteController, liveTest.copy(),
-          countSuccess: countSuccess);
-      _restarted.remove(liveTest);
-    }, zoneValues: {#test.liveTest: liveTest});
+    if (!_restarted.contains(liveTest)) return;
+    await _runLiveTest(suiteController, liveTest.copy(),
+        countSuccess: countSuccess);
+    _restarted.remove(liveTest);
   }
 
   /// Runs a dummy [LiveTest] for a test marked as "skip".
