@@ -1,3 +1,7 @@
+## 0.12.20+4
+
+* Fixed strong-mode errors and other blockers for compiling with `dev_compiler`.
+
 ## 0.12.20+3
 
 * `--pause-after-load` no longer deadlocks with recent versions of Chrome.
