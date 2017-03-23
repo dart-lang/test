@@ -112,7 +112,7 @@ class Runner {
       success = await _loadThenPause(suites);
     } else {
       _suiteSubscription = suites.listen(_engine.suiteSink.add);
-      var results = await Future.wait([
+      var results = await Future.wait(<Future>[
         _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
         _engine.run()
       ], eagerError: true);
@@ -381,7 +381,7 @@ class Runner {
       await _debugOperation.valueOrCancellation();
     }).listen(null);
 
-    var results = await Future.wait([
+    var results = await Future.wait(<Future>[
       _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
       _engine.run()
     ], eagerError: true);

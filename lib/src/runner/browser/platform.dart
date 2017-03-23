@@ -335,7 +335,7 @@ class BrowserPlatform extends PlatformPlugin {
               await UTF8.decodeStream(response),
               mapUrl: url,
               packageResolver: new SyncPackageResolver.root('packages'),
-              sdkRoot: 'packages/\$sdk');
+              sdkRoot: p.toUri('packages/\$sdk'));
           return;
         }
 
@@ -443,7 +443,7 @@ class BrowserPlatform extends PlatformPlugin {
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   Future close() => _closeMemo.runOnce(() async {
-    var futures = _browserManagers.values.map((future) async {
+    var futures = _browserManagers.values.map<Future<dynamic>>((future) async {
       var result = await future;
       if (result.isError) return;
 
