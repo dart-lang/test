@@ -115,11 +115,11 @@ abstract class Browser {
       try{
         if (Platform.isLinux) {
           var result = Process.runSync('pgrep', ['-P', '${process.pid}']);
-          for(var pid in '${result.stdout}'.split('\n')){
+          for (var pid in '${result.stdout}'.split('\n')) {
             Process.runSync('kill', ['-9', pid]);
           }
         }
-      }catch(e){
+      } catch(e) {
         print('Failed to kill browser children: $e');
       }
       process.kill();
