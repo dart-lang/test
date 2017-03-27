@@ -108,7 +108,22 @@ abstract class Browser {
   /// exceptions.
   Future close() {
     _closed = true;
-    _process.then((process) => process.kill());
+
+    _process.then((process) {
+      // Dartium has a difficult time being killed on Linux. To ensure it is
+      // properly closed, find all children processes and kill those first.
+      try{
+        if (Platform.isLinux) {
+          var result = Process.runSync('pgrep', ['-P', '${process.pid}']);
+          for (var pid in '${result.stdout}'.split('\n')) {
+            Process.runSync('kill', ['-9', pid]);
+          }
+        }
+      } catch(e) {
+        print('Failed to kill browser children: $e');
+      }
+      process.kill();
+    });
 
     // Swallow exceptions. The user should explicitly use [onExit] for these.
     return onExit.catchError((_) {});
