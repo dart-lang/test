@@ -56,6 +56,7 @@ final String testVersion = (() {
 
       return "$version (from $path)";
 
-    default: return null;
+    default:
+      return null;
   }
 })();

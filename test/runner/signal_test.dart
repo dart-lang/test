@@ -4,7 +4,6 @@
 
 // Windows doesn't support sending signals.
 @TestOn("vm && !windows")
-
 import 'dart:async';
 import 'dart:io';
 
@@ -27,13 +26,17 @@ void main() {
 
   group("during loading,", () {
     test("cleans up if killed while loading a VM test", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 void main() {
   print("in test.dart");
   // Spin for a long time so the test is probably killed while still loading.
   for (var i = 0; i < 100000000; i++) {}
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("in test.dart"));
@@ -53,12 +56,16 @@ void main() {
     }, tags: "chrome");
 
     test("exits immediately if ^C is sent twice", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 void main() {
   print("in test.dart");
   while (true) {}
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("in test.dart"));
@@ -75,7 +82,10 @@ void main() {
 
   group("during test running", () {
     test("waits for a VM test to finish running", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 import 'dart:io';
 
@@ -93,7 +103,8 @@ void main() {
     return new Future.delayed(new Duration(seconds: 1));
   });
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("running test"));
@@ -105,7 +116,10 @@ void main() {
     });
 
     test("waits for an active tearDownAll to finish running", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 import 'dart:io';
 
@@ -120,7 +134,8 @@ void main() {
 
   test("test", () {});
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("running tearDownAll"));
@@ -131,7 +146,10 @@ void main() {
     });
 
     test("kills a browser test immediately", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -148,7 +166,8 @@ void main() {
     });
   });
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough("running test"));
@@ -158,7 +177,10 @@ void main() {
     }, tags: "content-shell");
 
     test("kills a VM test immediately if ^C is sent twice", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'package:test/test.dart';
 
 void main() {
@@ -167,7 +189,8 @@ void main() {
     while (true) {}
   });
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("running test"));
@@ -181,7 +204,10 @@ void main() {
     });
 
     test("causes expect() to always throw an error immediately", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 import 'dart:io';
 
@@ -205,7 +231,8 @@ void main() {
     }
   });
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("running test"));
@@ -216,7 +243,10 @@ void main() {
     });
 
     test("causes expectAsync() to always throw an error immediately", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 import 'dart:io';
 
@@ -240,7 +270,8 @@ void main() {
     }
   });
 }
-""").create();
+""")
+          .create();
 
       var test = _runTest(["test.dart"]);
       test.stdout.expect(consumeThrough("running test"));

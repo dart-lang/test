@@ -21,8 +21,7 @@ import 'package:test/src/util/io.dart';
 final Future<String> packageDir = PackageResolver.current.packagePath('test');
 
 /// The path to the `pub` executable in the current Dart SDK.
-final _pubPath = p.absolute(p.join(
-    p.dirname(Platform.resolvedExecutable),
+final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
     Platform.isWindows ? 'pub.bat' : 'pub'));
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
@@ -85,10 +84,12 @@ void expectStderrEquals(ScheduledProcess test, String expected) =>
 
 /// Expects that the entirety of the line stream [stream] equals [expected].
 void _expectStreamEquals(Stream<String> stream, String expected) {
-  expect((() async {
-    var lines = await stream.toList();
-    expect(lines.join("\n").trim(), equals(expected.trim()));
-  })(), completes);
+  expect(
+      (() async {
+        var lines = await stream.toList();
+        expect(lines.join("\n").trim(), equals(expected.trim()));
+      })(),
+      completes);
 }
 
 /// Returns a [StreamMatcher] that asserts that the stream emits strings
@@ -103,8 +104,10 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 ///
 /// If [forwardStdio] is true, the standard output and error from the process
 /// will be printed as part of the parent test. This is used for debugging.
-ScheduledProcess runTest(List args, {String reporter,
-    int concurrency, Map<String, String> environment,
+ScheduledProcess runTest(List args,
+    {String reporter,
+    int concurrency,
+    Map<String, String> environment,
     bool forwardStdio: false}) {
   concurrency ??= 1;
 
@@ -119,8 +122,7 @@ ScheduledProcess runTest(List args, {String reporter,
   environment.putIfAbsent("_DART_TEST_TESTING", () => "true");
 
   var process = runDart(allArgs,
-      environment: environment,
-      description: "dart bin/test.dart");
+      environment: environment, description: "dart bin/test.dart");
 
   if (forwardStdio) {
     process.stdoutStream().listen(print);
@@ -131,8 +133,8 @@ ScheduledProcess runTest(List args, {String reporter,
 }
 
 /// Runs Dart.
-ScheduledProcess runDart(List<String> args, {Map<String, String> environment,
-    String description}) {
+ScheduledProcess runDart(List<String> args,
+    {Map<String, String> environment, String description}) {
   var allArgs = <Object>[]
     ..addAll(Platform.executableArguments.where((arg) =>
         !arg.startsWith("--package-root=") && !arg.startsWith("--packages=")))
@@ -148,8 +150,7 @@ ScheduledProcess runDart(List<String> args, {Map<String, String> environment,
 
 /// Runs Pub.
 ScheduledProcess runPub(List args, {Map<String, String> environment}) {
-  return new ScheduledProcess.start(
-      _pubPath, args,
+  return new ScheduledProcess.start(_pubPath, args,
       workingDirectory: _sandbox,
       environment: environment,
       description: "pub ${args.first}");
@@ -159,7 +160,9 @@ ScheduledProcess runPub(List args, {Map<String, String> environment}) {
 ///
 /// This returns assigns [_pubServePort] to a future that will complete to the
 /// port of the "pub serve" instance.
-ScheduledProcess runPubServe({List<String> args, String workingDirectory,
+ScheduledProcess runPubServe(
+    {List<String> args,
+    String workingDirectory,
     Map<String, String> environment}) {
   _pubServePortCompleter = new Completer();
   currentSchedule.onComplete.schedule(() => _pubServePortCompleter = null);

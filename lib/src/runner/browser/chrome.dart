@@ -37,9 +37,14 @@ class Chrome extends Browser {
       var tryPort = ([int port]) async {
         var dir = createTempDir();
         var args = [
-          "--user-data-dir=$dir", url.toString(), "--disable-extensions",
-          "--disable-popup-blocking", "--bwsi", "--no-first-run",
-          "--no-default-browser-check", "--disable-default-apps",
+          "--user-data-dir=$dir",
+          url.toString(),
+          "--disable-extensions",
+          "--disable-popup-blocking",
+          "--bwsi",
+          "--no-first-run",
+          "--no-default-browser-check",
+          "--disable-default-apps",
           "--disable-translate",
         ];
 

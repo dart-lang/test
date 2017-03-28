@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:io';
 import 'dart:isolate';
 
@@ -16,15 +15,18 @@ import '../io.dart';
 void main() {
   String packageRoot;
   setUpAll(() async {
-    packageRoot = p.absolute(p.dirname(p.fromUri(
-        await Isolate.resolvePackageUri(Uri.parse("package:test/")))));
+    packageRoot = p.absolute(p.dirname(p
+        .fromUri(await Isolate.resolvePackageUri(Uri.parse("package:test/")))));
   });
 
   useSandbox();
 
   group("spawnHybridUri():", () {
     test("loads a file in a separate isolate connected via StreamChannel", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:test/test.dart";
 
         void main() {
@@ -33,27 +35,32 @@ void main() {
                 completion(equals([1, 2, 3])));
           });
         }
-      """).create();
+      """)
+          .create();
 
-      d.file("hybrid.dart", """
+      d
+          .file(
+              "hybrid.dart",
+              """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: hybrid emits numbers",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
       test.shouldExit(0);
     });
 
     test("resolves URIs relative to the test file", () {
       d.dir("test/dir/subdir", [
-        d.file("test.dart", """
+        d.file(
+            "test.dart",
+            """
           import "package:test/test.dart";
 
           void main() {
@@ -63,8 +70,9 @@ void main() {
             });
           }
         """),
-
-        d.file("hybrid.dart", """
+        d.file(
+            "hybrid.dart",
+            """
           import "package:stream_channel/stream_channel.dart";
 
           void hybridMain(StreamChannel channel) {
@@ -74,16 +82,17 @@ void main() {
       ]).create();
 
       var test = runTest(["test/dir/subdir/test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: hybrid emits numbers",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
       test.shouldExit(0);
     });
 
     test("supports absolute file: URIs", () {
       var url = p.toUri(p.absolute(p.join(sandbox, 'hybrid.dart')));
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:test/test.dart";
 
         void main() {
@@ -92,26 +101,32 @@ void main() {
                 completion(equals([1, 2, 3])));
           });
         }
-      """).create();
+      """)
+          .create();
 
-      d.file("hybrid.dart", """
+      d
+          .file(
+              "hybrid.dart",
+              """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: hybrid emits numbers",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
       test.shouldExit(0);
     });
 
     test("supports Uri objects", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:test/test.dart";
 
         void main() {
@@ -120,21 +135,24 @@ void main() {
                 completion(equals([1, 2, 3])));
           });
         }
-      """).create();
+      """)
+          .create();
 
-      d.file("hybrid.dart", """
+      d
+          .file(
+              "hybrid.dart",
+              """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: hybrid emits numbers",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
       test.shouldExit(0);
     });
 
@@ -143,7 +161,10 @@ void main() {
     });
 
     test("passes a message to the hybrid isolate", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:test/test.dart";
 
         void main() {
@@ -159,21 +180,24 @@ void main() {
                 completion(equals("wow")));
           });
         }
-      """).create();
+      """)
+          .create();
 
-      d.file("hybrid.dart", """
+      d
+          .file(
+              "hybrid.dart",
+              """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel, Object message) {
           channel.sink..add(message)..close();
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: hybrid echoes message",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: hybrid echoes message", "+1: All tests passed!"]));
       test.shouldExit(0);
     });
 
@@ -198,7 +222,10 @@ void main() {
 
     test("can use dart:io even when run from a browser", () {
       var path = p.join(sandbox, "test.dart");
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:test/test.dart";
 
         void main() {
@@ -216,13 +243,12 @@ void main() {
             ''').stream.first, completion(contains("hybrid emits numbers")));
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: hybrid loads dart:io",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: hybrid loads dart:io", "+1: All tests passed!"]));
       test.shouldExit(0);
     }, tags: ["content-shell"]);
 
@@ -331,7 +357,10 @@ void main() {
     });
 
     test("gracefully handles an unserializable message in the browser", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:test/test.dart";
 
         void main() {
@@ -345,13 +374,12 @@ void main() {
             expect(() => channel.sink.add([].iterator), throwsArgumentError);
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: invalid message to hybrid",
-        "+1: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: invalid message to hybrid", "+1: All tests passed!"]));
       test.shouldExit(0);
     }, tags: ['content-shell']);
 
@@ -423,7 +451,8 @@ void main() {
       await channel.sink.close();
     }, skip: "Enable when sdk#28081 is fixed.");
 
-    test("kills the isolate when the hybrid isolate closes the channel", () async {
+    test("kills the isolate when the hybrid isolate closes the channel",
+        () async {
       var channel = spawnHybridCode("""
         import "dart:async";
         import "dart:io";
@@ -460,7 +489,10 @@ void main() {
     });
 
     test("closes the channel when the test finishes by default", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "package:stream_channel/stream_channel.dart";
         import "package:test/test.dart";
 
@@ -483,19 +515,20 @@ void main() {
             expect(isDone, isTrue);
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: test 1",
-        "+1: test 2",
-        "+2: All tests passed!"
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: test 1", "+1: test 2", "+2: All tests passed!"]));
       test.shouldExit(0);
     });
 
     test("persists across multiple tests with stayAlive: true", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import "dart:async";
 
         import "package:async/async.dart";
@@ -530,7 +563,8 @@ void main() {
             sink.add("wow");
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(containsInOrder([

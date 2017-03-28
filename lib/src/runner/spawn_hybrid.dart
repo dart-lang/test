@@ -42,13 +42,13 @@ StreamChannel spawnHybridUri(String url, Object message) {
 
       return new IsolateChannel.connectReceive(port)
           .transform(disconnector)
-          .transformSink(new StreamSinkTransformer.fromHandlers(
-              handleDone: (sink) {
-                // If the user closes the stream channel, kill the isolate.
-                isolate.kill();
-                onExitPort.close();
-                sink.close();
-              }));
+          .transformSink(
+              new StreamSinkTransformer.fromHandlers(handleDone: (sink) {
+        // If the user closes the stream channel, kill the isolate.
+        isolate.kill();
+        onExitPort.close();
+        sink.close();
+      }));
     } catch (error, stackTrace) {
       port.close();
       onExitPort.close();

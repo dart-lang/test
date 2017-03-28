@@ -4,7 +4,6 @@
 
 @TestOn("vm")
 @Tags(const ["chrome"])
-
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
@@ -19,7 +18,10 @@ void main() {
   useSandbox();
 
   test("runs a precompiled version of a test rather than recompiling", () {
-    d.file("to_precompile.dart", """
+    d
+        .file(
+            "to_precompile.dart",
+            """
       import "package:stream_channel/stream_channel.dart";
 
       import "package:test/src/runner/plugin/remote_platform_helpers.dart";
@@ -32,10 +34,13 @@ void main() {
         }, hidePrints: false);
         postMessageChannel().pipe(channel);
       }
-    """).create();
+    """)
+        .create();
 
     d.dir("precompiled", [
-      d.file("test.html", """
+      d.file(
+          "test.html",
+          """
         <!DOCTYPE html>
         <html>
         <head>
@@ -46,21 +51,22 @@ void main() {
       """)
     ]).create();
 
-    var dart2js = new ScheduledProcess.start(p.join(sdkDir, 'bin', 'dart2js'), [
-      PackageResolver.current.processArgument,
-      "to_precompile.dart",
-      "--out=precompiled/test.dart.browser_test.dart.js"
-    ], workingDirectory: sandbox);
+    var dart2js = new ScheduledProcess.start(
+        p.join(sdkDir, 'bin', 'dart2js'),
+        [
+          PackageResolver.current.processArgument,
+          "to_precompile.dart",
+          "--out=precompiled/test.dart.browser_test.dart.js"
+        ],
+        workingDirectory: sandbox);
     dart2js.shouldExit(0);
 
     d.file("test.dart", "invalid dart}").create();
 
-    var test = runTest(
-        ["-p", "chrome", "--precompiled=precompiled/", "test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "+0: success",
-      "+1: All tests passed!"
-    ]));
+    var test =
+        runTest(["-p", "chrome", "--precompiled=precompiled/", "test.dart"]);
+    test.stdout
+        .expect(containsInOrder(["+0: success", "+1: All tests passed!"]));
     test.shouldExit(0);
   });
 }

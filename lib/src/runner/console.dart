@@ -73,7 +73,7 @@ class Console {
         if (command == null) {
           stderr.writeln(
               "${_red}Unknown command $_bold$commandName$_noColor$_red."
-                "$_noColor");
+              "$_noColor");
         } else {
           await command.body();
         }
@@ -92,9 +92,8 @@ class Console {
 
   /// Displays the help info for the console commands.
   void _displayHelp() {
-    var maxCommandLength = _commands.values
-        .map((command) => command.name.length)
-        .reduce(math.max);
+    var maxCommandLength =
+        _commands.values.map((command) => command.name.length).reduce(math.max);
 
     for (var command in _commands.values) {
       var name = command.name.padRight(maxCommandLength + 4);

@@ -39,11 +39,11 @@ class VMPlatform extends PlatformPlugin {
     }());
 
     // Once the connection is closed by either end, kill the isolate.
-    return channel.transformStream(
-        new StreamTransformer.fromHandlers(handleDone: (sink) {
-          if (isolate != null) isolate.kill();
-          sink.close();
-        }));
+    return channel
+        .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
+      if (isolate != null) isolate.kill();
+      sink.close();
+    }));
   }
 
   /// Spawns an isolate and passes it [message].
@@ -52,7 +52,8 @@ class VMPlatform extends PlatformPlugin {
   /// serialized tests over that channel.
   Future<Isolate> _spawnIsolate(String path, SendPort message) async {
     if (_config.pubServeUrl == null) {
-      return await dart.runInIsolate('''
+      return await dart.runInIsolate(
+          '''
         import "dart:isolate";
 
         import "package:stream_channel/stream_channel.dart";
@@ -69,22 +70,26 @@ class VMPlatform extends PlatformPlugin {
           });
           new IsolateChannel.connectSend(message).pipe(channel);
         }
-      ''', message, checked: true);
+      ''',
+          message,
+          checked: true);
     }
 
-    var url = _config.pubServeUrl.resolveUri(
-        p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
+    var url = _config.pubServeUrl
+        .resolveUri(p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
 
     try {
       return await Isolate.spawnUri(url, [], message, checked: true);
     } on IsolateSpawnException catch (error) {
       if (error.message.contains("OS Error: Connection refused") ||
           error.message.contains("The remote computer refused")) {
-        throw new LoadException(path,
+        throw new LoadException(
+            path,
             "Error getting $url: Connection refused\n"
             'Make sure "pub serve" is running.');
       } else if (error.message.contains("404 Not Found")) {
-        throw new LoadException(path,
+        throw new LoadException(
+            path,
             "Error getting $url: 404 Not Found\n"
             'Make sure "pub serve" is serving the test/ directory.');
       }

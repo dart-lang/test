@@ -35,15 +35,15 @@ void main() {
     });
 
     test("merges tags by computing the union of the two tag sets", () {
-      var merged = new Metadata(tags: ["a", "b"])
-          .merge(new Metadata(tags: ["b", "c"]));
+      var merged =
+          new Metadata(tags: ["a", "b"]).merge(new Metadata(tags: ["b", "c"]));
       expect(merged.tags, unorderedEquals(["a", "b", "c"]));
     });
 
     test("serializes and deserializes tags", () {
       var metadata = new Metadata(tags: ["a", "b"]).serialize();
-      expect(new Metadata.deserialize(metadata).tags,
-          unorderedEquals(['a', 'b']));
+      expect(
+          new Metadata.deserialize(metadata).tags, unorderedEquals(['a', 'b']));
     });
   });
 
@@ -55,9 +55,9 @@ void main() {
     });
 
     test("returns the normal metadata if there's no tags", () {
-      var metadata = new Metadata(verboseTrace: true, forTag: {
-        new BooleanSelector.parse('foo'): new Metadata(skip: true)
-      });
+      var metadata = new Metadata(
+          verboseTrace: true,
+          forTag: {new BooleanSelector.parse('foo'): new Metadata(skip: true)});
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
       expect(metadata.forTag, contains(new BooleanSelector.parse('foo')));
@@ -78,15 +78,15 @@ void main() {
     });
 
     test("resolves forTags that match tags", () {
-      var metadata = new Metadata(
-          verboseTrace: true,
-          tags: ['foo', 'bar', 'baz'],
-          forTag: {
-            new BooleanSelector.parse('foo'): new Metadata(skip: true),
-            new BooleanSelector.parse('baz'):
-                new Metadata(timeout: Timeout.none),
-            new BooleanSelector.parse('qux'): new Metadata(skipReason: "blah")
-          });
+      var metadata = new Metadata(verboseTrace: true, tags: [
+        'foo',
+        'bar',
+        'baz'
+      ], forTag: {
+        new BooleanSelector.parse('foo'): new Metadata(skip: true),
+        new BooleanSelector.parse('baz'): new Metadata(timeout: Timeout.none),
+        new BooleanSelector.parse('qux'): new Metadata(skipReason: "blah")
+      });
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isTrue);
@@ -97,14 +97,14 @@ void main() {
     });
 
     test("resolves forTags that adds a behavioral tag", () {
-      var metadata = new Metadata(
-          tags: ['foo'],
-          forTag: {
-            new BooleanSelector.parse('baz'): new Metadata(skip: true),
-            new BooleanSelector.parse('bar'):
-                new Metadata(verboseTrace: true, tags: ['baz']),
-            new BooleanSelector.parse('foo'): new Metadata(tags: ['bar'])
-          });
+      var metadata = new Metadata(tags: [
+        'foo'
+      ], forTag: {
+        new BooleanSelector.parse('baz'): new Metadata(skip: true),
+        new BooleanSelector.parse('bar'):
+            new Metadata(verboseTrace: true, tags: ['baz']),
+        new BooleanSelector.parse('foo'): new Metadata(tags: ['bar'])
+      });
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isTrue);
@@ -113,20 +113,22 @@ void main() {
     });
 
     test("resolves forTags that adds circular tags", () {
-      var metadata = new Metadata(
-          tags: ['foo'],
-          forTag: {
-            new BooleanSelector.parse('foo'): new Metadata(tags: ['bar']),
-            new BooleanSelector.parse('bar'): new Metadata(tags: ['baz']),
-            new BooleanSelector.parse('baz'): new Metadata(tags: ['foo'])
-          });
+      var metadata = new Metadata(tags: [
+        'foo'
+      ], forTag: {
+        new BooleanSelector.parse('foo'): new Metadata(tags: ['bar']),
+        new BooleanSelector.parse('bar'): new Metadata(tags: ['baz']),
+        new BooleanSelector.parse('baz'): new Metadata(tags: ['foo'])
+      });
 
       expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
       expect(metadata.forTag, isEmpty);
     });
 
     test("base metadata takes precedence over forTags", () {
-      var metadata = new Metadata(verboseTrace: true, tags: ['foo'], forTag: {
+      var metadata = new Metadata(verboseTrace: true, tags: [
+        'foo'
+      ], forTag: {
         new BooleanSelector.parse('foo'): new Metadata(verboseTrace: false)
       });
 
@@ -163,7 +165,9 @@ void main() {
 
     test("refuses an invalid value in a list", () {
       expect(() {
-        new Metadata.parse(onPlatform: {"chrome": [new TestOn("chrome")]});
+        new Metadata.parse(onPlatform: {
+          "chrome": [new TestOn("chrome")]
+        });
       }, throwsArgumentError);
     });
 
@@ -183,7 +187,9 @@ void main() {
 
     test("refuses multiple Skips", () {
       expect(() {
-        new Metadata.parse(onPlatform: {"chrome": [new Skip(), new Skip()]});
+        new Metadata.parse(onPlatform: {
+          "chrome": [new Skip(), new Skip()]
+        });
       }, throwsArgumentError);
     });
   });
@@ -196,7 +202,10 @@ void main() {
           skip: true,
           skipReason: "just because",
           verboseTrace: true,
-          tags: ["foo", "bar"],
+          tags: [
+            "foo",
+            "bar"
+          ],
           onPlatform: {
             new PlatformSelector.parse("mac-os"): new Metadata(skip: false)
           },

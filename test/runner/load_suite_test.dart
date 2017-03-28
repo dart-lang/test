@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:async';
 
 import 'package:test/src/backend/group.dart';
@@ -24,8 +23,8 @@ void main() {
   });
 
   test("running a load test causes LoadSuite.suite to emit a suite", () async {
-    var suite = new LoadSuite("name", SuiteConfiguration.empty,
-        () => new Future.value(innerSuite));
+    var suite = new LoadSuite(
+        "name", SuiteConfiguration.empty, () => new Future.value(innerSuite));
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(equals(innerSuite)));
@@ -35,8 +34,8 @@ void main() {
   });
 
   test("running a load suite's body may be synchronous", () async {
-    var suite = new LoadSuite("name", SuiteConfiguration.empty,
-        () => innerSuite);
+    var suite =
+        new LoadSuite("name", SuiteConfiguration.empty, () => innerSuite);
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(equals(innerSuite)));
@@ -47,8 +46,8 @@ void main() {
 
   test("a load test doesn't complete until the body returns", () async {
     var completer = new Completer();
-    var suite = new LoadSuite("name", SuiteConfiguration.empty,
-        () => completer.future);
+    var suite =
+        new LoadSuite("name", SuiteConfiguration.empty, () => completer.future);
     expect(suite.group.entries, hasLength(1));
 
     var liveTest = await (suite.group.entries.single as Test).load(suite);
@@ -63,8 +62,8 @@ void main() {
 
   test("a load test forwards errors and completes LoadSuite.suite to null",
       () async {
-    var suite = new LoadSuite("name", SuiteConfiguration.empty,
-        () => fail("error"));
+    var suite =
+        new LoadSuite("name", SuiteConfiguration.empty, () => fail("error"));
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(isNull));
@@ -75,8 +74,8 @@ void main() {
   });
 
   test("a load test completes early if it's closed", () async {
-    var suite = new LoadSuite("name", SuiteConfiguration.empty,
-        () => new Completer().future);
+    var suite = new LoadSuite(
+        "name", SuiteConfiguration.empty, () => new Completer().future);
     expect(suite.group.entries, hasLength(1));
 
     var liveTest = await (suite.group.entries.single as Test).load(suite);
@@ -90,8 +89,8 @@ void main() {
   test("forLoadException() creates a suite that completes to a LoadException",
       () async {
     var exception = new LoadException("path", "error");
-    var suite = new LoadSuite.forLoadException(
-        exception, SuiteConfiguration.empty);
+    var suite =
+        new LoadSuite.forLoadException(exception, SuiteConfiguration.empty);
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(isNull));
@@ -117,8 +116,8 @@ void main() {
 
   group("changeSuite()", () {
     test("returns a new load suite with the same properties", () {
-      var suite = new LoadSuite("name", SuiteConfiguration.empty,
-          () => innerSuite,
+      var suite = new LoadSuite(
+          "name", SuiteConfiguration.empty, () => innerSuite,
           platform: TestPlatform.vm);
       expect(suite.group.entries, hasLength(1));
 
@@ -129,8 +128,8 @@ void main() {
     });
 
     test("changes the inner suite", () async {
-      var suite = new LoadSuite("name", SuiteConfiguration.empty,
-          () => innerSuite);
+      var suite =
+          new LoadSuite("name", SuiteConfiguration.empty, () => innerSuite);
       expect(suite.group.entries, hasLength(1));
 
       var newInnerSuite = runnerSuite(new Group.root([]));
@@ -164,8 +163,8 @@ void main() {
     });
 
     test("forwards errors to the future", () {
-      var suite = new LoadSuite("name", SuiteConfiguration.empty,
-          () => throw "error");
+      var suite =
+          new LoadSuite("name", SuiteConfiguration.empty, () => throw "error");
       expect(suite.group.entries, hasLength(1));
 
       expect(suite.getSuite(), throwsA("error"));

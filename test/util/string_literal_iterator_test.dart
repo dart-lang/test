@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:analyzer/analyzer.dart';
 import 'package:test/test.dart';
 import 'package:test/src/util/string_literal_iterator.dart';
@@ -240,7 +239,8 @@ Matcher _isRune(String char) {
 /// [StringLiteralIterator].
 StringLiteralIterator _parse(String dart) {
   var declaration = parseCompilationUnit("final str = $dart;")
-      .declarations.single as TopLevelVariableDeclaration;
+      .declarations
+      .single as TopLevelVariableDeclaration;
   var literal = declaration.variables.variables.single.initializer;
   return new StringLiteralIterator(literal);
 }

@@ -103,8 +103,7 @@ class CompactReporter implements Reporter {
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
-  static CompactReporter watch(Engine engine) =>
-      new CompactReporter._(engine);
+  static CompactReporter watch(Engine engine) => new CompactReporter._(engine);
 
   CompactReporter._(this._engine) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -155,6 +154,7 @@ class CompactReporter implements Reporter {
     if (!_stopwatchStarted) {
       _stopwatchStarted = true;
       _stopwatch.start();
+
       /// Keep updating the time even when nothing else is happening.
       _subscriptions.add(new Stream.periodic(new Duration(seconds: 1))
           .listen((_) => _progressLine(_lastProgressMessage)));
@@ -170,8 +170,8 @@ class CompactReporter implements Reporter {
     _subscriptions.add(liveTest.onStateChange
         .listen((state) => _onStateChange(liveTest, state)));
 
-    _subscriptions.add(liveTest.onError.listen((error) =>
-        _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(liveTest.onError
+        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
 
     _subscriptions.add(liveTest.onMessage.listen((message) {
       _progressLine(_description(liveTest), truncate: false);
@@ -212,8 +212,8 @@ class CompactReporter implements Reporter {
 
     if (error is! LoadException) {
       print(indent(error.toString()));
-      var chain = terseChain(stackTrace,
-          verbose: liveTest.test.metadata.verboseTrace);
+      var chain =
+          terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace);
       print(indent(chain.toString()));
       return;
     }
@@ -273,8 +273,8 @@ class CompactReporter implements Reporter {
   /// entire line within [_lineLength]. If [color] is passed, it's used as the
   /// color for [message]. If [suffix] is passed, it's added to the end of
   /// [message].
-  bool _progressLine(String message, {String color, bool truncate: true,
-      String suffix}) {
+  bool _progressLine(String message,
+      {String color, bool truncate: true, String suffix}) {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.
@@ -360,7 +360,8 @@ class CompactReporter implements Reporter {
   String _description(LiveTest liveTest) {
     var name = liveTest.test.name;
 
-    if (_printPath && liveTest.suite is! LoadSuite &&
+    if (_printPath &&
+        liveTest.suite is! LoadSuite &&
         liveTest.suite.path != null) {
       name = "${liveTest.suite.path}: $name";
     }

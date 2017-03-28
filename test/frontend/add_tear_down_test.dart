@@ -260,9 +260,11 @@ void main() {
         test("test 1", () {
           addTearDown(() async {
             expect(tearDownRun, isFalse);
-            expect(pumpEventQueue().then((_) {
-              tearDownRun = true;
-            }), completes);
+            expect(
+                pumpEventQueue().then((_) {
+                  tearDownRun = true;
+                }),
+                completes);
           });
         });
 

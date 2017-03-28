@@ -96,12 +96,19 @@ class Declarer {
   declare(body()) => runZoned(body, zoneValues: {#test.declarer: this});
 
   /// Defines a test case with the given name and body.
-  void test(String name, body(), {String testOn, Timeout timeout, skip,
-      Map<String, dynamic> onPlatform, tags}) {
+  void test(String name, body(),
+      {String testOn,
+      Timeout timeout,
+      skip,
+      Map<String, dynamic> onPlatform,
+      tags}) {
     _checkNotBuilt("test");
 
     var metadata = _metadata.merge(new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        onPlatform: onPlatform,
         tags: tags));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
@@ -127,17 +134,24 @@ class Declarer {
   }
 
   /// Creates a group of tests.
-  void group(String name, void body(), {String testOn, Timeout timeout, skip,
-      Map<String, dynamic> onPlatform, tags}) {
+  void group(String name, void body(),
+      {String testOn,
+      Timeout timeout,
+      skip,
+      Map<String, dynamic> onPlatform,
+      tags}) {
     _checkNotBuilt("group");
 
     var metadata = _metadata.merge(new Metadata.parse(
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform,
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        onPlatform: onPlatform,
         tags: tags));
     var trace = _collectTraces ? new Trace.current(2) : null;
 
-    var declarer = new Declarer._(
-        this, _prefix(name), metadata, _collectTraces, trace);
+    var declarer =
+        new Declarer._(this, _prefix(name), metadata, _collectTraces, trace);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.

@@ -20,10 +20,10 @@ final ArgParser _parser = (() {
   if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
   if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
 
-  parser.addFlag("help", abbr: "h", negatable: false,
-      help: "Shows this usage information.");
-  parser.addFlag("version", negatable: false,
-      help: "Shows the package's version.");
+  parser.addFlag("help",
+      abbr: "h", negatable: false, help: "Shows this usage information.");
+  parser.addFlag("version",
+      negatable: false, help: "Shows the package's version.");
 
   // Note that defaultsTo declarations here are only for documentation purposes.
   // We pass null values rather than defaults to [new Configuration] so that it
@@ -93,13 +93,15 @@ final ArgParser _parser = (() {
       defaultsTo: defaultReporter,
       allowed: allReporters,
       allowedHelp: {
-    'compact': 'A single line, updated continuously.',
-    'expanded': 'A separate line for each update.',
-    'json': 'A machine-readable format (see https://goo.gl/gBsV1a).'
-  });
-  parser.addFlag("verbose-trace", negatable: false,
+        'compact': 'A single line, updated continuously.',
+        'expanded': 'A separate line for each update.',
+        'json': 'A machine-readable format (see https://goo.gl/gBsV1a).'
+      });
+  parser.addFlag("verbose-trace",
+      negatable: false,
       help: 'Whether to emit stack traces with core library frames.');
-  parser.addFlag("js-trace", negatable: false,
+  parser.addFlag("js-trace",
+      negatable: false,
       help: 'Whether to emit raw JavaScript stack traces for browser tests.');
   parser.addFlag("color",
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
@@ -113,7 +115,8 @@ final ArgParser _parser = (() {
       help: 'The path to the dart2js executable.', hide: true);
   parser.addOption("dart2js-args",
       help: 'Extra arguments to pass to dart2js.',
-      allowMultiple: true, hide: true);
+      allowMultiple: true,
+      hide: true);
   parser.addOption("total-shards",
       help: 'The total number of invocations of the test runner being run.',
       hide: true);
@@ -153,8 +156,7 @@ class _Parser {
     var patterns = (_options['name'] as List<String>)
         .map/*<Pattern>*/(
             (value) => _wrapFormatException('name', () => new RegExp(value)))
-        .toList()
-        ..addAll(_options['plain-name'] as List<String>);
+        .toList()..addAll(_options['plain-name'] as List<String>);
 
     var includeTagSet = new Set.from(_options['tags'] ?? [])
       ..addAll(_options['tag'] ?? []);
@@ -204,8 +206,8 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
-        platforms: (_ifParsed('platform') as List<String>)
-            ?.map(TestPlatform.find),
+        platforms:
+            (_ifParsed('platform') as List<String>)?.map(TestPlatform.find),
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,

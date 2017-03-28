@@ -38,8 +38,8 @@ void main() {
   });
 
   test("runs a handler for a suffix", () async {
-    var request = new shelf.Request(
-        "GET", Uri.parse("http://localhost/foo/bar"));
+    var request =
+        new shelf.Request("GET", Uri.parse("http://localhost/foo/bar"));
     handler.add("foo", expectAsync1((request) {
       expect(request.handlerPath, equals('/foo/'));
       expect(request.url.path, 'bar');
@@ -52,8 +52,8 @@ void main() {
   });
 
   test("runs the longest matching handler", () async {
-    var request = new shelf.Request(
-        "GET", Uri.parse("http://localhost/foo/bar/baz"));
+    var request =
+        new shelf.Request("GET", Uri.parse("http://localhost/foo/bar/baz"));
 
     handler.add("foo", expectAsync1((_) {}, count: 0));
     handler.add("foo/bar", expectAsync1((request) {

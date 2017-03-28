@@ -85,15 +85,15 @@ class LiveTestController {
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onStateChangeController = new StreamController<State>
-      .broadcast(sync: true);
+  final _onStateChangeController =
+      new StreamController<State>.broadcast(sync: true);
 
   /// The controller for [LiveTest.onError].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onErrorController = new StreamController<AsyncError>
-      .broadcast(sync: true);
+  final _onErrorController =
+      new StreamController<AsyncError>.broadcast(sync: true);
 
   /// The controller for [LiveTest.onMessage].
   ///
@@ -128,13 +128,12 @@ class LiveTestController {
   /// If [groups] is passed, it's used to populate the list of groups that
   /// contain this test. Otherwise, `suite.group` is used.
   LiveTestController(Suite suite, this._test, void onRun(), void onClose(),
-          {Iterable<Group> groups})
+      {Iterable<Group> groups})
       : _suite = suite,
         _onRun = onRun,
         _onClose = onClose,
-        _groups = groups == null
-            ? [suite.group]
-            : new List.unmodifiable(groups) {
+        _groups =
+            groups == null ? [suite.group] : new List.unmodifiable(groups) {
     _liveTest = new _LiveTest(this);
   }
 

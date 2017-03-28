@@ -38,8 +38,7 @@ void main() {
 
     test("declares a test with an object as the description", () async {
       var tests = declare(() {
-        test(Object, () {
-        });
+        test(Object, () {});
       });
 
       expect(tests.single.name, equals("Object"));
@@ -65,15 +64,19 @@ void main() {
       var tests = declare(() {
         setUp(() => setUpRun = true);
 
-        test("description 1", expectAsync0(() {
-          expect(setUpRun, isTrue);
-          setUpRun = false;
-        }, max: 1));
+        test(
+            "description 1",
+            expectAsync0(() {
+              expect(setUpRun, isTrue);
+              setUpRun = false;
+            }, max: 1));
 
-        test("description 2", expectAsync0(() {
-          expect(setUpRun, isTrue);
-          setUpRun = false;
-        }, max: 1));
+        test(
+            "description 2",
+            expectAsync0(() {
+              expect(setUpRun, isTrue);
+              setUpRun = false;
+            }, max: 1));
       });
 
       await _runTest(tests[0]);
@@ -87,9 +90,11 @@ void main() {
           return new Future(() => setUpRun = true);
         });
 
-        test("description", expectAsync0(() {
-          expect(setUpRun, isTrue);
-        }, max: 1));
+        test(
+            "description",
+            expectAsync0(() {
+              expect(setUpRun, isTrue);
+            }, max: 1));
       });
 
       return _runTest(tests.single);
@@ -136,13 +141,17 @@ void main() {
         setUp(() => tearDownRun = false);
         tearDown(() => tearDownRun = true);
 
-        test("description 1", expectAsync0(() {
-          expect(tearDownRun, isFalse);
-        }, max: 1));
+        test(
+            "description 1",
+            expectAsync0(() {
+              expect(tearDownRun, isFalse);
+            }, max: 1));
 
-        test("description 2", expectAsync0(() {
-          expect(tearDownRun, isFalse);
-        }, max: 1));
+        test(
+            "description 2",
+            expectAsync0(() {
+              expect(tearDownRun, isFalse);
+            }, max: 1));
       });
 
       await _runTest(tests[0]);
@@ -157,10 +166,12 @@ void main() {
         setUp(() => tearDownRun = false);
         tearDown(() => tearDownRun = true);
 
-        test("description 1", expectAsync0(() {
-          Invoker.current.addOutstandingCallback();
-          new Future(() => throw new TestFailure("oh no"));
-        }, max: 1));
+        test(
+            "description 1",
+            expectAsync0(() {
+              Invoker.current.addOutstandingCallback();
+              new Future(() => throw new TestFailure("oh no"));
+            }, max: 1));
       });
 
       await _runTest(tests.single, shouldFail: true);
@@ -174,9 +185,11 @@ void main() {
           return new Future(() => tearDownRun = true);
         });
 
-        test("description", expectAsync0(() {
-          expect(tearDownRun, isFalse);
-        }, max: 1));
+        test(
+            "description",
+            expectAsync0(() {
+              expect(tearDownRun, isFalse);
+            }, max: 1));
       });
 
       await _runTest(tests.single);
@@ -245,11 +258,13 @@ void main() {
           thirdTearDownRun = true;
         }));
 
-        test("description", expectAsync0(() {
-          expect(firstTearDownRun, isFalse);
-          expect(secondTearDownRun, isFalse);
-          expect(thirdTearDownRun, isFalse);
-        }, max: 1));
+        test(
+            "description",
+            expectAsync0(() {
+              expect(firstTearDownRun, isFalse);
+              expect(secondTearDownRun, isFalse);
+              expect(thirdTearDownRun, isFalse);
+            }, max: 1));
       });
 
       await _runTest(tests.single);
@@ -304,8 +319,7 @@ void main() {
     test("a test's timeout factor is applied to the group's", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () {},
-              timeout: new Timeout.factor(3));
+          test("test", () {}, timeout: new Timeout.factor(3));
         }, timeout: new Timeout.factor(2));
       });
 
@@ -314,15 +328,13 @@ void main() {
       expect(testGroup.metadata.timeout.scaleFactor, equals(2));
       expect(testGroup.entries, hasLength(1));
       expect(testGroup.entries.single, new isInstanceOf<Test>());
-      expect(testGroup.entries.single.metadata.timeout.scaleFactor,
-          equals(6));
+      expect(testGroup.entries.single.metadata.timeout.scaleFactor, equals(6));
     });
 
     test("a test's timeout factor is applied to the group's duration", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () {},
-              timeout: new Timeout.factor(2));
+          test("test", () {}, timeout: new Timeout.factor(2));
         }, timeout: new Timeout(new Duration(seconds: 10)));
       });
 
@@ -339,8 +351,7 @@ void main() {
     test("a test's timeout duration is applied over the group's", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () {},
-              timeout: new Timeout(new Duration(seconds: 15)));
+          test("test", () {}, timeout: new Timeout(new Duration(seconds: 15)));
         }, timeout: new Timeout(new Duration(seconds: 10)));
       });
 
@@ -367,16 +378,20 @@ void main() {
           group("group", () {
             setUp(() => setUpRun = true);
 
-            test("description 1", expectAsync0(() {
-              expect(setUpRun, isTrue);
-              setUpRun = false;
-            }, max: 1));
+            test(
+                "description 1",
+                expectAsync0(() {
+                  expect(setUpRun, isTrue);
+                  setUpRun = false;
+                }, max: 1));
           });
 
-          test("description 2", expectAsync0(() {
-            expect(setUpRun, isFalse);
-            setUpRun = false;
-          }, max: 1));
+          test(
+              "description 2",
+              expectAsync0(() {
+                expect(setUpRun, isFalse);
+                setUpRun = false;
+              }, max: 1));
         });
 
         await _runTest((entries[0] as Group).entries.single);
@@ -408,11 +423,13 @@ void main() {
                 innerSetUpRun = true;
               }, max: 1));
 
-              test("description", expectAsync0(() {
-                expect(outerSetUpRun, isTrue);
-                expect(middleSetUpRun, isTrue);
-                expect(innerSetUpRun, isTrue);
-              }, max: 1));
+              test(
+                  "description",
+                  expectAsync0(() {
+                    expect(outerSetUpRun, isTrue);
+                    expect(middleSetUpRun, isTrue);
+                    expect(innerSetUpRun, isTrue);
+                  }, max: 1));
             });
           });
         });
@@ -437,10 +454,12 @@ void main() {
               return new Future(() => innerSetUpRun = true);
             }, max: 1));
 
-            test("description", expectAsync0(() {
-              expect(outerSetUpRun, isTrue);
-              expect(innerSetUpRun, isTrue);
-            }, max: 1));
+            test(
+                "description",
+                expectAsync0(() {
+                  expect(outerSetUpRun, isTrue);
+                  expect(innerSetUpRun, isTrue);
+                }, max: 1));
           });
         });
 
@@ -462,8 +481,8 @@ void main() {
         var testWithTags = innerGroup.entries.single;
         expect(outerGroup.metadata.tags, unorderedEquals(["a"]));
         expect(innerGroup.metadata.tags, unorderedEquals(["a", "b", "c"]));
-        expect(testWithTags.metadata.tags,
-            unorderedEquals(["a", "b", "c", "d"]));
+        expect(
+            testWithTags.metadata.tags, unorderedEquals(["a", "b", "c", "d"]));
       });
 
       test("throws on invalid tags", () {
@@ -484,14 +503,18 @@ void main() {
           group("group", () {
             tearDown(() => tearDownRun = true);
 
-            test("description 1", expectAsync0(() {
-              expect(tearDownRun, isFalse);
-            }, max: 1));
+            test(
+                "description 1",
+                expectAsync0(() {
+                  expect(tearDownRun, isFalse);
+                }, max: 1));
           });
 
-          test("description 2", expectAsync0(() {
-            expect(tearDownRun, isFalse);
-          }, max: 1));
+          test(
+              "description 2",
+              expectAsync0(() {
+                expect(tearDownRun, isFalse);
+              }, max: 1));
         });
 
         var testGroup = entries[0] as Group;
@@ -526,11 +549,13 @@ void main() {
                 innerTearDownRun = true;
               }, max: 1));
 
-              test("description", expectAsync0(() {
-                expect(outerTearDownRun, isFalse);
-                expect(middleTearDownRun, isFalse);
-                expect(innerTearDownRun, isFalse);
-              }, max: 1));
+              test(
+                  "description",
+                  expectAsync0(() {
+                    expect(outerTearDownRun, isFalse);
+                    expect(middleTearDownRun, isFalse);
+                    expect(innerTearDownRun, isFalse);
+                  }, max: 1));
             });
           });
         });
@@ -558,10 +583,12 @@ void main() {
               return new Future(() => innerTearDownRun = true);
             }, max: 1));
 
-            test("description", expectAsync0(() {
-              expect(outerTearDownRun, isFalse);
-              expect(innerTearDownRun, isFalse);
-            }, max: 1));
+            test(
+                "description",
+                expectAsync0(() {
+                  expect(outerTearDownRun, isFalse);
+                  expect(innerTearDownRun, isFalse);
+                }, max: 1));
           });
         });
 
@@ -583,9 +610,11 @@ void main() {
               throw 'inner error';
             });
 
-            test("description", expectAsync0(() {
-              expect(outerTearDownRun, isFalse);
-            }, max: 1));
+            test(
+                "description",
+                expectAsync0(() {
+                  expect(outerTearDownRun, isFalse);
+                }, max: 1));
           });
         });
 

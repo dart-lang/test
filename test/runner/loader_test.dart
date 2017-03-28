@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -121,17 +120,20 @@ void main() {
         new File(p.join(_sandbox, 'dir/sub_test.dart'))
             .writeAsStringSync(_tests);
 
-        suites = await _loader.loadDir(_sandbox, SuiteConfiguration.empty)
+        suites = await _loader
+            .loadDir(_sandbox, SuiteConfiguration.empty)
             .asyncMap((loadSuite) => loadSuite.getSuite())
             .toList();
       });
 
       test("gives those suites the correct paths", () {
-        expect(suites.map((suite) => suite.path), unorderedEquals([
-          p.join(_sandbox, 'a_test.dart'),
-          p.join(_sandbox, 'another_test.dart'),
-          p.join(_sandbox, 'dir', 'sub_test.dart')
-        ]));
+        expect(
+            suites.map((suite) => suite.path),
+            unorderedEquals([
+              p.join(_sandbox, 'a_test.dart'),
+              p.join(_sandbox, 'another_test.dart'),
+              p.join(_sandbox, 'dir', 'sub_test.dart')
+            ]));
       });
 
       test("can run tests in those suites", () {
@@ -155,8 +157,8 @@ void main() {
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
-    var liveTest = await (loadSuite.group.entries.single as Test)
-        .load(loadSuite);
+    var liveTest =
+        await (loadSuite.group.entries.single as Test).load(loadSuite);
     expect(liveTest.onMessage.first.then((message) => message.text),
         completion(equals("print within test")));
     await liveTest.run();

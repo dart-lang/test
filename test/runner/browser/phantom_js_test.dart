@@ -4,7 +4,6 @@
 
 @TestOn("vm")
 @Tags(const ["phantomjs"])
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -22,8 +21,8 @@ void main() {
 
     schedule(() async {
       var phantomJS = new PhantomJS(await server.url);
-      currentSchedule.onComplete.schedule(
-          () async => (await phantomJS).close());
+      currentSchedule.onComplete
+          .schedule(() async => (await phantomJS).close());
     });
 
     server.handleJavaScript('''
@@ -50,20 +49,26 @@ webSocket.addEventListener("open", function() {
   });
 
   test("reports an error in onExit", () {
-    var phantomJS = new PhantomJS("http://dart-lang.org",
-        executable: "_does_not_exist");
-    expect(phantomJS.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to run PhantomJS: $noSuchFileMessage"))));
+    var phantomJS =
+        new PhantomJS("http://dart-lang.org", executable: "_does_not_exist");
+    expect(
+        phantomJS.onExit,
+        throwsA(isApplicationException(
+            startsWith("Failed to run PhantomJS: $noSuchFileMessage"))));
   });
 
   test("can run successful tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "phantomjs", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -71,13 +76,17 @@ void main() {
   });
 
   test("can run failing tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "phantomjs", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));

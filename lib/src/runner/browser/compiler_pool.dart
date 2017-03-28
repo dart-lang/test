@@ -48,8 +48,8 @@ class CompilerPool {
   ///
   /// The returned [Future] will complete once the `dart2js` process completes
   /// *and* all its output has been printed to the command line.
-  Future compile(String dartPath, String jsPath,
-      SuiteConfiguration suiteConfig) {
+  Future compile(
+      String dartPath, String jsPath, SuiteConfiguration suiteConfig) {
     return _pool.withResource(() {
       if (_closed) return null;
 
@@ -136,7 +136,8 @@ class CompilerPool {
   /// them to [buffer].
   Future _printOutputStream(Stream<List<int>> stream, StringBuffer buffer) {
     return sanitizeForWindows(stream)
-        .listen((data) => buffer.write(UTF8.decode(data))).asFuture();
+        .listen((data) => buffer.write(UTF8.decode(data)))
+        .asFuture();
   }
 
   /// Closes the compiler pool.

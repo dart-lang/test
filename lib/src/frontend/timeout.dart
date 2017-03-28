@@ -43,12 +43,10 @@ class Timeout {
   final num scaleFactor;
 
   /// Declares an absolute timeout that overrides the default.
-  const Timeout(this.duration)
-      : scaleFactor = null;
+  const Timeout(this.duration) : scaleFactor = null;
 
   /// Declares a relative timeout that scales the default.
-  const Timeout.factor(this.scaleFactor)
-      : duration = null;
+  const Timeout.factor(this.scaleFactor) : duration = null;
 
   const Timeout._none()
       : scaleFactor = null,
@@ -108,13 +106,20 @@ class Timeout {
   /// Returns the number of microseconds in [number] [unit]s.
   static double _microsecondsFor(double number, String unit) {
     switch (unit) {
-      case "d": return number * 24 * 60 * 60 * 1000000;
-      case "h": return number * 60 * 60 * 1000000;
-      case "m": return number * 60 * 1000000;
-      case "s": return number * 1000000;
-      case "ms": return number * 1000;
-      case "us": return number;
-      default: throw new ArgumentError("Unknown unit $unit.");
+      case "d":
+        return number * 24 * 60 * 60 * 1000000;
+      case "h":
+        return number * 60 * 60 * 1000000;
+      case "m":
+        return number * 60 * 1000000;
+      case "s":
+        return number * 1000000;
+      case "ms":
+        return number * 1000;
+      case "us":
+        return number;
+      default:
+        throw new ArgumentError("Unknown unit $unit.");
     }
   }
 
@@ -141,7 +146,9 @@ class Timeout {
 
   int get hashCode => duration.hashCode ^ 5 * scaleFactor.hashCode;
 
-  bool operator==(other) => other is Timeout && other.duration == duration &&
+  bool operator ==(other) =>
+      other is Timeout &&
+      other.duration == duration &&
       other.scaleFactor == scaleFactor;
 
   String toString() {

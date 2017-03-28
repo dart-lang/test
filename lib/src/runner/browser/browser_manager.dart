@@ -95,8 +95,9 @@ class BrowserManager {
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
-  static Future<BrowserManager> start(TestPlatform platform, Uri url,
-      Future<WebSocketChannel> future, {bool debug: false}) {
+  static Future<BrowserManager> start(
+      TestPlatform platform, Uri url, Future<WebSocketChannel> future,
+      {bool debug: false}) {
     var browser = _newBrowser(url, platform, debug: debug);
 
     var completer = new Completer<BrowserManager>();
@@ -133,14 +134,20 @@ class BrowserManager {
   static Browser _newBrowser(Uri url, TestPlatform browser,
       {bool debug: false}) {
     switch (browser) {
-      case TestPlatform.dartium: return new Dartium(url, debug: debug);
+      case TestPlatform.dartium:
+        return new Dartium(url, debug: debug);
       case TestPlatform.contentShell:
         return new ContentShell(url, debug: debug);
-      case TestPlatform.chrome: return new Chrome(url, debug: debug);
-      case TestPlatform.phantomJS: return new PhantomJS(url, debug: debug);
-      case TestPlatform.firefox: return new Firefox(url);
-      case TestPlatform.safari: return new Safari(url);
-      case TestPlatform.internetExplorer: return new InternetExplorer(url);
+      case TestPlatform.chrome:
+        return new Chrome(url, debug: debug);
+      case TestPlatform.phantomJS:
+        return new PhantomJS(url, debug: debug);
+      case TestPlatform.firefox:
+        return new Firefox(url);
+      case TestPlatform.safari:
+        return new Safari(url);
+      case TestPlatform.internetExplorer:
+        return new InternetExplorer(url);
       default:
         throw new ArgumentError("$browser is not a browser.");
     }
@@ -163,8 +170,8 @@ class BrowserManager {
 
     // Whenever we get a message, no matter which child channel it's for, we the
     // know browser is still running code which means the user isn't debugging.
-    _channel = new MultiChannel(webSocket.transform(jsonDocument)
-        .changeStream((stream) {
+    _channel = new MultiChannel(
+        webSocket.transform(jsonDocument).changeStream((stream) {
       return stream.map((message) {
         if (!_closed) _timer.reset();
         for (var controller in _controllers) {
@@ -195,7 +202,8 @@ class BrowserManager {
   /// from this test suite.
   Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
       {StackTraceMapper mapper}) async {
-    url = url.replace(fragment: Uri.encodeFull(JSON.encode({
+    url = url.replace(
+        fragment: Uri.encodeFull(JSON.encode({
       "metadata": suiteConfig.metadata.serialize(),
       "browser": _platform.identifier
     })));
@@ -205,21 +213,18 @@ class BrowserManager {
     closeIframe() {
       if (_closed) return;
       _controllers.remove(controller);
-      _channel.sink.add({
-        "command": "closeSuite",
-        "id": suiteID
-      });
+      _channel.sink.add({"command": "closeSuite", "id": suiteID});
     }
 
     // The virtual channel will be closed when the suite is closed, in which
     // case we should unload the iframe.
     var suiteChannel = _channel.virtualChannel();
     var suiteChannelID = suiteChannel.id;
-    suiteChannel = suiteChannel.transformStream(
-        new StreamTransformer.fromHandlers(handleDone: (sink) {
-          closeIframe();
-          sink.close();
-        }));
+    suiteChannel = suiteChannel
+        .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
+      closeIframe();
+      sink.close();
+    }));
 
     return await _pool.withResource/*<Future<RunnerSuite>>*/(() async {
       _channel.sink.add({
@@ -263,7 +268,8 @@ class BrowserManager {
   /// The callback for handling messages received from the host page.
   void _onMessage(Map message) {
     switch (message["command"]) {
-      case "ping": break;
+      case "ping":
+        break;
 
       case "restart":
         _onRestartController.add(null);
@@ -283,13 +289,13 @@ class BrowserManager {
   /// Closes the manager and releases any resources it owns, including closing
   /// the browser.
   Future close() => _closeMemoizer.runOnce(() {
-    _closed = true;
-    _timer.cancel();
-    if (_pauseCompleter != null) _pauseCompleter.complete();
-    _pauseCompleter = null;
-    _controllers.clear();
-    return _browser.close();
-  });
+        _closed = true;
+        _timer.cancel();
+        if (_pauseCompleter != null) _pauseCompleter.complete();
+        _pauseCompleter = null;
+        _controllers.clear();
+        return _browser.close();
+      });
   final _closeMemoizer = new AsyncMemoizer();
 }
 

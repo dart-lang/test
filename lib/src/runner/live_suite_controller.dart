@@ -145,11 +145,11 @@ class LiveSuiteController {
 
   /// Closes the underlying suite.
   Future close() => _closeMemo.runOnce(() async {
-    try {
-      await _suite.close();
-    } finally {
-      _onCloseCompleter.complete();
-    }
-  });
+        try {
+          await _suite.close();
+        } finally {
+          _onCloseCompleter.complete();
+        }
+      });
   final _closeMemo = new AsyncMemoizer();
 }

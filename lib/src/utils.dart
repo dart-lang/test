@@ -45,13 +45,8 @@ final _vowel = new RegExp('[aeiou]');
 /// Directories that are specific to OS X.
 ///
 /// This is used to try to distinguish OS X and Linux in [currentOSGuess].
-final _macOSDirectories = new Set<String>.from([
-  "/Applications",
-  "/Library",
-  "/Network",
-  "/System",
-  "/Users"
-]);
+final _macOSDirectories = new Set<String>.from(
+    ["/Applications", "/Library", "/Network", "/System", "/Users"]);
 
 /// Returns the best guess for the current operating system without using
 /// `dart:io`.
@@ -86,7 +81,7 @@ class Pair<E, F> {
 
   String toString() => '($first, $last)';
 
-  bool operator==(other) {
+  bool operator ==(other) {
     if (other is! Pair) return false;
     return other.first == first && other.last == last;
   }
@@ -99,7 +94,7 @@ class Pair<E, F> {
 /// Many exceptions include the exception class name at the beginning of their
 /// [toString], so we remove that if it exists.
 String getErrorMessage(error) =>
-  error.toString().replaceFirst(_exceptionPrefix, '');
+    error.toString().replaceFirst(_exceptionPrefix, '');
 
 /// Indent each line in [string] by [size] spaces.
 ///
@@ -180,8 +175,8 @@ String withoutColors(String str) => str.replaceAll(_colorCode, '');
 /// If [verbose] is `true`, returns the chain for [stackTrace] unmodified.
 Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
   if (verbose) return new Chain.forTrace(stackTrace);
-  return new Chain.forTrace(stackTrace).foldFrames((frame) =>
-      frame.package == 'test' || frame.package == 'stream_channel',
+  return new Chain.forTrace(stackTrace).foldFrames(
+      (frame) => frame.package == 'test' || frame.package == 'stream_channel',
       terse: true);
 }
 
@@ -205,14 +200,15 @@ List flatten(Iterable nested) {
       }
     }
   }
+
   helper(nested);
   return result;
 }
 
 /// Like [runZoned], but [zoneValues] are set for the callbacks in
 /// [zoneSpecification] and [onError].
-runZonedWithValues(body(), {Map zoneValues,
-    ZoneSpecification zoneSpecification, Function onError}) {
+runZonedWithValues(body(),
+    {Map zoneValues, ZoneSpecification zoneSpecification, Function onError}) {
   return runZoned(() {
     return runZoned(body,
         zoneSpecification: zoneSpecification, onError: onError);
@@ -242,7 +238,7 @@ String truncate(String text, int maxLength) {
       var buffer = new StringBuffer();
       buffer.write(words.first);
       buffer.write(' ...');
-      for ( ; i < words.length; i++) {
+      for (; i < words.length; i++) {
         buffer.write(' ');
         buffer.write(words[i]);
       }
@@ -326,14 +322,17 @@ CancelableOperation cancelableNext(StreamQueue queue) {
 /// If the subscription is canceled, any pending operations are canceled as
 /// well.
 Stream/*<T>*/ inCompletionOrder/*<T>*/(
-    Iterable<CancelableOperation/*<T>*/> operations) {
+    Iterable<CancelableOperation/*<T>*/ > operations) {
   var operationSet = operations.toSet();
-  var controller = new StreamController/*<T>*/(sync: true, onCancel: () {
-    return Future.wait(operationSet.map((operation) => operation.cancel()));
-  });
+  var controller = new StreamController/*<T>*/(
+      sync: true,
+      onCancel: () {
+        return Future.wait(operationSet.map((operation) => operation.cancel()));
+      });
 
   for (var operation in operationSet) {
-    operation.value.then((value) => controller.add(value))
+    operation.value
+        .then((value) => controller.add(value))
         .catchError(controller.addError)
         .whenComplete(() {
       operationSet.remove(operation);
@@ -394,7 +393,9 @@ String randomBase64(int bytes, {int seed}) {
 
 /// Throws an [ArgumentError] if [message] isn't recursively JSON-safe.
 void ensureJsonEncodable(Object message) {
-  if (message == null || message is String || message is num ||
+  if (message == null ||
+      message is String ||
+      message is num ||
       message is bool) {
     // JSON-encodable, hooray!
   } else if (message is List) {
@@ -416,9 +417,7 @@ void ensureJsonEncodable(Object message) {
 
 /// Prepends a vertical bar to [text].
 String addBar(String text) => prefixLines(text, "${glyph.verticalLine} ",
-    first: "${glyph.downEnd} ",
-    last: "${glyph.upEnd} ",
-    single: "| ");
+    first: "${glyph.downEnd} ", last: "${glyph.upEnd} ", single: "| ");
 
 /// Indents [text], and adds a bullet at the beginning.
 String addBullet(String text) =>
@@ -433,8 +432,8 @@ String bullet(Iterable<String> strings) => strings.map(addBullet).join("\n");
 /// prefixed with those instead. If [single] is passed, it's used if there's
 /// only a single line; otherwise, [first], [last], or [prefix] is used, in that
 /// order of precedence.
-String prefixLines(String text, String prefix, {String first, String last,
-    String single}) {
+String prefixLines(String text, String prefix,
+    {String first, String last, String single}) {
   first ??= prefix;
   last ??= prefix;
   single ??= first ?? last ?? prefix;

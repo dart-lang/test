@@ -19,9 +19,8 @@ final defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 const allReporters = const ["compact", "expanded", "json"];
 
 /// The default reporter.
-final defaultReporter = inTestTests
-    ? 'expanded'
-    : (Platform.isWindows ? 'expanded' : 'compact');
+final defaultReporter =
+    inTestTests ? 'expanded' : (Platform.isWindows ? 'expanded' : 'compact');
 
 /// The default filename pattern.
 ///

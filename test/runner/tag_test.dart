@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -12,7 +11,10 @@ import '../io.dart';
 
 void main() {
   useSandbox(() {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
@@ -21,7 +23,8 @@ void main() {
         test("b", () {}, tags: "b");
         test("bc", () {}, tags: ["b", "c"]);
       }
-    """).create();
+    """)
+        .create();
   });
 
   group("--tags", () {
@@ -126,7 +129,10 @@ void main() {
 
   group("with a tagged group", () {
     setUp(() {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
@@ -136,7 +142,8 @@ void main() {
 
           test("out", () {});
         }
-      """).create();
+      """)
+          .create();
     });
 
     test("includes tags specified on the group", () {
@@ -155,14 +162,18 @@ void main() {
   });
 
   test('respects top-level @Tags annotations', () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       @Tags(const ['a'])
       import 'package:test/test.dart';
 
       void main() {
         test("foo", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["-x", "a", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("No tests ran")));
@@ -171,13 +182,17 @@ void main() {
 
   group("warning formatting", () {
     test("for multiple tags", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: ["a", "b"]);
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
@@ -188,14 +203,18 @@ void main() {
     });
 
     test("for multiple tests", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: "a");
           test("bar", () {}, tags: "a");
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
@@ -207,7 +226,10 @@ void main() {
     });
 
     test("for groups", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
@@ -216,7 +238,8 @@ void main() {
             test("bar", () {});
           }, tags: "a");
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
@@ -226,7 +249,10 @@ void main() {
     });
 
     test("for suites", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         @Tags(const ["a"])
         import 'package:test/test.dart';
 
@@ -234,7 +260,8 @@ void main() {
           test("foo", () {});
           test("bar", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(lines(
@@ -244,13 +271,17 @@ void main() {
     });
 
     test("doesn't double-print a tag warning", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: "a");
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["-p", "vm,content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(lines(
@@ -263,23 +294,30 @@ void main() {
 
   group("invalid tags", () {
     test("are disallowed by test()", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: "a b");
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(
           '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
-            'b". Tags must be (optionally hyphenated) Dart identifiers.'));
+          'b". Tags must be (optionally hyphenated) Dart identifiers.'));
       test.shouldExit(1);
     });
 
     test("are disallowed by group()", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
@@ -287,17 +325,21 @@ void main() {
             test("foo", () {});
           }, tags: "a b");
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(
           '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
-            'b". Tags must be (optionally hyphenated) Dart identifiers.'));
+          'b". Tags must be (optionally hyphenated) Dart identifiers.'));
       test.shouldExit(1);
     });
 
     test("are disallowed by @Tags()", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         @Tags(const ["a b"])
 
         import 'package:test/test.dart';
@@ -305,13 +347,13 @@ void main() {
         void main() {
           test("foo", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(lines(
-          '  Failed to load "test.dart":\n'
+      test.stdout.expect(consumeThrough(lines('  Failed to load "test.dart":\n'
           '  Error on line 1, column 22: Invalid tag name. Tags must be '
-            '(optionally hyphenated) Dart identifiers.')));
+          '(optionally hyphenated) Dart identifiers.')));
       test.shouldExit(1);
     });
   });
@@ -320,21 +362,21 @@ void main() {
 /// Returns a [StreamMatcher] that asserts that a test emits warnings for [tags]
 /// in order.
 StreamMatcher tagWarnings(List<String> tags) => inOrder(() sync* {
-  yield consumeThrough(
-      "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
-        "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
-        "dart_test.yaml.");
+      yield consumeThrough(
+          "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
+          "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
+          "dart_test.yaml.");
 
-  for (var tag in tags) {
-    yield consumeWhile(isNot(contains(" was used in")));
-    yield consumeThrough(startsWith("  $tag was used in"));
-  }
+      for (var tag in tags) {
+        yield consumeWhile(isNot(contains(" was used in")));
+        yield consumeThrough(startsWith("  $tag was used in"));
+      }
 
-  // Consume until the end of the warning block, and assert that it has no
-  // further tags than the ones we specified.
-  yield consumeWhile(isNot(anyOf([contains(" was used in"), isEmpty])));
-  yield isEmpty;
-}());
+      // Consume until the end of the warning block, and assert that it has no
+      // further tags than the ones we specified.
+      yield consumeWhile(isNot(anyOf([contains(" was used in"), isEmpty])));
+      yield isEmpty;
+    }());
 
 /// Returns a [StreamMatcher] that matches the lines of [string] in order.
 StreamMatcher lines(String string) => inOrder(string.split("\n"));

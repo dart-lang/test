@@ -24,8 +24,7 @@ final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
 /// The version of the Dart SDK currently in use.
 final Version _sdkVersion = new Version.parse(
-    new File(p.join(sdkDir, 'version'))
-        .readAsStringSync().trim());
+    new File(p.join(sdkDir, 'version')).readAsStringSync().trim());
 
 /// Returns the current operating system.
 final OperatingSystem currentOS = (() {
@@ -62,7 +61,8 @@ bool get canUseSpecialChars =>
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() => new Directory(_tempDir)
-    .createTempSync('dart_test_').resolveSymbolicLinksSync();
+    .createTempSync('dart_test_')
+    .resolveSymbolicLinksSync();
 
 /// Creates a temporary directory and passes its path to [fn].
 ///
@@ -95,12 +95,16 @@ Stream<List<int>> sanitizeForWindows(Stream<List<int>> input) {
 
   return input.map((list) {
     var previous;
-    return list.reversed.where((byte) {
-      if (byte == 0) return false;
-      if (byte == _carriageReturn && previous == _newline) return false;
-      previous = byte;
-      return true;
-    }).toList().reversed.toList();
+    return list.reversed
+        .where((byte) {
+          if (byte == 0) return false;
+          if (byte == _carriageReturn && previous == _newline) return false;
+          previous = byte;
+          return true;
+        })
+        .toList()
+        .reversed
+        .toList();
   });
 }
 
@@ -111,9 +115,7 @@ Stream<List<int>> sanitizeForWindows(Stream<List<int>> input) {
 /// [canUseSpecialChars].
 void warn(String message, {bool color}) {
   if (color == null) color = canUseSpecialChars;
-  var header = color
-      ? "\u001b[33mWarning:\u001b[0m"
-      : "Warning:";
+  var header = color ? "\u001b[33mWarning:\u001b[0m" : "Warning:";
   stderr.writeln(wordWrap("$header $message\n"));
 }
 

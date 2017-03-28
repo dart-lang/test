@@ -4,7 +4,6 @@
 
 @TestOn("vm")
 @Tags(const ["content-shell"])
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -22,8 +21,8 @@ void main() {
 
     schedule(() async {
       var contentShell = new ContentShell(await server.url);
-      currentSchedule.onComplete.schedule(
-          () async => (await contentShell).close());
+      currentSchedule.onComplete
+          .schedule(() async => (await contentShell).close());
     });
 
     server.handleDart('''
@@ -50,20 +49,26 @@ webSocket.send("loaded!");
   });
 
   test("reports an error in onExit", () {
-    var contentShell = new ContentShell("http://dart-lang.org",
-        executable: "_does_not_exist");
-    expect(contentShell.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to run Content Shell: $noSuchFileMessage"))));
+    var contentShell =
+        new ContentShell("http://dart-lang.org", executable: "_does_not_exist");
+    expect(
+        contentShell.onExit,
+        throwsA(isApplicationException(
+            startsWith("Failed to run Content Shell: $noSuchFileMessage"))));
   });
 
   test("can run successful tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "content-shell", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -71,13 +76,17 @@ void main() {
   });
 
   test("can run failing tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "content-shell", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));

@@ -48,11 +48,11 @@ class Suite {
   /// Returns [entries] filtered according to [platform] and [os].
   ///
   /// Gracefully handles [platform] being null.
-  static Group _filterGroup(Group group, TestPlatform platform,
-      OperatingSystem os) {
+  static Group _filterGroup(
+      Group group, TestPlatform platform, OperatingSystem os) {
     if (platform == null && os != null) {
-      throw new ArgumentError.value(null, "os",
-          "If os is passed, platform must be passed as well");
+      throw new ArgumentError.value(
+          null, "os", "If os is passed, platform must be passed as well");
     }
 
     if (platform == null) return group;

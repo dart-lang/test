@@ -24,24 +24,25 @@ import 'runner_suite.dart';
 /// Returns a [CancelableOperation] that will complete once the suite has
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
-CancelableOperation debug(Engine engine, Reporter reporter,
-    LoadSuite loadSuite) {
+CancelableOperation debug(
+    Engine engine, Reporter reporter, LoadSuite loadSuite) {
   var debugger;
   var canceled = false;
-  return new CancelableOperation.fromFuture(() async {
-    // Make the underlying suite null so that the engine doesn't start running
-    // it immediately.
-    engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
-      engine.pause();
-      return runnerSuite;
-    }));
+  return new CancelableOperation.fromFuture(
+      () async {
+        // Make the underlying suite null so that the engine doesn't start running
+        // it immediately.
+        engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
+          engine.pause();
+          return runnerSuite;
+        }));
 
-    var suite = await loadSuite.suite;
-    if (canceled || suite == null) return;
+        var suite = await loadSuite.suite;
+        if (canceled || suite == null) return;
 
-    debugger = new _Debugger(engine, reporter, suite);
-    await debugger.run();
-  }(), onCancel: () {
+        debugger = new _Debugger(engine, reporter, suite);
+        await debugger.run();
+      }(), onCancel: () {
     canceled = true;
     // Make sure the load test finishes so the engine can close.
     engine.resume();
@@ -85,9 +86,8 @@ class _Debugger {
 
   _Debugger(this._engine, this._reporter, this._suite)
       : _console = new Console(color: Configuration.current.color) {
-    _console.registerCommand(
-        "restart", "Restart the current test after it finishes running.",
-        _restartTest);
+    _console.registerCommand("restart",
+        "Restart the current test after it finishes running.", _restartTest);
 
     _onDebuggingSubscription = _suite.onDebugging.listen((debugging) {
       if (debugging) {
@@ -152,8 +152,8 @@ class _Debugger {
           }
         }
 
-        var buffer = new StringBuffer(
-            "${bold}The test runner is paused.${noColor} ");
+        var buffer =
+            new StringBuffer("${bold}The test runner is paused.${noColor} ");
         if (!_suite.platform.isHeadless) {
           buffer.write("Open the dev console in ${_suite.platform} ");
         } else {
@@ -167,10 +167,9 @@ class _Debugger {
         print(wordWrap(buffer.toString()));
       }
 
-      await inCompletionOrder([
-        _suite.environment.displayPause(),
-        cancelableNext(stdinLines)
-      ]).first;
+      await inCompletionOrder(
+              [_suite.environment.displayPause(), cancelableNext(stdinLines)])
+          .first;
     } finally {
       if (!_json) _reporter.resume();
     }

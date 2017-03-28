@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -14,7 +13,10 @@ void main() {
   useSandbox();
 
   test("prints the platform name when running on multiple platforms", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -22,13 +24,18 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest([
-      "-r", "expanded",
-      "-p", "content-shell",
-      "-p", "vm",
-      "-j", "1",
+      "-r",
+      "expanded",
+      "-p",
+      "content-shell",
+      "-p",
+      "vm",
+      "-j",
+      "1",
       "test.dart"
     ]);
 

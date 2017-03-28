@@ -168,9 +168,11 @@ void main() {
           expect(setUpAll2Run, isFalse);
           expect(setUpAll3Run, isFalse);
 
-          expect(pumpEventQueue().then((_) {
-            setUpAll1Run = true;
-          }), completes);
+          expect(
+              pumpEventQueue().then((_) {
+                setUpAll1Run = true;
+              }),
+              completes);
         });
 
         setUpAll(() {
@@ -178,9 +180,11 @@ void main() {
           expect(setUpAll2Run, isFalse);
           expect(setUpAll3Run, isFalse);
 
-          expect(pumpEventQueue().then((_) {
-            setUpAll2Run = true;
-          }), completes);
+          expect(
+              pumpEventQueue().then((_) {
+                setUpAll2Run = true;
+              }),
+              completes);
         });
 
         setUpAll(() {
@@ -188,9 +192,11 @@ void main() {
           expect(setUpAll2Run, isFalse);
           expect(setUpAll3Run, isFalse);
 
-          expect(pumpEventQueue().then((_) {
-            setUpAll3Run = true;
-          }), completes);
+          expect(
+              pumpEventQueue().then((_) {
+                setUpAll3Run = true;
+              }),
+              completes);
         });
 
         test("test", () {

@@ -16,10 +16,12 @@ void main() {
     var testsRun = 0;
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
-        test("test ${i + 1}", expectAsync0(() {
-          expect(testsRun, equals(i));
-          testsRun++;
-        }, max: 1));
+        test(
+            "test ${i + 1}",
+            expectAsync0(() {
+              expect(testsRun, equals(i));
+              testsRun++;
+            }, max: 1));
       }
     });
 
@@ -36,23 +38,28 @@ void main() {
     var testsRun = 0;
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
-        test("test ${i + 1}", expectAsync0(() {
-          expect(testsRun, equals(i));
-          testsRun++;
-        }, max: 1));
+        test(
+            "test ${i + 1}",
+            expectAsync0(() {
+              expect(testsRun, equals(i));
+              testsRun++;
+            }, max: 1));
       }
     });
 
     var engine = new Engine();
-    expect(engine.run().then((_) {
-      expect(testsRun, equals(4));
-    }), completes);
+    expect(
+        engine.run().then((_) {
+          expect(testsRun, equals(4));
+        }),
+        completes);
 
     engine.suiteSink.add(runnerSuite(new Group.root(tests)));
     engine.suiteSink.close();
   });
 
-  test("emits each test before it starts running and after the previous test "
+  test(
+      "emits each test before it starts running and after the previous test "
       "finished", () {
     var testsRun = 0;
     var engine = declareEngine(() {
@@ -228,8 +235,8 @@ void main() {
         }, skip: true);
       });
 
-      var engine = new Engine.withSuites(
-          [runnerSuite(new Group.root(entries))]);
+      var engine =
+          new Engine.withSuites([runnerSuite(new Group.root(entries))]);
 
       engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));

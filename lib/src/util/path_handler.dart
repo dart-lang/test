@@ -39,7 +39,7 @@ class PathHandler {
     var handlerIndex;
     var node = _paths;
     var components = p.url.split(request.url.path);
-    for (var i = 0; i < components.length; i++ ) {
+    for (var i = 0; i < components.length; i++) {
       node = node.children[components[i]];
       if (node == null) break;
       if (node.handler == null) continue;
@@ -49,8 +49,8 @@ class PathHandler {
 
     if (handler == null) return new shelf.Response.notFound("Not found.");
 
-    return handler(request.change(
-        path: p.url.joinAll(components.take(handlerIndex + 1))));
+    return handler(
+        request.change(path: p.url.joinAll(components.take(handlerIndex + 1))));
   }
 }
 

@@ -31,8 +31,7 @@ class LocalTest extends Test {
   /// The test body.
   final AsyncFunction _body;
 
-  LocalTest(this.name, this.metadata, body(), {this.trace})
-      : _body = body;
+  LocalTest(this.name, this.metadata, body(), {this.trace}) : _body = body;
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
@@ -135,7 +134,8 @@ class Invoker {
 
   Invoker._(Suite suite, LocalTest test, {Iterable<Group> groups}) {
     _controller = new LiveTestController(
-        suite, test, _onRun, _onCloseCompleter.complete, groups: groups);
+        suite, test, _onRun, _onCloseCompleter.complete,
+        groups: groups);
   }
 
   /// Runs [callback] after this test completes.
@@ -204,9 +204,7 @@ class Invoker {
         await fn();
         counter.removeOutstandingCallback();
       }, onError: _handleError);
-    }, zoneValues: {
-      _counterKey: counter
-    });
+    }, zoneValues: {_counterKey: counter});
 
     return counter.noOutstandingCallbacks.whenComplete(() {
       _outstandingCallbackZones.remove(zone);
@@ -221,9 +219,7 @@ class Invoker {
   unclosable(fn()) {
     heartbeat();
 
-    return runZoned(fn, zoneValues: {
-      _closableKey: false
-    });
+    return runZoned(fn, zoneValues: {_closableKey: false});
   }
 
   /// Notifies the invoker that progress is being made.
@@ -234,15 +230,14 @@ class Invoker {
     if (liveTest.isComplete) return;
     if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-    var timeout = liveTest.test.metadata.timeout
-        .apply(new Duration(seconds: 30));
+    var timeout =
+        liveTest.test.metadata.timeout.apply(new Duration(seconds: 30));
     if (timeout == null) return;
     _timeoutTimer = _invokerZone.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         if (liveTest.isComplete) return;
-        _handleError(
-            new TimeoutException(
-                "Test timed out after ${niceDuration(timeout)}.", timeout));
+        _handleError(new TimeoutException(
+            "Test timed out after ${niceDuration(timeout)}.", timeout));
       });
     });
   }
@@ -259,8 +254,8 @@ class Invoker {
       // failing after being complete.
       _controller.setState(const State(Status.complete, Result.error));
       throw "This test was marked as skipped after it had already completed. "
-               "Make sure to use\n"
-            "[expectAsync] or the [completes] matcher when testing async code.";
+          "Make sure to use\n"
+          "[expectAsync] or the [completes] matcher when testing async code.";
     }
 
     if (message != null) _controller.message(new Message.skip(message));
@@ -312,7 +307,7 @@ class Invoker {
 
     _handleError(
         "This test failed after it had already completed. Make sure to use "
-            "[expectAsync]\n"
+        "[expectAsync]\n"
         "or the [completes] matcher when testing async code.",
         stackTrace);
   }
@@ -339,25 +334,25 @@ class Invoker {
         // microtask-level events.
         new Future(() async {
           await _test._body();
-          await unclosable(() =>
-              Future.forEach(_tearDowns.reversed, errorsDontStopTest));
+          await unclosable(
+              () => Future.forEach(_tearDowns.reversed, errorsDontStopTest));
           removeOutstandingCallback();
         });
 
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-        _controller.setState(
-            new State(Status.complete, liveTest.state.result));
+        _controller.setState(new State(Status.complete, liveTest.state.result));
 
         _controller.completer.complete();
-      }, zoneValues: {
-        #test.invoker: this,
-        // Use the invoker as a key so that multiple invokers can have different
-        // outstanding callback counters at once.
-        _counterKey: outstandingCallbacksForBody,
-        _closableKey: true
       },
+          zoneValues: {
+            #test.invoker: this,
+            // Use the invoker as a key so that multiple invokers can have different
+            // outstanding callback counters at once.
+            _counterKey: outstandingCallbacksForBody,
+            _closableKey: true
+          },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) =>
                   _controller.message(new Message.print(line))),

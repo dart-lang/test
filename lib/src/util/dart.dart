@@ -21,8 +21,8 @@ import 'string_literal_iterator.dart';
 ///
 /// If [resolver] is passed, its package resolution strategy is used to resolve
 /// code in the spawned isolate. It defaults to [PackageResolver.current].
-Future<Isolate> runInIsolate(String code, message, {PackageResolver resolver,
-    bool checked, SendPort onExit}) async {
+Future<Isolate> runInIsolate(String code, message,
+    {PackageResolver resolver, bool checked, SendPort onExit}) async {
   resolver ??= PackageResolver.current;
   return await Isolate.spawnUri(
       new Uri.dataFromString(code,
@@ -62,8 +62,8 @@ Future<Isolate> runInIsolate(String code, message, {PackageResolver resolver,
 ///
 /// This will return `null` if [context] contains an invalid string or does not
 /// contain [span].
-SourceSpan contextualizeSpan(SourceSpan span, StringLiteral context,
-    SourceFile file) {
+SourceSpan contextualizeSpan(
+    SourceSpan span, StringLiteral context, SourceFile file) {
   var contextRunes = new StringLiteralIterator(context)..moveNext();
 
   for (var i = 0; i < span.start.offset; i++) {

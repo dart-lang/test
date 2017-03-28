@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -39,7 +38,8 @@ final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 final _browsers =
     "[vm (default), dartium, content-shell, chrome, phantomjs, firefox" +
         (Platform.isMacOS ? ", safari" : "") +
-        (Platform.isWindows ? ", ie" : "") + "]";
+        (Platform.isWindows ? ", ie" : "") +
+        "]";
 
 final _usage = """
 Usage: pub run test [files or directories...]
@@ -97,7 +97,9 @@ void main() {
 
   test("prints help information", () {
     var test = runTest(["--help"]);
-    expectStdoutEquals(test, """
+    expectStdoutEquals(
+        test,
+        """
 Runs tests in this package.
 
 $_usage""");
@@ -107,7 +109,9 @@ $_usage""");
   group("fails gracefully if", () {
     test("an invalid option is passed", () {
       var test = runTest(["--asdf"]);
-      expectStderrEquals(test, """
+      expectStderrEquals(
+          test,
+          """
 Could not find an option named "asdf".
 
 $_usage""");
@@ -116,16 +120,16 @@ $_usage""");
 
     test("a non-existent file is passed", () {
       var test = runTest(["file"]);
-      test.stdout.expect(containsInOrder([
-        '-1: loading file [E]',
-        'Failed to load "file": Does not exist.'
-      ]));
+      test.stdout.expect(containsInOrder(
+          ['-1: loading file [E]', 'Failed to load "file": Does not exist.']));
       test.shouldExit(1);
     });
 
     test("the default directory doesn't exist", () {
       var test = runTest([]);
-      expectStderrEquals(test, """
+      expectStderrEquals(
+          test,
+          """
 No test files were passed and the default "test/" directory doesn't exist.
 
 $_usage""");
@@ -210,10 +214,8 @@ $_usage""");
       d.file("test.dart", "void main() => throw 'oh no';").create();
       var test = runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart": oh no'
-      ]));
+      test.stdout.expect(containsInOrder(
+          ['-1: loading test.dart [E]', 'Failed to load "test.dart": oh no']));
       test.shouldExit(1);
     });
 
@@ -289,9 +291,13 @@ $_usage""");
     });
 
     test("defaulting to the test directory", () {
-      d.dir("test", new Iterable.generate(3, (i) {
-        return d.file("${i}_test.dart", _success);
-      })).create();
+      d
+          .dir(
+              "test",
+              new Iterable.generate(3, (i) {
+                return d.file("${i}_test.dart", _success);
+              }))
+          .create();
 
       var test = runTest([]);
       test.stdout.expect(consumeThrough(contains("+3: All tests passed!")));
@@ -336,9 +342,13 @@ $_usage""");
     });
 
     test("defaulting to the test directory", () {
-      d.dir("test", new Iterable.generate(3, (i) {
-        return d.file("${i}_test.dart", _failure);
-      })).create();
+      d
+          .dir(
+              "test",
+              new Iterable.generate(3, (i) {
+                return d.file("${i}_test.dart", _failure);
+              }))
+          .create();
 
       var test = runTest([]);
       test.stdout.expect(consumeThrough(contains("-3: Some tests failed.")));
@@ -363,7 +373,10 @@ $_usage""");
 
   group("with a top-level @Skip declaration", () {
     setUp(() {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
         @Skip()
 
         import 'dart:async';
@@ -373,7 +386,8 @@ $_usage""");
         void main() {
           test("success", () {});
         }
-      ''').create();
+      ''')
+          .create();
     });
 
     test("skips all tests", () {
@@ -391,7 +405,10 @@ $_usage""");
 
   group("with onPlatform", () {
     test("respects matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -399,7 +416,8 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no', onPlatform: {"vm": new Skip()});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
@@ -407,7 +425,10 @@ void main() {
     });
 
     test("ignores non-matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -415,7 +436,8 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {}, onPlatform: {"chrome": new Skip()});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -423,7 +445,10 @@ void main() {
     });
 
     test("respects matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -436,18 +461,20 @@ void main() {
     "vm": new Timeout(Duration.ZERO)
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "Test timed out after 0 seconds.",
-        "-1: Some tests failed."
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
       test.shouldExit(1);
     });
 
     test("ignores non-matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -457,7 +484,8 @@ void main() {
     "chrome": new Timeout(new Duration(seconds: 0))
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -465,7 +493,10 @@ void main() {
     });
 
     test("applies matching platforms in order", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -479,7 +510,8 @@ void main() {
     "vm || android": new Skip("fifth")
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.fork().expect(never(contains("Skip: first")));
@@ -493,7 +525,10 @@ void main() {
 
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {"vm": const Skip()})
 
 import 'dart:async';
@@ -503,7 +538,8 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no');
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
@@ -511,7 +547,10 @@ void main() {
     });
 
     test("ignores non-matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {"chrome": const Skip()})
 
 import 'dart:async';
@@ -521,7 +560,8 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -529,7 +569,10 @@ void main() {
     });
 
     test("respects matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {
   "vm": const Timeout(const Duration(seconds: 0))
 })
@@ -544,18 +587,20 @@ void main() {
     throw 'oh no';
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "Test timed out after 0 seconds.",
-        "-1: Some tests failed."
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
       test.shouldExit(1);
     });
 
     test("ignores non-matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {
   "chrome": const Timeout(const Duration(seconds: 0))
 })
@@ -567,7 +612,8 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));

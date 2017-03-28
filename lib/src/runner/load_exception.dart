@@ -52,9 +52,10 @@ class LoadException implements Exception {
 
       innerString = innerString.replaceFirst("FileSystemException: ", "");
       innerString = innerString.split("Stack Trace:\n").first.trim();
-    } if (innerError is SourceSpanException) {
-      innerString = innerError.toString(color: color)
-          .replaceFirst(" of $path", "");
+    }
+    if (innerError is SourceSpanException) {
+      innerString =
+          innerError.toString(color: color).replaceFirst(" of $path", "");
     }
 
     buffer.write(innerString.contains("\n") ? "\n" : " ");

@@ -68,15 +68,10 @@ class JsonReporter implements Reporter {
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
     _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
-      _emit("allSuites", {
-        "count": _engine.addedSuites.length
-      });
+      _emit("allSuites", {"count": _engine.addedSuites.length});
     }));
 
-    _emit("start", {
-      "protocolVersion": "0.1.0",
-      "runnerVersion": testVersion
-    });
+    _emit("start", {"protocolVersion": "0.1.0", "runnerVersion": testVersion});
   }
 
   void pause() {
@@ -127,22 +122,26 @@ class JsonReporter implements Reporter {
     var id = _nextID++;
     _liveTestIDs[liveTest] = id;
     _emit("testStart", {
-      "test": _addFrameInfo(suiteConfig, {
-        "id": id,
-        "name": liveTest.test.name, 
-        "suiteID": suiteID,
-        "groupIDs": groupIDs,
-        "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
-      }, liveTest.test, liveTest.suite.platform)
+      "test": _addFrameInfo(
+          suiteConfig,
+          {
+            "id": id,
+            "name": liveTest.test.name,
+            "suiteID": suiteID,
+            "groupIDs": groupIDs,
+            "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
+          },
+          liveTest.test,
+          liveTest.suite.platform)
     });
 
     /// Convert the future to a stream so that the subscription can be paused or
     /// canceled.
-    _subscriptions.add(liveTest.onComplete.asStream().listen((_) =>
-        _onComplete(liveTest)));
+    _subscriptions.add(
+        liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)));
 
-    _subscriptions.add(liveTest.onError.listen((error) =>
-        _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(liveTest.onError
+        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
 
     _subscriptions.add(liveTest.onMessage.listen((message) {
       _emit("print", {
@@ -209,14 +208,18 @@ class JsonReporter implements Reporter {
 
       var suiteConfig = _configFor(suite);
       _emit("group", {
-        "group": _addFrameInfo(suiteConfig, {
-          "id": id,
-          "suiteID": _idForSuite(suite),
-          "parentID": parentID,
-          "name": group.name,
-          "metadata": _serializeMetadata(suiteConfig, group.metadata),
-          "testCount": group.testCount
-        }, group, suite.platform)
+        "group": _addFrameInfo(
+            suiteConfig,
+            {
+              "id": id,
+              "suiteID": _idForSuite(suite),
+              "parentID": parentID,
+              "name": group.name,
+              "metadata": _serializeMetadata(suiteConfig, group.metadata),
+              "testCount": group.testCount
+            },
+            group,
+            suite.platform)
       });
       parentID = id;
       return id;
@@ -249,7 +252,7 @@ class JsonReporter implements Reporter {
       "error": error.toString(),
       "stackTrace":
           terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace)
-          .toString(),
+              .toString(),
       "isFailure": error is TestFailure
     });
   }

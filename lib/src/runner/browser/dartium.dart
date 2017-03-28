@@ -39,9 +39,14 @@ class Dartium extends Browser {
       var tryPort = ([int port]) async {
         var dir = createTempDir();
         var args = [
-          "--user-data-dir=$dir", url.toString(), "--disable-extensions",
-          "--disable-popup-blocking", "--bwsi", "--no-first-run",
-          "--no-default-browser-check", "--disable-default-apps",
+          "--user-data-dir=$dir",
+          url.toString(),
+          "--disable-extensions",
+          "--disable-popup-blocking",
+          "--bwsi",
+          "--no-first-run",
+          "--no-default-browser-check",
+          "--disable-default-apps",
           "--disable-translate"
         ];
 
@@ -57,8 +62,8 @@ class Dartium extends Browser {
           args.add("--vmodule=startup_browser_creator_impl=1");
         }
 
-        var process = await Process.start(executable, args,
-            environment: {"DART_FLAGS": "--checked"});
+        var process = await Process
+            .start(executable, args, environment: {"DART_FLAGS": "--checked"});
 
         if (port != null) {
           // Dartium on Windows prints all standard IO to stderr, so we need to
@@ -116,7 +121,7 @@ class Dartium extends Browser {
   }
 
   Dartium._(Future<Process> startBrowser(), this.observatoryUrl,
-          this.remoteDebuggerUrl)
+      this.remoteDebuggerUrl)
       : super(startBrowser);
 
   /// Starts a new instance of Dartium open to the given [url], which may be a
@@ -148,8 +153,8 @@ class Dartium extends Browser {
         return null;
       }
 
-      var dartium = p.join(
-          dir, "chromium/Chromium.app/Contents/MacOS/Chromium");
+      var dartium =
+          p.join(dir, "chromium/Chromium.app/Contents/MacOS/Chromium");
       return new File(dartium).existsSync() ? dartium : null;
     }
 
@@ -176,11 +181,8 @@ class Dartium extends Browser {
       return match == null ? null : Uri.parse(match[1]);
     }).where((line) => line != null));
 
-    var operations = [
-      urlQueue.next,
-      urlQueue.next,
-      urlQueue.next
-    ].map((future) => _checkObservatoryUrl(future));
+    var operations = [urlQueue.next, urlQueue.next, urlQueue.next]
+        .map((future) => _checkObservatoryUrl(future));
 
     urlQueue.cancel();
 
@@ -214,8 +216,8 @@ class Dartium extends Browser {
 
     future.then((url) async {
       try {
-        webSocket = await WebSocket.connect(
-            url.replace(scheme: 'ws', path: '/ws').toString());
+        webSocket = await WebSocket
+            .connect(url.replace(scheme: 'ws', path: '/ws').toString());
         if (canceled) {
           webSocket.close();
           return null;
@@ -228,12 +230,8 @@ class Dartium extends Browser {
           "id": "0"
         }));
 
-        webSocket.add(JSON.encode({
-          "jsonrpc": "2.0",
-          "method": "getVM",
-          "params": {},
-          "id": "1"
-        }));
+        webSocket.add(JSON.encode(
+            {"jsonrpc": "2.0", "method": "getVM", "params": {}, "id": "1"}));
 
         webSocket.listen((response) {
           try {

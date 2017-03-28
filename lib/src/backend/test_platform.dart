@@ -31,12 +31,12 @@ class TestPlatform {
       isBrowser: true, isJS: true, isBlink: true, isHeadless: true);
 
   /// Mozilla Firefox.
-  static const TestPlatform firefox = const TestPlatform._("Firefox", "firefox",
-      isBrowser: true, isJS: true);
+  static const TestPlatform firefox =
+      const TestPlatform._("Firefox", "firefox", isBrowser: true, isJS: true);
 
   /// Apple Safari.
-  static const TestPlatform safari = const TestPlatform._("Safari", "safari",
-      isBrowser: true, isJS: true);
+  static const TestPlatform safari =
+      const TestPlatform._("Safari", "safari", isBrowser: true, isJS: true);
 
   /// Microsoft Internet Explorer.
   static const TestPlatform internetExplorer = const TestPlatform._(
@@ -83,8 +83,11 @@ class TestPlatform {
   /// Whether this platform has no visible window.
   final bool isHeadless;
 
-  const TestPlatform._(this.name, this.identifier, {this.isDartVM: false,
-      this.isBrowser: false, this.isJS: false, this.isBlink: false,
+  const TestPlatform._(this.name, this.identifier,
+      {this.isDartVM: false,
+      this.isBrowser: false,
+      this.isJS: false,
+      this.isBlink: false,
       this.isHeadless: false});
 
   String toString() => name;

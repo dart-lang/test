@@ -58,7 +58,8 @@ void main() {
       });
 
       test("supports multiple units", () {
-        expect(new Timeout.parse("1d 2h3m  4s5ms\t6us"),
+        expect(
+            new Timeout.parse("1d 2h3m  4s5ms\t6us"),
             equals(new Timeout(new Duration(
                 days: 1,
                 hours: 2,

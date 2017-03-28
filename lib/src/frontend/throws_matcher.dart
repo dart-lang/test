@@ -49,8 +49,7 @@ class Throws extends AsyncMatcher {
     }
 
     if (item is Future) {
-      return item.then(
-          (value) => indent(prettyPrint(value), first: 'emitted '),
+      return item.then((value) => indent(prettyPrint(value), first: 'emitted '),
           onError: _check);
     }
 
@@ -83,7 +82,7 @@ class Throws extends AsyncMatcher {
         .toString();
 
     var buffer = new StringBuffer();
-    buffer.writeln(indent(prettyPrint(error),            first: 'threw '));
+    buffer.writeln(indent(prettyPrint(error), first: 'threw '));
     if (trace != null) {
       buffer.writeln(indent(testChain(trace).toString(), first: 'stack '));
     }

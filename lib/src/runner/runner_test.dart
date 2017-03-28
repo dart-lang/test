@@ -33,13 +33,13 @@ class RunnerTest extends Test {
   /// The function used to reformat errors' stack traces.
   final _MapTrace _mapTrace;
 
-  RunnerTest(this.name, this.metadata, Trace trace, this._channel,
-      _MapTrace mapTrace)
+  RunnerTest(
+      this.name, this.metadata, Trace trace, this._channel, _MapTrace mapTrace)
       : trace = trace == null ? null : new Trace.from(mapTrace(trace)),
         _mapTrace = mapTrace;
 
-  RunnerTest._(this.name, this.metadata, this.trace, this._channel,
-      this._mapTrace);
+  RunnerTest._(
+      this.name, this.metadata, this.trace, this._channel, this._mapTrace);
 
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var controller;
@@ -48,10 +48,7 @@ class RunnerTest extends Test {
       controller.setState(const State(Status.running, Result.success));
 
       testChannel = _channel.virtualChannel();
-      _channel.sink.add({
-        'command': 'run',
-        'channel': testChannel.id
-      });
+      _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
       testChannel.stream.listen((message) {
         switch (message['type']) {
@@ -62,10 +59,8 @@ class RunnerTest extends Test {
             break;
 
           case 'state-change':
-            controller.setState(
-                new State(
-                    new Status.parse(message['status']),
-                    new Result.parse(message['result'])));
+            controller.setState(new State(new Status.parse(message['status']),
+                new Result.parse(message['result'])));
             break;
 
           case 'message':
@@ -113,11 +108,7 @@ class RunnerTest extends Test {
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new RunnerTest._(
-        name,
-        metadata.forPlatform(platform, os: os),
-        trace,
-        _channel,
-        _mapTrace);
+    return new RunnerTest._(name, metadata.forPlatform(platform, os: os), trace,
+        _channel, _mapTrace);
   }
 }

@@ -4,7 +4,6 @@
 
 @TestOn("vm")
 @Tags(const ["firefox"])
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -49,20 +48,26 @@ webSocket.addEventListener("open", function() {
   });
 
   test("reports an error in onExit", () {
-    var firefox = new Firefox("http://dart-lang.org",
-        executable: "_does_not_exist");
-    expect(firefox.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to run Firefox: $noSuchFileMessage"))));
+    var firefox =
+        new Firefox("http://dart-lang.org", executable: "_does_not_exist");
+    expect(
+        firefox.onExit,
+        throwsA(isApplicationException(
+            startsWith("Failed to run Firefox: $noSuchFileMessage"))));
   });
 
   test("can run successful tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "firefox", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -70,13 +75,17 @@ void main() {
   });
 
   test("can run failing tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "firefox", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));

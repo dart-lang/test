@@ -27,8 +27,8 @@ class State {
 
   const State(this.status, this.result);
 
-  bool operator==(other) => other is State && status == other.status &&
-      result == other.result;
+  bool operator ==(other) =>
+      other is State && status == other.status && result == other.result;
 
   int get hashCode => status.hashCode ^ (7 * result.hashCode);
 
@@ -62,9 +62,12 @@ class Status {
 
   factory Status.parse(String name) {
     switch (name) {
-      case "pending": return Status.pending;
-      case "running": return Status.running;
-      case "complete": return Status.complete;
+      case "pending":
+        return Status.pending;
+      case "running":
+        return Status.running;
+      case "complete":
+        return Status.complete;
       default:
         throw new ArgumentError('Invalid status name "$name".');
     }
@@ -116,10 +119,14 @@ class Result {
 
   factory Result.parse(String name) {
     switch (name) {
-      case "success": return Result.success;
-      case "skipped": return Result.skipped;
-      case "failure": return Result.failure;
-      case "error": return Result.error;
+      case "success":
+        return Result.success;
+      case "skipped":
+        return Result.skipped;
+      case "failure":
+        return Result.failure;
+      case "error":
+        return Result.error;
       default:
         throw new ArgumentError('Invalid result name "$name".');
     }

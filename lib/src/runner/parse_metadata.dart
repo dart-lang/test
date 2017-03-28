@@ -33,22 +33,24 @@ class _Parser {
   /// All prefixes defined by imports in this file.
   Set<String> _prefixes;
 
-  _Parser(String path)
-      : _path = path {
+  _Parser(String path) : _path = path {
     var contents = new File(path).readAsStringSync();
     var directives = parseDirectives(contents, name: path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
-    _prefixes = directives.map((directive) {
-      if (directive is ImportDirective) {
-        if (directive.prefix == null) return null;
-        return directive.prefix.name;
-      } else {
-        return null;
-      }
-    }).where((prefix) => prefix != null).toSet();
+    _prefixes = directives
+        .map((directive) {
+          if (directive is ImportDirective) {
+            if (directive.prefix == null) return null;
+            return directive.prefix.name;
+          } else {
+            return null;
+          }
+        })
+        .where((prefix) => prefix != null)
+        .toSet();
   }
 
   /// Parses the metadata.
@@ -60,8 +62,8 @@ class _Parser {
     Set<String> tags;
 
     for (var annotation in _annotations) {
-      var pair = _resolveConstructor(
-          annotation.name, annotation.constructorName);
+      var pair =
+          _resolveConstructor(annotation.name, annotation.constructorName);
       var name = pair.first;
       var constructorName = pair.last;
 
@@ -100,8 +102,8 @@ class _Parser {
     _assertConstructorName(constructorName, 'TestOn', annotation);
     _assertArguments(annotation.arguments, 'TestOn', annotation, positional: 1);
     var literal = _parseString(annotation.arguments.arguments.first);
-    return _contextualize(literal,
-        () => new PlatformSelector.parse(literal.stringValue));
+    return _contextualize(
+        literal, () => new PlatformSelector.parse(literal.stringValue));
   }
 
   /// Parses a `@Timeout` annotation.
@@ -113,7 +115,7 @@ class _Parser {
         validNames: [null, 'factor', 'none']);
 
     var description = 'Timeout';
-    if (constructorName != null) description += '.$constructorName'; 
+    if (constructorName != null) description += '.$constructorName';
 
     if (constructorName == 'none') {
       _assertNoArguments(annotation, description);
@@ -130,8 +132,8 @@ class _Parser {
 
   /// Parses a `Timeout` constructor.
   Timeout _parseTimeoutConstructor(InstanceCreationExpression constructor) {
-    var name = _parseConstructor(constructor, 'Timeout',
-        validNames: [null, 'factor']);
+    var name =
+        _parseConstructor(constructor, 'Timeout', validNames: [null, 'factor']);
 
     var description = 'Timeout';
     if (name != null) description += '.$name';
@@ -178,13 +180,14 @@ class _Parser {
     _assertConstructorName(constructorName, 'Tags', annotation);
     _assertArguments(annotation.arguments, 'Tags', annotation, positional: 1);
 
-    return _parseList(annotation.arguments.arguments.first).map((tagExpression) {
+    return _parseList(annotation.arguments.arguments.first)
+        .map((tagExpression) {
       var name = _parseString(tagExpression).stringValue;
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
       throw new SourceSpanFormatException(
           "Invalid tag name. Tags must be (optionally hyphenated) Dart "
-            "identifiers.",
+          "identifiers.",
           _spanFor(tagExpression));
     }).toSet();
   }
@@ -193,27 +196,26 @@ class _Parser {
   ///
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
-  Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation,
-      String constructorName) {
+  Map<PlatformSelector, Metadata> _parseOnPlatform(
+      Annotation annotation, String constructorName) {
     _assertConstructorName(constructorName, 'OnPlatform', annotation);
     _assertArguments(annotation.arguments, 'OnPlatform', annotation,
         positional: 1);
 
     return _parseMap(annotation.arguments.arguments.first, key: (key) {
       var selector = _parseString(key);
-      return _contextualize(selector,
-          () => new PlatformSelector.parse(selector.stringValue));
+      return _contextualize(
+          selector, () => new PlatformSelector.parse(selector.stringValue));
     }, value: (value) {
       var expressions = [];
       if (value is ListLiteral) {
         expressions = _parseList(value);
       } else if (value is InstanceCreationExpression ||
-                 value is PrefixedIdentifier) {
+          value is PrefixedIdentifier) {
         expressions = [value];
       } else {
         throw new SourceSpanFormatException(
-            'Expected a Timeout, Skip, or List of those.',
-            _spanFor(value));
+            'Expected a Timeout, Skip, or List of those.', _spanFor(value));
       }
 
       var timeout;
@@ -221,8 +223,9 @@ class _Parser {
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
           var className = _resolveConstructor(
-              expression.constructorName.type.name,
-              expression.constructorName.name).first;
+                  expression.constructorName.type.name,
+                  expression.constructorName.name)
+              .first;
 
           if (className == 'Timeout') {
             _assertSingle(timeout, 'Timeout', expression);
@@ -246,8 +249,7 @@ class _Parser {
         }
 
         throw new SourceSpanFormatException(
-            'Expected a Timeout or Skip.',
-            _spanFor(expression));
+            'Expected a Timeout or Skip.', _spanFor(expression));
       }
 
       return new Metadata.parse(timeout: timeout, skip: skip);
@@ -261,18 +263,24 @@ class _Parser {
     var constructor = expression as InstanceCreationExpression;
     var valueExpressions = _assertArguments(
         constructor.argumentList, 'Duration', constructor, named: [
-      'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds'
+      'days',
+      'hours',
+      'minutes',
+      'seconds',
+      'milliseconds',
+      'microseconds'
     ]);
 
-    var values = mapMap(valueExpressions,
-        value: (_, value) => _parseInt(value));
+    var values =
+        mapMap(valueExpressions, value: (_, value) => _parseInt(value));
 
     return new Duration(
         days: values["days"] == null ? 0 : values["days"],
         hours: values["hours"] == null ? 0 : values["hours"],
         minutes: values["minutes"] == null ? 0 : values["minutes"],
         seconds: values["seconds"] == null ? 0 : values["seconds"],
-        milliseconds: values["milliseconds"] == null ? 0 : values["milliseconds"],
+        milliseconds:
+            values["milliseconds"] == null ? 0 : values["milliseconds"],
         microseconds:
             values["microseconds"] == null ? 0 : values["microseconds"]);
   }
@@ -292,8 +300,8 @@ class _Parser {
   ///
   /// Since the parsed file isn't fully resolved, this is necessary to
   /// disambiguate between prefixed names and named constructors.
-  Pair<String, String> _resolveConstructor(Identifier identifier,
-      SimpleIdentifier constructorName) {
+  Pair<String, String> _resolveConstructor(
+      Identifier identifier, SimpleIdentifier constructorName) {
     // The syntax is ambiguous between named constructors and prefixed
     // annotations, so we need to resolve that ambiguity using the known
     // prefixes. The analyzer parses "new x.y()" as prefix "x", annotation "y",
@@ -322,15 +330,15 @@ class _Parser {
   /// AST node for that class. [validNames], if passed, is the set of valid
   /// constructor names; if an unnamed constructor is valid, it should include
   /// `null`. By default, only an unnamed constructor is allowed.
-  void _assertConstructorName(String constructorName, String nodeName,
-      AstNode node, {Iterable<String> validNames}) {
+  void _assertConstructorName(
+      String constructorName, String nodeName, AstNode node,
+      {Iterable<String> validNames}) {
     if (validNames == null) validNames = [null];
     if (validNames.contains(constructorName)) return;
 
     if (constructorName == null) {
       throw new SourceSpanFormatException(
-          "$nodeName doesn't have an unnamed constructor.",
-          _spanFor(node));
+          "$nodeName doesn't have an unnamed constructor.", _spanFor(node));
     } else {
       throw new SourceSpanFormatException(
           '$nodeName doesn\'t have a constructor named "$constructorName".',
@@ -355,8 +363,7 @@ class _Parser {
     }
 
     var constructor = expression as InstanceCreationExpression;
-    var pair = _resolveConstructor(
-        constructor.constructorName.type.name,
+    var pair = _resolveConstructor(constructor.constructorName.type.name,
         constructor.constructorName.name);
     var actualClassName = pair.first;
     var constructorName = pair.last;
@@ -384,8 +391,9 @@ class _Parser {
   /// names.
   ///
   /// The set of parsed named arguments is returned.
-  Map<String, Expression> _assertArguments(ArgumentList arguments, String name,
-      AstNode node, {int positional, int optional, Iterable<String> named}) {
+  Map<String, Expression> _assertArguments(
+      ArgumentList arguments, String name, AstNode node,
+      {int positional, int optional, Iterable<String> named}) {
     if (positional == null) positional = 0;
     if (optional == null) optional = 0;
     if (named == null) named = new Set();
@@ -481,8 +489,7 @@ class _Parser {
     }
 
     return new Map.fromIterable(map.entries,
-        key: (entry) => key(entry.key),
-        value: (entry) => value(entry.value));
+        key: (entry) => key(entry.key), value: (entry) => value(entry.value));
   }
 
   /// Parses a List literal.
