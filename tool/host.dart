@@ -162,8 +162,8 @@ MultiChannel _connectToServer() {
     controller.local.sink.add(JSON.decode(message.data));
   });
 
-  controller.local.stream.listen(
-      (message) => webSocket.send(JSON.encode(message)));
+  controller.local.stream
+      .listen((message) => webSocket.send(JSON.encode(message)));
 
   return new MultiChannel(controller.foreign);
 }
