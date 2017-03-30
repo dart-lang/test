@@ -40,13 +40,9 @@ class Firefox extends Browser {
     var dir = createTempDir();
     new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
-    var process = await Process.start(executable, [
-      "--profile", "$dir",
-      url.toString(),
-      "--no-remote"
-    ], environment: {
-      "MOZ_CRASHREPORTER_DISABLE": "1"
-    });
+    var process = await Process.start(
+        executable, ["--profile", "$dir", url.toString(), "--no-remote"],
+        environment: {"MOZ_CRASHREPORTER_DISABLE": "1"});
 
     process.exitCode
         .then((_) => new Directory(dir).deleteSync(recursive: true));

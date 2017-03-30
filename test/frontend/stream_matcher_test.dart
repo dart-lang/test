@@ -22,10 +22,10 @@ void main() {
   setUp(() {
     stream = new Stream.fromIterable([1, 2, 3, 4, 5]);
     queue = new StreamQueue(new Stream.fromIterable([1, 2, 3, 4, 5]));
-    errorStream = new Stream.fromFuture(
-        new Future.error("oh no!", StackTrace.current));
-    errorQueue = new StreamQueue(new Stream.fromFuture(
-        new Future.error("oh no!", StackTrace.current)));
+    errorStream =
+        new Stream.fromFuture(new Future.error("oh no!", StackTrace.current));
+    errorQueue = new StreamQueue(
+        new Stream.fromFuture(new Future.error("oh no!", StackTrace.current)));
   });
 
   group("emits()", () {
@@ -34,12 +34,11 @@ void main() {
     });
 
     test("rejects the first event of a Stream", () {
-      expect(expectLater(stream, emits(2)),
+      expect(
+          expectLater(stream, emits(2)),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should emit an event that <2>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            startsWith("Expected: should emit an event that <2>\n"),
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -56,12 +55,11 @@ void main() {
     });
 
     test("rejects and does not consume the first event of a StreamQueue", () {
-      expect(expectLater(queue, emits(2)),
+      expect(
+          expectLater(queue, emits(2)),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should emit an event that <2>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            startsWith("Expected: should emit an event that <2>\n"),
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -73,12 +71,11 @@ void main() {
     });
 
     test("rejects an empty stream", () {
-      expect(expectLater(new Stream.empty(), emits(1)),
+      expect(
+          expectLater(new Stream.empty(), emits(1)),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should emit an event that <1>\n"),
-            endsWith(
-                "   Which: emitted x Stream closed.\n")
+            startsWith("Expected: should emit an event that <1>\n"),
+            endsWith("   Which: emitted x Stream closed.\n")
           ])));
     });
 
@@ -104,12 +101,11 @@ void main() {
     });
 
     test("fails for a stream with events", () {
-      expect(expectLater(stream, emitsDone),
+      expect(
+          expectLater(stream, emitsDone),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should be done\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            startsWith("Expected: should be done\n"),
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -126,18 +122,15 @@ void main() {
     });
 
     test("fails for a non-matching error", () {
-      expect(expectLater(errorStream, emitsError("oh heck")),
+      expect(
+          expectLater(errorStream, emitsError("oh heck")),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should emit an error that 'oh heck'\n"),
-            contains(
-                "   Which: emitted ! oh no!\n"),
-            contains(
-                "                  x Stream closed.\n"
+            startsWith("Expected: should emit an error that 'oh heck'\n"),
+            contains("   Which: emitted ! oh no!\n"),
+            contains("                  x Stream closed.\n"
                 "            which threw 'oh no!'\n"
                 "                  stack "),
-            endsWith(
-                "                  which is different.\n"
+            endsWith("                  which is different.\n"
                 "                        Expected: oh heck\n"
                 "                          Actual: oh no!\n"
                 "                                     ^\n"
@@ -146,12 +139,11 @@ void main() {
     });
 
     test("fails for a stream with events", () {
-      expect(expectLater(stream, emitsDone),
+      expect(
+          expectLater(stream, emitsDone),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should be done\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            startsWith("Expected: should be done\n"),
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -180,25 +172,26 @@ void main() {
     });
 
     test("consumes as many events as possible", () {
-      expect(queue, emitsAnyOf([
-        1,
-        emitsInOrder([1, 2]),
-        emitsInOrder([1, 2, 3])
-      ]));
+      expect(
+          queue,
+          emitsAnyOf([
+            1,
+            emitsInOrder([1, 2]),
+            emitsInOrder([1, 2, 3])
+          ]));
 
       expect(queue, emits(4));
     });
 
     test("fails if no matchers match", () {
-      expect(expectLater(stream, emitsAnyOf([2, 3, 4])),
+      expect(
+          expectLater(stream, emitsAnyOf([2, 3, 4])),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should do one of the following:\n"
+            startsWith("Expected: should do one of the following:\n"
                 "          * emit an event that <2>\n"
                 "          * emit an event that <3>\n"
                 "          * emit an event that <4>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -216,8 +209,8 @@ void main() {
     });
 
     test("rethrows an error if no matcher matches", () {
-      expect(expectLater(errorStream, emitsAnyOf([1, 2, 3])),
-          throwsA("oh no!"));
+      expect(
+          expectLater(errorStream, emitsAnyOf([1, 2, 3])), throwsA("oh no!"));
     });
   });
 
@@ -228,15 +221,14 @@ void main() {
     });
 
     test("fails if the matchers don't match in order", () {
-      expect(expectLater(queue, emitsInOrder([1, 3, 2])),
+      expect(
+          expectLater(queue, emitsInOrder([1, 3, 2])),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should do the following in order:\n"
+            startsWith("Expected: should do the following in order:\n"
                 "          * emit an event that <1>\n"
                 "          * emit an event that <3>\n"
                 "          * emit an event that <2>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -259,12 +251,11 @@ void main() {
     });
 
     test("fails if the queue never matches the matcher", () {
-      expect(expectLater(queue, emitsThrough(6)),
+      expect(
+          expectLater(queue, emitsThrough(6)),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should eventually emit an event that <6>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            startsWith("Expected: should eventually emit an event that <6>\n"),
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -299,12 +290,11 @@ void main() {
     });
 
     test("fails if the event matches", () {
-      expect(expectLater(stream, neverEmits(4)),
+      expect(
+          expectLater(stream, neverEmits(4)),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should never emit an event that <4>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            startsWith("Expected: should never emit an event that <4>\n"),
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"
@@ -332,15 +322,14 @@ void main() {
     });
 
     test("fails if the events don't match in any order", () {
-      expect(expectLater(stream, emitsInAnyOrder([4, 1, 2])),
+      expect(
+          expectLater(stream, emitsInAnyOrder([4, 1, 2])),
           throwsTestFailure(allOf([
-            startsWith(
-                "Expected: should do the following in any order:\n"
+            startsWith("Expected: should do the following in any order:\n"
                 "          * emit an event that <4>\n"
                 "          * emit an event that <1>\n"
                 "          * emit an event that <2>\n"),
-            endsWith(
-                "   Which: emitted * 1\n"
+            endsWith("   Which: emitted * 1\n"
                 "                  * 2\n"
                 "                  * 3\n"
                 "                  * 4\n"

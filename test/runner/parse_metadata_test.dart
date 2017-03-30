@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -38,10 +37,9 @@ void main() {
     var metadata = parseMetadata(_path);
     expect(metadata.testOn, equals(PlatformSelector.all));
   });
-  
+
   test("parses a prefixed annotation", () {
-    new File(_path).writeAsStringSync(
-        "@foo.TestOn('vm')\n"
+    new File(_path).writeAsStringSync("@foo.TestOn('vm')\n"
         "import 'package:test/test.dart' as foo;");
     var metadata = parseMetadata(_path);
     expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
@@ -79,13 +77,14 @@ void main() {
       });
 
       test("a named argument", () {
-        new File(_path).writeAsStringSync(
-            "@TestOn(expression: 'foo')\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@TestOn(expression: 'foo')\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
       test("multiple arguments", () {
-        new File(_path).writeAsStringSync("@TestOn('foo', 'bar')\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@TestOn('foo', 'bar')\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -95,8 +94,8 @@ void main() {
       });
 
       test("multiple @TestOns", () {
-        new File(_path).writeAsStringSync(
-            "@TestOn('foo')\n@TestOn('bar')\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@TestOn('foo')\n@TestOn('bar')\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
     });
@@ -115,7 +114,8 @@ void main() {
 library foo;
 """);
       var metadata = parseMetadata(_path);
-      expect(metadata.timeout.duration,
+      expect(
+          metadata.timeout.duration,
           equals(new Duration(
               hours: 1,
               minutes: 2,
@@ -188,8 +188,8 @@ library foo;
       });
 
       test("multiple arguments", () {
-        new File(_path).writeAsStringSync(
-            "@Timeout.factor(1, 2)\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@Timeout.factor(1, 2)\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -199,8 +199,8 @@ library foo;
       });
 
       test("a non-num argument", () {
-        new File(_path).writeAsStringSync(
-            "@Timeout.factor('foo')\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@Timeout.factor('foo')\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -212,11 +212,11 @@ library foo;
 
       group("a Duration with", () {
         test("a non-const constructor", () {
-          new File(_path).writeAsStringSync(
-              "@Timeout(new Duration(1))\nlibrary foo;");
+          new File(_path)
+              .writeAsStringSync("@Timeout(new Duration(1))\nlibrary foo;");
           expect(() => parseMetadata(_path), throwsFormatException);
         });
- 
+
         test("a named constructor", () {
           new File(_path).writeAsStringSync(
               "@Timeout(const Duration.name(seconds: 1))\nlibrary foo;");
@@ -224,8 +224,8 @@ library foo;
         });
 
         test("a positional argument", () {
-          new File(_path).writeAsStringSync(
-              "@Timeout(const Duration(1))\nlibrary foo;");
+          new File(_path)
+              .writeAsStringSync("@Timeout(const Duration(1))\nlibrary foo;");
           expect(() => parseMetadata(_path), throwsFormatException);
         });
 
@@ -277,8 +277,7 @@ library foo;
       });
 
       test("a named argument", () {
-        new File(_path).writeAsStringSync(
-            "@Skip(reason: 'foo')\nlibrary foo;");
+        new File(_path).writeAsStringSync("@Skip(reason: 'foo')\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -293,8 +292,8 @@ library foo;
       });
 
       test("multiple @Skips", () {
-        new File(_path).writeAsStringSync(
-            "@Skip('foo')\n@Skip('bar')\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@Skip('foo')\n@Skip('bar')\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
     });
@@ -315,8 +314,8 @@ library foo;
 
     group("throws an error for", () {
       test("a named constructor", () {
-        new File(_path).writeAsStringSync(
-            "@Tags.name(const ['a'])\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@Tags.name(const ['a'])\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -326,14 +325,13 @@ library foo;
       });
 
       test("a named argument", () {
-        new File(_path).writeAsStringSync(
-            "@Tags(tags: ['a'])\nlibrary foo;");
+        new File(_path).writeAsStringSync("@Tags(tags: ['a'])\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
       test("multiple arguments", () {
-        new File(_path).writeAsStringSync(
-            "@Tags(const ['a'], ['b'])\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@Tags(const ['a'], ['b'])\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -382,8 +380,8 @@ library foo;""");
 
     group("throws an error for", () {
       test("a named constructor", () {
-        new File(_path).writeAsStringSync(
-            "@OnPlatform.name(const {})\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@OnPlatform.name(const {})\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
@@ -398,20 +396,20 @@ library foo;""");
       });
 
       test("a named argument", () {
-        new File(_path).writeAsStringSync(
-            "@OnPlatform(map: const {})\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@OnPlatform(map: const {})\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
       test("multiple arguments", () {
-        new File(_path).writeAsStringSync(
-            "@OnPlatform(const {}, const {})\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@OnPlatform(const {}, const {})\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 
       test("a non-map argument", () {
-        new File(_path).writeAsStringSync(
-            "@OnPlatform(const Skip())\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@OnPlatform(const Skip())\nlibrary foo;");
         expect(() => parseMetadata(_path), throwsFormatException);
       });
 

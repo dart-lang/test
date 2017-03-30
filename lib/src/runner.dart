@@ -67,30 +67,29 @@ class Runner {
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
-    var engine = new Engine(concurrency: config.concurrency);
+        var engine = new Engine(concurrency: config.concurrency);
 
-    var reporter;
-    switch (config.reporter) {
-      case "expanded":
-        reporter = ExpandedReporter.watch(
-            engine,
-            color: config.color,
-            printPath: config.paths.length > 1 ||
-                new Directory(config.paths.single).existsSync(),
-            printPlatform: config.suiteDefaults.platforms.length > 1);
-        break;
+        var reporter;
+        switch (config.reporter) {
+          case "expanded":
+            reporter = ExpandedReporter.watch(engine,
+                color: config.color,
+                printPath: config.paths.length > 1 ||
+                    new Directory(config.paths.single).existsSync(),
+                printPlatform: config.suiteDefaults.platforms.length > 1);
+            break;
 
-      case "compact":
-        reporter = CompactReporter.watch(engine);
-        break;
+          case "compact":
+            reporter = CompactReporter.watch(engine);
+            break;
 
-      case "json":
-        reporter = JsonReporter.watch(engine);
-        break;
-    }
+          case "json":
+            reporter = JsonReporter.watch(engine);
+            break;
+        }
 
-    return new Runner._(engine, reporter);
-  });
+        return new Runner._(engine, reporter);
+      });
 
   Runner._(this._engine, this._reporter);
 
@@ -99,44 +98,46 @@ class Runner {
   /// This starts running tests and printing their progress. It returns whether
   /// or not they ran successfully.
   Future<bool> run() => _config.asCurrent(() async {
-    if (_closed) {
-      throw new StateError("run() may not be called on a closed Runner.");
-    }
+        if (_closed) {
+          throw new StateError("run() may not be called on a closed Runner.");
+        }
 
-    _warnForUnsupportedPlatforms();
+        _warnForUnsupportedPlatforms();
 
-    var suites = _loadSuites();
+        var suites = _loadSuites();
 
-    var success;
-    if (_config.pauseAfterLoad) {
-      success = await _loadThenPause(suites);
-    } else {
-      _suiteSubscription = suites.listen(_engine.suiteSink.add);
-      var results = await Future.wait(<Future>[
-        _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
-        _engine.run()
-      ], eagerError: true);
-      success = results.last;
-    }
+        var success;
+        if (_config.pauseAfterLoad) {
+          success = await _loadThenPause(suites);
+        } else {
+          _suiteSubscription = suites.listen(_engine.suiteSink.add);
+          var results = await Future.wait(<Future>[
+            _suiteSubscription
+                .asFuture()
+                .then((_) => _engine.suiteSink.close()),
+            _engine.run()
+          ], eagerError: true);
+          success = results.last;
+        }
 
-    if (_closed) return false;
+        if (_closed) return false;
 
-    if (_engine.passed.length == 0 &&
-        _engine.failed.length == 0 &&
-        _engine.skipped.length == 0 &&
-        _config.suiteDefaults.patterns.isNotEmpty) {
-      var patterns = toSentence(_config.suiteDefaults.patterns.map(
-          (pattern) => pattern is RegExp
-              ? 'regular expression "${pattern.pattern}"'
-              : '"$pattern"'));
+        if (_engine.passed.length == 0 &&
+            _engine.failed.length == 0 &&
+            _engine.skipped.length == 0 &&
+            _config.suiteDefaults.patterns.isNotEmpty) {
+          var patterns = toSentence(_config.suiteDefaults.patterns.map(
+              (pattern) => pattern is RegExp
+                  ? 'regular expression "${pattern.pattern}"'
+                  : '"$pattern"'));
 
-      throw new ApplicationException('No tests match $patterns.');
-    }
+          throw new ApplicationException('No tests match $patterns.');
+        }
 
-    // Explicitly check "== true" here because [Engine.run] can return `null`
-    // if the engine was closed prematurely.
-    return success == true;
-  });
+        // Explicitly check "== true" here because [Engine.run] can return `null`
+        // if the engine was closed prematurely.
+        return success == true;
+      });
 
   /// Emits a warning if the user is trying to run on a platform that's
   /// unsupported for the entire package.
@@ -155,16 +156,16 @@ class Runner {
     // If the user tried to run on one or moe unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
     // browsers are unsupported.
-    var unsupportedBrowsers = unsupportedPlatforms
-        .where((platform) => platform.isBrowser);
+    var unsupportedBrowsers =
+        unsupportedPlatforms.where((platform) => platform.isBrowser);
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = TestPlatform.all
           .where((platform) => platform.isBrowser)
           .any((platform) => testOn.evaluate(platform));
 
       if (supportsAnyBrowser) {
-        unsupportedNames.addAll(
-            unsupportedBrowsers.map((platform) => platform.name));
+        unsupportedNames
+            .addAll(unsupportedBrowsers.map((platform) => platform.name));
       } else {
         unsupportedNames.add("browsers");
       }
@@ -173,8 +174,8 @@ class Runner {
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
     if (unsupportedPlatforms.contains(TestPlatform.vm)) {
-      var supportsAnyOS = OperatingSystem.all.any((os) =>
-          testOn.evaluate(TestPlatform.vm, os: os));
+      var supportsAnyOS = OperatingSystem.all
+          .any((os) => testOn.evaluate(TestPlatform.vm, os: os));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);
@@ -184,7 +185,8 @@ class Runner {
     }
 
     warn("this package doesn't support running tests on " +
-        toSentence(unsupportedNames, conjunction: "or") + ".");
+        toSentence(unsupportedNames, conjunction: "or") +
+        ".");
   }
 
   /// Closes the runner.
@@ -193,38 +195,35 @@ class Runner {
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
   Future close() => _closeMemo.runOnce(() async {
-    var timer;
-    if (!_engine.isIdle) {
-      // Wait a bit to print this message, since printing it eagerly looks weird
-      // if the tests then finish immediately.
-      timer = new Timer(new Duration(seconds: 1), () {
-        // Pause the reporter while we print to ensure that we don't interfere
-        // with its output.
-        _reporter.pause();
-        print("Waiting for current test(s) to finish.");
-        print("Press Control-C again to terminate immediately.");
-        _reporter.resume();
+        var timer;
+        if (!_engine.isIdle) {
+          // Wait a bit to print this message, since printing it eagerly looks weird
+          // if the tests then finish immediately.
+          timer = new Timer(new Duration(seconds: 1), () {
+            // Pause the reporter while we print to ensure that we don't interfere
+            // with its output.
+            _reporter.pause();
+            print("Waiting for current test(s) to finish.");
+            print("Press Control-C again to terminate immediately.");
+            _reporter.resume();
+          });
+        }
+
+        if (_debugOperation != null) await _debugOperation.cancel();
+
+        if (_suiteSubscription != null) _suiteSubscription.cancel();
+        _suiteSubscription = null;
+
+        // Make sure we close the engine *before* the loader. Otherwise,
+        // LoadSuites provided by the loader may get into bad states.
+        //
+        // We close the loader's browsers while we're closing the engine because
+        // browser tests don't store any state we care about and we want them to
+        // shut down without waiting for their tear-downs.
+        await Future.wait([_loader.closeEphemeral(), _engine.close()]);
+        if (timer != null) timer.cancel();
+        await _loader.close();
       });
-    }
-
-    if (_debugOperation != null) await _debugOperation.cancel();
-
-    if (_suiteSubscription != null) _suiteSubscription.cancel();
-    _suiteSubscription = null;
-
-    // Make sure we close the engine *before* the loader. Otherwise,
-    // LoadSuites provided by the loader may get into bad states.
-    //
-    // We close the loader's browsers while we're closing the engine because
-    // browser tests don't store any state we care about and we want them to
-    // shut down without waiting for their tear-downs.
-    await Future.wait([
-      _loader.closeEphemeral(),
-      _engine.close()
-    ]);
-    if (timer != null) timer.cancel();
-    await _loader.close();
-  });
 
   /// Return a stream of [LoadSuite]s in [_config.paths].
   ///
@@ -239,8 +238,7 @@ class Runner {
       } else {
         return new Stream.fromIterable([
           new LoadSuite.forLoadException(
-              new LoadException(path, 'Does not exist.'),
-              _config.suiteDefaults)
+              new LoadException(path, 'Does not exist.'), _config.suiteDefaults)
         ]);
       }
     })).map((loadSuite) {
@@ -318,8 +316,8 @@ class Runner {
 
     collect(entry) {
       var newTags = new Set<String>();
-      for (var unknownTag in
-          entry.metadata.tags.difference(_config.knownTags)) {
+      for (var unknownTag
+          in entry.metadata.tags.difference(_config.knownTags)) {
         if (currentTags.contains(unknownTag)) continue;
         unknownTags.putIfAbsent(unknownTag, () => []).add(entry);
         newTags.add(unknownTag);

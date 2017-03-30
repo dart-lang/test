@@ -96,9 +96,8 @@ class _ExpectedFunction<T> {
       {String id, String reason, bool isDone()})
       : this._callback = callback,
         _minExpectedCalls = minExpected,
-        _maxExpectedCalls = (maxExpected == 0 && minExpected > 0)
-            ? minExpected
-            : maxExpected,
+        _maxExpectedCalls =
+            (maxExpected == 0 && minExpected > 0) ? minExpected : maxExpected,
         this._isDone = isDone,
         this._reason = reason == null ? '' : '\n$reason',
         this._zone = Zone.current,
@@ -446,8 +445,8 @@ Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
 /// This method takes callbacks with five arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync4], and [expectAsync6] for callbacks with different arity.
-Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
-        dynamic/*=D*/, dynamic/*=E*/ >
+Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
+        dynamic/*=E*/ >
     expectAsync5/*<T, A, B, C, D, E>*/(
         dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
             dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e),
@@ -485,8 +484,8 @@ Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
 /// This method takes callbacks with six arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync4], and [expectAsync5] for callbacks with different arity.
-Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
-        dynamic/*=D*/, dynamic/*=E*/, dynamic/*=F*/ >
+Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
+        dynamic/*=E*/, dynamic/*=F*/ >
     expectAsync6/*<T, A, B, C, D, E, F>*/(
         dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
             dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e, dynamic/*=F*/ f),
@@ -697,8 +696,8 @@ Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil2],
 /// [expectAsyncUntil3], [expectAsyncUntil4], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
-        dynamic/*=D*/, dynamic/*=E*/ >
+Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
+        dynamic/*=E*/ >
     expectAsyncUntil5/*<T, A, B, C, D, E>*/(
         dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
             dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e),
@@ -732,8 +731,8 @@ Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil2],
 /// [expectAsyncUntil3], [expectAsyncUntil4], and [expectAsyncUntil5] for
 /// callbacks with different arity.
-Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
-        dynamic/*=D*/, dynamic/*=E*/, dynamic/*=F*/ >
+Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
+        dynamic/*=E*/, dynamic/*=F*/ >
     expectAsyncUntil6/*<T, A, B, C, D, E, F>*/(
         dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
             dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e, dynamic/*=F*/ f),

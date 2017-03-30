@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -40,8 +39,7 @@ void main() {
     });
 
     test("doesn't run a test suite on a non-matching operating system", () {
-      _writeTestFile("os_test.dart", suiteTestOn: otherOS,
-          loadable: false);
+      _writeTestFile("os_test.dart", suiteTestOn: otherOS, loadable: false);
 
       var test = runTest(["os_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
@@ -82,8 +80,7 @@ void main() {
     test("runs a browser group on a browser", () {
       _writeTestFile("browser_test.dart", groupTestOn: "browser");
 
-      var test = runTest(
-          ["--platform", "content-shell", "browser_test.dart"]);
+      var test = runTest(["--platform", "content-shell", "browser_test.dart"]);
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
       test.shouldExit(0);
     }, tags: 'content-shell');
@@ -117,8 +114,7 @@ void main() {
     test("runs a browser test on a browser", () {
       _writeTestFile("browser_test.dart", testTestOn: "browser");
 
-      var test = runTest(
-          ["--platform", "content-shell", "browser_test.dart"]);
+      var test = runTest(["--platform", "content-shell", "browser_test.dart"]);
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
       test.shouldExit(0);
     }, tags: 'content-shell');
@@ -134,8 +130,8 @@ void main() {
 
   group("with suite, group, and test selectors", () {
     test("runs the test if all selectors match", () {
-      _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
-          groupTestOn: "!js", testTestOn: "vm");
+      _writeTestFile("vm_test.dart",
+          suiteTestOn: "!browser", groupTestOn: "!js", testTestOn: "vm");
 
       var test = runTest(["vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("All tests passed!")));
@@ -143,8 +139,8 @@ void main() {
     });
 
     test("doesn't runs the test if the suite doesn't match", () {
-      _writeTestFile("vm_test.dart", suiteTestOn: "browser",
-          groupTestOn: "!js", testTestOn: "vm");
+      _writeTestFile("vm_test.dart",
+          suiteTestOn: "browser", groupTestOn: "!js", testTestOn: "vm");
 
       var test = runTest(["vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
@@ -152,8 +148,8 @@ void main() {
     });
 
     test("doesn't runs the test if the group doesn't match", () {
-      _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
-          groupTestOn: "browser", testTestOn: "vm");
+      _writeTestFile("vm_test.dart",
+          suiteTestOn: "!browser", groupTestOn: "browser", testTestOn: "vm");
 
       var test = runTest(["vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
@@ -161,8 +157,8 @@ void main() {
     });
 
     test("doesn't runs the test if the test doesn't match", () {
-      _writeTestFile("vm_test.dart", suiteTestOn: "!browser",
-          groupTestOn: "!js", testTestOn: "browser");
+      _writeTestFile("vm_test.dart",
+          suiteTestOn: "!browser", groupTestOn: "!js", testTestOn: "browser");
 
       var test = runTest(["vm_test.dart"]);
       test.stdout.expect(consumeThrough(contains("No tests ran.")));
@@ -176,16 +172,19 @@ void main() {
 /// Each of [suiteTestOn], [groupTestOn], and [testTestOn] is a platform
 /// selector that's suite-, group-, and test-level respectively. If [loadable]
 /// is `false`, the test file will be made unloadable on the Dart VM.
-void _writeTestFile(String filename, {String suiteTestOn, String groupTestOn,
-    String testTestOn, bool loadable: true}) {
+void _writeTestFile(String filename,
+    {String suiteTestOn,
+    String groupTestOn,
+    String testTestOn,
+    bool loadable: true}) {
   var buffer = new StringBuffer();
   if (suiteTestOn != null) buffer.writeln("@TestOn('$suiteTestOn')");
   if (!loadable) buffer.writeln("import 'dart:html';");
 
   buffer
-      ..writeln("import 'package:test/test.dart';")
-      ..writeln("void main() {")
-      ..writeln("  group('group', () {");
+    ..writeln("import 'package:test/test.dart';")
+    ..writeln("void main() {")
+    ..writeln("  group('group', () {");
 
   if (testTestOn != null) {
     buffer.writeln("    test('test', () {}, testOn: '$testTestOn');");

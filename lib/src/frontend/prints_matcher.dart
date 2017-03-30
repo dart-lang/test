@@ -61,7 +61,7 @@ class _Prints extends AsyncMatcher {
     if (actual.isEmpty) {
       buffer.writeln('printed nothing');
     } else {
-      buffer.writeln(indent(prettyPrint(actual),         first: 'printed '));
+      buffer.writeln(indent(prettyPrint(actual), first: 'printed '));
     }
     if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
     return buffer.toString().trimRight();

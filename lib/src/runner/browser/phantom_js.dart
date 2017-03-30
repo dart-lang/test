@@ -54,10 +54,8 @@ class PhantomJS extends Browser {
 
       var args = <String>[];
       if (debug) {
-        args.addAll([
-          "--remote-debugger-port=$port",
-          "--remote-debugger-autorun=yes"
-        ]);
+        args.addAll(
+            ["--remote-debugger-port=$port", "--remote-debugger-autorun=yes"]);
       }
       args.addAll([script, url.toString()]);
       var process = await Process.start(executable, args);

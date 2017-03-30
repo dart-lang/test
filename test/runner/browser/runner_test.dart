@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -89,13 +88,17 @@ void main() {
     test("a custom HTML file has no script tag", () {
       d.file("test.dart", "void main() {}").create();
 
-      d.file("test.html", """
+      d
+          .file(
+              "test.html",
+              """
 <html>
 <head>
   <link rel="x-dart-test" href="test.dart">
 </head>
 </html>
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -109,13 +112,17 @@ void main() {
     test("a custom HTML file has no link", () {
       d.file("test.dart", "void main() {}").create();
 
-      d.file("test.html", """
+      d
+          .file(
+              "test.html",
+              """
 <html>
 <head>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -129,7 +136,10 @@ void main() {
     test("a custom HTML file has too many links", () {
       d.file("test.dart", "void main() {}").create();
 
-      d.file("test.html", """
+      d
+          .file(
+              "test.html",
+              """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -137,7 +147,8 @@ void main() {
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -151,14 +162,18 @@ void main() {
     test("a custom HTML file has no href in the link", () {
       d.file("test.dart", "void main() {}").create();
 
-      d.file("test.html", """
+      d
+          .file(
+              "test.html",
+              """
 <html>
 <head>
   <link rel='x-dart-test'>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -172,14 +187,18 @@ void main() {
     test("a custom HTML file has an invalid test URL", () {
       d.file("test.dart", "void main() {}").create();
 
-      d.file("test.html", """
+      d
+          .file(
+              "test.html",
+              """
 <html>
 <head>
   <link rel='x-dart-test' href='wrong.dart'>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -212,7 +231,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("with setUpAll", () {
-      d.file("test.dart", r"""
+      d
+          .file(
+              "test.dart",
+              r"""
           import 'package:test/test.dart';
 
           void main() {
@@ -220,7 +242,8 @@ void main() {
 
             test("test", () {});
           }
-          """).create();
+          """)
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains('+0: (setUpAll)')));
@@ -229,7 +252,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("with tearDownAll", () {
-      d.file("test.dart", r"""
+      d
+          .file(
+              "test.dart",
+              r"""
           import 'package:test/test.dart';
 
           void main() {
@@ -237,7 +263,8 @@ void main() {
 
             test("test", () {});
           }
-          """).create();
+          """)
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains('+1: (tearDownAll)')));
@@ -256,7 +283,10 @@ void main() {
 
     group("with a custom HTML file", () {
       setUp(() {
-        d.file("test.dart", """
+        d
+            .file(
+                "test.dart",
+                """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -266,9 +296,13 @@ void main() {
     expect(document.query('#foo'), isNotNull);
   });
 }
-""").create();
+""")
+            .create();
 
-        d.file("test.html", """
+        d
+            .file(
+                "test.html",
+                """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -278,7 +312,8 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""").create();
+""")
+            .create();
       });
 
       test("on content shell", () {
@@ -295,7 +330,10 @@ void main() {
 
       // Regression test for https://github.com/dart-lang/test/issues/82.
       test("ignores irrelevant link tags", () {
-        d.file("test.html", """
+        d
+            .file(
+                "test.html",
+                """
 <html>
 <head>
   <link rel='x-dart-test-not'>
@@ -307,7 +345,8 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""").create();
+""")
+            .create();
 
         var test = runTest(["-p", "content-shell", "test.dart"]);
         test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -318,7 +357,10 @@ void main() {
 
   group("runs failing tests", () {
     test("that fail only on the browser", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -329,7 +371,8 @@ void main() {
     if (p.style == p.Style.url) throw new TestFailure("oh no");
   });
 }
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
@@ -337,7 +380,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("that fail only on the VM", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -348,7 +394,8 @@ void main() {
     if (p.style != p.Style.url) throw new TestFailure("oh no");
   });
 }
-""").create();
+""")
+          .create();
 
       var test = runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
@@ -357,7 +404,10 @@ void main() {
 
     group("with a custom HTML file", () {
       setUp(() {
-        d.file("test.dart", """
+        d
+            .file(
+                "test.dart",
+                """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -367,9 +417,13 @@ void main() {
     expect(document.query('#foo'), isNull);
   });
 }
-""").create();
+""")
+            .create();
 
-        d.file("test.html", """
+        d
+            .file(
+                "test.html",
+                """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -379,7 +433,8 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""").create();
+""")
+            .create();
       });
 
       test("on content shell", () {
@@ -405,7 +460,10 @@ void main() {
   }, tags: 'chrome');
 
   test("forwards prints from the browser test", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -416,13 +474,11 @@ void main() {
     return new Future(() => print("world!"));
   });
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "content-shell", "test.dart"]);
-    test.stdout.expect(inOrder([
-      consumeThrough("Hello,"),
-      "world!"
-    ]));
+    test.stdout.expect(inOrder([consumeThrough("Hello,"), "world!"]));
     test.shouldExit(0);
   }, tags: 'content-shell');
 
@@ -430,19 +486,17 @@ void main() {
     d.file("test.dart", _failure).create();
 
     var test = runTest(["-p", "chrome", "--verbose-trace", "test.dart"]);
-    test.stdout.expect(containsInOrder([
-      " main.<fn>",
-      "package:test",
-      "dart:async/zone.dart"
-    ]));
+    test.stdout.expect(containsInOrder(
+        [" main.<fn>", "package:test", "dart:async/zone.dart"]));
     test.shouldExit(1);
   }, tags: 'chrome');
 
-  test("doesn't dartify stack traces for JS-compiled tests with --js-trace", () {
+  test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
+      () {
     d.file("test.dart", _failure).create();
 
-    var test = runTest(
-        ["-p", "chrome", "--verbose-trace", "--js-trace", "test.dart"]);
+    var test =
+        runTest(["-p", "chrome", "--verbose-trace", "--js-trace", "test.dart"]);
     test.stdout.fork().expect(never(endsWith(" main.<fn>")));
     test.stdout.fork().expect(never(contains("package:test")));
     test.stdout.fork().expect(never(contains("dart:async/zone.dart")));
@@ -451,7 +505,10 @@ void main() {
   }, tags: 'chrome');
 
   test("respects top-level @Timeout declarations", () {
-    d.file("test.dart", '''
+    d
+        .file(
+            "test.dart",
+            '''
 @Timeout(const Duration(seconds: 0))
 
 import 'dart:async';
@@ -461,19 +518,21 @@ import 'package:test/test.dart';
 void main() {
   test("timeout", () => new Future.delayed(Duration.ZERO));
 }
-''').create();
+''')
+        .create();
 
     var test = runTest(["-p", "content-shell", "test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "Test timed out after 0 seconds.",
-      "-1: Some tests failed."
-    ]));
+    test.stdout.expect(containsInOrder(
+        ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
     test.shouldExit(1);
   }, tags: 'content-shell');
 
   group("with onPlatform", () {
     test("respects matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -481,7 +540,8 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no', onPlatform: {"browser": new Skip()});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
@@ -489,7 +549,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("ignores non-matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -497,7 +560,8 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {}, onPlatform: {"vm": new Skip()});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -505,7 +569,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("respects matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -518,18 +585,20 @@ void main() {
     "browser": new Timeout(Duration.ZERO)
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "Test timed out after 0 seconds.",
-        "-1: Some tests failed."
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
       test.shouldExit(1);
     }, tags: 'content-shell');
 
     test("ignores non-matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -539,7 +608,8 @@ void main() {
     "vm": new Timeout(new Duration(seconds: 0))
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -547,7 +617,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("applies matching platforms in order", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -561,7 +634,8 @@ void main() {
     "browser || android": new Skip("fifth")
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.fork().expect(never(contains("Skip: first")));
@@ -575,7 +649,10 @@ void main() {
 
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {"browser": const Skip()})
 
 import 'dart:async';
@@ -585,7 +662,8 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no');
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("~1: All tests skipped.")));
@@ -593,7 +671,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("ignores non-matching Skips", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {"vm": const Skip()})
 
 import 'dart:async';
@@ -603,7 +684,8 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -611,7 +693,10 @@ void main() {
     }, tags: 'content-shell');
 
     test("respects matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {
   "browser": const Timeout(const Duration(seconds: 0))
 })
@@ -626,18 +711,20 @@ void main() {
     throw 'oh no';
   });
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "Test timed out after 0 seconds.",
-        "-1: Some tests failed."
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
       test.shouldExit(1);
     }, tags: 'content-shell');
 
     test("ignores non-matching Timeouts", () {
-      d.file("test.dart", '''
+      d
+          .file(
+              "test.dart",
+              '''
 @OnPlatform(const {
   "vm": const Timeout(const Duration(seconds: 0))
 })
@@ -649,7 +736,8 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''').create();
+''')
+          .create();
 
       var test = runTest(["-p", "content-shell", "test.dart"]);
       test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));

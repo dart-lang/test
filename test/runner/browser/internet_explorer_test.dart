@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @Tags(const ["ie"])
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -50,18 +49,24 @@ webSocket.addEventListener("open", function() {
   test("reports an error in onExit", () {
     var ie = new InternetExplorer("http://dart-lang.org",
         executable: "_does_not_exist");
-    expect(ie.onExit, throwsA(isApplicationException(startsWith(
-        "Failed to run Internet Explorer: $noSuchFileMessage"))));
+    expect(
+        ie.onExit,
+        throwsA(isApplicationException(startsWith(
+            "Failed to run Internet Explorer: $noSuchFileMessage"))));
   });
 
   test("can run successful tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "ie", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -69,13 +74,17 @@ void main() {
   });
 
   test("can run failing tests", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "ie", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));

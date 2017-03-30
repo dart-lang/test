@@ -54,8 +54,8 @@ main() {
 
     test("multiple requests at the same time", () async {
       var events = new StreamQueue<int>(createStream());
-      var result = await Future.wait(
-          [events.next, events.next, events.next, events.next]);
+      var result = await Future
+          .wait([events.next, events.next, events.next, events.next]);
       expect(result, [1, 2, 3, 4]);
       await events.cancel();
     });
@@ -84,9 +84,9 @@ main() {
       expect(() => events.skip(-1), throwsArgumentError);
       // A non-int throws either a type error or an argument error,
       // depending on whether it's checked mode or not.
-      expect(await events.next, 1);  // Did not consume event.
+      expect(await events.next, 1); // Did not consume event.
       expect(() => events.skip(-1), throwsArgumentError);
-      expect(await events.next, 2);  // Did not consume event.
+      expect(await events.next, 2); // Did not consume event.
       await events.cancel();
     });
 
@@ -152,14 +152,16 @@ main() {
       var index = 0;
       // Check that futures complete in order.
       sequence(expectedValue, sequenceIndex) => (int value) {
-        expect(value, expectedValue);
-        expect(index, sequenceIndex);
-        index++;
-      };
-      await Future.wait([skip1.then(sequence(0, 0)),
-                         skip2.then(sequence(0, 1)),
-                         skip3.then(sequence(1, 2)),
-                         skip4.then(sequence(1, 3))]);
+            expect(value, expectedValue);
+            expect(index, sequenceIndex);
+            index++;
+          };
+      await Future.wait([
+        skip1.then(sequence(0, 0)),
+        skip2.then(sequence(0, 1)),
+        skip3.then(sequence(1, 2)),
+        skip4.then(sequence(1, 3))
+      ]);
       await events.cancel();
     });
   });
@@ -192,9 +194,9 @@ main() {
     test("with bad arguments throws", () async {
       var events = new StreamQueue<int>(createStream());
       expect(() => events.take(-1), throwsArgumentError);
-      expect(await events.next, 1);  // Did not consume event.
+      expect(await events.next, 1); // Did not consume event.
       expect(() => events.take(-1), throwsArgumentError);
-      expect(await events.next, 2);  // Did not consume event.
+      expect(await events.next, 2); // Did not consume event.
       await events.cancel();
     });
 
@@ -406,8 +408,8 @@ main() {
 
       test("returns the result of closing the underlying subscription",
           () async {
-        var controller = new StreamController<int>(
-            onCancel: () => new Future.value(42));
+        var controller =
+            new StreamController<int>(onCancel: () => new Future.value(42));
         var events = new StreamQueue<int>(controller.stream);
         expect(await events.cancel(immediate: true), 42);
       });
@@ -415,8 +417,8 @@ main() {
       test("listens and then cancels a stream that hasn't been listened to yet",
           () async {
         var wasListened = false;
-        var controller = new StreamController<int>(
-            onListen: () => wasListened = true);
+        var controller =
+            new StreamController<int>(onListen: () => wasListened = true);
         var events = new StreamQueue<int>(controller.stream);
         expect(wasListened, isFalse);
         expect(controller.hasListener, isFalse);
@@ -475,7 +477,9 @@ main() {
       var events = new StreamQueue<int>(controller.stream);
 
       var hasNext;
-      events.hasNext.then((result) { hasNext = result; });
+      events.hasNext.then((result) {
+        hasNext = result;
+      });
       await flushMicrotasks();
       expect(hasNext, isNull);
       controller.add(42);
@@ -489,7 +493,9 @@ main() {
       var events = new StreamQueue<int>(controller.stream);
 
       var hasNext;
-      events.hasNext.then((result) { hasNext = result; });
+      events.hasNext.then((result) {
+        hasNext = result;
+      });
       await flushMicrotasks();
       expect(hasNext, isNull);
       controller.addError("BAD");
@@ -937,7 +943,8 @@ main() {
           expect(await queue2.hasNext, isFalse);
         });
 
-        test("the underlying stream is only canceled once all forks are "
+        test(
+            "the underlying stream is only canceled once all forks are "
             "canceled", () async {
           var controller = new StreamController<int>();
           var queue1 = new StreamQueue<int>(controller.stream);
@@ -962,7 +969,8 @@ main() {
     });
 
     group("pausing:", () {
-      test("the underlying stream is only implicitly paused when no forks are "
+      test(
+          "the underlying stream is only implicitly paused when no forks are "
           "awaiting input", () async {
         var controller = new StreamController<int>();
         var queue1 = new StreamQueue<int>(controller.stream);
@@ -1083,8 +1091,9 @@ main() {
     // `take(10)`.
     takeTest(startIndex) {
       expect(events.take(10),
-             completion(new List.generate(10, (i) => startIndex + i)));
+          completion(new List.generate(10, (i) => startIndex + i)));
     }
+
     var tests = [nextTest, skipTest, takeTest];
 
     int counter = 0;
@@ -1098,7 +1107,7 @@ main() {
     }
     // Then expect 20 more events as a `rest` call.
     expect(events.rest.toList(),
-           completion(new List.generate(20, (i) => counter + i)));
+        completion(new List.generate(20, (i) => counter + i)));
   });
 }
 

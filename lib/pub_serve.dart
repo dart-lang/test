@@ -27,8 +27,9 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
   Future apply(Transform transform) async {
     var id = transform.primaryInput.id;
 
-    transform.addOutput(
-        new Asset.fromString(id.addExtension('.vm_test.dart'), '''
+    transform.addOutput(new Asset.fromString(
+        id.addExtension('.vm_test.dart'),
+        '''
           import "dart:isolate";
 
           import "package:stream_channel/stream_channel.dart";
@@ -47,8 +48,9 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
           }
         '''));
 
-    transform.addOutput(
-        new Asset.fromString(id.addExtension('.browser_test.dart'), '''
+    transform.addOutput(new Asset.fromString(
+        id.addExtension('.browser_test.dart'),
+        '''
           import "package:stream_channel/stream_channel.dart";
 
           import "package:test/src/runner/plugin/remote_platform_helpers.dart";
@@ -67,8 +69,9 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     var htmlId = id.changeExtension('.html');
     if (await transform.hasInput(htmlId)) return;
 
-    transform.addOutput(
-        new Asset.fromString(htmlId, '''
+    transform.addOutput(new Asset.fromString(
+        htmlId,
+        '''
           <!DOCTYPE html>
           <html>
           <head>

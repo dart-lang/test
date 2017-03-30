@@ -85,10 +85,7 @@ Future expectLater(actual, matcher, {String reason, skip}) =>
 
 /// The implementation of [expect] and [expectLater].
 Future _expect(actual, matcher,
-    {String reason,
-    skip,
-    bool verbose: false,
-    ErrorFormatter formatter}) {
+    {String reason, skip, bool verbose: false, ErrorFormatter formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = new StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
@@ -126,11 +123,14 @@ Future _expect(actual, matcher,
   if (matcher is AsyncMatcher) {
     // Avoid async/await so that expect() throws synchronously when possible.
     var result = matcher.matchAsync(actual);
-    expect(result, anyOf([
-      equals(null),
-      new isInstanceOf<Future>(),
-      new isInstanceOf<String>()
-    ]), reason: "matchAsync() may only return a String, a Future, or null.");
+    expect(
+        result,
+        anyOf([
+          equals(null),
+          new isInstanceOf<Future>(),
+          new isInstanceOf<String>()
+        ]),
+        reason: "matchAsync() may only return a String, a Future, or null.");
 
     if (result is String) {
       fail(formatFailure(matcher, actual, result, reason: reason));
@@ -167,8 +167,8 @@ void fail(String message) => throw new TestFailure(message);
 @Deprecated("Will be removed in 0.13.0.")
 String formatFailure(Matcher expected, actual, String which, {String reason}) {
   var buffer = new StringBuffer();
-  buffer.writeln(indent(prettyPrint(expected),       first: 'Expected: '));
-  buffer.writeln(indent(prettyPrint(actual),         first: '  Actual: '));
+  buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
+  buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));
   if (which.isNotEmpty) buffer.writeln(indent(which, first: '   Which: '));
   if (reason != null) buffer.writeln(reason);
   return buffer.toString();

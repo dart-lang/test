@@ -66,8 +66,7 @@ class RemoteException implements Exception {
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
   static AsyncError deserialize(serialized) {
-    return new AsyncError(
-        _deserializeException(serialized),
+    return new AsyncError(_deserializeException(serialized),
         new Chain.parse(serialized['stackChain']));
   }
 

@@ -55,8 +55,8 @@ void main() {
       return new shelf.Response.ok("three");
     }));
 
-    var request = new shelf.Request(
-        "GET", Uri.parse("http://localhost/$path2"));
+    var request =
+        new shelf.Request("GET", Uri.parse("http://localhost/$path2"));
     var response = await _handle(request);
     expect(response.statusCode, equals(200));
     expect(response.readAsString(), completion(equals("two")));

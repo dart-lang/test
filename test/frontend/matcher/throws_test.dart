@@ -21,13 +21,14 @@ void main() {
           expect(closure, throws);
         });
 
-        expectTestFailed(liveTest, allOf([
-          startsWith(
-              "Expected: throws\n"
-              "  Actual: <"),
-          endsWith(">\n"
-              "   Which: returned <null>\n")
-        ]));
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws\n"
+                  "  Actual: <"),
+              endsWith(">\n"
+                  "   Which: returned <null>\n")
+            ]));
       });
 
       test("with a non-function", () async {
@@ -35,7 +36,8 @@ void main() {
           expect(10, throws);
         });
 
-        expectTestFailed(liveTest,
+        expectTestFailed(
+            liveTest,
             "Expected: throws\n"
             "  Actual: <10>\n"
             "   Which: was not a Function or Future\n");
@@ -48,8 +50,8 @@ void main() {
       });
 
       test("with a function that throws a matching error", () {
-        expect(() => throw new FormatException("bad"),
-            throwsA(isFormatException));
+        expect(
+            () => throw new FormatException("bad"), throwsA(isFormatException));
       });
 
       test("with a function that doesn't throw", () async {
@@ -58,13 +60,14 @@ void main() {
           expect(closure, throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest, allOf([
-          startsWith(
-              "Expected: throws 'oh no'\n"
-              "  Actual: <"),
-          endsWith(">\n"
-              "   Which: returned <null>\n")
-        ]));
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws 'oh no'\n"
+                  "  Actual: <"),
+              endsWith(">\n"
+                  "   Which: returned <null>\n")
+            ]));
       });
 
       test("with a non-function", () async {
@@ -72,7 +75,8 @@ void main() {
           expect(10, throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest,
+        expectTestFailed(
+            liveTest,
             "Expected: throws 'oh no'\n"
             "  Actual: <10>\n"
             "   Which: was not a Function or Future\n");
@@ -83,20 +87,20 @@ void main() {
           expect(() => throw 'aw dang', throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest, allOf([
-          startsWith(
-              "Expected: throws 'oh no'\n"
-              "  Actual: <"),
-          contains(">\n"
-              "   Which: threw 'aw dang'\n"
-              "          stack"),
-          endsWith(
-              "          which is different.\n"
-              "                Expected: oh no\n"
-              "                  Actual: aw dang\n"
-              "                          ^\n"
-              "                 Differ at offset 0\n")
-        ]));
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws 'oh no'\n"
+                  "  Actual: <"),
+              contains(">\n"
+                  "   Which: threw 'aw dang'\n"
+                  "          stack"),
+              endsWith("          which is different.\n"
+                  "                Expected: oh no\n"
+                  "                  Actual: aw dang\n"
+                  "                          ^\n"
+                  "                 Differ at offset 0\n")
+            ]));
       });
     });
   });
@@ -112,13 +116,14 @@ void main() {
           expect(new Future.value(), throws);
         });
 
-        expectTestFailed(liveTest, allOf([
-          startsWith(
-              "Expected: throws\n"
-              "  Actual: <"),
-          endsWith(">\n"
-              "   Which: emitted <null>\n")
-        ]));
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws\n"
+                  "  Actual: <"),
+              endsWith(">\n"
+                  "   Which: emitted <null>\n")
+            ]));
       });
 
       test("won't let the test end until the Future completes", () {
@@ -145,13 +150,14 @@ void main() {
           expect(new Future.value(), throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest, allOf([
-          startsWith(
-              "Expected: throws 'oh no'\n"
-              "  Actual: <"),
-          endsWith(">\n"
-              "   Which: emitted <null>\n")
-        ]));
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws 'oh no'\n"
+                  "  Actual: <"),
+              endsWith(">\n"
+                  "   Which: emitted <null>\n")
+            ]));
       });
 
       test("with a Future that throws the wrong error", () async {
@@ -159,13 +165,14 @@ void main() {
           expect(new Future.error('aw dang'), throwsA('oh no'));
         });
 
-        expectTestFailed(liveTest, allOf([
-          startsWith(
-              "Expected: throws 'oh no'\n"
-              "  Actual: <"),
-          contains(">\n"
-              "   Which: threw 'aw dang'\n")
-        ]));
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws 'oh no'\n"
+                  "  Actual: <"),
+              contains(">\n"
+                  "   Which: threw 'aw dang'\n")
+            ]));
       });
 
       test("won't let the test end until the Future completes", () {

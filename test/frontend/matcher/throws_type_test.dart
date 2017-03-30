@@ -17,8 +17,7 @@ void main() {
         expect(() => throw new Exception(), throwsArgumentError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws ArgumentError"));
+      expectTestFailed(liveTest, startsWith("Expected: throws ArgumentError"));
     });
   });
 
@@ -33,8 +32,8 @@ void main() {
         expect(() => throw new Exception(), throwsConcurrentModificationError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws ConcurrentModificationError"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws ConcurrentModificationError"));
     });
   });
 
@@ -49,8 +48,8 @@ void main() {
         expect(() => throw new Exception(), throwsCyclicInitializationError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws CyclicInitializationError"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws CyclicInitializationError"));
     });
   });
 
@@ -64,8 +63,7 @@ void main() {
         expect(() => throw 'oh no', throwsException);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws Exception"));
+      expectTestFailed(liveTest, startsWith("Expected: throws Exception"));
     });
   });
 
@@ -79,8 +77,8 @@ void main() {
         expect(() => throw new Exception(), throwsFormatException);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws FormatException"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws FormatException"));
     });
   });
 
@@ -96,8 +94,8 @@ void main() {
         expect(() => throw new Exception(), throwsNoSuchMethodError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws NoSuchMethodError"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws NoSuchMethodError"));
     });
   });
 
@@ -111,8 +109,8 @@ void main() {
         expect(() => throw new Exception(), throwsNullThrownError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws NullThrownError"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws NullThrownError"));
     });
   });
 
@@ -126,8 +124,7 @@ void main() {
         expect(() => throw new Exception(), throwsRangeError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws RangeError"));
+      expectTestFailed(liveTest, startsWith("Expected: throws RangeError"));
     });
   });
 
@@ -141,8 +138,7 @@ void main() {
         expect(() => throw new Exception(), throwsStateError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws StateError"));
+      expectTestFailed(liveTest, startsWith("Expected: throws StateError"));
     });
   });
 
@@ -156,8 +152,8 @@ void main() {
         expect(() => throw new Exception(), throwsUnimplementedError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws UnimplementedError"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws UnimplementedError"));
     });
   });
 
@@ -171,8 +167,8 @@ void main() {
         expect(() => throw new Exception(), throwsUnsupportedError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws UnsupportedError"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws UnsupportedError"));
     });
   });
 }

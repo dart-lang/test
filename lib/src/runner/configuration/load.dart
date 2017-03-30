@@ -59,8 +59,8 @@ class _ConfigurationLoader {
   /// Whether runner configuration is allowed at this level.
   final bool _runnerConfig;
 
-  _ConfigurationLoader(this._document, this._source, {bool global: false,
-          bool runnerConfig: true})
+  _ConfigurationLoader(this._document, this._source,
+      {bool global: false, bool runnerConfig: true})
       : _global = global,
         _runnerConfig = runnerConfig;
 
@@ -84,15 +84,16 @@ class _ConfigurationLoader {
             _nestedConfig(valueNode, "on_platform value", runnerConfig: false));
 
     var onOS = _getMap("on_os", key: (keyNode) {
-      _validate(keyNode, "on_os key must be a string.",
-          (value) => value is String);
+      _validate(
+          keyNode, "on_os key must be a string.", (value) => value is String);
 
       var os = OperatingSystem.find(keyNode.value);
       if (os != null) return os;
 
       throw new SourceSpanFormatException(
           'Invalid on_os key: No such operating system.',
-          keyNode.span, _source);
+          keyNode.span,
+          _source);
     }, value: (valueNode) => _nestedConfig(valueNode, "on_os value"));
 
     var presets = _getMap("presets",
@@ -104,8 +105,8 @@ class _ConfigurationLoader {
             jsTrace: jsTrace,
             timeout: timeout,
             presets: presets)
-        .merge(_extractPresets/*<PlatformSelector>*/(onPlatform,
-            (map) => new Configuration(onPlatform: map)));
+        .merge(_extractPresets/*<PlatformSelector>*/(
+            onPlatform, (map) => new Configuration(onPlatform: map)));
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -133,15 +134,15 @@ class _ConfigurationLoader {
       skip = true;
     }
 
-    var testOn = _parseValue("test_on",
-        (value) => new PlatformSelector.parse(value));
+    var testOn =
+        _parseValue("test_on", (value) => new PlatformSelector.parse(value));
 
-    var addTags = _getList("add_tags",
-        (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
+    var addTags = _getList(
+        "add_tags", (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
 
     var tags = _getMap("tags",
-        key: (keyNode) => _parseNode(keyNode, "tags key",
-            (value) => new BooleanSelector.parse(value)),
+        key: (keyNode) => _parseNode(
+            keyNode, "tags key", (value) => new BooleanSelector.parse(value)),
         value: (valueNode) =>
             _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
@@ -150,8 +151,8 @@ class _ConfigurationLoader {
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags)
-        .merge(_extractPresets/*<BooleanSelector>*/(tags,
-            (map) => new Configuration(tags: map)));
+        .merge(_extractPresets/*<BooleanSelector>*/(
+            tags, (map) => new Configuration(tags: map)));
   }
 
   /// Loads runner configuration that's allowed in the global configuration
@@ -226,10 +227,12 @@ class _ConfigurationLoader {
     var patterns = _getList("names", (nameNode) {
       _validate(nameNode, "Names must be strings.", (value) => value is String);
       return _parseNode(nameNode, "name", (value) => new RegExp(value));
-    })..addAll(_getList("plain_names", (nameNode) {
-      _validate(nameNode, "Names must be strings.", (value) => value is String);
-      return nameNode.value;
-    }));
+    })
+      ..addAll(_getList("plain_names", (nameNode) {
+        _validate(
+            nameNode, "Names must be strings.", (value) => value is String);
+        return nameNode.value;
+      }));
 
     var paths = _getList("paths", (pathNode) {
       _validate(pathNode, "Paths must be strings.", (value) => value is String);
@@ -281,8 +284,7 @@ class _ConfigurationLoader {
   }
 
   /// Asserts that [field] is an int and returns its value.
-  int _getInt(String field) =>
-      _getValue(field, "int", (value) => value is int);
+  int _getInt(String field) => _getValue(field, "int", (value) => value is int);
 
   /// Asserts that [field] is a boolean and returns its value.
   bool _getBool(String field) =>
@@ -296,7 +298,8 @@ class _ConfigurationLoader {
   /// contains.
   ///
   /// Returns a list of values returned by [forElement].
-  List/*<T>*/ _getList/*<T>*/(String field,
+  List/*<T>*/ _getList/*<T>*/(
+      String field,
       /*=T*/ forElement(YamlNode elementNode)) {
     var node = _getNode(field, "list", (value) => value is List) as YamlList;
     if (node == null) return [];
@@ -307,14 +310,15 @@ class _ConfigurationLoader {
   ///
   /// Returns a map with the keys and values returned by [key] and [value]. Each
   /// of these defaults to asserting that the value is a string.
-  Map/*<K, V>*/ _getMap/*<K, V>*/(String field, {/*=K*/ key(YamlNode keyNode),
+  Map/*<K, V>*/ _getMap/*<K, V>*/(String field,
+      {/*=K*/ key(YamlNode keyNode),
       /*=V*/ value(YamlNode valueNode)}) {
     var node = _getNode(field, "map", (value) => value is Map) as YamlMap;
     if (node == null) return {};
 
     key ??= (keyNode) {
-      _validate(keyNode, "$field keys must be strings.",
-          (value) => value is String);
+      _validate(
+          keyNode, "$field keys must be strings.", (value) => value is String);
 
       return keyNode.value as dynamic/*=K*/;
     };
@@ -335,9 +339,7 @@ class _ConfigurationLoader {
   /// and returns it
   String _parseIdentifierLike(YamlNode node, String name) {
     _validate(node, "$name must be a string.", (value) => value is String);
-    _validate(
-        node,
-        "$name must be an (optionally hyphenated) Dart identifier.",
+    _validate(node, "$name must be an (optionally hyphenated) Dart identifier.",
         (value) => value.contains(anchoredHyphenatedIdentifier));
     return node.value;
   }
@@ -351,7 +353,9 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [node]'s
   /// span.
-  /*=T*/ _parseNode/*<T>*/(YamlNode node, String name,
+  /*=T*/ _parseNode/*<T>*/(
+      YamlNode node,
+      String name,
       /*=T*/ parse(String value)) {
     _validate(node, "$name must be a string.", (value) => value is String);
 
@@ -379,14 +383,12 @@ class _ConfigurationLoader {
   /// [name] is the name of the field, which is used for error-handling.
   /// [runnerConfig] controls whether runner configuration is allowed in the
   /// nested configuration. It defaults to [_runnerConfig].
-  Configuration _nestedConfig(YamlNode node, String name,
-      {bool runnerConfig}) {
+  Configuration _nestedConfig(YamlNode node, String name, {bool runnerConfig}) {
     if (node == null || node.value == null) return Configuration.empty;
 
     _validate(node, "$name must be a map.", (value) => value is Map);
     var loader = new _ConfigurationLoader(node, _source,
-        global: _global,
-        runnerConfig: runnerConfig ?? _runnerConfig);
+        global: _global, runnerConfig: runnerConfig ?? _runnerConfig);
     return loader.load();
   }
 
@@ -399,13 +401,12 @@ class _ConfigurationLoader {
   /// logic into a parent [Configuration], leaving only maps to
   /// [SuiteConfiguration]s. The [create] function is used to construct
   /// [Configuration]s from the resolved maps.
-  Configuration _extractPresets/*<T>*/(
-      Map/*<T, Configuration>*/ map,
+  Configuration _extractPresets/*<T>*/(Map/*<T, Configuration>*/ map,
       Configuration create(Map/*<T, SuiteConfiguration>*/ map)) {
     if (map.isEmpty) return Configuration.empty;
 
-    var base = /*<T, SuiteConfiguration>*/{};
-    var presets = /*<String, Map<T, SuiteConfiguration>>*/{};
+    var base = /*<T, SuiteConfiguration>*/ {};
+    var presets = /*<String, Map<T, SuiteConfiguration>>*/ {};
     map.forEach((key, config) {
       base[key] = config.suiteDefaults;
       config.presets.forEach((preset, presetConfig) {

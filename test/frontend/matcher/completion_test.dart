@@ -43,7 +43,8 @@ void main() {
         expect(10, completes);
       });
 
-      expectTestFailed(liveTest,
+      expectTestFailed(
+          liveTest,
           "Expected: completes successfully\n"
           "  Actual: <10>\n"
           "   Which: was not a Future\n");
@@ -87,7 +88,8 @@ void main() {
         expect(10, completion(equals(10)));
       });
 
-      expectTestFailed(liveTest,
+      expectTestFailed(
+          liveTest,
           "Expected: completes to a value that <10>\n"
           "  Actual: <10>\n"
           "   Which: was not a Future\n");
@@ -98,18 +100,19 @@ void main() {
         expect(new Future.value('a'), completion(equals('b')));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: completes to a value that 'b'\n"
-            "  Actual: <"),
-        endsWith(">\n"
-            "   Which: emitted 'a'\n"
-            "            which is different.\n"
-            "                  Expected: b\n"
-            "                    Actual: a\n"
-            "                            ^\n"
-            "                   Differ at offset 0\n")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: completes to a value that 'b'\n"
+                "  Actual: <"),
+            endsWith(">\n"
+                "   Which: emitted 'a'\n"
+                "            which is different.\n"
+                "                  Expected: b\n"
+                "                    Actual: a\n"
+                "                            ^\n"
+                "                   Differ at offset 0\n")
+          ]));
     });
 
     test("blocks expectLater's Future", () async {

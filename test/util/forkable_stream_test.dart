@@ -114,7 +114,8 @@ void main() {
     });
   });
 
-  test("with a fork created after the stream emitted a few events, forwards "
+  test(
+      "with a fork created after the stream emitted a few events, forwards "
       "future events, errors, and close to both branches", () async {
     var queue = new StreamQueue(stream);
 

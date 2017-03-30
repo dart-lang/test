@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -21,13 +20,17 @@ void main() {
   test("ignores an empty file", () {
     d.file("dart_test.yaml", "").create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
@@ -36,21 +39,21 @@ void main() {
 
   test("loads configuration from the path passed to --configuration", () {
     // Make sure dart_test.yaml is ignored.
-    d.file("dart_test.yaml", JSON.encode({
-      "run_skipped": true
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"run_skipped": true})).create();
 
-    d.file("special_test.yaml", JSON.encode({
-      "skip": true
-    })).create();
+    d.file("special_test.yaml", JSON.encode({"skip": true})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () => throw "oh no");
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["--configuration", "special_test.yaml", "test.dart"]);
     test.stdout.expect(consumeThrough(contains('All tests skipped.')));
@@ -59,11 +62,12 @@ void main() {
 
   test("pauses the test runner after a suite loads with pause_after_load: true",
       () {
-    d.file("dart_test.yaml", JSON.encode({
-      "pause_after_load": true
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"pause_after_load": true})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -71,7 +75,8 @@ void main() {
 
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["-p", "content-shell", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test!"));
@@ -103,17 +108,19 @@ void main() {
   }, tags: 'content-shell');
 
   test("runs skipped tests with run_skipped: true", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "run_skipped": true
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"run_skipped": true})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("skip", () => print("In test!"), skip: true);
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("In test!")));
@@ -122,17 +129,19 @@ void main() {
   });
 
   test("includes the full stack with verbose_trace: true", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "verbose_trace": true
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"verbose_trace": true})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("failure", () => throw "oh no");
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
@@ -141,17 +150,19 @@ void main() {
 
   test("doesn't dartify stack traces for JS-compiled tests with js_trace: true",
       () {
-    d.file("dart_test.yaml", JSON.encode({
-      "js_trace": true
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"js_trace": true})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("failure", () => throw "oh no");
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["-p", "chrome", "--verbose-trace", "test.dart"]);
     test.stdout.fork().expect(never(endsWith(" main.<fn>")));
@@ -162,17 +173,19 @@ void main() {
   }, tags: 'chrome');
 
   test("skips tests with skip: true", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "skip": true
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"skip": true})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains('All tests skipped.')));
@@ -180,17 +193,21 @@ void main() {
   });
 
   test("skips tests with skip: reason", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "skip": "Tests are boring."
-    })).create();
+    d
+        .file("dart_test.yaml", JSON.encode({"skip": "Tests are boring."}))
+        .create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains('Tests are boring.')));
@@ -200,17 +217,19 @@ void main() {
 
   group("test_on", () {
     test("runs tests on a platform matching platform", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "test_on": "vm"
-      })).create();
+      d.file("dart_test.yaml", JSON.encode({"test_on": "vm"})).create();
 
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains('All tests passed!')));
@@ -218,59 +237,65 @@ void main() {
     });
 
     test("warns about the VM when no OSes are supported", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "test_on": "chrome"
-      })).create();
+      d.file("dart_test.yaml", JSON.encode({"test_on": "chrome"})).create();
 
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stderr.expect(
           "Warning: this package doesn't support running tests on the Dart "
-            "VM.");
+          "VM.");
       test.stdout.expect(consumeThrough(contains('No tests ran.')));
       test.shouldExit(0);
     });
 
     test("warns about the OS when some OSes are supported", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "test_on": otherOS
-      })).create();
+      d.file("dart_test.yaml", JSON.encode({"test_on": otherOS})).create();
 
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stderr.expect(
-          "Warning: this package doesn't support running tests on "
-            "${currentOS.name}.");
+      test.stderr
+          .expect("Warning: this package doesn't support running tests on "
+              "${currentOS.name}.");
       test.stdout.expect(consumeThrough(contains('No tests ran.')));
       test.shouldExit(0);
     });
 
     test("warns about browsers in general when no browsers are supported", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "test_on": "vm"
-      })).create();
+      d.file("dart_test.yaml", JSON.encode({"test_on": "vm"})).create();
 
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["-p", "chrome", "test.dart"]);
       test.stderr.expect(
@@ -279,41 +304,46 @@ void main() {
       test.shouldExit(0);
     });
 
-    test("warns about specific browsers when specific browsers are "
+    test(
+        "warns about specific browsers when specific browsers are "
         "supported", () {
-      d.file("dart_test.yaml", JSON.encode({
-        "test_on": "safari"
-      })).create();
+      d.file("dart_test.yaml", JSON.encode({"test_on": "safari"})).create();
 
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["-p", "chrome,firefox,phantomjs", "test.dart"]);
       test.stderr.expect(
           "Warning: this package doesn't support running tests on Chrome, "
-            "Firefox, or PhantomJS.");
+          "Firefox, or PhantomJS.");
       test.stdout.expect(consumeThrough(contains('No tests ran.')));
       test.shouldExit(0);
     });
   });
 
   test("uses the specified reporter", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "reporter": "json"
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"reporter": "json"})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains('"testStart"')));
@@ -321,7 +351,10 @@ void main() {
   });
 
   test("uses the specified pub serve port", () {
-    d.file("pubspec.yaml", """
+    d
+        .file(
+            "pubspec.yaml",
+            """
 name: myapp
 dependencies:
   barback: any
@@ -331,10 +364,13 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
-""").create();
+""")
+        .create();
 
     d.dir("lib", [
-      d.file("myapp.dart", """
+      d.file(
+          "myapp.dart",
+          """
         import 'package:barback/barback.dart';
 
         class MyTransformer extends Transformer {
@@ -355,7 +391,9 @@ transformers:
     runPub(['get']).shouldExit(0);
 
     d.dir("test", [
-      d.file("my_test.dart", """
+      d.file(
+          "my_test.dart",
+          """
         import 'package:test/test.dart';
 
         void main() {
@@ -367,9 +405,7 @@ transformers:
     var pub = runPubServe();
 
     d.async(pubServePort.then((port) {
-      return d.file("dart_test.yaml", JSON.encode({
-        "pub_serve": port
-      }));
+      return d.file("dart_test.yaml", JSON.encode({"pub_serve": port}));
     })).create();
 
     var test = runTest([]);
@@ -379,17 +415,19 @@ transformers:
   }, tags: 'pub');
 
   test("uses the specified concurrency", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "concurrency": 2
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"concurrency": 2})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """).create();
+    """)
+        .create();
 
     // We can't reliably test cthe concurrency, but this at least ensures that
     // it doesn't fail to parse.
@@ -399,11 +437,12 @@ transformers:
   });
 
   test("uses the specified timeout", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "timeout": "0s"
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -411,43 +450,49 @@ transformers:
       void main() {
         test("success", () => new Future.delayed(Duration.ZERO));
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "Test timed out after 0 seconds.",
-      "-1: Some tests failed."
-    ]));
+    test.stdout.expect(containsInOrder(
+        ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
     test.shouldExit(1);
   });
 
   test("runs on the specified platforms", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "platforms": ["vm", "content-shell"]
-    })).create();
+    d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "platforms": ["vm", "content-shell"]
+            }))
+        .create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "[VM] success",
-      "[Dartium Content Shell] success"
-    ]));
+    test.stdout.expect(
+        containsInOrder(["[VM] success", "[Dartium Content Shell] success"]));
     test.shouldExit(0);
   }, tags: "content-shell");
 
   test("command line args take precedence", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "timeout": "0s"
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -455,7 +500,8 @@ transformers:
       void main() {
         test("success", () => new Future.delayed(Duration.ZERO));
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["--timeout=none", "test.dart"]);
     test.stdout.expect(consumeThrough(contains("All tests passed!")));
@@ -463,11 +509,18 @@ transformers:
   });
 
   test("uses the specified regexp names", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "names": ["z[ia]p", "a"]
-    })).create();
+    d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "names": ["z[ia]p", "a"]
+            }))
+        .create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
@@ -475,22 +528,27 @@ transformers:
         test("zap", () {});
         test("zop", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "+0: zap",
-      "+1: All tests passed!"
-    ]));
+    test.stdout.expect(containsInOrder(["+0: zap", "+1: All tests passed!"]));
     test.shouldExit(0);
   });
 
   test("uses the specified plain names", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "names": ["z", "a"]
-    })).create();
+    d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "names": ["z", "a"]
+            }))
+        .create();
 
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
       import 'package:test/test.dart';
 
       void main() {
@@ -498,23 +556,27 @@ transformers:
         test("zap", () {});
         test("zop", () {});
       }
-    """).create();
+    """)
+        .create();
 
     var test = runTest(["test.dart"]);
-    test.stdout.expect(containsInOrder([
-      "+0: zap",
-      "+1: All tests passed!"
-    ]));
+    test.stdout.expect(containsInOrder(["+0: zap", "+1: All tests passed!"]));
     test.shouldExit(0);
   });
 
   test("uses the specified paths", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "paths": ["zip", "zap"]
-    })).create();
+    d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "paths": ["zip", "zap"]
+            }))
+        .create();
 
     d.dir("zip", [
-      d.file("zip_test.dart", """
+      d.file(
+          "zip_test.dart",
+          """
         import 'package:test/test.dart';
 
         void main() {
@@ -524,7 +586,9 @@ transformers:
     ]).create();
 
     d.dir("zap", [
-      d.file("zip_test.dart", """
+      d.file(
+          "zip_test.dart",
+          """
         import 'package:test/test.dart';
 
         void main() {
@@ -534,7 +598,9 @@ transformers:
     ]).create();
 
     d.dir("zop", [
-      d.file("zip_test.dart", """
+      d.file(
+          "zip_test.dart",
+          """
         import 'package:test/test.dart';
 
         void main() {
@@ -549,28 +615,30 @@ transformers:
   });
 
   test("uses the specified filename", () {
-    d.file("dart_test.yaml", JSON.encode({
-      "filename": "test_*.dart"
-    })).create();
+    d.file("dart_test.yaml", JSON.encode({"filename": "test_*.dart"})).create();
 
     d.dir("test", [
-      d.file("test_foo.dart", """
+      d.file(
+          "test_foo.dart",
+          """
         import 'package:test/test.dart';
 
         void main() {
           test("success", () {});
         }
       """),
-
-      d.file("foo_test.dart", """
+      d.file(
+          "foo_test.dart",
+          """
         import 'package:test/test.dart';
 
         void main() {
           test("failure", () => throw "oh no");
         }
       """),
-
-      d.file("test_foo.bart", """
+      d.file(
+          "test_foo.bart",
+          """
         import 'package:test/test.dart';
 
         void main() {

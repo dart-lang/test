@@ -30,9 +30,12 @@ class MessageType {
 
   factory MessageType.parse(String name) {
     switch (name) {
-      case "print": return MessageType.print;
-      case "skip": return MessageType.skip;
-      default: throw new ArgumentError('Invalid message type "$name".');
+      case "print":
+        return MessageType.print;
+      case "skip":
+        return MessageType.skip;
+      default:
+        throw new ArgumentError('Invalid message type "$name".');
     }
   }
 

@@ -47,8 +47,11 @@ class RunnerSuite extends Suite {
 
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode.
-  factory RunnerSuite(Environment environment, SuiteConfiguration config,
-      Group group, {String path, TestPlatform platform, OperatingSystem os,
+  factory RunnerSuite(
+      Environment environment, SuiteConfiguration config, Group group,
+      {String path,
+      TestPlatform platform,
+      OperatingSystem os,
       AsyncFunction onClose}) {
     var controller = new RunnerSuiteController(environment, config, group,
         path: path, platform: platform, os: os, onClose: onClose);
@@ -56,7 +59,7 @@ class RunnerSuite extends Suite {
   }
 
   RunnerSuite._(this._controller, Group group, String path,
-          TestPlatform platform, OperatingSystem os)
+      TestPlatform platform, OperatingSystem os)
       : super(group, path: path, platform: platform, os: os);
 
   RunnerSuite filter(bool callback(Test test)) {
@@ -91,8 +94,10 @@ class RunnerSuiteController {
   final _onDebuggingController = new StreamController<bool>.broadcast();
 
   RunnerSuiteController(this._environment, this._config, Group group,
-          {String path, TestPlatform platform,
-          OperatingSystem os, AsyncFunction onClose})
+      {String path,
+      TestPlatform platform,
+      OperatingSystem os,
+      AsyncFunction onClose})
       : _onClose = onClose {
     _suite = new RunnerSuite._(this, group, path, platform, os);
   }
@@ -109,8 +114,8 @@ class RunnerSuiteController {
 
   /// The backing function for [suite.close].
   Future _close() => _closeMemo.runOnce(() async {
-    _onDebuggingController.close();
-    if (_onClose != null) await _onClose();
-  });
+        _onDebuggingController.close();
+        if (_onClose != null) await _onClose();
+      });
   final _closeMemo = new AsyncMemoizer();
 }

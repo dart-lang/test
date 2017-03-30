@@ -14,16 +14,14 @@ import "../utils.dart";
 
 /// A sink transformer that wraps data and error events so that errors can be
 /// decoded after being JSON-serialized.
-final _transformer = new StreamSinkTransformer.fromHandlers(
-    handleData: (data, sink) {
-      ensureJsonEncodable(data);
-      sink.add({"type": "data", "data": data});
-    }, handleError: (error, stackTrace, sink) {
-      sink.add({
-        "type": "error",
-        "error": RemoteException.serialize(error, stackTrace)
-      });
-    });
+final _transformer =
+    new StreamSinkTransformer.fromHandlers(handleData: (data, sink) {
+  ensureJsonEncodable(data);
+  sink.add({"type": "data", "data": data});
+}, handleError: (error, stackTrace, sink) {
+  sink.add(
+      {"type": "error", "error": RemoteException.serialize(error, stackTrace)});
+});
 
 /// Runs the body of a hybrid isolate and communicates its messages, errors, and
 /// prints to the main isolate.

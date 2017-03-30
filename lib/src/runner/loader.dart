@@ -90,8 +90,8 @@ class Loader {
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
-    return StreamGroup.merge(new Directory(dir).listSync(recursive: true)
-        .map((entry) {
+    return StreamGroup
+        .merge(new Directory(dir).listSync(recursive: true).map((entry) {
       if (entry is! File) return new Stream.fromIterable([]);
 
       if (!_config.filename.matches(p.basename(entry.path))) {
@@ -99,7 +99,7 @@ class Loader {
       }
 
       if (p.split(entry.path).contains('packages')) {
-         return new Stream.fromIterable([]);
+        return new Stream.fromIterable([]);
       }
 
       return loadFile(entry.path, suiteConfig);
@@ -112,17 +112,18 @@ class Loader {
   /// [RunnerSuite]s defined in the file.
   ///
   /// This will emit a [LoadException] if the file fails to load.
-  Stream<LoadSuite> loadFile(String path, SuiteConfiguration suiteConfig)
-      async* {
+  Stream<LoadSuite> loadFile(
+      String path, SuiteConfiguration suiteConfig) async* {
     try {
-      suiteConfig = suiteConfig.merge(
-          new SuiteConfiguration.fromMetadata(parseMetadata(path)));
+      suiteConfig = suiteConfig
+          .merge(new SuiteConfiguration.fromMetadata(parseMetadata(path)));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
     } on FormatException catch (error, stackTrace) {
       yield new LoadSuite.forLoadException(
-          new LoadException(path, error), suiteConfig, stackTrace: stackTrace);
+          new LoadException(path, error), suiteConfig,
+          stackTrace: stackTrace);
       return;
     }
 
@@ -149,7 +150,8 @@ class Loader {
             new Group.root(
                 [new LocalTest("(suite)", platformConfig.metadata, () {})],
                 metadata: platformConfig.metadata),
-            path: path, platform: platform));
+            path: path,
+            platform: platform));
         continue;
       }
 
@@ -164,8 +166,7 @@ class Loader {
           return suite;
         } catch (error, stackTrace) {
           if (error is LoadException) rethrow;
-          await new Future.error(
-              new LoadException(path, error), stackTrace);
+          await new Future.error(new LoadException(path, error), stackTrace);
           return null;
         }
       }, path: path, platform: platform);
@@ -181,17 +182,17 @@ class Loader {
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
-    await Future.wait([
-      Future.wait(_platformPlugins.values.map((memo) async {
-        if (!memo.hasRun) return;
-        await (await memo.future).close();
-      })),
-      Future.wait(_suites.map((suite) => suite.close()))
-    ]);
+        await Future.wait([
+          Future.wait(_platformPlugins.values.map((memo) async {
+            if (!memo.hasRun) return;
+            await (await memo.future).close();
+          })),
+          Future.wait(_suites.map((suite) => suite.close()))
+        ]);
 
-    _platformPlugins.clear();
-    _platformCallbacks.clear();
-    _suites.clear();
-  });
+        _platformPlugins.clear();
+        _platformCallbacks.clear();
+        _suites.clear();
+      });
   final _closeMemo = new AsyncMemoizer();
 }

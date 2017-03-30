@@ -22,26 +22,26 @@ import '../utils.dart';
 /// messages are printed using `print()`.
 final _transformer = new StreamChannelTransformer<Object, Map>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
-      switch (message["type"]) {
-        case "data":
-          sink.add(message["data"]);
-          break;
+  switch (message["type"]) {
+    case "data":
+      sink.add(message["data"]);
+      break;
 
-        case "print":
-          print(message["line"]);
-          break;
+    case "print":
+      print(message["line"]);
+      break;
 
-        case "error":
-          var error = RemoteException.deserialize(message["error"]);
-          sink.addError(error.error, error.stackTrace);
-          break;
-      }
-    }), new StreamSinkTransformer.fromHandlers(handleData: (message, sink) {
-      // This is called synchronously from the user's `Sink.add()` call, so if
-      // [ensureJsonEncodable] throws here they'll get a helpful stack trace.
-      ensureJsonEncodable(message);
-      sink.add(message);
-    }));
+    case "error":
+      var error = RemoteException.deserialize(message["error"]);
+      sink.addError(error.error, error.stackTrace);
+      break;
+  }
+}), new StreamSinkTransformer.fromHandlers(handleData: (message, sink) {
+  // This is called synchronously from the user's `Sink.add()` call, so if
+  // [ensureJsonEncodable] throws here they'll get a helpful stack trace.
+  ensureJsonEncodable(message);
+  sink.add(message);
+}));
 
 /// Spawns a VM isolate for the given [uri], which may be a [Uri] or a [String].
 ///
@@ -149,8 +149,8 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridCode(String dartCode, {Object message,
-    bool stayAlive: false}) {
+StreamChannel spawnHybridCode(String dartCode,
+    {Object message, bool stayAlive: false}) {
   var uri = new Uri.dataFromString(dartCode,
       encoding: UTF8, mimeType: 'application/dart');
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
@@ -163,8 +163,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive: false}) {
   if (channel == null) {
     // TODO(nweiz): Link to an issue tracking support when running the test file
     // directly.
-    throw new UnsupportedError(
-        "Can't connect to the test runner.\n"
+    throw new UnsupportedError("Can't connect to the test runner.\n"
         'spawnHybridUri() is currently only supported within "pub run test".');
   }
 

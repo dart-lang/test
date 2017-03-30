@@ -104,9 +104,8 @@ class StreamQueue<T> {
 
   /// Create a `StreamQueue` of the events of [source].
   StreamQueue(Stream<T> source)
-      : _sourceStream = source is ForkableStream
-          ? source
-          : new ForkableStream(source);
+      : _sourceStream =
+            source is ForkableStream ? source : new ForkableStream(source);
 
   /// Asks if the stream has any more events.
   ///
@@ -602,8 +601,9 @@ class _RestRequest<T> implements _EventRequest {
       for (var event in events) {
         event.addTo(controller);
       }
-      controller.addStream(_getRestStream(), cancelOnError: false)
-                .whenComplete(controller.close);
+      controller
+          .addStream(_getRestStream(), cancelOnError: false)
+          .whenComplete(controller.close);
       _completer.setSourceStream(controller.stream);
     }
   }
@@ -689,7 +689,8 @@ class _ForkRequest<T> implements _EventRequest {
       }
 
       var fork = _streamQueue._sourceStream.fork();
-      controller.addStream(fork, cancelOnError: false)
+      controller
+          .addStream(fork, cancelOnError: false)
           .whenComplete(controller.close);
       _completer.setSourceStream(controller.stream);
     }

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'dart:async';
 import 'dart:io';
 
@@ -17,7 +16,10 @@ void main() {
   useSandbox();
 
   test("pauses the test runner for each file until the user presses enter", () {
-    d.file("test1.dart", """
+    d
+        .file(
+            "test1.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -25,9 +27,13 @@ void main() {
 
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
-    d.file("test2.dart", """
+    d
+        .file(
+            "test2.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -35,7 +41,8 @@ void main() {
 
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(
         ["--pause-after-load", "-p", "dartium", "test1.dart", "test2.dart"]);
@@ -90,7 +97,10 @@ void main() {
 
   test("pauses the test runner for each platform until the user presses enter",
       () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -98,7 +108,8 @@ void main() {
 
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(
         ["--pause-after-load", "-p", "dartium", "-p", "chrome", "test.dart"]);
@@ -151,24 +162,30 @@ void main() {
   }, tags: ['dartium', 'chrome']);
 
   test("prints a warning and doesn't pause for unsupported platforms", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
-    var test = runTest(
-        ["--pause-after-load", "-p", "vm", "test.dart"]);
-    test.stderr.expect(
-        "Warning: Debugging is currently unsupported on the Dart VM.");
+    var test = runTest(["--pause-after-load", "-p", "vm", "test.dart"]);
+    test.stderr
+        .expect("Warning: Debugging is currently unsupported on the Dart VM.");
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
   });
 
   test("can mix supported and unsupported platforms", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -176,12 +193,13 @@ void main() {
 
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(
         ["--pause-after-load", "-p", "dartium", "-p", "vm", "test.dart"]);
-    test.stderr.expect(
-        "Warning: Debugging is currently unsupported on the Dart VM.");
+    test.stderr
+        .expect("Warning: Debugging is currently unsupported on the Dart VM.");
 
     test.stdout.expect(consumeThrough("loaded test!"));
     test.stdout.expect(consumeThrough(inOrder([
@@ -206,16 +224,16 @@ void main() {
 
     test.writeLine('');
 
-    test.stdout.expect(containsInOrder([
-      "loaded test!",
-      "+1: [VM] success",
-      "+2: All tests passed!"
-    ]));
+    test.stdout.expect(containsInOrder(
+        ["loaded test!", "+1: [VM] success", "+2: All tests passed!"]));
     test.shouldExit(0);
   }, tags: 'dartium');
 
   test("stops immediately if killed while paused", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -223,7 +241,8 @@ void main() {
 
   test("success", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["--pause-after-load", "-p", "dartium", "test.dart"]);
     test.stdout.expect(consumeThrough("loaded test!"));
@@ -240,7 +259,10 @@ void main() {
   }, tags: 'dartium', testOn: "!windows");
 
   test("disables timeouts", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -252,7 +274,8 @@ void main() {
     await new Future.delayed(Duration.ZERO);
   }, timeout: new Timeout(Duration.ZERO));
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(
         ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
@@ -284,7 +307,10 @@ void main() {
 
   // Regression test for #304.
   test("supports test name patterns", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'package:test/test.dart';
 
 void main() {
@@ -294,7 +320,8 @@ void main() {
   test("success", () {});
   test("failure 2", () {});
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(
         ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);

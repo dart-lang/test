@@ -4,7 +4,6 @@
 
 @TestOn("vm")
 @Tags(const ["pub"])
-
 import 'dart:async';
 import 'dart:io';
 
@@ -22,7 +21,10 @@ Future<String> get _pubServeArg =>
 
 void main() {
   useSandbox(() {
-    d.file("pubspec.yaml", """
+    d
+        .file(
+            "pubspec.yaml",
+            """
 name: myapp
 dependencies:
   barback: any
@@ -32,10 +34,13 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
-""").create();
+""")
+        .create();
 
     d.dir("test", [
-      d.file("my_test.dart", """
+      d.file(
+          "my_test.dart",
+          """
 import 'package:test/test.dart';
 
 void main() {
@@ -45,7 +50,9 @@ void main() {
     ]).create();
 
     d.dir("lib", [
-      d.file("myapp.dart", """
+      d.file(
+          "myapp.dart",
+          """
 import 'package:barback/barback.dart';
 
 class MyTransformer extends Transformer {
@@ -70,13 +77,17 @@ class MyTransformer extends Transformer {
     setUp(() {
       // Give the test a failing assertion that the transformer will convert to
       // a passing assertion.
-      d.file("test/my_test.dart", """
+      d
+          .file(
+              "test/my_test.dart",
+              """
 import 'package:test/test.dart';
 
 void main() {
   test("test", () => expect(true, isFalse));
 }
-""").create();
+""")
+          .create();
     });
 
     test("runs those tests in the VM", () {
@@ -103,7 +114,8 @@ void main() {
       pub.kill();
     }, tags: 'content-shell');
 
-    test("gracefully handles pub serve running on the wrong directory for "
+    test(
+        "gracefully handles pub serve running on the wrong directory for "
         "VM tests", () {
       d.dir("web").create();
 
@@ -120,7 +132,8 @@ void main() {
       pub.kill();
     });
 
-    group("gracefully handles pub serve running on the wrong directory for "
+    group(
+        "gracefully handles pub serve running on the wrong directory for "
         "browser tests", () {
       test("when run on Chrome", () {
         d.dir("web").create();
@@ -156,16 +169,22 @@ void main() {
     });
 
     test("gracefully handles unconfigured transformers", () {
-      d.file("pubspec.yaml", """
+      d
+          .file(
+              "pubspec.yaml",
+              """
 name: myapp
 dependencies:
   barback: any
   test: {path: ${p.current}}
-""").create();
+""")
+          .create();
 
       var pub = runPubServe();
       var test = runTest([_pubServeArg]);
-      expectStderrEquals(test, '''
+      expectStderrEquals(
+          test,
+          '''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
 your pubspec:
 
@@ -182,7 +201,9 @@ transformers:
   group("uses a custom HTML file", () {
     setUp(() {
       d.dir("test", [
-        d.file("test.dart", """
+        d.file(
+            "test.dart",
+            """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -193,8 +214,9 @@ void main() {
   });
 }
 """),
-
-      d.file("test.html", """
+        d.file(
+            "test.html",
+            """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -226,7 +248,10 @@ void main() {
 
   group("with a failing test", () {
     setUp(() {
-      d.file("test/my_test.dart", """
+      d
+          .file(
+              "test/my_test.dart",
+              """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -234,17 +259,15 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw 'oh no');
 }
-""").create();
+""")
+          .create();
     });
 
     test("dartifies stack traces for JS-compiled tests by default", () {
       var pub = runPubServe();
       var test = runTest([_pubServeArg, '-p', 'chrome', '--verbose-trace']);
-      test.stdout.expect(containsInOrder([
-        " main.<fn>",
-        "package:test",
-        "dart:async/zone.dart"
-      ]));
+      test.stdout.expect(containsInOrder(
+          [" main.<fn>", "package:test", "dart:async/zone.dart"]));
       test.shouldExit(1);
       pub.kill();
     }, tags: 'chrome');
@@ -252,12 +275,8 @@ void main() {
     test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
         () {
       var pub = runPubServe();
-      var test = runTest([
-        _pubServeArg,
-        '-p', 'chrome',
-        '--js-trace',
-        '--verbose-trace'
-      ]);
+      var test = runTest(
+          [_pubServeArg, '-p', 'chrome', '--js-trace', '--verbose-trace']);
 
       test.stdout.fork().expect(never(endsWith(" main.<fn>")));
       test.stdout.fork().expect(never(contains("package:test")));

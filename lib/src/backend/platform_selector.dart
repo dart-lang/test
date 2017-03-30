@@ -11,8 +11,8 @@ import 'test_platform.dart';
 /// The set of all valid variable names.
 final _validVariables =
     new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
-        ..addAll(TestPlatform.all.map((platform) => platform.identifier))
-        ..addAll(OperatingSystem.all.map((os) => os.identifier));
+      ..addAll(TestPlatform.all.map((platform) => platform.identifier))
+      ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.
@@ -48,12 +48,18 @@ class PlatformSelector {
       if (variable == platform.identifier) return true;
       if (variable == os.identifier) return true;
       switch (variable) {
-        case "dart-vm": return platform.isDartVM;
-        case "browser": return platform.isBrowser;
-        case "js": return platform.isJS;
-        case "blink": return platform.isBlink;
-        case "posix": return os.isPosix;
-        default: return false;
+        case "dart-vm":
+          return platform.isDartVM;
+        case "browser":
+          return platform.isBrowser;
+        case "js":
+          return platform.isJS;
+        case "blink":
+          return platform.isBlink;
+        case "posix":
+          return os.isPosix;
+        default:
+          return false;
       }
     });
   }
@@ -67,7 +73,8 @@ class PlatformSelector {
 
   String toString() => _inner.toString();
 
-  bool operator==(other) => other is PlatformSelector && _inner == other._inner;
+  bool operator ==(other) =>
+      other is PlatformSelector && _inner == other._inner;
 
   int get hashCode => _inner.hashCode;
 }

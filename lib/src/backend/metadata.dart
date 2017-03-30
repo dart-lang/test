@@ -112,8 +112,8 @@ class Metadata {
     if (tags == null) return new Set();
     if (tags is String) return new Set.from([tags]);
     if (tags is! Iterable) {
-      throw new ArgumentError.value(tags, "tags",
-          "must be either a String or an Iterable.");
+      throw new ArgumentError.value(
+          tags, "tags", "must be either a String or an Iterable.");
     }
 
     if (tags.any((tag) => tag is! String)) {
@@ -130,10 +130,15 @@ class Metadata {
   /// If [forTag] contains metadata that applies to [tags], that metadata is
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
-  factory Metadata({PlatformSelector testOn, Timeout timeout, bool skip,
-          bool verboseTrace, String skipReason, Iterable<String> tags,
-          Map<PlatformSelector, Metadata> onPlatform,
-          Map<BooleanSelector, Metadata> forTag}) {
+  factory Metadata(
+      {PlatformSelector testOn,
+      Timeout timeout,
+      bool skip,
+      bool verboseTrace,
+      String skipReason,
+      Iterable<String> tags,
+      Map<PlatformSelector, Metadata> onPlatform,
+      Map<BooleanSelector, Metadata> forTag}) {
     // Returns metadata without forTag resolved at all.
     _unresolved() => new Metadata._(
         testOn: testOn,
@@ -167,22 +172,23 @@ class Metadata {
   /// Creates new Metadata.
   ///
   /// Unlike [new Metadata], this assumes [forTag] is already resolved.
-  Metadata._({PlatformSelector testOn, Timeout timeout, bool skip,
-          this.skipReason, bool verboseTrace, Iterable<String> tags,
-          Map<PlatformSelector, Metadata> onPlatform,
-          Map<BooleanSelector, Metadata> forTag})
+  Metadata._(
+      {PlatformSelector testOn,
+      Timeout timeout,
+      bool skip,
+      this.skipReason,
+      bool verboseTrace,
+      Iterable<String> tags,
+      Map<PlatformSelector, Metadata> onPlatform,
+      Map<BooleanSelector, Metadata> forTag})
       : testOn = testOn == null ? PlatformSelector.all : testOn,
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         _skip = skip,
         _verboseTrace = verboseTrace,
-        tags = new UnmodifiableSetView(
-            tags == null ? new Set() : tags.toSet()),
-        onPlatform = onPlatform == null
-            ? const {}
-            : new UnmodifiableMapView(onPlatform),
-        forTag = forTag == null
-            ? const {}
-            : new UnmodifiableMapView(forTag) {
+        tags = new UnmodifiableSetView(tags == null ? new Set() : tags.toSet()),
+        onPlatform =
+            onPlatform == null ? const {} : new UnmodifiableMapView(onPlatform),
+        forTag = forTag == null ? const {} : new UnmodifiableMapView(forTag) {
     _validateTags();
   }
 
@@ -190,9 +196,13 @@ class Metadata {
   /// where applicable.
   ///
   /// Throws a [FormatException] if any field is invalid.
-  Metadata.parse({String testOn, Timeout timeout, skip,
-          bool verboseTrace, Map<String, dynamic> onPlatform,
-          tags})
+  Metadata.parse(
+      {String testOn,
+      Timeout timeout,
+      skip,
+      bool verboseTrace,
+      Map<String, dynamic> onPlatform,
+      tags})
       : testOn = testOn == null
             ? PlatformSelector.all
             : new PlatformSelector.parse(testOn),
@@ -233,8 +243,7 @@ class Metadata {
     if (serialized == 'none') return Timeout.none;
     var scaleFactor = serialized['scaleFactor'];
     if (scaleFactor != null) return new Timeout.factor(scaleFactor);
-    return new Timeout(
-        new Duration(microseconds: serialized['duration']));
+    return new Timeout(new Duration(microseconds: serialized['duration']));
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
@@ -247,10 +256,9 @@ class Metadata {
 
     if (invalidTags.isEmpty) return;
 
-    throw new ArgumentError(
-        "Invalid ${pluralize('tag', invalidTags.length)} "
-          "${toSentence(invalidTags)}. Tags must be (optionally hyphenated) "
-          "Dart identifiers.");
+    throw new ArgumentError("Invalid ${pluralize('tag', invalidTags.length)} "
+        "${toSentence(invalidTags)}. Tags must be (optionally hyphenated) "
+        "Dart identifiers.");
   }
 
   /// Return a new [Metadata] that merges [this] with [other].
@@ -258,18 +266,17 @@ class Metadata {
   /// If the two [Metadata]s have conflicting properties, [other] wins. If
   /// either has a [forTag] metadata for one of the other's tags, that metadata
   /// is merged as well.
-  Metadata merge(Metadata other) =>
-      new Metadata(
-          testOn: testOn.intersection(other.testOn),
-          timeout: timeout.merge(other.timeout),
-          skip: other._skip ?? _skip,
-          skipReason: other.skipReason ?? skipReason,
-          verboseTrace: other._verboseTrace ?? _verboseTrace,
-          tags: tags.union(other.tags),
-          onPlatform: mergeMaps(onPlatform, other.onPlatform,
-              value: (metadata1, metadata2) => metadata1.merge(metadata2)),
-          forTag: mergeMaps(forTag, other.forTag,
-              value: (metadata1, metadata2) => metadata1.merge(metadata2)));
+  Metadata merge(Metadata other) => new Metadata(
+      testOn: testOn.intersection(other.testOn),
+      timeout: timeout.merge(other.timeout),
+      skip: other._skip ?? _skip,
+      skipReason: other.skipReason ?? skipReason,
+      verboseTrace: other._verboseTrace ?? _verboseTrace,
+      tags: tags.union(other.tags),
+      onPlatform: mergeMaps(onPlatform, other.onPlatform,
+          value: (metadata1, metadata2) => metadata1.merge(metadata2)),
+      forTag: mergeMaps(forTag, other.forTag,
+          value: (metadata1, metadata2) => metadata1.merge(metadata2)));
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change(
@@ -289,9 +296,15 @@ class Metadata {
     onPlatform ??= this.onPlatform;
     tags ??= this.tags;
     forTag ??= this.forTag;
-    return new Metadata(testOn: testOn, timeout: timeout, skip: skip,
-        verboseTrace: verboseTrace, skipReason: skipReason,
-        onPlatform: onPlatform, tags: tags, forTag: forTag);
+    return new Metadata(
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        verboseTrace: verboseTrace,
+        skipReason: skipReason,
+        onPlatform: onPlatform,
+        tags: tags,
+        forTag: forTag);
   }
 
   /// Returns a copy of [this] with all platform-specific metadata from
@@ -334,9 +347,8 @@ class Metadata {
   _serializeTimeout(Timeout timeout) {
     if (timeout == Timeout.none) return 'none';
     return {
-      'duration': timeout.duration == null
-          ? null
-          : timeout.duration.inMicroseconds,
+      'duration':
+          timeout.duration == null ? null : timeout.duration.inMicroseconds,
       'scaleFactor': timeout.scaleFactor
     };
   }

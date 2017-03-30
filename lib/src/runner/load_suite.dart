@@ -84,8 +84,8 @@ class LoadSuite extends Suite implements RunnerSuite {
             return;
           }
 
-          completer.complete(
-              suite == null ? null : new Pair(suite, Zone.current));
+          completer
+              .complete(suite == null ? null : new Pair(suite, Zone.current));
           invoker.removeOutstandingCallback();
         } catch (error, stackTrace) {
           registerException(error, stackTrace);
@@ -106,9 +106,9 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// A utility constructor for a load suite that just throws [exception].
   ///
   /// The suite's name will be based on [exception]'s path.
-  factory LoadSuite.forLoadException(LoadException exception,
-      SuiteConfiguration config, {StackTrace stackTrace,
-      TestPlatform platform}) {
+  factory LoadSuite.forLoadException(
+      LoadException exception, SuiteConfiguration config,
+      {StackTrace stackTrace, TestPlatform platform}) {
     if (stackTrace == null) stackTrace = new Trace.current();
 
     return new LoadSuite(
@@ -126,12 +126,16 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   LoadSuite._(String name, this.config, void body(), this._suiteAndZone,
-          {String path, TestPlatform platform})
-      : super(new Group.root([
-        new LocalTest(name,
-            new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
-            body)
-      ]), path: path, platform: platform);
+      {String path, TestPlatform platform})
+      : super(
+            new Group.root([
+              new LocalTest(
+                  name,
+                  new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
+                  body)
+            ]),
+            path: path,
+            platform: platform);
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)

@@ -29,10 +29,8 @@ import 'utils.dart';
 /// terminates the program immediately.
 final _signals = Platform.isWindows
     ? ProcessSignal.SIGINT.watch()
-    : StreamGroup.merge([
-        ProcessSignal.SIGTERM.watch(),
-        ProcessSignal.SIGINT.watch()
-      ]);
+    : StreamGroup
+        .merge([ProcessSignal.SIGTERM.watch(), ProcessSignal.SIGINT.watch()]);
 
 /// Returns whether the current package has a pubspec which uses the
 /// `test/pub_serve` transformer.
@@ -62,7 +60,7 @@ bool get _usesTransformer {
 }
 
 /// Returns the path to the global test configuration file.
-final String _globalConfigPath = (){
+final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
     return Platform.environment['DART_TEST_CONFIG'];
   } else if (Platform.operatingSystem == 'windows') {
@@ -101,13 +99,13 @@ main(List<String> args) async {
   try {
     var fileConfiguration = Configuration.empty;
     if (new File(_globalConfigPath).existsSync()) {
-      fileConfiguration = fileConfiguration.merge(
-          new Configuration.load(_globalConfigPath, global: true));
+      fileConfiguration = fileConfiguration
+          .merge(new Configuration.load(_globalConfigPath, global: true));
     }
 
     if (new File(configuration.configurationPath).existsSync()) {
-      fileConfiguration = fileConfiguration.merge(
-          new Configuration.load(configuration.configurationPath));
+      fileConfiguration = fileConfiguration
+          .merge(new Configuration.load(configuration.configurationPath));
     }
 
     configuration = fileConfiguration.merge(configuration);
@@ -125,10 +123,9 @@ main(List<String> args) async {
     return;
   }
 
-  var undefinedPresets =
-      configuration.chosenPresets
-          .where((preset) => !configuration.knownPresets.contains(preset))
-          .toList();
+  var undefinedPresets = configuration.chosenPresets
+      .where((preset) => !configuration.knownPresets.contains(preset))
+      .toList();
   if (undefinedPresets.isNotEmpty) {
     _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
         "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
@@ -178,9 +175,8 @@ transformers:
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(new Trace.from(stackTrace).terse);
-    stderr.writeln(
-        "This is an unexpected error. Please file an issue at "
-            "http://github.com/dart-lang/test\n"
+    stderr.writeln("This is an unexpected error. Please file an issue at "
+        "http://github.com/dart-lang/test\n"
         "with the stack trace and instructions for reproducing the error.");
     exitCode = exit_codes.software;
   } finally {

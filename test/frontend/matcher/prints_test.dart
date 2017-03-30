@@ -31,20 +31,21 @@ void main() {
         expect(closure, prints("Goodbye, world!\n"));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: prints 'Goodbye, world!\\n'\n"
-            "            ''\n"
-            "  Actual: <"),
-        endsWith(">\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "                    ''\n"
-            "            which is different.\n"
-            "                  Expected: Goodbye, w ...\n"
-            "                    Actual: Hello, wor ...\n"
-            "                            ^\n"
-            "                   Differ at offset 0\n")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: prints 'Goodbye, world!\\n'\n"
+                "            ''\n"
+                "  Actual: <"),
+            endsWith(">\n"
+                "   Which: printed 'Hello, world!\\n'\n"
+                "                    ''\n"
+                "            which is different.\n"
+                "                  Expected: Goodbye, w ...\n"
+                "                    Actual: Hello, wor ...\n"
+                "                            ^\n"
+                "                   Differ at offset 0\n")
+          ]));
     });
 
     test("describes a failure with a non-descriptive Matcher nicely", () async {
@@ -53,14 +54,15 @@ void main() {
         expect(closure, prints(contains("Goodbye")));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <"),
-        endsWith(">\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "                    ''\n")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: prints contains 'Goodbye'\n"
+                "  Actual: <"),
+            endsWith(">\n"
+                "   Which: printed 'Hello, world!\\n'\n"
+                "                    ''\n")
+          ]));
     });
 
     test("describes a failure with no text nicely", () async {
@@ -69,13 +71,14 @@ void main() {
         expect(closure, prints(contains("Goodbye")));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <"),
-        endsWith(">\n"
-            "   Which: printed nothing\n")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: prints contains 'Goodbye'\n"
+                "  Actual: <"),
+            endsWith(">\n"
+                "   Which: printed nothing\n")
+          ]));
     });
 
     test("with a non-function", () async {
@@ -83,7 +86,8 @@ void main() {
         expect(10, prints(contains("Goodbye")));
       });
 
-      expectTestFailed(liveTest,
+      expectTestFailed(
+          liveTest,
           "Expected: prints contains 'Goodbye'\n"
           "  Actual: <10>\n"
           "   Which: was not a Function\n");
@@ -97,10 +101,12 @@ void main() {
     });
 
     test("combines multiple prints", () {
-      expect(() => new Future(() {
-        print("Hello");
-        print("World!");
-      }), prints("Hello\nWorld!\n"));
+      expect(
+          () => new Future(() {
+                print("Hello");
+                print("World!");
+              }),
+          prints("Hello\nWorld!\n"));
     });
 
     test("works with a Matcher", () {
@@ -114,20 +120,21 @@ void main() {
         expect(closure, prints("Goodbye, world!\n"));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: prints 'Goodbye, world!\\n'\n"
-            "            ''\n"
-            "  Actual: <"),
-        contains(">\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "                    ''\n"
-            "            which is different.\n"
-            "                  Expected: Goodbye, w ...\n"
-            "                    Actual: Hello, wor ...\n"
-            "                            ^\n"
-            "                   Differ at offset 0")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: prints 'Goodbye, world!\\n'\n"
+                "            ''\n"
+                "  Actual: <"),
+            contains(">\n"
+                "   Which: printed 'Hello, world!\\n'\n"
+                "                    ''\n"
+                "            which is different.\n"
+                "                  Expected: Goodbye, w ...\n"
+                "                    Actual: Hello, wor ...\n"
+                "                            ^\n"
+                "                   Differ at offset 0")
+          ]));
     });
 
     test("describes a failure with a non-descriptive Matcher nicely", () async {
@@ -136,14 +143,15 @@ void main() {
         expect(closure, prints(contains("Goodbye")));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <"),
-        contains(">\n"
-            "   Which: printed 'Hello, world!\\n'\n"
-            "                    ''")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: prints contains 'Goodbye'\n"
+                "  Actual: <"),
+            contains(">\n"
+                "   Which: printed 'Hello, world!\\n'\n"
+                "                    ''")
+          ]));
     });
 
     test("describes a failure with no text nicely", () async {
@@ -152,13 +160,14 @@ void main() {
         expect(closure, prints(contains("Goodbye")));
       });
 
-      expectTestFailed(liveTest, allOf([
-        startsWith(
-            "Expected: prints contains 'Goodbye'\n"
-            "  Actual: <"),
-        contains(">\n"
-            "   Which: printed nothing")
-      ]));
+      expectTestFailed(
+          liveTest,
+          allOf([
+            startsWith("Expected: prints contains 'Goodbye'\n"
+                "  Actual: <"),
+            contains(">\n"
+                "   Which: printed nothing")
+          ]));
     });
 
     test("won't let the test end until the Future completes", () {

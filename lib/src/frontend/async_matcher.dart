@@ -31,11 +31,14 @@ abstract class AsyncMatcher extends Matcher {
 
   bool matches(item, Map matchState) {
     var result = matchAsync(item);
-    expect(result, anyOf([
-      equals(null),
-      new isInstanceOf<Future>(),
-      new isInstanceOf<String>()
-    ]), reason: "matchAsync() may only return a String, a Future, or null.");
+    expect(
+        result,
+        anyOf([
+          equals(null),
+          new isInstanceOf<Future>(),
+          new isInstanceOf<String>()
+        ]),
+        reason: "matchAsync() may only return a String, a Future, or null.");
 
     if (result is Future) {
       Invoker.current.addOutstandingCallback();

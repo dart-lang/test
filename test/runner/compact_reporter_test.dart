@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -22,7 +21,8 @@ void main() {
   });
 
   test("runs several successful tests and reports when each completes", () {
-    _expectReport("""
+    _expectReport(
+        """
         test('success 1', () {});
         test('success 2', () {});
         test('success 3', () {});""",
@@ -38,7 +38,8 @@ void main() {
   });
 
   test("runs several failing tests and reports when each fails", () {
-    _expectReport("""
+    _expectReport(
+        """
         test('failure 1', () => throw new TestFailure('oh no'));
         test('failure 2', () => throw new TestFailure('oh no'));
         test('failure 3', () => throw new TestFailure('oh no'));""",
@@ -66,7 +67,10 @@ void main() {
   });
 
   test("includes the full stack trace with --verbose-trace", () {
-    d.file("test.dart", """
+    d
+        .file(
+            "test.dart",
+            """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -74,7 +78,8 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw "oh no");
 }
-""").create();
+""")
+        .create();
 
     var test = runTest(["--verbose-trace", "test.dart"], reporter: "compact");
     test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
@@ -82,7 +87,8 @@ void main() {
   });
 
   test("runs failing tests along with successful tests", () {
-    _expectReport("""
+    _expectReport(
+        """
         test('failure 1', () => throw new TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw new TestFailure('oh no'));
@@ -109,7 +115,8 @@ void main() {
   });
 
   test("gracefully handles multiple test failures in a row", () {
-    _expectReport("""
+    _expectReport(
+        """
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = new Completer();
@@ -149,7 +156,8 @@ void main() {
   });
 
   test("prints the full test name before an error", () {
-    _expectReport("""
+    _expectReport(
+        """
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. A little more... okay, that should do it.',
@@ -167,14 +175,15 @@ void main() {
 
   group("print:", () {
     test("handles multiple prints", () {
-      _expectReport("""
+      _expectReport(
+          """
         test('test', () {
           print("one");
           print("two");
           print("three");
           print("four");
         });""",
-        """
+          """
         +0: loading test.dart
         +0: test
         one
@@ -187,7 +196,8 @@ void main() {
     });
 
     test("handles a print after the test completes", () {
-      _expectReport("""
+      _expectReport(
+          """
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = new Completer();
@@ -205,7 +215,8 @@ void main() {
         test('wait', () {
           waitStarted.complete();
           return testDone.future;
-        });""", """
+        });""",
+          """
         +0: loading test.dart
         +0: test
         +1: test
@@ -221,7 +232,8 @@ void main() {
     });
 
     test("interleaves prints and errors", () {
-      _expectReport("""
+      _expectReport(
+          """
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var completer = new Completer();
@@ -244,7 +256,7 @@ void main() {
         });
 
         test('wait', () => completer.future);""",
-        """
+          """
         +0: loading test.dart
         +0: test
         one
@@ -271,7 +283,8 @@ void main() {
     });
 
     test("prints the full test name before a print", () {
-      _expectReport("""
+      _expectReport(
+          """
           test(
              'really gosh dang long test name. Even longer than that. No, yet '
                  'longer. A little more... okay, that should do it.',
@@ -287,7 +300,8 @@ void main() {
     });
 
     test("doesn't print a clock update between two prints", () {
-      _expectReport("""
+      _expectReport(
+          """
           test('slow', () async {
             print('hello');
             await new Future.delayed(new Duration(seconds: 3));
@@ -306,7 +320,8 @@ void main() {
 
   group("skip:", () {
     test("displays skipped tests separately", () {
-      _expectReport("""
+      _expectReport(
+          """
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);""",
@@ -322,7 +337,8 @@ void main() {
     });
 
     test("displays a skipped group", () {
-      _expectReport("""
+      _expectReport(
+          """
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
@@ -340,7 +356,8 @@ void main() {
     });
 
     test("runs skipped tests along with successful tests", () {
-      _expectReport("""
+      _expectReport(
+          """
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
@@ -359,7 +376,8 @@ void main() {
     });
 
     test("runs skipped tests along with successful and failing tests", () {
-      _expectReport("""
+      _expectReport(
+          """
           test('failure 1', () => throw new TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
@@ -392,7 +410,8 @@ void main() {
     });
 
     test("displays the skip reason if available", () {
-      _expectReport("""
+      _expectReport(
+          """
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');""",
           """
@@ -409,7 +428,8 @@ void main() {
     });
 
     test("runs skipped tests with --run-skipped", () {
-      _expectReport("""
+      _expectReport(
+          """
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');""",
           """
@@ -446,18 +466,22 @@ $tests
     // Skip the first CR, remove excess trailing whitespace, and trim off
     // timestamps.
     var lastLine;
-    var actual = stdoutLines.skip(1).map((line) {
-      if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
+    var actual = stdoutLines
+        .skip(1)
+        .map((line) {
+          if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
 
-      var trimmed = line.trim()
-          .replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
+          var trimmed =
+              line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
 
-      // Trim identical lines so the test isn't dependent on how fast each test
-      // runs.
-      if (trimmed == lastLine) return null;
-      lastLine = trimmed;
-      return trimmed;
-    }).where((line) => line != null).join("\n");
+          // Trim identical lines so the test isn't dependent on how fast each test
+          // runs.
+          if (trimmed == lastLine) return null;
+          lastLine = trimmed;
+          return trimmed;
+        })
+        .where((line) => line != null)
+        .join("\n");
 
     // Un-indent the expected string.
     var indentation = expected.indexOf(new RegExp("[^ ]"));

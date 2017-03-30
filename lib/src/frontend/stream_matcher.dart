@@ -87,9 +87,8 @@ abstract class StreamMatcher extends Matcher {
   /// should be grammatically valid when used after the word "should". For
   /// example, it might be "emit the right events".
   factory StreamMatcher(
-          Future<String> matchQueue(StreamQueue queue),
-          String description)
-      = _StreamMatcher;
+          Future<String> matchQueue(StreamQueue queue), String description) =
+      _StreamMatcher;
 
   /// Tries to match events emitted by [queue].
   ///
@@ -150,7 +149,8 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
       // of the error message.
       var replay = transaction.newQueue();
       var events = <Result>[];
-      var subscription = Result.captureStreamTransformer.bind(replay.rest)
+      var subscription = Result.captureStreamTransformer
+          .bind(replay.rest)
           .listen(events.add, onDone: () => events.add(null));
 
       // Wait on a timer tick so all buffered events are emitted.
@@ -173,7 +173,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
       transaction.reject();
 
       var buffer = new StringBuffer();
-      buffer.writeln(indent(eventsString,                  first: "emitted "));
+      buffer.writeln(indent(eventsString, first: "emitted "));
       if (result.isNotEmpty) buffer.writeln(indent(result, first: "  which "));
       return buffer.toString().trimRight();
     }, onError: (error) {

@@ -4,7 +4,6 @@
 
 @TestOn("vm")
 @Tags(const ["chrome"])
-
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -40,6 +39,7 @@ void main() {
   setUp(() async {
     _sandbox = createTempDir();
     _loader = new Loader(root: _sandbox);
+
     /// TODO(nweiz): Use scheduled_test for this once it's compatible with this
     /// version of test.
     new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
@@ -93,7 +93,6 @@ void main() {
     });
   });
 
-
   test("loads tests that are defined asynchronously", () async {
     new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync("""
 import 'dart:async';
@@ -131,9 +130,12 @@ Future main() {
     var path = p.join(_sandbox, 'a_test.dart');
 
     var suites = await _loader
-        .loadFile(path, new SuiteConfiguration(
-            platforms: [TestPlatform.vm, TestPlatform.chrome]))
-        .asyncMap((loadSuite) => loadSuite.getSuite()).toList();
+        .loadFile(
+            path,
+            new SuiteConfiguration(
+                platforms: [TestPlatform.vm, TestPlatform.chrome]))
+        .asyncMap((loadSuite) => loadSuite.getSuite())
+        .toList();
     expect(suites[0].platform, equals(TestPlatform.vm));
     expect(suites[0].path, equals(path));
     expect(suites[1].platform, equals(TestPlatform.chrome));

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -15,13 +14,17 @@ void main() {
 
   group("a skipped expect", () {
     test("marks the test as skipped", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2), skip: true));
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(consumeThrough(contains("~1: All tests skipped.")));
@@ -29,14 +32,18 @@ void main() {
     });
 
     test("prints the skip reason if there is one", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2),
               reason: "1 is 2", skip: "is failing"));
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -48,14 +55,18 @@ void main() {
     });
 
     test("prints the expect reason if there's no skip reason", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2),
               reason: "1 is 2", skip: true));
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -67,25 +78,29 @@ void main() {
     });
 
     test("prints the matcher description if there are no reasons", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2), skip: true));
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: skipped",
-        "  Skip expect (<2>).",
-        "~1: All tests skipped."
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["+0: skipped", "  Skip expect (<2>).", "~1: All tests skipped."]));
       test.shouldExit(0);
     });
 
     test("still allows the test to fail", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
@@ -94,7 +109,8 @@ void main() {
             expect(1, equals(2));
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -111,7 +127,10 @@ void main() {
 
   group("errors", () {
     test("when called after the test succeeded", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -133,7 +152,8 @@ void main() {
             await waitCompleter.future;
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
       test.stdout.expect(containsInOrder([
@@ -141,7 +161,7 @@ void main() {
         "+1: wait",
         "+0 -1: skip",
         "This test was marked as skipped after it had already completed. "
-          "Make sure to use",
+            "Make sure to use",
         "[expectAsync] or the [completes] matcher when testing async code.",
         "+1 -1: Some tests failed."
       ]));
@@ -149,7 +169,10 @@ void main() {
     });
 
     test("when an invalid type is used for skip", () {
-      d.file("test.dart", """
+      d
+          .file(
+              "test.dart",
+              """
         import 'package:test/test.dart';
 
         void main() {
@@ -157,13 +180,12 @@ void main() {
             expect(1, equals(2), skip: 10);
           });
         }
-      """).create();
+      """)
+          .create();
 
       var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "Invalid argument (skip)",
-        "+0 -1: Some tests failed."
-      ]));
+      test.stdout.expect(containsInOrder(
+          ["Invalid argument (skip)", "+0 -1: Some tests failed."]));
       test.shouldExit(1);
     });
   });

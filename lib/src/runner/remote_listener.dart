@@ -42,8 +42,8 @@ class RemoteListener {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
-    var controller = new StreamChannelController(
-        allowForeignErrors: false, sync: true);
+    var controller =
+        new StreamChannelController(allowForeignErrors: false, sync: true);
     var channel = new MultiChannel(controller.local);
 
     var printZone = hidePrints ? null : Zone.current;
@@ -73,13 +73,11 @@ class RemoteListener {
       if (message['asciiGlyphs']) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
       var declarer = new Declarer(
-          metadata: metadata,
-          collectTraces: message['collectTraces']);
+          metadata: metadata, collectTraces: message['collectTraces']);
       await declarer.declare(main);
 
-      var os = message['os'] == null
-          ? null
-          : OperatingSystem.find(message['os']);
+      var os =
+          message['os'] == null ? null : OperatingSystem.find(message['os']);
       var platform = TestPlatform.find(message['platform']);
       var suite = new Suite(declarer.build(),
           platform: platform, os: os, path: message['path']);
@@ -93,7 +91,6 @@ class RemoteListener {
 
     return controller.foreign;
   }
-
 
   /// Sends a message over [channel] indicating that the tests failed to load.
   ///
@@ -124,8 +121,8 @@ class RemoteListener {
   /// Serializes [group] into a JSON-safe map.
   ///
   /// [parents] lists the groups that contain [group].
-  Map _serializeGroup(MultiChannel channel, Group group,
-      Iterable<Group> parents) {
+  Map _serializeGroup(
+      MultiChannel channel, Group group, Iterable<Group> parents) {
     parents = parents.toList()..add(group);
     return {
       "type": "group",
@@ -152,8 +149,7 @@ class RemoteListener {
     var testChannel = channel.virtualChannel();
     testChannel.stream.listen((message) {
       assert(message['command'] == 'run');
-      _runLiveTest(
-          test.load(_suite, groups: groups),
+      _runLiveTest(test.load(_suite, groups: groups),
           channel.virtualChannel(message['channel']));
     });
 
@@ -184,8 +180,8 @@ class RemoteListener {
     liveTest.onError.listen((asyncError) {
       channel.sink.add({
         "type": "error",
-        "error": RemoteException.serialize(
-            asyncError.error, asyncError.stackTrace)
+        "error":
+            RemoteException.serialize(asyncError.error, asyncError.stackTrace)
       });
     });
 

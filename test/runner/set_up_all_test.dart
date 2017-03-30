@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
@@ -14,7 +13,10 @@ void main() {
   useSandbox();
 
   test("an error causes the run to fail", () {
-    d.file("test.dart", r"""
+    d
+        .file(
+            "test.dart",
+            r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -22,7 +24,8 @@ void main() {
 
           test("test", () {});
         }
-        """).create();
+        """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("-1: (setUpAll) [E]")));
@@ -31,7 +34,10 @@ void main() {
   });
 
   test("doesn't run if no tests in the group are selected", () {
-    d.file("test.dart", r"""
+    d
+        .file(
+            "test.dart",
+            r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -45,7 +51,8 @@ void main() {
             test("test", () {});
           });
         }
-        """).create();
+        """)
+        .create();
 
     var test = runTest(["test.dart", "--name", "without"]);
     test.stdout.expect(never(contains("(setUpAll)")));
@@ -53,7 +60,10 @@ void main() {
   });
 
   test("doesn't run if no tests in the group are selected", () {
-    d.file("test.dart", r"""
+    d
+        .file(
+            "test.dart",
+            r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -67,7 +77,8 @@ void main() {
             test("without", () {});
           });
         }
-        """).create();
+        """)
+        .create();
 
     var test = runTest(["test.dart", "--name", "without"]);
     test.stdout.expect(never(contains("(setUpAll)")));
@@ -75,7 +86,10 @@ void main() {
   });
 
   test("doesn't run if no tests in the group match the platform", () {
-    d.file("test.dart", r"""
+    d
+        .file(
+            "test.dart",
+            r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -89,7 +103,8 @@ void main() {
             test("without", () {});
           });
         }
-        """).create();
+        """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(never(contains("(setUpAll)")));
@@ -97,7 +112,10 @@ void main() {
   });
 
   test("doesn't run if the group doesn't match the platform", () {
-    d.file("test.dart", r"""
+    d
+        .file(
+            "test.dart",
+            r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -111,7 +129,8 @@ void main() {
             test("without", () {});
           });
         }
-        """).create();
+        """)
+        .create();
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(never(contains("(setUpAll)")));

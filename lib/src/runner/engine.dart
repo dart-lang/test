@@ -81,9 +81,8 @@ class Engine {
   /// A future that completes once [this] is unpaused.
   ///
   /// If [this] isn't paused, this completes immediately.
-  Future get _onUnpaused => _pauseCompleter == null
-      ? new Future.value()
-      : _pauseCompleter.future;
+  Future get _onUnpaused =>
+      _pauseCompleter == null ? new Future.value() : _pauseCompleter.future;
 
   /// Whether all tests passed or were skipped.
   ///
@@ -158,9 +157,9 @@ class Engine {
   /// [skipped], [failed], and [active].
   ///
   /// [LiveTest.run] must not be called on these tests.
-  Set<LiveTest> get liveTests => new UnionSet.from(
-      [passed, skipped, failed, new IterableSet(active)],
-      disjoint: true);
+  Set<LiveTest> get liveTests =>
+      new UnionSet.from([passed, skipped, failed, new IterableSet(active)],
+          disjoint: true);
 
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
@@ -301,8 +300,8 @@ class Engine {
       var skipGroup = !suiteConfig.runSkipped && group.metadata.skip;
       var setUpAllSucceeded = true;
       if (!skipGroup && group.setUpAll != null) {
-        var liveTest = group.setUpAll.load(suiteController.liveSuite.suite,
-            groups: parents);
+        var liveTest = group.setUpAll
+            .load(suiteController.liveSuite.suite, groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
         setUpAllSucceeded = liveTest.state.result.isPassing;
       }
@@ -317,8 +316,7 @@ class Engine {
             await _runSkippedTest(suiteController, entry, parents);
           } else {
             var test = entry as Test;
-            await _runLiveTest(
-                suiteController,
+            await _runLiveTest(suiteController,
                 test.load(suiteController.liveSuite.suite, groups: parents));
           }
         }
@@ -327,8 +325,8 @@ class Engine {
       // Even if we're closed or setUpAll failed, we want to run all the
       // teardowns to ensure that any state is properly cleaned up.
       if (!skipGroup && group.tearDownAll != null) {
-        var liveTest = group.tearDownAll.load(suiteController.liveSuite.suite,
-            groups: parents);
+        var liveTest = group.tearDownAll
+            .load(suiteController.liveSuite.suite, groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
         if (_closed) await liveTest.close();
       }
@@ -388,18 +386,18 @@ class Engine {
   Future _runSkippedTest(LiveSuiteController suiteController, Test test,
       List<Group> parents) async {
     await _onUnpaused;
-    var skipped = new LocalTest(test.name, test.metadata, () {},
-        trace: test.trace);
+    var skipped =
+        new LocalTest(test.name, test.metadata, () {}, trace: test.trace);
 
     var controller;
-    controller = new LiveTestController(
-        suiteController.liveSuite.suite, skipped, () {
+    controller =
+        new LiveTestController(suiteController.liveSuite.suite, skipped, () {
       controller.setState(const State(Status.running, Result.success));
       controller.setState(const State(Status.running, Result.skipped));
 
       if (skipped.metadata.skipReason != null) {
-        controller.message(
-            new Message.skip("Skip: ${skipped.metadata.skipReason}"));
+        controller
+            .message(new Message.skip("Skip: ${skipped.metadata.skipReason}"));
       }
 
       controller.setState(const State(Status.complete, Result.skipped));

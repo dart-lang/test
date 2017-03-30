@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
 
@@ -24,11 +23,10 @@ void main() {
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new SuiteConfiguration(
-                jsTrace: true,
-                runSkipped: true,
-                precompiledPath: "/tmp/js",
-                platforms: [TestPlatform.chrome])
-            .merge(new SuiteConfiguration());
+            jsTrace: true,
+            runSkipped: true,
+            precompiledPath: "/tmp/js",
+            platforms: [TestPlatform.chrome]).merge(new SuiteConfiguration());
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
@@ -49,7 +47,8 @@ void main() {
         expect(merged.platforms, equals([TestPlatform.chrome]));
       });
 
-      test("if the two configurations conflict, uses the new configuration's "
+      test(
+          "if the two configurations conflict, uses the new configuration's "
           "values", () {
         var older = new SuiteConfiguration(
             jsTrace: false,
@@ -173,39 +172,33 @@ void main() {
 
     group("for config maps", () {
       test("merges each nested configuration", () {
-        var merged = new SuiteConfiguration(
-          tags: {
-            new BooleanSelector.parse("foo"):
-                new SuiteConfiguration(precompiledPath: "path/"),
-            new BooleanSelector.parse("bar"):
-                new SuiteConfiguration(jsTrace: true)
-          },
-          onPlatform: {
-            new PlatformSelector.parse("vm"):
-                new SuiteConfiguration(precompiledPath: "path/"),
-            new PlatformSelector.parse("chrome"):
-                new SuiteConfiguration(jsTrace: true)
-          }
-        ).merge(new SuiteConfiguration(
-          tags: {
-            new BooleanSelector.parse("bar"):
-                new SuiteConfiguration(jsTrace: false),
-            new BooleanSelector.parse("baz"):
-                new SuiteConfiguration(runSkipped: true)
-          },
-          onPlatform: {
-            new PlatformSelector.parse("chrome"):
-                new SuiteConfiguration(jsTrace: false),
-            new PlatformSelector.parse("firefox"):
-                new SuiteConfiguration(runSkipped: true)
-          }
-        ));
+        var merged = new SuiteConfiguration(tags: {
+          new BooleanSelector.parse("foo"):
+              new SuiteConfiguration(precompiledPath: "path/"),
+          new BooleanSelector.parse("bar"):
+              new SuiteConfiguration(jsTrace: true)
+        }, onPlatform: {
+          new PlatformSelector.parse("vm"):
+              new SuiteConfiguration(precompiledPath: "path/"),
+          new PlatformSelector.parse("chrome"):
+              new SuiteConfiguration(jsTrace: true)
+        }).merge(new SuiteConfiguration(tags: {
+          new BooleanSelector.parse("bar"):
+              new SuiteConfiguration(jsTrace: false),
+          new BooleanSelector.parse("baz"):
+              new SuiteConfiguration(runSkipped: true)
+        }, onPlatform: {
+          new PlatformSelector.parse("chrome"):
+              new SuiteConfiguration(jsTrace: false),
+          new PlatformSelector.parse("firefox"):
+              new SuiteConfiguration(runSkipped: true)
+        }));
 
         expect(merged.tags[new BooleanSelector.parse("foo")].precompiledPath,
             equals("path/"));
         expect(merged.tags[new BooleanSelector.parse("bar")].jsTrace, isFalse);
-        expect(merged.tags[new BooleanSelector.parse("baz")].runSkipped,
-            isTrue);
+        expect(
+            merged.tags[new BooleanSelector.parse("baz")].runSkipped, isTrue);
 
         expect(
             merged.onPlatform[new PlatformSelector.parse("vm")].precompiledPath,

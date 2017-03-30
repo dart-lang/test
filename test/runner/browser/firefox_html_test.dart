@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("firefox")
-
 import 'dart:html';
 
 import 'package:test/test.dart';

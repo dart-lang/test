@@ -125,8 +125,8 @@ class ForkableStream<T> extends StreamView<T> {
   void _onPause(StreamController<T> controller) {
     if (controller.isClosed) return;
     if (_subscription.isPaused) return;
-    if (_controllers.any((controller) =>
-        controller.hasListener && !controller.isPaused)) {
+    if (_controllers
+        .any((controller) => controller.hasListener && !controller.isPaused)) {
       return;
     }
 
@@ -163,4 +163,3 @@ class ForkableStream<T> extends StreamView<T> {
     _controllers.clear();
   }
 }
-

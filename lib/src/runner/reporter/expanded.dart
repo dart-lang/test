@@ -104,17 +104,14 @@ class ExpandedReporter implements Reporter {
   /// won't. If [printPath] is `true`, this will print the path name as part of
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
-  static ExpandedReporter watch(Engine engine, {bool color: true,
-      bool printPath: true, bool printPlatform: true}) {
-    return new ExpandedReporter._(
-        engine,
-        color: color,
-        printPath: printPath,
-        printPlatform: printPlatform);
+  static ExpandedReporter watch(Engine engine,
+      {bool color: true, bool printPath: true, bool printPlatform: true}) {
+    return new ExpandedReporter._(engine,
+        color: color, printPath: printPath, printPlatform: printPlatform);
   }
 
-  ExpandedReporter._(this._engine, {bool color: true, bool printPath: true,
-      bool printPlatform: true})
+  ExpandedReporter._(this._engine,
+      {bool color: true, bool printPath: true, bool printPlatform: true})
       : _printPath = printPath,
         _printPlatform = printPlatform,
         _color = color,
@@ -180,8 +177,8 @@ class ExpandedReporter implements Reporter {
       _progressLine(_description(liveTest));
     }
 
-    _subscriptions.add(liveTest.onError.listen((error) =>
-        _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(liveTest.onError
+        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
 
     _subscriptions.add(liveTest.onMessage.listen((message) {
       _progressLine(_description(liveTest));
@@ -210,8 +207,8 @@ class ExpandedReporter implements Reporter {
 
     if (error is! LoadException) {
       print(indent(error.toString()));
-      var chain = terseChain(stackTrace,
-          verbose: liveTest.test.metadata.verboseTrace);
+      var chain =
+          terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace);
       print(indent(chain.toString()));
       return;
     }
@@ -317,7 +314,8 @@ class ExpandedReporter implements Reporter {
   String _description(LiveTest liveTest) {
     var name = liveTest.test.name;
 
-    if (_printPath && liveTest.suite is! LoadSuite &&
+    if (_printPath &&
+        liveTest.suite is! LoadSuite &&
         liveTest.suite.path != null) {
       name = "${liveTest.suite.path}: $name";
     }

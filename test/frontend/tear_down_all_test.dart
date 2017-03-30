@@ -245,9 +245,11 @@ void main() {
         group("group", () {
           tearDownAll(() async {
             expect(tearDownAllRun, isFalse);
-            expect(pumpEventQueue().then((_) {
-              tearDownAllRun = true;
-            }), completes);
+            expect(
+                pumpEventQueue().then((_) {
+                  tearDownAllRun = true;
+                }),
+                completes);
           });
 
           test("test", () {});
