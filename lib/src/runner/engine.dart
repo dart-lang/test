@@ -90,7 +90,8 @@ class Engine {
   /// This will be `null` if [close] was called before all the tests finished
   /// running.
   Future<bool> get success async {
-    await Future.wait([_group.future, _loadPool.done], eagerError: true);
+    await Future
+        .wait(<Future>[_group.future, _loadPool.done], eagerError: true);
     if (_closedBeforeDone) return null;
     return liveTests.every((liveTest) => liveTest.state.result.isPassing);
   }
