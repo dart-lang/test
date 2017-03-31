@@ -70,7 +70,7 @@ class RemoteListener {
 
       var message = await channel.stream.first;
 
-      if (message['asciiGlyphs']) glyph.ascii = true;
+      if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
       var declarer = new Declarer(
           metadata: metadata, collectTraces: message['collectTraces']);
