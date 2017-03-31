@@ -1,3 +1,10 @@
+## 0.12.20+8
+
+* Fixed more blockers for compiling with `dev_compiler`.
+* Dartfmt the entire repo.
+
+* **Note:** 0.12.20+5-0.12.20+7 were tagged but not officially published.
+
 ## 0.12.20+4
 
 * Fixed strong-mode errors and other blockers for compiling with `dev_compiler`.
