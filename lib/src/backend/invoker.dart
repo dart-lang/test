@@ -357,6 +357,6 @@ class Invoker {
               print: (self, parent, zone, line) =>
                   _controller.message(new Message.print(line))),
           onError: _handleError);
-    });
+    }, when: liveTest.test.metadata.chainStackTraces);
   }
 }

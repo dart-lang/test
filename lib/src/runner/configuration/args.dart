@@ -85,6 +85,12 @@ final ArgParser _parser = (() {
           'Implies --concurrency=1 and --timeout=none.\n'
           'Currently only supported for browser tests.',
       negatable: false);
+  parser.addFlag("chain-stack-traces",
+      help: 'Chains stack traces to provide greater exception details \n'
+          'especially for asynchronous code. It may be useful to disable \n'
+          'to provide improved test performance but at the cost of \n'
+          'debuggability.',
+      defaultsTo: true);
 
   parser.addSeparator("======== Output");
   parser.addOption("reporter",
@@ -192,6 +198,7 @@ class _Parser {
         help: _ifParsed('help'),
         version: _ifParsed('version'),
         verboseTrace: _ifParsed('verbose-trace'),
+        chainStackTraces: _ifParsed('chain-stack-traces'),
         jsTrace: _ifParsed('js-trace'),
         pauseAfterLoad: _ifParsed('pause-after-load'),
         color: _ifParsed('color'),
