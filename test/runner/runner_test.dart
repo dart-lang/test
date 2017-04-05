@@ -93,7 +93,7 @@ Usage: pub run test [files or directories...]
                                  Implies --concurrency=1 and --timeout=none.
                                  Currently only supported for browser tests.
 
-    --[no-]chain-stack-traces    Chains stack traces to provide greater exception details
+    --[no-]chain-stack-traces    Chained stack traces to provide greater exception details
                                  especially for asynchronous code. It may be useful to disable
                                  to provide improved test performance but at the cost of
                                  debuggability.
