@@ -584,7 +584,8 @@ void main() {
         await liveTest.run();
       },
           prints("Consider enabling the flag chain-stack-traces to "
-              "recieve more detailed exceptions.\n"));
+              "recieve more detailed exceptions.\n"
+              "For example, 'pub run test --chain-stack-traces'.\n"));
     });
   });
 
