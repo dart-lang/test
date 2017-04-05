@@ -42,6 +42,10 @@ class Metadata {
   bool get verboseTrace => _verboseTrace ?? false;
   final bool _verboseTrace;
 
+  /// Whether to chain stack traces.
+  bool get chainStackTraces => _chainStackTraces ?? true;
+  final bool _chainStackTraces;
+
   /// The user-defined tags attached to the test or suite.
   final Set<String> tags;
 
@@ -135,6 +139,7 @@ class Metadata {
       Timeout timeout,
       bool skip,
       bool verboseTrace,
+      bool chainStackTraces,
       String skipReason,
       Iterable<String> tags,
       Map<PlatformSelector, Metadata> onPlatform,
@@ -145,6 +150,7 @@ class Metadata {
         timeout: timeout,
         skip: skip,
         verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
         skipReason: skipReason,
         tags: tags,
         onPlatform: onPlatform,
@@ -178,6 +184,7 @@ class Metadata {
       bool skip,
       this.skipReason,
       bool verboseTrace,
+      bool chainStackTraces,
       Iterable<String> tags,
       Map<PlatformSelector, Metadata> onPlatform,
       Map<BooleanSelector, Metadata> forTag})
@@ -185,6 +192,7 @@ class Metadata {
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         _skip = skip,
         _verboseTrace = verboseTrace,
+        _chainStackTraces = chainStackTraces,
         tags = new UnmodifiableSetView(tags == null ? new Set() : tags.toSet()),
         onPlatform =
             onPlatform == null ? const {} : new UnmodifiableMapView(onPlatform),
@@ -201,6 +209,7 @@ class Metadata {
       Timeout timeout,
       skip,
       bool verboseTrace,
+      bool chainStackTraces,
       Map<String, dynamic> onPlatform,
       tags})
       : testOn = testOn == null
@@ -209,6 +218,7 @@ class Metadata {
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         _skip = skip == null ? null : skip != false,
         _verboseTrace = verboseTrace,
+        _chainStackTraces = chainStackTraces,
         skipReason = skip is String ? skip : null,
         onPlatform = _parseOnPlatform(onPlatform),
         tags = _parseTags(tags),
@@ -230,6 +240,7 @@ class Metadata {
         _skip = serialized['skip'],
         skipReason = serialized['skipReason'],
         _verboseTrace = serialized['verboseTrace'],
+        _chainStackTraces = serialized['chainStackTraces'],
         tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
@@ -272,6 +283,7 @@ class Metadata {
       skip: other._skip ?? _skip,
       skipReason: other.skipReason ?? skipReason,
       verboseTrace: other._verboseTrace ?? _verboseTrace,
+      chainStackTraces: other._chainStackTraces ?? _chainStackTraces,
       tags: tags.union(other.tags),
       onPlatform: mergeMaps(onPlatform, other.onPlatform,
           value: (metadata1, metadata2) => metadata1.merge(metadata2)),
@@ -284,6 +296,7 @@ class Metadata {
       Timeout timeout,
       bool skip,
       bool verboseTrace,
+      bool chainStackTraces,
       String skipReason,
       Map<PlatformSelector, Metadata> onPlatform,
       Set<String> tags,
@@ -292,6 +305,7 @@ class Metadata {
     timeout ??= this.timeout;
     skip ??= this._skip;
     verboseTrace ??= this._verboseTrace;
+    chainStackTraces ??= this._chainStackTraces;
     skipReason ??= this.skipReason;
     onPlatform ??= this.onPlatform;
     tags ??= this.tags;
@@ -301,6 +315,7 @@ class Metadata {
         timeout: timeout,
         skip: skip,
         verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
         skipReason: skipReason,
         onPlatform: onPlatform,
         tags: tags,
@@ -335,6 +350,7 @@ class Metadata {
       'skip': _skip,
       'skipReason': skipReason,
       'verboseTrace': _verboseTrace,
+      'chainStackTraces': _chainStackTraces,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
       'forTag': mapMap(forTag,

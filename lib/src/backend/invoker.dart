@@ -289,6 +289,12 @@ class Invoker {
     _controller.addError(error, stackTrace);
     removeAllOutstandingCallbacks();
 
+    if (!liveTest.test.metadata.chainStackTraces) {
+      _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
+          "recieve more detailed exceptions.\n"
+          "For example, 'pub run test --chain-stack-traces'.");
+    }
+
     if (_printsOnFailure.isNotEmpty) {
       print(_printsOnFailure.join("\n\n"));
       _printsOnFailure.clear();
@@ -357,6 +363,6 @@ class Invoker {
               print: (self, parent, zone, line) =>
                   _controller.message(new Message.print(line))),
           onError: _handleError);
-    });
+    }, when: liveTest.test.metadata.chainStackTraces);
   }
 }

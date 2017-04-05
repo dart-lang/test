@@ -133,6 +133,7 @@ class SuiteConfiguration {
       // Test-level configuration
       Timeout timeout,
       bool verboseTrace,
+      bool chainStackTraces,
       bool skip,
       String skipReason,
       PlatformSelector testOn,
@@ -151,6 +152,7 @@ class SuiteConfiguration {
         metadata: new Metadata(
             timeout: timeout,
             verboseTrace: verboseTrace,
+            chainStackTraces: chainStackTraces,
             skip: skip,
             skipReason: skipReason,
             testOn: testOn,
@@ -254,6 +256,7 @@ class SuiteConfiguration {
       // Test-level configuration
       Timeout timeout,
       bool verboseTrace,
+      bool chainStackTraces,
       bool skip,
       String skipReason,
       PlatformSelector testOn,
@@ -272,6 +275,7 @@ class SuiteConfiguration {
         metadata: _metadata.change(
             timeout: timeout,
             verboseTrace: verboseTrace,
+            chainStackTraces: chainStackTraces,
             skip: skip,
             skipReason: skipReason,
             testOn: testOn,
