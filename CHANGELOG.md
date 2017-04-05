@@ -1,6 +1,6 @@
 ## 0.12.20+9
 
-* Introduce new flag --chain-stack-traces to conditionally chain stack traces.
+* Introduce new flag `--chain-stack-traces` to conditionally chain stack traces.
 
 ## 0.12.20+8
 
