@@ -1,3 +1,7 @@
+## 0.12.20+9
+
+* Introduce new flag --chain-stack-traces to conditionally chain stack traces.
+
 ## 0.12.20+8
 
 * Fixed more blockers for compiling with `dev_compiler`.
