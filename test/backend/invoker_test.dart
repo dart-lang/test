@@ -570,6 +570,24 @@ void main() {
     });
   });
 
+  group("chainStackTraces", () {
+    test(
+        "if disabled, directs users to run with the flag enabled when "
+        "failures occur", () {
+      expect(() async {
+        var liveTest = _localTest(() {
+          expect(true, isFalse);
+        }, metadata: new Metadata(chainStackTraces: false))
+            .load(suite);
+        liveTest.onError.listen(expectAsync1((_) {}, count: 1));
+
+        await liveTest.run();
+      },
+          prints("Consider enabling the flag chain-stack-traces to "
+              "recieve more detailed exceptions.\n"));
+    });
+  });
+
   group("printOnFailure:", () {
     test("doesn't print anything if the test succeeds", () {
       expect(() async {

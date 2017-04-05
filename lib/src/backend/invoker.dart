@@ -289,6 +289,11 @@ class Invoker {
     _controller.addError(error, stackTrace);
     removeAllOutstandingCallbacks();
 
+    if (!liveTest.test.metadata.chainStackTraces) {
+      _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
+          "recieve more detailed exceptions.");
+    }
+
     if (_printsOnFailure.isNotEmpty) {
       print(_printsOnFailure.join("\n\n"));
       _printsOnFailure.clear();

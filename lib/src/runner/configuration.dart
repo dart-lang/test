@@ -420,6 +420,7 @@ class Configuration {
       // Test-level configuration
       Timeout timeout,
       bool verboseTrace,
+      bool chainStackTraces,
       bool skip,
       String skipReason,
       PlatformSelector testOn,
@@ -453,6 +454,7 @@ class Configuration {
             onPlatform: onPlatform,
             timeout: timeout,
             verboseTrace: verboseTrace,
+            chainStackTraces: chainStackTraces,
             skip: skip,
             skipReason: skipReason,
             testOn: testOn,

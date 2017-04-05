@@ -33,6 +33,20 @@ void main() {
 }
 """;
 
+final _asyncFailure = """
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("failure", () async{
+    await new Future((){});
+    await new Future((){});
+    throw "oh no";
+  });
+}
+""";
+
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 final _browsers =
@@ -44,52 +58,58 @@ final _browsers =
 final _usage = """
 Usage: pub run test [files or directories...]
 
--h, --help                     Shows this usage information.
-    --version                  Shows the package's version.
+-h, --help                       Shows this usage information.
+    --version                    Shows the package's version.
 
 ======== Selecting Tests
--n, --name                     A substring of the name of the test to run.
-                               Regular expression syntax is supported.
-                               If passed multiple times, tests must match all substrings.
+-n, --name                       A substring of the name of the test to run.
+                                 Regular expression syntax is supported.
+                                 If passed multiple times, tests must match all substrings.
 
--N, --plain-name               A plain-text substring of the name of the test to run.
-                               If passed multiple times, tests must match all substrings.
+-N, --plain-name                 A plain-text substring of the name of the test to run.
+                                 If passed multiple times, tests must match all substrings.
 
--t, --tags                     Run only tests with all of the specified tags.
-                               Supports boolean selector syntax.
+-t, --tags                       Run only tests with all of the specified tags.
+                                 Supports boolean selector syntax.
 
--x, --exclude-tags             Don't run tests with any of the specified tags.
-                               Supports boolean selector syntax.
+-x, --exclude-tags               Don't run tests with any of the specified tags.
+                                 Supports boolean selector syntax.
 
-    --[no-]run-skipped         Run skipped tests instead of skipping them.
+    --[no-]run-skipped           Run skipped tests instead of skipping them.
 
 ======== Running Tests
--p, --platform                 The platform(s) on which to run the tests.
-                               $_browsers
+-p, --platform                   The platform(s) on which to run the tests.
+                                 $_browsers
 
--P, --preset                   The configuration preset(s) to use.
--j, --concurrency=<threads>    The number of concurrent test suites run.
-                               (defaults to "$_defaultConcurrency")
+-P, --preset                     The configuration preset(s) to use.
+-j, --concurrency=<threads>      The number of concurrent test suites run.
+                                 (defaults to "$_defaultConcurrency")
 
-    --pub-serve=<port>         The port of a pub serve instance serving "test/".
-    --timeout                  The default test timeout. For example: 15s, 2x, none
-                               (defaults to "30s")
+    --pub-serve=<port>           The port of a pub serve instance serving "test/".
+    --timeout                    The default test timeout. For example: 15s, 2x, none
+                                 (defaults to "30s")
 
-    --pause-after-load         Pauses for debugging before any tests execute.
-                               Implies --concurrency=1 and --timeout=none.
-                               Currently only supported for browser tests.
+    --pause-after-load           Pauses for debugging before any tests execute.
+                                 Implies --concurrency=1 and --timeout=none.
+                                 Currently only supported for browser tests.
+
+    --[no-]chain-stack-traces    Chains stack traces to provide greater exception details
+                                 especially for asynchronous code. It may be useful to disable
+                                 to provide improved test performance but at the cost of
+                                 debuggability.
+                                 (defaults to on)
 
 ======== Output
--r, --reporter                 The runner used to print test results.
+-r, --reporter                   The runner used to print test results.
 
-          [compact]            A single line, updated continuously.
-          [expanded]           A separate line for each update.
-          [json]               A machine-readable format (see https://goo.gl/gBsV1a).
+          [compact]              A single line, updated continuously.
+          [expanded]             A separate line for each update.
+          [json]                 A machine-readable format (see https://goo.gl/gBsV1a).
 
-    --verbose-trace            Whether to emit stack traces with core library frames.
-    --js-trace                 Whether to emit raw JavaScript stack traces for browser tests.
-    --[no-]color               Whether to use terminal colors.
-                               (auto-detected by default)
+    --verbose-trace              Whether to emit stack traces with core library frames.
+    --js-trace                   Whether to emit raw JavaScript stack traces for browser tests.
+    --[no-]color                 Whether to use terminal colors.
+                                 (auto-detected by default)
 """;
 
 void main() {
@@ -323,6 +343,27 @@ $_usage""");
   });
 
   group("runs failing tests", () {
+    test("defaults to chaining stack traces", () {
+      d.file("test.dart", _asyncFailure).create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains("asynchronous gap")));
+      test.shouldExit(1);
+    });
+
+    test("respects the chain-stack-traces flag", () {
+      d.file("test.dart", _asyncFailure).create();
+
+      var test = runTest(["test.dart", "--no-chain-stack-traces"]);
+      test.stdout.expect(containsInOrder([
+        "00:00 +0: failure",
+        "00:00 +0 -1: failure [E]",
+        "oh no",
+        "test.dart 9:5  main.<fn>",
+      ]));
+      test.shouldExit(1);
+    });
+
     test("defined in a single file", () {
       d.file("test.dart", _failure).create();
 

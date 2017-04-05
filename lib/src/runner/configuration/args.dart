@@ -86,9 +86,9 @@ final ArgParser _parser = (() {
           'Currently only supported for browser tests.',
       negatable: false);
   parser.addFlag("chain-stack-traces",
-      help: 'Chains stack traces to provide greater exception details \n'
-          'especially for asynchronous code. It may be useful to disable \n'
-          'to provide improved test performance but at the cost of \n'
+      help: 'Chains stack traces to provide greater exception details\n'
+          'especially for asynchronous code. It may be useful to disable\n'
+          'to provide improved test performance but at the cost of\n'
           'debuggability.',
       defaultsTo: true);
 
