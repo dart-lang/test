@@ -16,6 +16,7 @@ import 'backend/test.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
 import 'runner/engine.dart';
 import 'runner/load_exception.dart';
@@ -69,26 +70,8 @@ class Runner {
   factory Runner(Configuration config) => config.asCurrent(() {
         var engine = new Engine(concurrency: config.concurrency);
 
-        var reporter;
-        switch (config.reporter) {
-          case "expanded":
-            reporter = ExpandedReporter.watch(engine,
-                color: config.color,
-                printPath: config.paths.length > 1 ||
-                    new Directory(config.paths.single).existsSync(),
-                printPlatform: config.suiteDefaults.platforms.length > 1);
-            break;
-
-          case "compact":
-            reporter = CompactReporter.watch(engine);
-            break;
-
-          case "json":
-            reporter = JsonReporter.watch(engine);
-            break;
-        }
-
-        return new Runner._(engine, reporter);
+        var reporterDetails = allReporters[config.reporter];
+        return new Runner._(engine, reporterDetails.factory(config, engine));
       });
 
   Runner._(this._engine, this._reporter);

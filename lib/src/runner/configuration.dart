@@ -16,6 +16,7 @@ import '../frontend/timeout.dart';
 import '../util/io.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/load.dart';
+import 'configuration/reporters.dart';
 import 'configuration/suite.dart';
 import 'configuration/values.dart';
 

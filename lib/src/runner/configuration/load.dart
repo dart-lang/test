@@ -19,7 +19,7 @@ import '../../utils.dart';
 import '../../util/io.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
-import 'values.dart';
+import 'reporters.dart';
 
 /// Loads configuration information from a YAML file at [path].
 ///
@@ -176,7 +176,7 @@ class _ConfigurationLoader {
     var runSkipped = _getBool("run_skipped");
 
     var reporter = _getString("reporter");
-    if (reporter != null && !allReporters.contains(reporter)) {
+    if (reporter != null && !allReporters.keys.contains(reporter)) {
       _error('Unknown reporter "$reporter".', "reporter");
     }
 
