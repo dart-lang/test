@@ -1,3 +1,7 @@
+## 0.12.20+10
+
+* Refactor for internal tools.
+
 ## 0.12.20+9
 
 * Introduce new flag `--chain-stack-traces` to conditionally chain stack traces.
