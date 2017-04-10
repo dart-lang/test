@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:collection';
+
 // TODO(nweiz): support pluggable platforms.
 /// An enum of all platforms on which tests can run.
 class TestPlatform {
@@ -44,16 +46,7 @@ class TestPlatform {
       isBrowser: true, isJS: true);
 
   /// A list of all instances of [TestPlatform].
-  static const List<TestPlatform> all = const [
-    vm,
-    dartium,
-    contentShell,
-    chrome,
-    phantomJS,
-    firefox,
-    safari,
-    internetExplorer
-  ];
+  static var all = new UnmodifiableListView<TestPlatform>(_all);
 
   /// Finds a platform by its identifier string.
   ///
@@ -91,4 +84,36 @@ class TestPlatform {
       this.isHeadless: false});
 
   String toString() => name;
+}
+
+List<TestPlatform> _all = [
+  TestPlatform.vm,
+  TestPlatform.dartium,
+  TestPlatform.contentShell,
+  TestPlatform.chrome,
+  TestPlatform.phantomJS,
+  TestPlatform.firefox,
+  TestPlatform.safari,
+  TestPlatform.internetExplorer
+];
+
+/// **Do not call this function without express permission from the test package
+/// authors**.
+///
+/// This constructs and globally registers a new TestPlatform with the provided
+/// details.
+TestPlatform registerTestPlatform(String name, String identifier,
+    {bool isDartVM: false,
+    bool isBrowser: false,
+    bool isJS: false,
+    bool isBlink: false,
+    bool isHeadless: false}) {
+  TestPlatform platform = new TestPlatform._(name, identifier,
+      isDartVM: isDartVM,
+      isBrowser: isBrowser,
+      isJS: isJS,
+      isBlink: isBlink,
+      isHeadless: isHeadless);
+  _all.add(platform);
+  return platform;
 }
