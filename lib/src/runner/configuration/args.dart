@@ -10,6 +10,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import '../configuration.dart';
+import 'reporters.dart';
 import 'values.dart';
 
 /// The parser used to parse the command-line arguments.
@@ -92,17 +93,18 @@ final ArgParser _parser = (() {
           'debuggability.',
       defaultsTo: true);
 
+  var reporterDescriptions = <String, String>{};
+  for (var reporter in allReporters.keys) {
+    reporterDescriptions[reporter] = allReporters[reporter].description;
+  }
+
   parser.addSeparator("======== Output");
   parser.addOption("reporter",
       abbr: 'r',
       help: 'The runner used to print test results.',
       defaultsTo: defaultReporter,
-      allowed: allReporters,
-      allowedHelp: {
-        'compact': 'A single line, updated continuously.',
-        'expanded': 'A separate line for each update.',
-        'json': 'A machine-readable format (see https://goo.gl/gBsV1a).'
-      });
+      allowed: reporterDescriptions.keys.toList(),
+      allowedHelp: reporterDescriptions);
   parser.addFlag("verbose-trace",
       negatable: false,
       help: 'Whether to emit stack traces with core library frames.');

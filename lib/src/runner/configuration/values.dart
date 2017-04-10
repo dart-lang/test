@@ -7,20 +7,11 @@ import 'dart:math' as math;
 
 import 'package:glob/glob.dart';
 
-import '../../util/io.dart';
-
 /// The default number of test suites to run at once.
 ///
 /// This defaults to half the available processors, since presumably some of
 /// them will be used for the OS and other processes.
 final defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
-
-/// The reporters supported by the test runner.
-const allReporters = const ["compact", "expanded", "json"];
-
-/// The default reporter.
-final defaultReporter =
-    inTestTests ? 'expanded' : (Platform.isWindows ? 'expanded' : 'compact');
 
 /// The default filename pattern.
 ///
