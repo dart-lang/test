@@ -46,7 +46,8 @@ class TestPlatform {
       isBrowser: true, isJS: true);
 
   /// A list of all instances of [TestPlatform].
-  static var all = new UnmodifiableListView<TestPlatform>(_all);
+  static final UnmodifiableListView<TestPlatform> all =
+      new UnmodifiableListView<TestPlatform>(_allPlatforms);
 
   /// Finds a platform by its identifier string.
   ///
@@ -86,7 +87,7 @@ class TestPlatform {
   String toString() => name;
 }
 
-List<TestPlatform> _all = [
+final List<TestPlatform> _allPlatforms = [
   TestPlatform.vm,
   TestPlatform.dartium,
   TestPlatform.contentShell,
@@ -108,12 +109,12 @@ TestPlatform registerTestPlatform(String name, String identifier,
     bool isJS: false,
     bool isBlink: false,
     bool isHeadless: false}) {
-  TestPlatform platform = new TestPlatform._(name, identifier,
+  var platform = new TestPlatform._(name, identifier,
       isDartVM: isDartVM,
       isBrowser: isBrowser,
       isJS: isJS,
       isBlink: isBlink,
       isHeadless: isHeadless);
-  _all.add(platform);
+  _allPlatforms.add(platform);
   return platform;
 }

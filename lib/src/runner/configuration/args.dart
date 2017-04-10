@@ -93,7 +93,7 @@ final ArgParser _parser = (() {
           'debuggability.',
       defaultsTo: true);
 
-  Map reporterDescriptions = {};
+  var reporterDescriptions = <String, String>{};
   for (var reporter in allReporters.keys) {
     reporterDescriptions[reporter] = allReporters[reporter].description;
   }

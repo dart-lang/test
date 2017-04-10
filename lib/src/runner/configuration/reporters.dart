@@ -28,7 +28,7 @@ class ReporterDetails {
 final UnmodifiableMapView<String, ReporterDetails> allReporters =
     new UnmodifiableMapView<String, ReporterDetails>(_allReporters);
 
-final Map<String, ReporterDetails> _allReporters = {
+final _allReporters = <String, ReporterDetails>{
   "expanded": new ReporterDetails(
       "A separate line for each update.",
       (config, engine) => ExpandedReporter.watch(engine,
