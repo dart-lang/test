@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:test/src/runner/configuration.dart';
-import 'package:test/src/runner/configuration/values.dart';
+import 'package:test/src/runner/configuration/reporters.dart';
 import 'package:test/src/util/io.dart';
 
 void main() {
