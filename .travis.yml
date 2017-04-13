@@ -1,0 +1,23 @@
+language: dart
+sudo: false
+dart:
+ - dev
+ - stable
+cache:
+ directories:
+   - $HOME/.pub-cache
+dart_task:
+ - test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x
+ - test: --platform dartium
+   install_dartium: true
+ - dartfmt
+ - dartanalyzer
+matrix:
+  allow_failures:
+    # Repo was formatted with stable SDK
+    - dart: dev
+      dart_task: dartfmt
+    # Pub can hang on tests using dev SDK
+    - dart: dev
+      dart_task:
+        test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x

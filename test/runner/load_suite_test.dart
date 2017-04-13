@@ -12,6 +12,7 @@ import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
+import 'package:test/src/runner/runner_suite.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -45,7 +46,7 @@ void main() {
   });
 
   test("a load test doesn't complete until the body returns", () async {
-    var completer = new Completer();
+    var completer = new Completer<RunnerSuite>();
     var suite =
         new LoadSuite("name", SuiteConfiguration.empty, () => completer.future);
     expect(suite.group.entries, hasLength(1));
@@ -62,8 +63,9 @@ void main() {
 
   test("a load test forwards errors and completes LoadSuite.suite to null",
       () async {
-    var suite =
-        new LoadSuite("name", SuiteConfiguration.empty, () => fail("error"));
+    var suite = new LoadSuite("name", SuiteConfiguration.empty, () {
+      fail("error");
+    });
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(isNull));
@@ -74,8 +76,8 @@ void main() {
   });
 
   test("a load test completes early if it's closed", () async {
-    var suite = new LoadSuite(
-        "name", SuiteConfiguration.empty, () => new Completer().future);
+    var suite = new LoadSuite("name", SuiteConfiguration.empty,
+        () => new Completer<RunnerSuite>().future);
     expect(suite.group.entries, hasLength(1));
 
     var liveTest = await (suite.group.entries.single as Test).load(suite);
