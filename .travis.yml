@@ -14,8 +14,10 @@ dart_task:
  - dartanalyzer
 matrix:
   allow_failures:
+    # Repo was formatted with stable SDK
     - dart: dev
       dart_task: dartfmt
+    # Pub can hang on tests using stable SDK
     - dart: stable
       dart_task:
         test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x
