@@ -46,10 +46,9 @@ void main() {
   });
 
   test("a load test doesn't complete until the body returns", () async {
-    var completer = new Completer();
-    var suite = new LoadSuite("name", SuiteConfiguration.empty, () {
-      return completer.future as FutureOr<RunnerSuite>;
-    });
+    var completer = new Completer<RunnerSuite>();
+    var suite =
+        new LoadSuite("name", SuiteConfiguration.empty, () => completer.future);
     expect(suite.group.entries, hasLength(1));
 
     var liveTest = await (suite.group.entries.single as Test).load(suite);
@@ -77,9 +76,8 @@ void main() {
   });
 
   test("a load test completes early if it's closed", () async {
-    var suite = new LoadSuite("name", SuiteConfiguration.empty, () {
-      return new Completer().future as FutureOr<RunnerSuite>;
-    });
+    var suite = new LoadSuite("name", SuiteConfiguration.empty,
+        () => new Completer<RunnerSuite>().future);
     expect(suite.group.entries, hasLength(1));
 
     var liveTest = await (suite.group.entries.single as Test).load(suite);
