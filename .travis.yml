@@ -21,4 +21,3 @@ matrix:
     - dart: dev
       dart_task:
         test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x
-
