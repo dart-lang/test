@@ -17,8 +17,8 @@ matrix:
     # Repo was formatted with stable SDK
     - dart: dev
       dart_task: dartfmt
-    # Pub can hang on tests using stable SDK
-    - dart: stable
+    # Pub can hang on tests using dev SDK
+    - dart: dev
       dart_task:
         test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x
 
