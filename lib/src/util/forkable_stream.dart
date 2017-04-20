@@ -6,7 +6,7 @@
 // lands.
 import 'dart:async';
 
-import 'package:async/async.dart' hide ForkableStream;
+import 'package:async/async.dart';
 
 /// A single-subscription stream from which other streams may be forked off at
 /// the current position.
