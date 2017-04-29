@@ -166,7 +166,8 @@ class BrowserManager {
       for (var controller in _controllers) {
         controller.setDebugging(true);
       }
-    })..cancel();
+    })
+      ..cancel();
 
     // Whenever we get a message, no matter which child channel it's for, we the
     // know browser is still running code which means the user isn't debugging.
