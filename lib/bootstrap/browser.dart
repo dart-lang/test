@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import "../src/runner/plugin/remote_platform_helpers.dart";
 import "../src/runner/browser/post_message_channel.dart";
-import '../src/utils.dart';
+import "../src/utils.dart";
 
 /// Bootstraps a browser test to communicate with the test runner.
 ///
