@@ -84,12 +84,10 @@ void expectStderrEquals(ScheduledProcess test, String expected) =>
 
 /// Expects that the entirety of the line stream [stream] equals [expected].
 void _expectStreamEquals(Stream<String> stream, String expected) {
-  expect(
-      (() async {
-        var lines = await stream.toList();
-        expect(lines.join("\n").trim(), equals(expected.trim()));
-      })(),
-      completes);
+  expect((() async {
+    var lines = await stream.toList();
+    expect(lines.join("\n").trim(), equals(expected.trim()));
+  })(), completes);
 }
 
 /// Returns a [StreamMatcher] that asserts that the stream emits strings

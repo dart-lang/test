@@ -83,18 +83,20 @@ class _ConfigurationLoader {
         value: (valueNode) =>
             _nestedConfig(valueNode, "on_platform value", runnerConfig: false));
 
-    var onOS = _getMap("on_os", key: (keyNode) {
-      _validate(
-          keyNode, "on_os key must be a string.", (value) => value is String);
+    var onOS = _getMap("on_os",
+        key: (keyNode) {
+          _validate(keyNode, "on_os key must be a string.",
+              (value) => value is String);
 
-      var os = OperatingSystem.find(keyNode.value);
-      if (os != null) return os;
+          var os = OperatingSystem.find(keyNode.value);
+          if (os != null) return os;
 
-      throw new SourceSpanFormatException(
-          'Invalid on_os key: No such operating system.',
-          keyNode.span,
-          _source);
-    }, value: (valueNode) => _nestedConfig(valueNode, "on_os value"));
+          throw new SourceSpanFormatException(
+              'Invalid on_os key: No such operating system.',
+              keyNode.span,
+              _source);
+        },
+        value: (valueNode) => _nestedConfig(valueNode, "on_os value"));
 
     var presets = _getMap("presets",
         key: (keyNode) => _parseIdentifierLike(keyNode, "presets key"),
