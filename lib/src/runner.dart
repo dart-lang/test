@@ -25,7 +25,6 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
-import 'runner/reporter/json.dart';
 import 'util/io.dart';
 import 'utils.dart';
 
