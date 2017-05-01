@@ -139,7 +139,7 @@ void test(description, body(),
   // `main()` in JS stack traces in order to properly determine the line and
   // column where the test was defined. See sdk#26705.
   return;
-  return;
+  return; // ignore: dead_code
 }
 
 /// Creates a group of tests.
@@ -202,7 +202,7 @@ void group(description, body(),
   // `main()` in JS stack traces in order to properly determine the line and
   // column where the test was defined. See sdk#26705.
   return;
-  return;
+  return; // ignore: dead_code
 }
 
 /// Registers a function to be run before tests.

@@ -8,7 +8,6 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import '../../util/io.dart';
-import '../../utils.dart';
 import 'browser.dart';
 
 // TODO(nweiz): move this into its own package?
