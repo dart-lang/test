@@ -164,7 +164,8 @@ class _Parser {
     var patterns = (_options['name'] as List<String>)
         .map/*<Pattern>*/(
             (value) => _wrapFormatException('name', () => new RegExp(value)))
-        .toList()..addAll(_options['plain-name'] as List<String>);
+        .toList()
+          ..addAll(_options['plain-name'] as List<String>);
 
     var includeTagSet = new Set.from(_options['tags'] ?? [])
       ..addAll(_options['tag'] ?? []);
