@@ -20,7 +20,7 @@ matrix:
     - dart: 1.22.1
       dart_task: dartfmt
   allow_failures:
-    # VM Tests are flaky – need to investigate
-    # https://github.com/dart-lang/test/issues/599
-    - dart_task:
+    # Stack traces can be different on the dev channel which can result in failing tests
+    - dart: dev
+      dart_task:
         test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x

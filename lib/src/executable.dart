@@ -182,6 +182,10 @@ transformers:
   } finally {
     await close();
   }
+
+  // TODO(grouma) - figure out why the executable can hang in the travis
+  // environment. https://github.com/dart-lang/test/issues/599
+  exit(exitCode);
 }
 
 /// Print usage information for this command.
