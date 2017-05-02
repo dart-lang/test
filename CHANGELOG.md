@@ -1,3 +1,7 @@
+## 0.12.20+11
+
+* Refactor bootstrapping to simplify the test/pub_serve transformer.
+
 ## 0.12.20+10
 
 * Refactor for internal tools.
