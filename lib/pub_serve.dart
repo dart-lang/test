@@ -30,6 +30,8 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     transform.addOutput(new Asset.fromString(
         id.addExtension('.vm_test.dart'),
         '''
+          import "dart:isolate";
+
           import "package:test/bootstrap/vm.dart";
 
           import "${p.url.basename(id.path)}" as test;
