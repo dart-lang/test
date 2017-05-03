@@ -7,8 +7,8 @@ import 'dart:async';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 
-import '../backend/state.dart';
 import '../backend/live_test.dart';
+import '../backend/state.dart';
 import 'live_suite.dart';
 import 'runner_suite.dart';
 

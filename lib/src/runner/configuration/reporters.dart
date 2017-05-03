@@ -2,16 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
 import 'dart:collection';
+import 'dart:io';
 
-import '../engine.dart';
+import '../../util/io.dart';
 import '../configuration.dart';
+import '../engine.dart';
 import '../reporter.dart';
 import '../reporter/compact.dart';
 import '../reporter/expanded.dart';
 import '../reporter/json.dart';
-import '../../util/io.dart';
 
 /// Constructs a reporter for the provided engine with the provided
 /// configuration.
