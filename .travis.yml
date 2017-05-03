@@ -19,8 +19,3 @@ matrix:
     # Repo was formatted with 1.23.x SDK
     - dart: 1.22.1
       dart_task: dartfmt
-  allow_failures:
-    # Stack traces can be different on the dev channel which can result in failing tests
-    - dart: dev
-      dart_task:
-        test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x

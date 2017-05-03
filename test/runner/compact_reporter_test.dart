@@ -490,6 +490,12 @@ $tests
       return line.substring(indentation);
     }).join("\n");
 
-    expect(actual, equals(expected));
+    // In Dart 1.24, stack traces with Future constructors output as
+    // `new Future` instead of `Future.Future`.
+    // Support running tests in both old and new styles.
+    expect(
+        actual,
+        anyOf(equals(expected),
+            equals(expected.replaceAll(' Future.Future.', ' new Future.'))));
   });
 }
