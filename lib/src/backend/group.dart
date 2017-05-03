@@ -48,10 +48,7 @@ class Group implements GroupEntry {
   int _testCount;
 
   Group(this.name, Iterable<GroupEntry> entries,
-      {Metadata metadata,
-      this.trace,
-      Test this.setUpAll,
-      Test this.tearDownAll})
+      {Metadata metadata, this.trace, this.setUpAll, this.tearDownAll})
       : entries = new List<GroupEntry>.unmodifiable(entries),
         metadata = metadata == null ? new Metadata() : metadata;
 
@@ -59,7 +56,7 @@ class Group implements GroupEntry {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
     var newMetadata = metadata.forPlatform(platform, os: os);
     var filtered = _map((entry) => entry.forPlatform(platform, os: os));
-    if (filtered.isEmpty && !entries.isEmpty) return null;
+    if (filtered.isEmpty && entries.isNotEmpty) return null;
     return new Group(name, filtered,
         metadata: newMetadata,
         trace: trace,
@@ -69,7 +66,7 @@ class Group implements GroupEntry {
 
   Group filter(bool callback(Test test)) {
     var filtered = _map((entry) => entry.filter(callback));
-    if (filtered.isEmpty && !entries.isEmpty) return null;
+    if (filtered.isEmpty && entries.isNotEmpty) return null;
     return new Group(name, filtered,
         metadata: metadata,
         trace: trace,

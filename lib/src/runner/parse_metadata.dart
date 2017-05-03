@@ -407,7 +407,7 @@ class _Parser {
         .where((arg) => arg is NamedExpression)
         .map((arg) => arg as NamedExpression)
         .toList();
-    if (!actualNamed.isEmpty && named.isEmpty) {
+    if (actualNamed.isNotEmpty && named.isEmpty) {
       throw new SourceSpanFormatException(
           "$name doesn't take named arguments.", _spanFor(actualNamed.first));
     }
@@ -442,7 +442,7 @@ class _Parser {
     if (actualPositional > positional + optional) {
       if (optional + positional == 0) {
         var buffer = new StringBuffer("$name doesn't take ");
-        if (!named.isEmpty) buffer.write("positional ");
+        if (named.isNotEmpty) buffer.write("positional ");
         buffer.write("arguments.");
         throw new SourceSpanFormatException(
             buffer.toString(), _spanFor(arguments));
