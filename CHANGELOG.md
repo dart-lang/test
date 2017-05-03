@@ -1,3 +1,11 @@
+## 0.12.20+12
+
+* Now support `v0.30.0` of `pkg/analyzer`
+
+* The test executable now does a "hard exit" when complete to ensure lingering
+  isolates or async code don't block completion. This may affect users trying
+  to use the Dart service protocol or observatory.
+
 ## 0.12.20+11
 
 * Refactor bootstrapping to simplify the test/pub_serve transformer.
