@@ -18,7 +18,8 @@ void main() {
     _testEscaping('ASCII control character', '\x11', r'\x11');
     _testEscaping('delete', '\x7F', r'\x7F');
     _testEscaping('escape combos', r'\n', r'\\n');
-    _testEscaping('All characters',
+    _testEscaping(
+        'All characters',
         'A new line\nA charriage return\rA form feed\fA backspace\b'
         'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
         'A delete\x7F',
@@ -40,7 +41,7 @@ void _testEscaping(String name, String source, String target) {
     var escaped = escape(source);
     expect(escaped == target, isTrue,
         reason: "Expected escaped value: $target\n"
-        "  Actual escaped value: $escaped");
+            "  Actual escaped value: $escaped");
   });
 }
 
