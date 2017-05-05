@@ -177,6 +177,40 @@ void main() {
         "Which: has no match for a value greater than <3> at index 0");
   });
 
+  test('containsAllInOrder', () {
+    var d = [0, 1, 0, 2];
+    shouldPass(d, containsAllInOrder([1, 2]));
+    shouldPass(d, containsAllInOrder([greaterThan(0), greaterThan(1)]));
+    shouldFail(
+        d,
+        containsAllInOrder([2, 1]),
+        "Expected: contains in order([2, 1]) "
+        "Actual: [0, 1, 0, 2] "
+        "Which: did not find a value matching <1> following expected prior "
+        "values");
+    shouldFail(
+        d,
+        containsAllInOrder([greaterThan(1), greaterThan(0)]),
+        "Expected: contains in order([<a value greater than <1>>, "
+        "<a value greater than <0>>]) "
+        "Actual: [0, 1, 0, 2] "
+        "Which: did not find a value matching a value greater than <0> "
+        "following expected prior values");
+    shouldFail(
+        d,
+        containsAllInOrder([1, 2, 3]),
+        "Expected: contains in order([1, 2, 3]) "
+        "Actual: [0, 1, 0, 2] "
+        "Which: did not find a value matching <3> following expected prior "
+        "values");
+    shouldFail(
+        1,
+        containsAllInOrder([1]),
+        "Expected: contains in order([1]) "
+        "Actual: <1> "
+        "Which: not an iterable");
+  });
+
   test('pairwise compare', () {
     var c = [1, 2];
     var d = [1, 2, 3];
