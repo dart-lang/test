@@ -49,9 +49,13 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
       }
 
       // Otherwise, print each member on its own line.
-      return "$type[\n" + strings.map((string) {
-        return _indent(indent + 2) + string;
-      }).join(",\n") + "\n" + _indent(indent) + "]";
+      return "$type[\n" +
+          strings.map((string) {
+            return _indent(indent + 2) + string;
+          }).join(",\n") +
+          "\n" +
+          _indent(indent) +
+          "]";
     } else if (object is Map) {
       // Convert the contents of the map to string representations.
       var strings = object.keys.map((key) {
@@ -73,9 +77,13 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
       }
 
       // Otherwise, print each key/value pair on its own line.
-      return "{\n" + strings.map((string) {
-        return _indent(indent + 2) + string;
-      }).join(",\n") + "\n" + _indent(indent) + "}";
+      return "{\n" +
+          strings.map((string) {
+            return _indent(indent + 2) + string;
+          }).join(",\n") +
+          "\n" +
+          _indent(indent) +
+          "}";
     } else if (object is String) {
       // Escape strings and print each line on its own line.
       var lines = object.split("\n");

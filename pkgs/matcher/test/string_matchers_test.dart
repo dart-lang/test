@@ -49,7 +49,9 @@ void main() {
 
   test('equalsIgnoringWhitespace', () {
     shouldPass(' hello   world  ', equalsIgnoringWhitespace('hello world'));
-    shouldFail(' helloworld  ', equalsIgnoringWhitespace('hello world'),
+    shouldFail(
+        ' helloworld  ',
+        equalsIgnoringWhitespace('hello world'),
         "Expected: 'hello world' ignoring whitespace "
         "Actual: ' helloworld ' "
         "Which: is 'helloworld' with whitespace compressed");
@@ -59,7 +61,9 @@ void main() {
     shouldPass('hello', startsWith(''));
     shouldPass('hello', startsWith('hell'));
     shouldPass('hello', startsWith('hello'));
-    shouldFail('hello', startsWith('hello '),
+    shouldFail(
+        'hello',
+        startsWith('hello '),
         "Expected: a string starting with 'hello ' "
         "Actual: 'hello'");
   });
@@ -68,7 +72,9 @@ void main() {
     shouldPass('hello', endsWith(''));
     shouldPass('hello', endsWith('lo'));
     shouldPass('hello', endsWith('hello'));
-    shouldFail('hello', endsWith(' hello'),
+    shouldFail(
+        'hello',
+        endsWith(' hello'),
         "Expected: a string ending with ' hello' "
         "Actual: 'hello'");
   });
@@ -96,7 +102,8 @@ void main() {
         'goodbye cruel world', stringContainsInOrder(['cruel', 'world']));
     shouldPass('goodbye cruel world',
         stringContainsInOrder(['goodbye', 'cruel', 'world']));
-    shouldFail('goodbye cruel world',
+    shouldFail(
+        'goodbye cruel world',
         stringContainsInOrder(['goo', 'cruel', 'bye']),
         "Expected: a string containing 'goo', 'cruel', 'bye' in order "
         "Actual: 'goodbye cruel world'");

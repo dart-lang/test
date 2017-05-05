@@ -23,23 +23,31 @@ void main() {
   test('allOf', () {
     // with a list
     shouldPass(1, allOf([lessThan(10), greaterThan(0)]));
-    shouldFail(-1, allOf([lessThan(10), greaterThan(0)]),
+    shouldFail(
+        -1,
+        allOf([lessThan(10), greaterThan(0)]),
         "Expected: (a value less than <10> and a value greater than <0>) "
         "Actual: <-1> "
         "Which: is not a value greater than <0>");
 
     // with individual items
     shouldPass(1, allOf(lessThan(10), greaterThan(0)));
-    shouldFail(-1, allOf(lessThan(10), greaterThan(0)),
+    shouldFail(
+        -1,
+        allOf(lessThan(10), greaterThan(0)),
         "Expected: (a value less than <10> and a value greater than <0>) "
         "Actual: <-1> "
         "Which: is not a value greater than <0>");
 
     // with maximum items
-    shouldPass(1, allOf(lessThan(10), lessThan(9), lessThan(8),
-        lessThan(7), lessThan(6), lessThan(5), lessThan(4)));
-    shouldFail(4, allOf(lessThan(10), lessThan(9), lessThan(8), lessThan(7),
-            lessThan(6), lessThan(5), lessThan(4)),
+    shouldPass(
+        1,
+        allOf(lessThan(10), lessThan(9), lessThan(8), lessThan(7), lessThan(6),
+            lessThan(5), lessThan(4)));
+    shouldFail(
+        4,
+        allOf(lessThan(10), lessThan(9), lessThan(8), lessThan(7), lessThan(6),
+            lessThan(5), lessThan(4)),
         "Expected: (a value less than <10> and a value less than <9> and a "
         "value less than <8> and a value less than <7> and a value less than "
         "<6> and a value less than <5> and a value less than <4>) "

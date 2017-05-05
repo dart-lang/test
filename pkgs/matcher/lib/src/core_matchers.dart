@@ -121,7 +121,7 @@ class _DeepMatcher extends Matcher {
 
     var expectedIterator = expected.iterator;
     var actualIterator = actual.iterator;
-    for (var index = 0; ; index++) {
+    for (var index = 0;; index++) {
       // Advance in lockstep.
       var expectedNext = expectedIterator.moveNext();
       var actualNext = actualIterator.moveNext();
@@ -528,8 +528,8 @@ class _Contains extends Matcher {
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is String || item is Iterable || item is Map) {
-      return super.describeMismatch(
-          item, mismatchDescription, matchState, verbose);
+      return super
+          .describeMismatch(item, mismatchDescription, matchState, verbose);
     } else {
       return mismatchDescription.add('is not a string, map or iterable');
     }

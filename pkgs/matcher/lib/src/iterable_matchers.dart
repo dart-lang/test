@@ -55,8 +55,8 @@ class _EveryElement extends _IterableMatcher {
       mismatchDescription.add(' at index $index');
       return mismatchDescription;
     }
-    return super.describeMismatch(
-        item, mismatchDescription, matchState, verbose);
+    return super
+        .describeMismatch(item, mismatchDescription, matchState, verbose);
   }
 }
 
@@ -136,8 +136,8 @@ abstract class _IterableMatcher extends Matcher {
     if (item is! Iterable) {
       return mismatchDescription.addDescriptionOf(item).add(' not an Iterable');
     } else {
-      return super.describeMismatch(
-          item, mismatchDescription, matchState, verbose);
+      return super
+          .describeMismatch(item, mismatchDescription, matchState, verbose);
     }
   }
 }
@@ -200,8 +200,8 @@ class _UnorderedMatches extends Matcher {
       .addAll('[', ', ', ']', _expected)
       .add(' unordered');
 
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) =>
+  Description describeMismatch(item, Description mismatchDescription,
+          Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item));
 }
 
@@ -211,8 +211,8 @@ class _UnorderedMatches extends Matcher {
 /// returning whether they match, will be applied to each pair in order.
 /// [description] should be a meaningful name for the comparator.
 Matcher pairwiseCompare(
-    Iterable expected, bool comparator(a, b), String description) =>
-        new _PairwiseCompare(expected, comparator, description);
+        Iterable expected, bool comparator(a, b), String description) =>
+    new _PairwiseCompare(expected, comparator, description);
 
 typedef bool _Comparator(a, b);
 
@@ -231,11 +231,8 @@ class _PairwiseCompare extends _IterableMatcher {
     for (var e in _expected) {
       iterator.moveNext();
       if (!_comparator(e, iterator.current)) {
-        addStateInfo(matchState, {
-          'index': i,
-          'expected': e,
-          'actual': iterator.current
-        });
+        addStateInfo(matchState,
+            {'index': i, 'expected': e, 'actual': iterator.current});
         return false;
       }
       i++;

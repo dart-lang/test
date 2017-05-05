@@ -37,14 +37,16 @@ void main() {
     });
 
     test('containing newlines', () {
-      expect(prettyPrint('foo\nbar\nbaz'), equals("'foo\\n'\n"
-          "  'bar\\n'\n"
-          "  'baz'"));
+      expect(
+          prettyPrint('foo\nbar\nbaz'),
+          equals("'foo\\n'\n"
+              "  'bar\\n'\n"
+              "  'baz'"));
     });
 
     test('containing escapable characters', () {
-      expect(
-          prettyPrint("foo\rbar\tbaz'qux\v"), equals(r"'foo\rbar\tbaz\'qux\v'"));
+      expect(prettyPrint("foo\rbar\tbaz'qux\v"),
+          equals(r"'foo\rbar\tbaz\'qux\v'"));
     });
   });
 
@@ -54,13 +56,15 @@ void main() {
     });
 
     test('containing a multiline string', () {
-      expect(prettyPrint(['foo', 'bar\nbaz\nbip', 'qux']), equals("[\n"
-          "  'foo',\n"
-          "  'bar\\n'\n"
-          "    'baz\\n'\n"
-          "    'bip',\n"
-          "  'qux'\n"
-          "]"));
+      expect(
+          prettyPrint(['foo', 'bar\nbaz\nbip', 'qux']),
+          equals("[\n"
+              "  'foo',\n"
+              "  'bar\\n'\n"
+              "    'baz\\n'\n"
+              "    'bip',\n"
+              "  'qux'\n"
+              "]"));
     });
 
     test('containing a matcher', () {
@@ -74,7 +78,8 @@ void main() {
     });
 
     test("that's over maxLineLength", () {
-      expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 29),
+      expect(
+          prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 29),
           equals("[\n"
               "  0,\n"
               "  1,\n"
@@ -90,23 +95,27 @@ void main() {
     });
 
     test("factors indentation into maxLineLength", () {
-      expect(prettyPrint(["foo\nbar", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],],
-          maxLineLength: 30), equals("[\n"
-          "  'foo\\n'\n"
-          "    'bar',\n"
-          "  [\n"
-          "    0,\n"
-          "    1,\n"
-          "    2,\n"
-          "    3,\n"
-          "    4,\n"
-          "    5,\n"
-          "    6,\n"
-          "    7,\n"
-          "    8,\n"
-          "    9\n"
-          "  ]\n"
-          "]"));
+      expect(
+          prettyPrint([
+            "foo\nbar",
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          ], maxLineLength: 30),
+          equals("[\n"
+              "  'foo\\n'\n"
+              "    'bar',\n"
+              "  [\n"
+              "    0,\n"
+              "    1,\n"
+              "    2,\n"
+              "    3,\n"
+              "    4,\n"
+              "    5,\n"
+              "    6,\n"
+              "    7,\n"
+              "    8,\n"
+              "    9\n"
+              "  ]\n"
+              "]"));
     });
 
     test("that's under maxItems", () {
@@ -133,27 +142,33 @@ void main() {
     });
 
     test('containing a multiline string key', () {
-      expect(prettyPrint({'foo\nbar': 1, 'bar': true}), equals("{\n"
-          "  'foo\\n'\n"
-          "    'bar': 1,\n"
-          "  'bar': true\n"
-          "}"));
+      expect(
+          prettyPrint({'foo\nbar': 1, 'bar': true}),
+          equals("{\n"
+              "  'foo\\n'\n"
+              "    'bar': 1,\n"
+              "  'bar': true\n"
+              "}"));
     });
 
     test('containing a multiline string value', () {
-      expect(prettyPrint({'foo': 'bar\nbaz', 'qux': true}), equals("{\n"
-          "  'foo': 'bar\\n'\n"
-          "    'baz',\n"
-          "  'qux': true\n"
-          "}"));
+      expect(
+          prettyPrint({'foo': 'bar\nbaz', 'qux': true}),
+          equals("{\n"
+              "  'foo': 'bar\\n'\n"
+              "    'baz',\n"
+              "  'qux': true\n"
+              "}"));
     });
 
     test('containing a multiline string key/value pair', () {
-      expect(prettyPrint({'foo\nbar': 'baz\nqux'}), equals("{\n"
-          "  'foo\\n'\n"
-          "    'bar': 'baz\\n'\n"
-          "    'qux'\n"
-          "}"));
+      expect(
+          prettyPrint({'foo\nbar': 'baz\nqux'}),
+          equals("{\n"
+              "  'foo\\n'\n"
+              "    'bar': 'baz\\n'\n"
+              "    'qux'\n"
+              "}"));
     });
 
     test('containing a matcher key', () {
@@ -172,7 +187,8 @@ void main() {
     });
 
     test("that's over maxLineLength", () {
-      expect(prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 31),
+      expect(
+          prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 31),
           equals("{\n"
               "  '0': 1,\n"
               "  '2': 3,\n"
@@ -182,17 +198,21 @@ void main() {
     });
 
     test("factors indentation into maxLineLength", () {
-      expect(prettyPrint(["foo\nbar", {'0': 1, '2': 3, '4': 5, '6': 7}],
-          maxLineLength: 32), equals("[\n"
-          "  'foo\\n'\n"
-          "    'bar',\n"
-          "  {\n"
-          "    '0': 1,\n"
-          "    '2': 3,\n"
-          "    '4': 5,\n"
-          "    '6': 7\n"
-          "  }\n"
-          "]"));
+      expect(
+          prettyPrint([
+            "foo\nbar",
+            {'0': 1, '2': 3, '4': 5, '6': 7}
+          ], maxLineLength: 32),
+          equals("[\n"
+              "  'foo\\n'\n"
+              "    'bar',\n"
+              "  {\n"
+              "    '0': 1,\n"
+              "    '2': 3,\n"
+              "    '4': 5,\n"
+              "    '6': 7\n"
+              "  }\n"
+              "]"));
     });
 
     test("that's under maxItems", () {

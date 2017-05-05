@@ -65,8 +65,8 @@ class _IsEqualIgnoringWhitespace extends _StringMatcher {
           .addDescriptionOf(collapseWhitespace(item))
           .add(' with whitespace compressed');
     } else {
-      return super.describeMismatch(
-          item, mismatchDescription, matchState, verbose);
+      return super
+          .describeMismatch(item, mismatchDescription, matchState, verbose);
     }
   }
 }
@@ -169,8 +169,8 @@ abstract class _StringMatcher extends Matcher {
     if (!(item is String)) {
       return mismatchDescription.addDescriptionOf(item).add(' not a string');
     } else {
-      return super.describeMismatch(
-          item, mismatchDescription, matchState, verbose);
+      return super
+          .describeMismatch(item, mismatchDescription, matchState, verbose);
     }
   }
 }

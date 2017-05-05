@@ -85,18 +85,18 @@ class _InRange extends Matcher {
     return true;
   }
 
-  Description describe(Description description) => description.add(
-      "be in range from "
-      "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
-      "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})");
+  Description describe(Description description) =>
+      description.add("be in range from "
+          "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
+          "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})");
 
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is! num) {
       return mismatchDescription.addDescriptionOf(item).add(' not numeric');
     } else {
-      return super.describeMismatch(
-          item, mismatchDescription, matchState, verbose);
+      return super
+          .describeMismatch(item, mismatchDescription, matchState, verbose);
     }
   }
 }
