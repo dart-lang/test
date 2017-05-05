@@ -1,3 +1,7 @@
+## 0.12.20+13
+
+* Upgrade to package:matcher 0.12.1
+
 ## 0.12.20+12
 
 * Now support `v0.30.0` of `pkg/analyzer`
