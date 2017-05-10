@@ -291,7 +291,7 @@ class Invoker {
 
     if (!liveTest.test.metadata.chainStackTraces) {
       _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
-          "recieve more detailed exceptions.\n"
+          "receive more detailed exceptions.\n"
           "For example, 'pub run test --chain-stack-traces'.");
     }
 
