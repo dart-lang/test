@@ -361,7 +361,7 @@ class _IsAnything extends Matcher {
 }
 
 /// Returns a matcher that matches if an object is an instance
-/// of [type] (or a subtype).
+/// of [T] (or a subtype).
 ///
 /// As types are not first class objects in Dart we can only
 /// approximate this test by using a generic wrapper class.
