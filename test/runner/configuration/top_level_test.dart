@@ -148,6 +148,39 @@ void main() {
     test.shouldExit(1);
   });
 
+  test("disables stack trace chaining with chain_stack_traces: false", () {
+    d
+        .file("dart_test.yaml", JSON.encode({"chain_stack_traces": false}))
+        .create();
+
+    d
+        .file(
+            "test.dart",
+            """
+         import 'dart:async';
+
+         import 'package:test/test.dart';
+
+          void main() {
+            test("failure", () async{
+              await new Future((){});
+              await new Future((){});
+              throw "oh no";
+            });
+          }
+    """)
+        .create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(containsInOrder([
+      "00:00 +0: failure",
+      "00:00 +0 -1: failure [E]",
+      "oh no",
+      "test.dart 9:15  main.<fn>",
+    ]));
+    test.shouldExit(1);
+  });
+
   test("doesn't dartify stack traces for JS-compiled tests with js_trace: true",
       () {
     d.file("dart_test.yaml", JSON.encode({"js_trace": true})).create();

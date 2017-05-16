@@ -34,6 +34,17 @@ void main() {
     test.shouldExit(exit_codes.data);
   });
 
+  test("rejects an invalid  chain_stack_traces", () {
+    d
+        .file("dart_test.yaml", JSON.encode({"chain_stack_traces": "flup"}))
+        .create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(
+        containsInOrder(["chain_stack_traces must be a boolean", "^^^^^^"]));
+    test.shouldExit(exit_codes.data);
+  });
+
   test("rejects an invalid js_trace", () {
     d.file("dart_test.yaml", JSON.encode({"js_trace": "flup"})).create();
 
