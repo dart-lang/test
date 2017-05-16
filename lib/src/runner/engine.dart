@@ -340,8 +340,11 @@ class Engine {
   ///
   /// If [countSuccess] is `true` (the default), the test is put into [passed]
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
+  ///
+  /// [attempt] is used to determine if this test should be retried, defaults to
+  /// 1.
   Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
-      {bool countSuccess: true}) async {
+      {bool countSuccess: true, int attempt: 1}) async {
     await _onUnpaused;
     _active.add(liveTest);
 
@@ -351,7 +354,7 @@ class Engine {
     if (_active.first.suite is LoadSuite) _active.removeFirst();
 
     StreamSubscription subscription;
-    subscription = liveTest.onStateChange.listen((state) {
+    subscription = liveTest.onStateChange.listen((state) async {
       if (state.status != Status.complete) return;
       _active.remove(liveTest);
 
@@ -364,7 +367,9 @@ class Engine {
     });
     _subscriptions.add(subscription);
 
-    suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
+    var countFailure = liveTest.test.metadata.retry + 1 <= attempt;
+    suiteController.reportLiveTest(liveTest,
+        countSuccess: countSuccess, countFailure: countFailure);
 
     // Schedule a microtask to ensure that [onTestStarted] fires before the
     // first [LiveTest.onStateChange] event.
@@ -373,6 +378,11 @@ class Engine {
     // Once the test finishes, use [new Future] to do a coarse-grained event
     // loop pump to avoid starving non-microtask events.
     await new Future(() {});
+
+    if (liveTest.state.result != Result.success && !countFailure) {
+      await _runLiveTest(suiteController, liveTest.copy(),
+          countSuccess: countSuccess, attempt: ++attempt);
+    }
 
     if (!_restarted.contains(liveTest)) return;
     await _runLiveTest(suiteController, liveTest.copy(),

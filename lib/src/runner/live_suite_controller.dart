@@ -106,8 +106,12 @@ class LiveSuiteController {
   /// is `true` (the default), the test is put into [passed] if it succeeds.
   /// Otherwise, it's removed from [liveTests] entirely.
   ///
+  /// Likewise, if [countFailure] is `true` (the default), the test is put into
+  /// [failed] if it fails. Otherwise, it's removed from [liveTests] entirely.
+  ///
   /// Throws a [StateError] if called after [noMoreLiveTests].
-  void reportLiveTest(LiveTest liveTest, {bool countSuccess: true}) {
+  void reportLiveTest(LiveTest liveTest,
+      {bool countSuccess: true, bool countFailure: true}) {
     if (_onTestStartedController.isClosed) {
       throw new StateError("Can't call reportLiveTest() after noMoreTests().");
     }
@@ -123,10 +127,10 @@ class LiveSuiteController {
 
       if (state.result == Result.skipped) {
         _skipped.add(liveTest);
-      } else if (state.result != Result.success) {
+      } else if (state.result != Result.success && countFailure) {
         _passed.remove(liveTest);
         _failed.add(liveTest);
-      } else if (countSuccess) {
+      } else if (state.result == Result.success && countSuccess) {
         _passed.add(liveTest);
       }
     });

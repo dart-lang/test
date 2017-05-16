@@ -49,6 +49,10 @@ class Metadata {
   /// The user-defined tags attached to the test or suite.
   final Set<String> tags;
 
+  /// The number of times to re-run a test before being marked as a failure.
+  int get retry => _retry ?? 0;
+  final int _retry;
+
   /// Platform-specific metadata.
   ///
   /// Each key identifies a platform, and its value identifies the specific
@@ -140,6 +144,7 @@ class Metadata {
       bool skip,
       bool verboseTrace,
       bool chainStackTraces,
+      int retry,
       String skipReason,
       Iterable<String> tags,
       Map<PlatformSelector, Metadata> onPlatform,
@@ -151,6 +156,7 @@ class Metadata {
         skip: skip,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,
+        retry: retry,
         skipReason: skipReason,
         tags: tags,
         onPlatform: onPlatform,
@@ -185,6 +191,7 @@ class Metadata {
       this.skipReason,
       bool verboseTrace,
       bool chainStackTraces,
+      int retry,
       Iterable<String> tags,
       Map<PlatformSelector, Metadata> onPlatform,
       Map<BooleanSelector, Metadata> forTag})
@@ -193,6 +200,7 @@ class Metadata {
         _skip = skip,
         _verboseTrace = verboseTrace,
         _chainStackTraces = chainStackTraces,
+        _retry = retry,
         tags = new UnmodifiableSetView(tags == null ? new Set() : tags.toSet()),
         onPlatform =
             onPlatform == null ? const {} : new UnmodifiableMapView(onPlatform),
@@ -210,6 +218,7 @@ class Metadata {
       skip,
       bool verboseTrace,
       bool chainStackTraces,
+      int retry,
       Map<String, dynamic> onPlatform,
       tags})
       : testOn = testOn == null
@@ -219,6 +228,7 @@ class Metadata {
         _skip = skip == null ? null : skip != false,
         _verboseTrace = verboseTrace,
         _chainStackTraces = chainStackTraces,
+        _retry = retry,
         skipReason = skip is String ? skip : null,
         onPlatform = _parseOnPlatform(onPlatform),
         tags = _parseTags(tags),
@@ -241,6 +251,7 @@ class Metadata {
         skipReason = serialized['skipReason'],
         _verboseTrace = serialized['verboseTrace'],
         _chainStackTraces = serialized['chainStackTraces'],
+        _retry = serialized['retry'],
         tags = new Set.from(serialized['tags']),
         onPlatform = new Map.fromIterable(serialized['onPlatform'],
             key: (pair) => new PlatformSelector.parse(pair.first),
@@ -284,6 +295,7 @@ class Metadata {
       skipReason: other.skipReason ?? skipReason,
       verboseTrace: other._verboseTrace ?? _verboseTrace,
       chainStackTraces: other._chainStackTraces ?? _chainStackTraces,
+      retry: other._retry ?? _retry,
       tags: tags.union(other.tags),
       onPlatform: mergeMaps(onPlatform, other.onPlatform,
           value: (metadata1, metadata2) => metadata1.merge(metadata2)),
@@ -297,6 +309,7 @@ class Metadata {
       bool skip,
       bool verboseTrace,
       bool chainStackTraces,
+      int retry,
       String skipReason,
       Map<PlatformSelector, Metadata> onPlatform,
       Set<String> tags,
@@ -306,6 +319,7 @@ class Metadata {
     skip ??= this._skip;
     verboseTrace ??= this._verboseTrace;
     chainStackTraces ??= this._chainStackTraces;
+    retry ??= this._retry;
     skipReason ??= this.skipReason;
     onPlatform ??= this.onPlatform;
     tags ??= this.tags;
@@ -351,6 +365,7 @@ class Metadata {
       'skipReason': skipReason,
       'verboseTrace': _verboseTrace,
       'chainStackTraces': _chainStackTraces,
+      'retry': _retry,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
       'forTag': mapMap(forTag,

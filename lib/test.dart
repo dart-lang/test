@@ -127,13 +127,15 @@ void test(description, body(),
     Timeout timeout,
     skip,
     tags,
-    Map<String, dynamic> onPlatform}) {
+    Map<String, dynamic> onPlatform,
+    int retry}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
       skip: skip,
       onPlatform: onPlatform,
-      tags: tags);
+      tags: tags,
+      retry: retry);
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and
