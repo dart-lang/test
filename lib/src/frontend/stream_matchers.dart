@@ -75,7 +75,7 @@ StreamMatcher mayEmit(matcher) {
   }, "maybe ${streamMatcher.description}");
 }
 
-/// Returns a [streamMatcher] that matches the stream if at least one of
+/// Returns a [StreamMatcher] that matches the stream if at least one of
 /// [matchers] matches.
 ///
 /// If multiple matchers match the stream, this chooses the matcher that
