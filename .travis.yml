@@ -19,3 +19,6 @@ matrix:
     # Repo was formatted with 1.23.x SDK
     - dart: 1.22.1
       dart_task: dartfmt
+  allow_failures:
+    - dart: dev
+      dart_task: dartanalyzer
