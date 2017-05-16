@@ -354,7 +354,7 @@ class Engine {
     if (_active.first.suite is LoadSuite) _active.removeFirst();
 
     StreamSubscription subscription;
-    subscription = liveTest.onStateChange.listen((state) async {
+    subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _active.remove(liveTest);
 
