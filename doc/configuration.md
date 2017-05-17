@@ -27,6 +27,7 @@ tags:
 * [Test Configuration](#test-configuration)
   * [`timeout`](#timeout)
   * [`verbose_trace`](#verbose_trace)
+  * [`chain_stack_traces`](#chain_stack_traces)
   * [`js_trace`](#js_trace)
   * [`skip`](#skip)
   * [`test_on`](#test_on)
@@ -94,6 +95,16 @@ itself. It defaults to `false`.
 
 ```yaml
 verbose_trace: true
+```
+
+### `chain_stack_traces`
+
+This boolean field controls whether or not stack traces are chained. 
+Disabling stack trace chaining will improve performance at the cost of
+debuggability. 
+
+```yaml
+chain_stack_traces: false 
 ```
 
 ### `js_trace`
