@@ -100,8 +100,10 @@ verbose_trace: true
 ### `chain_stack_traces`
 
 This boolean field controls whether or not stack traces are chained. 
-Disabling stack trace chaining will improve performance at the cost of
-debuggability. 
+Disabling [`stack trace chaining`][stack trace chaining] will improve
+performance for heavily asynchronous code at the cost of debuggability. 
+
+[stack trace chaining]: https://github.com/dart-lang/stack_trace/blob/master/README.md#stack-chains
 
 ```yaml
 chain_stack_traces: false 
