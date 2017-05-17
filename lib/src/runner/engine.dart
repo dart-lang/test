@@ -341,10 +341,12 @@ class Engine {
   /// If [countSuccess] is `true` (the default), the test is put into [passed]
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
   ///
-  /// [attempt] is used to determine if this test should be retried, defaults to
-  /// 1.
+  /// The [attempt] argument is only passed when [_runLiveTest] calls itself
+  /// recursively. It indicates the number of times the test has been run,
+  /// including the current time. It defaults to 1.
   Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
-      {bool countSuccess: true, int attempt: 1}) async {
+      {bool countSuccess: true, int attempt}) async {
+    attempt ??= 1;
     await _onUnpaused;
     _active.add(liveTest);
 
