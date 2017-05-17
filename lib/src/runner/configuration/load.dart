@@ -73,6 +73,7 @@ class _ConfigurationLoader {
   /// Loads test configuration that's allowed in the global configuration file.
   Configuration _loadGlobalTestConfig() {
     var verboseTrace = _getBool("verbose_trace");
+    var chainStackTraces = _getBool("chain_stack_traces");
     var jsTrace = _getBool("js_trace");
 
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
@@ -106,7 +107,8 @@ class _ConfigurationLoader {
             verboseTrace: verboseTrace,
             jsTrace: jsTrace,
             timeout: timeout,
-            presets: presets)
+            presets: presets,
+            chainStackTraces: chainStackTraces)
         .merge(_extractPresets/*<PlatformSelector>*/(
             onPlatform, (map) => new Configuration(onPlatform: map)));
 

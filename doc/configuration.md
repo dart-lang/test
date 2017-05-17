@@ -27,6 +27,7 @@ tags:
 * [Test Configuration](#test-configuration)
   * [`timeout`](#timeout)
   * [`verbose_trace`](#verbose_trace)
+  * [`chain_stack_traces`](#chain_stack_traces)
   * [`js_trace`](#js_trace)
   * [`skip`](#skip)
   * [`test_on`](#test_on)
@@ -94,6 +95,18 @@ itself. It defaults to `false`.
 
 ```yaml
 verbose_trace: true
+```
+
+### `chain_stack_traces`
+
+This boolean field controls whether or not stack traces are chained. 
+Disabling [`stack trace chaining`][stack trace chaining] will improve
+performance for heavily asynchronous code at the cost of debuggability. 
+
+[stack trace chaining]: https://github.com/dart-lang/stack_trace/blob/master/README.md#stack-chains
+
+```yaml
+chain_stack_traces: false 
 ```
 
 ### `js_trace`
