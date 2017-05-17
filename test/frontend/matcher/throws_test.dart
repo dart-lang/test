@@ -126,6 +126,25 @@ void main() {
             ]));
       });
 
+      test("with a closure that returns a Future that throws an error", () {
+        expect(() => new Future.error('oh no'), throws);
+      });
+
+      test("with a closure that returns a Future that doesn't throw", () async {
+        var liveTest = await runTestBody(() {
+          expect(() => new Future.value(), throws);
+        });
+
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws\n"
+                  "  Actual: <"),
+              endsWith(">\n"
+                  "   Which: returned a Future that emitted <null>\n")
+            ]));
+      });
+
       test("won't let the test end until the Future completes", () {
         return expectTestBlocks(() {
           var completer = new Completer();
@@ -163,6 +182,43 @@ void main() {
       test("with a Future that throws the wrong error", () async {
         var liveTest = await runTestBody(() {
           expect(new Future.error('aw dang'), throwsA('oh no'));
+        });
+
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws 'oh no'\n"
+                  "  Actual: <"),
+              contains(">\n"
+                  "   Which: threw 'aw dang'\n")
+            ]));
+      });
+
+      test("with a closure that returns a Future that throws a matching error",
+          () {
+        expect(() => new Future.error(new FormatException("bad")),
+            throwsA(isFormatException));
+      });
+
+      test("with a closure that returns a Future that doesn't throw", () async {
+        var liveTest = await runTestBody(() {
+          expect(() => new Future.value(), throwsA('oh no'));
+        });
+
+        expectTestFailed(
+            liveTest,
+            allOf([
+              startsWith("Expected: throws 'oh no'\n"
+                  "  Actual: <"),
+              endsWith(">\n"
+                  "   Which: returned a Future that emitted <null>\n")
+            ]));
+      });
+
+      test("with closure that returns a Future that throws the wrong error",
+          () async {
+        var liveTest = await runTestBody(() {
+          expect(() => new Future.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
