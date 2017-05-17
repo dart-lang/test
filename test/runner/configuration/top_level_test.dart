@@ -173,8 +173,8 @@ void main() {
 
     var test = runTest(["test.dart"]);
     test.stdout.expect(containsInOrder([
-      "00:00 +0: failure",
-      "00:00 +0 -1: failure [E]",
+      "+0: failure",
+      "+0 -1: failure [E]",
       "oh no",
       "test.dart 9:15  main.<fn>",
     ]));
