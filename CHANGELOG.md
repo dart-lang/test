@@ -3,6 +3,8 @@
 * `throwsA()` and all related matchers will now match functions that return
   `Future`s that emit exceptions.
 
+* Respect `onPlatform` for groups.
+
 ## 0.12.20+13
 
 * Upgrade to package:matcher 0.12.1
