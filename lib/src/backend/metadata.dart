@@ -336,7 +336,8 @@ class Metadata {
         skipReason: skipReason,
         onPlatform: onPlatform,
         tags: tags,
-        forTag: forTag);
+        forTag: forTag,
+        retry: retry);
   }
 
   /// Returns a copy of [this] with all platform-specific metadata from

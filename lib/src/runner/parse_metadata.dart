@@ -60,6 +60,7 @@ class _Parser {
     var skip;
     Map<PlatformSelector, Metadata> onPlatform;
     Set<String> tags;
+    var retry;
 
     for (var annotation in _annotations) {
       var pair =
@@ -82,6 +83,8 @@ class _Parser {
       } else if (name == 'Tags') {
         _assertSingle(tags, 'Tags', annotation);
         tags = _parseTags(annotation, constructorName);
+      } else if (name == 'Retry') {
+        retry = _parseRetry(annotation, constructorName);
       }
     }
 
@@ -91,7 +94,8 @@ class _Parser {
         skip: skip == null ? null : true,
         skipReason: skip is String ? skip : null,
         onPlatform: onPlatform,
-        tags: tags);
+        tags: tags,
+        retry: retry);
   }
 
   /// Parses a `@TestOn` annotation.
@@ -104,6 +108,16 @@ class _Parser {
     var literal = _parseString(annotation.arguments.arguments.first);
     return _contextualize(
         literal, () => new PlatformSelector.parse(literal.stringValue));
+  }
+
+  /// Parses a `@Retry` annotation.
+  ///
+  /// [annotation] is the annotation. [constructorName] is the name of the named
+  /// constructor for the annotation, if any.
+  int _parseRetry(Annotation annotation, String constructorName) {
+    _assertConstructorName(constructorName, 'Retry', annotation);
+    _assertArguments(annotation.arguments, 'Retry', annotation, positional: 1);
+    return _parseInt(annotation.arguments.arguments.first);
   }
 
   /// Parses a `@Timeout` annotation.
