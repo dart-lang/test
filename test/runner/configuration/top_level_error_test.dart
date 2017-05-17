@@ -34,7 +34,7 @@ void main() {
     test.shouldExit(exit_codes.data);
   });
 
-  test("rejects an invalid  chain_stack_traces", () {
+  test("rejects an invalid chain_stack_traces", () {
     d
         .file("dart_test.yaml", JSON.encode({"chain_stack_traces": "flup"}))
         .create();
