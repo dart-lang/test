@@ -352,7 +352,6 @@ class Invoker {
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-
         if (liveTest.state.result == Result.failure &&
             _runCount < liveTest.test.metadata.retry + 1) {
           _onRun();
