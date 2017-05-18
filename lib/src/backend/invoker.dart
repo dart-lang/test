@@ -107,6 +107,9 @@ class Invoker {
   /// on one anothers' toes.
   final _counterKey = new Object();
 
+  /// The number of times this [liveTest] has been run.
+  int _runCount = 0;
+
   /// The current invoker, or `null` if none is defined.
   ///
   /// An invoker is only set within the zone scope of a running test.
@@ -339,6 +342,7 @@ class Invoker {
         // Using [new Future] also avoids starving the DOM or other
         // microtask-level events.
         new Future(() async {
+          _runCount++;
           await _test._body();
           await unclosable(
               () => Future.forEach(_tearDowns.reversed, errorsDontStopTest));
@@ -347,6 +351,13 @@ class Invoker {
 
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
+
+
+        if (liveTest.state.result == Result.failure &&
+            _runCount < liveTest.test.metadata.retry + 1) {
+          _onRun();
+          return;
+        }
 
         _controller.setState(new State(Status.complete, liveTest.state.result));
 
