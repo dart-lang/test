@@ -60,7 +60,8 @@ class ContentShell extends Browser {
         // Any errors from this will always come before the "Running without
         // renderer sandbox" message.
         while (await stderr.moveNext() &&
-            !stderr.current.endsWith("Running without renderer sandbox")) {
+            !stderr.current.endsWith("Running without renderer sandbox") &&
+            !stderr.current.contains("Running without the SUID sandbox")) {
           if (stderr.current == "[dartToStderr]: Dartium build has expired") {
             stderr.cancel();
             process.kill();
