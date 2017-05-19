@@ -119,13 +119,13 @@ class _DoesNotComplete extends AsyncMatcher {
     var value;
 
     return new Future(() async {
-      var notCompleted = true;
+      var isCompleted = false;
       item.then((value) {
         value = value;
-        notCompleted = false;
+        isCompleted = true;
       });
       await _pumpEventQueue(timesToPump);
-      return notCompleted ? null : 'completed with a value of $value';
+      return isCompleted ? 'completed with a value of $value' : null;
     });
   }
 
