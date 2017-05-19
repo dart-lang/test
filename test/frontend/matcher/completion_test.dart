@@ -11,6 +11,10 @@ import '../../utils.dart';
 
 void main() {
   group("[doesNotComplete]", () {
+    test("succeeds when provided a non future", () {
+      expect(10, doesNotComplete);
+    });
+
     test("succeeds when a future does not complete", () {
       var completer = new Completer();
       expect(completer.future, doesNotComplete);

@@ -114,7 +114,7 @@ class _DoesNotComplete extends AsyncMatcher {
   }
 
   /*FutureOr<String>*/ matchAsync(item) {
-    if (item is! Future) return "was not a Future";
+    if (item is! Future) return null;
 
     var value;
 
