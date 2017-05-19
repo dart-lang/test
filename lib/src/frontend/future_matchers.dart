@@ -117,16 +117,13 @@ class _DoesNotComplete extends AsyncMatcher {
     if (item is! Future) return null; // non-Future instances cannot 'complete'
 
     var value;
-
-    return new Future(() async {
-      var isCompleted = false;
-      item.then((value) {
-        value = value;
-        isCompleted = true;
-      });
-      await _pumpEventQueue(timesToPump);
-      return isCompleted ? 'completed with a value of $value' : null;
+    var isCompleted = false;
+    item.then((value) {
+      value = value;
+      isCompleted = true;
     });
+    return _pumpEventQueue(timesToPump)
+        .then((_) => isCompleted ? 'completed with a value of $value' : null);
   }
 
   Description describe(Description description) {
