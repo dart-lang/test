@@ -80,3 +80,57 @@ class _Completes extends AsyncMatcher {
     return description;
   }
 }
+
+/// Matches a [Future] that does not complete.
+///
+/// Note that this creates an asynchronous expectation. The call to
+/// `expect()` that includes this will return immediately and execution will
+/// continue. Later, after 20  passes through the event queue,
+/// the matcher will complete.
+///
+/// This returns an [AsyncMatcher], so [expect] won't complete until
+/// [timesToPump] passes through the event queue.
+final Matcher doesNotComplete = const _DoesNotComplete(20);
+
+/// Matches a [Future] that does not complete.
+///
+/// Note that this creates an asynchronous expectation. The call to
+/// `expect()` that includes this will return immediately and execution will
+/// continue. Later, after [timesToPump]  passes through the event queue,
+/// the matcher will complete.
+///
+/// This returns an [AsyncMatcher], so [expect] won't complete until
+/// [timesToPump] passes through the event queue.
+Matcher doesNotCompleteAfter(int timesToPump) =>
+    new _DoesNotComplete(timesToPump);
+
+class _DoesNotComplete extends AsyncMatcher {
+  final int timesToPump;
+  const _DoesNotComplete(this.timesToPump);
+
+  Future _pumpEventQueue(times) {
+    if (times == 0) return new Future.value();
+    return new Future(() => _pumpEventQueue(times - 1));
+  }
+
+  /*FutureOr<String>*/ matchAsync(item) {
+    if (item is! Future) return "was not a Future";
+
+    var value;
+
+    return new Future(() async {
+      var notCompleted = true;
+      item.then((value) {
+        value = value;
+        notCompleted = false;
+      });
+      await _pumpEventQueue(timesToPump);
+      return notCompleted ? null : 'completed with a value of $value';
+    });
+  }
+
+  Description describe(Description description) {
+    description.add('does not complete');
+    return description;
+  }
+}

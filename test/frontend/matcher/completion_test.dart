@@ -10,6 +10,71 @@ import 'package:test/src/backend/state.dart';
 import '../../utils.dart';
 
 void main() {
+  group("[doesNotComplete]", () {
+    test("succeeds when a future does not complete", () {
+      var completer = new Completer();
+      expect(completer.future, doesNotComplete);
+    });
+
+    test("fails when a future does complete", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        completer.complete(null);
+        expect(completer.future, doesNotComplete);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Expected: does not complete\n"
+          "  Actual: <Instance of '_Future'>\n"
+          "   Which: completed with a value of null\n");
+    });
+
+    test("fails when a future completes after the expect", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        expect(completer.future, doesNotComplete);
+        completer.complete(null);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Expected: does not complete\n"
+          "  Actual: <Instance of '_Future'>\n"
+          "   Which: completed with a value of null\n");
+    });
+
+    test(
+        "succeeds if a future completes after the provided timesToPump"
+        "through the event queue", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        expect(completer.future, doesNotCompleteAfter(2));
+        new Future(() async {
+          await pumpEventQueue(2);
+          completer.complete(null);
+        });
+      });
+
+      expectTestPassed(liveTest);
+    });
+
+    test("fails when a future eventually completes", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        expect(completer.future, doesNotComplete);
+        new Future(() async {
+          await pumpEventQueue(10);
+        }).then(completer.complete);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Expected: does not complete\n"
+          "  Actual: <Instance of '_Future'>\n"
+          "   Which: completed with a value of null\n");
+    });
+  });
   group("[completes]", () {
     test("blocks the test until the Future completes", () {
       return expectTestBlocks(() {
