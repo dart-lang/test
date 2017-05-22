@@ -89,7 +89,7 @@ class _Completes extends AsyncMatcher {
 /// the matcher will complete.
 ///
 /// This returns an [AsyncMatcher], so [expect] won't complete until
-/// [_timesToPump] passes through the event queue.
+/// the provided number of passes through the event queue.
 final Matcher doesNotComplete = const _DoesNotComplete(20);
 
 class _DoesNotComplete extends AsyncMatcher {
