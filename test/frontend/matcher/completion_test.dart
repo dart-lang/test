@@ -17,10 +17,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
-          "Expected: does not complete\n"
-          "  Actual: <10>\n"
-          "   Which: 10 is not a Future\n");
+          liveTest,"10 is not a Future");
     });
 
     test("succeeds when a future does not complete", () {
@@ -36,10 +33,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
-          "Expected: does not complete\n"
-          "  Actual: <Instance of '_Future'>\n"
-          "   Which: completed with a value of null\n");
+          liveTest, "Instance of '_Future' completed with a value of null");
     });
 
     test("fails when a future completes after the expect", () async {
@@ -50,10 +44,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
-          "Expected: does not complete\n"
-          "  Actual: <Instance of '_Future'>\n"
-          "   Which: completed with a value of null\n");
+          liveTest, "Instance of '_Future' completed with a value of null");
     });
 
     test("fails when a future eventually completes", () async {
@@ -66,10 +57,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
-          "Expected: does not complete\n"
-          "  Actual: <Instance of '_Future'>\n"
-          "   Which: completed with a value of null\n");
+          liveTest, "Instance of '_Future' completed with a value of null");
     });
   });
   group("[completes]", () {

@@ -103,20 +103,16 @@ class _DoesNotComplete extends AsyncMatcher {
   }
 
   /*FutureOr<String>*/ matchAsync(item) {
-    if (item is! Future) return '$item is not a Future';
+    if (item is! Future) fail('$item is not a Future');
 
-    var value;
-    var isCompleted = false;
     item.then((value) {
       value = value;
-      isCompleted = true;
+      fail('$item completed with a value of $value');
     });
-    return _pumpEventQueue(_timesToPump)
-        .then((_) => isCompleted ? 'completed with a value of $value' : null);
+    return _pumpEventQueue(_timesToPump);
   }
 
   Description describe(Description description) {
-    description.add('does not complete');
     return description;
   }
 }
