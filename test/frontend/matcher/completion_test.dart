@@ -32,7 +32,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, "Instance of '_Future' completed with a value of null");
+          liveTest,
+          "Future was not expected to complete but completed with a value of"
+          " null");
     });
 
     test("fails when a future completes after the expect", () async {
@@ -43,7 +45,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, "Instance of '_Future' completed with a value of null");
+          liveTest,
+          "Future was not expected to complete but completed with a value of"
+          " null");
     });
 
     test("fails when a future eventually completes", () async {
@@ -56,7 +60,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, "Instance of '_Future' completed with a value of null");
+          liveTest,
+          "Future was not expected to complete but completed with a value of"
+          " null");
     });
   });
   group("[completes]", () {

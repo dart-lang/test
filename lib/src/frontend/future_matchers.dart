@@ -105,12 +105,19 @@ class _DoesNotComplete extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    if (item is! Future) fail('$item is not a Future');
+    if (item is! Future) return false;
     item.then((value) {
       value = value;
-      fail('$item completed with a value of $value');
+      fail('Future was not expected to complete but completed with a value of '
+          '$value');
     });
     expect(_pumpEventQueue(_timesToPump), completes);
     return true;
+  }
+
+  Description describeMismatch(
+      item, Description description, Map matchState, bool verbose) {
+    if (item is! Future) return description.add("$item is not a Future");
+    return description;
   }
 }
