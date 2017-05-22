@@ -107,7 +107,6 @@ class _DoesNotComplete extends Matcher {
   bool matches(item, Map matchState) {
     if (item is! Future) return false;
     item.then((value) {
-      value = value;
       fail('Future was not expected to complete but completed with a value of '
           '$value');
     });
