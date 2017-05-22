@@ -92,18 +92,6 @@ class _Completes extends AsyncMatcher {
 /// [timesToPump] passes through the event queue.
 final Matcher doesNotComplete = const _DoesNotComplete(20);
 
-/// Matches a [Future] that does not complete.
-///
-/// Note that this creates an asynchronous expectation. The call to
-/// `expect()` that includes this will return immediately and execution will
-/// continue. Later, after [timesToPump]  passes through the event queue,
-/// the matcher will complete.
-///
-/// This returns an [AsyncMatcher], so [expect] won't complete until
-/// [timesToPump] passes through the event queue.
-Matcher doesNotCompleteAfter(int timesToPump) =>
-    new _DoesNotComplete(timesToPump);
-
 class _DoesNotComplete extends AsyncMatcher {
   final int timesToPump;
   const _DoesNotComplete(this.timesToPump);

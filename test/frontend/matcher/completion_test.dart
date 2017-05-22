@@ -48,21 +48,6 @@ void main() {
           "   Which: completed with a value of null\n");
     });
 
-    test(
-        "succeeds if a future completes after the provided timesToPump"
-        "through the event queue", () async {
-      var liveTest = await runTestBody(() {
-        var completer = new Completer();
-        expect(completer.future, doesNotCompleteAfter(2));
-        new Future(() async {
-          await pumpEventQueue(2);
-          completer.complete(null);
-        });
-      });
-
-      expectTestPassed(liveTest);
-    });
-
     test("fails when a future eventually completes", () async {
       var liveTest = await runTestBody(() {
         var completer = new Completer();
