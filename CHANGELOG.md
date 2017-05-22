@@ -1,11 +1,11 @@
 ## 0.12.21
 
+* Add a `doesNotComplete` matcher that asserts that a Future never completes.
+
 * `throwsA()` and all related matchers will now match functions that return
   `Future`s that emit exceptions.
 
 * Respect `onPlatform` for groups.
-
-* Expose new matcher `doesNotComplete`
 
 ## 0.12.20+13
 
