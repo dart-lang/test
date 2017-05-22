@@ -16,7 +16,7 @@ void main() {
         expect(10, doesNotComplete);
       });
 
-      expectTestFailed(liveTest, "10 is not a Future");
+      expectTestFailed(liveTest, contains("10 is not a Future"));
     });
 
     test("succeeds when a future does not complete", () {

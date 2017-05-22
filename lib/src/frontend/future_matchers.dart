@@ -85,14 +85,10 @@ class _Completes extends AsyncMatcher {
 ///
 /// Note that this creates an asynchronous expectation. The call to
 /// `expect()` that includes this will return immediately and execution will
-/// continue. Later, after 20  passes through the event queue,
-/// the matcher will complete.
-///
-/// This returns an [AsyncMatcher], so [expect] won't complete until
-/// the provided number of passes through the event queue.
+/// continue.
 final Matcher doesNotComplete = const _DoesNotComplete(20);
 
-class _DoesNotComplete extends AsyncMatcher {
+class _DoesNotComplete extends Matcher {
   final int _timesToPump;
   const _DoesNotComplete(this._timesToPump);
 
@@ -102,17 +98,19 @@ class _DoesNotComplete extends AsyncMatcher {
     return new Future(() => _pumpEventQueue(times - 1));
   }
 
-  /*FutureOr<String>*/ matchAsync(item) {
-    if (item is! Future) fail('$item is not a Future');
+  Description describe(Description description) {
+    description.add("does not complete");
+    return description;
+  }
 
+  @override
+  bool matches(item, Map matchState) {
+    if (item is! Future) fail('$item is not a Future');
     item.then((value) {
       value = value;
       fail('$item completed with a value of $value');
     });
-    return _pumpEventQueue(_timesToPump);
-  }
-
-  Description describe(Description description) {
-    return description;
+    expect(_pumpEventQueue(_timesToPump), completes);
+    return true;
   }
 }
