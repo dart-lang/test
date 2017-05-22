@@ -103,7 +103,7 @@ class _DoesNotComplete extends AsyncMatcher {
   }
 
   /*FutureOr<String>*/ matchAsync(item) {
-    if (item is! Future) return null; // non-Future instances cannot 'complete'
+    if (item is! Future) return '$item is not a Future';
 
     var value;
     var isCompleted = false;

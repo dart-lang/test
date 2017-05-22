@@ -11,8 +11,16 @@ import '../../utils.dart';
 
 void main() {
   group("[doesNotComplete]", () {
-    test("succeeds when provided a non future", () {
-      expect(10, doesNotComplete);
+    test("fails when provided a non future", () async {
+      var liveTest = await runTestBody(() {
+        expect(10, doesNotComplete);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Expected: does not complete\n"
+          "  Actual: <10>\n"
+          "   Which: 10 is not a Future\n");
     });
 
     test("succeeds when a future does not complete", () {
