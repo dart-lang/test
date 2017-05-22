@@ -354,6 +354,8 @@ class Invoker {
 
         if (liveTest.state.result != Result.success &&
             _runCount < liveTest.test.metadata.retry + 1) {
+          _controller
+              .message(new Message.retry("Retry: ${liveTest.test.name}"));
           _onRun();
           return;
         }

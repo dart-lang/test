@@ -16,6 +16,7 @@ class Message {
 
   Message.print(this.text) : type = MessageType.print;
   Message.skip(this.text) : type = MessageType.skip;
+  Message.retry(this.text) : type = MessageType.retry;
 }
 
 class MessageType {
@@ -24,6 +25,9 @@ class MessageType {
 
   /// A message indicating that a test, or some portion of one, was skipped.
   static const skip = const MessageType._("skip");
+
+  /// A message indicating that a test was retried.
+  static const retry = const MessageType._("skip");
 
   /// The name of the message type.
   final String name;
@@ -34,6 +38,8 @@ class MessageType {
         return MessageType.print;
       case "skip":
         return MessageType.skip;
+      case "retry":
+        return MessageType.retry;
       default:
         throw new ArgumentError('Invalid message type "$name".');
     }
