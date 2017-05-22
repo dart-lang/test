@@ -5,6 +5,8 @@
 
 * Respect `onPlatform` for groups.
 
+* Expose new matcher `doesNotComplete`
+
 ## 0.12.20+13
 
 * Upgrade to package:matcher 0.12.1
