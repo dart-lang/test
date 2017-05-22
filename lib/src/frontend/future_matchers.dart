@@ -96,6 +96,7 @@ class _DoesNotComplete extends AsyncMatcher {
   final int _timesToPump;
   const _DoesNotComplete(this._timesToPump);
 
+  // TODO(grouma) - Make this a top level function
   Future _pumpEventQueue(times) {
     if (times == 0) return new Future.value();
     return new Future(() => _pumpEventQueue(times - 1));
