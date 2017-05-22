@@ -89,12 +89,12 @@ class _Completes extends AsyncMatcher {
 /// the matcher will complete.
 ///
 /// This returns an [AsyncMatcher], so [expect] won't complete until
-/// [timesToPump] passes through the event queue.
+/// [_timesToPump] passes through the event queue.
 final Matcher doesNotComplete = const _DoesNotComplete(20);
 
 class _DoesNotComplete extends AsyncMatcher {
-  final int timesToPump;
-  const _DoesNotComplete(this.timesToPump);
+  final int _timesToPump;
+  const _DoesNotComplete(this._timesToPump);
 
   Future _pumpEventQueue(times) {
     if (times == 0) return new Future.value();
@@ -110,7 +110,7 @@ class _DoesNotComplete extends AsyncMatcher {
       value = value;
       isCompleted = true;
     });
-    return _pumpEventQueue(timesToPump)
+    return _pumpEventQueue(_timesToPump)
         .then((_) => isCompleted ? 'completed with a value of $value' : null);
   }
 
