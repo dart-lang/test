@@ -10,6 +10,61 @@ import 'package:test/src/backend/state.dart';
 import '../../utils.dart';
 
 void main() {
+  group("[doesNotComplete]", () {
+    test("fails when provided a non future", () async {
+      var liveTest = await runTestBody(() {
+        expect(10, doesNotComplete);
+      });
+
+      expectTestFailed(liveTest, contains("10 is not a Future"));
+    });
+
+    test("succeeds when a future does not complete", () {
+      var completer = new Completer();
+      expect(completer.future, doesNotComplete);
+    });
+
+    test("fails when a future does complete", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        completer.complete(null);
+        expect(completer.future, doesNotComplete);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Future was not expected to complete but completed with a value of"
+          " null");
+    });
+
+    test("fails when a future completes after the expect", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        expect(completer.future, doesNotComplete);
+        completer.complete(null);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Future was not expected to complete but completed with a value of"
+          " null");
+    });
+
+    test("fails when a future eventually completes", () async {
+      var liveTest = await runTestBody(() {
+        var completer = new Completer();
+        expect(completer.future, doesNotComplete);
+        new Future(() async {
+          await pumpEventQueue(10);
+        }).then(completer.complete);
+      });
+
+      expectTestFailed(
+          liveTest,
+          "Future was not expected to complete but completed with a value of"
+          " null");
+    });
+  });
   group("[completes]", () {
     test("blocks the test until the Future completes", () {
       return expectTestBlocks(() {

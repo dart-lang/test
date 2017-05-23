@@ -17,7 +17,7 @@ import 'async_matcher.dart';
 @Deprecated("Will be removed in 0.13.0")
 const Matcher throws = const Throws();
 
-/// This can be used to match two kinds of objects:
+/// This can be used to match three kinds of objects:
 ///
 /// * A [Function] that throws an exception when called. The function cannot
 ///   take any arguments. If you want to test that a function expecting
@@ -29,7 +29,9 @@ const Matcher throws = const Throws();
 ///   return immediately and execution will continue. Later, when the future
 ///   completes, the actual expectation will run.
 ///
-/// In both cases, when an exception is thrown, this will test that the
+/// * A [Function] that returns a [Future] that completes with an exception.
+///
+/// In all three cases, when an exception is thrown, this will test that the
 /// exception object matches [matcher]. If [matcher] is not an instance of
 /// [Matcher], it will implicitly be treated as `equals(matcher)`.
 Matcher throwsA(matcher) => new Throws(wrapMatcher(matcher));
@@ -55,6 +57,13 @@ class Throws extends AsyncMatcher {
 
     try {
       var value = item();
+      if (value is Future) {
+        return value.then(
+            (value) => indent(prettyPrint(value),
+                first: 'returned a Future that emitted '),
+            onError: _check);
+      }
+
       return indent(prettyPrint(value), first: 'returned ');
     } catch (error, trace) {
       return _check(error, trace);

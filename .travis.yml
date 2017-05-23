@@ -1,21 +1,29 @@
 language: dart
 sudo: false
+
 dart:
  - dev
  - stable
  - 1.23.0
  - 1.22.1
-cache:
- directories:
-   - $HOME/.pub-cache
+
 dart_task:
  - test: --platform dartium
    install_dartium: true
  - test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x
  - dartfmt
  - dartanalyzer
+
 matrix:
   exclude:
-    # Repo was formatted with 1.23.x SDK
+    # Repo was formatted with the 1.23 SDK.
     - dart: 1.22.1
       dart_task: dartfmt
+
+# Only building master means that we don't run two builds for each pull request.
+branches:
+  only: [master]
+
+cache:
+ directories:
+   - $HOME/.pub-cache

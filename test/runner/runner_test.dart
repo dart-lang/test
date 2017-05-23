@@ -638,6 +638,30 @@ void main() {
       test.stdout.expect(consumeThrough(contains("Skip: fifth")));
       test.shouldExit(0);
     });
+
+    test("applies platforms to a group", () {
+      d
+          .file(
+              "test.dart",
+              '''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  group("group", () {
+    test("success", () {});
+  }, onPlatform: {
+    "vm": new Skip()
+  });
+}
+''')
+          .create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains("All tests skipped.")));
+      test.shouldExit(0);
+    });
   });
 
   group("with an @OnPlatform annotation", () {

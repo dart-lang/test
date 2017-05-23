@@ -201,7 +201,11 @@ void group(description, body(),
     tags,
     Map<String, dynamic> onPlatform}) {
   _declarer.group(description.toString(), body,
-      testOn: testOn, timeout: timeout, skip: skip, tags: tags);
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      tags: tags,
+      onPlatform: onPlatform);
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and
