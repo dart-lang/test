@@ -5,7 +5,7 @@ author: Dart Team <misc@dartlang.org>
 description: Support for specifying test expectations
 homepage: https://github.com/dart-lang/matcher
 environment:
-  sdk: '>=1.0.0 <2.0.0'
+  sdk: '>=1.8.0 <2.0.0'
 dependencies:
   stack_trace: '^1.2.0'
 dev_dependencies:
