@@ -1,6 +1,6 @@
 name: matcher
 
-version: 0.12.1
+version: 0.12.1+1
 author: Dart Team <misc@dartlang.org>
 description: Support for specifying test expectations
 homepage: https://github.com/dart-lang/matcher

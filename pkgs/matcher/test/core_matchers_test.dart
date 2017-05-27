@@ -7,6 +7,11 @@ import 'package:test/test.dart' show test, group;
 
 import 'test_utils.dart';
 
+class BadCustomMatcher extends CustomMatcher {
+  BadCustomMatcher() : super("feature", "description", {1: "a"});
+  featureValueOf(actual) => throw new Exception("bang");
+}
+
 void main() {
   test('isTrue', () {
     shouldPass(true, isTrue);
@@ -235,5 +240,18 @@ void main() {
         "Actual: <Instance of 'Widget'> "
         "Which: has price with value <10> which is not "
         "a value greater than <10>");
+  });
+
+  test("Custom Matcher Exception", () {
+    shouldFail(
+        "a",
+        new BadCustomMatcher(),
+        allOf([
+          contains("Expected: feature {1: 'a'} "),
+          contains("Actual: 'a' "),
+          contains("Which: threw 'Exception: bang' "),
+          contains("test/core_matchers_test.dart "),
+          contains("package:test ")
+        ]));
   });
 }
