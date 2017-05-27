@@ -310,11 +310,11 @@ class _StringEqualsMatcher extends Matcher {
       }
       if (start == minLength) {
         if (escapedValue.length < escapedItem.length) {
-          buff.write(' Both strings start the same, but the given value also'
+          buff.write(' Both strings start the same, but the actual value also'
               ' has the following trailing characters: ');
           _writeTrailing(buff, escapedItem, escapedValue.length);
         } else {
-          buff.write(' Both strings start the same, but the given value is'
+          buff.write(' Both strings start the same, but the actual value is'
               ' missing the following trailing characters: ');
           _writeTrailing(buff, escapedValue, escapedItem.length);
         }
