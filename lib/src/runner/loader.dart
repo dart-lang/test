@@ -162,7 +162,7 @@ class Loader {
         try {
           var plugin = await memo.runOnce(_platformCallbacks[platform]);
           var suite = await plugin.load(path, platform, platformConfig);
-          _suites.add(suite);
+          if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {
           if (error is LoadException) rethrow;

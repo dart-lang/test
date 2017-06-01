@@ -93,12 +93,10 @@ class BrowserPlatform extends PlatformPlugin {
   bool get _closed => _closeMemo.hasRun;
 
   /// A map from browser identifiers to futures that will complete to the
-  /// [BrowserManager]s for those browsers, or the errors that occurred when
-  /// trying to load those managers.
+  /// [BrowserManager]s for those browsers, or `null` if they failed to load.
   ///
   /// This should only be accessed through [_browserManagerFor].
-  final _browserManagers =
-      new Map<TestPlatform, Future<Result<BrowserManager>>>();
+  final _browserManagers = new Map<TestPlatform, Future<BrowserManager>>();
 
   /// A cascade of handlers for suites' precompiled paths.
   ///
@@ -278,7 +276,7 @@ class BrowserPlatform extends PlatformPlugin {
 
     // TODO(nweiz): Don't start the browser until all the suites are compiled.
     var browserManager = await _browserManagerFor(browser);
-    if (_closed) return null;
+    if (_closed || browserManager == null) return null;
 
     var suite = await browserManager.load(path, suiteUrl, suiteConfig,
         mapper: browser.isJS ? _mappers[path] : null);
@@ -405,8 +403,8 @@ class BrowserPlatform extends PlatformPlugin {
   ///
   /// If no browser manager is running yet, starts one.
   Future<BrowserManager> _browserManagerFor(TestPlatform platform) {
-    var manager = _browserManagers[platform];
-    if (manager != null) return Result.release(manager);
+    var managerFuture = _browserManagers[platform];
+    if (managerFuture != null) return managerFuture;
 
     var completer = new Completer<WebSocketChannel>.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
@@ -421,12 +419,9 @@ class BrowserPlatform extends PlatformPlugin {
     var future = BrowserManager.start(platform, hostUrl, completer.future,
         debug: _config.pauseAfterLoad);
 
-    // Capture errors and release them later to avoid Zone issues. This call to
-    // [_browserManagerFor] is running in a different [LoadSuite] than future
-    // calls, which means they're also running in different error zones so
-    // errors can't be freely passed between them. Storing the error or value as
-    // an explicit [Result] fixes that.
-    _browserManagers[platform] = Result.capture(future);
+    // Store null values for browsers that error out so we know not to load them
+    // again.
+    _browserManagers[platform] = future.catchError((_) => null);
 
     return future;
   }
@@ -440,8 +435,8 @@ class BrowserPlatform extends PlatformPlugin {
     _browserManagers.clear();
     return Future.wait(managers.map((manager) async {
       var result = await manager;
-      if (result.isError) return;
-      await result.asValue.value.close();
+      if (result == null) return;
+      await result.close();
     }));
   }
 
@@ -453,9 +448,9 @@ class BrowserPlatform extends PlatformPlugin {
         var futures =
             _browserManagers.values.map<Future<dynamic>>((future) async {
           var result = await future;
-          if (result.isError) return;
+          if (result == null) return;
 
-          await result.asValue.value.close();
+          await result.close();
         }).toList();
 
         futures.add(_server.close());

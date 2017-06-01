@@ -7,6 +7,8 @@
 
 * Respect `onPlatform` for groups.
 
+* Only print browser load errors once per browser.
+
 ## 0.12.20+13
 
 * Upgrade to package:matcher 0.12.1
