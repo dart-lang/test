@@ -126,7 +126,10 @@ void main() {
 
   group("load()", () {
     test("loads a file", () {
-      var dir = d.dir('dir', [d.file('name.txt', 'contents')]);
+      var dir = d.dir('dir', [
+        d.file('name.txt', 'contents'),
+        d.file('other.txt', 'wrong')
+      ]);
       expect(UTF8.decodeStream(dir.load('name.txt')),
           completion(equals('contents')));
     });
@@ -134,8 +137,10 @@ void main() {
     test("loads a deeply-nested file", () {
       var dir = d.dir('dir', [
         d.dir('subdir', [
-          d.file('name.txt', 'subcontents')
+          d.file('name.txt', 'subcontents'),
+          d.file('other.txt', 'wrong')
         ]),
+        d.dir('otherdir', [d.file('other.txt', 'wrong')]),
         d.file('name.txt', 'contents')
       ]);
 

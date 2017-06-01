@@ -93,9 +93,9 @@ class DirectoryDescriptor extends Descriptor {
       var file = split.length == 1;
       var matchingEntries = contents.where((entry) {
         return entry.name == split.first &&
-            file
+            (file
                 ? entry is FileDescriptor
-                : entry is DirectoryDescriptor;
+                : entry is DirectoryDescriptor);
       }).toList();
 
       var type = file ? 'file' : 'directory';
