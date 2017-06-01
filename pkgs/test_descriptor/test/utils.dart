@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
 /// Converts a [Stream<List<int>>] to a flat byte future.

@@ -66,6 +66,11 @@ void main() {
           .validate();
     });
 
+    test('succeeds if invalid UTF-8 matches a text matcher', () async {
+      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
+      await d.file('name.txt', isNot(isEmpty)).validate();
+    });
+
     test("fails if the text contents don't match", () async {
       await new File(p.join(d.sandbox, 'name.txt')).writeAsString('wrong');
 
@@ -97,6 +102,14 @@ void main() {
               .validate(),
           throwsA(toString(startsWith(
               'Invalid contents for file "name.txt":'))));
+    });
+
+    test("fails if invalid UTF-8 doesn't match a text matcher", () async {
+      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
+      expect(d.file('name.txt', isEmpty).validate(), throwsA(toString(allOf([
+        startsWith('Invalid contents for file "name.txt":'),
+        contains('�')
+      ]))));
     });
 
     test("fails if there's no file", () {

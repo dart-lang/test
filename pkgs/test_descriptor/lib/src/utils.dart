@@ -3,12 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:path/path.dart' as p;
 import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
 import 'sandbox.dart';
+
+/// A UTF-8 codec that allows malformed byte sequences.
+final utf8 = const Utf8Codec(allowMalformed: true);
 
 /// Prepends a vertical bar to [text].
 String addBar(String text) => prefixLines(text, "${glyph.verticalLine} ",

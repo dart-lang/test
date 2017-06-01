@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -87,7 +86,7 @@ abstract class FileDescriptor extends Descriptor {
   /// Reads and decodes the contents of this descriptor as a UTF-8 string.
   ///
   /// This isn't supported for matcher descriptors.
-  Future<String> read() => UTF8.decodeStream(readAsBytes());
+  Future<String> read() => utf8.decodeStream(readAsBytes());
 
   /// Reads the contents of this descriptor as a byte stream.
   ///
@@ -121,10 +120,10 @@ class _StringFileDescriptor extends FileDescriptor {
   Future<String> read() async => _contents;
 
   Stream<List<int>> readAsBytes() =>
-      new Stream.fromIterable([UTF8.encode(_contents)]);
+      new Stream.fromIterable([utf8.encode(_contents)]);
 
   Future _validate(String prettyPath, List<int> actualContents) {
-    var actualContentsText = UTF8.decode(actualContents);
+    var actualContentsText = utf8.decode(actualContents);
     if (_contents == actualContentsText) return null;
     throw fail(_textMismatchMessage(prettyPath, _contents, actualContentsText));
   }
@@ -184,7 +183,7 @@ class _MatcherFileDescriptor extends FileDescriptor {
   void _validate(String prettyPath, List<int> actualContents) {
     try {
       expect(
-          _isBinary ? actualContents : UTF8.decode(actualContents),
+          _isBinary ? actualContents : utf8.decode(actualContents),
           _matcher);
     } on TestFailure catch (error) {
       throw new TestFailure(
