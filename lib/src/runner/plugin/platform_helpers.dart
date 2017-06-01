@@ -24,7 +24,7 @@ import '../runner_test.dart';
 
 typedef StackTrace _MapTrace(StackTrace trace);
 
-Duration _deserializeTimeout = new Duration(seconds: 30);
+Duration _deserializeTimeout = new Duration(seconds: 45);
 
 /// A helper method for creating a [RunnerSuiteController] containing tests
 /// that communicate over [channel].
