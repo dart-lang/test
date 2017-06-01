@@ -55,10 +55,8 @@ void main() {
       d.file("test.dart", _importFailure).create();
       var test = runTest(["-p", "content-shell", "test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        "Timed out trying to deserialize the test suite. "
-            "If possible, look for errors within the browser logs"
-      ]));
+      test.stdout.expect(
+          containsInOrder(["Timed out trying to deserialize the test suite."]));
       test.shouldExit(1);
     }, tags: 'content-shell');
 
