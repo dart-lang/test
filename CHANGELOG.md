@@ -7,6 +7,8 @@
 
 * Respect `onPlatform` for groups.
 
+* Only print browser load errors once per browser.
+
 * Gracefully timeout when attempting to deserialize a test suite.
 
 ## 0.12.20+13

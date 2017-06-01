@@ -80,7 +80,7 @@ class LoadSuite extends Suite implements RunnerSuite {
           if (completer.isCompleted) {
             // If the load test has already been closed, close the suite it
             // generated.
-            suite.close();
+            suite?.close();
             return;
           }
 
