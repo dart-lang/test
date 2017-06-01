@@ -14,6 +14,7 @@ import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
+import '../application_exception.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';
@@ -22,6 +23,8 @@ import '../runner_suite.dart';
 import '../runner_test.dart';
 
 typedef StackTrace _MapTrace(StackTrace trace);
+
+Duration _deserializeTimeout = new Duration(seconds: 15);
 
 /// A helper method for creating a [RunnerSuiteController] containing tests
 /// that communicate over [channel].
@@ -108,7 +111,13 @@ Future<RunnerSuiteController> deserializeSuite(
       });
 
   return new RunnerSuiteController(
-      environment, suiteConfig, await completer.future,
+      environment,
+      suiteConfig,
+      await completer.future.timeout(_deserializeTimeout, onTimeout: () {
+        throw new ApplicationException(
+            "Timed out trying to deserialize the test suite. "
+            "If possible, look for errors within the browser logs.");
+      }),
       path: path,
       platform: platform,
       os: currentOS,

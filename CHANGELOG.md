@@ -7,6 +7,8 @@
 
 * Respect `onPlatform` for groups.
 
+* Gracefully timeout when attempting to deserialize a test suite.
+
 ## 0.12.20+13
 
 * Upgrade to package:matcher 0.12.1

@@ -25,6 +25,16 @@ void main() {
 }
 """;
 
+final _importFailure = """
+import 'package:test/test.dart';
+import 'blah' as bad_library;
+
+void main() {
+  bad_library.main();
+  test("failure", () => throw new TestFailure("oh no"));
+}
+""";
+
 void main() {
   useSandbox();
 
@@ -40,6 +50,17 @@ void main() {
       ]));
       test.shouldExit(1);
     }, tags: 'chrome');
+
+    test("a test file has import errors", () {
+      d.file("test.dart", _importFailure).create();
+      var test = runTest(["-p", "content-shell", "test.dart"]);
+
+      test.stdout.expect(containsInOrder([
+        "Timed out trying to deserialize the test suite. "
+            "If possible, look for errors within the browser logs"
+      ]));
+      test.shouldExit(1);
+    }, tags: 'content-shell');
 
     test("a test file throws", () {
       d.file("test.dart", "void main() => throw 'oh no';").create();
