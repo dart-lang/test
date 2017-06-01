@@ -122,12 +122,15 @@ class TestProcess {
 
     // Listen eagerly so that the lines are interleaved properly between the two
     // streams.
-    stdoutStream().listen((line) {
+    //
+    // Call [split] explicitly because we don't want to log overridden
+    // [stdoutStream] or [stderrStream] output.
+    _stdoutSplitter.split().listen((line) {
       if (forwardStdio) print(line);
       _log.add("    $line");
     });
 
-    stderrStream().listen((line) {
+    _stderrSplitter.split().listen((line) {
       if (forwardStdio) print(line);
       _log.add("[e] $line");
     });
