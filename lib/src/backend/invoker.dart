@@ -278,6 +278,8 @@ class Invoker {
 
   /// Notifies the invoker of an asynchronous error.
   void _handleError(error, [StackTrace stackTrace]) {
+    // Ignore errors propagated from previous test runs
+    if (_runCount != Zone.current[#runCount]) return;
     if (stackTrace == null) stackTrace = new Chain.current();
 
     // Store these here because they'll change when we set the state below.
@@ -355,7 +357,7 @@ class Invoker {
         if (liveTest.state.result != Result.success &&
             _runCount < liveTest.test.metadata.retry + 1) {
           _controller
-              .message(new Message.retry("Retry: ${liveTest.test.name}"));
+              .message(new Message.print("Retry: ${liveTest.test.name}"));
           _onRun();
           return;
         }
@@ -369,7 +371,8 @@ class Invoker {
             // Use the invoker as a key so that multiple invokers can have different
             // outstanding callback counters at once.
             _counterKey: outstandingCallbacksForBody,
-            _closableKey: true
+            _closableKey: true,
+            #runCount: _runCount + 1
           },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) =>
