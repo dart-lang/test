@@ -9,7 +9,7 @@
 
 * Only print browser load errors once per browser.
 
-* Gracefully timeout when attempting to deserialize a test suite.
+* Gracefully time out when attempting to deserialize a test suite.
 
 ## 0.12.20+13
 

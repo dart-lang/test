@@ -24,7 +24,7 @@ import '../runner_test.dart';
 
 typedef StackTrace _MapTrace(StackTrace trace);
 
-Duration _deserializeTimeout = new Duration(seconds: 45);
+final _deserializeTimeout = new Duration(seconds: 45);
 
 /// A helper method for creating a [RunnerSuiteController] containing tests
 /// that communicate over [channel].
@@ -115,7 +115,8 @@ Future<RunnerSuiteController> deserializeSuite(
       suiteConfig,
       await completer.future.timeout(_deserializeTimeout, onTimeout: () {
         throw new ApplicationException(
-            "Timed out trying to deserialize the test suite.");
+            "Timed out while loading the test suite.\n"
+            "It's likely that there's a missing import or syntax error.");
       }),
       path: path,
       platform: platform,

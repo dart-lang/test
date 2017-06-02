@@ -25,16 +25,6 @@ void main() {
 }
 """;
 
-final _importFailure = """
-import 'package:test/test.dart';
-import 'blah' as bad_library;
-
-void main() {
-  bad_library.main();
-  test("failure", () => throw new TestFailure("oh no"));
-}
-""";
-
 void main() {
   useSandbox();
 
@@ -52,11 +42,28 @@ void main() {
     }, tags: 'chrome');
 
     test("a test file has import errors", () {
-      d.file("test.dart", _importFailure).create();
+      // Bad imports cause errors only at runtime when running in content-shell
+      // or Dartium. The runner will connect to the browser but will never
+      // receive the test suite to deserialize.
+      d
+          .file(
+              "test.dart",
+              """
+              import 'package:test/test.dart';
+              import 'blah' as bad_library;
+
+              void main() {
+                bad_library.main();
+                test("failure", () => throw new TestFailure("oh no"));
+              }
+              """)
+          .create();
       var test = runTest(["-p", "content-shell", "test.dart"]);
 
-      test.stdout.expect(
-          containsInOrder(["Timed out trying to deserialize the test suite."]));
+      test.stdout.expect(containsInOrder([
+        "Timed out while loading the test suite.",
+        "It's likely that there's a missing import or syntax error."
+      ]));
       test.shouldExit(1);
     }, tags: 'content-shell');
 
