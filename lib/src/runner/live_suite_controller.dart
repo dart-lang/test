@@ -128,6 +128,7 @@ class LiveSuiteController {
         _failed.add(liveTest);
       } else if (countSuccess) {
         _passed.add(liveTest);
+        // A passing test that was once failing was retried
         _failed.remove(liveTest);
       }
     });

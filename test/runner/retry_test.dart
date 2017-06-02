@@ -40,4 +40,80 @@ void main() {
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
   });
+
+  group("retries tests", () {
+    test("and eventually passes for valid tests", () {
+      d
+          .file(
+              "test.dart",
+              """
+              import 'dart:async';
+
+              import 'package:test/test.dart';
+
+              int attempt = 0;
+              void main() {
+                test("eventually passes", () {
+                 attempt++;
+                 if(attempt <= 2) {
+                   throw new TestFailure("oh no");
+                 }
+                }, retry: 2);
+              }
+          """)
+          .create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
+    });
+
+    test("and eventually fails for invalid tests", () {
+      d
+          .file(
+              "test.dart",
+              """
+              import 'dart:async';
+
+              import 'package:test/test.dart';
+
+              void main() {
+                test("failure", () {
+                 throw new TestFailure("oh no");
+                }, retry: 2);
+              }
+          """)
+          .create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
+      test.shouldExit(1);
+    });
+
+    test("only after a failure", () {
+      d
+          .file(
+              "test.dart",
+              """
+              import 'dart:async';
+
+              import 'package:test/test.dart';
+
+              int attempt = 0;
+              void main() {
+                test("eventually passes", () {
+                attempt++;
+                if (attempt != 2){
+                 throw new TestFailure("oh no");
+                }
+                }, retry: 5);
+          }
+          """)
+          .create();
+
+      var test = runTest(["test.dart"]);
+      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+      test.shouldExit(0);
+    });
+  });
 }

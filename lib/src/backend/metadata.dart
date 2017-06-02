@@ -205,7 +205,7 @@ class Metadata {
         onPlatform =
             onPlatform == null ? const {} : new UnmodifiableMapView(onPlatform),
         forTag = forTag == null ? const {} : new UnmodifiableMapView(forTag) {
-    if (retry != null) RangeError.checkNotNegative(retry);
+    if (retry != null) RangeError.checkNotNegative(retry, "retry");
     _validateTags();
   }
 
@@ -239,7 +239,7 @@ class Metadata {
           '"skip" must be a String or a bool, was "$skip".');
     }
 
-    if (retry != null) RangeError.checkNotNegative(retry);
+    if (retry != null) RangeError.checkNotNegative(retry, "retry");
 
     _validateTags();
   }

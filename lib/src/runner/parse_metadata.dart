@@ -60,7 +60,7 @@ class _Parser {
     var skip;
     Map<PlatformSelector, Metadata> onPlatform;
     Set<String> tags;
-    var retry;
+    int retry;
 
     for (var annotation in _annotations) {
       var pair =

@@ -80,7 +80,7 @@ void main() {
 ''')
         .create();
 
-    var test = runTest(["--timeout=0.016x", "test.dart"]);
+    var test = runTest(["--timeout=400ms", "test.dart"]);
     test.stdout.expect(containsInOrder([
       "Test timed out after 0.4 seconds.",
       "Test timed out after 0.4 seconds.",
