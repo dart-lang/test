@@ -32,7 +32,7 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
         '''
           import "dart:isolate";
 
-          import "package:test/bootstrap/vm.dart";
+          import "package:test/src/bootstrap/vm.dart";
 
           import "${p.url.basename(id.path)}" as test;
 
@@ -44,7 +44,7 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     transform.addOutput(new Asset.fromString(
         id.addExtension('.browser_test.dart'),
         '''
-          import "package:test/bootstrap/browser.dart";
+          import "package:test/src/bootstrap/browser.dart";
 
           import "${p.url.basename(id.path)}" as test;
 

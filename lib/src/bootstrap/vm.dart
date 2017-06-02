@@ -5,15 +5,14 @@ import "dart:isolate";
 
 import "package:stream_channel/stream_channel.dart";
 
-import "../src/runner/plugin/remote_platform_helpers.dart";
-import "../src/runner/vm/catch_isolate_errors.dart";
-import "../src/utils.dart";
+import "../runner/plugin/remote_platform_helpers.dart";
+import "../runner/vm/catch_isolate_errors.dart";
+import "../utils.dart";
 
 /// Bootstraps a vm test to communicate with the test runner.
 ///
 /// This should NOT be used directly, instead use the `test/pub_serve`
 /// transformer which will bootstrap your test and call this method.
-@deprecated
 void internalBootstrapVmTest(AsyncFunction originalMain, SendPort sendPort) {
   var channel = serializeSuite(() {
     catchIsolateErrors();
