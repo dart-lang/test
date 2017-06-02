@@ -9,7 +9,6 @@ import "../utils.dart";
 ///
 /// This should NOT be used directly, instead use the `test/pub_serve`
 /// transformer which will bootstrap your test and call this method.
-@deprecated
 void internalBootstrapBrowserTest(AsyncFunction originalMain) {
   var channel = serializeSuite(() => originalMain);
   postMessageChannel().pipe(channel);

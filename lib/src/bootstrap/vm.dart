@@ -13,7 +13,6 @@ import "../utils.dart";
 ///
 /// This should NOT be used directly, instead use the `test/pub_serve`
 /// transformer which will bootstrap your test and call this method.
-@deprecated
 void internalBootstrapVmTest(AsyncFunction originalMain, SendPort sendPort) {
   var channel = serializeSuite(() {
     catchIsolateErrors();
