@@ -69,7 +69,6 @@ void main() {
       test.shouldExit(0);
     });
 
-
     test("and ignores previous errors", () {
       d
           .file(
