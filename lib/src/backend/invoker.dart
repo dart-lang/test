@@ -329,6 +329,7 @@ class Invoker {
 
     var outstandingCallbacksForBody = new OutstandingCallbackCounter();
 
+    _runCount++;
     Chain.capture(() {
       runZonedWithValues(() async {
         _invokerZone = Zone.current;
@@ -344,7 +345,6 @@ class Invoker {
         // Using [new Future] also avoids starving the DOM or other
         // microtask-level events.
         new Future(() async {
-          _runCount++;
           await _test._body();
           await unclosable(
               () => Future.forEach(_tearDowns.reversed, errorsDontStopTest));
@@ -372,7 +372,7 @@ class Invoker {
             // outstanding callback counters at once.
             _counterKey: outstandingCallbacksForBody,
             _closableKey: true,
-            #runCount: _runCount + 1
+            #runCount: _runCount
           },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) =>

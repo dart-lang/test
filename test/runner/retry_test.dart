@@ -23,14 +23,13 @@ void main() {
 
           import 'package:test/test.dart';
 
-
-          int attempt = 0;
+          var attempt = 0;
           void main() {
             test("failure", () {
-             attempt++;
-             if(attempt <= 3) {
-               throw new TestFailure("oh no");
-             }
+               attempt++;
+               if(attempt <= 3) {
+                 throw new TestFailure("oh no");
+               }
             });
           }
           """)
@@ -39,6 +38,40 @@ void main() {
     var test = runTest(["test.dart"]);
     test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
     test.shouldExit(0);
+  });
+
+  test("Tests are not retried after they have already been reported successful",
+      () {
+    d
+        .file(
+            "test.dart",
+            """
+              import 'dart:async';
+
+              import 'package:test/test.dart';
+
+              void main() {
+                var completer1 = new Completer();
+                var completer2 = new Completer();
+                test("first", () {
+                  completer1.future.then((_) {
+                    completer2.complete();
+                    throw "oh no";
+                  });
+                }, retry: 2);
+
+                test("second", () async {
+                  completer1.complete();
+                  await completer2.future;
+                });
+              }
+          """)
+        .create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(
+        contains("This test failed after it had already completed")));
+    test.shouldExit(1);
   });
 
   group("retries tests", () {
@@ -51,7 +84,7 @@ void main() {
 
               import 'package:test/test.dart';
 
-              int attempt = 0;
+              var attempt = 0;
               void main() {
                 test("eventually passes", () {
                  attempt++;
@@ -77,16 +110,17 @@ void main() {
 
               import 'package:test/test.dart';
 
-              int attempt = 0;
+              var attempt = 0;
               Completer completer = new Completer();
               void main() {
-                test("failure", () {
+                test("failure", () async {
                   attempt++;
                   if (attempt == 1) {
                     completer.future.then((_) => throw 'some error');
                     throw new TestFailure("oh no");
                   }
                   completer.complete(null);
+                  await new Future((){});
                 }, retry: 1);
               }
           """)
@@ -128,7 +162,7 @@ void main() {
 
               import 'package:test/test.dart';
 
-              int attempt = 0;
+              var attempt = 0;
               void main() {
                 test("eventually passes", () {
                 attempt++;
