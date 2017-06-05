@@ -101,7 +101,8 @@ class Declarer {
       Timeout timeout,
       skip,
       Map<String, dynamic> onPlatform,
-      tags}) {
+      tags,
+      int retry}) {
     _checkNotBuilt("test");
 
     var metadata = _metadata.merge(new Metadata.parse(
@@ -109,7 +110,8 @@ class Declarer {
         timeout: timeout,
         skip: skip,
         onPlatform: onPlatform,
-        tags: tags));
+        tags: tags,
+        retry: retry));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
       var parents = <Declarer>[];

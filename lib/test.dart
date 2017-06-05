@@ -101,6 +101,9 @@ Declarer get _declarer {
 /// [package configuration file][configuring tags]. The parameter can be an
 /// [Iterable] of tag names, or a [String] representing a single tag.
 ///
+/// If [retry] is passed, the test will be retried the provided number of times
+/// before being marked as a failure.
+///
 /// [configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
 ///
 /// [onPlatform] allows tests to be configured on a platform-by-platform
@@ -127,13 +130,15 @@ void test(description, body(),
     Timeout timeout,
     skip,
     tags,
-    Map<String, dynamic> onPlatform}) {
+    Map<String, dynamic> onPlatform,
+    int retry}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
       skip: skip,
       onPlatform: onPlatform,
-      tags: tags);
+      tags: tags,
+      retry: retry);
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and

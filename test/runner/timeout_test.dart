@@ -59,6 +59,36 @@ void main() {
     test.shouldExit(1);
   });
 
+  test("timeout is reset with each retry", () {
+    d
+        .file(
+            "test.dart",
+            '''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  var runCount = 0;
+  test("timeout", () async {
+    runCount++;
+    if (runCount <=2) {
+      await new Future.delayed(new Duration(milliseconds: 1000));
+    }
+  }, retry: 3);
+}
+''')
+        .create();
+
+    var test = runTest(["--timeout=400ms", "test.dart"]);
+    test.stdout.expect(containsInOrder([
+      "Test timed out after 0.4 seconds.",
+      "Test timed out after 0.4 seconds.",
+      "+1: All tests passed!"
+    ]));
+    test.shouldExit(0);
+  });
+
   test("the --timeout flag applies on top of the default 30s timeout", () {
     d
         .file(

@@ -107,6 +107,9 @@ class Invoker {
   /// on one anothers' toes.
   final _counterKey = new Object();
 
+  /// The number of times this [liveTest] has been run.
+  int _runCount = 0;
+
   /// The current invoker, or `null` if none is defined.
   ///
   /// An invoker is only set within the zone scope of a running test.
@@ -275,6 +278,8 @@ class Invoker {
 
   /// Notifies the invoker of an asynchronous error.
   void _handleError(error, [StackTrace stackTrace]) {
+    // Ignore errors propagated from previous test runs
+    if (_runCount != Zone.current[#runCount]) return;
     if (stackTrace == null) stackTrace = new Chain.current();
 
     // Store these here because they'll change when we set the state below.
@@ -324,6 +329,7 @@ class Invoker {
 
     var outstandingCallbacksForBody = new OutstandingCallbackCounter();
 
+    _runCount++;
     Chain.capture(() {
       runZonedWithValues(() async {
         _invokerZone = Zone.current;
@@ -348,6 +354,14 @@ class Invoker {
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
 
+        if (liveTest.state.result != Result.success &&
+            _runCount < liveTest.test.metadata.retry + 1) {
+          _controller
+              .message(new Message.print("Retry: ${liveTest.test.name}"));
+          _onRun();
+          return;
+        }
+
         _controller.setState(new State(Status.complete, liveTest.state.result));
 
         _controller.completer.complete();
@@ -357,7 +371,8 @@ class Invoker {
             // Use the invoker as a key so that multiple invokers can have different
             // outstanding callback counters at once.
             _counterKey: outstandingCallbacksForBody,
-            _closableKey: true
+            _closableKey: true,
+            #runCount: _runCount
           },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) =>
