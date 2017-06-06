@@ -58,8 +58,8 @@ void main() {
     d.file("dart_test.yaml", JSON.encode({"retry": -1})).create();
 
     var test = runTest(["test.dart"]);
-    test.stderr.expect(
-        containsInOrder(["retry must be a non-negative int", "^^"]));
+    test.stderr
+        .expect(containsInOrder(["retry must be a non-negative int", "^^"]));
     test.shouldExit(exit_codes.data);
   });
 
