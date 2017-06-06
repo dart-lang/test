@@ -54,10 +54,17 @@ class TestProcess {
   /// Whether [_log] has been passed to [printOnFailure] yet.
   bool _loggedOutput = false;
 
+  /// Returns a [Future] which completes to the exit code of the process, once
+  /// it completes.
+  Future<int> get exitCode => _process.exitCode;
+
+  /// The process ID of the process.
+  int get pid => _process.pid;
+
   /// Completes to [_process]'s exit code if it's exited, otherwise completes to
   /// `null` immediately.
   Future<int> get _exitCodeOrNull async =>
-      await _process.exitCode.timeout(Duration.ZERO, onTimeout: () => null);
+      await exitCode.timeout(Duration.ZERO, onTimeout: () => null);
 
   /// Starts a process.
   ///
@@ -153,7 +160,7 @@ class TestProcess {
     if (_loggedOutput) return;
     _loggedOutput = true;
 
-    var exitCode = await _exitCodeOrNull;
+    var exitCodeOrNull = await _exitCodeOrNull;
 
     // Wait a timer tick to ensure that all available lines have been flushed to
     // [_log].
@@ -161,10 +168,10 @@ class TestProcess {
 
     var buffer = new StringBuffer();
     buffer.write("Process `$description` ");
-    if ((await _exitCodeOrNull) == null) {
+    if (exitCodeOrNull == null) {
       buffer.writeln("was killed with SIGKILL in a tear-down. Output:");
     } else {
-      buffer.writeln("exited with exitCode $exitCode. Output:");
+      buffer.writeln("exited with exitCode $exitCodeOrNull. Output:");
     }
 
     buffer.writeln(_log.join("\n"));
@@ -210,7 +217,7 @@ class TestProcess {
   /// If this is called after the process is already dead, it does nothing.
   Future kill() async {
     _process.kill(ProcessSignal.SIGKILL);
-    await _process.exitCode;
+    await exitCode;
   }
 
   /// Waits for the process to exit, and verifies that the exit code matches
@@ -219,7 +226,7 @@ class TestProcess {
   /// If this is called after the process is already dead, it verifies its
   /// existing exit code.
   Future shouldExit([expectedExitCode]) async {
-    var exitCode = await _process.exitCode;
+    var exitCode = await this.exitCode;
     if (expectedExitCode == null) return;
     expect(exitCode, expectedExitCode,
         reason: "Process `$description` had an unexpected exit code.");

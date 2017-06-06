@@ -17,16 +17,19 @@ void main() {
   group("shouldExit()", () {
     test("succeeds when the process exits with the given exit code", () async {
       var process = await startDartProcess('exitCode = 42;');
+      expect(process.exitCode, completion(equals(42)));
       await process.shouldExit(greaterThan(12));
     });
 
     test("fails when the process exits with a different exit code", () async {
       var process = await startDartProcess('exitCode = 1;');
+      expect(process.exitCode, completion(equals(1)));
       expect(process.shouldExit(greaterThan(12)), throwsTestFailure);
     });
 
     test("allows any exit code without an assertion", () async {
       var process = await startDartProcess('exitCode = 1;');
+      expect(process.exitCode, completion(equals(1)));
       await process.shouldExit();
     });
   });
