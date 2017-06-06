@@ -205,6 +205,34 @@ void main() {
     test.shouldExit(1);
   }, tags: 'chrome');
 
+  test("retries tests with retry: 1", () {
+    d.file("dart_test.yaml", JSON.encode({"retry": 1})).create();
+
+    d
+        .file(
+            "test.dart",
+            """
+      import 'package:test/test.dart';
+      import 'dart:async';
+
+      var attempt = 0;
+      void main() {
+        test("test", () {
+          attempt++;
+          if(attempt <= 1) {
+            throw 'Failure!';
+          }
+        });
+      }
+
+    """)
+        .create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains('+1: All tests passed')));
+    test.shouldExit(0);
+  });
+
   test("skips tests with skip: true", () {
     d.file("dart_test.yaml", JSON.encode({"skip": true})).create();
 

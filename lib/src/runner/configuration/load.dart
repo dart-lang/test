@@ -150,8 +150,11 @@ class _ConfigurationLoader {
         value: (valueNode) =>
             _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
+    var retry = _getInt("retry");
+
     return new Configuration(
             skip: skip,
+            retry: retry,
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags)

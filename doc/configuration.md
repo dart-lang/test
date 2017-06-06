@@ -31,6 +31,7 @@ tags:
   * [`js_trace`](#js_trace)
   * [`skip`](#skip)
   * [`test_on`](#test_on)
+  & [`retry`](#retry)
 * [Runner Configuration](#runner-configuration)
   * [`paths`](#paths)
   * [`filename`](#filename)
@@ -138,6 +139,16 @@ tags:
 
 This field is not supported in the
 [global configuration file](#global-configuration).
+
+### `retry`
+
+This int field controls how many times a test is retried upon failure. 
+
+```yaml
+tags:
+  chrome:
+    retry: 3 # retry chrome failures 3 times
+```
 
 ### `test_on`
 

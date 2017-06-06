@@ -216,6 +216,7 @@ class Configuration {
       bool verboseTrace,
       bool chainStackTraces,
       bool skip,
+      int retry,
       String skipReason,
       PlatformSelector testOn,
       Iterable<String> addTags}) {
@@ -253,6 +254,7 @@ class Configuration {
             verboseTrace: verboseTrace,
             chainStackTraces: chainStackTraces,
             skip: skip,
+            retry: retry,
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags));
