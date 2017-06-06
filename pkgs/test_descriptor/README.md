@@ -47,7 +47,7 @@ finishes running.
 [sandbox]: https://www.dartdocs.org/documentation/test_descriptor/latest/test_descriptor/sandbox.html
 
 This package is [`term_glyph`][term_glyph] aware. It will decide whether to use
-ASCII or Unicode glyphs based on the [`glyph.ascii`][glyph.ascii] attribute.
+ASCII or Unicode glyphs based on the [`glyph.ascii`][ascii] attribute.
 
 [term_glyph]: https://pub.dartlang.org/packages/term_glyph
-[gylph.ascii]: https://www.dartdocs.org/documentation/term_glyph/latest/term_glyph/ascii.html
+[ascii]: https://www.dartdocs.org/documentation/term_glyph/latest/term_glyph/ascii.html
