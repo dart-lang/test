@@ -95,7 +95,7 @@ Windows), you can do so by explicitly calling [`signal()`][signal].
 [signal]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/signal.html
 
 In addition to [`exitCode`][exitCode], which works the same as in `dart:io`,
-`TestProcess` also adds a new method named [`shouldExit()`][shouldExit]. This is
+`TestProcess` also adds a new method named [`shouldExit()`][shouldExit]. This
 lets tests wait for a process to exit, and (if desired) assert what particular
 exit code it produced.
 
