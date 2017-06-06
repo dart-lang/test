@@ -151,7 +151,7 @@ class _ConfigurationLoader {
         value: (valueNode) =>
             _nestedConfig(valueNode, "tag value", runnerConfig: false));
 
-    var retry = _getInt("retry");
+    var retry = _getNonNegativeInt("retry");
 
     return new Configuration(
             skip: skip,
@@ -293,6 +293,10 @@ class _ConfigurationLoader {
 
   /// Asserts that [field] is an int and returns its value.
   int _getInt(String field) => _getValue(field, "int", (value) => value is int);
+
+  /// Asserts that [field] is a non-negative int and returns its value.
+  int _getNonNegativeInt(String field) => _getValue(
+      field, "non-negative int", (value) => value is int && value >= 0);
 
   /// Asserts that [field] is a boolean and returns its value.
   bool _getBool(String field) =>

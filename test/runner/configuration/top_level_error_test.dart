@@ -49,7 +49,8 @@ void main() {
     d.file("dart_test.yaml", JSON.encode({"retry": "flup"})).create();
 
     var test = runTest(["test.dart"]);
-    test.stderr.expect(containsInOrder(["retry must be an int", "^^^^^^"]));
+    test.stderr.expect(
+        containsInOrder(["retry must be a non-negative int", "^^^^^^"]));
     test.shouldExit(exit_codes.data);
   });
 
@@ -57,9 +58,9 @@ void main() {
     d.file("dart_test.yaml", JSON.encode({"retry": -1})).create();
 
     var test = runTest(["test.dart"]);
-    test.stderr
-        .expect(containsInOrder(["Not greater than or equal to 0"]));
-    test.shouldExit(255);
+    test.stderr.expect(
+        containsInOrder(["retry must be a non-negative int", "^^"]));
+    test.shouldExit(exit_codes.data);
   });
 
   test("rejects an invalid js_trace", () {
