@@ -124,6 +124,7 @@ class _ConfigurationLoader {
   Configuration _loadLocalTestConfig() {
     if (_global) {
       _disallow("skip");
+      _disallow("retry");
       _disallow("test_on");
       _disallow("add_tags");
       _disallow("tags");

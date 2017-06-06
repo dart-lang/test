@@ -105,6 +105,7 @@ void main() {
   group("disallows local-only configuration:", () {
     for (var field in [
       "skip",
+      "retry",
       "test_on",
       "paths",
       "filename",
