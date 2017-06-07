@@ -58,7 +58,8 @@ Future<RunnerSuiteController> deserializeSuite(
     'os': platform == TestPlatform.vm ? currentOS.identifier : null,
     'asciiGlyphs': Platform.isWindows,
     'path': path,
-    'collectTraces': Configuration.current.reporter == 'json'
+    'collectTraces': Configuration.current.reporter == 'json',
+    'doRetry': Configuration.current.doRetry,
   });
 
   var completer = new Completer();

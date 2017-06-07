@@ -53,6 +53,9 @@ class LocalTest extends Test {
 /// using [Invoker.current]. It's used to track asynchronous callbacks and
 /// report asynchronous errors.
 class Invoker {
+  /// The test runner configuration.
+  final _config = Configuration.current;
+
   /// The live test being driven by the invoker.
   ///
   /// This provides a view into the state of the test being executed.
@@ -355,7 +358,7 @@ class Invoker {
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-        if (Configuration.current.doRetry &&
+        if (_config.doRetry &&
             liveTest.state.result != Result.success &&
             _runCount < liveTest.test.metadata.retry + 1) {
           _controller

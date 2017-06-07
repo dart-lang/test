@@ -41,6 +41,9 @@ class Declarer {
   /// Whether to collect stack traces for [GroupEntry]s.
   final bool _collectTraces;
 
+  /// Whether to retry failed tests when configured.
+  final bool _doRetry;
+
   /// The set-up functions to run for each test in this group.
   final _setUps = new List<AsyncFunction>();
 
@@ -84,11 +87,15 @@ class Declarer {
   /// If [collectTraces] is `true`, this will set [GroupEntry.trace] for all
   /// entries built by the declarer. Note that this can be noticeably slow when
   /// thousands of tests are being declared (see #457).
-  Declarer({Metadata metadata, bool collectTraces: false})
-      : this._(null, null, metadata ?? new Metadata(), collectTraces, null);
+  ///
+  /// If [doRetry] is `true`, this will retry failed tests if they are
+  /// configured to do so. Otherwise, tests will be run at most once.
+  Declarer({Metadata metadata, bool collectTraces: false, bool doRetry: true})
+      : this._(null, null, metadata ?? new Metadata(), collectTraces, null,
+            doRetry);
 
   Declarer._(this._parent, this._name, this._metadata, this._collectTraces,
-      this._trace);
+      this._trace, this._doRetry);
 
   /// Runs [body] with this declarer as [Declarer.current].
   ///
@@ -111,7 +118,7 @@ class Declarer {
         skip: skip,
         onPlatform: onPlatform,
         tags: tags,
-        retry: retry));
+        retry: _doRetry ? retry : 0));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
       var parents = <Declarer>[];
@@ -152,8 +159,8 @@ class Declarer {
         tags: tags));
     var trace = _collectTraces ? new Trace.current(2) : null;
 
-    var declarer =
-        new Declarer._(this, _prefix(name), metadata, _collectTraces, trace);
+    var declarer = new Declarer._(
+        this, _prefix(name), metadata, _collectTraces, trace, _doRetry);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
