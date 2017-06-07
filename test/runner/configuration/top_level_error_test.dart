@@ -45,6 +45,24 @@ void main() {
     test.shouldExit(exit_codes.data);
   });
 
+  test("rejects an invalid retry", () {
+    d.file("dart_test.yaml", JSON.encode({"retry": "flup"})).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr.expect(
+        containsInOrder(["retry must be a non-negative int", "^^^^^^"]));
+    test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an negative retry values", () {
+    d.file("dart_test.yaml", JSON.encode({"retry": -1})).create();
+
+    var test = runTest(["test.dart"]);
+    test.stderr
+        .expect(containsInOrder(["retry must be a non-negative int", "^^"]));
+    test.shouldExit(exit_codes.data);
+  });
+
   test("rejects an invalid js_trace", () {
     d.file("dart_test.yaml", JSON.encode({"js_trace": "flup"})).create();
 

@@ -30,6 +30,7 @@ tags:
   * [`chain_stack_traces`](#chain_stack_traces)
   * [`js_trace`](#js_trace)
   * [`skip`](#skip)
+  * [`retry`](#retry)
   * [`test_on`](#test_on)
 * [Runner Configuration](#runner-configuration)
   * [`paths`](#paths)
@@ -134,6 +135,19 @@ whether the tests are skipped or a string indicating the reason they're skipped.
 tags:
   chrome:
     skip: "Our Chrome launcher is busted. See issue 1234."
+```
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### `retry`
+
+This int field controls how many times a test is retried upon failure. 
+
+```yaml
+tags:
+  chrome:
+    retry: 3 # Retry chrome failures 3 times.
 ```
 
 This field is not supported in the
