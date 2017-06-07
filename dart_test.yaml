@@ -2,7 +2,14 @@
 verbose_trace: true
 
 tags:
-  browser: {timeout: 2x}
+  browser:
+    timeout: 2x
+
+    # Browsers can sometimes randomly time out while starting, especially on
+    # Travis which is pretty slow. Don't retry locally because it makes
+    # debugging more annoying.
+    presets: {travis: {retry: 3}}
+
   dart2js:
     add_tags: [browser]
     timeout: 2x
