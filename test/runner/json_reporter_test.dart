@@ -529,7 +529,7 @@ void main() {
             "-p",
             "chrome"
           ]);
-    }, tags: ["chrome"]);
+    }, tags: ["chrome"], skip: "Broken by sdk#29693.");
   });
 
   test(
@@ -555,7 +555,7 @@ void main() {
           "chrome",
           "--js-trace"
         ]);
-  }, tags: ["chrome"]);
+  }, tags: ["chrome"], skip: "Broken by sdk#29693.");
 }
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
