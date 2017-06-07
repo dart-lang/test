@@ -167,5 +167,5 @@ void main() {
         completion(equals("print within test")));
     await liveTest.run();
     expectTestPassed(liveTest);
-  });
+  }, skip: "Broken by sdk#29693.");
 }
