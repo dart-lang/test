@@ -1,4 +1,4 @@
-A library for testing subprocesses.
+A package for testing subprocesses.
 
 This exposes a [`TestProcess`][TestProcess] class that wraps `dart:io`'s
 [`Process`][Process] class and makes it easy to read standard output
