@@ -9,6 +9,7 @@ import 'package:stack_trace/stack_trace.dart';
 import '../frontend/expect.dart';
 import '../runner/load_suite.dart';
 import '../utils.dart';
+import '../runner/configuration.dart';
 import 'closed_exception.dart';
 import 'group.dart';
 import 'live_test.dart';
@@ -354,7 +355,8 @@ class Invoker {
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-        if (liveTest.state.result != Result.success &&
+        if (Configuration.current.doRetry &&
+            liveTest.state.result != Result.success &&
             _runCount < liveTest.test.metadata.retry + 1) {
           _controller
               .message(new Message.print("Retry: ${liveTest.test.name}"));

@@ -60,6 +60,10 @@ class Configuration {
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
 
+  /// Whether to enable retry on failure.
+  bool get doRetry => _doRetry ?? true;
+  final bool _doRetry;
+
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
   final Uri pubServeUrl;
@@ -198,6 +202,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      bool doRetry,
 
       // Suite-level configuration
       bool jsTrace,
@@ -237,6 +242,7 @@ class Configuration {
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
+        doRetry: doRetry,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -288,6 +294,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      bool doRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
@@ -305,6 +312,7 @@ class Configuration {
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
         presets = _map(presets),
+        _doRetry = doRetry,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 new SuiteConfiguration(timeout: Timeout.none)
@@ -378,6 +386,7 @@ class Configuration {
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
+        doRetry: other._doRetry ?? _doRetry,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -407,6 +416,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      bool doRetry,
 
       // Suite-level configuration
       bool jsTrace,
@@ -444,6 +454,7 @@ class Configuration {
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,
+        doRetry: doRetry ?? _doRetry,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,

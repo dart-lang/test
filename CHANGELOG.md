@@ -1,5 +1,10 @@
 ## 0.12.21
 
+* Introduce test `retry` option and corresponding configuration. Also
+  introduce related `no-retry` runner flag.
+
+## 0.12.21
+
 * Add a `doesNotComplete` matcher that asserts that a Future never completes.
 
 * `throwsA()` and all related matchers will now match functions that return

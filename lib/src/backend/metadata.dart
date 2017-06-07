@@ -10,6 +10,7 @@ import 'package:collection/collection.dart';
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';
 import '../utils.dart';
+import '../runner/configuration.dart';
 import 'operating_system.dart';
 import 'platform_selector.dart';
 import 'test_platform.dart';

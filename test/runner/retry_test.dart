@@ -12,6 +12,31 @@ import '../io.dart';
 void main() {
   useSandbox();
 
+  test("respects --no-retry flag", () {
+    d
+        .file(
+            "test.dart",
+            """
+          import 'dart:async';
+
+          import 'package:test/test.dart';
+
+          var attempt = 0;
+          void main() {
+            test("eventually passes", () {
+               attempt++;
+               if(attempt <= 1 ) {
+                 throw new TestFailure("oh no");
+               }
+            }, retry: 1);
+          }
+          """)
+        .create();
+
+    var test = runTest(["test.dart", "--no-retry"]);
+    test.shouldExit(1);
+  });
+
   test("respects top-level @Retry declarations", () {
     d
         .file(

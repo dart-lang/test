@@ -92,6 +92,11 @@ final ArgParser _parser = (() {
           'to provide improved test performance but at the cost of\n'
           'debuggability.',
       defaultsTo: true);
+  parser.addFlag("retry",
+      help: 'Retry failing tests if configured to do so.\n'
+          'Useful for iterating locally on a failing test with retry '
+          'configuration.',
+      defaultsTo: true);
 
   var reporterDescriptions = <String, String>{};
   for (var reporter in allReporters.keys) {
@@ -222,7 +227,8 @@ class _Parser {
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,
-        excludeTags: excludeTags);
+        excludeTags: excludeTags,
+        doRetry: _ifParsed('retry'));
   }
 
   /// Returns the parsed option for [name], or `null` if none was parsed.
