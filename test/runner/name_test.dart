@@ -3,19 +3,18 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/test.dart';
 
 import '../io.dart';
 
 void main() {
-  useSandbox();
-
   group("with the --name flag,", () {
-    test("selects tests with matching names", () {
-      d
+    test("selects tests with matching names", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -29,13 +28,13 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--name", "selected", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["--name", "selected", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("supports RegExp syntax", () {
-      d
+    test("supports RegExp syntax", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -49,13 +48,13 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--name", "test [13]", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["--name", "test [13]", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("selects more narrowly when passed multiple times", () {
-      d
+    test("selects more narrowly when passed multiple times", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -69,13 +68,14 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--name", "selected", "--name", "1", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test =
+          await runTest(["--name", "selected", "--name", "1", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("produces an error when no tests match", () {
-      d
+    test("produces an error when no tests match", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -87,25 +87,29 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--name", "no match", "test.dart"]);
-      test.stderr.expect(consumeThrough(
-          contains('No tests match regular expression "no match".')));
-      test.shouldExit(exit_codes.data);
+      var test = await runTest(["--name", "no match", "test.dart"]);
+      expect(
+          test.stderr,
+          emitsThrough(
+              contains('No tests match regular expression "no match".')));
+      await test.shouldExit(exit_codes.data);
     });
 
-    test("doesn't filter out load exceptions", () {
-      var test = runTest(["--name", "name", "file"]);
-      test.stdout.expect(containsInOrder([
-        '-1: loading file [E]',
-        '  Failed to load "file": Does not exist.'
-      ]));
-      test.shouldExit(1);
+    test("doesn't filter out load exceptions", () async {
+      var test = await runTest(["--name", "name", "file"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading file [E]',
+            '  Failed to load "file": Does not exist.'
+          ]));
+      await test.shouldExit(1);
     });
   });
 
   group("with the --plain-name flag,", () {
-    test("selects tests with matching names", () {
-      d
+    test("selects tests with matching names", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -119,13 +123,13 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--plain-name", "selected", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["--plain-name", "selected", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("doesn't support RegExp syntax", () {
-      d
+    test("doesn't support RegExp syntax", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -139,13 +143,13 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--plain-name", "test [12]", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["--plain-name", "test [12]", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("selects more narrowly when passed multiple times", () {
-      d
+    test("selects more narrowly when passed multiple times", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -159,14 +163,14 @@ void main() {
       """)
           .create();
 
-      var test = runTest(
+      var test = await runTest(
           ["--plain-name", "selected", "--plain-name", "1", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("produces an error when no tests match", () {
-      d
+    test("produces an error when no tests match", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -178,15 +182,14 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["--plain-name", "no match", "test.dart"]);
-      test.stderr
-          .expect(consumeThrough(contains('No tests match "no match".')));
-      test.shouldExit(exit_codes.data);
+      var test = await runTest(["--plain-name", "no match", "test.dart"]);
+      expect(test.stderr, emitsThrough(contains('No tests match "no match".')));
+      await test.shouldExit(exit_codes.data);
     });
   });
 
-  test("--name and --plain-name together narrow the selection", () {
-    d
+  test("--name and --plain-name together narrow the selection", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -200,8 +203,9 @@ void main() {
     """)
         .create();
 
-    var test = runTest(["--name", ".....", "--plain-name", "e", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("+2: All tests passed!")));
-    test.shouldExit(0);
+    var test =
+        await runTest(["--name", ".....", "--plain-name", "e", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
+    await test.shouldExit(0);
   });
 }

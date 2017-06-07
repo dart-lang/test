@@ -4,21 +4,21 @@
 
 @TestOn("vm")
 @Tags(const ["chrome"])
+
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_process.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test_process/test_process.dart';
 
 import 'package:test/src/util/io.dart';
+import 'package:test/test.dart';
 
 import '../io.dart';
 
 void main() {
-  useSandbox();
-
-  test("runs a precompiled version of a test rather than recompiling", () {
-    d
+  test("runs a precompiled version of a test rather than recompiling",
+      () async {
+    await d
         .file(
             "to_precompile.dart",
             """
@@ -37,7 +37,7 @@ void main() {
     """)
         .create();
 
-    d.dir("precompiled", [
+    await d.dir("precompiled", [
       d.file(
           "test.html",
           """
@@ -51,22 +51,22 @@ void main() {
       """)
     ]).create();
 
-    var dart2js = new ScheduledProcess.start(
+    var dart2js = await TestProcess.start(
         p.join(sdkDir, 'bin', 'dart2js'),
         [
-          PackageResolver.current.processArgument,
+          await PackageResolver.current.processArgument,
           "to_precompile.dart",
           "--out=precompiled/test.dart.browser_test.dart.js"
         ],
-        workingDirectory: sandbox);
-    dart2js.shouldExit(0);
+        workingDirectory: d.sandbox);
+    await dart2js.shouldExit(0);
 
-    d.file("test.dart", "invalid dart}").create();
+    await d.file("test.dart", "invalid dart}").create();
 
-    var test =
-        runTest(["-p", "chrome", "--precompiled=precompiled/", "test.dart"]);
-    test.stdout
-        .expect(containsInOrder(["+0: success", "+1: All tests passed!"]));
-    test.shouldExit(0);
+    var test = await runTest(
+        ["-p", "chrome", "--precompiled=precompiled/", "test.dart"]);
+    expect(
+        test.stdout, containsInOrder(["+0: success", "+1: All tests passed!"]));
+    await test.shouldExit(0);
   });
 }

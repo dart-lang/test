@@ -3,25 +3,26 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'dart:async';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
+import 'package:test/test.dart';
 
 import '../io.dart';
 
 void main() {
-  useSandbox();
+  test("reports when no tests are run", () async {
+    await d.file("test.dart", "void main() {}").create();
 
-  test("reports when no tests are run", () {
-    d.file("test.dart", "void main() {}").create();
-
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains("No tests ran.")));
-    test.shouldExit(0);
+    var test = await runTest(["test.dart"]);
+    expect(test.stdout, emitsThrough(contains("No tests ran.")));
+    await test.shouldExit(0);
   });
 
   test("runs several successful tests and reports when each completes", () {
-    _expectReport(
+    return _expectReport(
         """
         test('success 1', () {});
         test('success 2', () {});
@@ -34,7 +35,7 @@ void main() {
   });
 
   test("runs several failing tests and reports when each fails", () {
-    _expectReport(
+    return _expectReport(
         """
         test('failure 1', () => throw new TestFailure('oh no'));
         test('failure 2', () => throw new TestFailure('oh no'));
@@ -58,8 +59,8 @@ void main() {
         +0 -3: Some tests failed.""");
   });
 
-  test("includes the full stack trace with --verbose-trace", () {
-    d
+  test("includes the full stack trace with --verbose-trace", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -73,13 +74,13 @@ void main() {
 """)
         .create();
 
-    var test = runTest(["--verbose-trace", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
-    test.shouldExit(1);
+    var test = await runTest(["--verbose-trace", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("dart:isolate-patch")));
+    await test.shouldExit(1);
   });
 
   test("runs failing tests along with successful tests", () {
-    _expectReport(
+    return _expectReport(
         """
         test('failure 1', () => throw new TestFailure('oh no'));
         test('success 1', () {});
@@ -102,7 +103,7 @@ void main() {
   });
 
   test("always prints the full test name", () {
-    _expectReport(
+    return _expectReport(
         """
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
@@ -114,7 +115,7 @@ void main() {
   });
 
   test("gracefully handles multiple test failures in a row", () {
-    _expectReport(
+    return _expectReport(
         """
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
@@ -153,7 +154,7 @@ void main() {
 
   group("print:", () {
     test("handles multiple prints", () {
-      _expectReport(
+      return _expectReport(
           """
         test('test', () {
           print("one");
@@ -171,7 +172,7 @@ void main() {
     });
 
     test("handles a print after the test completes", () {
-      _expectReport(
+      return _expectReport(
           """
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
@@ -203,7 +204,7 @@ void main() {
     });
 
     test("interleaves prints and errors", () {
-      _expectReport(
+      return _expectReport(
           """
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
@@ -252,7 +253,7 @@ void main() {
 
   group("skip:", () {
     test("displays skipped tests separately", () {
-      _expectReport(
+      return _expectReport(
           """
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
@@ -265,7 +266,7 @@ void main() {
     });
 
     test("displays a skipped group", () {
-      _expectReport(
+      return _expectReport(
           """
           group('skip', () {
             test('test 1', () {});
@@ -280,7 +281,7 @@ void main() {
     });
 
     test("runs skipped tests along with successful tests", () {
-      _expectReport(
+      return _expectReport(
           """
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
@@ -295,7 +296,7 @@ void main() {
     });
 
     test("runs skipped tests along with successful and failing tests", () {
-      _expectReport(
+      return _expectReport(
           """
           test('failure 1', () => throw new TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
@@ -322,7 +323,7 @@ void main() {
     });
 
     test("displays the skip reason if available", () {
-      _expectReport(
+      return _expectReport(
           """
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');""",
@@ -335,7 +336,7 @@ void main() {
     });
 
     test("runs skipped tests with --run-skipped", () {
-      _expectReport(
+      return _expectReport(
           """
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');""",
@@ -348,44 +349,44 @@ void main() {
   });
 }
 
-void _expectReport(String tests, String expected, {List<String> args}) {
-  var dart = """
-import 'dart:async';
+Future _expectReport(String tests, String expected, {List<String> args}) async {
+  d
+      .file(
+          "test.dart",
+          """
+    import 'dart:async';
 
-import 'package:test/test.dart';
+    import 'package:test/test.dart';
 
-void main() {
+    void main() {
 $tests
-}
-""";
+    }
+  """)
+      .create();
 
-  d.file("test.dart", dart).create();
+  var test = await runTest(["test.dart"]..addAll(args ?? []));
+  await test.shouldExit();
 
-  var test = runTest(["test.dart"]..addAll(args ?? []));
-  test.shouldExit();
+  var stdoutLines = await test.stdoutStream().toList();
 
-  schedule(() async {
-    var stdoutLines = await test.stdoutStream().toList();
+  // Remove excess trailing whitespace and trim off timestamps.
+  var actual = stdoutLines.map((line) {
+    if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
+    return line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
+  }).join("\n");
 
-    // Remove excess trailing whitespace and trim off timestamps.
-    var actual = stdoutLines.map((line) {
-      if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
-      return line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
-    }).join("\n");
+  // Un-indent the expected string.
+  var indentation = expected.indexOf(new RegExp("[^ ]"));
+  expected = expected.split("\n").map((line) {
+    if (line.isEmpty) return line;
+    return line.substring(indentation);
+  }).join("\n");
 
-    // Un-indent the expected string.
-    var indentation = expected.indexOf(new RegExp("[^ ]"));
-    expected = expected.split("\n").map((line) {
-      if (line.isEmpty) return line;
-      return line.substring(indentation);
-    }).join("\n");
-
-    // In Dart 1.24, stack traces with Future constructors output as
-    // `new Future` instead of `Future.Future`.
-    // Support running tests in both old and new styles.
-    expect(
-        actual,
-        anyOf(equals(expected),
-            equals(expected.replaceAll(' Future.Future.', ' new Future.'))));
-  });
+  // In Dart 1.24, stack traces with Future constructors output as
+  // `new Future` instead of `Future.Future`.
+  // Support running tests in both old and new styles.
+  expect(
+      actual,
+      anyOf(equals(expected),
+          equals(expected.replaceAll(' Future.Future.', ' new Future.'))));
 }
