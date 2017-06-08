@@ -1,5 +1,8 @@
 language: dart
-sudo: false
+sudo: required
+
+# We require PhantomJS 2.x, which is only available on Trusty.
+dist: trusty
 
 dart:
  - dev
@@ -7,18 +10,61 @@ dart:
  - 1.23.0
  - 1.22.1
 
+# Content shell needs these fonts.
+addons:
+  apt:
+    packages:
+    - ttf-kochi-mincho
+    - ttf-kochi-gothic
+    - ttf-dejavu
+    - ttf-indic-fonts
+    - fonts-tlwg-garuda
+
+before_install:
+  # Content shell needs this font. Since it has a EULA, we need to manually
+  # install it.
+  #
+  # TODO: remove this and use "sudo: false" when travis-ci/travis-ci#4714 is
+  # fixed.
+  - sudo apt-get update -yq
+  - sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
+  - sudo apt-get install msttcorefonts -qq
+
+  - mkdir -p bin
+  - export PATH="$PATH:`pwd`/bin/"
+  - ln -s `which chromium-browser` bin/google-chrome
+
+  - wget "http://gsdview.appspot.com/dart-archive/channels/stable/release/latest/dartium/content_shell-linux-x64-release.zip"
+  - unzip content_shell-linux-x64-release.zip
+  - ln -s `pwd`/`echo drt-linux-*`/content_shell bin/content_shell
+
 dart_task:
+ # Browser tests take particularly long on Dartium, so we split them up into different tasks.
  - test: --platform dartium
    install_dartium: true
- - test: --platform vm -x content-shell -x chrome -x firefox -x dartium -x phantomjs --timeout 4x
- - dartfmt
- - dartanalyzer
+
+ # Split the tests into four shards to help parallelize them across Travis workers.
+ - test: --preset travis --total-shards 5 --shard-index 0
+   install_dartium: true
+ - test: --preset travis --total-shards 5 --shard-index 1
+   install_dartium: true
+ - test: --preset travis --total-shards 5 --shard-index 2
+   install_dartium: true
+ - test: --preset travis --total-shards 5 --shard-index 3
+   install_dartium: true
+ - test: --preset travis --total-shards 5 --shard-index 4
+   install_dartium: true
 
 matrix:
   exclude:
     # Repo was formatted with the 1.23 SDK.
     - dart: 1.22.1
       dart_task: dartfmt
+  include:
+    - dart: stable
+      dart_task: dartfmt
+    - dart: dev
+      dart_task: dartanalyzer
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

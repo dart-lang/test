@@ -72,6 +72,65 @@ void main() {
     });
   });
 
+  test("can be called in addTearDown", () {
+    return expectTestsPass(() {
+      var tearDown2Run = false;
+      var tearDown3Run = false;
+
+      test("test 1", () {
+        addTearDown(() {
+          expect(tearDown2Run, isTrue);
+          expect(tearDown3Run, isFalse);
+          tearDown3Run = true;
+        });
+
+        addTearDown(() {
+          addTearDown(() {
+            expect(tearDown2Run, isFalse);
+            expect(tearDown3Run, isFalse);
+            tearDown2Run = true;
+          });
+        });
+      });
+
+      test("test 2", () {
+        expect(tearDown2Run, isTrue);
+        expect(tearDown3Run, isTrue);
+      });
+    });
+  });
+
+  test("can be called in tearDown", () {
+    return expectTestsPass(() {
+      var tearDown2Run = false;
+      var tearDown3Run = false;
+
+      tearDown(() {
+        expect(tearDown2Run, isTrue);
+        expect(tearDown3Run, isFalse);
+        tearDown3Run = true;
+      });
+
+      tearDown(() {
+        tearDown2Run = false;
+        tearDown3Run = false;
+
+        addTearDown(() {
+          expect(tearDown2Run, isFalse);
+          expect(tearDown3Run, isFalse);
+          tearDown2Run = true;
+        });
+      });
+
+      test("test 1", () {});
+
+      test("test 2", () {
+        expect(tearDown2Run, isTrue);
+        expect(tearDown3Run, isTrue);
+      });
+    });
+  });
+
   test("runs before a normal tearDown", () {
     return expectTestsPass(() {
       var groupTearDownRun = false;

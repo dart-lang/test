@@ -5,6 +5,11 @@
 
 * Introduce `no-retry` runner flag to disable retries of failing tests.
 
+## 0.12.21+1
+
+* Fix a "concurrent modification during iteration" error when calling
+  `addTearDown()` from within a tear down.
+
 ## 0.12.21
 
 * Add a `doesNotComplete` matcher that asserts that a Future never completes.
