@@ -147,7 +147,8 @@ class Declarer {
       Timeout timeout,
       skip,
       Map<String, dynamic> onPlatform,
-      tags}) {
+      tags,
+      int retry}) {
     _checkNotBuilt("group");
 
     var metadata = _metadata.merge(new Metadata.parse(
@@ -155,7 +156,8 @@ class Declarer {
         timeout: timeout,
         skip: skip,
         onPlatform: onPlatform,
-        tags: tags));
+        tags: tags,
+        retry: retry));
     var trace = _collectTraces ? new Trace.current(2) : null;
 
     var declarer = new Declarer._(

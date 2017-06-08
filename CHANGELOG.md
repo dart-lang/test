@@ -1,9 +1,11 @@
 ## 0.12.22
 
-* Introduce test `retry` option, corresponding `@Retry` annotation, and
-  corresponding `retry` test configuration to enable retries of failing tests.
-
-* Introduce `no-retry` runner flag to disable retries of failing tests.
+* Add a `retry` option to `test()` and `group()` functions, as well as `@Retry()`
+  annotation for test files and a `retry` configuration field for `dart_test.yaml`.
+  A test with reties enabled will be re-run if it fails for a reason other than a
+  `TestFailure`.
+  
+* Add a `--no-retry` runner flag that disables retries of failing tests.
 
 ## 0.12.21+1
 

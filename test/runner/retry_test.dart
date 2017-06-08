@@ -92,7 +92,35 @@ void main() {
     test.shouldExit(0);
   });
 
-  test("Tests are not retried after they have already been reported successful",
+  test("respects group retry declarations", () {
+    d
+        .file(
+            "test.dart",
+            """
+          import 'dart:async';
+
+          import 'package:test/test.dart';
+
+          var attempt = 0;
+          void main() {
+            group("retry", () {
+              test("failure", () {
+                 attempt++;
+                 if(attempt <= 3) {
+                   throw new TestFailure("oh no");
+                 }
+              });
+             }, retry: 3);
+          }
+          """)
+        .create();
+
+    var test = runTest(["test.dart"]);
+    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
+    test.shouldExit(0);
+  });
+
+  test("tests are not retried after they have already been reported successful",
       () {
     d
         .file(
