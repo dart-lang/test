@@ -203,6 +203,9 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
+  /// The current zone-scoped [Engine].
+  static Engine get current => Zone.current[#test.engine];
+
   // TODO(nweiz): Use interface libraries to take a Configuration even when
   // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
@@ -242,49 +245,51 @@ class Engine {
   /// only return once all tests have finished running and [suiteSink] has been
   /// closed.
   Future<bool> run() {
-    if (_runCalled) {
-      throw new StateError("Engine.run() may not be called more than once.");
-    }
-    _runCalled = true;
+    return runZoned((){
+      if (_runCalled) {
+        throw new StateError("Engine.run() may not be called more than once.");
+      }
+      _runCalled = true;
 
-    StreamSubscription subscription;
-    subscription = _suiteController.stream.listen((suite) {
-      _addedSuites.add(suite);
-      _onSuiteAddedController.add(suite);
+      StreamSubscription subscription;
+      subscription = _suiteController.stream.listen((suite) {
+        _addedSuites.add(suite);
+        _onSuiteAddedController.add(suite);
 
-      _group.add(new Future.sync(() async {
-        var loadResource = await _loadPool.request();
+        _group.add(new Future.sync(() async {
+          var loadResource = await _loadPool.request();
 
-        var controller;
-        if (suite is LoadSuite) {
-          await _onUnpaused;
-          controller = await _addLoadSuite(suite);
-          if (controller == null) {
-            loadResource.release();
-            return;
+          var controller;
+          if (suite is LoadSuite) {
+            await _onUnpaused;
+            controller = await _addLoadSuite(suite);
+            if (controller == null) {
+              loadResource.release();
+              return;
+            }
+          } else {
+            controller = new LiveSuiteController(suite);
           }
-        } else {
-          controller = new LiveSuiteController(suite);
-        }
 
-        _addLiveSuite(controller.liveSuite);
+          _addLiveSuite(controller.liveSuite);
 
-        await _runPool.withResource(() async {
-          if (_closed) return;
-          await _runGroup(controller, controller.liveSuite.suite.group, []);
-          controller.noMoreLiveTests();
-          loadResource.allowRelease(() => controller.close());
-        });
-      }));
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-      _onSuiteAddedController.close();
-      _group.close();
-      _loadPool.close();
-    });
-    _subscriptions.add(subscription);
+          await _runPool.withResource(() async {
+            if (_closed) return;
+            await _runGroup(controller, controller.liveSuite.suite.group, []);
+            controller.noMoreLiveTests();
+            loadResource.allowRelease(() => controller.close());
+          });
+        }));
+      }, onDone: () {
+        _subscriptions.remove(subscription);
+        _onSuiteAddedController.close();
+        _group.close();
+        _loadPool.close();
+      });
+      _subscriptions.add(subscription);
 
-    return success;
+      return success;
+    }, zoneValues: {#test.engine: this});
   }
 
   /// Runs all the entries in [group] in sequence.

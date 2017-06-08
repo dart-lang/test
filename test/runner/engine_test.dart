@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/runner/engine.dart';
@@ -12,6 +13,41 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
+  test("current scoped liveTest is accessible", () async {
+    var tests = declare(() {
+      for (var i = 0; i < 4; i++) {
+        test("test ${i + 1}", expectAsync0(() {
+          expect(Invoker.current.liveTest.individualName, "test ${i + 1}");
+        }, max: 2));
+      }
+    });
+
+    var engine = new Engine.withSuites([
+      runnerSuite(new Group.root(tests.take(2))),
+      runnerSuite(new Group.root(tests.skip(2)))
+    ]);
+
+    await engine.run();
+  });
+
+  test("scoped liveTests are accessible", () async {
+    var tests = declare(() {
+      for (var i = 0; i < 4; i++) {
+        test("test ${i + 1}", expectAsync0(() {
+          expect(Engine.current.liveTests.contains(Invoker.current.liveTest),
+              isTrue);
+        }, max: 2));
+      }
+    });
+
+    var engine = new Engine.withSuites([
+      runnerSuite(new Group.root(tests.take(2))),
+      runnerSuite(new Group.root(tests.skip(2)))
+    ]);
+
+    await engine.run();
+  });
+
   test("runs each test in each suite in order", () async {
     var testsRun = 0;
     var tests = declare(() {
