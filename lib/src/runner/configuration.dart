@@ -60,9 +60,9 @@ class Configuration {
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
 
-  /// Whether to enable retry on failure.
-  bool get doRetry => _doRetry ?? true;
-  final bool _doRetry;
+  /// Whether to disable retry of tests.
+  bool get noRetry => _noRetry ?? false;
+  final bool _noRetry;
 
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
@@ -202,7 +202,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
-      bool doRetry,
+      bool noRetry,
 
       // Suite-level configuration
       bool jsTrace,
@@ -242,7 +242,7 @@ class Configuration {
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
-        doRetry: doRetry,
+        noRetry: noRetry,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -294,7 +294,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
-      bool doRetry,
+      bool noRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
@@ -312,7 +312,7 @@ class Configuration {
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
         presets = _map(presets),
-        _doRetry = doRetry,
+        _noRetry = noRetry,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 new SuiteConfiguration(timeout: Timeout.none)
@@ -386,7 +386,7 @@ class Configuration {
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
-        doRetry: other._doRetry ?? _doRetry,
+        noRetry: other._noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -416,7 +416,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
-      bool doRetry,
+      bool noRetry,
 
       // Suite-level configuration
       bool jsTrace,
@@ -454,7 +454,7 @@ class Configuration {
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,
-        doRetry: doRetry ?? _doRetry,
+        noRetry: noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,

@@ -12,7 +12,7 @@ import '../io.dart';
 void main() {
   useSandbox();
 
-  test("respects --no-retry flag", () {
+  test("respects --no-retry flag with retry option", () {
     d
         .file(
             "test.dart",
@@ -29,6 +29,33 @@ void main() {
                  throw new TestFailure("oh no");
                }
             }, retry: 1);
+          }
+          """)
+        .create();
+
+    var test = runTest(["test.dart", "--no-retry"]);
+    test.shouldExit(1);
+  });
+
+  test("respects --no-retry flag with @Retry declaration", () {
+    d
+        .file(
+            "test.dart",
+            """
+          @Retry(3)
+
+          import 'dart:async';
+
+          import 'package:test/test.dart';
+
+          var attempt = 0;
+          void main() {
+            test("eventually passes", () {
+               attempt++;
+               if(attempt <= 1 ) {
+                 throw new TestFailure("oh no");
+               }
+            });
           }
           """)
         .create();

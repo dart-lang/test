@@ -75,7 +75,7 @@ class RemoteListener {
       var declarer = new Declarer(
           metadata: metadata,
           collectTraces: message['collectTraces'],
-          doRetry: message['doRetry']);
+          noRetry: message['noRetry']);
       await declarer.declare(main);
 
       var os =

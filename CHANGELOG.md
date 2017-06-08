@@ -1,4 +1,4 @@
-## 0.12.21
+## 0.12.22
 
 * Introduce test `retry` option and corresponding configuration. Also
   introduce related `no-retry` runner flag.

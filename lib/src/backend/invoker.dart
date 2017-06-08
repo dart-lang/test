@@ -9,7 +9,6 @@ import 'package:stack_trace/stack_trace.dart';
 import '../frontend/expect.dart';
 import '../runner/load_suite.dart';
 import '../utils.dart';
-import '../runner/configuration.dart';
 import 'closed_exception.dart';
 import 'group.dart';
 import 'live_test.dart';
@@ -53,9 +52,6 @@ class LocalTest extends Test {
 /// using [Invoker.current]. It's used to track asynchronous callbacks and
 /// report asynchronous errors.
 class Invoker {
-  /// The test runner configuration.
-  final _config = Configuration.current;
-
   /// The live test being driven by the invoker.
   ///
   /// This provides a view into the state of the test being executed.
@@ -358,8 +354,7 @@ class Invoker {
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-        if (_config.doRetry &&
-            liveTest.state.result != Result.success &&
+        if (liveTest.state.result != Result.success &&
             _runCount < liveTest.test.metadata.retry + 1) {
           _controller
               .message(new Message.print("Retry: ${liveTest.test.name}"));

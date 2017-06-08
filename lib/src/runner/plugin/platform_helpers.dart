@@ -59,7 +59,7 @@ Future<RunnerSuiteController> deserializeSuite(
     'asciiGlyphs': Platform.isWindows,
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json',
-    'doRetry': Configuration.current.doRetry,
+    'noRetry': Configuration.current.noRetry,
   });
 
   var completer = new Completer();

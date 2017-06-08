@@ -99,9 +99,7 @@ Usage: pub run test [files or directories...]
                                  debuggability.
                                  (defaults to on)
 
-    --[no-]retry                 Retry failing tests if configured to do so.
-                                 Useful for iterating locally on a failing test with retry configuration.
-                                 (defaults to on)
+    --no-retry                   Don't re-run tests that have retry set.
 
 ======== Output
 -r, --reporter                   The runner used to print test results.
