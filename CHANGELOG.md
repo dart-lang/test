@@ -1,7 +1,9 @@
 ## 0.12.22
 
-* Introduce test `retry` option and corresponding configuration. Also
-  introduce related `no-retry` runner flag.
+* Introduce test `retry` option, corresponding `@Retry` annotation, and
+  corresponding `retry` test configuration to enable retries of failing tests.
+
+* Introduce `no-retry` runner flag to disable retries of failing tests.
 
 ## 0.12.21
 

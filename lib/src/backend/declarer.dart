@@ -41,7 +41,7 @@ class Declarer {
   /// Whether to collect stack traces for [GroupEntry]s.
   final bool _collectTraces;
 
-  /// Whether to disable retry of tests.
+  /// Whether to disable retries of tests.
   final bool _noRetry;
 
   /// The set-up functions to run for each test in this group.

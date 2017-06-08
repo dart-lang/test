@@ -60,7 +60,7 @@ class Configuration {
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
 
-  /// Whether to disable retry of tests.
+  /// Whether to disable retries of tests.
   bool get noRetry => _noRetry ?? false;
   final bool _noRetry;
 
