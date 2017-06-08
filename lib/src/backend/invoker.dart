@@ -346,8 +346,7 @@ class Invoker {
         // microtask-level events.
         new Future(() async {
           await _test._body();
-          await unclosable(
-              () => Future.forEach(_tearDowns.reversed, errorsDontStopTest));
+          await unclosable(_runTearDowns);
           removeOutstandingCallback();
         });
 
@@ -379,5 +378,12 @@ class Invoker {
                   _controller.message(new Message.print(line))),
           onError: _handleError);
     }, when: liveTest.test.metadata.chainStackTraces);
+  }
+
+  /// Run [_tearDowns] in reverse order.
+  Future _runTearDowns() async {
+    while (_tearDowns.isNotEmpty) {
+      await errorsDontStopTest(_tearDowns.removeLast());
+    }
   }
 }
