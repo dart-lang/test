@@ -3,21 +3,20 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
-import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
 
 Loader _loader;
-String _sandbox;
 
 final _tests = """
 import 'dart:async';
@@ -33,23 +32,17 @@ void main() {
 
 void main() {
   setUp(() async {
-    _sandbox = createTempDir();
-    _loader = new Loader(root: _sandbox);
+    _loader = new Loader(root: d.sandbox);
   });
 
-  tearDown(() {
-    new Directory(_sandbox).deleteSync(recursive: true);
-    return _loader.close();
-  });
+  tearDown(() => _loader.close());
 
   group(".loadFile()", () {
     var suite;
     setUp(() async {
-      /// TODO(nweiz): Use scheduled_test for this once it's compatible with
-      /// this version of test.
-      new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
+      await d.file('a_test.dart', _tests).create();
       var suites = await _loader
-          .loadFile(p.join(_sandbox, 'a_test.dart'), SuiteConfiguration.empty)
+          .loadFile(p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
           .toList();
       expect(suites, hasLength(1));
       var loadSuite = suites.first;
@@ -57,7 +50,7 @@ void main() {
     });
 
     test("returns a suite with the file path and platform", () {
-      expect(suite.path, equals(p.join(_sandbox, 'a_test.dart')));
+      expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
       expect(suite.platform, equals(TestPlatform.vm));
     });
 
@@ -88,40 +81,33 @@ void main() {
   });
 
   group(".loadDir()", () {
-    test("ignores non-Dart files", () {
-      new File(p.join(_sandbox, 'a_test.txt')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox, SuiteConfiguration.empty).toList(),
+    test("ignores non-Dart files", () async {
+      await d.file('a_test.txt', _tests).create();
+      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
           completion(isEmpty));
     });
 
-    test("ignores files in packages/ directories", () {
-      var dir = p.join(_sandbox, 'packages');
-      new Directory(dir).createSync();
-      new File(p.join(dir, 'a_test.dart')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox, SuiteConfiguration.empty).toList(),
+    test("ignores files in packages/ directories", () async {
+      await d.dir('packages', [d.file('a_test.dart', _tests)]).create();
+      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
           completion(isEmpty));
     });
 
-    test("ignores files that don't end in _test.dart", () {
-      new File(p.join(_sandbox, 'test.dart')).writeAsStringSync(_tests);
-      expect(_loader.loadDir(_sandbox, SuiteConfiguration.empty).toList(),
+    test("ignores files that don't end in _test.dart", () async {
+      await d.file('test.dart', _tests).create();
+      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
           completion(isEmpty));
     });
 
     group("with suites loaded from a directory", () {
       var suites;
       setUp(() async {
-        /// TODO(nweiz): Use scheduled_test for this once it's compatible with
-        /// this version of test.
-        new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync(_tests);
-        new File(p.join(_sandbox, 'another_test.dart'))
-            .writeAsStringSync(_tests);
-        new Directory(p.join(_sandbox, 'dir')).createSync();
-        new File(p.join(_sandbox, 'dir/sub_test.dart'))
-            .writeAsStringSync(_tests);
+        await d.file('a_test.dart', _tests).create();
+        await d.file('another_test.dart', _tests).create();
+        await d.dir('dir', [d.file('sub_test.dart', _tests)]).create();
 
         suites = await _loader
-            .loadDir(_sandbox, SuiteConfiguration.empty)
+            .loadDir(d.sandbox, SuiteConfiguration.empty)
             .asyncMap((loadSuite) => loadSuite.getSuite())
             .toList();
       });
@@ -130,9 +116,9 @@ void main() {
         expect(
             suites.map((suite) => suite.path),
             unorderedEquals([
-              p.join(_sandbox, 'a_test.dart'),
-              p.join(_sandbox, 'another_test.dart'),
-              p.join(_sandbox, 'dir', 'sub_test.dart')
+              p.join(d.sandbox, 'a_test.dart'),
+              p.join(d.sandbox, 'another_test.dart'),
+              p.join(d.sandbox, 'dir', 'sub_test.dart')
             ]));
       });
 
@@ -146,13 +132,17 @@ void main() {
   });
 
   test("a print in a loaded file is piped through the LoadSuite", () async {
-    new File(p.join(_sandbox, 'a_test.dart')).writeAsStringSync("""
-void main() {
-  print('print within test');
-}
-""");
+    await d
+        .file(
+            'a_test.dart',
+            """
+      void main() {
+        print('print within test');
+      }
+    """)
+        .create();
     var suites = await _loader
-        .loadFile(p.join(_sandbox, 'a_test.dart'), SuiteConfiguration.empty)
+        .loadFile(p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
         .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;

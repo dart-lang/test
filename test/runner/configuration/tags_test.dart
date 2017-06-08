@@ -3,20 +3,19 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
+
 import 'dart:convert';
 
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/test.dart';
 
 import '../../io.dart';
 
 void main() {
-  useSandbox();
-
-  test("adds the specified tags", () {
-    d
+  test("adds the specified tags", () async {
+    await d
         .file(
             "dart_test.yaml",
             JSON.encode({
@@ -24,7 +23,7 @@ void main() {
             }))
         .create();
 
-    d
+    await d
         .file(
             "test.dart",
             """
@@ -36,22 +35,22 @@ void main() {
     """)
         .create();
 
-    var test = runTest(["--exclude-tag", "foo", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("No tests ran.")));
-    test.shouldExit(0);
+    var test = await runTest(["--exclude-tag", "foo", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("No tests ran.")));
+    await test.shouldExit(0);
 
-    test = runTest(["--exclude-tag", "bar", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("No tests ran.")));
-    test.shouldExit(0);
+    test = await runTest(["--exclude-tag", "bar", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("No tests ran.")));
+    await test.shouldExit(0);
 
-    test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-    test.shouldExit(0);
+    test = await runTest(["test.dart"]);
+    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    await test.shouldExit(0);
   });
 
   group("tags", () {
-    test("doesn't warn for tags that exist in the configuration", () {
-      d
+    test("doesn't warn for tags that exist in the configuration", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -59,7 +58,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -71,13 +70,13 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(never(contains("Warning: Tags were used")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, neverEmits(contains("Warning: Tags were used")));
+      await test.shouldExit(0);
     });
 
-    test("applies tag-specific configuration only to matching tests", () {
-      d
+    test("applies tag-specific configuration only to matching tests", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -87,7 +86,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -102,14 +101,14 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout,
           containsInOrder(["-1: test 1 [E]", "+1 -1: Some tests failed."]));
-      test.shouldExit(1);
+      await test.shouldExit(1);
     });
 
-    test("supports tag selectors", () {
-      d
+    test("supports tag selectors", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -119,7 +118,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -136,14 +135,14 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout,
           containsInOrder(["+2 -1: test 3 [E]", "+2 -1: Some tests failed."]));
-      test.shouldExit(1);
+      await test.shouldExit(1);
     });
 
-    test("allows tag inheritance via add_tags", () {
-      d
+    test("allows tag inheritance via add_tags", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -156,7 +155,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -169,14 +168,14 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart", "--tags", "foo"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart", "--tags", "foo"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
     // Regression test for #503.
-    test("skips tests whose tags are marked as skip", () {
-      d
+    test("skips tests whose tags are marked as skip", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -186,7 +185,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -200,20 +199,20 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout
-          .expect(containsInOrder(["some reason", "All tests skipped."]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout, containsInOrder(["some reason", "All tests skipped."]));
+      await test.shouldExit(0);
     });
   });
 
   group("include_tags and exclude_tags", () {
-    test("only runs tests with the included tags", () {
-      d
+    test("only runs tests with the included tags", () async {
+      await d
           .file("dart_test.yaml", JSON.encode({"include_tags": "foo && bar"}))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -227,17 +226,18 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(["+0: zop", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout, containsInOrder(["+0: zop", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
-    test("doesn't run tests with the excluded tags", () {
-      d
+    test("doesn't run tests with the excluded tags", () async {
+      await d
           .file("dart_test.yaml", JSON.encode({"exclude_tags": "foo && bar"}))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -251,26 +251,26 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout,
           containsInOrder(["+0: zip", "+1: zap", "+2: All tests passed!"]));
-      test.shouldExit(0);
+      await test.shouldExit(0);
     });
   });
 
   group("errors", () {
     group("tags", () {
-      test("rejects an invalid tag type", () {
-        d.file("dart_test.yaml", '{"tags": {12: null}}').create();
+      test("rejects an invalid tag type", () async {
+        await d.file("dart_test.yaml", '{"tags": {12: null}}').create();
 
-        var test = runTest([]);
-        test.stderr
-            .expect(containsInOrder(["tags key must be a string", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr, containsInOrder(["tags key must be a string", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid tag selector", () {
-        d
+      test("rejects an invalid tag selector", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -278,22 +278,24 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(
-            ["Invalid tags key: Expected end of input.", "^^^^^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder(
+                ["Invalid tags key: Expected end of input.", "^^^^^^^^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid tag map", () {
-        d.file("dart_test.yaml", JSON.encode({"tags": 12})).create();
+      test("rejects an invalid tag map", () async {
+        await d.file("dart_test.yaml", JSON.encode({"tags": 12})).create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(["tags must be a map", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(test.stderr, containsInOrder(["tags must be a map", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid tag configuration", () {
-        d
+      test("rejects an invalid tag configuration", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -303,14 +305,14 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["Invalid timeout: expected unit", "^^^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects runner configuration", () {
-        d
+      test("rejects runner configuration", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -320,25 +322,27 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["filename isn't supported here.", "^^^^^^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
     });
 
     group("add_tags", () {
-      test("rejects an invalid list type", () {
-        d.file("dart_test.yaml", JSON.encode({"add_tags": "foo"})).create();
+      test("rejects an invalid list type", () async {
+        await d
+            .file("dart_test.yaml", JSON.encode({"add_tags": "foo"}))
+            .create();
 
-        var test = runTest(["test.dart"]);
-        test.stderr
-            .expect(containsInOrder(["add_tags must be a list", "^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest(["test.dart"]);
+        expect(
+            test.stderr, containsInOrder(["add_tags must be a list", "^^^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid tag type", () {
-        d
+      test("rejects an invalid tag type", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -346,14 +350,14 @@ void main() {
                 }))
             .create();
 
-        var test = runTest(["test.dart"]);
-        test.stderr
-            .expect(containsInOrder(["Tag name must be a string", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest(["test.dart"]);
+        expect(
+            test.stderr, containsInOrder(["Tag name must be a string", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid tag name", () {
-        d
+      test("rejects an invalid tag name", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -361,56 +365,66 @@ void main() {
                 }))
             .create();
 
-        var test = runTest(["test.dart"]);
-        test.stderr.expect(containsInOrder([
-          "Tag name must be an (optionally hyphenated) Dart identifier.",
-          "^^^^^^^^^"
-        ]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest(["test.dart"]);
+        expect(
+            test.stderr,
+            containsInOrder([
+              "Tag name must be an (optionally hyphenated) Dart identifier.",
+              "^^^^^^^^^"
+            ]));
+        await test.shouldExit(exit_codes.data);
       });
     });
 
     group("include_tags", () {
-      test("rejects an invalid type", () {
-        d.file("dart_test.yaml", JSON.encode({"include_tags": 12})).create();
+      test("rejects an invalid type", () async {
+        await d
+            .file("dart_test.yaml", JSON.encode({"include_tags": 12}))
+            .create();
 
-        var test = runTest(["test.dart"]);
-        test.stderr
-            .expect(containsInOrder(["include_tags must be a string", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest(["test.dart"]);
+        expect(test.stderr,
+            containsInOrder(["include_tags must be a string", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid selector", () {
-        d
+      test("rejects an invalid selector", () async {
+        await d
             .file("dart_test.yaml", JSON.encode({"include_tags": "foo bar"}))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(
-            ["Invalid include_tags: Expected end of input.", "^^^^^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder(
+                ["Invalid include_tags: Expected end of input.", "^^^^^^^^^"]));
+        await test.shouldExit(exit_codes.data);
       });
     });
 
     group("exclude_tags", () {
-      test("rejects an invalid type", () {
-        d.file("dart_test.yaml", JSON.encode({"exclude_tags": 12})).create();
+      test("rejects an invalid type", () async {
+        await d
+            .file("dart_test.yaml", JSON.encode({"exclude_tags": 12}))
+            .create();
 
-        var test = runTest(["test.dart"]);
-        test.stderr
-            .expect(containsInOrder(["exclude_tags must be a string", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest(["test.dart"]);
+        expect(test.stderr,
+            containsInOrder(["exclude_tags must be a string", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid selector", () {
-        d
+      test("rejects an invalid selector", () async {
+        await d
             .file("dart_test.yaml", JSON.encode({"exclude_tags": "foo bar"}))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(
-            ["Invalid exclude_tags: Expected end of input.", "^^^^^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder(
+                ["Invalid exclude_tags: Expected end of input.", "^^^^^^^^^"]));
+        await test.shouldExit(exit_codes.data);
       });
     });
   });
