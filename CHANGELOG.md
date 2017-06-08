@@ -1,13 +1,12 @@
 ## 0.12.22
 
-* Add a `retry` option to `test()` and `group()` functions, as well as `@Retry()`
-  annotation for test files and a `retry` configuration field for `dart_test.yaml`.
-  A test with reties enabled will be re-run if it fails for a reason other than a
+* Add a `retry` option to `test()` and `group()` functions, as well
+  as `@Retry()`  annotation for test files and a `retry` 
+  configuration field for `dart_test.yaml`.  A test with reties
+  enabled will be re-run if it fails for a reason other than a
   `TestFailure`.
   
 * Add a `--no-retry` runner flag that disables retries of failing tests.
-
-## 0.12.21+1
 
 * Fix a "concurrent modification during iteration" error when calling
   `addTearDown()` from within a tear down.
