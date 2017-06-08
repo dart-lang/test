@@ -3,17 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
+import 'package:test/test.dart';
 
 import '../../io.dart';
 
 void main() {
-  useSandbox();
-
-  test("prints the platform name when running on multiple platforms", () {
-    d
+  test("prints the platform name when running on multiple platforms", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -27,20 +26,13 @@ void main() {
 """)
         .create();
 
-    var test = runTest([
-      "-r",
-      "expanded",
-      "-p",
-      "content-shell",
-      "-p",
-      "vm",
-      "-j",
-      "1",
+    var test = await runTest([
+      "-r", "expanded", "-p", "content-shell", "-p", "vm", "-j", "1", //
       "test.dart"
     ]);
 
-    test.stdout.fork().expect(consumeThrough(contains("[VM]")));
-    test.stdout.expect(consumeThrough(contains("[Dartium Content Shell]")));
-    test.shouldExit(0);
+    expect(test.stdoutStream(), emitsThrough(contains("[VM]")));
+    expect(test.stdout, emitsThrough(contains("[Dartium Content Shell]")));
+    await test.shouldExit(0);
   }, tags: ['content-shell']);
 }

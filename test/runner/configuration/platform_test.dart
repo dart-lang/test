@@ -5,20 +5,18 @@
 @TestOn("vm")
 import 'dart:convert';
 
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/src/util/io.dart';
+import 'package:test/test.dart';
 
 import '../../io.dart';
 
 void main() {
-  useSandbox();
-
   group("on_platform", () {
-    test("applies platform-specific configuration to matching tests", () {
-      d
+    test("applies platform-specific configuration to matching tests", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -28,7 +26,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -42,16 +40,18 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["-p", "content-shell,vm", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "-1: [Dartium Content Shell] test [E]",
-        "+1 -1: Some tests failed."
-      ]));
-      test.shouldExit(1);
+      var test = await runTest(["-p", "content-shell,vm", "test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            "-1: [Dartium Content Shell] test [E]",
+            "+1 -1: Some tests failed."
+          ]));
+      await test.shouldExit(1);
     }, tags: ['content-shell']);
 
-    test("supports platform selectors", () {
-      d
+    test("supports platform selectors", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -61,7 +61,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "test.dart",
               """
@@ -75,27 +75,29 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["-p", "content-shell,vm", "test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "-1: [VM] test [E]",
-        "-2: [Dartium Content Shell] test [E]",
-        "-2: Some tests failed."
-      ]));
-      test.shouldExit(1);
+      var test = await runTest(["-p", "content-shell,vm", "test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            "-1: [VM] test [E]",
+            "-2: [Dartium Content Shell] test [E]",
+            "-2: Some tests failed."
+          ]));
+      await test.shouldExit(1);
     }, tags: ['content-shell']);
 
     group("errors", () {
-      test("rejects an invalid selector type", () {
-        d.file("dart_test.yaml", '{"on_platform": {12: null}}').create();
+      test("rejects an invalid selector type", () async {
+        await d.file("dart_test.yaml", '{"on_platform": {12: null}}').create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["on_platform key must be a string", "^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid selector", () {
-        d
+      test("rejects an invalid selector", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -103,14 +105,18 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(
-            ["Invalid on_platform key: Expected end of input.", "^^^^^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder([
+              "Invalid on_platform key: Expected end of input.",
+              "^^^^^^^^^"
+            ]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects a selector with an undefined variable", () {
-        d
+      test("rejects a selector with an undefined variable", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -118,14 +124,16 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(
-            ["Invalid on_platform key: Undefined variable.", "^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder(
+                ["Invalid on_platform key: Undefined variable.", "^^^^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid map", () {
-        d
+      test("rejects an invalid map", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -133,14 +141,14 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["on_platform value must be a map.", "^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid configuration", () {
-        d
+      test("rejects an invalid configuration", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -150,14 +158,14 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["Invalid timeout: expected unit.", "^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects runner configuration", () {
-        d
+      test("rejects runner configuration", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -167,17 +175,17 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["filename isn't supported here.", "^^^^^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
     });
   });
 
   group("on_os", () {
-    test("applies OS-specific configuration on a matching OS", () {
-      d
+    test("applies OS-specific configuration on a matching OS", () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -187,7 +195,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "foo_test.dart",
               """
@@ -199,7 +207,7 @@ void main() {
       """)
           .create();
 
-      d
+      await d
           .file(
               "test_foo.dart",
               """
@@ -211,14 +219,17 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["."]);
-      test.stdout.expect(containsInOrder(
-          ["+0: ./test_foo.dart: test_foo", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["."]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: ./test_foo.dart: test_foo", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
-    test("doesn't apply OS-specific configuration on a non-matching OS", () {
-      d
+    test("doesn't apply OS-specific configuration on a non-matching OS",
+        () async {
+      await d
           .file(
               "dart_test.yaml",
               JSON.encode({
@@ -228,7 +239,7 @@ void main() {
               }))
           .create();
 
-      d
+      await d
           .file(
               "foo_test.dart",
               """
@@ -240,7 +251,7 @@ void main() {
       """)
           .create();
 
-      d
+      await d
           .file(
               "test_foo.dart",
               """
@@ -252,24 +263,26 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["."]);
-      test.stdout.expect(containsInOrder(
-          ["+0: ./foo_test.dart: foo_test", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["."]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: ./foo_test.dart: foo_test", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
     group("errors", () {
-      test("rejects an invalid OS type", () {
-        d.file("dart_test.yaml", '{"on_os": {12: null}}').create();
+      test("rejects an invalid OS type", () async {
+        await d.file("dart_test.yaml", '{"on_os": {12: null}}').create();
 
-        var test = runTest([]);
-        test.stderr
-            .expect(containsInOrder(["on_os key must be a string", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr, containsInOrder(["on_os key must be a string", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an unknown OS name", () {
-        d
+      test("rejects an unknown OS name", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -277,14 +290,16 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(containsInOrder(
-            ["Invalid on_os key: No such operating system.", "^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder(
+                ["Invalid on_os key: No such operating system.", "^^^^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid map", () {
-        d
+      test("rejects an invalid map", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -292,14 +307,14 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr
-            .expect(containsInOrder(["on_os value must be a map.", "^^"]));
-        test.shouldExit(exit_codes.data);
+        var test = await runTest([]);
+        expect(
+            test.stderr, containsInOrder(["on_os value must be a map.", "^^"]));
+        await test.shouldExit(exit_codes.data);
       });
 
-      test("rejects an invalid configuration", () {
-        d
+      test("rejects an invalid configuration", () async {
+        await d
             .file(
                 "dart_test.yaml",
                 JSON.encode({
@@ -309,10 +324,10 @@ void main() {
                 }))
             .create();
 
-        var test = runTest([]);
-        test.stderr.expect(
+        var test = await runTest([]);
+        expect(test.stderr,
             containsInOrder(["Invalid timeout: expected unit.", "^^^^^"]));
-        test.shouldExit(exit_codes.data);
+        await test.shouldExit(exit_codes.data);
       });
     });
   });
