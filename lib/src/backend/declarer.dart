@@ -41,6 +41,9 @@ class Declarer {
   /// Whether to collect stack traces for [GroupEntry]s.
   final bool _collectTraces;
 
+  /// Whether to disable retries of tests.
+  final bool _noRetry;
+
   /// The set-up functions to run for each test in this group.
   final _setUps = new List<AsyncFunction>();
 
@@ -84,11 +87,14 @@ class Declarer {
   /// If [collectTraces] is `true`, this will set [GroupEntry.trace] for all
   /// entries built by the declarer. Note that this can be noticeably slow when
   /// thousands of tests are being declared (see #457).
-  Declarer({Metadata metadata, bool collectTraces: false})
-      : this._(null, null, metadata ?? new Metadata(), collectTraces, null);
+  ///
+  /// If [noRetry] is `true` tests will be run at most once.
+  Declarer({Metadata metadata, bool collectTraces: false, bool noRetry: false})
+      : this._(null, null, metadata ?? new Metadata(), collectTraces, null,
+            noRetry);
 
   Declarer._(this._parent, this._name, this._metadata, this._collectTraces,
-      this._trace);
+      this._trace, this._noRetry);
 
   /// Runs [body] with this declarer as [Declarer.current].
   ///
@@ -111,7 +117,7 @@ class Declarer {
         skip: skip,
         onPlatform: onPlatform,
         tags: tags,
-        retry: retry));
+        retry: _noRetry ? 0 : retry));
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
       var parents = <Declarer>[];
@@ -141,7 +147,8 @@ class Declarer {
       Timeout timeout,
       skip,
       Map<String, dynamic> onPlatform,
-      tags}) {
+      tags,
+      int retry}) {
     _checkNotBuilt("group");
 
     var metadata = _metadata.merge(new Metadata.parse(
@@ -149,11 +156,12 @@ class Declarer {
         timeout: timeout,
         skip: skip,
         onPlatform: onPlatform,
-        tags: tags));
+        tags: tags,
+        retry: retry));
     var trace = _collectTraces ? new Trace.current(2) : null;
 
-    var declarer =
-        new Declarer._(this, _prefix(name), metadata, _collectTraces, trace);
+    var declarer = new Declarer._(
+        this, _prefix(name), metadata, _collectTraces, trace, _noRetry);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.

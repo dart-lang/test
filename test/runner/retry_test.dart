@@ -10,8 +10,62 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
-  test("respects top-level @Retry declarations", () async {
+  test("respects --no-retry flag with retry option", () async {
     await d
+        .file(
+            "test.dart",
+            """
+          import 'dart:async';
+
+          import 'package:test/test.dart';
+
+          var attempt = 0;
+          void main() {
+            test("eventually passes", () {
+               attempt++;
+               if(attempt <= 1 ) {
+                 throw new TestFailure("oh no");
+               }
+            }, retry: 1);
+          }
+          """)
+        .create();
+
+    var test = await runTest(["test.dart", "--no-retry"]);
+    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    await test.shouldExit(1);
+  });
+
+  test("respects --no-retry flag with @Retry declaration", () async {
+    await d
+        .file(
+            "test.dart",
+            """
+          @Retry(3)
+
+          import 'dart:async';
+
+          import 'package:test/test.dart';
+
+          var attempt = 0;
+          void main() {
+            test("eventually passes", () {
+               attempt++;
+               if(attempt <= 1 ) {
+                 throw new TestFailure("oh no");
+               }
+            });
+          }
+          """)
+        .create();
+
+    var test = await runTest(["test.dart", "--no-retry"]);
+    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    await test.shouldExit(1);
+  });
+
+  test("respects top-level @Retry declarations", () async {
+    d
         .file(
             "test.dart",
             """
@@ -38,7 +92,35 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test("Tests are not retried after they have already been reported successful",
+  test("respects group retry declarations", () async {
+    await d
+        .file(
+            "test.dart",
+            """
+          import 'dart:async';
+
+          import 'package:test/test.dart';
+
+          var attempt = 0;
+          void main() {
+            group("retry", () {
+              test("failure", () {
+                 attempt++;
+                 if(attempt <= 3) {
+                   throw new TestFailure("oh no");
+                 }
+              });
+             }, retry: 3);
+          }
+          """)
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    await test.shouldExit(0);
+  });
+
+  test("tests are not retried after they have already been reported successful",
       () async {
     await d
         .file(

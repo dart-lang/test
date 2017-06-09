@@ -73,7 +73,9 @@ class RemoteListener {
       if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
       var declarer = new Declarer(
-          metadata: metadata, collectTraces: message['collectTraces']);
+          metadata: metadata,
+          collectTraces: message['collectTraces'],
+          noRetry: message['noRetry']);
       await declarer.declare(main);
 
       var os =

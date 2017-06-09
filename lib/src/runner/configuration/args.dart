@@ -92,6 +92,10 @@ final ArgParser _parser = (() {
           'to provide improved test performance but at the cost of\n'
           'debuggability.',
       defaultsTo: true);
+  parser.addFlag("no-retry",
+      help: "Don't re-run tests that have retry set.",
+      defaultsTo: false,
+      negatable: false);
 
   var reporterDescriptions = <String, String>{};
   for (var reporter in allReporters.keys) {
@@ -222,7 +226,8 @@ class _Parser {
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,
-        excludeTags: excludeTags);
+        excludeTags: excludeTags,
+        noRetry: _ifParsed('no-retry'));
   }
 
   /// Returns the parsed option for [name], or `null` if none was parsed.
