@@ -4,25 +4,19 @@
 
 @TestOn("vm")
 @Tags(const ["firefox"])
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'package:test/src/runner/browser/firefox.dart';
+import 'package:test/test.dart';
 
 import '../../io.dart';
 import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
-  useSandbox();
-
-  test("starts Firefox with the given URL", () {
-    var server = new CodeServer();
-
-    schedule(() async {
-      var firefox = new Firefox(await server.url);
-      currentSchedule.onComplete.schedule(() async => (await firefox).close());
-    });
+  test("starts Firefox with the given URL", () async {
+    var server = await CodeServer.start();
 
     server.handleJavaScript('''
 var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
@@ -30,21 +24,19 @@ webSocket.addEventListener("open", function() {
   webSocket.send("loaded!");
 });
 ''');
-
     var webSocket = server.handleWebSocket();
 
-    schedule(() async {
-      expect(await (await webSocket).stream.first, equals("loaded!"));
-    });
+    var firefox = new Firefox(server.url);
+    addTearDown(() => firefox.close());
+
+    expect(await (await webSocket).stream.first, equals("loaded!"));
   });
 
   test("a process can be killed synchronously after it's started", () async {
-    var server = new CodeServer();
+    var server = await CodeServer.start();
 
-    schedule(() async {
-      var firefox = new Firefox(await server.url);
-      await firefox.close();
-    });
+    var firefox = new Firefox(server.url);
+    await firefox.close();
   });
 
   test("reports an error in onExit", () {
@@ -56,8 +48,8 @@ webSocket.addEventListener("open", function() {
             startsWith("Failed to run Firefox: $noSuchFileMessage"))));
   });
 
-  test("can run successful tests", () {
-    d
+  test("can run successful tests", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -69,13 +61,13 @@ void main() {
 """)
         .create();
 
-    var test = runTest(["-p", "firefox", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-    test.shouldExit(0);
+    var test = await runTest(["-p", "firefox", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    await test.shouldExit(0);
   });
 
-  test("can run failing tests", () {
-    d
+  test("can run failing tests", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -87,8 +79,8 @@ void main() {
 """)
         .create();
 
-    var test = runTest(["-p", "firefox", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
-    test.shouldExit(1);
+    var test = await runTest(["-p", "firefox", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    await test.shouldExit(1);
   });
 }

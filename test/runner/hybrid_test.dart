@@ -3,12 +3,14 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
+
 import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
+import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -19,11 +21,10 @@ void main() {
         .fromUri(await Isolate.resolvePackageUri(Uri.parse("package:test/")))));
   });
 
-  useSandbox();
-
   group("spawnHybridUri():", () {
-    test("loads a file in a separate isolate connected via StreamChannel", () {
-      d
+    test("loads a file in a separate isolate connected via StreamChannel",
+        () async {
+      await d
           .file(
               "test.dart",
               """
@@ -38,7 +39,7 @@ void main() {
       """)
           .create();
 
-      d
+      await d
           .file(
               "hybrid.dart",
               """
@@ -50,14 +51,16 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
-    test("resolves URIs relative to the test file", () {
-      d.dir("test/dir/subdir", [
+    test("resolves URIs relative to the test file", () async {
+      await d.dir("test/dir/subdir", [
         d.file(
             "test.dart",
             """
@@ -81,15 +84,17 @@ void main() {
         """),
       ]).create();
 
-      var test = runTest(["test/dir/subdir/test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test/dir/subdir/test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
-    test("supports absolute file: URIs", () {
-      var url = p.toUri(p.absolute(p.join(sandbox, 'hybrid.dart')));
-      d
+    test("supports absolute file: URIs", () async {
+      var url = p.toUri(p.absolute(p.join(d.sandbox, 'hybrid.dart')));
+      await d
           .file(
               "test.dart",
               """
@@ -104,7 +109,7 @@ void main() {
       """)
           .create();
 
-      d
+      await d
           .file(
               "hybrid.dart",
               """
@@ -116,14 +121,16 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
-    test("supports Uri objects", () {
-      d
+    test("supports Uri objects", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -138,7 +145,7 @@ void main() {
       """)
           .create();
 
-      d
+      await d
           .file(
               "hybrid.dart",
               """
@@ -150,18 +157,20 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
     test("rejects non-String, non-Uri objects", () {
       expect(() => spawnHybridUri(123), throwsArgumentError);
     });
 
-    test("passes a message to the hybrid isolate", () {
-      d
+    test("passes a message to the hybrid isolate", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -183,7 +192,7 @@ void main() {
       """)
           .create();
 
-      d
+      await d
           .file(
               "hybrid.dart",
               """
@@ -195,10 +204,12 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: hybrid echoes message", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: hybrid echoes message", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
     test("emits an error from the stream channel if the isolate fails to load",
@@ -220,9 +231,9 @@ void main() {
       """).stream.toList(), completion(equals([1, 2, 3])));
     });
 
-    test("can use dart:io even when run from a browser", () {
-      var path = p.join(sandbox, "test.dart");
-      d
+    test("can use dart:io even when run from a browser", () async {
+      var path = p.join(d.sandbox, "test.dart");
+      await d
           .file(
               "test.dart",
               """
@@ -246,13 +257,15 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: hybrid loads dart:io", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["-p", "content-shell", "test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: hybrid loads dart:io", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     }, tags: ["content-shell"]);
 
-    test("forwards data from the test to the hybrid isolate", () {
+    test("forwards data from the test to the hybrid isolate", () async {
       var channel = spawnHybridCode("""
         import "package:stream_channel/stream_channel.dart";
 
@@ -356,8 +369,9 @@ void main() {
       expect(() => channel.sink.add([].iterator), throwsArgumentError);
     });
 
-    test("gracefully handles an unserializable message in the browser", () {
-      d
+    test("gracefully handles an unserializable message in the browser",
+        () async {
+      await d
           .file(
               "test.dart",
               """
@@ -377,10 +391,12 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["-p", "content-shell", "test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: invalid message to hybrid", "+1: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["-p", "content-shell", "test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: invalid message to hybrid", "+1: All tests passed!"]));
+      await test.shouldExit(0);
     }, tags: ['content-shell']);
 
     test("gracefully handles an unserializable message in the hybrid isolate",
@@ -488,8 +504,8 @@ void main() {
       expect(channel.stream.toList(), completion(isEmpty));
     });
 
-    test("closes the channel when the test finishes by default", () {
-      d
+    test("closes the channel when the test finishes by default", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -518,14 +534,16 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["+0: test 1", "+1: test 2", "+2: All tests passed!"]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["+0: test 1", "+1: test 2", "+2: All tests passed!"]));
+      await test.shouldExit(0);
     });
 
-    test("persists across multiple tests with stayAlive: true", () {
-      d
+    test("persists across multiple tests with stayAlive: true", () async {
+      await d
           .file(
               "test.dart",
               """
@@ -566,13 +584,15 @@ void main() {
       """)
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder([
-        "+0: echoes a number",
-        "+1: echoes a string",
-        "+2: All tests passed!"
-      ]));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            "+0: echoes a number",
+            "+1: echoes a string",
+            "+2: All tests passed!"
+          ]));
+      await test.shouldExit(0);
     });
   });
 }

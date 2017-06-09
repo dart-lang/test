@@ -40,7 +40,6 @@ dev_dependencies:
   fake_async: '^0.1.2'
   http: '^0.11.0'
   js: '^0.6.0'
-  scheduled_test: '^0.12.5'
-
-dependency_overrides:
-  scheduled_test: '^0.12.5'
+  shelf_test_handler: '^1.0.0'
+  test_descriptor: '^1.0.0'
+  test_process: '^1.0.0'

@@ -4,26 +4,19 @@
 
 @TestOn("vm")
 @Tags(const ["content-shell"])
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'package:test/src/runner/browser/content_shell.dart';
+import 'package:test/test.dart';
 
 import '../../io.dart';
 import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
-  useSandbox();
-
-  test("starts content shell with the given URL", () {
-    var server = new CodeServer();
-
-    schedule(() async {
-      var contentShell = new ContentShell(await server.url);
-      currentSchedule.onComplete
-          .schedule(() async => (await contentShell).close());
-    });
+  test("starts content shell with the given URL", () async {
+    var server = await CodeServer.start();
 
     server.handleDart('''
 var webSocket = new WebSocket(
@@ -31,21 +24,19 @@ var webSocket = new WebSocket(
 await webSocket.onOpen.first;
 webSocket.send("loaded!");
 ''');
-
     var webSocket = server.handleWebSocket();
 
-    schedule(() async {
-      expect(await (await webSocket).stream.first, equals("loaded!"));
-    });
+    var contentShell = new ContentShell(server.url);
+    addTearDown(() => contentShell.close());
+
+    expect(await (await webSocket).stream.first, equals("loaded!"));
   }, skip: "Failing with mysterious WebSocket issues.");
 
   test("a process can be killed synchronously after it's started", () async {
-    var server = new CodeServer();
+    var server = await CodeServer.start();
 
-    schedule(() async {
-      var contentShell = new ContentShell(await server.url);
-      await contentShell.close();
-    });
+    var contentShell = new ContentShell(server.url);
+    await contentShell.close();
   });
 
   test("reports an error in onExit", () {
@@ -57,8 +48,8 @@ webSocket.send("loaded!");
             startsWith("Failed to run Content Shell: $noSuchFileMessage"))));
   });
 
-  test("can run successful tests", () {
-    d
+  test("can run successful tests", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -70,13 +61,13 @@ void main() {
 """)
         .create();
 
-    var test = runTest(["-p", "content-shell", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-    test.shouldExit(0);
+    var test = await runTest(["-p", "content-shell", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    await test.shouldExit(0);
   });
 
-  test("can run failing tests", () {
-    d
+  test("can run failing tests", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -88,8 +79,8 @@ void main() {
 """)
         .create();
 
-    var test = runTest(["-p", "content-shell", "test.dart"]);
-    test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
-    test.shouldExit(1);
+    var test = await runTest(["-p", "content-shell", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    await test.shouldExit(1);
   });
 }

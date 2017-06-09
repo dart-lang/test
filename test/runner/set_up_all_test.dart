@@ -3,17 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
+import 'package:test/test.dart';
 
 import '../io.dart';
 
 void main() {
-  useSandbox();
-
-  test("an error causes the run to fail", () {
-    d
+  test("an error causes the run to fail", () async {
+    await d
         .file(
             "test.dart",
             r"""
@@ -27,14 +26,14 @@ void main() {
         """)
         .create();
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(consumeThrough(contains("-1: (setUpAll) [E]")));
-    test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
-    test.shouldExit(1);
+    var test = await runTest(["test.dart"]);
+    expect(test.stdout, emitsThrough(contains("-1: (setUpAll) [E]")));
+    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    await test.shouldExit(1);
   });
 
-  test("doesn't run if no tests in the group are selected", () {
-    d
+  test("doesn't run if no tests in the group are selected", () async {
+    await d
         .file(
             "test.dart",
             r"""
@@ -54,39 +53,13 @@ void main() {
         """)
         .create();
 
-    var test = runTest(["test.dart", "--name", "without"]);
-    test.stdout.expect(never(contains("(setUpAll)")));
-    test.shouldExit(0);
+    var test = await runTest(["test.dart", "--name", "without"]);
+    expect(test.stdout, neverEmits(contains("(setUpAll)")));
+    await test.shouldExit(0);
   });
 
-  test("doesn't run if no tests in the group are selected", () {
-    d
-        .file(
-            "test.dart",
-            r"""
-        import 'package:test/test.dart';
-
-        void main() {
-          group("group", () {
-            setUpAll(() => throw "oh no");
-
-            test("with", () {});
-          });
-
-          group("group", () {
-            test("without", () {});
-          });
-        }
-        """)
-        .create();
-
-    var test = runTest(["test.dart", "--name", "without"]);
-    test.stdout.expect(never(contains("(setUpAll)")));
-    test.shouldExit(0);
-  });
-
-  test("doesn't run if no tests in the group match the platform", () {
-    d
+  test("doesn't run if no tests in the group match the platform", () async {
+    await d
         .file(
             "test.dart",
             r"""
@@ -106,13 +79,13 @@ void main() {
         """)
         .create();
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(never(contains("(setUpAll)")));
-    test.shouldExit(0);
+    var test = await runTest(["test.dart"]);
+    expect(test.stdout, neverEmits(contains("(setUpAll)")));
+    await test.shouldExit(0);
   });
 
-  test("doesn't run if the group doesn't match the platform", () {
-    d
+  test("doesn't run if the group doesn't match the platform", () async {
+    await d
         .file(
             "test.dart",
             r"""
@@ -132,8 +105,8 @@ void main() {
         """)
         .create();
 
-    var test = runTest(["test.dart"]);
-    test.stdout.expect(never(contains("(setUpAll)")));
-    test.shouldExit(0);
+    var test = await runTest(["test.dart"]);
+    expect(test.stdout, neverEmits(contains("(setUpAll)")));
+    await test.shouldExit(0);
   });
 }
