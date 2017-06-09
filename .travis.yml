@@ -8,7 +8,6 @@ dart:
  - dev
  - stable
  - 1.23.0
- - 1.22.1
 
 # Content shell needs these fonts.
 addons:
@@ -39,11 +38,7 @@ before_install:
   - ln -s `pwd`/`echo drt-linux-*`/content_shell bin/content_shell
 
 dart_task:
- # Browser tests take particularly long on Dartium, so we split them up into different tasks.
- - test: --platform dartium
-   install_dartium: true
-
- # Split the tests into four shards to help parallelize them across Travis workers.
+ # Split the tests into five shards to help parallelize them across Travis workers.
  - test: --preset travis --total-shards 5 --shard-index 0
    install_dartium: true
  - test: --preset travis --total-shards 5 --shard-index 1
@@ -56,10 +51,6 @@ dart_task:
    install_dartium: true
 
 matrix:
-  exclude:
-    # Repo was formatted with the 1.23 SDK.
-    - dart: 1.22.1
-      dart_task: dartfmt
   include:
     - dart: stable
       dart_task: dartfmt
