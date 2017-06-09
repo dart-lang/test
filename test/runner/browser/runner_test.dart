@@ -42,18 +42,18 @@ void main() {
       await test.shouldExit(1);
     }, tags: 'chrome');
 
-    test("a test file throws", () async {		
-       await d.file("test.dart", "void main() => throw 'oh no';").create();		
- 		
-       var test = await runTest(["-p", "chrome", "test.dart"]);		
-       expect(		
-           test.stdout,		
-           containsInOrder([		
-             '-1: compiling test.dart [E]',		
-             'Failed to load "test.dart": oh no'		
-           ]));		
-       await test.shouldExit(1);		
-      }, tags: 'chrome');
+    test("a test file throws", () async {
+      await d.file("test.dart", "void main() => throw 'oh no';").create();
+
+      var test = await runTest(["-p", "chrome", "test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": oh no'
+          ]));
+      await test.shouldExit(1);
+    }, tags: 'chrome');
 
     test("a test file doesn't have a main defined", () async {
       await d.file("test.dart", "void foo() {}").create();
