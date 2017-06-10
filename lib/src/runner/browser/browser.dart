@@ -126,6 +126,8 @@ abstract class Browser {
     });
 
     // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.catchError((_) {});
+    // However, surface application exceptions which are thrown due to startup
+    // issues with the browser.
+    return onExit.catchError((_) {}, test: (e) => e is! ApplicationException);
   }
 }
