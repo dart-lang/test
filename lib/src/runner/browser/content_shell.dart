@@ -11,7 +11,7 @@ import '../application_exception.dart';
 import 'browser.dart';
 
 final _observatoryRegExp = new RegExp(r"^Observatory listening on ([^ ]+)");
-final _errorTimeout = const Duration(seconds: 30);
+final _errorTimeout = const Duration(seconds: 10);
 
 /// A class for running an instance of the Dartium content shell.
 ///
