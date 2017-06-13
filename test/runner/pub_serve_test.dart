@@ -8,6 +8,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
@@ -344,8 +345,22 @@ void main() {
   });
 }
 
+/// The list of supported compilers for the current [Platform.version].
+final Iterable<String> _compilers = () {
+  var compilers = ['dart2js'];
+  var sdkVersion = new Version.parse(
+      Platform.version.substring(0, Platform.version.indexOf(' ')));
+  var minDartDevcVersion = new Version(1, 24, 0);
+  if (sdkVersion >= minDartDevcVersion) {
+    compilers.add('dartdevc');
+  }
+  return compilers;
+}();
+
+/// Runs the test described by [testFn] once for each supported compiler on the
+/// current [Platform.version], passing that compiler as the first argument.
 void testWithCompiler(String name, testFn(String compiler), {tags}) {
-  for (var compiler in ['dartdevc', 'dart2js']) {
+  for (var compiler in _compilers) {
     test("$name with $compiler", () => testFn(compiler), tags: tags);
   }
 }
