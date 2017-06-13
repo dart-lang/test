@@ -161,6 +161,21 @@ void main() {
     });
   });
 
+  test("runs in the same error zone as the test", () {
+    return expectTestsPass(() {
+      test("test", () {
+        var future = new Future.error("oh no");
+        expect(future, throwsA("oh no"));
+
+        addTearDown(() {
+          // If the tear-down is in a different error zone than the test, the
+          // error will try to cross the zone boundary and get top-leveled.
+          expect(future, throwsA("oh no"));
+        });
+      });
+    });
+  });
+
   group("asynchronously", () {
     test("blocks additional test tearDowns on in-band async", () {
       return expectTestsPass(() {

@@ -205,16 +205,6 @@ List flatten(Iterable nested) {
   return result;
 }
 
-/// Like [runZoned], but [zoneValues] are set for the callbacks in
-/// [zoneSpecification] and [onError].
-runZonedWithValues(body(),
-    {Map zoneValues, ZoneSpecification zoneSpecification, Function onError}) {
-  return runZoned(() {
-    return runZoned(body,
-        zoneSpecification: zoneSpecification, onError: onError);
-  }, zoneValues: zoneValues);
-}
-
 /// Truncates [text] to fit within [maxLength].
 ///
 /// This will try to truncate along word boundaries and preserve words both at

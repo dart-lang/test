@@ -283,6 +283,22 @@ void main() {
 
       await _runTest(tests.single, shouldFail: true);
     });
+
+    test("runs in the same error zone as the test", () {
+      return expectTestsPass(() {
+        Future future;
+        tearDown(() {
+          // If the tear-down is in a different error zone than the test, the
+          // error will try to cross the zone boundary and get top-leveled.
+          expect(future, throwsA("oh no"));
+        });
+
+        test("test", () {
+          future = new Future.error("oh no");
+          expect(future, throwsA("oh no"));
+        });
+      });
+    });
   });
 
   group("in a group,", () {

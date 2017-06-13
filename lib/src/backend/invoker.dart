@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 
@@ -200,13 +201,11 @@ class Invoker {
 
     var zone;
     var counter = new OutstandingCallbackCounter();
-    runZoned(() {
-      runZoned(() async {
-        zone = Zone.current;
-        _outstandingCallbackZones.add(zone);
-        await fn();
-        counter.removeOutstandingCallback();
-      }, onError: _handleError);
+    runZoned(() async {
+      zone = Zone.current;
+      _outstandingCallbackZones.add(zone);
+      await fn();
+      counter.removeOutstandingCallback();
     }, zoneValues: {_counterKey: counter});
 
     return counter.noOutstandingCallbacks.whenComplete(() {
@@ -239,8 +238,10 @@ class Invoker {
     _timeoutTimer = _invokerZone.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         if (liveTest.isComplete) return;
-        _handleError(new TimeoutException(
-            "Test timed out after ${niceDuration(timeout)}.", timeout));
+        _handleError(
+            Zone.current,
+            new TimeoutException(
+                "Test timed out after ${niceDuration(timeout)}.", timeout));
       });
     });
   }
@@ -277,9 +278,11 @@ class Invoker {
   }
 
   /// Notifies the invoker of an asynchronous error.
-  void _handleError(error, [StackTrace stackTrace]) {
+  ///
+  /// The [zone] is the zone in which the error was thrown.
+  void _handleError(Zone zone, error, [StackTrace stackTrace]) {
     // Ignore errors propagated from previous test runs
-    if (_runCount != Zone.current[#runCount]) return;
+    if (_runCount != zone[#runCount]) return;
     if (stackTrace == null) stackTrace = new Chain.current();
 
     // Store these here because they'll change when we set the state below.
@@ -292,7 +295,7 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace);
-    removeAllOutstandingCallbacks();
+    zone.run(removeAllOutstandingCallbacks);
 
     if (!liveTest.test.metadata.chainStackTraces) {
       _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
@@ -317,6 +320,7 @@ class Invoker {
     if (liveTest.suite is LoadSuite) return;
 
     _handleError(
+        zone,
         "This test failed after it had already completed. Make sure to use "
         "[expectAsync]\n"
         "or the [completes] matcher when testing async code.",
@@ -331,7 +335,7 @@ class Invoker {
 
     _runCount++;
     Chain.capture(() {
-      runZonedWithValues(() async {
+      runZoned(() async {
         _invokerZone = Zone.current;
         _outstandingCallbackZones.add(Zone.current);
 
@@ -375,8 +379,13 @@ class Invoker {
           },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) =>
-                  _controller.message(new Message.print(line))),
-          onError: _handleError);
+                  _controller.message(new Message.print(line)),
+              // Use [handleUncaughtError] rather than [onError] so we can
+              // capture [zone] and with it the outstanding callback counter for
+              // the zone in which [error] was thrown.
+              handleUncaughtError: (self, _, zone, error, stackTrace) => self
+                  .parent
+                  .run(() => _handleError(zone, error, stackTrace))));
     }, when: liveTest.test.metadata.chainStackTraces);
   }
 
