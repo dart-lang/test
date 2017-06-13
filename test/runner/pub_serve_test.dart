@@ -348,8 +348,7 @@ void main() {
 /// The list of supported compilers for the current [Platform.version].
 final Iterable<String> _compilers = () {
   var compilers = ['dart2js'];
-  var sdkVersion = new Version.parse(
-      Platform.version.substring(0, Platform.version.indexOf(' ')));
+  var sdkVersion = new Version.parse(Platform.version.split(' ').first);
   var minDartDevcVersion = new Version(1, 24, 0);
   if (sdkVersion >= minDartDevcVersion) {
     compilers.add('dartdevc');
