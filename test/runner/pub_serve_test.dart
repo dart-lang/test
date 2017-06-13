@@ -97,8 +97,8 @@ void main() {
       await pub.kill();
     });
 
-    test("runs those tests on Chrome", () async {
-      var pub = await runPubServe();
+    testWithCompiler("runs those tests on Chrome", (compiler) async {
+      var pub = await runPubServe(args: ['--web-compiler', compiler]);
       var test = await runTest([_pubServeArg, '-p', 'chrome']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
@@ -136,10 +136,10 @@ void main() {
     group(
         "gracefully handles pub serve running on the wrong directory for "
         "browser tests", () {
-      test("when run on Chrome", () async {
+      testWithCompiler("when run on Chrome", (compiler) async {
         await d.dir("web").create();
 
-        var pub = await runPubServe(args: ['web']);
+        var pub = await runPubServe(args: ['web', '--web-compiler', compiler]);
         var test = await runTest([_pubServeArg, '-p', 'chrome']);
         expect(
             test.stdout,
@@ -234,8 +234,8 @@ void main() {
       ]).create();
     });
 
-    test("on Chrome", () async {
-      var pub = await runPubServe();
+    testWithCompiler("on Chrome", (compiler) async {
+      var pub = await runPubServe(args: ['--web-compiler', compiler]);
       var test = await runTest([_pubServeArg, '-p', 'chrome']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
@@ -342,4 +342,10 @@ void main() {
         ]));
     await test.shouldExit(1);
   });
+}
+
+void testWithCompiler(String name, testFn(String compiler), {tags}) {
+  for (var compiler in ['dartdevc', 'dart2js']) {
+    test("$name with $compiler", () => testFn(compiler), tags: tags);
+  }
 }
