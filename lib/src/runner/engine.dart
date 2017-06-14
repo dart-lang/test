@@ -434,7 +434,7 @@ class Engine {
     var controller = new LiveSuiteController(suite);
     _addLiveSuite(controller.liveSuite);
 
-    var liveTest = await suite.test.load(suite);
+    var liveTest = suite.test.load(suite);
     _activeLoadTests.add(liveTest);
 
     // Only surface the load test if there are no other tests currently running.

@@ -128,12 +128,13 @@ void warn(String message, {bool color}) {
 ///
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
-Future/*<T>*/ getUnusedPort/*<T>*/(/*=T*/ tryPort(int port)) {
-  var/*=T*/ value;
-  return Future.doWhile(() async {
+Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
+  T value;
+  await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());
     return value == null;
-  }).then((_) => value);
+  });
+  return value;
 }
 
 /// Returns a port that is probably, but not definitely, not in use.

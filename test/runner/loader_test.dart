@@ -147,8 +147,7 @@ void main() {
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
-    var liveTest =
-        await (loadSuite.group.entries.single as Test).load(loadSuite);
+    var liveTest = (loadSuite.group.entries.single as Test).load(loadSuite);
     expect(liveTest.onMessage.first.then((message) => message.text),
         completion(equals("print within test")));
     await liveTest.run();

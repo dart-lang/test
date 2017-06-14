@@ -68,8 +68,8 @@ void main() {
     await d.file("dart_test.yaml", JSON.encode({"js_trace": "flup"})).create();
 
     var test = await runTest(["test.dart"]);
-    expect(await test.stderr,
-        containsInOrder(["js_trace must be a boolean", "^^^^^^"]));
+    expect(
+        test.stderr, containsInOrder(["js_trace must be a boolean", "^^^^^^"]));
     await test.shouldExit(exit_codes.data);
   });
 

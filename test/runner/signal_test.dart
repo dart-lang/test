@@ -71,7 +71,7 @@ void main() {
 
       var test = await _runTest(["test.dart"]);
       await expectLater(test.stdout, emitsThrough("in test.dart"));
-      await test.signal(ProcessSignal.SIGTERM);
+      test.signal(ProcessSignal.SIGTERM);
 
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
@@ -196,7 +196,7 @@ void main() {
 
       var test = await _runTest(["test.dart"]);
       await expectLater(test.stdout, emitsThrough("running test"));
-      await test.signal(ProcessSignal.SIGTERM);
+      test.signal(ProcessSignal.SIGTERM);
 
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
@@ -291,7 +291,7 @@ Future<TestProcess> _runTest(List<String> args, {bool forwardStdio: false}) =>
         forwardStdio: forwardStdio);
 
 Future signalAndQuit(TestProcess test) async {
-  await test.signal(ProcessSignal.SIGTERM);
+  test.signal(ProcessSignal.SIGTERM);
   await test.shouldExit();
   await expectLater(test.stderr, emitsDone);
 }

@@ -2,4 +2,5 @@ analyzer:
   strong-mode: true
 linter:
   rules:
+    - await_only_futures
     - implementation_imports
