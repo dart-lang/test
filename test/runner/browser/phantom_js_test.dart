@@ -35,7 +35,7 @@ webSocket.addEventListener("open", function() {
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
 
-    var phantomJS = new PhantomJS(await server.url);
+    var phantomJS = new PhantomJS(server.url);
     await phantomJS.close();
   });
 

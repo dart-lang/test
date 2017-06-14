@@ -118,7 +118,7 @@ Usage: pub run test [files or directories...]
 void main() {
   test("prints help information", () async {
     var test = await runTest(["--help"]);
-    await expectStdoutEquals(
+    expectStdoutEquals(
         test,
         """
 Runs tests in this package.
@@ -130,7 +130,7 @@ $_usage""");
   group("fails gracefully if", () {
     test("an invalid option is passed", () async {
       var test = await runTest(["--asdf"]);
-      await expectStderrEquals(
+      expectStderrEquals(
           test,
           """
 Could not find an option named "asdf".
@@ -152,7 +152,7 @@ $_usage""");
 
     test("the default directory doesn't exist", () async {
       var test = await runTest([]);
-      await expectStderrEquals(
+      expectStderrEquals(
           test,
           """
 No test files were passed and the default "test/" directory doesn't exist.

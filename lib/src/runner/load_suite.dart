@@ -169,7 +169,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// Rather than emitting errors through a [LiveTest], this just pipes them
   /// through the return value.
   Future<RunnerSuite> getSuite() async {
-    var liveTest = await test.load(this);
+    var liveTest = test.load(this);
     liveTest.onMessage.listen((message) => print(message.text));
     await liveTest.run();
 

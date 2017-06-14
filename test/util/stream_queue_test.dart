@@ -384,7 +384,7 @@ main() {
         expect(controller.hasListener, isTrue);
 
         events.cancel(immediate: true);
-        await expect(controller.hasListener, isFalse);
+        expect(controller.hasListener, isFalse);
       });
 
       test("cancels the underlying subscription when called before any event",

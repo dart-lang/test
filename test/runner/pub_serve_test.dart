@@ -187,7 +187,7 @@ dependencies:
 
       var pub = await runPubServe();
       var test = await runTest([_pubServeArg]);
-      await expectStderrEquals(
+      expectStderrEquals(
           test,
           '''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
