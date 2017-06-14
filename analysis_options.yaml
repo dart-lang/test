@@ -1,2 +1,5 @@
 analyzer:
   strong-mode: true
+linter:
+  rules:
+    - implementation_imports
