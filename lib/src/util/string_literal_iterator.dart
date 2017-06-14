@@ -73,9 +73,6 @@ class StringLiteralIterator extends Iterator<int> {
   /// that string's component runes.
   Iterator<int> _runes;
 
-  /// Whether this has finished iterating.
-  bool _done = false;
-
   /// Creates a new [StringLiteralIterator] iterating over the contents of
   /// [literal].
   ///
@@ -101,8 +98,6 @@ class StringLiteralIterator extends Iterator<int> {
   }
 
   bool moveNext() {
-    if (_done) return false;
-
     // If we're at beginning of a [SimpleStringLiteral], move forward until
     // there's actually text to consume.
     while (_runes == null || _runes.current == null) {

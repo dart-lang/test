@@ -65,12 +65,6 @@ class ExpandedReporter implements Reporter {
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
 
-  /// Whether we've started [_stopwatch].
-  ///
-  /// We can't just use `_stopwatch.isRunning` because the stopwatch is stopped
-  /// when the reporter is paused.
-  var _stopwatchStarted = false;
-
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed;
@@ -141,7 +135,7 @@ class ExpandedReporter implements Reporter {
 
   void resume() {
     if (!_paused) return;
-    if (_stopwatchStarted) _stopwatch.start();
+    _stopwatch.start();
 
     for (var subscription in _subscriptions) {
       subscription.resume();
