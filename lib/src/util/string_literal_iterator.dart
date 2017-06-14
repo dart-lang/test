@@ -4,7 +4,7 @@
 
 import 'dart:collection';
 
-import 'package:analyzer/src/generated/ast.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 
 // ASCII character codes.
 
