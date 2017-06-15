@@ -8,6 +8,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
@@ -97,8 +98,8 @@ void main() {
       await pub.kill();
     });
 
-    test("runs those tests on Chrome", () async {
-      var pub = await runPubServe();
+    testWithCompiler("runs those tests on Chrome", (compilerArgs) async {
+      var pub = await runPubServe(args: compilerArgs);
       var test = await runTest([_pubServeArg, '-p', 'chrome']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
@@ -136,10 +137,10 @@ void main() {
     group(
         "gracefully handles pub serve running on the wrong directory for "
         "browser tests", () {
-      test("when run on Chrome", () async {
+      testWithCompiler("when run on Chrome", (compilerArgs) async {
         await d.dir("web").create();
 
-        var pub = await runPubServe(args: ['web']);
+        var pub = await runPubServe(args: ['web']..addAll(compilerArgs));
         var test = await runTest([_pubServeArg, '-p', 'chrome']);
         expect(
             test.stdout,
@@ -234,8 +235,8 @@ void main() {
       ]).create();
     });
 
-    test("on Chrome", () async {
-      var pub = await runPubServe();
+    testWithCompiler("on Chrome", (compilerArgs) async {
+      var pub = await runPubServe(args: compilerArgs);
       var test = await runTest([_pubServeArg, '-p', 'chrome']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
@@ -342,4 +343,29 @@ void main() {
         ]));
     await test.shouldExit(1);
   });
+}
+
+/// The list of supported compilers for the current [Platform.version].
+final Iterable<String> _compilers = () {
+  var compilers = ['dart2js'];
+  if (_sdkSupportsDartDevc) compilers.add('dartdevc');
+  return compilers;
+}();
+
+/// Whether or not the dartdevc compiler is supported on the current
+/// [Platform.version].
+final bool _sdkSupportsDartDevc = () {
+  var sdkVersion = new Version.parse(Platform.version.split(' ').first);
+  var minDartDevcVersion = new Version(1, 24, 0);
+  return sdkVersion >= minDartDevcVersion;
+}();
+
+/// Runs the test described by [testFn] once for each supported compiler on the
+/// current [Platform.version], passing the relevant compiler args for pub serve
+/// as the first argument.
+void testWithCompiler(String name, testFn(List<String> compilerArgs), {tags}) {
+  for (var compiler in _compilers) {
+    var compilerArgs = _sdkSupportsDartDevc ? ['--web-compiler', compiler] : [];
+    test("$name with $compiler", () => testFn(compilerArgs), tags: tags);
+  }
 }
