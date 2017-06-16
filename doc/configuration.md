@@ -45,6 +45,7 @@ tags:
   * [`run_skipped`](#run_skipped)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
+  * [`fold_stack_frames`](#fold_stack_frames)
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
@@ -393,6 +394,22 @@ reporter: expanded
 
 This field is not supported in the
 [global configuration file](#global-configuration).
+
+### `fold_stack_frames`
+
+This field indicates which packages will be folded when producing stack traces.
+Packages contained in the `exclude` option will be folded. If `only` is provided,
+all packages not contained in this list will be folded. If no options are provided,
+we fold `package:test` and `package:stream_channel` by default.
+
+```yaml
+fold_stack_frames:
+  only:
+   - some_package
+  exclude:
+   - a_package
+   - another_package
+```
 
 ## Configuring Tags
 
