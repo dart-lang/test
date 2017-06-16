@@ -66,6 +66,7 @@ class StackTraceMapper {
 
   static Map<String, String> _serializablePackageConfigMap(
       Map<String, Uri> packageConfigMap) {
+    if (packageConfigMap == null) return null;
     var result = {};
     for (var key in packageConfigMap.keys) {
       result[key] = '${packageConfigMap[key]}';
@@ -75,6 +76,7 @@ class StackTraceMapper {
 
   static Map<String, Uri> _deserializePackageConfigMap(
       Map<String, String> serialized) {
+    if (serialized == null) return null;
     var result = {};
     for (var key in serialized.keys) {
       result[key] = Uri.parse(serialized[key]);
