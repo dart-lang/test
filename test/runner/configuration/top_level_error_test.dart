@@ -24,7 +24,7 @@ void main() {
     await test.shouldExit(exit_codes.data);
   });
 
-  test("rejects an invalid fold_stack_frames key", () async {
+  test("rejects invalid fold_stack_frames keys", () async {
     await d
         .file(
             "dart_test.yaml",
@@ -39,7 +39,7 @@ void main() {
     await test.shouldExit(exit_codes.data);
   });
 
-  test("rejects an invalid fold_stack_frames values", () async {
+  test("rejects invalid fold_stack_frames values", () async {
     await d
         .file(
             "dart_test.yaml",
