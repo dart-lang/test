@@ -10,7 +10,6 @@ import 'dart:typed_data';
 import 'package:async/async.dart' hide StreamQueue;
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
-import 'package:stack_trace/stack_trace.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
@@ -168,24 +167,6 @@ final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
 
 /// Returns [str] without any color codes.
 String withoutColors(String str) => str.replaceAll(_colorCode, '');
-
-/// Returns [stackTrace] converted to a [Chain] with all irrelevant frames
-/// folded together.
-///
-/// If [verbose] is `true`, returns the chain for [stackTrace] unmodified.
-Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
-  if (verbose) return new Chain.forTrace(stackTrace);
-  return new Chain.forTrace(stackTrace).foldFrames(
-      (frame) => frame.package == 'test' || frame.package == 'stream_channel',
-      terse: true);
-}
-
-/// Converts [stackTrace] to a [Chain] following the test's configuration.
-Chain testChain(StackTrace stackTrace) {
-  // TODO(nweiz): Follow more configuration when #527 is fixed.
-  return terseChain(stackTrace,
-      verbose: Invoker.current.liveTest.test.metadata.verboseTrace);
-}
 
 /// Flattens nested [Iterable]s inside an [Iterable] into a single [List]
 /// containing only non-[Iterable] elements.

@@ -19,8 +19,6 @@ import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'spawn_hybrid.dart';
 
-typedef StackTrace _MapTrace(StackTrace trace);
-
 /// A test running remotely, controlled by a stream channel.
 class RunnerTest extends Test {
   final String name;
@@ -30,16 +28,9 @@ class RunnerTest extends Test {
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
 
-  /// The function used to reformat errors' stack traces.
-  final _MapTrace _mapTrace;
+  RunnerTest(this.name, this.metadata, this.trace, this._channel);
 
-  RunnerTest(
-      this.name, this.metadata, Trace trace, this._channel, _MapTrace mapTrace)
-      : trace = trace == null ? null : new Trace.from(mapTrace(trace)),
-        _mapTrace = mapTrace;
-
-  RunnerTest._(
-      this.name, this.metadata, this.trace, this._channel, this._mapTrace);
+  RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var controller;
@@ -54,7 +45,7 @@ class RunnerTest extends Test {
         switch (message['type']) {
           case 'error':
             var asyncError = RemoteException.deserialize(message['error']);
-            var stackTrace = _mapTrace(asyncError.stackTrace);
+            var stackTrace = asyncError.stackTrace;
             controller.addError(asyncError.error, stackTrace);
             break;
 
@@ -108,7 +99,7 @@ class RunnerTest extends Test {
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new RunnerTest._(name, metadata.forPlatform(platform, os: os), trace,
-        _channel, _mapTrace);
+    return new RunnerTest._(
+        name, metadata.forPlatform(platform, os: os), trace, _channel);
   }
 }

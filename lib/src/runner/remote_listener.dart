@@ -16,7 +16,9 @@ import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../util/remote_exception.dart';
+import '../util/stack_trace_mapper.dart';
 import '../utils.dart';
+import '../frontend/test_chain.dart';
 
 class RemoteListener {
   /// The test suite to run.
@@ -78,6 +80,17 @@ class RemoteListener {
           noRetry: message['noRetry']);
       await declarer.declare(main);
 
+      if (message['stackTraceMapper'] != null) {
+        var mapper =
+            await StackTraceMapper.deserialize(message['stackTraceMapper']);
+        currentMapper = mapper.mapStackTrace;
+      }
+      if (message['exceptPackages'] != null) {
+        exceptPackages = new Set.from(message["exceptPackages"]);
+      }
+      if (message['onlyPackages'] != null) {
+        onlyPackages = new Set.from(message["onlyPackages"]);
+      }
       var os =
           message['os'] == null ? null : OperatingSystem.find(message['os']);
       var platform = TestPlatform.find(message['platform']);
@@ -105,7 +118,7 @@ class RemoteListener {
   static void _sendError(StreamChannel channel, error, StackTrace stackTrace) {
     channel.sink.add({
       "type": "error",
-      "error": RemoteException.serialize(error, stackTrace)
+      "error": RemoteException.serialize(error, testChain(stackTrace))
     });
   }
 
@@ -179,11 +192,13 @@ class RemoteListener {
       });
     });
 
-    liveTest.onError.listen((asyncError) {
+    liveTest.onError.listen((asyncError) async {
       channel.sink.add({
         "type": "error",
-        "error":
-            RemoteException.serialize(asyncError.error, asyncError.stackTrace)
+        "error": RemoteException.serialize(
+            asyncError.error,
+            testChain(asyncError.stackTrace,
+                verbose: liveTest.test.metadata.verboseTrace))
       });
     });
 

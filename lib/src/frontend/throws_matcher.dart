@@ -8,6 +8,8 @@ import 'package:matcher/matcher.dart';
 
 import '../utils.dart';
 import 'async_matcher.dart';
+import '../frontend/test_chain.dart';
+import '../backend/invoker.dart';
 
 /// This function is deprecated.
 ///
@@ -93,7 +95,11 @@ class Throws extends AsyncMatcher {
     var buffer = new StringBuffer();
     buffer.writeln(indent(prettyPrint(error), first: 'threw '));
     if (trace != null) {
-      buffer.writeln(indent(testChain(trace).toString(), first: 'stack '));
+      buffer.writeln(indent(
+          testChain(trace,
+                  verbose: Invoker.current.liveTest.test.metadata.verboseTrace)
+              .toString(),
+          first: 'stack '));
     }
     if (result.isNotEmpty) buffer.writeln(indent(result, first: 'which '));
     return buffer.toString().trimRight();

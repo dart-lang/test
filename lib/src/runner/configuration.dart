@@ -97,6 +97,15 @@ class Configuration {
   /// See [shardIndex] for details.
   final int totalShards;
 
+  /// The list of packages to fold when producing [StackTrace]s.
+  List<String> get exceptPackages => _exceptPackages ?? [];
+  final List<String> _exceptPackages;
+
+  /// If non-empty, all packages not in this list will be folded when producing
+  /// [StackTrace]s.
+  List<String> get onlyPackages => _onlyPackages ?? [];
+  final List<String> _onlyPackages;
+
   /// The paths from which to load tests.
   List<String> get paths => _paths ?? ["test"];
   final List<String> _paths;
@@ -198,6 +207,8 @@ class Configuration {
       int shardIndex,
       int totalShards,
       Iterable<String> paths,
+      Iterable<String> exceptPackages,
+      Iterable<String> onlyPackages,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
@@ -238,6 +249,8 @@ class Configuration {
         shardIndex: shardIndex,
         totalShards: totalShards,
         paths: paths,
+        exceptPackages: exceptPackages,
+        onlyPackages: onlyPackages,
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
@@ -290,6 +303,8 @@ class Configuration {
       this.shardIndex,
       this.totalShards,
       Iterable<String> paths,
+      Iterable<String> exceptPackages,
+      Iterable<String> onlyPackages,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
@@ -307,6 +322,8 @@ class Configuration {
             : Uri.parse("http://localhost:$pubServePort"),
         _concurrency = concurrency,
         _paths = _list(paths),
+        _exceptPackages = _list(exceptPackages),
+        _onlyPackages = _list(onlyPackages),
         _filename = filename,
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
@@ -382,6 +399,8 @@ class Configuration {
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
         paths: other._paths ?? _paths,
+        exceptPackages: other._exceptPackages ?? _exceptPackages,
+        onlyPackages: other._onlyPackages ?? _onlyPackages,
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
@@ -412,6 +431,8 @@ class Configuration {
       int shardIndex,
       int totalShards,
       Iterable<String> paths,
+      Iterable<String> exceptPackages,
+      Iterable<String> onlyPackages,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
@@ -450,6 +471,8 @@ class Configuration {
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,
         paths: paths ?? _paths,
+        exceptPackages: exceptPackages ?? _exceptPackages,
+        onlyPackages: onlyPackages ?? _onlyPackages,
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,

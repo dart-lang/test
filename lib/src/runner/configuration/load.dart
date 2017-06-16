@@ -74,6 +74,30 @@ class _ConfigurationLoader {
   Configuration _loadGlobalTestConfig() {
     var verboseTrace = _getBool("verbose_trace");
     var chainStackTraces = _getBool("chain_stack_traces");
+    var foldStackFrames = _getMap("fold_stack_frames", key: (keyNode) {
+      _validate(keyNode, "fold_stack_frames key must be a string",
+          (value) => value is String);
+      if (keyNode.value != "only" && keyNode.value != "except") {
+        throw new SourceSpanFormatException(
+            'Invalid fold_stack_frames key: '
+            'Must either be `only` or `except`.',
+            keyNode.span,
+            _source);
+      }
+      return keyNode.value;
+    }, value: (valueNode) {
+      if (valueNode is! YamlList ||
+          (valueNode as YamlList).firstWhere((value) => value is! String,
+                  orElse: () => null) !=
+              null) {
+        throw new SourceSpanFormatException(
+            'Invalid option for fold_stack_frames value: '
+            'Must be a list of strings.',
+            valueNode.span,
+            _source);
+      }
+      return valueNode.value;
+    });
     var jsTrace = _getBool("js_trace");
 
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
@@ -108,7 +132,9 @@ class _ConfigurationLoader {
             jsTrace: jsTrace,
             timeout: timeout,
             presets: presets,
-            chainStackTraces: chainStackTraces)
+            chainStackTraces: chainStackTraces,
+            exceptPackages: foldStackFrames["except"],
+            onlyPackages: foldStackFrames["only"])
         .merge(_extractPresets/*<PlatformSelector>*/(
             onPlatform, (map) => new Configuration(onPlatform: map)));
 

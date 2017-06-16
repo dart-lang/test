@@ -14,6 +14,7 @@ import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
+import '../../util/stack_trace_mapper.dart';
 import '../application_exception.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
@@ -46,9 +47,7 @@ Future<RunnerSuiteController> deserializeSuite(
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
-    {StackTrace mapTrace(StackTrace trace)}) async {
-  if (mapTrace == null) mapTrace = (trace) => trace;
-
+    {StackTraceMapper mapper}) async {
   var disconnector = new Disconnector();
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
 
@@ -60,6 +59,9 @@ Future<RunnerSuiteController> deserializeSuite(
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json',
     'noRetry': Configuration.current.noRetry,
+    'stackTraceMapper': mapper?.serialize(),
+    'exceptPackages': Configuration.current.exceptPackages,
+    'onlyPackages': Configuration.current.onlyPackages,
   });
 
   var completer = new Completer();
@@ -72,9 +74,9 @@ Future<RunnerSuiteController> deserializeSuite(
       // If we've already provided a controller, send the error to the
       // LoadSuite. This will cause the virtual load test to fail, which will
       // notify the user of the error.
-      loadSuiteZone.handleUncaughtError(error, mapTrace(stackTrace));
+      loadSuiteZone.handleUncaughtError(error, stackTrace);
     } else {
-      completer.completeError(error, mapTrace(stackTrace));
+      completer.completeError(error);
     }
   }
 
@@ -93,11 +95,11 @@ Future<RunnerSuiteController> deserializeSuite(
           case "error":
             var asyncError = RemoteException.deserialize(response["error"]);
             handleError(new LoadException(path, asyncError.error),
-                mapTrace(asyncError.stackTrace));
+                asyncError.stackTrace);
             break;
 
           case "success":
-            var deserializer = new _Deserializer(suiteChannel, mapTrace);
+            var deserializer = new _Deserializer(suiteChannel);
             completer.complete(deserializer.deserializeGroup(response["root"]));
             break;
         }
@@ -130,10 +132,7 @@ class _Deserializer {
   /// The channel over which tests communicate.
   final MultiChannel _channel;
 
-  /// The function used to errors' map stack traces.
-  final _MapTrace _mapTrace;
-
-  _Deserializer(this._channel, this._mapTrace);
+  _Deserializer(this._channel);
 
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
@@ -160,7 +159,6 @@ class _Deserializer {
     var metadata = new Metadata.deserialize(test['metadata']);
     var trace = test['trace'] == null ? null : new Trace.parse(test['trace']);
     var testChannel = _channel.virtualChannel(test['channel']);
-    return new RunnerTest(
-        test['name'], metadata, trace, testChannel, _mapTrace);
+    return new RunnerTest(test['name'], metadata, trace, testChannel);
   }
 }
