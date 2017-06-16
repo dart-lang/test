@@ -13,6 +13,49 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  test("rejects an invalid fold_stack_frames", () async {
+    await d
+        .file("dart_test.yaml", JSON.encode({"fold_stack_frames": "flup"}))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(test.stderr,
+        containsInOrder(["fold_stack_frames must be a map", "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an invalid fold_stack_frames key", () async {
+    await d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "fold_stack_frames": {"invalid": "blah"}
+            }))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(test.stderr,
+        containsInOrder(["Invalid fold_stack_frames key", "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects an invalid fold_stack_frames values", () async {
+    await d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "fold_stack_frames": {"only": "blah"}
+            }))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(
+        test.stderr,
+        containsInOrder(
+            ["Invalid option for fold_stack_frames value", "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
   test("rejects an invalid pause_after_load", () async {
     await d
         .file("dart_test.yaml", JSON.encode({"pause_after_load": "flup"}))
