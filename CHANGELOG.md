@@ -3,6 +3,14 @@
 * Add a `fold_stack_frame` field for `dart_test.yaml`. This will
   allow users to customize which packages' frames are folded.
   
+## 0.12.22+1
+
+* Support `args` 1.0.0.
+
+* Run tear-down callbacks in the same error zone as the test function. This
+  makes it possible to safely share `Future`s and `Stream`s between tests and
+  their tear-downs.
+
 ## 0.12.22
 
 * Add a `retry` option to `test()` and `group()` functions, as well

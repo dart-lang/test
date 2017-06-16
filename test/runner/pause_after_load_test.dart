@@ -226,7 +226,7 @@ void main() {
     await new Future.delayed(new Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
-    await test.stdin.writeln();
+    test.stdin.writeln();
 
     await expectLater(
         test.stdout,
@@ -262,7 +262,7 @@ void main() {
           "Once you're finished, return to this terminal and press Enter."
         ])));
 
-    await test.signal(ProcessSignal.SIGTERM);
+    test.signal(ProcessSignal.SIGTERM);
     await test.shouldExit();
     await expectLater(test.stderr, emitsDone);
   }, tags: 'dartium', testOn: "!windows");
