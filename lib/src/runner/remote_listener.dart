@@ -78,7 +78,6 @@ class RemoteListener {
           metadata: metadata,
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
-      await declarer.declare(main);
 
       if (message['stackTraceMapper'] != null) {
         var mapper =
@@ -95,6 +94,9 @@ class RemoteListener {
           onlyPackages = new Set.from(message["onlyPackages"]);
         }
       }
+
+      await declarer.declare(main);
+
       var os =
           message['os'] == null ? null : OperatingSystem.find(message['os']);
       var platform = TestPlatform.find(message['platform']);
@@ -196,7 +198,7 @@ class RemoteListener {
       });
     });
 
-    liveTest.onError.listen((asyncError) async {
+    liveTest.onError.listen((asyncError) {
       channel.sink.add({
         "type": "error",
         "error": RemoteException.serialize(
