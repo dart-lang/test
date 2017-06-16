@@ -86,10 +86,14 @@ class RemoteListener {
         currentMapper = mapper.mapStackTrace;
       }
       if (message['exceptPackages'] != null) {
-        exceptPackages = new Set.from(message["exceptPackages"]);
+        if (message['exceptPackages'].isNotEmpty) {
+          exceptPackages = new Set.from(message["exceptPackages"]);
+        }
       }
       if (message['onlyPackages'] != null) {
-        onlyPackages = new Set.from(message["onlyPackages"]);
+        if (message['onlyPackages'].isNotEmpty) {
+          onlyPackages = new Set.from(message["onlyPackages"]);
+        }
       }
       var os =
           message['os'] == null ? null : OperatingSystem.find(message['os']);

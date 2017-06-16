@@ -247,9 +247,11 @@ void main() {
           });
 
           scheduleMicrotask(() {
-            print("five");
-            print("six");
-            completer.complete();
+            scheduleMicrotask(() {
+              print("five");
+              print("six");
+              completer.complete();
+            });
           });
 
           print("one");
@@ -264,12 +266,14 @@ void main() {
         one
         two
 
-        +0 -1: test [E]
-          first error
-          test.dart 24:11  main.<fn>
-
+        +0 -1: test
         three
         four
+
+        +0 -1: test [E]
+          first error
+          test.dart 26:11  main.<fn>
+
           second error
           test.dart 13:13  main.<fn>.<fn>
           ===== asynchronous gap ===========================
