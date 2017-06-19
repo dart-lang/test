@@ -39,4 +39,4 @@ Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
 
 /// Converts [stackTrace] to a [Chain] following the test's configuration.
 Chain testChain(StackTrace stackTrace) => terseChain(stackTrace,
-    verbose: Invoker.current.liveTest.test.metadata.verboseTrace);
+    verbose: Invoker.current?.liveTest?.test?.metadata?.verboseTrace ?? true);
