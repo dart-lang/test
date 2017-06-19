@@ -74,21 +74,7 @@ class _ConfigurationLoader {
   Configuration _loadGlobalTestConfig() {
     var verboseTrace = _getBool("verbose_trace");
     var chainStackTraces = _getBool("chain_stack_traces");
-    var foldStackFrames = _getMap("fold_stack_frames", key: (keyNode) {
-      _validate(keyNode, "Must be a string", (value) => value is String);
-      if (keyNode.value != "only" && keyNode.value != "except") {
-        throw new SourceSpanFormatException(
-            'Must be "only" or "except".', keyNode.span, _source);
-      }
-      return keyNode.value;
-    }, value: (valueNode) {
-      if (valueNode is! YamlList ||
-          (valueNode as YamlList).any((value) => value is! String)) {
-        throw new SourceSpanFormatException(
-            'Folded packages must be strings.', valueNode.span, _source);
-      }
-      return valueNode.value;
-    });
+    var foldStackFrames = _loadFoldedStackFrames();
     var jsTrace = _getBool("js_trace");
 
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
@@ -278,6 +264,32 @@ class _ConfigurationLoader {
         filename: filename,
         includeTags: includeTags,
         excludeTags: excludeTags);
+  }
+
+  Map _loadFoldedStackFrames() {
+    bool foldOptionSet = false;
+    return _getMap("fold_stack_frames", key: (keyNode) {
+      _validate(keyNode, "Must be a string", (value) => value is String);
+      if (keyNode.value != "only" && keyNode.value != "except") {
+        throw new SourceSpanFormatException(
+            'Must be "only" or "except".', keyNode.span, _source);
+      }
+      if (foldOptionSet) {
+        throw new SourceSpanFormatException(
+            'Can only contain one of "only" or "except".',
+            keyNode.span,
+            _source);
+      }
+      foldOptionSet = true;
+      return keyNode.value;
+    }, value: (valueNode) {
+      if (valueNode is! YamlList ||
+          (valueNode as YamlList).any((value) => value is! String)) {
+        throw new SourceSpanFormatException(
+            'Folded packages must be strings.', valueNode.span, _source);
+      }
+      return valueNode.value;
+    });
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed

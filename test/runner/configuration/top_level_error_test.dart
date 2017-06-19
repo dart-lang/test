@@ -24,6 +24,26 @@ void main() {
     await test.shouldExit(exit_codes.data);
   });
 
+  test("rejects multiple fold_stack_frames keys", () async {
+    await d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "fold_stack_frames": {
+                "except": ["blah"],
+                "only": ["blah"]
+              }
+            }))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(
+        test.stderr,
+        containsInOrder(
+            ['Can only contain one of "only" or "except".', "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
   test("rejects invalid fold_stack_frames keys", () async {
     await d
         .file(
