@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'package:collection/collection.dart';
+
 import 'package:package_resolver/package_resolver.dart';
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
@@ -10,39 +12,40 @@ import 'package:source_maps/source_maps.dart';
 /// A class for mapping JS stack traces to Dart stack traces using source maps.
 class StackTraceMapper {
   /// The parsed source map.
-  final Mapping _mapping;
+  Mapping _mapping;
 
   /// The package resolution information passed to dart2js.
   final SyncPackageResolver _packageResolver;
 
-  /// The URI of the SDK root from which dart2js loaded its sources.
+  /// The URL of the SDK root from which dart2js loaded its sources.
   final Uri _sdkRoot;
 
   /// The contents of the source map.
-  final String _contents;
+  final String _mapContents;
 
-  /// The URI of the source map.
+  /// The URL of the source map.
   final Uri _mapUrl;
 
-  StackTraceMapper(this._contents,
+  StackTraceMapper(this._mapContents,
       {Uri mapUrl, SyncPackageResolver packageResolver, Uri sdkRoot})
-      : _mapping = parseExtended(_contents, mapUrl: mapUrl),
-        _mapUrl = mapUrl,
+      : _mapUrl = mapUrl,
         _packageResolver = packageResolver,
         _sdkRoot = sdkRoot;
 
   /// Converts [trace] into a Dart stack trace.
-  StackTrace mapStackTrace(StackTrace trace) =>
-      mapper.mapStackTrace(_mapping, trace,
-          packageResolver: _packageResolver, sdkRoot: _sdkRoot);
+  StackTrace mapStackTrace(StackTrace trace) {
+    _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);
+    return mapper.mapStackTrace(_mapping, trace,
+        packageResolver: _packageResolver, sdkRoot: _sdkRoot);
+  }
 
   /// Returns a Map representation which is suitable for JSON serialization.
   Map<String, dynamic> serialize() {
     return {
-      'contents': _contents,
+      'mapContents': _mapContents,
       'sdkRoot': _sdkRoot?.toString(),
       'packageConfigMap':
-          _serializablePackageConfigMap(_packageResolver.packageConfigMap),
+          _serializePackageConfigMap(_packageResolver.packageConfigMap),
       'packageRoot': _packageResolver.packageRoot?.toString(),
       'mapUrl': _mapUrl?.toString(),
     };
@@ -51,8 +54,8 @@ class StackTraceMapper {
   /// Returns a Future which will resolve to a [StackTraceMapper] contained in
   /// the provided serialized representation.
   static Future<StackTraceMapper> deserialize(Map serialized) async {
-    String packageRoot = serialized['packageRoot'] ?? '';
-    return new StackTraceMapper(serialized['contents'],
+    String packageRoot = serialized['packageRoot'] as String ?? '';
+    return new StackTraceMapper(serialized['mapContents'],
         sdkRoot: Uri.parse(serialized['sdkRoot']),
         packageResolver: packageRoot.isNotEmpty
             ? await new PackageResolver.root(
@@ -64,23 +67,19 @@ class StackTraceMapper {
         mapUrl: Uri.parse(serialized['mapUrl']));
   }
 
-  static Map<String, String> _serializablePackageConfigMap(
+  /// Converts a [packageConfigMap] into a format suitable for JSON
+  /// serialization.
+  static Map<String, String> _serializePackageConfigMap(
       Map<String, Uri> packageConfigMap) {
     if (packageConfigMap == null) return null;
-    var result = {};
-    for (var key in packageConfigMap.keys) {
-      result[key] = '${packageConfigMap[key]}';
-    }
-    return result;
+    return mapMap(packageConfigMap, value: (_, value) => '$value');
   }
 
+  /// Converts a serialized package config map into a format suitable for
+  /// the [PackageResolver]
   static Map<String, Uri> _deserializePackageConfigMap(
       Map<String, String> serialized) {
     if (serialized == null) return null;
-    var result = {};
-    for (var key in serialized.keys) {
-      result[key] = Uri.parse(serialized[key]);
-    }
-    return result;
+    return mapMap(serialized, value: (_, value) => Uri.parse(value));
   }
 }

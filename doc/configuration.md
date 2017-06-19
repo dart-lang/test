@@ -397,19 +397,32 @@ This field is not supported in the
 
 ### `fold_stack_frames`
 
-This field indicates which packages will be folded when producing stack traces.
-Packages contained in the `exclude` option will be folded. If `only` is provided,
-all packages not contained in this list will be folded. If no options are provided,
-we fold `package:test` and `package:stream_channel` by default.
+This field controls which packages' stack frames will be folded away
+when displaying stack traces. Packages contained in the `exclude` 
+option will be folded. If `only` is provided, all packages not
+contained in this list will be folded. By default,
+frames from the `test` package and the `stream_channel`
+package are folded.
 
 ```yaml
 fold_stack_frames:
-  only:
-   - some_package
-  exclude:
-   - a_package
-   - another_package
+  except:
+  - test 
+  - stream_channel 
 ```
+
+Sample stack trace, note the absence of `package:test`
+and `package:stream_channel`:
+```
+test/sample_test.dart 7:5   main.<fn>
+===== asynchronous gap ===========================
+dart:async                  _Completer.completeError
+test/sample_test.dart 8:3   main.<fn>
+===== asynchronous gap ===========================
+dart:async                  _asyncThenWrapperHelper
+test/sample_test.dart 5:27  main.<fn>
+```
+
 
 ## Configuring Tags
 

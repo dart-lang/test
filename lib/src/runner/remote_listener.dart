@@ -15,10 +15,10 @@ import '../backend/operating_system.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
+import '../frontend/test_chain.dart';
 import '../util/remote_exception.dart';
 import '../util/stack_trace_mapper.dart';
 import '../utils.dart';
-import '../frontend/test_chain.dart';
 
 class RemoteListener {
   /// The test suite to run.

@@ -35,7 +35,7 @@ void main() {
 
     var test = await runTest(["test.dart"]);
     expect(test.stderr,
-        containsInOrder(["Invalid fold_stack_frames key", "^^^^^^"]));
+        containsInOrder(['Must be "only" or "except".', "^^^^^^"]));
     await test.shouldExit(exit_codes.data);
   });
 
@@ -49,10 +49,8 @@ void main() {
         .create();
 
     var test = await runTest(["test.dart"]);
-    expect(
-        test.stderr,
-        containsInOrder(
-            ["Invalid option for fold_stack_frames value", "^^^^^^"]));
+    expect(test.stderr,
+        containsInOrder(["Folded packages must be strings", "^^^^^^"]));
     await test.shouldExit(exit_codes.data);
   });
 

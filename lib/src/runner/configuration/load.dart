@@ -75,26 +75,17 @@ class _ConfigurationLoader {
     var verboseTrace = _getBool("verbose_trace");
     var chainStackTraces = _getBool("chain_stack_traces");
     var foldStackFrames = _getMap("fold_stack_frames", key: (keyNode) {
-      _validate(keyNode, "fold_stack_frames key must be a string",
-          (value) => value is String);
+      _validate(keyNode, "Must be a string", (value) => value is String);
       if (keyNode.value != "only" && keyNode.value != "except") {
         throw new SourceSpanFormatException(
-            'Invalid fold_stack_frames key: '
-            'Must either be `only` or `except`.',
-            keyNode.span,
-            _source);
+            'Must be "only" or "except".', keyNode.span, _source);
       }
       return keyNode.value;
     }, value: (valueNode) {
       if (valueNode is! YamlList ||
-          (valueNode as YamlList).firstWhere((value) => value is! String,
-                  orElse: () => null) !=
-              null) {
+          (valueNode as YamlList).any((value) => value is! String)) {
         throw new SourceSpanFormatException(
-            'Invalid option for fold_stack_frames value: '
-            'Must be a list of strings.',
-            valueNode.span,
-            _source);
+            'Folded packages must be strings.', valueNode.span, _source);
       }
       return valueNode.value;
     });

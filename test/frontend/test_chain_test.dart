@@ -1,4 +1,4 @@
-// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -11,21 +11,26 @@ import 'package:test/test.dart';
 
 import '../io.dart';
 
-final _asyncFailure = """
-import 'dart:async';
-
-import 'package:test/test.dart';
-
 void main() {
-  test("failure", () async{
-    await new Future((){});
-    await new Future((){});
-    throw "oh no";
+  setUp(() async {
+    await d
+        .file(
+            "test.dart",
+            """
+            import 'dart:async';
+
+            import 'package:test/test.dart';
+
+            void main() {
+              test("failure", () async{
+                await new Future((){});
+                await new Future((){});
+                throw "oh no";
+              });
+            }
+            """)
+        .create();
   });
-}
-""";
-
-void main() {
   test("folds packages contained in the except list", () async {
     await d
         .file(
@@ -36,26 +41,15 @@ void main() {
               }
             }))
         .create();
-    await d.file("test.dart", _asyncFailure).create();
-
     var test = await runTest(["test.dart"]);
-    var testOutput = (await test.stdoutStream().toList());
-    for (var output in testOutput) {
-      expect(output.contains('package:stream_channel'), isFalse);
-    }
-
+    expect(test.stdoutStream(), neverEmits(contains('package:stream_channel')));
     await test.shouldExit(1);
   });
 
   test("by default folds both stream_channel and test packages", () async {
-    await d.file("test.dart", _asyncFailure).create();
-
     var test = await runTest(["test.dart"]);
-    var testOutput = (await test.stdoutStream().toList());
-    for (var output in testOutput) {
-      expect(output.contains('package:test'), isFalse);
-      expect(output.contains('package:stream_channel'), isFalse);
-    }
+    expect(test.stdoutStream(), neverEmits(contains('package:test')));
+    expect(test.stdoutStream(), neverEmits(contains('package:stream_channel')));
     await test.shouldExit(1);
   });
 
@@ -69,13 +63,8 @@ void main() {
               }
             }))
         .create();
-    await d.file("test.dart", _asyncFailure).create();
-
     var test = await runTest(["test.dart"]);
-    var testOutput = (await test.stdoutStream().toList());
-    for (var output in testOutput) {
-      expect(output.contains('package:stream_channel'), isFalse);
-    }
+    expect(test.stdoutStream(), neverEmits(contains('package:stream_channel')));
     await test.shouldExit(1);
   });
 
@@ -89,15 +78,8 @@ void main() {
               }
             }))
         .create();
-    await d.file("test.dart", _asyncFailure).create();
-
     var test = await runTest(["test.dart"]);
-    var hasPackageTest = false;
-    var testOutput = (await test.stdoutStream().toList());
-    for (var output in testOutput) {
-      if (output.contains('package:test')) hasPackageTest = true;
-    }
-    expect(hasPackageTest, isTrue);
+    expect(test.stdoutStream(), emitsThrough(contains('package:test')));
     await test.shouldExit(1);
   });
 }

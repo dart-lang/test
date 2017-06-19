@@ -1,6 +1,6 @@
 ## 0.12.23
 
-* Add a `fold_stack_frame` field for `dart_test.yaml`. This will
+* Add a `fold_stack_frames` field for `dart_test.yaml`. This will
   allow users to customize which packages' frames are folded.
   
 ## 0.12.22+1
