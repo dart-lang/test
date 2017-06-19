@@ -98,13 +98,13 @@ class Configuration {
   final int totalShards;
 
   /// The list of packages to fold when producing [StackTrace]s.
-  List<String> get exceptPackages => _exceptPackages ?? [];
-  final List<String> _exceptPackages;
+  List<String> get foldTraceExcept => _foldTraceExcept ?? [];
+  final List<String> _foldTraceExcept;
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// [StackTrace]s.
-  List<String> get onlyPackages => _onlyPackages ?? [];
-  final List<String> _onlyPackages;
+  List<String> get foldTraceOnly => _foldTraceOnly ?? [];
+  final List<String> _foldTraceOnly;
 
   /// The paths from which to load tests.
   List<String> get paths => _paths ?? ["test"];
@@ -207,8 +207,8 @@ class Configuration {
       int shardIndex,
       int totalShards,
       Iterable<String> paths,
-      Iterable<String> exceptPackages,
-      Iterable<String> onlyPackages,
+      Iterable<String> foldTraceExcept,
+      Iterable<String> foldTraceOnly,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
@@ -249,8 +249,8 @@ class Configuration {
         shardIndex: shardIndex,
         totalShards: totalShards,
         paths: paths,
-        exceptPackages: exceptPackages,
-        onlyPackages: onlyPackages,
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
@@ -303,8 +303,8 @@ class Configuration {
       this.shardIndex,
       this.totalShards,
       Iterable<String> paths,
-      Iterable<String> exceptPackages,
-      Iterable<String> onlyPackages,
+      Iterable<String> foldTraceExcept,
+      Iterable<String> foldTraceOnly,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
@@ -322,8 +322,8 @@ class Configuration {
             : Uri.parse("http://localhost:$pubServePort"),
         _concurrency = concurrency,
         _paths = _list(paths),
-        _exceptPackages = _list(exceptPackages),
-        _onlyPackages = _list(onlyPackages),
+        _foldTraceExcept = _list(foldTraceExcept),
+        _foldTraceOnly = _list(foldTraceOnly),
         _filename = filename,
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
@@ -386,6 +386,31 @@ class Configuration {
     if (this == Configuration.empty) return other;
     if (other == Configuration.empty) return this;
 
+    List<String> foldTraceOnly = other._foldTraceOnly ?? _foldTraceOnly;
+    if (other._foldTraceOnly != null && _foldTraceExcept != null) {
+      foldTraceOnly = new Set.from(other._foldTraceExcept)
+          .difference(new Set.from(_foldTraceExcept))
+          .toList();
+    }
+
+    if (_foldTraceOnly != null && other._foldTraceExcept != null) {
+      foldTraceOnly = new Set.from(_foldTraceExcept)
+          .difference(new Set.from(other._foldTraceExcept))
+          .toList();
+    }
+    if (other._foldTraceOnly != null && _foldTraceOnly != null) {
+      foldTraceOnly = new Set.from(other._foldTraceOnly)
+          .intersection(new Set.from(_foldTraceOnly))
+          .toList();
+    }
+
+    List<String> foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
+    if (other._foldTraceExcept != null && _foldTraceExcept != null) {
+      foldTraceExcept = new Set.from(other._foldTraceExcept)
+          .union(new Set.from(_foldTraceExcept))
+          .toList();
+    }
+
     var result = new Configuration._(
         help: other._help ?? _help,
         version: other._version ?? _version,
@@ -399,8 +424,8 @@ class Configuration {
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
         paths: other._paths ?? _paths,
-        exceptPackages: other._exceptPackages ?? _exceptPackages,
-        onlyPackages: other._onlyPackages ?? _onlyPackages,
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
@@ -471,8 +496,8 @@ class Configuration {
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,
         paths: paths ?? _paths,
-        exceptPackages: exceptPackages ?? _exceptPackages,
-        onlyPackages: onlyPackages ?? _onlyPackages,
+        foldTraceExcept: exceptPackages ?? _foldTraceExcept,
+        foldTraceOnly: onlyPackages ?? _foldTraceOnly,
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,

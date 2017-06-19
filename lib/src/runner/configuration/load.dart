@@ -110,8 +110,8 @@ class _ConfigurationLoader {
             timeout: timeout,
             presets: presets,
             chainStackTraces: chainStackTraces,
-            exceptPackages: foldStackFrames["except"],
-            onlyPackages: foldStackFrames["only"])
+            foldTraceExcept: foldStackFrames["except"],
+            foldTraceOnly: foldStackFrames["only"])
         .merge(_extractPresets/*<PlatformSelector>*/(
             onPlatform, (map) => new Configuration(onPlatform: map)));
 
