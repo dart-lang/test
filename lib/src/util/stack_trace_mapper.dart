@@ -54,6 +54,7 @@ class StackTraceMapper {
   /// Returns a [StackTraceMapper] contained in the provided serialized
   /// representation.
   static StackTraceMapper deserialize(Map serialized) {
+    if (serialized == null) return null;
     String packageRoot = serialized['packageRoot'] as String ?? '';
     return new StackTraceMapper(serialized['mapContents'],
         sdkRoot: Uri.parse(serialized['sdkRoot']),

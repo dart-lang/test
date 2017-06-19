@@ -166,8 +166,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
           return addBullet(event.asValue.value.toString());
         } else {
           var error = event.asError;
-          var chain = testChain(error.stackTrace,
-              verbose: Invoker.current.liveTest.test.metadata.verboseTrace);
+          var chain = testChain(error.stackTrace);
           var text = "${error.error}\n$chain";
           return prefixLines(text, "  ", first: "! ");
         }

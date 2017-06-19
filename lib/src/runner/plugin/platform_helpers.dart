@@ -60,8 +60,8 @@ Future<RunnerSuiteController> deserializeSuite(
     'collectTraces': Configuration.current.reporter == 'json',
     'noRetry': Configuration.current.noRetry,
     'stackTraceMapper': mapper?.serialize(),
-    'exceptPackages': Configuration.current.foldTraceExcept,
-    'onlyPackages': Configuration.current.foldTraceOnly,
+    'foldTraceExcept': Configuration.current.foldTraceExcept,
+    'foldTraceOnly': Configuration.current.foldTraceOnly,
   });
 
   var completer = new Completer();

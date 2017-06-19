@@ -79,20 +79,10 @@ class RemoteListener {
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
 
-      if (message['stackTraceMapper'] != null) {
-        var mapper = StackTraceMapper.deserialize(message['stackTraceMapper']);
-        currentMapper = mapper.mapStackTrace;
-      }
-      if (message['exceptPackages'] != null) {
-        if (message['exceptPackages'].isNotEmpty) {
-          exceptPackages = new Set.from(message["exceptPackages"]);
-        }
-      }
-      if (message['onlyPackages'] != null) {
-        if (message['onlyPackages'].isNotEmpty) {
-          onlyPackages = new Set.from(message["onlyPackages"]);
-        }
-      }
+      configureTestChaining(
+          mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
+          exceptPackages: _setFromSerializedList(message['foldTraceExcept']),
+          onlyPackages: _setFromSerializedList(message['foldTraceOnly']));
 
       await declarer.declare(main);
 
@@ -110,6 +100,13 @@ class RemoteListener {
     }));
 
     return controller.foreign;
+  }
+
+  /// Returns a [Set] from a JSON serialized list.
+  static Set<String> _setFromSerializedList(List<String> list) {
+    if (list == null) return null;
+    if (list.isEmpty) return null;
+    return new Set.from(list);
   }
 
   /// Sends a message over [channel] indicating that the tests failed to load.
@@ -202,7 +199,7 @@ class RemoteListener {
         "type": "error",
         "error": RemoteException.serialize(
             asyncError.error,
-            testChain(asyncError.stackTrace,
+            terseChain(asyncError.stackTrace,
                 verbose: liveTest.test.metadata.verboseTrace))
       });
     });
