@@ -51,19 +51,16 @@ class StackTraceMapper {
     };
   }
 
-  /// Returns a Future which will resolve to a [StackTraceMapper] contained in
-  /// the provided serialized representation.
-  static Future<StackTraceMapper> deserialize(Map serialized) async {
+  /// Returns a [StackTraceMapper] contained in the provided serialized
+  /// representation.
+  static StackTraceMapper deserialize(Map serialized) {
     String packageRoot = serialized['packageRoot'] as String ?? '';
     return new StackTraceMapper(serialized['mapContents'],
         sdkRoot: Uri.parse(serialized['sdkRoot']),
         packageResolver: packageRoot.isNotEmpty
-            ? await new PackageResolver.root(
-                    Uri.parse(serialized['packageRoot']))
-                .asSync
-            : await new PackageResolver.config(_deserializePackageConfigMap(
-                    serialized['packageConfigMap']))
-                .asSync,
+            ? new SyncPackageResolver.root(Uri.parse(serialized['packageRoot']))
+            : new SyncPackageResolver.config(
+                _deserializePackageConfigMap(serialized['packageConfigMap'])),
         mapUrl: Uri.parse(serialized['mapUrl']));
   }
 

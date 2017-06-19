@@ -80,8 +80,7 @@ class RemoteListener {
           noRetry: message['noRetry']);
 
       if (message['stackTraceMapper'] != null) {
-        var mapper =
-            await StackTraceMapper.deserialize(message['stackTraceMapper']);
+        var mapper = StackTraceMapper.deserialize(message['stackTraceMapper']);
         currentMapper = mapper.mapStackTrace;
       }
       if (message['exceptPackages'] != null) {
