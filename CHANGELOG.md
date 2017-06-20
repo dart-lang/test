@@ -6,6 +6,8 @@
   makes it possible to safely share `Future`s and `Stream`s between tests and
   their tear-downs.
 
+* Add support for IPv6
+
 ## 0.12.22
 
 * Add a `retry` option to `test()` and `group()` functions, as well
