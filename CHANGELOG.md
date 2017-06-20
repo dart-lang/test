@@ -6,7 +6,8 @@
   makes it possible to safely share `Future`s and `Stream`s between tests and
   their tear-downs.
 
-* Add support for IPv6.
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
 
 ## 0.12.22
 

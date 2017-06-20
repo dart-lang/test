@@ -130,10 +130,7 @@ void warn(String message, {bool color}) {
 /// applications that don't print out the bound port.
 Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
   T value;
-  var supportsIPv6 = false;
-  if (await _supportsIPv6()) {
-    supportsIPv6 = true;
-  }
+  var supportsIPv6 = await _supportsIPv6();
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort(ipV6: supportsIPv6));
     return value == null;
