@@ -10,13 +10,19 @@ import '../util/stack_trace_mapper.dart';
 /// Converts [trace] into a Dart stack trace
 StackTraceMapper _mapper;
 
-/// The list of packages to fold when producing [StackTrace]s.
+/// The list of packages to fold when producing [Chain]s.
 Set<String> _exceptPackages = new Set.from(['test', 'stream_channel']);
 
 /// If non-empty, all packages not in this list will be folded when producing
-/// [StackTrace]s.
+/// [Chain]s.
 Set<String> _onlyPackages = new Set();
 
+/// Configure the resources used for test chaining.
+///
+/// [mapper] is used to convert traces into Dart stack traces.
+/// [exceptPackages] is the list of packages to fold when producing a [Chain].
+/// [onlyPackages] is the list of packages to keep in a [Chain]. If non-empty,
+/// all packages not in this will be folded.
 void configureTestChaining(
     {StackTraceMapper mapper,
     Set<String> exceptPackages,
@@ -26,6 +32,10 @@ void configureTestChaining(
   if (onlyPackages != null) _onlyPackages = onlyPackages;
 }
 
+/// Returns [stackTrace] converted to a [Chain] with all irrelevant frames
+/// folded together.
+///
+/// If [verbose] is `true`, returns the chain for [stackTrace] unmodified.
 Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
   var testTrace = _mapper?.mapStackTrace(stackTrace) ?? stackTrace;
   if (verbose) return new Chain.forTrace(testTrace);

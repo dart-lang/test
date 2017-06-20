@@ -98,13 +98,13 @@ class Configuration {
   final int totalShards;
 
   /// The list of packages to fold when producing [StackTrace]s.
-  List<String> get foldTraceExcept => _foldTraceExcept ?? [];
-  final List<String> _foldTraceExcept;
+  Set<String> get foldTraceExcept => _foldTraceExcept ?? new Set();
+  final Set<String> _foldTraceExcept;
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// [StackTrace]s.
-  List<String> get foldTraceOnly => _foldTraceOnly ?? [];
-  final List<String> _foldTraceOnly;
+  Set<String> get foldTraceOnly => _foldTraceOnly ?? new Set();
+  final Set<String> _foldTraceOnly;
 
   /// The paths from which to load tests.
   List<String> get paths => _paths ?? ["test"];
@@ -322,8 +322,11 @@ class Configuration {
             : Uri.parse("http://localhost:$pubServePort"),
         _concurrency = concurrency,
         _paths = _list(paths),
-        _foldTraceExcept = _list(foldTraceExcept),
-        _foldTraceOnly = _list(foldTraceOnly),
+        _foldTraceExcept = foldTraceExcept != null
+            ? new Set.from(_list(foldTraceExcept))
+            : null,
+        _foldTraceOnly =
+            foldTraceOnly != null ? new Set.from(_list(foldTraceOnly)) : null,
         _filename = filename,
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
@@ -386,29 +389,21 @@ class Configuration {
     if (this == Configuration.empty) return other;
     if (other == Configuration.empty) return this;
 
-    List<String> foldTraceOnly = other._foldTraceOnly ?? _foldTraceOnly;
+    var foldTraceOnly = other._foldTraceOnly ?? _foldTraceOnly;
     if (other._foldTraceOnly != null && _foldTraceExcept != null) {
-      foldTraceOnly = new Set.from(other._foldTraceExcept)
-          .difference(new Set.from(_foldTraceExcept))
-          .toList();
+      foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
     }
 
-    if (_foldTraceOnly != null && other._foldTraceExcept != null) {
-      foldTraceOnly = new Set.from(_foldTraceExcept)
-          .difference(new Set.from(other._foldTraceExcept))
-          .toList();
+    if (other._foldTraceExcept != null && _foldTraceOnly != null) {
+      foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
     }
     if (other._foldTraceOnly != null && _foldTraceOnly != null) {
-      foldTraceOnly = new Set.from(other._foldTraceOnly)
-          .intersection(new Set.from(_foldTraceOnly))
-          .toList();
+      foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
     }
 
-    List<String> foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
+    var foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
     if (other._foldTraceExcept != null && _foldTraceExcept != null) {
-      foldTraceExcept = new Set.from(other._foldTraceExcept)
-          .union(new Set.from(_foldTraceExcept))
-          .toList();
+      foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
     }
 
     var result = new Configuration._(

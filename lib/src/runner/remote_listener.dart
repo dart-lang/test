@@ -48,6 +48,8 @@ class RemoteListener {
         new StreamChannelController(allowForeignErrors: false, sync: true);
     var channel = new MultiChannel(controller.local);
 
+    var verboseChain = true;
+
     var printZone = hidePrints ? null : Zone.current;
     runZoned(() async {
       var main;
@@ -57,7 +59,7 @@ class RemoteListener {
         _sendLoadException(channel, "No top-level main() function defined.");
         return;
       } catch (error, stackTrace) {
-        _sendError(channel, error, stackTrace);
+        _sendError(channel, error, stackTrace, verboseChain);
         return;
       }
 
@@ -74,6 +76,7 @@ class RemoteListener {
 
       if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
+      verboseChain = metadata.verboseTrace;
       var declarer = new Declarer(
           metadata: metadata,
           collectTraces: message['collectTraces'],
@@ -81,8 +84,8 @@ class RemoteListener {
 
       configureTestChaining(
           mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
-          exceptPackages: _setFromSerializedList(message['foldTraceExcept']),
-          onlyPackages: _setFromSerializedList(message['foldTraceOnly']));
+          exceptPackages: _deserializeSet(message['foldTraceExcept']),
+          onlyPackages: _deserializeSet(message['foldTraceOnly']));
 
       await declarer.declare(main);
 
@@ -93,7 +96,7 @@ class RemoteListener {
           platform: platform, os: os, path: message['path']);
       new RemoteListener._(suite, printZone)._listen(channel);
     }, onError: (error, stackTrace) {
-      _sendError(channel, error, stackTrace);
+      _sendError(channel, error, stackTrace, verboseChain);
     }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
       if (printZone != null) printZone.print(line);
       channel.sink.add({"type": "print", "line": line});
@@ -103,7 +106,7 @@ class RemoteListener {
   }
 
   /// Returns a [Set] from a JSON serialized list.
-  static Set<String> _setFromSerializedList(List<String> list) {
+  static Set<String> _deserializeSet(List<String> list) {
     if (list == null) return null;
     if (list.isEmpty) return null;
     return new Set.from(list);
@@ -117,10 +120,12 @@ class RemoteListener {
   }
 
   /// Sends a message over [channel] indicating an error from user code.
-  static void _sendError(StreamChannel channel, error, StackTrace stackTrace) {
+  static void _sendError(
+      StreamChannel channel, error, StackTrace stackTrace, bool verboseChain) {
     channel.sink.add({
       "type": "error",
-      "error": RemoteException.serialize(error, testChain(stackTrace))
+      "error": RemoteException.serialize(
+          error, terseChain(stackTrace, verbose: verboseChain))
     });
   }
 

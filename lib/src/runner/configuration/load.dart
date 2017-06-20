@@ -266,14 +266,18 @@ class _ConfigurationLoader {
         excludeTags: excludeTags);
   }
 
+  /// Returns a map representation of the `fold_stack_frames` configuration.
+  ///
+  /// The key `except` will correspond to the list of packages to fold.
+  /// The key `only` will correspond to the list of packages to keep in a
+  /// test [Chain].
   Map _loadFoldedStackFrames() {
-    bool foldOptionSet = false;
+    var foldOptionSet = false;
     return _getMap("fold_stack_frames", key: (keyNode) {
       _validate(keyNode, "Must be a string", (value) => value is String);
-      if (keyNode.value != "only" && keyNode.value != "except") {
-        throw new SourceSpanFormatException(
-            'Must be "only" or "except".', keyNode.span, _source);
-      }
+      _validate(keyNode, 'Must be "only" or "except".',
+          (value) => value == "only" || value == "except");
+
       if (foldOptionSet) {
         throw new SourceSpanFormatException(
             'Can only contain one of "only" or "except".',

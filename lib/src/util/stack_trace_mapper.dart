@@ -2,9 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'package:collection/collection.dart';
-
 import 'package:package_resolver/package_resolver.dart';
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
@@ -12,6 +10,8 @@ import 'package:source_maps/source_maps.dart';
 /// A class for mapping JS stack traces to Dart stack traces using source maps.
 class StackTraceMapper {
   /// The parsed source map.
+  ///
+  /// This is initialized lazily in `mapStackTrace()`.
   Mapping _mapping;
 
   /// The package resolution information passed to dart2js.
