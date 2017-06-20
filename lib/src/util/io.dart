@@ -135,7 +135,7 @@ Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
     supportsIPv6 = true;
   }
   await Future.doWhile(() async {
-    value = await tryPort(await getUnsafeUnusedPort(IPv6: supportsIPv6));
+    value = await tryPort(await getUnsafeUnusedPort(ipV6: supportsIPv6));
     return value == null;
   });
   return value;
@@ -146,9 +146,9 @@ Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
 /// This has a built-in race condition: another process may bind this port at
 /// any time after this call has returned. If at all possible, callers should
 /// use [getUnusedPort] instead.
-Future<int> getUnsafeUnusedPort({bool IPv6: false}) async {
+Future<int> getUnsafeUnusedPort({bool ipV6: false}) async {
   var socket;
-  if (IPv6) {
+  if (ipV6) {
     socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
         v6Only: true);
   } else {
