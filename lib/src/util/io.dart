@@ -130,9 +130,8 @@ void warn(String message, {bool color}) {
 /// applications that don't print out the bound port.
 Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
   T value;
-  var supportsIPv6 = await _supportsIPv6();
   await Future.doWhile(() async {
-    value = await tryPort(await getUnsafeUnusedPort(ipV6: supportsIPv6));
+    value = await tryPort(await getUnsafeUnusedPort());
     return value == null;
   });
   return value;
@@ -143,9 +142,9 @@ Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
 /// This has a built-in race condition: another process may bind this port at
 /// any time after this call has returned. If at all possible, callers should
 /// use [getUnusedPort] instead.
-Future<int> getUnsafeUnusedPort({bool ipV6: false}) async {
+Future<int> getUnsafeUnusedPort() async {
   var socket;
-  if (ipV6) {
+  if (await _supportsIPv6) {
     socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
         v6Only: true);
   } else {
@@ -157,7 +156,7 @@ Future<int> getUnsafeUnusedPort({bool ipV6: false}) async {
 }
 
 /// Returns whether this computer supports binding to IPv6 addresses.
-Future<bool> _supportsIPv6() async {
+Future<bool> _supportsIPv6 = () async {
   try {
     var socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
         v6Only: true);
@@ -166,7 +165,7 @@ Future<bool> _supportsIPv6() async {
   } on SocketException {
     return false;
   }
-}
+}();
 
 /// Returns the full URL of the Chrome remote debugger for the main page.
 ///
