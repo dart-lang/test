@@ -166,7 +166,7 @@ Future<bool> _supportsIPv6() async {
         v6Only: true);
     socket.close();
     return true;
-  } on SocketException catch (_) {
+  } on SocketException {
     return false;
   }
 }
