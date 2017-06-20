@@ -271,7 +271,7 @@ class _ConfigurationLoader {
   /// The key `except` will correspond to the list of packages to fold.
   /// The key `only` will correspond to the list of packages to keep in a
   /// test [Chain].
-  Map _loadFoldedStackFrames() {
+  Map<String, List<String>> _loadFoldedStackFrames() {
     var foldOptionSet = false;
     return _getMap("fold_stack_frames", key: (keyNode) {
       _validate(keyNode, "Must be a string", (value) => value is String);

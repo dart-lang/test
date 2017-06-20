@@ -322,11 +322,8 @@ class Configuration {
             : Uri.parse("http://localhost:$pubServePort"),
         _concurrency = concurrency,
         _paths = _list(paths),
-        _foldTraceExcept = foldTraceExcept != null
-            ? new Set.from(_list(foldTraceExcept))
-            : null,
-        _foldTraceOnly =
-            foldTraceOnly != null ? new Set.from(_list(foldTraceOnly)) : null,
+        _foldTraceExcept = _set(foldTraceExcept),
+        _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
@@ -365,6 +362,14 @@ class Configuration {
     var list = new List/*<T>*/ .unmodifiable(input);
     if (list.isEmpty) return null;
     return list;
+  }
+
+  /// Returns a set from [input].
+  static Set<T> _set<T>(Iterable<T> input) {
+    if (input == null) return null;
+    var set = new Set<T>.from(input);
+    if (set.isEmpty) return null;
+    return set;
   }
 
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
