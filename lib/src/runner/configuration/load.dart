@@ -300,16 +300,19 @@ class _ConfigurationLoader {
       foldOptionSet = true;
       return keyNode.value;
     }, value: (valueNode) {
-      if (valueNode is! YamlList ||
-          (valueNode as YamlList).any((value) => value is! String)) {
-        throw new SourceSpanFormatException(
-            'Folded packages must be strings.', valueNode.span, _source);
-      }
-      if ((valueNode as YamlList)
-          .any((value) => !_packageName.hasMatch(value))) {
-        throw new SourceSpanFormatException(
-            'Invalid package identifier', valueNode.span, _source);
-      }
+      _validate(
+          valueNode,
+          "Folded packages must be strings",
+          (valueList) =>
+              valueList is YamlList &&
+              !(valueList).any((value) => value is! String));
+
+      _validate(
+          valueNode,
+          "Invalid package identifier",
+          (valueList) =>
+              !(valueList).any((value) => !_packageName.hasMatch(value)));
+
       return valueNode.value;
     });
   }
