@@ -161,7 +161,7 @@ transformers:
     if (signalSubscription == null) return;
     signalSubscription.cancel();
     signalSubscription = null;
-    stdinLines.cancel(immediate: true);
+    await stdinLines.cancel(immediate: true);
     await runner.close();
   }
 

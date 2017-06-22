@@ -38,7 +38,7 @@ main() {
       expect(controller.hasListener, isTrue);
       expect(controller.isPaused, isTrue);
 
-      events.cancel();
+      await events.cancel();
       expect(controller.hasListener, isFalse);
     });
   });
@@ -383,7 +383,7 @@ main() {
         expect(await events.next, 1);
         expect(controller.hasListener, isTrue);
 
-        events.cancel(immediate: true);
+        await events.cancel(immediate: true);
         expect(controller.hasListener, isFalse);
       });
 
@@ -831,7 +831,7 @@ main() {
         var queue1 = new StreamQueue<int>(createStream());
         var queue2 = queue1.fork();
 
-        queue2.cancel();
+        await queue2.cancel();
         expect(() => queue2.next, throwsStateError);
 
         expect(await queue1.next, 1);
@@ -846,7 +846,7 @@ main() {
         var queue1 = new StreamQueue<int>(createStream());
         var queue2 = queue1.fork();
 
-        queue1.cancel();
+        await queue1.cancel();
         expect(() => queue1.next, throwsStateError);
 
         expect(await queue2.next, 1);
@@ -863,7 +863,7 @@ main() {
 
         expect(await queue1.next, 1);
 
-        queue1.cancel();
+        await queue1.cancel();
         expect(() => queue1.next, throwsStateError);
 
         expect(await queue2.next, 1);
@@ -886,12 +886,12 @@ main() {
         await flushMicrotasks();
         expect(controller.hasListener, isTrue);
 
-        queue2.cancel();
+        await queue2.cancel();
         await flushMicrotasks();
         expect(controller.hasListener, isTrue);
 
         controller.add(1);
-        queue1.cancel();
+        await queue1.cancel();
         await flushMicrotasks();
         expect(controller.hasListener, isFalse);
       });
@@ -901,7 +901,7 @@ main() {
           var queue1 = new StreamQueue<int>(createStream());
           var queue2 = queue1.fork();
 
-          queue2.cancel(immediate: true);
+          await queue2.cancel(immediate: true);
           expect(() => queue2.next, throwsStateError);
 
           expect(await queue1.next, 1);
@@ -916,7 +916,7 @@ main() {
           var queue1 = new StreamQueue<int>(createStream());
           var queue2 = queue1.fork();
 
-          queue1.cancel(immediate: true);
+          await queue1.cancel(immediate: true);
           expect(() => queue1.next, throwsStateError);
 
           expect(await queue2.next, 1);
@@ -933,7 +933,7 @@ main() {
 
           expect(await queue1.next, 1);
 
-          queue1.cancel(immediate: true);
+          await queue1.cancel(immediate: true);
           expect(() => queue1.next, throwsStateError);
 
           expect(await queue2.next, 1);
@@ -957,11 +957,11 @@ main() {
           await flushMicrotasks();
           expect(controller.hasListener, isTrue);
 
-          queue2.cancel(immediate: true);
+          await queue2.cancel(immediate: true);
           await flushMicrotasks();
           expect(controller.hasListener, isTrue);
 
-          queue1.cancel(immediate: true);
+          await queue1.cancel(immediate: true);
           await flushMicrotasks();
           expect(controller.hasListener, isFalse);
         });
@@ -1132,7 +1132,7 @@ Stream<int> createErrorStream() {
     await flushMicrotasks();
     controller.add(4);
     await flushMicrotasks();
-    controller.close();
+    await controller.close();
   }();
   return controller.stream;
 }

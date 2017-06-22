@@ -563,7 +563,7 @@ void main() {
 /// [expected].
 Future _expectReport(String tests, List<Map> expected,
     {List<String> args}) async {
-  d
+  await d
       .file(
           "test.dart",
           """

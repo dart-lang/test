@@ -114,7 +114,7 @@ class RunnerSuiteController {
 
   /// The backing function for [suite.close].
   Future _close() => _closeMemo.runOnce(() async {
-        _onDebuggingController.close();
+        await _onDebuggingController.close();
         if (_onClose != null) await _onClose();
       });
   final _closeMemo = new AsyncMemoizer();

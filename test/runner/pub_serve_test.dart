@@ -278,7 +278,7 @@ void main() {
           containsInOrder(
               [" main.<fn>", "package:test", "dart:async/zone.dart"]));
       await test.shouldExit(1);
-      pub.kill();
+      await pub.kill();
     }, tags: 'chrome');
 
     test("doesn't dartify stack traces for JS-compiled tests with --js-trace",

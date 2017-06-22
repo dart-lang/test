@@ -73,7 +73,7 @@ class ContentShell extends Browser {
             !stderr.current
                 .contains("kq_init: detected broken kqueue; not using")) {
           if (stderr.current == "[dartToStderr]: Dartium build has expired") {
-            stderr.cancel();
+            await stderr.cancel();
             process.kill();
             // TODO(nweiz): link to dartlang.org once it has download links for
             // content shell
@@ -86,7 +86,7 @@ class ContentShell extends Browser {
           } else if (stderr.current.contains("bind() returned an error")) {
             // If we failed to bind to the port, return null to tell
             // getUnusedPort to try another one.
-            stderr.cancel();
+            await stderr.cancel();
             process.kill();
             return null;
           }
@@ -99,7 +99,7 @@ class ContentShell extends Browser {
           remoteDebuggerCompleter.complete(null);
         }
 
-        stderr.cancel();
+        await stderr.cancel();
         return process;
       };
 
