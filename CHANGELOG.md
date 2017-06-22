@@ -1,3 +1,8 @@
+## 0.12.22+2
+
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
+
 ## 0.12.22+1
 
 * Support `args` 1.0.0.
