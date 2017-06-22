@@ -21,6 +21,19 @@ import '../configuration.dart';
 import '../configuration/suite.dart';
 import 'reporters.dart';
 
+/// A regular expression matching a Dart identifier.
+///
+/// This also matches a package name, since they must be Dart identifiers.
+final identifierRegExp = new RegExp(r"[a-zA-Z_]\w*");
+
+/// A regular expression matching allowed package names.
+///
+/// This allows dot-separated valid Dart identifiers. The dots are there for
+/// compatibility with Google's internal Dart packages, but they may not be used
+/// when publishing a package to pub.dartlang.org.
+final _packageName = new RegExp(
+    "^${identifierRegExp.pattern}(\\.${identifierRegExp.pattern})*\$");
+
 /// Loads configuration information from a YAML file at [path].
 ///
 /// If [global] is `true`, this restricts the configuration file to only rules
@@ -291,6 +304,11 @@ class _ConfigurationLoader {
           (valueNode as YamlList).any((value) => value is! String)) {
         throw new SourceSpanFormatException(
             'Folded packages must be strings.', valueNode.span, _source);
+      }
+      if ((valueNode as YamlList)
+          .any((value) => !_packageName.hasMatch(value))) {
+        throw new SourceSpanFormatException(
+            'Invalid package identifier', valueNode.span, _source);
       }
       return valueNode.value;
     });
