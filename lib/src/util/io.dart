@@ -138,7 +138,7 @@ Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
 }
 
 /// Whether this computer supports binding to IPv6 addresses.
-var _supportsIPv6 = true;
+var _maySupportIPv6 = true;
 
 /// Returns a port that is probably, but not definitely, not in use.
 ///
@@ -147,15 +147,15 @@ var _supportsIPv6 = true;
 /// use [getUnusedPort] instead.
 Future<int> getUnsafeUnusedPort() async {
   var socket;
-  if (_supportsIPv6) {
+  if (_maySupportIPv6) {
     try {
       socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
           v6Only: true);
     } on SocketException {
-      _supportsIPv6 = false;
+      _maySupportIPv6 = false;
     }
   }
-  if (!_supportsIPv6) {
+  if (!_maySupportIPv6) {
     socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
   }
   var port = socket.port;
