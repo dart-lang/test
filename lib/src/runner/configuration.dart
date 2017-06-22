@@ -395,20 +395,19 @@ class Configuration {
     if (other == Configuration.empty) return this;
 
     var foldTraceOnly = other._foldTraceOnly ?? _foldTraceOnly;
-    if (other._foldTraceOnly != null && _foldTraceExcept != null) {
-      foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
-    }
-
-    if (other._foldTraceExcept != null && _foldTraceOnly != null) {
-      foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
-    }
-    if (other._foldTraceOnly != null && _foldTraceOnly != null) {
-      foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
-    }
-
     var foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
-    if (other._foldTraceExcept != null && _foldTraceExcept != null) {
-      foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
+    if (_foldTraceOnly != null) {
+      if (other._foldTraceExcept != null) {
+        foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
+      } else if (other._foldTraceOnly != null) {
+        foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
+      }
+    } else if (_foldTraceExcept != null) {
+      if (other._foldTraceOnly != null) {
+        foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
+      } else if (other._foldTraceExcept != null) {
+        foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
+      }
     }
 
     var result = new Configuration._(
