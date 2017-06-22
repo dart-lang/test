@@ -6,6 +6,9 @@
   makes it possible to safely share `Future`s and `Stream`s between tests and
   their tear-downs.
 
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
+
 ## 0.12.22
 
 * Add a `retry` option to `test()` and `group()` functions, as well
