@@ -302,16 +302,16 @@ class _ConfigurationLoader {
     }, value: (valueNode) {
       _validate(
           valueNode,
-          "Folded packages must be strings",
+          "Folded packages must be strings.",
           (valueList) =>
               valueList is YamlList &&
-              !(valueList).any((value) => value is! String));
+              (valueList).every((value) => value is String));
 
       _validate(
           valueNode,
-          "Invalid package identifier",
+          "Invalid package name.",
           (valueList) =>
-              !(valueList).any((value) => !_packageName.hasMatch(value)));
+              (valueList).every((value) => _packageName.hasMatch(value)));
 
       return valueNode.value;
     });
