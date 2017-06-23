@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
+import 'src/backend/platform_selector.dart' show PlatformSelector; // for the dartdocs
 import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/configuration/suite.dart';
@@ -284,7 +285,7 @@ void setUpAll(callback()) => _declarer.setUpAll(callback);
 ///
 /// **Note**: This function makes it very easy to accidentally introduce hidden
 /// dependencies between tests that should be isolated. In general, you should
-/// prefer [tearDown], and only use [tearDOwnAll] if the callback is
+/// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
 void tearDownAll(callback()) => _declarer.tearDownAll(callback);
 
