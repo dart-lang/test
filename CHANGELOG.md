@@ -3,6 +3,11 @@
 * Add a `fold_stack_frames` field for `dart_test.yaml`. This will
   allow users to customize which packages' frames are folded.
   
+## 0.12.22+2
+
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
+
 ## 0.12.22+1
 
 * Support `args` 1.0.0.
