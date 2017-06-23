@@ -15,7 +15,9 @@ import '../backend/operating_system.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
+import '../frontend/test_chain.dart';
 import '../util/remote_exception.dart';
+import '../util/stack_trace_mapper.dart';
 import '../utils.dart';
 
 class RemoteListener {
@@ -46,6 +48,8 @@ class RemoteListener {
         new StreamChannelController(allowForeignErrors: false, sync: true);
     var channel = new MultiChannel(controller.local);
 
+    var verboseChain = true;
+
     var printZone = hidePrints ? null : Zone.current;
     runZoned(() async {
       var main;
@@ -55,7 +59,7 @@ class RemoteListener {
         _sendLoadException(channel, "No top-level main() function defined.");
         return;
       } catch (error, stackTrace) {
-        _sendError(channel, error, stackTrace);
+        _sendError(channel, error, stackTrace, verboseChain);
         return;
       }
 
@@ -72,10 +76,17 @@ class RemoteListener {
 
       if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
+      verboseChain = metadata.verboseTrace;
       var declarer = new Declarer(
           metadata: metadata,
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
+
+      configureTestChaining(
+          mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
+          exceptPackages: _deserializeSet(message['foldTraceExcept']),
+          onlyPackages: _deserializeSet(message['foldTraceOnly']));
+
       await declarer.declare(main);
 
       var os =
@@ -85,13 +96,20 @@ class RemoteListener {
           platform: platform, os: os, path: message['path']);
       new RemoteListener._(suite, printZone)._listen(channel);
     }, onError: (error, stackTrace) {
-      _sendError(channel, error, stackTrace);
+      _sendError(channel, error, stackTrace, verboseChain);
     }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
       if (printZone != null) printZone.print(line);
       channel.sink.add({"type": "print", "line": line});
     }));
 
     return controller.foreign;
+  }
+
+  /// Returns a [Set] from a JSON serialized list.
+  static Set<String> _deserializeSet(List<String> list) {
+    if (list == null) return null;
+    if (list.isEmpty) return null;
+    return new Set.from(list);
   }
 
   /// Sends a message over [channel] indicating that the tests failed to load.
@@ -102,10 +120,12 @@ class RemoteListener {
   }
 
   /// Sends a message over [channel] indicating an error from user code.
-  static void _sendError(StreamChannel channel, error, StackTrace stackTrace) {
+  static void _sendError(
+      StreamChannel channel, error, StackTrace stackTrace, bool verboseChain) {
     channel.sink.add({
       "type": "error",
-      "error": RemoteException.serialize(error, stackTrace)
+      "error": RemoteException.serialize(
+          error, terseChain(stackTrace, verbose: verboseChain))
     });
   }
 
@@ -182,8 +202,10 @@ class RemoteListener {
     liveTest.onError.listen((asyncError) {
       channel.sink.add({
         "type": "error",
-        "error":
-            RemoteException.serialize(asyncError.error, asyncError.stackTrace)
+        "error": RemoteException.serialize(
+            asyncError.error,
+            terseChain(asyncError.stackTrace,
+                verbose: liveTest.test.metadata.verboseTrace))
       });
     });
 

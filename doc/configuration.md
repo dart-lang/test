@@ -45,6 +45,7 @@ tags:
   * [`run_skipped`](#run_skipped)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
+  * [`fold_stack_frames`](#fold_stack_frames)
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
@@ -393,6 +394,35 @@ reporter: expanded
 
 This field is not supported in the
 [global configuration file](#global-configuration).
+
+### `fold_stack_frames`
+
+This field controls which packages' stack frames will be folded away
+when displaying stack traces. Packages contained in the `exclude` 
+option will be folded. If `only` is provided, all packages not
+contained in this list will be folded. By default,
+frames from the `test` package and the `stream_channel`
+package are folded.
+
+```yaml
+fold_stack_frames:
+  except:
+  - test 
+  - stream_channel 
+```
+
+Sample stack trace, note the absence of `package:test`
+and `package:stream_channel`:
+```
+test/sample_test.dart 7:5   main.<fn>
+===== asynchronous gap ===========================
+dart:async                  _Completer.completeError
+test/sample_test.dart 8:3   main.<fn>
+===== asynchronous gap ===========================
+dart:async                  _asyncThenWrapperHelper
+test/sample_test.dart 5:27  main.<fn>
+```
+
 
 ## Configuring Tags
 

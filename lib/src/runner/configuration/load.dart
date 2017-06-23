@@ -21,6 +21,19 @@ import '../configuration.dart';
 import '../configuration/suite.dart';
 import 'reporters.dart';
 
+/// A regular expression matching a Dart identifier.
+///
+/// This also matches a package name, since they must be Dart identifiers.
+final identifierRegExp = new RegExp(r"[a-zA-Z_]\w*");
+
+/// A regular expression matching allowed package names.
+///
+/// This allows dot-separated valid Dart identifiers. The dots are there for
+/// compatibility with Google's internal Dart packages, but they may not be used
+/// when publishing a package to pub.dartlang.org.
+final _packageName = new RegExp(
+    "^${identifierRegExp.pattern}(\\.${identifierRegExp.pattern})*\$");
+
 /// Loads configuration information from a YAML file at [path].
 ///
 /// If [global] is `true`, this restricts the configuration file to only rules
@@ -74,6 +87,7 @@ class _ConfigurationLoader {
   Configuration _loadGlobalTestConfig() {
     var verboseTrace = _getBool("verbose_trace");
     var chainStackTraces = _getBool("chain_stack_traces");
+    var foldStackFrames = _loadFoldedStackFrames();
     var jsTrace = _getBool("js_trace");
 
     var timeout = _parseValue("timeout", (value) => new Timeout.parse(value));
@@ -108,7 +122,9 @@ class _ConfigurationLoader {
             jsTrace: jsTrace,
             timeout: timeout,
             presets: presets,
-            chainStackTraces: chainStackTraces)
+            chainStackTraces: chainStackTraces,
+            foldTraceExcept: foldStackFrames["except"],
+            foldTraceOnly: foldStackFrames["only"])
         .merge(_extractPresets/*<PlatformSelector>*/(
             onPlatform, (map) => new Configuration(onPlatform: map)));
 
@@ -261,6 +277,44 @@ class _ConfigurationLoader {
         filename: filename,
         includeTags: includeTags,
         excludeTags: excludeTags);
+  }
+
+  /// Returns a map representation of the `fold_stack_frames` configuration.
+  ///
+  /// The key `except` will correspond to the list of packages to fold.
+  /// The key `only` will correspond to the list of packages to keep in a
+  /// test [Chain].
+  Map<String, List<String>> _loadFoldedStackFrames() {
+    var foldOptionSet = false;
+    return _getMap("fold_stack_frames", key: (keyNode) {
+      _validate(keyNode, "Must be a string", (value) => value is String);
+      _validate(keyNode, 'Must be "only" or "except".',
+          (value) => value == "only" || value == "except");
+
+      if (foldOptionSet) {
+        throw new SourceSpanFormatException(
+            'Can only contain one of "only" or "except".',
+            keyNode.span,
+            _source);
+      }
+      foldOptionSet = true;
+      return keyNode.value;
+    }, value: (valueNode) {
+      _validate(
+          valueNode,
+          "Folded packages must be strings.",
+          (valueList) =>
+              valueList is YamlList &&
+              valueList.every((value) => value is String));
+
+      _validate(
+          valueNode,
+          "Invalid package name.",
+          (valueList) =>
+              valueList.every((value) => _packageName.hasMatch(value)));
+
+      return valueNode.value;
+    });
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed

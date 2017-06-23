@@ -250,9 +250,7 @@ class JsonReporter implements Reporter {
     _emit("error", {
       "testID": _liveTestIDs[liveTest],
       "error": error.toString(),
-      "stackTrace":
-          terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace)
-              .toString(),
+      "stackTrace": '$stackTrace',
       "isFailure": error is TestFailure
     });
   }
