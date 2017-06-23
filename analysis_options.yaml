@@ -1,5 +1,6 @@
 analyzer:
   strong-mode: true
+# Upgrade lints to errors that will break Google3
 errors:
   unused_element: error
   unused_import: error
