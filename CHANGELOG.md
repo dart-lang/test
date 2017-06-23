@@ -1,3 +1,8 @@
+## 0.12.22+2
+
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
+
 ## 0.12.22+1
 
 * Support `args` 1.0.0.
@@ -5,9 +10,6 @@
 * Run tear-down callbacks in the same error zone as the test function. This
   makes it possible to safely share `Future`s and `Stream`s between tests and
   their tear-downs.
-
-* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
-  environment.
 
 ## 0.12.22
 
