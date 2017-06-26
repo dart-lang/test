@@ -13,7 +13,6 @@ import '../../backend/state.dart';
 import '../../backend/suite.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/expect.dart';
-import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../engine.dart';
