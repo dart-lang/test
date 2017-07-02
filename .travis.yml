@@ -1,9 +1,6 @@
 language: dart
 sudo: required
 
-# We require PhantomJS 2.x, which is only available on Trusty.
-dist: trusty
-
 dart:
  - dev
  - stable
