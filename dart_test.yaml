@@ -31,3 +31,7 @@ tags:
   # Tests that run pub. These tests may need to be excluded when there are local
   # dependency_overrides.
   pub:
+
+  # Tests that use Node.js. These tests may need to be excluded on systems that
+  # don't have Node installed.
+  node:

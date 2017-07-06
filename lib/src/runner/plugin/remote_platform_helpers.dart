@@ -22,6 +22,5 @@ import '../remote_listener.dart';
 /// suite will not be forwarded to the parent zone's print handler. However, the
 /// caller may want them to be forwarded in (for example) a browser context
 /// where they'll be visible in the development console.
-StreamChannel serializeSuite(AsyncFunction getMain(),
-        {bool hidePrints: true}) =>
+StreamChannel serializeSuite(Function getMain(), {bool hidePrints: true}) =>
     RemoteListener.start(getMain, hidePrints: hidePrints);

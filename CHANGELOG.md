@@ -1,3 +1,8 @@
+## 0.12.24
+
+* Add a `node` platform for compiling tests to JavaScript and running them on
+  Node.js.
+
 ## 0.12.23+1
 
 * Remove unused imports. 

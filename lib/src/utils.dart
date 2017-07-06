@@ -10,6 +10,7 @@ import 'dart:typed_data';
 import 'package:async/async.dart' hide StreamQueue;
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
+import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
@@ -33,6 +34,14 @@ final lineSplitter = new StreamTransformer<List<int>, String>(
         .transform(UTF8.decoder)
         .transform(const LineSplitter())
         .listen(null, cancelOnError: cancelOnError));
+
+/// A [StreamChannelTransformer] that converts a chunked string channel to a
+/// line-by-line channel. Note that this is only safe for channels whose
+/// messages are guaranteed not to contain newlines.
+final chunksToLines = new StreamChannelTransformer(
+    const LineSplitter(),
+    new StreamSinkTransformer.fromHandlers(
+        handleData: (data, sink) => sink.add("$data\n")));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
