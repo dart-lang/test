@@ -65,7 +65,7 @@ class Console {
     invoke(() async {
       while (_running) {
         stdout.write("> ");
-        _nextLine = cancelableNext(stdinLines);
+        _nextLine = stdinLines.cancelable((queue) => queue.next);
         var commandName = await _nextLine.value;
         _nextLine = null;
 
