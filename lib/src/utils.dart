@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:async/async.dart' hide StreamQueue;
+import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
@@ -15,7 +15,6 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
-import 'util/stream_queue.dart';
 
 /// The maximum console line length.
 const _lineLength = 100;
@@ -272,28 +271,6 @@ Future maybeFirst(Stream stream) {
   });
 
   return completer.future;
-}
-
-/// Returns a [CancelableOperation] that returns the next value of [queue]
-/// unless it's canceled.
-///
-/// If the operation is canceled, [queue] is not moved forward at all. Note that
-/// it's not safe to call further methods on [queue] until this operation has
-/// either completed or been canceled.
-CancelableOperation cancelableNext(StreamQueue queue) {
-  var fork = queue.fork();
-  var canceled = false;
-  var completer = new CancelableCompleter(onCancel: () {
-    canceled = true;
-    return fork.cancel(immediate: true);
-  });
-
-  completer.complete(fork.next.then((_) {
-    fork.cancel();
-    return canceled ? null : queue.next;
-  }));
-
-  return completer.operation;
 }
 
 /// Returns a single-subscription stream that emits the results of [operations]
