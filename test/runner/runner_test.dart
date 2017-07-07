@@ -54,7 +54,7 @@ final _browsers =
     "[vm (default), dartium, content-shell, chrome, phantomjs, firefox" +
         (Platform.isMacOS ? ", safari" : "") +
         (Platform.isWindows ? ", ie" : "") +
-        "]";
+        ", node]";
 
 final _usage = """
 Usage: pub run test [files or directories...]

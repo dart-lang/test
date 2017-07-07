@@ -25,13 +25,13 @@ import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
+import '../compiler_pool.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../load_exception.dart';
 import '../plugin/platform.dart';
 import '../runner_suite.dart';
 import 'browser_manager.dart';
-import 'compiler_pool.dart';
 import 'polymer.dart';
 
 class BrowserPlatform extends PlatformPlugin {
@@ -70,9 +70,7 @@ class BrowserPlatform extends PlatformPlugin {
   final _jsHandler = new PathHandler();
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  ///
-  /// This is `null` if tests are loaded from `pub serve`.
-  final CompilerPool _compilers;
+  final _compilers = new CompilerPool();
 
   /// The temporary directory in which compiled JS is emitted.
   final String _compiledDir;
@@ -120,8 +118,7 @@ class BrowserPlatform extends PlatformPlugin {
       : _config = config,
         _root = root == null ? p.current : root,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
-        _http = config.pubServeUrl == null ? null : new HttpClient(),
-        _compilers = new CompilerPool() {
+        _http = config.pubServeUrl == null ? null : new HttpClient() {
     var cascade = new shelf.Cascade().add(_webSocketHandler.handler);
 
     if (_config.pubServeUrl == null) {
@@ -371,7 +368,18 @@ class BrowserPlatform extends PlatformPlugin {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
 
-      await _compilers.compile(dartPath, jsPath, suiteConfig);
+      await _compilers.compile(
+          '''
+        import "package:test/src/bootstrap/browser.dart";
+
+        import "${p.toUri(p.absolute(dartPath))}" as test;
+
+        void main() {
+          internalBootstrapBrowserTest(() => test.main);
+        }
+      ''',
+          jsPath,
+          suiteConfig);
       if (_closed) return;
 
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
