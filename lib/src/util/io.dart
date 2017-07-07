@@ -6,11 +6,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
-import '../util/stream_queue.dart';
 import '../utils.dart';
 
 /// The ASCII code for a newline character.
