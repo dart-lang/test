@@ -1,3 +1,7 @@
+## 0.12.24-dev
+
+* Extend `deserializeTimeout`.
+
 ## 0.12.24
 
 * Add a `node` platform for compiling tests to JavaScript and running them on
