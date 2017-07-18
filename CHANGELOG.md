@@ -1,4 +1,4 @@
-## 0.12.24-dev
+## 0.12.25-dev
 
 * Extend `deserializeTimeout`.
 
