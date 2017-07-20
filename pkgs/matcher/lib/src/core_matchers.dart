@@ -595,15 +595,18 @@ class _Predicate extends Matcher {
 /// have a Widget class where each Widget has a price; we could make a
 /// [CustomMatcher] that can make assertions about prices with:
 ///
-///     class HasPrice extends CustomMatcher {
-///       const HasPrice(matcher) :
-///           super("Widget with price that is", "price", matcher);
-///       featureValueOf(actual) => actual.price;
-///     }
+/// ```dart
+/// class HasPrice extends CustomMatcher {
+///   HasPrice(matcher) : super("Widget with price that is", "price", matcher);
+///   featureValueOf(actual) => actual.price;
+/// }
+/// ```
 ///
 /// and then use this for example like:
 ///
-///      expect(inventoryItem, new HasPrice(greaterThan(0)));
+/// ```dart
+/// expect(inventoryItem, new HasPrice(greaterThan(0)));
+/// ```
 class CustomMatcher extends Matcher {
   final String _featureDescription;
   final String _featureName;
