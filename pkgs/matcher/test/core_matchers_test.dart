@@ -250,8 +250,6 @@ void main() {
           contains("Expected: feature {1: 'a'} "),
           contains("Actual: 'a' "),
           contains("Which: threw 'Exception: bang' "),
-          contains("test/core_matchers_test.dart "),
-          contains("package:test ")
         ]));
   });
 }
