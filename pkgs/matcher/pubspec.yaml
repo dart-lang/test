@@ -1,12 +1,16 @@
 name: matcher
-
-version: 0.12.1+1
+version: 0.12.2-dev
 author: Dart Team <misc@dartlang.org>
 description: Support for specifying test expectations
 homepage: https://github.com/dart-lang/matcher
 environment:
-  sdk: '>=1.8.0 <2.0.0'
+  sdk: '>=1.8.0 <2.0.0-dev.infinity'
 dependencies:
   stack_trace: '^1.2.0'
 dev_dependencies:
   test: '>=0.12.0 <0.13.0'
+
+# TODO(kevmoo) – remove once pkg/test has been updated to support this version
+# pkg/test has a tight dependency constraint on pkg/matcher
+dependency_overrides:
+  test: 0.12.24
