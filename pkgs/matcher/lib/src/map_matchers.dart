@@ -27,7 +27,7 @@ class _ContainsMapping extends Matcher {
   final _key;
   final Matcher _valueMatcher;
 
-  const _ContainsMapping(this._key, Matcher this._valueMatcher);
+  const _ContainsMapping(this._key, this._valueMatcher);
 
   bool matches(item, Map matchState) =>
       item.containsKey(_key) && _valueMatcher.matches(item[_key], matchState);

@@ -28,6 +28,7 @@ abstract class Description {
 }
 
 /// [expect] Matchers must implement/extend the Matcher class.
+///
 /// The base Matcher class has a generic implementation of [describeMismatch]
 /// so this does not need to be provided unless a more clear description is
 /// required. The other two methods ([matches] and [describe])
@@ -48,7 +49,7 @@ abstract class Matcher {
   /// is the value that was tested by [matches]; [matchState] is
   /// the [Map] that was passed to and supplemented by [matches]
   /// with additional information about the mismatch, and [mismatchDescription]
-  /// is the [Description] that is being built to decribe the mismatch.
+  /// is the [Description] that is being built to describe the mismatch.
   /// A few matchers make use of the [verbose] flag to provide detailed
   /// information that is not typically included but can be of help in
   /// diagnosing failures, such as stack traces.

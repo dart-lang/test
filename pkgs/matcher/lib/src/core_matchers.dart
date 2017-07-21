@@ -113,7 +113,6 @@ Matcher equals(expected, [int limit = 100]) => expected is String
 class _DeepMatcher extends Matcher {
   final _expected;
   final int _limit;
-  var count;
 
   _DeepMatcher(this._expected, [int limit = 1000]) : this._limit = limit;
 
@@ -132,7 +131,7 @@ class _DeepMatcher extends Matcher {
       if (!expectedNext && !actualNext) return null;
 
       // Fail if their lengths are different.
-      var newLocation = '${location}[${index}]';
+      var newLocation = '$location[$index]';
       if (!expectedNext) return ['longer than expected', newLocation];
       if (!actualNext) return ['shorter than expected', newLocation];
 
@@ -212,7 +211,7 @@ class _DeepMatcher extends Matcher {
 
         for (var key in expected.keys) {
           var rp = _recursiveMatch(
-              expected[key], actual[key], "${location}['${key}']", depth + 1);
+              expected[key], actual[key], "$location['$key']", depth + 1);
           if (rp != null) return rp;
         }
 

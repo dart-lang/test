@@ -14,7 +14,7 @@ Matcher everyElement(matcher) => new _EveryElement(wrapMatcher(matcher));
 class _EveryElement extends _IterableMatcher {
   final Matcher _matcher;
 
-  _EveryElement(Matcher this._matcher);
+  _EveryElement(this._matcher);
 
   bool matches(item, Map matchState) {
     if (item is! Iterable) {
@@ -184,7 +184,7 @@ class _UnorderedMatches extends Matcher {
         return new StringDescription()
             .add('has no match for ')
             .addDescriptionOf(expectedMatcher)
-            .add(' at index ${expectedPosition}')
+            .add(' at index $expectedPosition')
             .toString();
       }
 
