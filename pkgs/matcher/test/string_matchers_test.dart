@@ -13,6 +13,16 @@ void main() {
         contains('Differ at offset 7'));
   });
 
+  test("Retains outer matcher mismatch text", () {
+    shouldFail(
+        {'word': 'thing'},
+        containsPair('word', equals('notthing')),
+        allOf([
+          contains("contains key 'word' but with value is different"),
+          contains("Differ at offset 0")
+        ]));
+  });
+
   test('collapseWhitespace', () {
     var source = '\t\r\n hello\t\r\n world\r\t \n';
     expect(collapseWhitespace(source), 'hello world');

@@ -329,7 +329,7 @@ class _StringEqualsMatcher extends Matcher {
         buff.write('^\n Differ at offset $start');
       }
 
-      return mismatchDescription.replace(buff.toString());
+      return mismatchDescription.add(buff.toString());
     }
   }
 
