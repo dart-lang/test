@@ -1,3 +1,7 @@
+## 0.12.24+1
+
+* Widen version constraint on `analyzer`.
+
 ## 0.12.24
 
 * Add a `node` platform for compiling tests to JavaScript and running them on
