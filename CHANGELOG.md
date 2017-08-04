@@ -1,6 +1,7 @@
 ## 0.12.24-dev
 
 * Fix issue where we were not awaiting some futures. 
+* Extend `deserializeTimeout`.
 
 ## 0.12.24+2
 
