@@ -45,6 +45,10 @@ class TestPlatform {
       "Internet Explorer", "ie",
       isBrowser: true, isJS: true);
 
+  /// The command-line Node.js VM.
+  static const TestPlatform nodeJS =
+      const TestPlatform._("Node.js", "node", isJS: true);
+
   /// A list of all instances of [TestPlatform].
   static final UnmodifiableListView<TestPlatform> all =
       new UnmodifiableListView<TestPlatform>(_allPlatforms);
@@ -95,7 +99,8 @@ final List<TestPlatform> _allPlatforms = [
   TestPlatform.phantomJS,
   TestPlatform.firefox,
   TestPlatform.safari,
-  TestPlatform.internetExplorer
+  TestPlatform.internetExplorer,
+  TestPlatform.nodeJS
 ];
 
 /// **Do not call this function without express permission from the test package

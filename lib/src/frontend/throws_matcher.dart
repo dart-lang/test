@@ -8,6 +8,7 @@ import 'package:matcher/matcher.dart';
 
 import '../utils.dart';
 import 'async_matcher.dart';
+import '../frontend/test_chain.dart';
 
 /// This function is deprecated.
 ///

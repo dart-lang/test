@@ -6,11 +6,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
-import '../util/stream_queue.dart';
 import '../utils.dart';
 
 /// The ASCII code for a newline character.
@@ -137,13 +137,27 @@ Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
   return value;
 }
 
+/// Whether this computer supports binding to IPv6 addresses.
+var _maySupportIPv6 = true;
+
 /// Returns a port that is probably, but not definitely, not in use.
 ///
 /// This has a built-in race condition: another process may bind this port at
 /// any time after this call has returned. If at all possible, callers should
 /// use [getUnusedPort] instead.
 Future<int> getUnsafeUnusedPort() async {
-  var socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+  var socket;
+  if (_maySupportIPv6) {
+    try {
+      socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
+          v6Only: true);
+    } on SocketException {
+      _maySupportIPv6 = false;
+    }
+  }
+  if (!_maySupportIPv6) {
+    socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+  }
   var port = socket.port;
   await socket.close();
   return port;

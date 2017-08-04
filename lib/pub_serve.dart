@@ -22,6 +22,7 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     var id = transform.primaryId;
     transform.declareOutput(id.addExtension('.vm_test.dart'));
     transform.declareOutput(id.addExtension('.browser_test.dart'));
+    transform.declareOutput(id.addExtension('.node_test.dart'));
   }
 
   Future apply(Transform transform) async {
@@ -37,7 +38,7 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
           import "${p.url.basename(id.path)}" as test;
 
           void main(_, SendPort message) {
-            internalBootstrapVmTest(test.main, message);
+            internalBootstrapVmTest(() => test.main, message);
           }
         '''));
 
@@ -49,7 +50,19 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
           import "${p.url.basename(id.path)}" as test;
 
           void main() {
-            internalBootstrapBrowserTest(test.main);
+            internalBootstrapBrowserTest(() => test.main);
+          }
+        '''));
+
+    transform.addOutput(new Asset.fromString(
+        id.addExtension('.node_test.dart'),
+        '''
+          import "package:test/src/bootstrap/node.dart";
+
+          import "${p.url.basename(id.path)}" as test;
+
+          void main() {
+            internalBootstrapNodeTest(() => test.main);
           }
         '''));
 

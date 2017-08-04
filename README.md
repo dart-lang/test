@@ -5,6 +5,7 @@
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
   * [Running Tests on Dartium](#running-tests-on-dartium)
+  * [Running Tests on Node.js](#running-tests-on-nodejs)
 * [Asynchronous Tests](#asynchronous-tests)
   * [Stream Matchers](#stream-matchers)
 * [Running Tests With Custom HTML](#running-tests-with-custom-html)
@@ -219,6 +220,8 @@ identifiers are defined:
 
 * `ie`: Whether the test is running on Microsoft Internet Explorer.
 
+* `node`: Whether the test is running on Node.js.
+
 * `dart-vm`: Whether the test is running on the Dart VM in any context,
   including Dartium. It's identical to `!js`.
 
@@ -276,6 +279,24 @@ Note content_shell on linux requires the font packages ttf-kochi-mincho and ttf-
 location of both the Dartium and content shell executables.
 
 [issue 63]: https://github.com/dart-lang/test/issues/63
+
+### Running Tests on Node.js
+
+The test runner also supports compiling tests to JavaScript and running them on
+[Node.js][] by passing `--platform node`. Note that Node has access to *neither*
+`dart:html` nor `dart:io`, so any platform-specific APIs will have to be invoked
+using [the `js` package][js]. However, it may be useful when testing APIs
+that are meant to be used by JavaScript code.
+
+[Node.js]: https://nodejs.org/en/
+[js]: https://pub.dartlang.org/packages/js
+
+The test runner looks for an executable named `node` (on Mac OS or Linux) or
+`node.exe` (on Windows) on your system path. When compiling Node.js tests, it
+passes `-Dnode=true`, so tests can determine whether they're running on Node
+using [`const bool.fromEnvironment("node")`][bool.fromEnvironment].
+
+[bool.fromEnvironment]: https://api.dartlang.org/stable/1.24.2/dart-core/bool/bool.fromEnvironment.html
 
 ## Asynchronous Tests
 

@@ -1,3 +1,34 @@
+## 0.12.24-dev
+
+* Fix issue where we were not awaiting some futures. 
+
+## 0.12.24+2
+
+* Only force exit if `FORCE_TEST_EXIT` is set in the environment.
+
+## 0.12.24+1
+
+* Widen version constraint on `analyzer`.
+
+## 0.12.24
+
+* Add a `node` platform for compiling tests to JavaScript and running them on
+  Node.js.
+
+## 0.12.23+1
+
+* Remove unused imports. 
+
+## 0.12.23
+
+* Add a `fold_stack_frames` field for `dart_test.yaml`. This will
+  allow users to customize which packages' frames are folded.
+  
+## 0.12.22+2
+
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
+
 ## 0.12.22+1
 
 * Support `args` 1.0.0.

@@ -284,7 +284,7 @@ void setUpAll(callback()) => _declarer.setUpAll(callback);
 ///
 /// **Note**: This function makes it very easy to accidentally introduce hidden
 /// dependencies between tests that should be isolated. In general, you should
-/// prefer [tearDown], and only use [tearDOwnAll] if the callback is
+/// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
 void tearDownAll(callback()) => _declarer.tearDownAll(callback);
 

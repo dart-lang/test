@@ -21,10 +21,7 @@ String get _pubServeArg => '--pub-serve=$pubServePort';
 
 void main() {
   setUp(() async {
-    await d
-        .file(
-            "pubspec.yaml",
-            """
+    await d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
@@ -34,13 +31,10 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
-""")
-        .create();
+""").create();
 
     await d.dir("test", [
-      d.file(
-          "my_test.dart",
-          """
+      d.file("my_test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -50,9 +44,7 @@ void main() {
     ]).create();
 
     await d.dir("lib", [
-      d.file(
-          "myapp.dart",
-          """
+      d.file("myapp.dart", """
 import 'package:barback/barback.dart';
 
 class MyTransformer extends Transformer {
@@ -77,17 +69,13 @@ class MyTransformer extends Transformer {
     setUp(() async {
       // Give the test a failing assertion that the transformer will convert to
       // a passing assertion.
-      await d
-          .file(
-              "test/my_test.dart",
-              """
+      await d.file("test/my_test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("test", () => expect(true, isFalse));
 }
-""")
-          .create();
+""").create();
     });
 
     test("runs those tests in the VM", () async {
@@ -105,6 +93,14 @@ void main() {
       await test.shouldExit(0);
       await pub.kill();
     }, tags: 'chrome');
+
+    test("runs those tests on Node", () async {
+      var pub = await runPubServe();
+      var test = await runTest([_pubServeArg, '-p', 'node']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+      await pub.kill();
+    }, tags: 'node');
 
     test("runs those tests on content shell", () async {
       var pub = await runPubServe();
@@ -174,23 +170,37 @@ void main() {
       }, tags: 'content-shell');
     });
 
+    test(
+        "gracefully handles pub serve running on the wrong directory for Node "
+        "tests", () async {
+      await d.dir("web").create();
+
+      var pub = await runPubServe(args: ['web']);
+      var test = await runTest([_pubServeArg, '-p', 'node']);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: compiling ${p.join("test", "my_test.dart")} [E]',
+            'Failed to load "${p.join("test", "my_test.dart")}":',
+            '404 Not Found',
+            'Make sure "pub serve" is serving the test/ directory.'
+          ]));
+      await test.shouldExit(1);
+
+      await pub.kill();
+    }, tags: 'node');
+
     test("gracefully handles unconfigured transformers", () async {
-      await d
-          .file(
-              "pubspec.yaml",
-              """
+      await d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
   test: {path: ${p.current}}
-""")
-          .create();
+""").create();
 
       var pub = await runPubServe();
       var test = await runTest([_pubServeArg]);
-      expectStderrEquals(
-          test,
-          '''
+      expectStderrEquals(test, '''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
 your pubspec:
 
@@ -207,9 +217,7 @@ transformers:
   group("uses a custom HTML file", () {
     setUp(() async {
       await d.dir("test", [
-        d.file(
-            "test.dart",
-            """
+        d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -220,9 +228,7 @@ void main() {
   });
 }
 """),
-        d.file(
-            "test.html",
-            """
+        d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -254,10 +260,7 @@ void main() {
 
   group("with a failing test", () {
     setUp(() async {
-      await d
-          .file(
-              "test/my_test.dart",
-              """
+      await d.file("test/my_test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -265,36 +268,67 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw 'oh no');
 }
-""")
-          .create();
+""").create();
     });
 
-    test("dartifies stack traces for JS-compiled tests by default", () async {
-      var pub = await runPubServe();
-      var test =
-          await runTest([_pubServeArg, '-p', 'chrome', '--verbose-trace']);
-      expect(
-          test.stdout,
-          containsInOrder(
-              [" main.<fn>", "package:test", "dart:async/zone.dart"]));
-      await test.shouldExit(1);
-      await pub.kill();
-    }, tags: 'chrome');
+    group("dartifies stack traces for JS-compiled tests by default", () {
+      test("on a browser", () async {
+        var pub = await runPubServe();
+        var test =
+            await runTest([_pubServeArg, '-p', 'chrome', '--verbose-trace']);
+        expect(
+            test.stdout,
+            containsInOrder(
+                [" main.<fn>", "package:test", "dart:async/zone.dart"]));
+        await test.shouldExit(1);
+        await pub.kill();
+      }, tags: 'chrome');
 
-    test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
-        () async {
-      var pub = await runPubServe();
-      var test = await runTest(
-          [_pubServeArg, '-p', 'chrome', '--js-trace', '--verbose-trace']);
+      test("on Node", () async {
+        var pub = await runPubServe();
+        var test =
+            await runTest([_pubServeArg, '-p', 'node', '--verbose-trace']);
+        expect(
+            test.stdout,
+            containsInOrder(
+                [" main.<fn>", "package:test", "dart:async/zone.dart"]));
+        await test.shouldExit(1);
+        pub.kill();
+      }, tags: 'node');
+    });
 
-      expect(test.stdoutStream(), neverEmits(endsWith(" main.<fn>")));
-      expect(test.stdoutStream(), neverEmits(contains("package:test")));
-      expect(test.stdoutStream(), neverEmits(contains("dart:async/zone.dart")));
-      expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
-      await test.shouldExit(1);
+    group("doesn't dartify stack traces for JS-compiled tests with --js-trace",
+        () {
+      test("on a browser", () async {
+        var pub = await runPubServe();
+        var test = await runTest(
+            [_pubServeArg, '-p', 'chrome', '--js-trace', '--verbose-trace']);
 
-      await pub.kill();
-    }, tags: 'chrome');
+        expect(test.stdoutStream(), neverEmits(endsWith(" main.<fn>")));
+        expect(test.stdoutStream(), neverEmits(contains("package:test")));
+        expect(
+            test.stdoutStream(), neverEmits(contains("dart:async/zone.dart")));
+        expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+        await test.shouldExit(1);
+
+        await pub.kill();
+      }, tags: 'chrome');
+
+      test("on Node", () async {
+        var pub = await runPubServe();
+        var test = await runTest(
+            [_pubServeArg, '-p', 'node', '--js-trace', '--verbose-trace']);
+
+        expect(test.stdoutStream(), neverEmits(endsWith(" main.<fn>")));
+        expect(test.stdoutStream(), neverEmits(contains("package:test")));
+        expect(
+            test.stdoutStream(), neverEmits(contains("dart:async/zone.dart")));
+        expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+        await test.shouldExit(1);
+
+        await pub.kill();
+      }, tags: 'node');
+    });
   });
 
   test("gracefully handles pub serve not running for VM tests", () async {
@@ -328,6 +362,24 @@ void main() {
         ]));
     await test.shouldExit(1);
   }, tags: 'chrome');
+
+  test("gracefully handles pub serve not running for Node tests", () async {
+    var test = await runTest(['--pub-serve=54321', '-p', 'node']);
+    var message = Platform.isWindows
+        ? 'The remote computer refused the network connection.'
+        : 'Connection refused (errno ';
+
+    expect(
+        test.stdout,
+        containsInOrder([
+          '-1: compiling ${p.join("test", "my_test.dart")} [E]',
+          'Failed to load "${p.join("test", "my_test.dart")}":',
+          'Error getting http://localhost:54321/my_test.dart.node_test.dart.js:'
+              ' $message',
+          'Make sure "pub serve" is running.'
+        ]));
+    await test.shouldExit(1);
+  }, tags: 'node');
 
   test("gracefully handles a test file not being in test/", () async {
     new File(p.join(d.sandbox, 'test/my_test.dart'))

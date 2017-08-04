@@ -11,10 +11,10 @@ import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
-import '../../util/io.dart';
-import '../configuration.dart';
-import '../configuration/suite.dart';
-import '../load_exception.dart';
+import '../util/io.dart';
+import 'configuration.dart';
+import 'configuration/suite.dart';
+import 'load_exception.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
 final _dart2jsStatus =
@@ -39,35 +39,27 @@ class CompilerPool {
   /// The memoizer for running [close] exactly once.
   final _closeMemo = new AsyncMemoizer();
 
-  /// Creates a compiler pool that multiple instances of `dart2js` at once.
-  CompilerPool() : _pool = new Pool(Configuration.current.concurrency);
+  /// Extra arguments to pass to dart2js.
+  final List<String> _extraArgs;
 
-  /// Compile the Dart code at [dartPath] to [jsPath].
+  /// Creates a compiler pool that multiple instances of `dart2js` at once.
+  CompilerPool([Iterable<String> extraArgs])
+      : _pool = new Pool(Configuration.current.concurrency),
+        _extraArgs = extraArgs?.toList() ?? const [];
+
+  /// Compiles [code] to [jsPath].
   ///
   /// This wraps the Dart code in the standard browser-testing wrapper.
   ///
   /// The returned [Future] will complete once the `dart2js` process completes
   /// *and* all its output has been printed to the command line.
-  Future compile(
-      String dartPath, String jsPath, SuiteConfiguration suiteConfig) {
+  Future compile(String code, String jsPath, SuiteConfiguration suiteConfig) {
     return _pool.withResource(() {
       if (_closed) return null;
 
       return withTempDir((dir) async {
         var wrapperPath = p.join(dir, "runInBrowser.dart");
-        new File(wrapperPath).writeAsStringSync('''
-          import "package:stream_channel/stream_channel.dart";
-
-          import "package:test/src/runner/plugin/remote_platform_helpers.dart";
-          import "package:test/src/runner/browser/post_message_channel.dart";
-
-          import "${p.toUri(p.absolute(dartPath))}" as test;
-
-          main(_) async {
-            var channel = serializeSuite(() => test.main, hidePrints: false);
-            postMessageChannel().pipe(channel);
-          }
-        ''');
+        new File(wrapperPath).writeAsStringSync(code);
 
         var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
@@ -77,7 +69,9 @@ class CompilerPool {
           wrapperPath,
           "--out=$jsPath",
           await PackageResolver.current.processArgument
-        ]..addAll(suiteConfig.dart2jsArgs);
+        ]
+          ..addAll(_extraArgs)
+          ..addAll(suiteConfig.dart2jsArgs);
 
         if (_config.color) args.add("--enable-diagnostic-colors");
 
@@ -108,7 +102,7 @@ class CompilerPool {
         var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
         if (output.isNotEmpty) print(output);
 
-        if (exitCode != 0) throw new LoadException(dartPath, "dart2js failed.");
+        if (exitCode != 0) throw "dart2js failed.";
 
         _fixSourceMap(jsPath + '.map');
       });

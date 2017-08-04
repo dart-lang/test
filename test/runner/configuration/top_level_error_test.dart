@@ -13,6 +13,67 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  test("rejects an invalid fold_stack_frames", () async {
+    await d
+        .file("dart_test.yaml", JSON.encode({"fold_stack_frames": "flup"}))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(test.stderr,
+        containsInOrder(["fold_stack_frames must be a map", "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects multiple fold_stack_frames keys", () async {
+    await d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "fold_stack_frames": {
+                "except": ["blah"],
+                "only": ["blah"]
+              }
+            }))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(
+        test.stderr,
+        containsInOrder(
+            ['Can only contain one of "only" or "except".', "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects invalid fold_stack_frames keys", () async {
+    await d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "fold_stack_frames": {"invalid": "blah"}
+            }))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(test.stderr,
+        containsInOrder(['Must be "only" or "except".', "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
+  test("rejects invalid fold_stack_frames values", () async {
+    await d
+        .file(
+            "dart_test.yaml",
+            JSON.encode({
+              "fold_stack_frames": {"only": "blah"}
+            }))
+        .create();
+
+    var test = await runTest(["test.dart"]);
+    expect(test.stderr,
+        containsInOrder(["Folded packages must be strings", "^^^^^^"]));
+    await test.shouldExit(exit_codes.data);
+  });
+
   test("rejects an invalid pause_after_load", () async {
     await d
         .file("dart_test.yaml", JSON.encode({"pause_after_load": "flup"}))
