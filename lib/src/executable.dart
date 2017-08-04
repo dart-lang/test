@@ -185,7 +185,7 @@ transformers:
 
   // TODO(grouma) - figure out why the executable can hang in the travis
   // environment. https://github.com/dart-lang/test/issues/599
-  if (Platform.environment["TRAVIS"] == "true") {
+  if (Platform.environment["FORCE_TEST_EXIT"] == "true") {
     exit(exitCode);
   }
 }

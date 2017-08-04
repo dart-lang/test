@@ -9,6 +9,9 @@ dart:
  - stable
  - 1.23.0
 
+env:
+ - FORCE_TEST_EXIT=true
+
 # Content shell needs these fonts.
 addons:
   apt:
