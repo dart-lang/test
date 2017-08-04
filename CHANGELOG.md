@@ -1,6 +1,14 @@
-## 0.12.25-dev
+## 0.12.24-dev
 
 * Extend `deserializeTimeout`.
+
+## 0.12.24+2
+
+* Only force exit if `FORCE_TEST_EXIT` is set in the environment.
+
+## 0.12.24+1
+
+* Widen version constraint on `analyzer`.
 
 ## 0.12.24
 
