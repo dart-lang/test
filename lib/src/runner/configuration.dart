@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
@@ -60,6 +59,10 @@ class Configuration {
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
 
+  /// Whether to disable retries of tests.
+  bool get noRetry => _noRetry ?? false;
+  final bool _noRetry;
+
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
   final Uri pubServeUrl;
@@ -93,6 +96,15 @@ class Configuration {
   ///
   /// See [shardIndex] for details.
   final int totalShards;
+
+  /// The list of packages to fold when producing [StackTrace]s.
+  Set<String> get foldTraceExcept => _foldTraceExcept ?? new Set();
+  final Set<String> _foldTraceExcept;
+
+  /// If non-empty, all packages not in this list will be folded when producing
+  /// [StackTrace]s.
+  Set<String> get foldTraceOnly => _foldTraceOnly ?? new Set();
+  final Set<String> _foldTraceOnly;
 
   /// The paths from which to load tests.
   List<String> get paths => _paths ?? ["test"];
@@ -195,9 +207,12 @@ class Configuration {
       int shardIndex,
       int totalShards,
       Iterable<String> paths,
+      Iterable<String> foldTraceExcept,
+      Iterable<String> foldTraceOnly,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      bool noRetry,
 
       // Suite-level configuration
       bool jsTrace,
@@ -216,6 +231,7 @@ class Configuration {
       bool verboseTrace,
       bool chainStackTraces,
       bool skip,
+      int retry,
       String skipReason,
       PlatformSelector testOn,
       Iterable<String> addTags}) {
@@ -233,9 +249,12 @@ class Configuration {
         shardIndex: shardIndex,
         totalShards: totalShards,
         paths: paths,
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
+        noRetry: noRetry,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -253,6 +272,7 @@ class Configuration {
             verboseTrace: verboseTrace,
             chainStackTraces: chainStackTraces,
             skip: skip,
+            retry: retry,
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags));
@@ -283,9 +303,12 @@ class Configuration {
       this.shardIndex,
       this.totalShards,
       Iterable<String> paths,
+      Iterable<String> foldTraceExcept,
+      Iterable<String> foldTraceOnly,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      bool noRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
@@ -299,10 +322,13 @@ class Configuration {
             : Uri.parse("http://localhost:$pubServePort"),
         _concurrency = concurrency,
         _paths = _list(paths),
+        _foldTraceExcept = _set(foldTraceExcept),
+        _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
         presets = _map(presets),
+        _noRetry = noRetry,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 new SuiteConfiguration(timeout: Timeout.none)
@@ -338,6 +364,14 @@ class Configuration {
     return list;
   }
 
+  /// Returns a set from [input].
+  static Set<T> _set<T>(Iterable<T> input) {
+    if (input == null) return null;
+    var set = new Set<T>.from(input);
+    if (set.isEmpty) return null;
+    return set;
+  }
+
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
   static Map/*<K, V>*/ _map/*<K, V>*/(Map/*<K, V>*/ input) {
     if (input == null || input.isEmpty) return const {};
@@ -360,6 +394,22 @@ class Configuration {
     if (this == Configuration.empty) return other;
     if (other == Configuration.empty) return this;
 
+    var foldTraceOnly = other._foldTraceOnly ?? _foldTraceOnly;
+    var foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
+    if (_foldTraceOnly != null) {
+      if (other._foldTraceExcept != null) {
+        foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
+      } else if (other._foldTraceOnly != null) {
+        foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
+      }
+    } else if (_foldTraceExcept != null) {
+      if (other._foldTraceOnly != null) {
+        foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
+      } else if (other._foldTraceExcept != null) {
+        foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
+      }
+    }
+
     var result = new Configuration._(
         help: other._help ?? _help,
         version: other._version ?? _version,
@@ -373,9 +423,12 @@ class Configuration {
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
         paths: other._paths ?? _paths,
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
+        noRetry: other._noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -402,9 +455,12 @@ class Configuration {
       int shardIndex,
       int totalShards,
       Iterable<String> paths,
+      Iterable<String> exceptPackages,
+      Iterable<String> onlyPackages,
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      bool noRetry,
 
       // Suite-level configuration
       bool jsTrace,
@@ -439,9 +495,12 @@ class Configuration {
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,
         paths: paths ?? _paths,
+        foldTraceExcept: exceptPackages ?? _foldTraceExcept,
+        foldTraceOnly: onlyPackages ?? _foldTraceOnly,
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,
+        noRetry: noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,

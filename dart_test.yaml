@@ -2,7 +2,14 @@
 verbose_trace: true
 
 tags:
-  browser: {timeout: 2x}
+  browser:
+    timeout: 2x
+
+    # Browsers can sometimes randomly time out while starting, especially on
+    # Travis which is pretty slow. Don't retry locally because it makes
+    # debugging more annoying.
+    presets: {travis: {retry: 3}}
+
   dart2js:
     add_tags: [browser]
     timeout: 2x
@@ -24,3 +31,7 @@ tags:
   # Tests that run pub. These tests may need to be excluded when there are local
   # dependency_overrides.
   pub:
+
+  # Tests that use Node.js. These tests may need to be excluded on systems that
+  # don't have Node installed.
+  node:

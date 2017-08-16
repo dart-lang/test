@@ -19,6 +19,7 @@ import 'configuration.dart';
 import 'configuration/suite.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
+import 'node/platform.dart';
 import 'parse_metadata.dart';
 import 'plugin/environment.dart';
 import 'plugin/hack_register_platform.dart';
@@ -49,6 +50,7 @@ class Loader {
   /// defaults to the working directory.
   Loader({String root}) {
     registerPlatformPlugin([TestPlatform.vm], () => new VMPlatform());
+    registerPlatformPlugin([TestPlatform.nodeJS], () => new NodePlatform());
     registerPlatformPlugin([
       TestPlatform.dartium,
       TestPlatform.contentShell,
@@ -162,7 +164,7 @@ class Loader {
         try {
           var plugin = await memo.runOnce(_platformCallbacks[platform]);
           var suite = await plugin.load(path, platform, platformConfig);
-          _suites.add(suite);
+          if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {
           if (error is LoadException) rethrow;

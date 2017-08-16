@@ -166,9 +166,10 @@ class _Debugger {
         print(wordWrap(buffer.toString()));
       }
 
-      await inCompletionOrder(
-              [_suite.environment.displayPause(), cancelableNext(stdinLines)])
-          .first;
+      await inCompletionOrder([
+        _suite.environment.displayPause(),
+        stdinLines.cancelable((queue) => queue.next)
+      ]).first;
     } finally {
       if (!_json) _reporter.resume();
     }

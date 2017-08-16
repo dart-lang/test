@@ -25,13 +25,13 @@ import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
+import '../compiler_pool.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../load_exception.dart';
 import '../plugin/platform.dart';
 import '../runner_suite.dart';
 import 'browser_manager.dart';
-import 'compiler_pool.dart';
 import 'polymer.dart';
 
 class BrowserPlatform extends PlatformPlugin {
@@ -70,9 +70,7 @@ class BrowserPlatform extends PlatformPlugin {
   final _jsHandler = new PathHandler();
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  ///
-  /// This is `null` if tests are loaded from `pub serve`.
-  final CompilerPool _compilers;
+  final _compilers = new CompilerPool();
 
   /// The temporary directory in which compiled JS is emitted.
   final String _compiledDir;
@@ -93,12 +91,10 @@ class BrowserPlatform extends PlatformPlugin {
   bool get _closed => _closeMemo.hasRun;
 
   /// A map from browser identifiers to futures that will complete to the
-  /// [BrowserManager]s for those browsers, or the errors that occurred when
-  /// trying to load those managers.
+  /// [BrowserManager]s for those browsers, or `null` if they failed to load.
   ///
   /// This should only be accessed through [_browserManagerFor].
-  final _browserManagers =
-      new Map<TestPlatform, Future<Result<BrowserManager>>>();
+  final _browserManagers = new Map<TestPlatform, Future<BrowserManager>>();
 
   /// A cascade of handlers for suites' precompiled paths.
   ///
@@ -122,8 +118,7 @@ class BrowserPlatform extends PlatformPlugin {
       : _config = config,
         _root = root == null ? p.current : root,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
-        _http = config.pubServeUrl == null ? null : new HttpClient(),
-        _compilers = new CompilerPool() {
+        _http = config.pubServeUrl == null ? null : new HttpClient() {
     var cascade = new shelf.Cascade().add(_webSocketHandler.handler);
 
     if (_config.pubServeUrl == null) {
@@ -278,7 +273,7 @@ class BrowserPlatform extends PlatformPlugin {
 
     // TODO(nweiz): Don't start the browser until all the suites are compiled.
     var browserManager = await _browserManagerFor(browser);
-    if (_closed) return null;
+    if (_closed || browserManager == null) return null;
 
     var suite = await browserManager.load(path, suiteUrl, suiteConfig,
         mapper: browser.isJS ? _mappers[path] : null);
@@ -373,7 +368,18 @@ class BrowserPlatform extends PlatformPlugin {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
 
-      await _compilers.compile(dartPath, jsPath, suiteConfig);
+      await _compilers.compile(
+          '''
+        import "package:test/src/bootstrap/browser.dart";
+
+        import "${p.toUri(p.absolute(dartPath))}" as test;
+
+        void main() {
+          internalBootstrapBrowserTest(() => test.main);
+        }
+      ''',
+          jsPath,
+          suiteConfig);
       if (_closed) return;
 
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
@@ -405,8 +411,8 @@ class BrowserPlatform extends PlatformPlugin {
   ///
   /// If no browser manager is running yet, starts one.
   Future<BrowserManager> _browserManagerFor(TestPlatform platform) {
-    var manager = _browserManagers[platform];
-    if (manager != null) return Result.release(manager);
+    var managerFuture = _browserManagers[platform];
+    if (managerFuture != null) return managerFuture;
 
     var completer = new Completer<WebSocketChannel>.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
@@ -421,12 +427,9 @@ class BrowserPlatform extends PlatformPlugin {
     var future = BrowserManager.start(platform, hostUrl, completer.future,
         debug: _config.pauseAfterLoad);
 
-    // Capture errors and release them later to avoid Zone issues. This call to
-    // [_browserManagerFor] is running in a different [LoadSuite] than future
-    // calls, which means they're also running in different error zones so
-    // errors can't be freely passed between them. Storing the error or value as
-    // an explicit [Result] fixes that.
-    _browserManagers[platform] = Result.capture(future);
+    // Store null values for browsers that error out so we know not to load them
+    // again.
+    _browserManagers[platform] = future.catchError((_) => null);
 
     return future;
   }
@@ -440,8 +443,8 @@ class BrowserPlatform extends PlatformPlugin {
     _browserManagers.clear();
     return Future.wait(managers.map((manager) async {
       var result = await manager;
-      if (result.isError) return;
-      await result.asValue.value.close();
+      if (result == null) return;
+      await result.close();
     }));
   }
 
@@ -453,9 +456,9 @@ class BrowserPlatform extends PlatformPlugin {
         var futures =
             _browserManagers.values.map<Future<dynamic>>((future) async {
           var result = await future;
-          if (result.isError) return;
+          if (result == null) return;
 
-          await result.asValue.value.close();
+          await result.close();
         }).toList();
 
         futures.add(_server.close());

@@ -11,6 +11,7 @@ import '../application_exception.dart';
 import 'browser.dart';
 
 final _observatoryRegExp = new RegExp(r"^Observatory listening on ([^ ]+)");
+final _errorTimeout = const Duration(seconds: 10);
 
 /// A class for running an instance of the Dartium content shell.
 ///
@@ -59,8 +60,18 @@ class ContentShell extends Browser {
         // make sure it's not expired and that the remote debugging port worked.
         // Any errors from this will always come before the "Running without
         // renderer sandbox" message.
-        while (await stderr.moveNext() &&
-            !stderr.current.endsWith("Running without renderer sandbox")) {
+        while (await stderr.moveNext().timeout(_errorTimeout).catchError((_) =>
+                throw new ApplicationException(
+                    "Error starting up content_shell.\n"
+                    "Ensure you are using the latest version:\n"
+                    "http://gsdview.appspot.com/dart-archive/channels/stable/"
+                    "release/latest/dartium/")) &&
+            !stderr.current.endsWith("Running without renderer sandbox") &&
+            !stderr.current.contains("Running without the SUID sandbox") &&
+            // Error messages on Mac can get gobbled, we must assume that it
+            // it started up successfully.
+            !stderr.current
+                .contains("kq_init: detected broken kqueue; not using")) {
           if (stderr.current == "[dartToStderr]: Dartium build has expired") {
             stderr.cancel();
             process.kill();

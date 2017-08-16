@@ -4,37 +4,42 @@
 
 import 'dart:async';
 
+import 'package:http_multi_server/http_multi_server.dart';
 import 'package:shelf/shelf.dart' as shelf;
+import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf_test_handler/shelf_test_handler.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:scheduled_test/scheduled_server.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-/// A class that schedules a server to serve Dart and/or JS code and receive
-/// WebSocket connections.
-///
-/// This uses [ScheduledServer] under the hood, and has similar semantics: its
-/// `handle*` methods all schedule a handler that must be hit before the
-/// schedule will continue.
+/// A class that serves Dart and/or JS code and receives WebSocket connections.
 class CodeServer {
-  /// The underlying server.
-  final ScheduledServer _server;
+  /// The handler for [_server].
+  final ShelfTestHandler _handler;
 
-  /// The URL of the server (including the port), once it's actually
-  /// instantiated.
-  Future<Uri> get url => _server.url;
+  /// The URL of the server (including the port).
+  final Uri url;
 
-  /// The port of the server, once it's actually instantiated.
-  Future<int> get port => _server.port;
+  static Future<CodeServer> start() async {
+    var server = await HttpMultiServer.loopback(0);
+    var handler = new ShelfTestHandler();
+    shelf_io.serveRequests(server, (request) {
+      if (request.method == "GET" && request.url.path == "favicon.ico") {
+        return new shelf.Response.notFound(null);
+      } else {
+        return handler(request);
+      }
+    });
 
-  CodeServer() : _server = new ScheduledServer("code server") {
-    _server.handleUnscheduled(
-        "GET", "/favicon.ico", (_) => new shelf.Response.notFound(null));
+    return new CodeServer._(
+        handler, Uri.parse("http://localhost:${server.port}"));
   }
+
+  CodeServer._(this._handler, this.url);
 
   /// Sets up a handler for the root of the server, "/", that serves a basic
   /// HTML page with a script tag that will run [dart].
   void handleDart(String dart) {
-    _server.handle("GET", "/", (_) {
+    _handler.expect("GET", "/", (_) {
       return new shelf.Response.ok(
           """
 <!doctype html>
@@ -47,7 +52,7 @@ class CodeServer {
           headers: {'content-type': 'text/html'});
     });
 
-    _server.handle("GET", "/index.dart", (_) {
+    _handler.expect("GET", "/index.dart", (_) {
       return new shelf.Response.ok(
           '''
 import "dart:html";
@@ -63,7 +68,7 @@ main() async {
   /// Sets up a handler for the root of the server, "/", that serves a basic
   /// HTML page with a script tag that will run [javaScript].
   void handleJavaScript(String javaScript) {
-    _server.handle("GET", "/", (_) {
+    _handler.expect("GET", "/", (_) {
       return new shelf.Response.ok(
           """
 <!doctype html>
@@ -76,7 +81,7 @@ main() async {
           headers: {'content-type': 'text/html'});
     });
 
-    _server.handle("GET", "/index.js", (_) {
+    _handler.expect("GET", "/index.js", (_) {
       return new shelf.Response.ok(javaScript,
           headers: {'content-type': 'application/javascript'});
     });
@@ -86,7 +91,7 @@ main() async {
   /// future that will complete to the WebSocket.
   Future<WebSocketChannel> handleWebSocket() {
     var completer = new Completer<WebSocketChannel>();
-    _server.handle("GET", "/", webSocketHandler(completer.complete));
+    _handler.expect("GET", "/", webSocketHandler(completer.complete));
     return completer.future;
   }
 }

@@ -65,12 +65,6 @@ class ExpandedReporter implements Reporter {
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = new Stopwatch();
 
-  /// Whether we've started [_stopwatch].
-  ///
-  /// We can't just use `_stopwatch.isRunning` because the stopwatch is stopped
-  /// when the reporter is paused.
-  var _stopwatchStarted = false;
-
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed;
@@ -141,7 +135,7 @@ class ExpandedReporter implements Reporter {
 
   void resume() {
     if (!_paused) return;
-    if (_stopwatchStarted) _stopwatch.start();
+    _stopwatch.start();
 
     for (var subscription in _subscriptions) {
       subscription.resume();
@@ -207,9 +201,7 @@ class ExpandedReporter implements Reporter {
 
     if (error is! LoadException) {
       print(indent(error.toString()));
-      var chain =
-          terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace);
-      print(indent(chain.toString()));
+      print(indent('$stackTrace'));
       return;
     }
 
@@ -219,7 +211,7 @@ class ExpandedReporter implements Reporter {
     if (error.innerError is! IsolateSpawnException &&
         error.innerError is! FormatException &&
         error.innerError is! String) {
-      print(indent(terseChain(stackTrace).toString()));
+      print(indent('$stackTrace'));
     }
   }
 

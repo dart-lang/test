@@ -1,9 +1,67 @@
+## 0.12.24-dev
+
+* Extend `deserializeTimeout`.
+
+## 0.12.24+2
+
+* Only force exit if `FORCE_TEST_EXIT` is set in the environment.
+
+## 0.12.24+1
+
+* Widen version constraint on `analyzer`.
+
+## 0.12.24
+
+* Add a `node` platform for compiling tests to JavaScript and running them on
+  Node.js.
+
+## 0.12.23+1
+
+* Remove unused imports. 
+
+## 0.12.23
+
+* Add a `fold_stack_frames` field for `dart_test.yaml`. This will
+  allow users to customize which packages' frames are folded.
+  
+## 0.12.22+2
+
+* Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
+  environment.
+
+## 0.12.22+1
+
+* Support `args` 1.0.0.
+
+* Run tear-down callbacks in the same error zone as the test function. This
+  makes it possible to safely share `Future`s and `Stream`s between tests and
+  their tear-downs.
+
+## 0.12.22
+
+* Add a `retry` option to `test()` and `group()` functions, as well
+  as `@Retry()`  annotation for test files and a `retry` 
+  configuration field for `dart_test.yaml`.  A test with reties
+  enabled will be re-run if it fails for a reason other than a
+  `TestFailure`.
+  
+* Add a `--no-retry` runner flag that disables retries of failing tests.
+
+* Fix a "concurrent modification during iteration" error when calling
+  `addTearDown()` from within a tear down.
+
 ## 0.12.21
+
+* Add a `doesNotComplete` matcher that asserts that a Future never completes.
 
 * `throwsA()` and all related matchers will now match functions that return
   `Future`s that emit exceptions.
 
 * Respect `onPlatform` for groups.
+
+* Only print browser load errors once per browser.
+
+* Gracefully time out when attempting to deserialize a test suite.
 
 ## 0.12.20+13
 

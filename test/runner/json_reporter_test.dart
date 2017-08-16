@@ -3,14 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
+
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/runner/version.dart';
+import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -22,10 +24,8 @@ final _start = {
 };
 
 void main() {
-  useSandbox();
-
   test("runs several successful tests and reports when each completes", () {
-    _expectReport(
+    return _expectReport(
         """
       test('success 1', () {});
       test('success 2', () {});
@@ -49,7 +49,7 @@ void main() {
   });
 
   test("runs several failing tests and reports when each fails", () {
-    _expectReport(
+    return _expectReport(
         """
       test('failure 1', () => throw new TestFailure('oh no'));
       test('failure 2', () => throw new TestFailure('oh no'));
@@ -75,8 +75,8 @@ void main() {
         ]);
   });
 
-  test("includes the full stack trace with --verbose-trace", () {
-    d
+  test("includes the full stack trace with --verbose-trace", () async {
+    await d
         .file(
             "test.dart",
             """
@@ -90,13 +90,14 @@ void main() {
     """)
         .create();
 
-    var test = runTest(["--verbose-trace", "test.dart"], reporter: "json");
-    test.stdout.expect(consumeThrough(contains("dart:isolate-patch")));
-    test.shouldExit(1);
+    var test =
+        await runTest(["--verbose-trace", "test.dart"], reporter: "json");
+    expect(test.stdout, emitsThrough(contains("dart:isolate-patch")));
+    await test.shouldExit(1);
   });
 
   test("runs failing tests along with successful tests", () {
-    _expectReport(
+    return _expectReport(
         """
       test('failure 1', () => throw new TestFailure('oh no'));
       test('success 1', () {});
@@ -125,7 +126,7 @@ void main() {
   });
 
   test("gracefully handles multiple test failures in a row", () {
-    _expectReport(
+    return _expectReport(
         """
       // This completer ensures that the test isolate isn't killed until all
       // errors have been thrown.
@@ -157,7 +158,7 @@ void main() {
   });
 
   test("gracefully handles a test failing after completion", () {
-    _expectReport(
+    return _expectReport(
         """
       // These completers ensure that the first test won't fail until the second
       // one is running, and that the test isolate isn't killed until all errors
@@ -197,7 +198,7 @@ void main() {
   });
 
   test("reports each test in its proper groups", () {
-    _expectReport(
+    return _expectReport(
         """
       group('group 1', () {
         group('.2', () {
@@ -236,7 +237,7 @@ void main() {
 
   group("print:", () {
     test("handles multiple prints", () {
-      _expectReport(
+      return _expectReport(
           """
         test('test', () {
           print("one");
@@ -263,7 +264,7 @@ void main() {
     });
 
     test("handles a print after the test completes", () {
-      _expectReport(
+      return _expectReport(
           """
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
@@ -304,7 +305,7 @@ void main() {
     });
 
     test("interleaves prints and errors", () {
-      _expectReport(
+      return _expectReport(
           """
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
@@ -355,7 +356,7 @@ void main() {
 
   group("skip:", () {
     test("reports skipped tests", () {
-      _expectReport(
+      return _expectReport(
           """
         test('skip 1', () {}, skip: true);
         test('skip 2', () {}, skip: true);
@@ -379,7 +380,7 @@ void main() {
     });
 
     test("reports skipped groups", () {
-      _expectReport(
+      return _expectReport(
           """
         group('skip', () {
           test('success 1', () {});
@@ -415,7 +416,7 @@ void main() {
     });
 
     test("reports the skip reason if available", () {
-      _expectReport(
+      return _expectReport(
           """
         test('skip 1', () {}, skip: 'some reason');
         test('skip 2', () {}, skip: 'or another');
@@ -438,7 +439,7 @@ void main() {
     });
 
     test("runs skipped tests with --run-skipped", () {
-      _expectReport(
+      return _expectReport(
           """
         test('skip 1', () {}, skip: 'some reason');
         test('skip 2', () {}, skip: 'or another');
@@ -464,7 +465,7 @@ void main() {
 
   group("reports line and column numbers for", () {
     test("the first call to setUpAll()", () {
-      _expectReport(
+      return _expectReport(
           """
         setUpAll(() {});
         setUpAll(() {});
@@ -487,7 +488,7 @@ void main() {
     });
 
     test("the first call to tearDownAll()", () {
-      _expectReport(
+      return _expectReport(
           """
         tearDownAll(() {});
         tearDownAll(() {});
@@ -510,7 +511,7 @@ void main() {
     });
 
     test("a test compiled to JS", () {
-      _expectReport(
+      return _expectReport(
           """
         test('success', () {});
       """,
@@ -529,13 +530,13 @@ void main() {
             "-p",
             "chrome"
           ]);
-    }, tags: ["chrome"]);
+    }, tags: ["chrome"], skip: "Broken by sdk#29693.");
   });
 
   test(
       "doesn't report line and column information for a test compiled to JS "
       "with --js-trace", () {
-    _expectReport(
+    return _expectReport(
         """
       test('success', () {});
     """,
@@ -555,13 +556,17 @@ void main() {
           "chrome",
           "--js-trace"
         ]);
-  }, tags: ["chrome"]);
+  }, tags: ["chrome"], skip: "Broken by sdk#29693.");
 }
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
 /// [expected].
-void _expectReport(String tests, List<Map> expected, {List<String> args}) {
-  var dart = """
+Future _expectReport(String tests, List<Map> expected,
+    {List<String> args}) async {
+  d
+      .file(
+          "test.dart",
+          """
     import 'dart:async';
 
     import 'package:test/test.dart';
@@ -569,30 +574,27 @@ void _expectReport(String tests, List<Map> expected, {List<String> args}) {
     void main() {
 $tests
     }
-  """;
+  """)
+      .create();
 
-  d.file("test.dart", dart).create();
+  var test = await runTest(["test.dart"]..addAll(args ?? []), reporter: "json");
+  await test.shouldExit();
 
-  var test = runTest(["test.dart"]..addAll(args ?? []), reporter: "json");
-  test.shouldExit();
+  var stdoutLines = await test.stdoutStream().toList();
 
-  schedule(() async {
-    var stdoutLines = await test.stdoutStream().toList();
+  expect(stdoutLines.length, equals(expected.length),
+      reason: "Expected $stdoutLines to match ${JSON.encode(expected)}.");
 
-    expect(stdoutLines.length, equals(expected.length),
-        reason: "Expected $stdoutLines to match ${JSON.encode(expected)}.");
+  // TODO(nweiz): validate each event against the JSON schema when
+  // patefacio/json_schema#4 is merged.
 
-    // TODO(nweiz): validate each event against the JSON schema when
-    // patefacio/json_schema#4 is merged.
-
-    // Remove excess trailing whitespace.
-    for (var i = 0; i < stdoutLines.length; i++) {
-      var event = JSON.decode(stdoutLines[i]);
-      expect(event.remove("time"), new isInstanceOf<int>());
-      event.remove("stackTrace");
-      expect(event, equals(expected[i]));
-    }
-  });
+  // Remove excess trailing whitespace.
+  for (var i = 0; i < stdoutLines.length; i++) {
+    var event = JSON.decode(stdoutLines[i]);
+    expect(event.remove("time"), new isInstanceOf<int>());
+    event.remove("stackTrace");
+    expect(event, equals(expected[i]));
+  }
 }
 
 /// Returns the event emitted by the JSON reporter providing information about
@@ -651,8 +653,9 @@ Map _group(int id,
       "testCount": testCount ?? 1,
       "line": line,
       "column": column,
-      "url":
-          line == null ? null : p.toUri(p.join(sandbox, "test.dart")).toString()
+      "url": line == null
+          ? null
+          : p.toUri(p.join(d.sandbox, "test.dart")).toString()
     }
   };
 }
@@ -681,8 +684,9 @@ Map _testStart(int id, String name,
       "metadata": _metadata(skip: skip),
       "line": line,
       "column": column,
-      "url":
-          line == null ? null : p.toUri(p.join(sandbox, "test.dart")).toString()
+      "url": line == null
+          ? null
+          : p.toUri(p.join(d.sandbox, "test.dart")).toString()
     }
   };
 }

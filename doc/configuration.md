@@ -27,8 +27,10 @@ tags:
 * [Test Configuration](#test-configuration)
   * [`timeout`](#timeout)
   * [`verbose_trace`](#verbose_trace)
+  * [`chain_stack_traces`](#chain_stack_traces)
   * [`js_trace`](#js_trace)
   * [`skip`](#skip)
+  * [`retry`](#retry)
   * [`test_on`](#test_on)
 * [Runner Configuration](#runner-configuration)
   * [`paths`](#paths)
@@ -43,6 +45,7 @@ tags:
   * [`run_skipped`](#run_skipped)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
+  * [`fold_stack_frames`](#fold_stack_frames)
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
@@ -96,6 +99,18 @@ itself. It defaults to `false`.
 verbose_trace: true
 ```
 
+### `chain_stack_traces`
+
+This boolean field controls whether or not stack traces are chained. 
+Disabling [`stack trace chaining`][stack trace chaining] will improve
+performance for heavily asynchronous code at the cost of debuggability. 
+
+[stack trace chaining]: https://github.com/dart-lang/stack_trace/blob/master/README.md#stack-chains
+
+```yaml
+chain_stack_traces: false 
+```
+
 ### `js_trace`
 
 This boolean field controls whether or not stack traces caused by errors that
@@ -121,6 +136,19 @@ whether the tests are skipped or a string indicating the reason they're skipped.
 tags:
   chrome:
     skip: "Our Chrome launcher is busted. See issue 1234."
+```
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### `retry`
+
+This int field controls how many times a test is retried upon failure. 
+
+```yaml
+tags:
+  chrome:
+    retry: 3 # Retry chrome failures 3 times.
 ```
 
 This field is not supported in the
@@ -366,6 +394,35 @@ reporter: expanded
 
 This field is not supported in the
 [global configuration file](#global-configuration).
+
+### `fold_stack_frames`
+
+This field controls which packages' stack frames will be folded away
+when displaying stack traces. Packages contained in the `exclude` 
+option will be folded. If `only` is provided, all packages not
+contained in this list will be folded. By default,
+frames from the `test` package and the `stream_channel`
+package are folded.
+
+```yaml
+fold_stack_frames:
+  except:
+  - test 
+  - stream_channel 
+```
+
+Sample stack trace, note the absence of `package:test`
+and `package:stream_channel`:
+```
+test/sample_test.dart 7:5   main.<fn>
+===== asynchronous gap ===========================
+dart:async                  _Completer.completeError
+test/sample_test.dart 8:3   main.<fn>
+===== asynchronous gap ===========================
+dart:async                  _asyncThenWrapperHelper
+test/sample_test.dart 5:27  main.<fn>
+```
+
 
 ## Configuring Tags
 

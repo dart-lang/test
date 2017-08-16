@@ -7,15 +7,14 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:async/async.dart' hide StreamQueue;
+import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
-import 'package:stack_trace/stack_trace.dart';
+import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
-import 'util/stream_queue.dart';
 
 /// The maximum console line length.
 const _lineLength = 100;
@@ -34,6 +33,14 @@ final lineSplitter = new StreamTransformer<List<int>, String>(
         .transform(UTF8.decoder)
         .transform(const LineSplitter())
         .listen(null, cancelOnError: cancelOnError));
+
+/// A [StreamChannelTransformer] that converts a chunked string channel to a
+/// line-by-line channel. Note that this is only safe for channels whose
+/// messages are guaranteed not to contain newlines.
+final chunksToLines = new StreamChannelTransformer(
+    const LineSplitter(),
+    new StreamSinkTransformer.fromHandlers(
+        handleData: (data, sink) => sink.add("$data\n")));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
@@ -169,24 +176,6 @@ final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
 /// Returns [str] without any color codes.
 String withoutColors(String str) => str.replaceAll(_colorCode, '');
 
-/// Returns [stackTrace] converted to a [Chain] with all irrelevant frames
-/// folded together.
-///
-/// If [verbose] is `true`, returns the chain for [stackTrace] unmodified.
-Chain terseChain(StackTrace stackTrace, {bool verbose: false}) {
-  if (verbose) return new Chain.forTrace(stackTrace);
-  return new Chain.forTrace(stackTrace).foldFrames(
-      (frame) => frame.package == 'test' || frame.package == 'stream_channel',
-      terse: true);
-}
-
-/// Converts [stackTrace] to a [Chain] following the test's configuration.
-Chain testChain(StackTrace stackTrace) {
-  // TODO(nweiz): Follow more configuration when #527 is fixed.
-  return terseChain(stackTrace,
-      verbose: Invoker.current.liveTest.test.metadata.verboseTrace);
-}
-
 /// Flattens nested [Iterable]s inside an [Iterable] into a single [List]
 /// containing only non-[Iterable] elements.
 List flatten(Iterable nested) {
@@ -203,16 +192,6 @@ List flatten(Iterable nested) {
 
   helper(nested);
   return result;
-}
-
-/// Like [runZoned], but [zoneValues] are set for the callbacks in
-/// [zoneSpecification] and [onError].
-runZonedWithValues(body(),
-    {Map zoneValues, ZoneSpecification zoneSpecification, Function onError}) {
-  return runZoned(() {
-    return runZoned(body,
-        zoneSpecification: zoneSpecification, onError: onError);
-  }, zoneValues: zoneValues);
 }
 
 /// Truncates [text] to fit within [maxLength].
@@ -292,28 +271,6 @@ Future maybeFirst(Stream stream) {
   });
 
   return completer.future;
-}
-
-/// Returns a [CancelableOperation] that returns the next value of [queue]
-/// unless it's canceled.
-///
-/// If the operation is canceled, [queue] is not moved forward at all. Note that
-/// it's not safe to call further methods on [queue] until this operation has
-/// either completed or been canceled.
-CancelableOperation cancelableNext(StreamQueue queue) {
-  var fork = queue.fork();
-  var canceled = false;
-  var completer = new CancelableCompleter(onCancel: () {
-    canceled = true;
-    return fork.cancel(immediate: true);
-  });
-
-  completer.complete(fork.next.then((_) {
-    fork.cancel();
-    return canceled ? null : queue.next;
-  }));
-
-  return completer.operation;
 }
 
 /// Returns a single-subscription stream that emits the results of [operations]

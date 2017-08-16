@@ -3,13 +3,14 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
+
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_stream.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -53,7 +54,7 @@ final _browsers =
     "[vm (default), dartium, content-shell, chrome, phantomjs, firefox" +
         (Platform.isMacOS ? ", safari" : "") +
         (Platform.isWindows ? ", ie" : "") +
-        "]";
+        ", node]";
 
 final _usage = """
 Usage: pub run test [files or directories...]
@@ -99,6 +100,8 @@ Usage: pub run test [files or directories...]
                                  debuggability.
                                  (defaults to on)
 
+    --no-retry                   Don't re-run tests that have retry set.
+
 ======== Output
 -r, --reporter                   The runner used to print test results.
 
@@ -113,179 +116,203 @@ Usage: pub run test [files or directories...]
 """;
 
 void main() {
-  useSandbox();
-
-  test("prints help information", () {
-    var test = runTest(["--help"]);
+  test("prints help information", () async {
+    var test = await runTest(["--help"]);
     expectStdoutEquals(
         test,
         """
 Runs tests in this package.
 
 $_usage""");
-    test.shouldExit(0);
+    await test.shouldExit(0);
   });
 
   group("fails gracefully if", () {
-    test("an invalid option is passed", () {
-      var test = runTest(["--asdf"]);
+    test("an invalid option is passed", () async {
+      var test = await runTest(["--asdf"]);
       expectStderrEquals(
           test,
           """
 Could not find an option named "asdf".
 
 $_usage""");
-      test.shouldExit(exit_codes.usage);
+      await test.shouldExit(exit_codes.usage);
     });
 
-    test("a non-existent file is passed", () {
-      var test = runTest(["file"]);
-      test.stdout.expect(containsInOrder(
-          ['-1: loading file [E]', 'Failed to load "file": Does not exist.']));
-      test.shouldExit(1);
+    test("a non-existent file is passed", () async {
+      var test = await runTest(["file"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading file [E]',
+            'Failed to load "file": Does not exist.'
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("the default directory doesn't exist", () {
-      var test = runTest([]);
+    test("the default directory doesn't exist", () async {
+      var test = await runTest([]);
       expectStderrEquals(
           test,
           """
 No test files were passed and the default "test/" directory doesn't exist.
 
 $_usage""");
-      test.shouldExit(exit_codes.data);
+      await test.shouldExit(exit_codes.data);
     });
 
-    test("a test file fails to load", () {
-      d.file("test.dart", "invalid Dart file").create();
-      var test = runTest(["test.dart"]);
+    test("a test file fails to load", () async {
+      await d.file("test.dart", "invalid Dart file").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart":',
-        "line 1 pos 1: unexpected token 'invalid'",
-        "invalid Dart file",
-        "^"
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart":',
+            "line 1 pos 1: unexpected token 'invalid'",
+            "invalid Dart file",
+            "^"
+          ]));
+      await test.shouldExit(1);
     });
 
     // This syntax error is detected lazily, and so requires some extra
     // machinery to support.
-    test("a test file fails to parse due to a missing semicolon", () {
-      d.file("test.dart", "void main() {foo}").create();
-      var test = runTest(["test.dart"]);
+    test("a test file fails to parse due to a missing semicolon", () async {
+      await d.file("test.dart", "void main() {foo}").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart":',
-        'line 1 pos 17: semicolon expected',
-        'void main() {foo}',
-        '                ^'
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart":',
+            'line 1 pos 17: semicolon expected',
+            'void main() {foo}',
+            '                ^'
+          ]));
+      await test.shouldExit(1);
     });
 
     // This is slightly different from the above test because it's an error
     // that's caught first by the analyzer when it's used to parse the file.
-    test("a test file fails to parse", () {
-      d.file("test.dart", "@TestOn)").create();
-      var test = runTest(["test.dart"]);
+    test("a test file fails to parse", () async {
+      await d.file("test.dart", "@TestOn)").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart":',
-        "line 1 pos 8: unexpected token ')'",
-        "@TestOn)",
-        "       ^"
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart":',
+            "line 1 pos 8: unexpected token ')'",
+            "@TestOn)",
+            "       ^"
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("an annotation's structure is invalid", () {
-      d.file("test.dart", "@TestOn()\nlibrary foo;").create();
-      var test = runTest(["test.dart"]);
+    test("an annotation's structure is invalid", () async {
+      await d.file("test.dart", "@TestOn()\nlibrary foo;").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart":',
-        "Error on line 1, column 8: TestOn takes 1 argument.",
-        "@TestOn()",
-        "       ^^"
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart":',
+            "Error on line 1, column 8: TestOn takes 1 argument.",
+            "@TestOn()",
+            "       ^^"
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("an annotation's contents are invalid", () {
-      d.file("test.dart", "@TestOn('zim')\nlibrary foo;").create();
-      var test = runTest(["test.dart"]);
+    test("an annotation's contents are invalid", () async {
+      await d.file("test.dart", "@TestOn('zim')\nlibrary foo;").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart":',
-        "Error on line 1, column 10: Undefined variable.",
-        "@TestOn('zim')",
-        "         ^^^"
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart":',
+            "Error on line 1, column 10: Undefined variable.",
+            "@TestOn('zim')",
+            "         ^^^"
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("a test file throws", () {
-      d.file("test.dart", "void main() => throw 'oh no';").create();
-      var test = runTest(["test.dart"]);
+    test("a test file throws", () async {
+      await d.file("test.dart", "void main() => throw 'oh no';").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder(
-          ['-1: loading test.dart [E]', 'Failed to load "test.dart": oh no']));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": oh no'
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("a test file doesn't have a main defined", () {
-      d.file("test.dart", "void foo() {}").create();
-      var test = runTest(["test.dart"]);
+    test("a test file doesn't have a main defined", () async {
+      await d.file("test.dart", "void foo() {}").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart": No top-level main() function defined.'
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": No top-level main() function defined.'
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("a test file has a non-function main", () {
-      d.file("test.dart", "int main;").create();
-      var test = runTest(["test.dart"]);
+    test("a test file has a non-function main", () async {
+      await d.file("test.dart", "int main;").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart": Top-level main getter is not a function.'
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": Top-level main getter is not a function.'
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("a test file has a main with arguments", () {
-      d.file("test.dart", "void main(arg) {}").create();
-      var test = runTest(["test.dart"]);
+    test("a test file has a main with arguments", () async {
+      await d.file("test.dart", "void main(arg) {}").create();
+      var test = await runTest(["test.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        '-1: loading test.dart [E]',
-        'Failed to load "test.dart": Top-level main() function takes arguments.'
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": Top-level main() function takes arguments.'
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("multiple load errors occur", () {
-      d.file("test.dart", "invalid Dart file").create();
-      var test = runTest(["test.dart", "nonexistent.dart"]);
+    test("multiple load errors occur", () async {
+      await d.file("test.dart", "invalid Dart file").create();
+      var test = await runTest(["test.dart", "nonexistent.dart"]);
 
-      test.stdout.expect(containsInOrder([
-        'loading nonexistent.dart',
-        'Failed to load "nonexistent.dart": Does not exist.',
-        'loading test.dart',
-        'Failed to load "test.dart":',
-        "line 1 pos 1: unexpected token 'invalid'",
-        "invalid Dart file",
-        "^"
-      ]));
-      test.shouldExit(1);
+      expect(
+          test.stdout,
+          containsInOrder([
+            'loading nonexistent.dart',
+            'Failed to load "nonexistent.dart": Does not exist.',
+            'loading test.dart',
+            'Failed to load "test.dart":',
+            "line 1 pos 1: unexpected token 'invalid'",
+            "invalid Dart file",
+            "^"
+          ]));
+      await test.shouldExit(1);
     });
 
     // TODO(nweiz): test what happens when a test file is unreadable once issue
@@ -293,25 +320,25 @@ $_usage""");
   });
 
   group("runs successful tests", () {
-    test("defined in a single file", () {
-      d.file("test.dart", _success).create();
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+    test("defined in a single file", () async {
+      await d.file("test.dart", _success).create();
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("defined in a directory", () {
+    test("defined in a directory", () async {
       for (var i = 0; i < 3; i++) {
-        d.file("${i}_test.dart", _success).create();
+        await d.file("${i}_test.dart", _success).create();
       }
 
-      var test = runTest(["."]);
-      test.stdout.expect(consumeThrough(contains("+3: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["."]);
+      expect(test.stdout, emitsThrough(contains("+3: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("defaulting to the test directory", () {
-      d
+    test("defaulting to the test directory", () async {
+      await d
           .dir(
               "test",
               new Iterable.generate(3, (i) {
@@ -319,71 +346,73 @@ $_usage""");
               }))
           .create();
 
-      var test = runTest([]);
-      test.stdout.expect(consumeThrough(contains("+3: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest([]);
+      expect(test.stdout, emitsThrough(contains("+3: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("directly", () {
-      d.file("test.dart", _success).create();
-      var test = runDart(["test.dart"]);
+    test("directly", () async {
+      await d.file("test.dart", _success).create();
+      var test = await runDart(["test.dart"]);
 
-      test.stdout.expect(consumeThrough(contains("All tests passed!")));
-      test.shouldExit(0);
+      expect(test.stdout, emitsThrough(contains("All tests passed!")));
+      await test.shouldExit(0);
     });
 
     // Regression test; this broke in 0.12.0-beta.9.
-    test("on a file in a subdirectory", () {
-      d.dir("dir", [d.file("test.dart", _success)]).create();
+    test("on a file in a subdirectory", () async {
+      await d.dir("dir", [d.file("test.dart", _success)]).create();
 
-      var test = runTest(["dir/test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["dir/test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
   });
 
   group("runs failing tests", () {
-    test("defaults to chaining stack traces", () {
-      d.file("test.dart", _asyncFailure).create();
+    test("defaults to chaining stack traces", () async {
+      await d.file("test.dart", _asyncFailure).create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("asynchronous gap")));
-      test.shouldExit(1);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("asynchronous gap")));
+      await test.shouldExit(1);
     });
 
-    test("respects the chain-stack-traces flag", () {
-      d.file("test.dart", _asyncFailure).create();
+    test("respects the chain-stack-traces flag", () async {
+      await d.file("test.dart", _asyncFailure).create();
 
-      var test = runTest(["test.dart", "--no-chain-stack-traces"]);
-      test.stdout.expect(containsInOrder([
-        "00:00 +0: failure",
-        "00:00 +0 -1: failure [E]",
-        "oh no",
-        "test.dart 9:5  main.<fn>",
-      ]));
-      test.shouldExit(1);
+      var test = await runTest(["test.dart", "--no-chain-stack-traces"]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            "00:00 +0: failure",
+            "00:00 +0 -1: failure [E]",
+            "oh no",
+            "test.dart 9:5  main.<fn>",
+          ]));
+      await test.shouldExit(1);
     });
 
-    test("defined in a single file", () {
-      d.file("test.dart", _failure).create();
+    test("defined in a single file", () async {
+      await d.file("test.dart", _failure).create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("-1: Some tests failed.")));
-      test.shouldExit(1);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+      await test.shouldExit(1);
     });
 
-    test("defined in a directory", () {
+    test("defined in a directory", () async {
       for (var i = 0; i < 3; i++) {
-        d.file("${i}_test.dart", _failure).create();
+        await d.file("${i}_test.dart", _failure).create();
       }
 
-      var test = runTest(["."]);
-      test.stdout.expect(consumeThrough(contains("-3: Some tests failed.")));
-      test.shouldExit(1);
+      var test = await runTest(["."]);
+      expect(test.stdout, emitsThrough(contains("-3: Some tests failed.")));
+      await test.shouldExit(1);
     });
 
-    test("defaulting to the test directory", () {
-      d
+    test("defaulting to the test directory", () async {
+      await d
           .dir(
               "test",
               new Iterable.generate(3, (i) {
@@ -391,30 +420,30 @@ $_usage""");
               }))
           .create();
 
-      var test = runTest([]);
-      test.stdout.expect(consumeThrough(contains("-3: Some tests failed.")));
-      test.shouldExit(1);
+      var test = await runTest([]);
+      expect(test.stdout, emitsThrough(contains("-3: Some tests failed.")));
+      await test.shouldExit(1);
     });
 
-    test("directly", () {
-      d.file("test.dart", _failure).create();
-      var test = runDart(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("Some tests failed.")));
-      test.shouldExit(255);
+    test("directly", () async {
+      await d.file("test.dart", _failure).create();
+      var test = await runDart(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("Some tests failed.")));
+      await test.shouldExit(255);
     });
   });
 
-  test("runs tests even when a file fails to load", () {
-    d.file("test.dart", _success).create();
+  test("runs tests even when a file fails to load", () async {
+    await d.file("test.dart", _success).create();
 
-    var test = runTest(["test.dart", "nonexistent.dart"]);
-    test.stdout.expect(consumeThrough(contains("+1 -1: Some tests failed.")));
-    test.shouldExit(1);
+    var test = await runTest(["test.dart", "nonexistent.dart"]);
+    expect(test.stdout, emitsThrough(contains("+1 -1: Some tests failed.")));
+    await test.shouldExit(1);
   });
 
   group("with a top-level @Skip declaration", () {
-    setUp(() {
-      d
+    setUp(() async {
+      await d
           .file(
               "test.dart",
               '''
@@ -431,22 +460,22 @@ $_usage""");
           .create();
     });
 
-    test("skips all tests", () {
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
-      test.shouldExit(0);
+    test("skips all tests", () async {
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
+      await test.shouldExit(0);
     });
 
-    test("runs all tests with --run-skipped", () {
-      var test = runTest(["--run-skipped", "test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+    test("runs all tests with --run-skipped", () async {
+      var test = await runTest(["--run-skipped", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
   });
 
   group("with onPlatform", () {
-    test("respects matching Skips", () {
-      d
+    test("respects matching Skips", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -460,13 +489,13 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
+      await test.shouldExit(0);
     });
 
-    test("ignores non-matching Skips", () {
-      d
+    test("ignores non-matching Skips", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -480,13 +509,13 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("respects matching Timeouts", () {
-      d
+    test("respects matching Timeouts", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -505,14 +534,16 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
-      test.shouldExit(1);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
+      await test.shouldExit(1);
     });
 
-    test("ignores non-matching Timeouts", () {
-      d
+    test("ignores non-matching Timeouts", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -528,13 +559,13 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("applies matching platforms in order", () {
-      d
+    test("applies matching platforms in order", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -554,17 +585,17 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.fork().expect(never(contains("Skip: first")));
-      test.stdout.fork().expect(never(contains("Skip: second")));
-      test.stdout.fork().expect(never(contains("Skip: third")));
-      test.stdout.fork().expect(never(contains("Skip: fourth")));
-      test.stdout.expect(consumeThrough(contains("Skip: fifth")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdoutStream(), neverEmits(contains("Skip: first")));
+      expect(test.stdoutStream(), neverEmits(contains("Skip: second")));
+      expect(test.stdoutStream(), neverEmits(contains("Skip: third")));
+      expect(test.stdoutStream(), neverEmits(contains("Skip: fourth")));
+      expect(test.stdout, emitsThrough(contains("Skip: fifth")));
+      await test.shouldExit(0);
     });
 
-    test("applies platforms to a group", () {
-      d
+    test("applies platforms to a group", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -582,15 +613,15 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("All tests skipped.")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("All tests skipped.")));
+      await test.shouldExit(0);
     });
   });
 
   group("with an @OnPlatform annotation", () {
-    test("respects matching Skips", () {
-      d
+    test("respects matching Skips", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -606,13 +637,13 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+0 ~1: All tests skipped.")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
+      await test.shouldExit(0);
     });
 
-    test("ignores non-matching Skips", () {
-      d
+    test("ignores non-matching Skips", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -628,13 +659,13 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
 
-    test("respects matching Timeouts", () {
-      d
+    test("respects matching Timeouts", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -655,14 +686,16 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(containsInOrder(
-          ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
-      test.shouldExit(1);
+      var test = await runTest(["test.dart"]);
+      expect(
+          test.stdout,
+          containsInOrder(
+              ["Test timed out after 0 seconds.", "-1: Some tests failed."]));
+      await test.shouldExit(1);
     });
 
-    test("ignores non-matching Timeouts", () {
-      d
+    test("ignores non-matching Timeouts", () async {
+      await d
           .file(
               "test.dart",
               '''
@@ -680,17 +713,17 @@ void main() {
 ''')
           .create();
 
-      var test = runTest(["test.dart"]);
-      test.stdout.expect(consumeThrough(contains("+1: All tests passed!")));
-      test.shouldExit(0);
+      var test = await runTest(["test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
     });
   });
 
-  test("with the --color flag, uses colors", () {
-    d.file("test.dart", _failure).create();
-    var test = runTest(["--color", "test.dart"]);
+  test("with the --color flag, uses colors", () async {
+    await d.file("test.dart", _failure).create();
+    var test = await runTest(["--color", "test.dart"]);
     // This is the color code for red.
-    test.stdout.expect(consumeThrough(contains("\u001b[31m")));
-    test.shouldExit();
+    expect(test.stdout, emitsThrough(contains("\u001b[31m")));
+    await test.shouldExit();
   });
 }

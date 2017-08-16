@@ -72,6 +72,65 @@ void main() {
     });
   });
 
+  test("can be called in addTearDown", () {
+    return expectTestsPass(() {
+      var tearDown2Run = false;
+      var tearDown3Run = false;
+
+      test("test 1", () {
+        addTearDown(() {
+          expect(tearDown2Run, isTrue);
+          expect(tearDown3Run, isFalse);
+          tearDown3Run = true;
+        });
+
+        addTearDown(() {
+          addTearDown(() {
+            expect(tearDown2Run, isFalse);
+            expect(tearDown3Run, isFalse);
+            tearDown2Run = true;
+          });
+        });
+      });
+
+      test("test 2", () {
+        expect(tearDown2Run, isTrue);
+        expect(tearDown3Run, isTrue);
+      });
+    });
+  });
+
+  test("can be called in tearDown", () {
+    return expectTestsPass(() {
+      var tearDown2Run = false;
+      var tearDown3Run = false;
+
+      tearDown(() {
+        expect(tearDown2Run, isTrue);
+        expect(tearDown3Run, isFalse);
+        tearDown3Run = true;
+      });
+
+      tearDown(() {
+        tearDown2Run = false;
+        tearDown3Run = false;
+
+        addTearDown(() {
+          expect(tearDown2Run, isFalse);
+          expect(tearDown3Run, isFalse);
+          tearDown2Run = true;
+        });
+      });
+
+      test("test 1", () {});
+
+      test("test 2", () {
+        expect(tearDown2Run, isTrue);
+        expect(tearDown3Run, isTrue);
+      });
+    });
+  });
+
   test("runs before a normal tearDown", () {
     return expectTestsPass(() {
       var groupTearDownRun = false;
@@ -98,6 +157,21 @@ void main() {
       test("test 2", () {
         expect(groupTearDownRun, isTrue);
         expect(testTearDownRun, isTrue);
+      });
+    });
+  });
+
+  test("runs in the same error zone as the test", () {
+    return expectTestsPass(() {
+      test("test", () {
+        var future = new Future.error("oh no");
+        expect(future, throwsA("oh no"));
+
+        addTearDown(() {
+          // If the tear-down is in a different error zone than the test, the
+          // error will try to cross the zone boundary and get top-leveled.
+          expect(future, throwsA("oh no"));
+        });
       });
     });
   });

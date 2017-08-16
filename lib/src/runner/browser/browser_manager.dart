@@ -238,7 +238,7 @@ class BrowserManager {
       try {
         controller = await deserializeSuite(
             path, _platform, suiteConfig, await _environment, suiteChannel,
-            mapTrace: mapper?.mapStackTrace);
+            mapper: mapper);
         _controllers.add(controller);
         return controller.suite;
       } catch (_) {

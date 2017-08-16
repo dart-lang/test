@@ -107,6 +107,9 @@ class Invoker {
   /// on one anothers' toes.
   final _counterKey = new Object();
 
+  /// The number of times this [liveTest] has been run.
+  int _runCount = 0;
+
   /// The current invoker, or `null` if none is defined.
   ///
   /// An invoker is only set within the zone scope of a running test.
@@ -197,13 +200,11 @@ class Invoker {
 
     var zone;
     var counter = new OutstandingCallbackCounter();
-    runZoned(() {
-      runZoned(() async {
-        zone = Zone.current;
-        _outstandingCallbackZones.add(zone);
-        await fn();
-        counter.removeOutstandingCallback();
-      }, onError: _handleError);
+    runZoned(() async {
+      zone = Zone.current;
+      _outstandingCallbackZones.add(zone);
+      await fn();
+      counter.removeOutstandingCallback();
     }, zoneValues: {_counterKey: counter});
 
     return counter.noOutstandingCallbacks.whenComplete(() {
@@ -236,8 +237,10 @@ class Invoker {
     _timeoutTimer = _invokerZone.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         if (liveTest.isComplete) return;
-        _handleError(new TimeoutException(
-            "Test timed out after ${niceDuration(timeout)}.", timeout));
+        _handleError(
+            Zone.current,
+            new TimeoutException(
+                "Test timed out after ${niceDuration(timeout)}.", timeout));
       });
     });
   }
@@ -274,7 +277,11 @@ class Invoker {
   }
 
   /// Notifies the invoker of an asynchronous error.
-  void _handleError(error, [StackTrace stackTrace]) {
+  ///
+  /// The [zone] is the zone in which the error was thrown.
+  void _handleError(Zone zone, error, [StackTrace stackTrace]) {
+    // Ignore errors propagated from previous test runs
+    if (_runCount != zone[#runCount]) return;
     if (stackTrace == null) stackTrace = new Chain.current();
 
     // Store these here because they'll change when we set the state below.
@@ -287,7 +294,7 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace);
-    removeAllOutstandingCallbacks();
+    zone.run(removeAllOutstandingCallbacks);
 
     if (!liveTest.test.metadata.chainStackTraces) {
       _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
@@ -312,6 +319,7 @@ class Invoker {
     if (liveTest.suite is LoadSuite) return;
 
     _handleError(
+        zone,
         "This test failed after it had already completed. Make sure to use "
         "[expectAsync]\n"
         "or the [completes] matcher when testing async code.",
@@ -324,8 +332,9 @@ class Invoker {
 
     var outstandingCallbacksForBody = new OutstandingCallbackCounter();
 
+    _runCount++;
     Chain.capture(() {
-      runZonedWithValues(() async {
+      runZoned(() async {
         _invokerZone = Zone.current;
         _outstandingCallbackZones.add(Zone.current);
 
@@ -340,13 +349,20 @@ class Invoker {
         // microtask-level events.
         new Future(() async {
           await _test._body();
-          await unclosable(
-              () => Future.forEach(_tearDowns.reversed, errorsDontStopTest));
+          await unclosable(_runTearDowns);
           removeOutstandingCallback();
         });
 
         await _outstandingCallbacks.noOutstandingCallbacks;
         if (_timeoutTimer != null) _timeoutTimer.cancel();
+
+        if (liveTest.state.result != Result.success &&
+            _runCount < liveTest.test.metadata.retry + 1) {
+          _controller
+              .message(new Message.print("Retry: ${liveTest.test.name}"));
+          _onRun();
+          return;
+        }
 
         _controller.setState(new State(Status.complete, liveTest.state.result));
 
@@ -357,12 +373,25 @@ class Invoker {
             // Use the invoker as a key so that multiple invokers can have different
             // outstanding callback counters at once.
             _counterKey: outstandingCallbacksForBody,
-            _closableKey: true
+            _closableKey: true,
+            #runCount: _runCount
           },
           zoneSpecification: new ZoneSpecification(
               print: (self, parent, zone, line) =>
-                  _controller.message(new Message.print(line))),
-          onError: _handleError);
+                  _controller.message(new Message.print(line)),
+              // Use [handleUncaughtError] rather than [onError] so we can
+              // capture [zone] and with it the outstanding callback counter for
+              // the zone in which [error] was thrown.
+              handleUncaughtError: (self, _, zone, error, stackTrace) => self
+                  .parent
+                  .run(() => _handleError(zone, error, stackTrace))));
     }, when: liveTest.test.metadata.chainStackTraces);
+  }
+
+  /// Run [_tearDowns] in reverse order.
+  Future _runTearDowns() async {
+    while (_tearDowns.isNotEmpty) {
+      await errorsDontStopTest(_tearDowns.removeLast());
+    }
   }
 }

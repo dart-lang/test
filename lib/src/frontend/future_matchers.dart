@@ -80,3 +80,43 @@ class _Completes extends AsyncMatcher {
     return description;
   }
 }
+
+/// Matches a [Future] that does not complete.
+///
+/// Note that this creates an asynchronous expectation. The call to
+/// `expect()` that includes this will return immediately and execution will
+/// continue.
+final Matcher doesNotComplete = const _DoesNotComplete(20);
+
+class _DoesNotComplete extends Matcher {
+  final int _timesToPump;
+  const _DoesNotComplete(this._timesToPump);
+
+  // TODO(grouma) - Make this a top level function
+  Future _pumpEventQueue(times) {
+    if (times == 0) return new Future.value();
+    return new Future(() => _pumpEventQueue(times - 1));
+  }
+
+  Description describe(Description description) {
+    description.add("does not complete");
+    return description;
+  }
+
+  @override
+  bool matches(item, Map matchState) {
+    if (item is! Future) return false;
+    item.then((value) {
+      fail('Future was not expected to complete but completed with a value of '
+          '$value');
+    });
+    expect(_pumpEventQueue(_timesToPump), completes);
+    return true;
+  }
+
+  Description describeMismatch(
+      item, Description description, Map matchState, bool verbose) {
+    if (item is! Future) return description.add("$item is not a Future");
+    return description;
+  }
+}

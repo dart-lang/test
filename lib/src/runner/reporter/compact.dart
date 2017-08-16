@@ -212,9 +212,7 @@ class CompactReporter implements Reporter {
 
     if (error is! LoadException) {
       print(indent(error.toString()));
-      var chain =
-          terseChain(stackTrace, verbose: liveTest.test.metadata.verboseTrace);
-      print(indent(chain.toString()));
+      print(indent('$stackTrace'));
       return;
     }
 
@@ -225,7 +223,7 @@ class CompactReporter implements Reporter {
         error.innerError is! IsolateSpawnException &&
         error.innerError is! FormatException &&
         error.innerError is! String) {
-      print(indent(terseChain(stackTrace).toString()));
+      print(indent('$stackTrace'));
     }
   }
 
