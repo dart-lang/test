@@ -159,7 +159,10 @@ class LoadSuite extends Suite implements RunnerSuite {
       if (pair == null) return null;
 
       var zone = pair.last;
-      var newSuite = zone.runUnaryGuarded(change, pair.first);
+      var newSuite;
+      zone.runUnaryGuarded((suite) {
+        newSuite = change(suite);
+      }, pair.first);
       return newSuite == null ? null : new Pair(newSuite, zone);
     }));
   }
