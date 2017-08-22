@@ -125,7 +125,7 @@ class _ConfigurationLoader {
             chainStackTraces: chainStackTraces,
             foldTraceExcept: foldStackFrames["except"],
             foldTraceOnly: foldStackFrames["only"])
-        .merge(_extractPresets/*<PlatformSelector>*/(
+        .merge(_extractPresets<PlatformSelector>(
             onPlatform, (map) => new Configuration(onPlatform: map)));
 
     var osConfig = onOS[currentOS];
@@ -175,7 +175,7 @@ class _ConfigurationLoader {
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags)
-        .merge(_extractPresets/*<BooleanSelector>*/(
+        .merge(_extractPresets<BooleanSelector>(
             tags, (map) => new Configuration(tags: map)));
   }
 
@@ -364,9 +364,7 @@ class _ConfigurationLoader {
   /// contains.
   ///
   /// Returns a list of values returned by [forElement].
-  List/*<T>*/ _getList/*<T>*/(
-      String field,
-      /*=T*/ forElement(YamlNode elementNode)) {
+  List<T> _getList<T>(String field, T forElement(YamlNode elementNode)) {
     var node = _getNode(field, "list", (value) => value is List) as YamlList;
     if (node == null) return [];
     return node.nodes.map(forElement).toList();
@@ -376,9 +374,8 @@ class _ConfigurationLoader {
   ///
   /// Returns a map with the keys and values returned by [key] and [value]. Each
   /// of these defaults to asserting that the value is a string.
-  Map/*<K, V>*/ _getMap/*<K, V>*/(String field,
-      {/*=K*/ key(YamlNode keyNode),
-      /*=V*/ value(YamlNode valueNode)}) {
+  Map<K, V> _getMap<K, V>(String field,
+      {K key(YamlNode keyNode), V value(YamlNode valueNode)}) {
     var node = _getNode(field, "map", (value) => value is Map) as YamlMap;
     if (node == null) return {};
 
@@ -386,14 +383,14 @@ class _ConfigurationLoader {
       _validate(
           keyNode, "$field keys must be strings.", (value) => value is String);
 
-      return keyNode.value as dynamic/*=K*/;
+      return keyNode.value as K;
     };
 
     value ??= (valueNode) {
       _validate(valueNode, "$field values must be strings.",
           (value) => value is String);
 
-      return valueNode.value as dynamic/*=V*/;
+      return valueNode.value as V;
     };
 
     return mapMap(node.nodes,
@@ -419,10 +416,7 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [node]'s
   /// span.
-  /*=T*/ _parseNode/*<T>*/(
-      YamlNode node,
-      String name,
-      /*=T*/ parse(String value)) {
+  T _parseNode<T>(YamlNode node, String name, T parse(String value)) {
     _validate(node, "$name must be a string.", (value) => value is String);
 
     try {
@@ -438,7 +432,7 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [field]'s
   /// span.
-  /*=T*/ _parseValue/*<T>*/(String field, /*=T*/ parse(String value)) {
+  T _parseValue<T>(String field, T parse(String value)) {
     var node = _document.nodes[field];
     if (node == null) return null;
     return _parseNode(node, field, parse);
@@ -467,12 +461,12 @@ class _ConfigurationLoader {
   /// logic into a parent [Configuration], leaving only maps to
   /// [SuiteConfiguration]s. The [create] function is used to construct
   /// [Configuration]s from the resolved maps.
-  Configuration _extractPresets/*<T>*/(Map/*<T, Configuration>*/ map,
-      Configuration create(Map/*<T, SuiteConfiguration>*/ map)) {
+  Configuration _extractPresets<T>(Map<T, Configuration> map,
+      Configuration create(Map<T, SuiteConfiguration> map)) {
     if (map.isEmpty) return Configuration.empty;
 
-    var base = /*<T, SuiteConfiguration>*/ {};
-    var presets = /*<String, Map<T, SuiteConfiguration>>*/ {};
+    var base = <T, SuiteConfiguration>{};
+    var presets = <String, Map<T, SuiteConfiguration>>{};
     map.forEach((key, config) {
       base[key] = config.suiteDefaults;
       config.presets.forEach((preset, presetConfig) {
@@ -484,7 +478,7 @@ class _ConfigurationLoader {
       return base.isEmpty ? Configuration.empty : create(base);
     } else {
       var newPresets =
-          mapMap/*<String, Map<T, SuiteConfiguration>, String, Configuration>*/(
+          mapMap<String, Map<T, SuiteConfiguration>, String, Configuration>(
               presets,
               value: (_, map) => create(map));
       return create(base).change(presets: newPresets);

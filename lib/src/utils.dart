@@ -278,10 +278,9 @@ Future maybeFirst(Stream stream) {
 ///
 /// If the subscription is canceled, any pending operations are canceled as
 /// well.
-Stream/*<T>*/ inCompletionOrder/*<T>*/(
-    Iterable<CancelableOperation/*<T>*/ > operations) {
+Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
   var operationSet = operations.toSet();
-  var controller = new StreamController/*<T>*/(
+  var controller = new StreamController<T>(
       sync: true,
       onCancel: () {
         return Future.wait(operationSet.map((operation) => operation.cancel()));

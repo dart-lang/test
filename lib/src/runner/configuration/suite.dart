@@ -202,15 +202,15 @@ class SuiteConfiguration {
   /// Returns an unmodifiable copy of [input].
   ///
   /// If [input] is `null` or empty, this returns `null`.
-  static List/*<T>*/ _list/*<T>*/(Iterable/*<T>*/ input) {
+  static List<T> _list<T>(Iterable<T> input) {
     if (input == null) return null;
-    var list = new List/*<T>*/ .unmodifiable(input);
+    var list = new List<T>.unmodifiable(input);
     if (list.isEmpty) return null;
     return list;
   }
 
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
-  static Map/*<K, V>*/ _map/*<K, V>*/(Map/*<K, V>*/ input) {
+  static Map<K, V> _map<K, V>(Map<K, V> input) {
     if (input == null || input.isEmpty) return const {};
     return new Map.unmodifiable(input);
   }
