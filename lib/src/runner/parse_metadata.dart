@@ -485,11 +485,10 @@ class _Parser {
   ///
   /// By default, returns [Expression] keys and values. These can be overridden
   /// with the [key] and [value] parameters.
-  Map/*<K, V>*/ _parseMap/*<K, V>*/(Expression expression,
-      {/*=K*/ key(Expression expression),
-      /*=V*/ value(Expression expression)}) {
-    if (key == null) key = (expression) => expression as dynamic/*=K*/;
-    if (value == null) value = (expression) => expression as dynamic/*=V*/;
+  Map<K, V> _parseMap<K, V>(Expression expression,
+      {K key(Expression expression), V value(Expression expression)}) {
+    if (key == null) key = (expression) => expression as K;
+    if (value == null) value = (expression) => expression as V;
 
     if (expression is! MapLiteral) {
       throw new SourceSpanFormatException(

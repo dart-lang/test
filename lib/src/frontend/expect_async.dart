@@ -264,14 +264,13 @@ Function expectAsync(Function callback,
 /// This method takes callbacks with zero arguments. See also
 /// [expectAsync1], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
-Func0<dynamic/*=T*/ > expectAsync0/*<T>*/(dynamic/*=T*/ callback(),
+Func0<T> expectAsync0<T>(T callback(),
     {int count: 1, int max: 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync0() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max0;
 }
 
@@ -296,18 +295,13 @@ Func0<dynamic/*=T*/ > expectAsync0/*<T>*/(dynamic/*=T*/ callback(),
 /// This method takes callbacks with one argument. See also
 /// [expectAsync0], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
-Func1<dynamic/*=T*/, dynamic/*=A*/ > expectAsync1/*<T, A>*/(
-    dynamic/*=T*/ callback(dynamic/*=A*/ a),
-    {int count: 1,
-    int max: 0,
-    String id,
-    String reason}) {
+Func1<T, A> expectAsync1<T, A>(T callback(A a),
+    {int count: 1, int max: 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync1() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max1;
 }
 
@@ -332,18 +326,13 @@ Func1<dynamic/*=T*/, dynamic/*=A*/ > expectAsync1/*<T, A>*/(
 /// This method takes callbacks with two arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
-Func2<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/ > expectAsync2/*<T, A, B>*/(
-    dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b),
-    {int count: 1,
-    int max: 0,
-    String id,
-    String reason}) {
+Func2<T, A, B> expectAsync2<T, A, B>(T callback(A a, B b),
+    {int count: 1, int max: 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync2() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max2;
 }
 
@@ -368,20 +357,13 @@ Func2<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/ > expectAsync2/*<T, A, B>*/(
 /// This method takes callbacks with three arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
-Func3<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/ >
-    expectAsync3/*<T, A, B, C>*/(
-        dynamic/*=T*/ callback(
-            dynamic/*=A*/ a, dynamic/*=B*/ b, dynamic/*=C*/ c),
-        {int count: 1,
-        int max: 0,
-        String id,
-        String reason}) {
+Func3<T, A, B, C> expectAsync3<T, A, B, C>(T callback(A a, B b, C c),
+    {int count: 1, int max: 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync3() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max3;
 }
 
@@ -406,21 +388,13 @@ Func3<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/ >
 /// This method takes callbacks with four arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
-Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
-        dynamic/*=D*/ >
-    expectAsync4/*<T, A, B, C, D>*/(
-        dynamic/*=T*/ callback(
-            dynamic/*=A*/ a, dynamic/*=B*/ b, dynamic/*=C*/ c, dynamic/*=D*/ d),
-        {int count: 1,
-        int max: 0,
-        String id,
-        String reason}) {
+Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(T callback(A a, B b, C c, D d),
+    {int count: 1, int max: 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync4() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max4;
 }
 
@@ -445,21 +419,17 @@ Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
 /// This method takes callbacks with five arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync4], and [expectAsync6] for callbacks with different arity.
-Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
-        dynamic/*=E*/ >
-    expectAsync5/*<T, A, B, C, D, E>*/(
-        dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
-            dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e),
-        {int count: 1,
-        int max: 0,
-        String id,
-        String reason}) {
+Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
+    T callback(A a, B b, C c, D d, E e),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync5() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max5;
 }
 
@@ -484,21 +454,17 @@ Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
 /// This method takes callbacks with six arguments. See also
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync4], and [expectAsync5] for callbacks with different arity.
-Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
-        dynamic/*=E*/, dynamic/*=F*/ >
-    expectAsync6/*<T, A, B, C, D, E, F>*/(
-        dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
-            dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e, dynamic/*=F*/ f),
-        {int count: 1,
-        int max: 0,
-        String id,
-        String reason}) {
+Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
+    T callback(A a, B b, C c, D d, E e, F f),
+    {int count: 1,
+    int max: 0,
+    String id,
+    String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync6() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, count, max,
-          id: id, reason: reason)
+  return new _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
       .max6;
 }
 
@@ -536,15 +502,14 @@ Function expectAsyncUntil(Function callback, bool isDone(),
 /// [expectAsyncUntil1], [expectAsyncUntil2], [expectAsyncUntil3],
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func0<dynamic/*=T*/ > expectAsyncUntil0/*<T>*/(
-    dynamic/*=T*/ callback(), bool isDone(),
+Func0<T> expectAsyncUntil0<T>(T callback(), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil0() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max0;
 }
@@ -566,15 +531,14 @@ Func0<dynamic/*=T*/ > expectAsyncUntil0/*<T>*/(
 /// [expectAsyncUntil0], [expectAsyncUntil2], [expectAsyncUntil3],
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func1<dynamic/*=T*/, dynamic/*=A*/ > expectAsyncUntil1/*<T, A>*/(
-    dynamic/*=T*/ callback(dynamic/*=A*/ a), bool isDone(),
+Func1<T, A> expectAsyncUntil1<T, A>(T callback(A a), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil1() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max1;
 }
@@ -596,16 +560,14 @@ Func1<dynamic/*=T*/, dynamic/*=A*/ > expectAsyncUntil1/*<T, A>*/(
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil3],
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func2<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/ >
-    expectAsyncUntil2/*<T, A, B>*/(
-        dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b), bool isDone(),
-        {String id, String reason}) {
+Func2<T, A, B> expectAsyncUntil2<T, A, B>(T callback(A a, B b), bool isDone(),
+    {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil2() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max2;
 }
@@ -627,19 +589,15 @@ Func2<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/ >
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil2],
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func3<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/ >
-    expectAsyncUntil3/*<T, A, B, C>*/(
-        dynamic/*=T*/ callback(
-            dynamic/*=A*/ a, dynamic/*=B*/ b, dynamic/*=C*/ c),
-        bool isDone(),
-        {String id,
-        String reason}) {
+Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
+    T callback(A a, B b, C c), bool isDone(),
+    {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil3() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max3;
 }
@@ -661,20 +619,15 @@ Func3<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/ >
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil2],
 /// [expectAsyncUntil3], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
-        dynamic/*=D*/ >
-    expectAsyncUntil4/*<T, A, B, C, D>*/(
-        dynamic/*=T*/ callback(
-            dynamic/*=A*/ a, dynamic/*=B*/ b, dynamic/*=C*/ c, dynamic/*=D*/ d),
-        bool isDone(),
-        {String id,
-        String reason}) {
+Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
+    T callback(A a, B b, C c, D d), bool isDone(),
+    {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil4() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max4;
 }
@@ -696,20 +649,15 @@ Func4<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/,
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil2],
 /// [expectAsyncUntil3], [expectAsyncUntil4], and [expectAsyncUntil6] for
 /// callbacks with different arity.
-Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
-        dynamic/*=E*/ >
-    expectAsyncUntil5/*<T, A, B, C, D, E>*/(
-        dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
-            dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e),
-        bool isDone(),
-        {String id,
-        String reason}) {
+Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
+    T callback(A a, B b, C c, D d, E e), bool isDone(),
+    {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil5() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max5;
 }
@@ -731,20 +679,15 @@ Func5<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
 /// [expectAsyncUntil0], [expectAsyncUntil1], [expectAsyncUntil2],
 /// [expectAsyncUntil3], [expectAsyncUntil4], and [expectAsyncUntil5] for
 /// callbacks with different arity.
-Func6<dynamic/*=T*/, dynamic/*=A*/, dynamic/*=B*/, dynamic/*=C*/, dynamic/*=D*/,
-        dynamic/*=E*/, dynamic/*=F*/ >
-    expectAsyncUntil6/*<T, A, B, C, D, E, F>*/(
-        dynamic/*=T*/ callback(dynamic/*=A*/ a, dynamic/*=B*/ b,
-            dynamic/*=C*/ c, dynamic/*=D*/ d, dynamic/*=E*/ e, dynamic/*=F*/ f),
-        bool isDone(),
-        {String id,
-        String reason}) {
+Func6<T, A, B, C, D, E, F> expectAsyncUntil6<T, A, B, C, D, E, F>(
+    T callback(A a, B b, C c, D d, E e, F f), bool isDone(),
+    {String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError(
         "expectAsyncUntil() may only be called within a test.");
   }
 
-  return new _ExpectedFunction/*<T>*/(callback, 0, -1,
+  return new _ExpectedFunction<T>(callback, 0, -1,
           id: id, reason: reason, isDone: isDone)
       .max6;
 }
