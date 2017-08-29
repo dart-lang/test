@@ -14,7 +14,6 @@ import 'package:pool/pool.dart';
 import '../util/io.dart';
 import 'configuration.dart';
 import 'configuration/suite.dart';
-import 'load_exception.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
 final _dart2jsStatus =
