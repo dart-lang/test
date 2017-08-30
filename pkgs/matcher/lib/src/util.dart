@@ -5,7 +5,7 @@
 import 'core_matchers.dart';
 import 'interfaces.dart';
 
-typedef bool _Predicate(value);
+typedef bool _Predicate<T>(T value);
 
 /// A [Map] between whitespace characters and their escape sequences.
 const _escapeMap = const {
@@ -38,8 +38,13 @@ void addStateInfo(Map matchState, Map values) {
 Matcher wrapMatcher(x) {
   if (x is Matcher) {
     return x;
-  } else if (x is _Predicate) {
+  } else if (x is _Predicate<Object>) {
+    // x is already a predicate that can handle anything
     return predicate(x);
+  } else if (x is _Predicate<Null>) {
+    // x is a unary predicate, but expects a specific type
+    // so wrap it.
+    return predicate((a) => (x as dynamic)(a));
   } else {
     return equals(x);
   }
