@@ -44,3 +44,8 @@ dev_dependencies:
   shelf_test_handler: '^1.0.0'
   test_descriptor: '^1.0.0'
   test_process: '^1.0.0'
+
+# TEMP: using this to validate travis
+dependency_overrides:
+  args: 1.0.0
+  async: 2.0.0

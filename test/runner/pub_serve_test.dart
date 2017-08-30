@@ -34,6 +34,11 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
+
+# TEMP: using this to validate travis
+dependency_overrides:
+  args: 1.0.0
+  async: 2.0.0
 """)
         .create();
 
