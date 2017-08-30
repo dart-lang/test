@@ -1,3 +1,11 @@
+## 0.12.1+2
+
+* Fixed small documentation issues.
+
+* Fixed small issue in `StringEqualsMatcher`.
+
+* Update to support future Dart language changes.
+
 ## 0.12.1+1
 
 * Produce a better error message when a `CustomMatcher`'s feature throws.
