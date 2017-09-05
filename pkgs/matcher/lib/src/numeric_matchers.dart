@@ -17,11 +17,13 @@ class _IsCloseTo extends Matcher {
   const _IsCloseTo(this._value, this._delta);
 
   bool matches(item, Map matchState) {
-    if (item is! num) return false;
-
-    var diff = item - _value;
-    if (diff < 0) diff = -diff;
-    return (diff <= _delta);
+    if (item is num) {
+      var diff = item - _value;
+      if (diff < 0) diff = -diff;
+      return (diff <= _delta);
+    } else {
+      return false;
+    }
   }
 
   Description describe(Description description) => description
@@ -32,12 +34,12 @@ class _IsCloseTo extends Matcher {
 
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
-    if (item is! num) {
-      return mismatchDescription.add(' not numeric');
-    } else {
+    if (item is num) {
       var diff = item - _value;
       if (diff < 0) diff = -diff;
       return mismatchDescription.add(' differs by ').addDescriptionOf(diff);
+    } else {
+      return mismatchDescription.add(' not numeric');
     }
   }
 }
@@ -70,19 +72,20 @@ class _InRange extends Matcher {
       this._low, this._high, this._lowMatchValue, this._highMatchValue);
 
   bool matches(value, Map matchState) {
-    if (value is! num) {
+    if (value is num) {
+      if (value < _low || value > _high) {
+        return false;
+      }
+      if (value == _low) {
+        return _lowMatchValue;
+      }
+      if (value == _high) {
+        return _highMatchValue;
+      }
+      return true;
+    } else {
       return false;
     }
-    if (value < _low || value > _high) {
-      return false;
-    }
-    if (value == _low) {
-      return _lowMatchValue;
-    }
-    if (value == _high) {
-      return _highMatchValue;
-    }
-    return true;
   }
 
   Description describe(Description description) =>

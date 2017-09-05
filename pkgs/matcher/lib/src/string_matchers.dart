@@ -118,15 +118,16 @@ class _StringContainsInOrder extends _StringMatcher {
   const _StringContainsInOrder(this._substrings);
 
   bool matches(item, Map matchState) {
-    if (!(item is String)) {
+    if (item is String) {
+      var from_index = 0;
+      for (var s in _substrings) {
+        from_index = item.indexOf(s, from_index);
+        if (from_index < 0) return false;
+      }
+      return true;
+    } else {
       return false;
     }
-    var from_index = 0;
-    for (var s in _substrings) {
-      from_index = item.indexOf(s, from_index);
-      if (from_index < 0) return false;
-    }
-    return true;
   }
 
   Description describe(Description description) => description.addAll(

@@ -155,42 +155,45 @@ class _UnorderedMatches extends Matcher {
       : _expected = expected.map(wrapMatcher).toList();
 
   String _test(item) {
-    if (item is! Iterable) return 'not iterable';
-    item = item.toList();
+    if (item is Iterable) {
+      var list = item.toList();
 
-    // Check the lengths are the same.
-    if (_expected.length > item.length) {
-      return 'has too few elements (${item.length} < ${_expected.length})';
-    } else if (_expected.length < item.length) {
-      return 'has too many elements (${item.length} > ${_expected.length})';
-    }
+      // Check the lengths are the same.
+      if (_expected.length > list.length) {
+        return 'has too few elements (${list.length} < ${_expected.length})';
+      } else if (_expected.length < list.length) {
+        return 'has too many elements (${list.length} > ${_expected.length})';
+      }
 
-    var matched = new List<bool>.filled(item.length, false);
-    var expectedPosition = 0;
-    for (var expectedMatcher in _expected) {
-      var actualPosition = 0;
-      var gotMatch = false;
-      for (var actualElement in item) {
-        if (!matched[actualPosition]) {
-          if (expectedMatcher.matches(actualElement, {})) {
-            matched[actualPosition] = gotMatch = true;
-            break;
+      var matched = new List<bool>.filled(list.length, false);
+      var expectedPosition = 0;
+      for (var expectedMatcher in _expected) {
+        var actualPosition = 0;
+        var gotMatch = false;
+        for (var actualElement in list) {
+          if (!matched[actualPosition]) {
+            if (expectedMatcher.matches(actualElement, {})) {
+              matched[actualPosition] = gotMatch = true;
+              break;
+            }
           }
+          ++actualPosition;
         }
-        ++actualPosition;
-      }
 
-      if (!gotMatch) {
-        return new StringDescription()
-            .add('has no match for ')
-            .addDescriptionOf(expectedMatcher)
-            .add(' at index $expectedPosition')
-            .toString();
-      }
+        if (!gotMatch) {
+          return new StringDescription()
+              .add('has no match for ')
+              .addDescriptionOf(expectedMatcher)
+              .add(' at index $expectedPosition')
+              .toString();
+        }
 
-      ++expectedPosition;
+        ++expectedPosition;
+      }
+      return null;
+    } else {
+      return 'not iterable';
     }
-    return null;
   }
 
   bool matches(item, Map mismatchState) => _test(item) == null;
@@ -210,34 +213,37 @@ class _UnorderedMatches extends Matcher {
 /// The [comparator] function, taking an expected and an actual argument, and
 /// returning whether they match, will be applied to each pair in order.
 /// [description] should be a meaningful name for the comparator.
-Matcher pairwiseCompare(
-        Iterable expected, bool comparator(a, b), String description) =>
+Matcher pairwiseCompare<S, T>(
+        Iterable<S> expected, bool comparator(S a, T b), String description) =>
     new _PairwiseCompare(expected, comparator, description);
 
-typedef bool _Comparator(a, b);
+typedef bool _Comparator<S, T>(S a, T b);
 
-class _PairwiseCompare extends _IterableMatcher {
-  final Iterable _expected;
-  final _Comparator _comparator;
+class _PairwiseCompare<S, T> extends _IterableMatcher {
+  final Iterable<S> _expected;
+  final _Comparator<S, T> _comparator;
   final String _description;
 
   _PairwiseCompare(this._expected, this._comparator, this._description);
 
   bool matches(item, Map matchState) {
-    if (item is! Iterable) return false;
-    if (item.length != _expected.length) return false;
-    var iterator = item.iterator;
-    var i = 0;
-    for (var e in _expected) {
-      iterator.moveNext();
-      if (!_comparator(e, iterator.current)) {
-        addStateInfo(matchState,
-            {'index': i, 'expected': e, 'actual': iterator.current});
-        return false;
+    if (item is Iterable) {
+      if (item.length != _expected.length) return false;
+      var iterator = item.iterator;
+      var i = 0;
+      for (var e in _expected) {
+        iterator.moveNext();
+        if (!_comparator(e, iterator.current)) {
+          addStateInfo(matchState,
+              {'index': i, 'expected': e, 'actual': iterator.current});
+          return false;
+        }
+        i++;
       }
-      i++;
+      return true;
+    } else {
+      return false;
     }
-    return true;
   }
 
   Description describe(Description description) =>
