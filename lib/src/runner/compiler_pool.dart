@@ -111,14 +111,21 @@ class CompilerPool {
         var exitCode = results[0];
 
         _processes.remove(process);
+        print("removed process");
         if (_closed) return;
 
+        print("not closed");
+
         var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
+        print("Getting status");
         if (output.isNotEmpty) print(output);
+        print("print status");
 
         if (exitCode != 0) throw "dart2js failed.";
+        print("not failed");
 
         _fixSourceMap(jsPath + '.map');
+        print("fixed sourcemaps");
       });
     });
   }

@@ -75,8 +75,10 @@ String createTempDir() => new Directory(_tempDir)
 Future withTempDir(Future fn(String path)) {
   return new Future.sync(() {
     var tempDir = createTempDir();
-    return new Future.sync(() => fn(tempDir))
-        .whenComplete(() => new Directory(tempDir).deleteSync(recursive: true));
+    return new Future.sync(() => fn(tempDir)).whenComplete(() {
+      new Directory(tempDir).deleteSync(recursive: true);
+      print("finished delete");
+    });
   });
 }
 
