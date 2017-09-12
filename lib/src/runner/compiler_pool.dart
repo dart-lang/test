@@ -93,11 +93,7 @@ class CompilerPool {
         var buffer = new StringBuffer();
 
         print("About to await for streams");
-        var results = await Future.wait([
-          process.exitCode.then((v) {
-            print("Exit code: $v");
-            return v;
-          }),
+        await Future.wait([
           _printOutputStream(process.stdout, buffer).then((_) {
             print("Stdout finished");
           }),
@@ -108,7 +104,12 @@ class CompilerPool {
 
         print("Finished waiting");
 
-        var exitCode = results[0];
+        var exitCode = process.exitCode.then((v) {
+          print("Exit code: $v");
+          return v;
+        });
+
+        print("finished waiting for exit code");
 
         _processes.remove(process);
         print("removed process");
