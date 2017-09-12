@@ -64,8 +64,6 @@ class CompilerPool {
         var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
 
-        print("In modified code!");
-
         var args = [
           "--checked",
           wrapperPath,

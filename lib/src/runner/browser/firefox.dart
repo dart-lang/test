@@ -45,8 +45,6 @@ class Firefox extends Browser {
         executable, ["--profile", "$dir", url.toString(), "--no-remote"],
         environment: {"MOZ_CRASHREPORTER_DISABLE": "1"});
 
-    await Future.wait([process.stdout.drain(), process.stderr.drain()]);
-
     process.exitCode
         .then((_) => new Directory(dir).deleteSync(recursive: true));
 

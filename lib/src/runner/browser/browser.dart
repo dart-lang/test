@@ -65,6 +65,8 @@ abstract class Browser {
       var process = await startBrowser();
       _processCompleter.complete(process);
 
+      await Future.wait([process.stdout.drain(), process.stderr.drain()]);
+
       var exitCode = await process.exitCode;
 
       // This hack dodges an otherwise intractable race condition. When the user
