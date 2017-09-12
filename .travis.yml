@@ -38,14 +38,7 @@ before_install:
   - ln -s `pwd`/`echo drt-linux-*`/content_shell bin/content_shell
 
 dart_task:
- - test: --platform firefox
-
-matrix:
-  include:
-    - dart: stable
-      dart_task: dartfmt
-    - dart: dev
-      dart_task: dartanalyzer
+ - test: --platform firefox test/frontend/expect_async_test.dart
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
