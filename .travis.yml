@@ -1,9 +1,6 @@
 language: dart
 sudo: required
 
-# We require PhantomJS 2.x, which is only available on Trusty.
-dist: trusty
-
 dart:
  - dev
  - stable
@@ -41,21 +38,7 @@ before_install:
   - ln -s `pwd`/`echo drt-linux-*`/content_shell bin/content_shell
 
 dart_task:
- # Browser tests take particularly long on Dartium, so we split them up into different tasks.
- - test: --platform dartium
-   install_dartium: true
-
- # Split the tests into five shards to help parallelize them across Travis workers.
- - test: --preset travis --total-shards 5 --shard-index 0
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 1
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 2
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 3
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 4
-   install_dartium: true
+ - test: --platform firefox
 
 matrix:
   include:
