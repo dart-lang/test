@@ -104,7 +104,7 @@ class CompilerPool {
 
         print("Finished waiting");
 
-        var exitCode = process.exitCode.then((v) {
+        var exitCode = await process.exitCode.then((v) {
           print("Exit code: $v");
           return v;
         });
