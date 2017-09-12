@@ -92,18 +92,6 @@ class CompilerPool {
         /// they're intended to be printed in order.
         var buffer = new StringBuffer();
 
-        print("About to await for streams");
-        await Future.wait([
-          _printOutputStream(process.stdout, buffer).then((_) {
-            print("Stdout finished");
-          }),
-          _printOutputStream(process.stderr, buffer).then((_) {
-            print("stderr finished");
-          }),
-        ]);
-
-        print("Finished waiting");
-
         var exitCode = await process.exitCode.then((v) {
           print("Exit code: $v");
           return v;
