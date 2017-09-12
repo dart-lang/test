@@ -261,18 +261,24 @@ class BrowserPlatform extends PlatformPlugin {
       }
 
       if (_closed) return null;
+      print("Before url");
       suiteUrl = url.resolveUri(
           p.toUri(p.withoutExtension(p.relative(path, from: _root)) + ".html"));
+      print("after url");
     }
 
     if (_closed) return null;
 
     // TODO(nweiz): Don't start the browser until all the suites are compiled.
+    print("Before manager");
     var browserManager = await _browserManagerFor(browser);
+    print("After manager");
     if (_closed || browserManager == null) return null;
 
+    print("before manager load");
     var suite = await browserManager.load(path, suiteUrl, suiteConfig,
         mapper: browser.isJS ? _mappers[path] : null);
+    print("after manager load");
     if (_closed) return null;
     return suite;
   }
