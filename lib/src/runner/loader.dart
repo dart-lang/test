@@ -163,7 +163,9 @@ class Loader {
 
         try {
           var plugin = await memo.runOnce(_platformCallbacks[platform]);
+          print("Before suite load");
           var suite = await plugin.load(path, platform, platformConfig);
+          print("after suite load");
           if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {
