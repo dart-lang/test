@@ -51,6 +51,12 @@ abstract class Browser {
   Future get onExit => _onExitCompleter.future;
   final _onExitCompleter = new Completer();
 
+  Future _drainAndIgnore(Stream s) async {
+    try {
+      await s.drain();
+    } on StateError catch (_) {}
+  }
+
   /// Creates a new browser.
   ///
   /// This is intended to be called by subclasses. They pass in [startBrowser],
@@ -64,6 +70,10 @@ abstract class Browser {
     runZoned(() async {
       var process = await startBrowser();
       _processCompleter.complete(process);
+
+      // If we don't drain the stdout and stderr the process can hang.
+      await Future.wait(
+          [_drainAndIgnore(process.stdout), _drainAndIgnore(process.stderr)]);
 
       var exitCode = await process.exitCode;
 
