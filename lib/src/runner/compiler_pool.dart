@@ -93,12 +93,23 @@ class CompilerPool {
         var buffer = new StringBuffer();
 
         print("About to await for streams");
-        await Future.wait([
-          _printOutputStream(process.stdout, buffer),
-          _printOutputStream(process.stderr, buffer),
+        var results = await Future.wait([
+          process.exitCode.then((v) {
+            print("Exit code: $v");
+            return v;
+          }),
+          _printOutputStream(process.stdout, buffer).then((_) {
+            print("Stdout finished");
+          }),
+          _printOutputStream(process.stderr, buffer).then((_) {
+            print("stderr finished");
+          }),
         ]);
 
-        var exitCode = await process.exitCode;
+        print("Finished waiting");
+
+        var exitCode = results[0];
+
         _processes.remove(process);
         if (_closed) return;
 
