@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -43,6 +44,14 @@ class Firefox extends Browser {
     var process = await Process.start(
         executable, ["--profile", "$dir", url.toString(), "--no-remote"],
         environment: {"MOZ_CRASHREPORTER_DISABLE": "1"});
+
+    process.stdout
+        .transform(UTF8.decoder)
+        .listen((line) => print("OUT: $line"));
+
+    process.stderr
+        .transform(UTF8.decoder)
+        .listen((line) => print("ERR: $line"));
 
     process.exitCode
         .then((_) => new Directory(dir).deleteSync(recursive: true));
