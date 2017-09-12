@@ -148,7 +148,8 @@ class BrowserPlatform extends PlatformPlugin {
 
     if (path.endsWith(".browser_test.dart")) {
       var testPath = p.basename(p.withoutExtension(p.withoutExtension(path)));
-      return new shelf.Response.ok('''
+      return new shelf.Response.ok(
+          '''
         import "package:stream_channel/stream_channel.dart";
 
         import "package:test/src/runner/plugin/remote_platform_helpers.dart";
@@ -160,7 +161,8 @@ class BrowserPlatform extends PlatformPlugin {
           var channel = serializeSuite(() => test.main, hidePrints: false);
           postMessageChannel().pipe(channel);
         }
-      ''', headers: {'Content-Type': 'application/dart'});
+      ''',
+          headers: {'Content-Type': 'application/dart'});
     }
 
     if (path.endsWith(".html")) {
@@ -174,7 +176,8 @@ class BrowserPlatform extends PlatformPlugin {
           ? 'type="application/dart" src="$scriptBase"'
           : 'src="$scriptBase.js"';
 
-      return new shelf.Response.ok('''
+      return new shelf.Response.ok(
+          '''
         <!DOCTYPE html>
         <html>
         <head>
@@ -182,7 +185,8 @@ class BrowserPlatform extends PlatformPlugin {
           <script $script></script>
         </head>
         </html>
-      ''', headers: {'Content-Type': 'text/html'});
+      ''',
+          headers: {'Content-Type': 'text/html'});
     }
 
     return new shelf.Response.notFound('Not found.');
@@ -271,10 +275,8 @@ class BrowserPlatform extends PlatformPlugin {
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
-    print("Before browser manager load");
     var suite = await browserManager.load(path, suiteUrl, suiteConfig,
         mapper: browser.isJS ? _mappers[path] : null);
-    print("After browser manager load");
     if (_closed) return null;
     return suite;
   }
@@ -366,7 +368,8 @@ class BrowserPlatform extends PlatformPlugin {
       var dir = new Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
 
-      await _compilers.compile('''
+      await _compilers.compile(
+          '''
         import "package:test/src/bootstrap/browser.dart";
 
         import "${p.toUri(p.absolute(dartPath))}" as test;
@@ -374,7 +377,9 @@ class BrowserPlatform extends PlatformPlugin {
         void main() {
           internalBootstrapBrowserTest(() => test.main);
         }
-      ''', jsPath, suiteConfig);
+      ''',
+          jsPath,
+          suiteConfig);
       if (_closed) return;
 
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +

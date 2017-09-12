@@ -236,15 +236,9 @@ class BrowserManager {
       });
 
       try {
-        print("Before environment");
-        var environment = await _environment;
-        print("after environment");
-
-        print("Before deserialize");
         controller = await deserializeSuite(
-            path, _platform, suiteConfig, environment, suiteChannel,
+            path, _platform, suiteConfig, await _environment, suiteChannel,
             mapper: mapper);
-        print("after deserialize");
         _controllers.add(controller);
         return controller.suite;
       } catch (_) {
