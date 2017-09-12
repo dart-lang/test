@@ -64,6 +64,8 @@ class CompilerPool {
         var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
 
+        print("In modified code!");
+
         var args = [
           "--checked",
           wrapperPath,
@@ -89,11 +91,6 @@ class CompilerPool {
         /// output. Write both stdout and stderr to the same buffer in case
         /// they're intended to be printed in order.
         var buffer = new StringBuffer();
-
-        await Future.wait([
-          _printOutputStream(process.stdout, buffer),
-          _printOutputStream(process.stderr, buffer),
-        ]);
 
         var exitCode = await process.exitCode;
         _processes.remove(process);
