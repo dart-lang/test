@@ -1,3 +1,8 @@
+## 0.12.24+4
+
+* Drain browser process `stdout` and `stdin`. This resolves test flakiness, especially in Travis
+  with the `Precise` image.
+
 ## 0.12.24+3
 
 * Extend `deserializeTimeout`.
