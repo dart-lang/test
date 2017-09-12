@@ -96,6 +96,7 @@ class CompilerPool {
         ]);
 
         var exitCode = await process.exitCode;
+
         _processes.remove(process);
         if (_closed) return;
 
