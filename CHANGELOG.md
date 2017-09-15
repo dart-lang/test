@@ -1,3 +1,7 @@
+## 0.12.24+5
+
+* Expose a way for tests to forward a `loadException` to the server.
+
 ## 0.12.24+4
 
 * Drain browser process `stdout` and `stdin`. This resolves test flakiness, especially in Travis
