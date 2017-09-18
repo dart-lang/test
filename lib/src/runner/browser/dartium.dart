@@ -116,7 +116,7 @@ class Dartium extends Browser {
       };
 
       if (!debug) return tryPort();
-      return getUnusedPort/*<Future<Process>>*/(tryPort);
+      return getUnusedPort<Future<Process>>(tryPort);
     }, observatoryCompleter.future, remoteDebuggerCompleter.future);
   }
 

@@ -1,4 +1,13 @@
-## 0.12.24-dev
+## 0.12.24+5
+
+* Expose a way for tests to forward a `loadException` to the server.
+
+## 0.12.24+4
+
+* Drain browser process `stdout` and `stdin`. This resolves test flakiness, especially in Travis
+  with the `Precise` image.
+
+## 0.12.24+3
 
 * Extend `deserializeTimeout`.
 

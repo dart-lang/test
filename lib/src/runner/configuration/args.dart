@@ -166,7 +166,7 @@ class _Parser {
   /// Returns the parsed configuration.
   Configuration parse() {
     var patterns = (_options['name'] as List<String>)
-        .map/*<Pattern>*/(
+        .map<Pattern>(
             (value) => _wrapFormatException('name', () => new RegExp(value)))
         .toList()
           ..addAll(_options['plain-name'] as List<String>);
@@ -239,7 +239,7 @@ class _Parser {
 
   /// Runs [parse] on the value of the option [name], and wraps any
   /// [FormatException] it throws with additional information.
-  /*=T*/ _parseOption/*<T>*/(String name, /*=T*/ parse(String value)) {
+  T _parseOption<T>(String name, T parse(String value)) {
     if (!_options.wasParsed(name)) return null;
 
     var value = _options[name];
@@ -250,7 +250,7 @@ class _Parser {
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.
-  /*=T*/ _wrapFormatException/*<T>*/(String name, /*=T*/ parse()) {
+  T _wrapFormatException<T>(String name, T parse()) {
     try {
       return parse();
     } on FormatException catch (error) {
