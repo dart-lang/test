@@ -8,7 +8,7 @@ environment:
 dependencies:
   analyzer: '>=0.26.4 <0.32.0'
   args: '>=0.13.1 <2.0.0'
-  async: '^1.13.0'
+  async: '>=1.13.0 <0.3.0'
   barback: '>=0.14.0 <0.16.0'
   boolean_selector: '^1.0.0'
   collection: '^1.8.0'
@@ -27,7 +27,7 @@ dependencies:
   shelf_web_socket: '^0.2.0'
   source_map_stack_trace: '^1.1.4'
   source_maps: '^0.10.2'
-  source_span: '^1.0.0'
+  source_span: '^1.4.0'
   stack_trace: '^1.2.1'
   stream_channel: '^1.6.0'
   string_scanner: '>=0.1.1 <2.0.0'
@@ -44,3 +44,8 @@ dev_dependencies:
   shelf_test_handler: '^1.0.0'
   test_descriptor: '^1.0.0'
   test_process: '^1.0.0'
+
+# TEMP: using this to validate travis
+dependency_overrides:
+  args: 1.0.0
+  async: 2.0.0
