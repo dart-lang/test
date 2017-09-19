@@ -4,7 +4,6 @@
 
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../utils.dart';
 import '../remote_listener.dart';
 
 /// Returns a channel that will emit a serialized representation of the tests
