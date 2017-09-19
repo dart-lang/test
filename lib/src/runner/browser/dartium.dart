@@ -92,12 +92,12 @@ class Dartium extends Browser {
             if (logs.current.contains("bind() returned an error")) {
               // If we failed to bind to the port, return null to tell
               // getUnusedPort to try another one.
-              logs.cancel();
+              await logs.cancel();
               process.kill();
               return null;
             }
           }
-          logs.cancel();
+          await logs.cancel();
         } else {
           observatoryCompleter.complete(null);
         }

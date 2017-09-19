@@ -65,7 +65,7 @@ void main() {
   });
 
   test("respects top-level @Retry declarations", () async {
-    d
+    await d
         .file(
             "test.dart",
             """
