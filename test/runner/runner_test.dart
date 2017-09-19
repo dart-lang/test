@@ -118,9 +118,7 @@ Usage: pub run test [files or directories...]
 void main() {
   test("prints help information", () async {
     var test = await runTest(["--help"]);
-    expectStdoutEquals(
-        test,
-        """
+    expectStdoutEquals(test, """
 Runs tests in this package.
 
 $_usage""");
@@ -130,9 +128,7 @@ $_usage""");
   group("fails gracefully if", () {
     test("an invalid option is passed", () async {
       var test = await runTest(["--asdf"]);
-      expectStderrEquals(
-          test,
-          """
+      expectStderrEquals(test, """
 Could not find an option named "asdf".
 
 $_usage""");
@@ -152,9 +148,7 @@ $_usage""");
 
     test("the default directory doesn't exist", () async {
       var test = await runTest([]);
-      expectStderrEquals(
-          test,
-          """
+      expectStderrEquals(test, """
 No test files were passed and the default "test/" directory doesn't exist.
 
 $_usage""");
@@ -443,10 +437,7 @@ $_usage""");
 
   group("with a top-level @Skip declaration", () {
     setUp(() async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
         @Skip()
 
         import 'dart:async';
@@ -456,8 +447,7 @@ $_usage""");
         void main() {
           test("success", () {});
         }
-      ''')
-          .create();
+      ''').create();
     });
 
     test("skips all tests", () async {
@@ -475,10 +465,7 @@ $_usage""");
 
   group("with onPlatform", () {
     test("respects matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -486,8 +473,7 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no', onPlatform: {"vm": new Skip()});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
@@ -495,10 +481,7 @@ void main() {
     });
 
     test("ignores non-matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -506,8 +489,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {}, onPlatform: {"chrome": new Skip()});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -515,10 +497,7 @@ void main() {
     });
 
     test("respects matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -531,8 +510,7 @@ void main() {
     "vm": new Timeout(Duration.ZERO)
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -543,10 +521,7 @@ void main() {
     });
 
     test("ignores non-matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -556,8 +531,7 @@ void main() {
     "chrome": new Timeout(new Duration(seconds: 0))
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -565,10 +539,7 @@ void main() {
     });
 
     test("applies matching platforms in order", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -582,8 +553,7 @@ void main() {
     "vm || android": new Skip("fifth")
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdoutStream(), neverEmits(contains("Skip: first")));
@@ -595,10 +565,7 @@ void main() {
     });
 
     test("applies platforms to a group", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -610,8 +577,7 @@ void main() {
     "vm": new Skip()
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("All tests skipped.")));
@@ -621,10 +587,7 @@ void main() {
 
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {"vm": const Skip()})
 
 import 'dart:async';
@@ -634,8 +597,7 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no');
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
@@ -643,10 +605,7 @@ void main() {
     });
 
     test("ignores non-matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {"chrome": const Skip()})
 
 import 'dart:async';
@@ -656,8 +615,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -665,10 +623,7 @@ void main() {
     });
 
     test("respects matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {
   "vm": const Timeout(const Duration(seconds: 0))
 })
@@ -683,8 +638,7 @@ void main() {
     throw 'oh no';
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -695,10 +649,7 @@ void main() {
     });
 
     test("ignores non-matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {
   "chrome": const Timeout(const Duration(seconds: 0))
 })
@@ -710,8 +661,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));

@@ -132,15 +132,11 @@ void main() {
   });
 
   test("a print in a loaded file is piped through the LoadSuite", () async {
-    await d
-        .file(
-            'a_test.dart',
-            """
+    await d.file('a_test.dart', """
       void main() {
         print('print within test');
       }
-    """)
-        .create();
+    """).create();
     var suites = await _loader
         .loadFile(p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
         .toList();

@@ -52,8 +52,7 @@ class VMPlatform extends PlatformPlugin {
   /// serialized tests over that channel.
   Future<Isolate> _spawnIsolate(String path, SendPort message) async {
     if (_config.pubServeUrl == null) {
-      return await dart.runInIsolate(
-          '''
+      return await dart.runInIsolate('''
         import "dart:isolate";
 
         import "package:stream_channel/stream_channel.dart";
@@ -70,9 +69,7 @@ class VMPlatform extends PlatformPlugin {
           });
           new IsolateChannel.connectSend(message).pipe(channel);
         }
-      ''',
-          message,
-          checked: true);
+      ''', message, checked: true);
     }
 
     var url = _config.pubServeUrl

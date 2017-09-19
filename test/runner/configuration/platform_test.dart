@@ -26,10 +26,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -37,8 +34,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "content-shell,vm", "test.dart"]);
       expect(
@@ -61,10 +57,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -72,8 +65,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "content-shell,vm", "test.dart"]);
       expect(
@@ -195,29 +187,21 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "foo_test.dart",
-              """
+      await d.file("foo_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("foo_test", () {});
         }
-      """)
-          .create();
+      """).create();
 
-      await d
-          .file(
-              "test_foo.dart",
-              """
+      await d.file("test_foo.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test_foo", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["."]);
       expect(
@@ -239,29 +223,21 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "foo_test.dart",
-              """
+      await d.file("foo_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("foo_test", () {});
         }
-      """)
-          .create();
+      """).create();
 
-      await d
-          .file(
-              "test_foo.dart",
-              """
+      await d.file("test_foo.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test_foo", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["."]);
       expect(

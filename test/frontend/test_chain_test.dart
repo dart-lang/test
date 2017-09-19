@@ -13,10 +13,7 @@ import '../io.dart';
 
 void main() {
   setUp(() async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
             import 'dart:async';
 
             import 'package:test/test.dart';
@@ -28,8 +25,7 @@ void main() {
                 throw "oh no";
               });
             }
-            """)
-        .create();
+            """).create();
   });
   test("folds packages contained in the except list", () async {
     await d

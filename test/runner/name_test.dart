@@ -14,10 +14,7 @@ import '../io.dart';
 void main() {
   group("with the --name flag,", () {
     test("selects tests with matching names", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -25,8 +22,7 @@ void main() {
           test("nope", () => throw new TestFailure("oh no"));
           test("selected 2", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["--name", "selected", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
@@ -34,10 +30,7 @@ void main() {
     });
 
     test("supports RegExp syntax", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -45,8 +38,7 @@ void main() {
           test("test 2", () => throw new TestFailure("oh no"));
           test("test 3", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["--name", "test [13]", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
@@ -54,10 +46,7 @@ void main() {
     });
 
     test("selects more narrowly when passed multiple times", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -65,8 +54,7 @@ void main() {
           test("nope", () => throw new TestFailure("oh no"));
           test("selected 2", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test =
           await runTest(["--name", "selected", "--name", "1", "test.dart"]);
@@ -75,17 +63,13 @@ void main() {
     });
 
     test("produces an error when no tests match", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["--name", "no match", "test.dart"]);
       expect(
@@ -109,10 +93,7 @@ void main() {
 
   group("with the --plain-name flag,", () {
     test("selects tests with matching names", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -120,8 +101,7 @@ void main() {
           test("nope", () => throw new TestFailure("oh no"));
           test("selected 2", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["--plain-name", "selected", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
@@ -129,10 +109,7 @@ void main() {
     });
 
     test("doesn't support RegExp syntax", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -140,8 +117,7 @@ void main() {
           test("test 2", () => throw new TestFailure("oh no"));
           test("test [12]", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["--plain-name", "test [12]", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -149,10 +125,7 @@ void main() {
     });
 
     test("selects more narrowly when passed multiple times", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -160,8 +133,7 @@ void main() {
           test("nope", () => throw new TestFailure("oh no"));
           test("selected 2", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(
           ["--plain-name", "selected", "--plain-name", "1", "test.dart"]);
@@ -170,17 +142,13 @@ void main() {
     });
 
     test("produces an error when no tests match", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["--plain-name", "no match", "test.dart"]);
       expect(test.stderr, emitsThrough(contains('No tests match "no match".')));
@@ -189,10 +157,7 @@ void main() {
   });
 
   test("--name and --plain-name together narrow the selection", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -200,8 +165,7 @@ void main() {
         test("nope", () => throw new TestFailure("oh no"));
         test("selected 2", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test =
         await runTest(["--name", ".....", "--plain-name", "e", "test.dart"]);

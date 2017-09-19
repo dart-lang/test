@@ -16,10 +16,7 @@ import '../io.dart';
 void main() {
   test("pauses the test runner for each file until the user presses enter",
       () async {
-    await d
-        .file(
-            "test1.dart",
-            """
+    await d.file("test1.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -27,13 +24,9 @@ void main() {
 
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
-    await d
-        .file(
-            "test2.dart",
-            """
+    await d.file("test2.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -41,8 +34,7 @@ void main() {
 
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(
         ["--pause-after-load", "-p", "dartium", "test1.dart", "test2.dart"]);
@@ -98,10 +90,7 @@ void main() {
 
   test("pauses the test runner for each platform until the user presses enter",
       () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -109,8 +98,7 @@ void main() {
 
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(
         ["--pause-after-load", "-p", "dartium", "-p", "chrome", "test.dart"]);
@@ -165,17 +153,13 @@ void main() {
 
   test("prints a warning and doesn't pause for unsupported platforms",
       () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(["--pause-after-load", "-p", "vm", "test.dart"]);
     await expectLater(test.stderr,
@@ -186,10 +170,7 @@ void main() {
   });
 
   test("can mix supported and unsupported platforms", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -197,8 +178,7 @@ void main() {
 
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(
         ["--pause-after-load", "-p", "dartium", "-p", "vm", "test.dart"]);
@@ -236,10 +216,7 @@ void main() {
   }, tags: 'dartium');
 
   test("stops immediately if killed while paused", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -247,8 +224,7 @@ void main() {
 
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test =
         await runTest(["--pause-after-load", "-p", "dartium", "test.dart"]);
@@ -268,10 +244,7 @@ void main() {
   }, tags: 'dartium', testOn: "!windows");
 
   test("disables timeouts", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -283,8 +256,7 @@ void main() {
     await new Future.delayed(Duration.ZERO);
   }, timeout: new Timeout(Duration.ZERO));
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(
         ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
@@ -317,10 +289,7 @@ void main() {
 
   // Regression test for #304.
   test("supports test name patterns", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -330,8 +299,7 @@ void main() {
   test("success", () {});
   test("failure 2", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(
         ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);

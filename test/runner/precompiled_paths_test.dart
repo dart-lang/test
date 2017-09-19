@@ -18,10 +18,7 @@ import '../io.dart';
 void main() {
   test("runs a precompiled version of a test rather than recompiling",
       () async {
-    await d
-        .file(
-            "to_precompile.dart",
-            """
+    await d.file("to_precompile.dart", """
       import "package:stream_channel/stream_channel.dart";
 
       import "package:test/src/runner/plugin/remote_platform_helpers.dart";
@@ -34,13 +31,10 @@ void main() {
         }, hidePrints: false);
         postMessageChannel().pipe(channel);
       }
-    """)
-        .create();
+    """).create();
 
     await d.dir("precompiled", [
-      d.file(
-          "test.html",
-          """
+      d.file("test.html", """
         <!DOCTYPE html>
         <html>
         <head>

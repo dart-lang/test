@@ -24,10 +24,7 @@ void main() {
   group("spawnHybridUri():", () {
     test("loads a file in a separate isolate connected via StreamChannel",
         () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:test/test.dart";
 
         void main() {
@@ -36,20 +33,15 @@ void main() {
                 completion(equals([1, 2, 3])));
           });
         }
-      """)
-          .create();
+      """).create();
 
-      await d
-          .file(
-              "hybrid.dart",
-              """
+      await d.file("hybrid.dart", """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -61,9 +53,7 @@ void main() {
 
     test("resolves URIs relative to the test file", () async {
       await d.dir("test/dir/subdir", [
-        d.file(
-            "test.dart",
-            """
+        d.file("test.dart", """
           import "package:test/test.dart";
 
           void main() {
@@ -73,9 +63,7 @@ void main() {
             });
           }
         """),
-        d.file(
-            "hybrid.dart",
-            """
+        d.file("hybrid.dart", """
           import "package:stream_channel/stream_channel.dart";
 
           void hybridMain(StreamChannel channel) {
@@ -94,10 +82,7 @@ void main() {
 
     test("supports absolute file: URIs", () async {
       var url = p.toUri(p.absolute(p.join(d.sandbox, 'hybrid.dart')));
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:test/test.dart";
 
         void main() {
@@ -106,20 +91,15 @@ void main() {
                 completion(equals([1, 2, 3])));
           });
         }
-      """)
-          .create();
+      """).create();
 
-      await d
-          .file(
-              "hybrid.dart",
-              """
+      await d.file("hybrid.dart", """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -130,10 +110,7 @@ void main() {
     });
 
     test("supports Uri objects", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:test/test.dart";
 
         void main() {
@@ -142,20 +119,15 @@ void main() {
                 completion(equals([1, 2, 3])));
           });
         }
-      """)
-          .create();
+      """).create();
 
-      await d
-          .file(
-              "hybrid.dart",
-              """
+      await d.file("hybrid.dart", """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -170,10 +142,7 @@ void main() {
     });
 
     test("passes a message to the hybrid isolate", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:test/test.dart";
 
         void main() {
@@ -189,20 +158,15 @@ void main() {
                 completion(equals("wow")));
           });
         }
-      """)
-          .create();
+      """).create();
 
-      await d
-          .file(
-              "hybrid.dart",
-              """
+      await d.file("hybrid.dart", """
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel, Object message) {
           channel.sink..add(message)..close();
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -233,10 +197,7 @@ void main() {
 
     test("can use dart:io even when run from a browser", () async {
       var path = p.join(d.sandbox, "test.dart");
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:test/test.dart";
 
         void main() {
@@ -254,8 +215,7 @@ void main() {
             ''').stream.first, completion(contains("hybrid emits numbers")));
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -371,10 +331,7 @@ void main() {
 
     test("gracefully handles an unserializable message in the browser",
         () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:test/test.dart";
 
         void main() {
@@ -388,8 +345,7 @@ void main() {
             expect(() => channel.sink.add([].iterator), throwsArgumentError);
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -505,10 +461,7 @@ void main() {
     });
 
     test("closes the channel when the test finishes by default", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "package:stream_channel/stream_channel.dart";
         import "package:test/test.dart";
 
@@ -531,8 +484,7 @@ void main() {
             expect(isDone, isTrue);
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -543,10 +495,7 @@ void main() {
     });
 
     test("persists across multiple tests with stayAlive: true", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import "dart:async";
 
         import "package:async/async.dart";
@@ -581,8 +530,7 @@ void main() {
             sink.add("wow");
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(

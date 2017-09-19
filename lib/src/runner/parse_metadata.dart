@@ -548,7 +548,7 @@ class _Parser {
     // Load a SourceFile from scratch here since we're only ever going to emit
     // one error per file anyway.
     var contents = new File(_path).readAsStringSync();
-    return new SourceFile.fromString (contents, url: p.toUri(_path))
+    return new SourceFile.fromString(contents, url: p.toUri(_path))
         .span(node.offset, node.end);
   }
 

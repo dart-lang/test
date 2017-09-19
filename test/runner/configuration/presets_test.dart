@@ -26,10 +26,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -37,8 +34,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       await (await runTest(["test.dart"])).shouldExit(0);
     });
@@ -54,10 +50,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -65,8 +58,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-P", "foo", "test.dart"]);
       expect(test.stdout,
@@ -88,10 +80,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -99,8 +88,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-P", "foo,bar"]);
       expect(test.stdout,
@@ -120,10 +108,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -131,8 +116,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       await (await runTest(["-P", "foo,bar", "test.dart"])).shouldExit(0);
 
@@ -154,10 +138,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -165,8 +146,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-P", "foo", "test.dart"]);
       expect(test.stdout,
@@ -202,10 +182,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -214,8 +191,7 @@ void main() {
           test("test 1", () => new Future.delayed(Duration.ZERO), tags: "foo");
           test("test 2", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-P", "bar", "test.dart"]);
       expect(test.stdout,
@@ -250,10 +226,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -261,8 +234,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout,
@@ -283,10 +255,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -294,8 +263,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       await (await runTest(["test.dart"])).shouldExit(0);
 
@@ -331,10 +299,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -342,8 +307,7 @@ void main() {
         void main() {
           test("test", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-P", "foo", "test.dart"]);
       expect(test.stdout,
@@ -367,10 +331,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -378,8 +339,7 @@ void main() {
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       await (await runTest(["-P", "foo", "test.dart"])).shouldExit(0);
     });

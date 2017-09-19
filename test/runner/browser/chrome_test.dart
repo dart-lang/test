@@ -51,17 +51,13 @@ webSocket.addEventListener("open", function() {
   });
 
   test("can run successful tests", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(["-p", "chrome", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -69,17 +65,13 @@ void main() {
   });
 
   test("can run failing tests", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(["-p", "chrome", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));

@@ -12,10 +12,7 @@ import '../io.dart';
 
 void main() {
   setUp(() async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -24,8 +21,7 @@ void main() {
         test("b", () {}, tags: "b");
         test("bc", () {}, tags: ["b", "c"]);
       }
-    """)
-        .create();
+    """).create();
   });
 
   group("--tags", () {
@@ -130,10 +126,7 @@ void main() {
 
   group("with a tagged group", () {
     setUp(() async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -143,8 +136,7 @@ void main() {
 
           test("out", () {});
         }
-      """)
-          .create();
+      """).create();
     });
 
     test("includes tags specified on the group", () async {
@@ -163,18 +155,14 @@ void main() {
   });
 
   test('respects top-level @Tags annotations', () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       @Tags(const ['a'])
       import 'package:test/test.dart';
 
       void main() {
         test("foo", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["-x", "a", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("No tests ran")));
@@ -183,17 +171,13 @@ void main() {
 
   group("warning formatting", () {
     test("for multiple tags", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: ["a", "b"]);
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -206,18 +190,14 @@ void main() {
     });
 
     test("for multiple tests", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: "a");
           test("bar", () {}, tags: "a");
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -231,10 +211,7 @@ void main() {
     });
 
     test("for groups", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -243,8 +220,7 @@ void main() {
             test("bar", () {});
           }, tags: "a");
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -256,10 +232,7 @@ void main() {
     });
 
     test("for suites", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         @Tags(const ["a"])
         import 'package:test/test.dart';
 
@@ -267,8 +240,7 @@ void main() {
           test("foo", () {});
           test("bar", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -280,17 +252,13 @@ void main() {
     });
 
     test("doesn't double-print a tag warning", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: "a");
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "vm,content-shell", "test.dart"]);
       expect(
@@ -305,17 +273,13 @@ void main() {
 
   group("invalid tags", () {
     test("are disallowed by test()", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("foo", () {}, tags: "a b");
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -327,10 +291,7 @@ void main() {
     });
 
     test("are disallowed by group()", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -338,8 +299,7 @@ void main() {
             test("foo", () {});
           }, tags: "a b");
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -351,10 +311,7 @@ void main() {
     });
 
     test("are disallowed by @Tags()", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         @Tags(const ["a b"])
 
         import 'package:test/test.dart';
@@ -362,8 +319,7 @@ void main() {
         void main() {
           test("foo", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(

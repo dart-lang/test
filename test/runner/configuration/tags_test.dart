@@ -23,17 +23,13 @@ void main() {
             }))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["--exclude-tag", "foo", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("No tests ran.")));
@@ -58,17 +54,13 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, neverEmits(contains("Warning: Tags were used")));
@@ -86,10 +78,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -98,8 +87,7 @@ void main() {
           test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
           test("test 2", () => new Future.delayed(Duration.ZERO));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout,
@@ -118,10 +106,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -132,8 +117,7 @@ void main() {
           test("test 3", () => new Future.delayed(Duration.ZERO),
               tags: ['foo', 'bar']);
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout,
@@ -155,18 +139,14 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test 1", () {}, tags: ['bar']);
           test("test 2", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart", "--tags", "foo"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -185,10 +165,7 @@ void main() {
               }))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -196,8 +173,7 @@ void main() {
         void main() {
           test("test 1", () => throw 'bad', tags: ['foo']);
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -212,10 +188,7 @@ void main() {
           .file("dart_test.yaml", JSON.encode({"include_tags": "foo && bar"}))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -223,8 +196,7 @@ void main() {
           test("zap", () {}, tags: "bar");
           test("zop", () {}, tags: ["foo", "bar"]);
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -237,10 +209,7 @@ void main() {
           .file("dart_test.yaml", JSON.encode({"exclude_tags": "foo && bar"}))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -248,8 +217,7 @@ void main() {
           test("zap", () {}, tags: "bar");
           test("zop", () {}, tags: ["foo", "bar"]);
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout,

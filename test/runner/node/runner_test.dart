@@ -116,10 +116,7 @@ void main() {
   });
 
   test("defines a node environment constant", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -127,8 +124,7 @@ void main() {
             expect(const bool.fromEnvironment("node"), isTrue);
           });
         }
-      """)
-        .create();
+      """).create();
 
     var test = await runTest(["-p", "node", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -136,10 +132,7 @@ void main() {
   });
 
   test("runs failing tests that fail only on node", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
         import 'package:path/path.dart' as p;
         import 'package:test/test.dart';
 
@@ -150,8 +143,7 @@ void main() {
             }
           });
         }
-      """)
-        .create();
+      """).create();
 
     var test = await runTest(["-p", "node", "-p", "vm", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("+1 -1: Some tests failed.")));
@@ -159,10 +151,7 @@ void main() {
   });
 
   test("forwards prints from the Node test", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -173,8 +162,7 @@ void main() {
           return new Future(() => print("world!"));
         });
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["-p", "node", "test.dart"]);
     expect(test.stdout, emitsInOrder([emitsThrough("Hello,"), "world!"]));
@@ -207,10 +195,7 @@ void main() {
 
   group("with onPlatform", () {
     test("respects matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -218,8 +203,7 @@ void main() {
         void main() {
           test("fail", () => throw 'oh no', onPlatform: {"node": new Skip()});
         }
-      ''')
-          .create();
+      ''').create();
 
       var test = await runTest(["-p", "node", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
@@ -227,10 +211,7 @@ void main() {
     });
 
     test("ignores non-matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -238,8 +219,7 @@ void main() {
         void main() {
           test("success", () {}, onPlatform: {"browser": new Skip()});
         }
-      ''')
-          .create();
+      ''').create();
 
       var test = await runTest(["-p", "node", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -249,10 +229,7 @@ void main() {
 
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
         @OnPlatform(const {"js": const Skip()})
 
         import 'dart:async';
@@ -262,8 +239,7 @@ void main() {
         void main() {
           test("fail", () => throw 'oh no');
         }
-      ''')
-          .create();
+      ''').create();
 
       var test = await runTest(["-p", "node", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("~1: All tests skipped.")));
@@ -271,10 +247,7 @@ void main() {
     });
 
     test("ignores non-matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
         @OnPlatform(const {"vm": const Skip()})
 
         import 'dart:async';
@@ -284,8 +257,7 @@ void main() {
         void main() {
           test("success", () {});
         }
-      ''')
-          .create();
+      ''').create();
 
       var test = await runTest(["-p", "node", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));

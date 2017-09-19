@@ -40,28 +40,24 @@ class CodeServer {
   /// HTML page with a script tag that will run [dart].
   void handleDart(String dart) {
     _handler.expect("GET", "/", (_) {
-      return new shelf.Response.ok(
-          """
+      return new shelf.Response.ok("""
 <!doctype html>
 <html>
 <head>
   <script type="application/dart" src="index.dart"></script>
 </head>
 </html>
-""",
-          headers: {'content-type': 'text/html'});
+""", headers: {'content-type': 'text/html'});
     });
 
     _handler.expect("GET", "/index.dart", (_) {
-      return new shelf.Response.ok(
-          '''
+      return new shelf.Response.ok('''
 import "dart:html";
 
 main() async {
   $dart
 }
-''',
-          headers: {'content-type': 'application/dart'});
+''', headers: {'content-type': 'application/dart'});
     });
   }
 
@@ -69,16 +65,14 @@ main() async {
   /// HTML page with a script tag that will run [javaScript].
   void handleJavaScript(String javaScript) {
     _handler.expect("GET", "/", (_) {
-      return new shelf.Response.ok(
-          """
+      return new shelf.Response.ok("""
 <!doctype html>
 <html>
 <head>
   <script src="index.js"></script>
 </head>
 </html>
-""",
-          headers: {'content-type': 'text/html'});
+""", headers: {'content-type': 'text/html'});
     });
 
     _handler.expect("GET", "/index.js", (_) {

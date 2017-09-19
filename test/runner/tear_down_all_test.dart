@@ -12,10 +12,7 @@ import '../io.dart';
 
 void main() {
   test("an error causes the run to fail", () async {
-    await d
-        .file(
-            "test.dart",
-            r"""
+    await d.file("test.dart", r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -23,8 +20,7 @@ void main() {
 
           test("test", () {});
         }
-        """)
-        .create();
+        """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains("-1: (tearDownAll) [E]")));
@@ -33,10 +29,7 @@ void main() {
   });
 
   test("doesn't run if no tests in the group are selected", () async {
-    await d
-        .file(
-            "test.dart",
-            r"""
+    await d.file("test.dart", r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -50,8 +43,7 @@ void main() {
             test("test", () {});
           });
         }
-        """)
-        .create();
+        """).create();
 
     var test = await runTest(["test.dart", "--name", "without"]);
     expect(test.stdout, neverEmits(contains("(tearDownAll)")));
@@ -59,10 +51,7 @@ void main() {
   });
 
   test("doesn't run if no tests in the group are selected", () async {
-    await d
-        .file(
-            "test.dart",
-            r"""
+    await d.file("test.dart", r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -76,8 +65,7 @@ void main() {
             test("without", () {});
           });
         }
-        """)
-        .create();
+        """).create();
 
     var test = await runTest(["test.dart", "--name", "without"]);
     expect(test.stdout, neverEmits(contains("(tearDownAll)")));
@@ -85,10 +73,7 @@ void main() {
   });
 
   test("doesn't run if no tests in the group match the platform", () async {
-    await d
-        .file(
-            "test.dart",
-            r"""
+    await d.file("test.dart", r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -102,8 +87,7 @@ void main() {
             test("without", () {});
           });
         }
-        """)
-        .create();
+        """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, neverEmits(contains("(tearDownAll)")));
@@ -111,10 +95,7 @@ void main() {
   });
 
   test("doesn't run if the group doesn't match the platform", () async {
-    await d
-        .file(
-            "test.dart",
-            r"""
+    await d.file("test.dart", r"""
         import 'package:test/test.dart';
 
         void main() {
@@ -128,8 +109,7 @@ void main() {
             test("without", () {});
           });
         }
-        """)
-        .create();
+        """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, neverEmits(contains("(tearDownAll)")));

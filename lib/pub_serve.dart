@@ -28,9 +28,8 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
   Future apply(Transform transform) async {
     var id = transform.primaryInput.id;
 
-    transform.addOutput(new Asset.fromString(
-        id.addExtension('.vm_test.dart'),
-        '''
+    transform
+        .addOutput(new Asset.fromString(id.addExtension('.vm_test.dart'), '''
           import "dart:isolate";
 
           import "package:test/src/bootstrap/vm.dart";
@@ -42,9 +41,8 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
           }
         '''));
 
-    transform.addOutput(new Asset.fromString(
-        id.addExtension('.browser_test.dart'),
-        '''
+    transform.addOutput(
+        new Asset.fromString(id.addExtension('.browser_test.dart'), '''
           import "package:test/src/bootstrap/browser.dart";
 
           import "${p.url.basename(id.path)}" as test;
@@ -54,9 +52,8 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
           }
         '''));
 
-    transform.addOutput(new Asset.fromString(
-        id.addExtension('.node_test.dart'),
-        '''
+    transform
+        .addOutput(new Asset.fromString(id.addExtension('.node_test.dart'), '''
           import "package:test/src/bootstrap/node.dart";
 
           import "${p.url.basename(id.path)}" as test;
@@ -71,9 +68,7 @@ class PubServeTransformer extends Transformer implements DeclaringTransformer {
     var htmlId = id.changeExtension('.html');
     if (await transform.hasInput(htmlId)) return;
 
-    transform.addOutput(new Asset.fromString(
-        htmlId,
-        '''
+    transform.addOutput(new Asset.fromString(htmlId, '''
           <!DOCTYPE html>
           <html>
           <head>

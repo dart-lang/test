@@ -21,10 +21,7 @@ String get _pubServeArg => '--pub-serve=$pubServePort';
 
 void main() {
   setUp(() async {
-    await d
-        .file(
-            "pubspec.yaml",
-            """
+    await d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
@@ -34,13 +31,10 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
-""")
-        .create();
+""").create();
 
     await d.dir("test", [
-      d.file(
-          "my_test.dart",
-          """
+      d.file("my_test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -50,9 +44,7 @@ void main() {
     ]).create();
 
     await d.dir("lib", [
-      d.file(
-          "myapp.dart",
-          """
+      d.file("myapp.dart", """
 import 'package:barback/barback.dart';
 
 class MyTransformer extends Transformer {
@@ -77,17 +69,13 @@ class MyTransformer extends Transformer {
     setUp(() async {
       // Give the test a failing assertion that the transformer will convert to
       // a passing assertion.
-      await d
-          .file(
-              "test/my_test.dart",
-              """
+      await d.file("test/my_test.dart", """
 import 'package:test/test.dart';
 
 void main() {
   test("test", () => expect(true, isFalse));
 }
-""")
-          .create();
+""").create();
     });
 
     test("runs those tests in the VM", () async {
@@ -203,22 +191,16 @@ void main() {
     }, tags: 'node');
 
     test("gracefully handles unconfigured transformers", () async {
-      await d
-          .file(
-              "pubspec.yaml",
-              """
+      await d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
   test: {path: ${p.current}}
-""")
-          .create();
+""").create();
 
       var pub = await runPubServe();
       var test = await runTest([_pubServeArg]);
-      expectStderrEquals(
-          test,
-          '''
+      expectStderrEquals(test, '''
 When using --pub-serve, you must include the "test/pub_serve" transformer in
 your pubspec:
 
@@ -235,9 +217,7 @@ transformers:
   group("uses a custom HTML file", () {
     setUp(() async {
       await d.dir("test", [
-        d.file(
-            "test.dart",
-            """
+        d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -248,9 +228,7 @@ void main() {
   });
 }
 """),
-        d.file(
-            "test.html",
-            """
+        d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -282,10 +260,7 @@ void main() {
 
   group("with a failing test", () {
     setUp(() async {
-      await d
-          .file(
-              "test/my_test.dart",
-              """
+      await d.file("test/my_test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -293,8 +268,7 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw 'oh no');
 }
-""")
-          .create();
+""").create();
     });
 
     group("dartifies stack traces for JS-compiled tests by default", () {

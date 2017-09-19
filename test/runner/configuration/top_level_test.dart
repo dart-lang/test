@@ -19,17 +19,13 @@ void main() {
   test("ignores an empty file", () async {
     await d.file("dart_test.yaml", "").create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -42,17 +38,13 @@ void main() {
 
     await d.file("special_test.yaml", JSON.encode({"skip": true})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () => throw "oh no");
       }
-    """)
-        .create();
+    """).create();
 
     var test =
         await runTest(["--configuration", "special_test.yaml", "test.dart"]);
@@ -66,10 +58,7 @@ void main() {
         .file("dart_test.yaml", JSON.encode({"pause_after_load": true}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'package:test/test.dart';
 
 void main() {
@@ -77,8 +66,7 @@ void main() {
 
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(["-p", "content-shell", "test.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test!"));
@@ -113,17 +101,13 @@ void main() {
   test("runs skipped tests with run_skipped: true", () async {
     await d.file("dart_test.yaml", JSON.encode({"run_skipped": true})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("skip", () => print("In test!"), skip: true);
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains("In test!")));
@@ -136,17 +120,13 @@ void main() {
         .file("dart_test.yaml", JSON.encode({"verbose_trace": true}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("failure", () => throw "oh no");
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains("dart:isolate-patch")));
@@ -159,10 +139,7 @@ void main() {
         .file("dart_test.yaml", JSON.encode({"chain_stack_traces": false}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
          import 'dart:async';
 
          import 'package:test/test.dart';
@@ -174,8 +151,7 @@ void main() {
               throw "oh no";
             });
           }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -193,17 +169,13 @@ void main() {
       () async {
     await d.file("dart_test.yaml", JSON.encode({"js_trace": true})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("failure", () => throw "oh no");
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["-p", "chrome", "--verbose-trace", "test.dart"]);
     expect(test.stdoutStream(), neverEmits(endsWith(" main.<fn>")));
@@ -216,10 +188,7 @@ void main() {
   test("retries tests with retry: 1", () async {
     await d.file("dart_test.yaml", JSON.encode({"retry": 1})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
       import 'dart:async';
 
@@ -233,8 +202,7 @@ void main() {
         });
       }
 
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed')));
@@ -244,17 +212,13 @@ void main() {
   test("skips tests with skip: true", () async {
     await d.file("dart_test.yaml", JSON.encode({"skip": true})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
@@ -266,17 +230,13 @@ void main() {
         .file("dart_test.yaml", JSON.encode({"skip": "Tests are boring."}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("test", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains('Tests are boring.')));
@@ -288,17 +248,13 @@ void main() {
     test("runs tests on a platform matching platform", () async {
       await d.file("dart_test.yaml", JSON.encode({"test_on": "vm"})).create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains('All tests passed!')));
@@ -310,17 +266,13 @@ void main() {
           .file("dart_test.yaml", JSON.encode({"test_on": "chrome"}))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -337,17 +289,13 @@ void main() {
           .file("dart_test.yaml", JSON.encode({"test_on": otherOS}))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -362,17 +310,13 @@ void main() {
         () async {
       await d.file("dart_test.yaml", JSON.encode({"test_on": "vm"})).create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "chrome", "test.dart"]);
       expect(
@@ -390,17 +334,13 @@ void main() {
           .file("dart_test.yaml", JSON.encode({"test_on": "safari"}))
           .create();
 
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("test", () {});
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["-p", "chrome,firefox,phantomjs", "test.dart"]);
       expect(
@@ -416,17 +356,13 @@ void main() {
   test("uses the specified reporter", () async {
     await d.file("dart_test.yaml", JSON.encode({"reporter": "json"})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains('"testStart"')));
@@ -434,10 +370,7 @@ void main() {
   });
 
   test("uses the specified pub serve port", () async {
-    await d
-        .file(
-            "pubspec.yaml",
-            """
+    await d.file("pubspec.yaml", """
 name: myapp
 dependencies:
   barback: any
@@ -447,13 +380,10 @@ transformers:
     \$include: test/**_test.dart
 - test/pub_serve:
     \$include: test/**_test.dart
-""")
-        .create();
+""").create();
 
     await d.dir("lib", [
-      d.file(
-          "myapp.dart",
-          """
+      d.file("myapp.dart", """
         import 'package:barback/barback.dart';
 
         class MyTransformer extends Transformer {
@@ -474,9 +404,7 @@ transformers:
     await (await runPub(['get'])).shouldExit(0);
 
     await d.dir("test", [
-      d.file(
-          "my_test.dart",
-          """
+      d.file("my_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -500,17 +428,13 @@ transformers:
   test("uses the specified concurrency", () async {
     await d.file("dart_test.yaml", JSON.encode({"concurrency": 2})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """)
-        .create();
+    """).create();
 
     // We can't reliably test the concurrency, but this at least ensures that
     // it doesn't fail to parse.
@@ -522,10 +446,7 @@ transformers:
   test("uses the specified timeout", () async {
     await d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -533,8 +454,7 @@ transformers:
       void main() {
         test("success", () => new Future.delayed(Duration.ZERO));
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -553,17 +473,13 @@ transformers:
             }))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout,
@@ -574,10 +490,7 @@ transformers:
   test("command line args take precedence", () async {
     await d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -585,8 +498,7 @@ transformers:
       void main() {
         test("success", () => new Future.delayed(Duration.ZERO));
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["--timeout=none", "test.dart"]);
     expect(test.stdout, emitsThrough(contains("All tests passed!")));
@@ -602,10 +514,7 @@ transformers:
             }))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -613,8 +522,7 @@ transformers:
         test("zap", () {});
         test("zop", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, containsInOrder(["+0: zap", "+1: All tests passed!"]));
@@ -630,10 +538,7 @@ transformers:
             }))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -641,8 +546,7 @@ transformers:
         test("zap", () {});
         test("zop", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, containsInOrder(["+0: zap", "+1: All tests passed!"]));
@@ -659,9 +563,7 @@ transformers:
         .create();
 
     await d.dir("zip", [
-      d.file(
-          "zip_test.dart",
-          """
+      d.file("zip_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -671,9 +573,7 @@ transformers:
     ]).create();
 
     await d.dir("zap", [
-      d.file(
-          "zip_test.dart",
-          """
+      d.file("zip_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -683,9 +583,7 @@ transformers:
     ]).create();
 
     await d.dir("zop", [
-      d.file(
-          "zip_test.dart",
-          """
+      d.file("zip_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -705,27 +603,21 @@ transformers:
         .create();
 
     await d.dir("test", [
-      d.file(
-          "test_foo.dart",
-          """
+      d.file("test_foo.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("success", () {});
         }
       """),
-      d.file(
-          "foo_test.dart",
-          """
+      d.file("foo_test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("failure", () => throw "oh no");
         }
       """),
-      d.file(
-          "test_foo.bart",
-          """
+      d.file("test_foo.bart", """
         import 'package:test/test.dart';
 
         void main() {

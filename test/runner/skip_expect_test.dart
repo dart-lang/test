@@ -13,17 +13,13 @@ import '../io.dart';
 void main() {
   group("a skipped expect", () {
     test("marks the test as skipped", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2), skip: true));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("~1: All tests skipped.")));
@@ -31,18 +27,14 @@ void main() {
     });
 
     test("prints the skip reason if there is one", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2),
               reason: "1 is 2", skip: "is failing"));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -56,18 +48,14 @@ void main() {
     });
 
     test("prints the expect reason if there's no skip reason", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2),
               reason: "1 is 2", skip: true));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -81,17 +69,13 @@ void main() {
     });
 
     test("prints the matcher description if there are no reasons", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
           test("skipped", () => expect(1, equals(2), skip: true));
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -105,10 +89,7 @@ void main() {
     });
 
     test("still allows the test to fail", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -117,8 +98,7 @@ void main() {
             expect(1, equals(2));
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -137,10 +117,7 @@ void main() {
 
   group("errors", () {
     test("when called after the test succeeded", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -162,8 +139,7 @@ void main() {
             await waitCompleter.future;
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -181,10 +157,7 @@ void main() {
     });
 
     test("when an invalid type is used for skip", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
         import 'package:test/test.dart';
 
         void main() {
@@ -192,8 +165,7 @@ void main() {
             expect(1, equals(2), skip: 10);
           });
         }
-      """)
-          .create();
+      """).create();
 
       var test = await runTest(["test.dart"]);
       expect(

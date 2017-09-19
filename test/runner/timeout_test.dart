@@ -12,10 +12,7 @@ import '../io.dart';
 
 void main() {
   test("respects top-level @Timeout declarations", () async {
-    await d
-        .file(
-            "test.dart",
-            '''
+    await d.file("test.dart", '''
 @Timeout(const Duration(seconds: 0))
 
 import 'dart:async';
@@ -27,8 +24,7 @@ void main() {
     await new Future.delayed(Duration.ZERO);
   });
 }
-''')
-        .create();
+''').create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -39,10 +35,7 @@ void main() {
   });
 
   test("respects the --timeout flag", () async {
-    await d
-        .file(
-            "test.dart",
-            '''
+    await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -52,8 +45,7 @@ void main() {
     await new Future.delayed(Duration.ZERO);
   });
 }
-''')
-        .create();
+''').create();
 
     var test = await runTest(["--timeout=0s", "test.dart"]);
     expect(
@@ -64,10 +56,7 @@ void main() {
   });
 
   test("timeout is reset with each retry", () async {
-    await d
-        .file(
-            "test.dart",
-            '''
+    await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -81,8 +70,7 @@ void main() {
     }
   }, retry: 3);
 }
-''')
-        .create();
+''').create();
 
     var test = await runTest(["--timeout=400ms", "test.dart"]);
     expect(
@@ -97,10 +85,7 @@ void main() {
 
   test("the --timeout flag applies on top of the default 30s timeout",
       () async {
-    await d
-        .file(
-            "test.dart",
-            '''
+    await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -114,8 +99,7 @@ void main() {
     await new Future.delayed(new Duration(milliseconds: 750));
   });
 }
-''')
-        .create();
+''').create();
 
     // This should make the timeout about 500ms, which should cause exactly one
     // test to fail.

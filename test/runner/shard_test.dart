@@ -13,10 +13,7 @@ import '../io.dart';
 
 void main() {
   test("divides all the tests among the available shards", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -31,8 +28,7 @@ void main() {
         test("test 9", () {});
         test("test 10", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test =
         await runTest(["test.dart", "--shard-index=0", "--total-shards=3"]);
@@ -71,10 +67,7 @@ void main() {
   });
 
   test("shards each suite", () async {
-    await d
-        .file(
-            "1_test.dart",
-            """
+    await d.file("1_test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -82,13 +75,9 @@ void main() {
         test("test 1.2", () {});
         test("test 1.3", () {});
       }
-    """)
-        .create();
+    """).create();
 
-    await d
-        .file(
-            "2_test.dart",
-            """
+    await d.file("2_test.dart", """
       import 'package:test/test.dart';
 
       void main() {
@@ -96,8 +85,7 @@ void main() {
         test("test 2.2", () {});
         test("test 2.3", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest([".", "--shard-index=0", "--total-shards=3"]);
     expect(
@@ -143,18 +131,14 @@ void main() {
   });
 
   test("an empty shard reports success", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("test 1", () {});
         test("test 2", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test =
         await runTest(["test.dart", "--shard-index=1", "--total-shards=3"]);

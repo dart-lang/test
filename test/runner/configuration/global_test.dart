@@ -16,17 +16,13 @@ void main() {
   test("ignores an empty file", () async {
     await d.file("global_test.yaml", "").create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"],
         environment: {"DART_TEST_CONFIG": "global_test.yaml"});
@@ -39,17 +35,13 @@ void main() {
         .file("global_test.yaml", JSON.encode({"verbose_trace": true}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("failure", () => throw "oh no");
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"],
         environment: {"DART_TEST_CONFIG": "global_test.yaml"});
@@ -62,17 +54,13 @@ void main() {
         .file("global_test.yaml", JSON.encode({"reporter": "json"}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("success", () {});
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"],
         environment: {"DART_TEST_CONFIG": "global_test.yaml"});
@@ -89,17 +77,13 @@ void main() {
         .file("dart_test.yaml", JSON.encode({"verbose_trace": false}))
         .create();
 
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
       import 'package:test/test.dart';
 
       void main() {
         test("failure", () => throw "oh no");
       }
-    """)
-        .create();
+    """).create();
 
     var test = await runTest(["test.dart"],
         environment: {"DART_TEST_CONFIG": "global_test.yaml"});
@@ -115,17 +99,13 @@ void main() {
       test("rejects local-only configuration", () async {
         await d.file("global_test.yaml", JSON.encode({field: null})).create();
 
-        await d
-            .file(
-                "test.dart",
-                """
+        await d.file("test.dart", """
           import 'package:test/test.dart';
 
           void main() {
             test("success", () {});
           }
-        """)
-            .create();
+        """).create();
 
         var test = await runTest(["test.dart"],
             environment: {"DART_TEST_CONFIG": "global_test.yaml"});

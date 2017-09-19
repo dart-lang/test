@@ -97,17 +97,13 @@ void main() {
     test("a custom HTML file has no script tag", () async {
       await d.file("test.dart", "void main() {}").create();
 
-      await d
-          .file(
-              "test.html",
-              """
+      await d.file("test.html", """
 <html>
 <head>
   <link rel="x-dart-test" href="test.dart">
 </head>
 </html>
-""")
-          .create();
+""").create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -123,17 +119,13 @@ void main() {
     test("a custom HTML file has no link", () async {
       await d.file("test.dart", "void main() {}").create();
 
-      await d
-          .file(
-              "test.html",
-              """
+      await d.file("test.html", """
 <html>
 <head>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""")
-          .create();
+""").create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -149,10 +141,7 @@ void main() {
     test("a custom HTML file has too many links", () async {
       await d.file("test.dart", "void main() {}").create();
 
-      await d
-          .file(
-              "test.html",
-              """
+      await d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -160,8 +149,7 @@ void main() {
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""")
-          .create();
+""").create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -177,18 +165,14 @@ void main() {
     test("a custom HTML file has no href in the link", () async {
       await d.file("test.dart", "void main() {}").create();
 
-      await d
-          .file(
-              "test.html",
-              """
+      await d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test'>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""")
-          .create();
+""").create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -204,18 +188,14 @@ void main() {
     test("a custom HTML file has an invalid test URL", () async {
       await d.file("test.dart", "void main() {}").create();
 
-      await d
-          .file(
-              "test.html",
-              """
+      await d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='wrong.dart'>
   <script src="packages/test/dart.js"></script>
 </head>
 </html>
-""")
-          .create();
+""").create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -253,10 +233,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("with setUpAll", () async {
-      await d
-          .file(
-              "test.dart",
-              r"""
+      await d.file("test.dart", r"""
           import 'package:test/test.dart';
 
           void main() {
@@ -264,8 +241,7 @@ void main() {
 
             test("test", () {});
           }
-          """)
-          .create();
+          """).create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains('+0: (setUpAll)')));
@@ -274,10 +250,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("with tearDownAll", () async {
-      await d
-          .file(
-              "test.dart",
-              r"""
+      await d.file("test.dart", r"""
           import 'package:test/test.dart';
 
           void main() {
@@ -285,8 +258,7 @@ void main() {
 
             test("test", () {});
           }
-          """)
-          .create();
+          """).create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains('+1: (tearDownAll)')));
@@ -305,10 +277,7 @@ void main() {
 
     group("with a custom HTML file", () {
       setUp(() async {
-        await d
-            .file(
-                "test.dart",
-                """
+        await d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -318,13 +287,9 @@ void main() {
     expect(document.query('#foo'), isNotNull);
   });
 }
-""")
-            .create();
+""").create();
 
-        await d
-            .file(
-                "test.html",
-                """
+        await d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -334,8 +299,7 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""")
-            .create();
+""").create();
       });
 
       test("on content shell", () async {
@@ -352,10 +316,7 @@ void main() {
 
       // Regression test for https://github.com/dart-lang/test/issues/82.
       test("ignores irrelevant link tags", () async {
-        await d
-            .file(
-                "test.html",
-                """
+        await d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test-not'>
@@ -367,8 +328,7 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""")
-            .create();
+""").create();
 
         var test = await runTest(["-p", "content-shell", "test.dart"]);
         expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -379,10 +339,7 @@ void main() {
 
   group("runs failing tests", () {
     test("that fail only on the browser", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -393,8 +350,7 @@ void main() {
     if (p.style == p.Style.url) throw new TestFailure("oh no");
   });
 }
-""")
-          .create();
+""").create();
 
       var test =
           await runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
@@ -403,10 +359,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("that fail only on the VM", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -417,8 +370,7 @@ void main() {
     if (p.style != p.Style.url) throw new TestFailure("oh no");
   });
 }
-""")
-          .create();
+""").create();
 
       var test =
           await runTest(["-p", "content-shell", "-p", "vm", "test.dart"]);
@@ -428,10 +380,7 @@ void main() {
 
     group("with a custom HTML file", () {
       setUp(() async {
-        await d
-            .file(
-                "test.dart",
-                """
+        await d.file("test.dart", """
 import 'dart:html';
 
 import 'package:test/test.dart';
@@ -441,13 +390,9 @@ void main() {
     expect(document.query('#foo'), isNull);
   });
 }
-""")
-            .create();
+""").create();
 
-        await d
-            .file(
-                "test.html",
-                """
+        await d.file("test.html", """
 <html>
 <head>
   <link rel='x-dart-test' href='test.dart'>
@@ -457,8 +402,7 @@ void main() {
   <div id="foo"></div>
 </body>
 </html>
-""")
-            .create();
+""").create();
       });
 
       test("on content shell", () async {
@@ -484,10 +428,7 @@ void main() {
   }, tags: 'chrome');
 
   test("forwards prints from the browser test", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -498,8 +439,7 @@ void main() {
     return new Future(() => print("world!"));
   });
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest(["-p", "content-shell", "test.dart"]);
     expect(test.stdout, emitsInOrder([emitsThrough("Hello,"), "world!"]));
@@ -531,10 +471,7 @@ void main() {
   }, tags: 'chrome');
 
   test("respects top-level @Timeout declarations", () async {
-    await d
-        .file(
-            "test.dart",
-            '''
+    await d.file("test.dart", '''
 @Timeout(const Duration(seconds: 0))
 
 import 'dart:async';
@@ -544,8 +481,7 @@ import 'package:test/test.dart';
 void main() {
   test("timeout", () => new Future.delayed(Duration.ZERO));
 }
-''')
-        .create();
+''').create();
 
     var test = await runTest(["-p", "content-shell", "test.dart"]);
     expect(
@@ -557,10 +493,7 @@ void main() {
 
   group("with onPlatform", () {
     test("respects matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -568,8 +501,7 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no', onPlatform: {"browser": new Skip()});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
@@ -577,10 +509,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("ignores non-matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -588,8 +517,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {}, onPlatform: {"vm": new Skip()});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -597,10 +525,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("respects matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -613,8 +538,7 @@ void main() {
     "browser": new Timeout(Duration.ZERO)
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -625,10 +549,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("ignores non-matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -638,8 +559,7 @@ void main() {
     "vm": new Timeout(new Duration(seconds: 0))
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -647,10 +567,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("applies matching platforms in order", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -664,8 +581,7 @@ void main() {
     "browser || android": new Skip("fifth")
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdoutStream(), neverEmits(contains("Skip: first")));
@@ -679,10 +595,7 @@ void main() {
 
   group("with an @OnPlatform annotation", () {
     test("respects matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {"browser": const Skip()})
 
 import 'dart:async';
@@ -692,8 +605,7 @@ import 'package:test/test.dart';
 void main() {
   test("fail", () => throw 'oh no');
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("~1: All tests skipped.")));
@@ -701,10 +613,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("ignores non-matching Skips", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {"vm": const Skip()})
 
 import 'dart:async';
@@ -714,8 +623,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -723,10 +631,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("respects matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {
   "browser": const Timeout(const Duration(seconds: 0))
 })
@@ -741,8 +646,7 @@ void main() {
     throw 'oh no';
   });
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       expect(
@@ -753,10 +657,7 @@ void main() {
     }, tags: 'content-shell');
 
     test("ignores non-matching Timeouts", () async {
-      await d
-          .file(
-              "test.dart",
-              '''
+      await d.file("test.dart", '''
 @OnPlatform(const {
   "vm": const Timeout(const Duration(seconds: 0))
 })
@@ -768,8 +669,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-''')
-          .create();
+''').create();
 
       var test = await runTest(["-p", "content-shell", "test.dart"]);
       await test.shouldExit(0);

@@ -27,10 +27,7 @@ void main() {
   setUp(() async {
     _loader = new Loader(root: d.sandbox);
 
-    await d
-        .file(
-            'a_test.dart',
-            """
+    await d.file('a_test.dart', """
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -40,8 +37,7 @@ void main() {
         test("failure", () => throw new TestFailure('oh no'));
         test("error", () => throw 'oh no');
       }
-    """)
-        .create();
+    """).create();
   });
 
   tearDown(() => _loader.close());

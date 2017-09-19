@@ -12,10 +12,7 @@ import '../../io.dart';
 
 void main() {
   test("prints the platform name when running on multiple platforms", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -23,8 +20,7 @@ import 'package:test/test.dart';
 void main() {
   test("success", () {});
 }
-""")
-        .create();
+""").create();
 
     var test = await runTest([
       "-r", "expanded", "-p", "content-shell", "-p", "vm", "-j", "1", //

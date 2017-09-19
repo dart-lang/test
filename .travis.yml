@@ -59,7 +59,7 @@ dart_task:
 
 matrix:
   include:
-    - dart: stable
+    - dart: dev
       dart_task: dartfmt
     - dart: dev
       dart_task: dartanalyzer

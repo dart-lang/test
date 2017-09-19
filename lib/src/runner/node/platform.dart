@@ -97,8 +97,7 @@ class NodePlatform extends PlatformPlugin {
     var jsPath = p.join(dir, p.basename(path) + ".node_test.dart.js");
 
     if (_config.pubServeUrl == null) {
-      await _compilers.compile(
-          '''
+      await _compilers.compile('''
         import "package:test/src/bootstrap/node.dart";
 
         import "${p.toUri(p.absolute(path))}" as test;
@@ -106,9 +105,7 @@ class NodePlatform extends PlatformPlugin {
         void main() {
           internalBootstrapNodeTest(() => test.main);
         }
-      ''',
-          jsPath,
-          suiteConfig);
+      ''', jsPath, suiteConfig);
 
       // Add the Node.js preamble to ensure that the dart2js output is
       // compatible. Use the minified version so the source map remains valid.

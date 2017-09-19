@@ -11,10 +11,7 @@ import '../io.dart';
 
 void main() {
   test("respects --no-retry flag with retry option", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
           import 'dart:async';
 
           import 'package:test/test.dart';
@@ -28,8 +25,7 @@ void main() {
                }
             }, retry: 1);
           }
-          """)
-        .create();
+          """).create();
 
     var test = await runTest(["test.dart", "--no-retry"]);
     expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
@@ -37,10 +33,7 @@ void main() {
   });
 
   test("respects --no-retry flag with @Retry declaration", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
           @Retry(3)
 
           import 'dart:async';
@@ -56,8 +49,7 @@ void main() {
                }
             });
           }
-          """)
-        .create();
+          """).create();
 
     var test = await runTest(["test.dart", "--no-retry"]);
     expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
@@ -65,10 +57,7 @@ void main() {
   });
 
   test("respects top-level @Retry declarations", () async {
-    d
-        .file(
-            "test.dart",
-            """
+    d.file("test.dart", """
           @Retry(3)
 
           import 'dart:async';
@@ -84,8 +73,7 @@ void main() {
                }
             });
           }
-          """)
-        .create();
+          """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -93,10 +81,7 @@ void main() {
   });
 
   test("respects group retry declarations", () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
           import 'dart:async';
 
           import 'package:test/test.dart';
@@ -112,8 +97,7 @@ void main() {
               });
              }, retry: 3);
           }
-          """)
-        .create();
+          """).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -122,10 +106,7 @@ void main() {
 
   test("tests are not retried after they have already been reported successful",
       () async {
-    await d
-        .file(
-            "test.dart",
-            """
+    await d.file("test.dart", """
               import 'dart:async';
 
               import 'package:test/test.dart';
@@ -145,8 +126,7 @@ void main() {
                   await completer2.future;
                 });
               }
-          """)
-        .create();
+          """).create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -158,10 +138,7 @@ void main() {
 
   group("retries tests", () {
     test("and eventually passes for valid tests", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
               import 'dart:async';
 
               import 'package:test/test.dart';
@@ -175,8 +152,7 @@ void main() {
                  }
                 }, retry: 2);
               }
-          """)
-          .create();
+          """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -184,10 +160,7 @@ void main() {
     });
 
     test("and ignores previous errors", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
               import 'dart:async';
 
               import 'package:test/test.dart';
@@ -205,8 +178,7 @@ void main() {
                   await new Future((){});
                 }, retry: 1);
               }
-          """)
-          .create();
+          """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
@@ -214,10 +186,7 @@ void main() {
     });
 
     test("and eventually fails for invalid tests", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
               import 'dart:async';
 
               import 'package:test/test.dart';
@@ -227,8 +196,7 @@ void main() {
                  throw new TestFailure("oh no");
                 }, retry: 2);
               }
-          """)
-          .create();
+          """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
@@ -236,10 +204,7 @@ void main() {
     });
 
     test("only after a failure", () async {
-      await d
-          .file(
-              "test.dart",
-              """
+      await d.file("test.dart", """
               import 'dart:async';
 
               import 'package:test/test.dart';
@@ -253,8 +218,7 @@ void main() {
                 }
                 }, retry: 5);
           }
-          """)
-          .create();
+          """).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
