@@ -548,7 +548,7 @@ class _Parser {
     // Load a SourceFile from scratch here since we're only ever going to emit
     // one error per file anyway.
     var contents = new File(_path).readAsStringSync();
-    return new SourceFile(contents, url: p.toUri(_path))
+    return new SourceFile.fromString (contents, url: p.toUri(_path))
         .span(node.offset, node.end);
   }
 
@@ -558,7 +558,7 @@ class _Parser {
     try {
       return fn();
     } on SourceSpanFormatException catch (error) {
-      var file = new SourceFile(new File(_path).readAsStringSync(),
+      var file = new SourceFile.fromString(new File(_path).readAsStringSync(),
           url: p.toUri(_path));
       var span = contextualizeSpan(error.span, literal, file);
       if (span == null) rethrow;
