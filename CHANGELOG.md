@@ -1,3 +1,8 @@
+## 0.12.24+6
+
+* Small refactoring to make the package compatible with strong-mode compliant Zone API.
+  No user-visible change.
+
 ## 0.12.24+5
 
 * Expose a way for tests to forward a `loadException` to the server.
