@@ -1,3 +1,7 @@
+## 0.12.1+4
+
+* Fixed SDK constraint to allow edge builds.
+
 ## 0.12.1+3
 
 * Make `predicate` and `pairwiseCompare` generic methods to allow typed
