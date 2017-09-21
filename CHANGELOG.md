@@ -1,3 +1,7 @@
+## 0.12.24+7
+
+* Declare support for `async` 2.0.0.
+
 ## 0.12.24+6
 
 * Small refactoring to make the package compatible with strong-mode compliant Zone API.
