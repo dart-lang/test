@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Declare support for `async` 2.0.0.
+
 ## 1.0.0
 
 * Added `pid` and `exitCode` getters to `TestProcess`.
