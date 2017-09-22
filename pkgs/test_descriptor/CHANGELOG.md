@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Declare support for `async` 2.0.0.
+
 ## 1.0.1
 
 * `FileDescriptor.validate()` now allows invalid UTF-8 files.
