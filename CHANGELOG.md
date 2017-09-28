@@ -1,3 +1,7 @@
+## 0.12.24+8
+
+* `spawnHybridUri()` now interprets relative URIs correctly in browser tests.
+
 ## 0.12.24+7
 
 * Declare support for `async` 2.0.0.

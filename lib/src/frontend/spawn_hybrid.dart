@@ -98,10 +98,17 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
 
   String absoluteUri;
   if (parsedUrl.scheme.isEmpty) {
-    var suitePath = Invoker.current.liveTest.suite.path;
-    absoluteUri = p.url.join(
-        p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-        parsedUrl.toString());
+    // If we're running in a browser context, the working directory is already
+    // relative to the test file, whereas on the VM the working directory is the
+    // root of the package.
+    if (p.style == p.Style.url) {
+      absoluteUri = p.absolute(parsedUrl.toString());
+    } else {
+      var suitePath = Invoker.current.liveTest.suite.path;
+      absoluteUri = p.url.join(
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUrl.toString());
+    }
   } else {
     absoluteUri = uri.toString();
   }

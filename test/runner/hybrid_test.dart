@@ -22,165 +22,13 @@ void main() {
   });
 
   group("spawnHybridUri():", () {
-    test("loads a file in a separate isolate connected via StreamChannel",
-        () async {
-      await d.file("test.dart", """
-        import "package:test/test.dart";
-
-        void main() {
-          test("hybrid emits numbers", () {
-            expect(spawnHybridUri("hybrid.dart").stream.toList(),
-                completion(equals([1, 2, 3])));
-          });
-        }
-      """).create();
-
-      await d.file("hybrid.dart", """
-        import "package:stream_channel/stream_channel.dart";
-
-        void hybridMain(StreamChannel channel) {
-          channel.sink..add(1)..add(2)..add(3)..close();
-        }
-      """).create();
-
-      var test = await runTest(["test.dart"]);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      await test.shouldExit(0);
+    group("in the VM", () {
+      _spawnHybridUriTests();
     });
 
-    test("resolves URIs relative to the test file", () async {
-      await d.dir("test/dir/subdir", [
-        d.file("test.dart", """
-          import "package:test/test.dart";
-
-          void main() {
-            test("hybrid emits numbers", () {
-              expect(spawnHybridUri("hybrid.dart").stream.toList(),
-                  completion(equals([1, 2, 3])));
-            });
-          }
-        """),
-        d.file("hybrid.dart", """
-          import "package:stream_channel/stream_channel.dart";
-
-          void hybridMain(StreamChannel channel) {
-            channel.sink..add(1)..add(2)..add(3)..close();
-          }
-        """),
-      ]).create();
-
-      var test = await runTest(["test/dir/subdir/test.dart"]);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      await test.shouldExit(0);
-    });
-
-    test("supports absolute file: URIs", () async {
-      var url = p.toUri(p.absolute(p.join(d.sandbox, 'hybrid.dart')));
-      await d.file("test.dart", """
-        import "package:test/test.dart";
-
-        void main() {
-          test("hybrid emits numbers", () {
-            expect(spawnHybridUri("$url").stream.toList(),
-                completion(equals([1, 2, 3])));
-          });
-        }
-      """).create();
-
-      await d.file("hybrid.dart", """
-        import "package:stream_channel/stream_channel.dart";
-
-        void hybridMain(StreamChannel channel) {
-          channel.sink..add(1)..add(2)..add(3)..close();
-        }
-      """).create();
-
-      var test = await runTest(["test.dart"]);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      await test.shouldExit(0);
-    });
-
-    test("supports Uri objects", () async {
-      await d.file("test.dart", """
-        import "package:test/test.dart";
-
-        void main() {
-          test("hybrid emits numbers", () {
-            expect(spawnHybridUri(Uri.parse("hybrid.dart")).stream.toList(),
-                completion(equals([1, 2, 3])));
-          });
-        }
-      """).create();
-
-      await d.file("hybrid.dart", """
-        import "package:stream_channel/stream_channel.dart";
-
-        void hybridMain(StreamChannel channel) {
-          channel.sink..add(1)..add(2)..add(3)..close();
-        }
-      """).create();
-
-      var test = await runTest(["test.dart"]);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ["+0: hybrid emits numbers", "+1: All tests passed!"]));
-      await test.shouldExit(0);
-    });
-
-    test("rejects non-String, non-Uri objects", () {
-      expect(() => spawnHybridUri(123), throwsArgumentError);
-    });
-
-    test("passes a message to the hybrid isolate", () async {
-      await d.file("test.dart", """
-        import "package:test/test.dart";
-
-        void main() {
-          test("hybrid echoes message", () {
-            expect(
-                spawnHybridUri(Uri.parse("hybrid.dart"), message: 123)
-                    .stream.first,
-                completion(equals(123)));
-
-            expect(
-                spawnHybridUri(Uri.parse("hybrid.dart"), message: "wow")
-                    .stream.first,
-                completion(equals("wow")));
-          });
-        }
-      """).create();
-
-      await d.file("hybrid.dart", """
-        import "package:stream_channel/stream_channel.dart";
-
-        void hybridMain(StreamChannel channel, Object message) {
-          channel.sink..add(message)..close();
-        }
-      """).create();
-
-      var test = await runTest(["test.dart"]);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ["+0: hybrid echoes message", "+1: All tests passed!"]));
-      await test.shouldExit(0);
-    });
-
-    test("emits an error from the stream channel if the isolate fails to load",
-        () {
-      expect(spawnHybridUri("non existent file").stream.first,
-          throwsA(new isInstanceOf<IsolateSpawnException>()));
-    });
+    group("in the browser", () {
+      _spawnHybridUriTests(["-p", "chrome"]);
+    }, tags: "browser");
   });
 
   group("spawnHybridCode()", () {
@@ -542,5 +390,165 @@ void main() {
           ]));
       await test.shouldExit(0);
     });
+  });
+}
+
+/// Defines tests for `spawnHybridUri()`.
+///
+/// If [arguments] is given, it's passed on to the invocation of the test
+/// runner.
+void _spawnHybridUriTests([Iterable<String> arguments]) {
+  arguments ??= [];
+
+  test("loads a file in a separate isolate connected via StreamChannel",
+      () async {
+    await d.file("test.dart", """
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(spawnHybridUri("hybrid.dart").stream.toList(),
+                completion(equals([1, 2, 3])));
+          });
+        }
+      """).create();
+
+    await d.file("hybrid.dart", """
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      """).create();
+
+    var test = await runTest(["test.dart"]..addAll(arguments));
+    expect(test.stdout,
+        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+    await test.shouldExit(0);
+  });
+
+  test("resolves URIs relative to the test file", () async {
+    await d.dir("test/dir/subdir", [
+      d.file("test.dart", """
+          import "package:test/test.dart";
+
+          void main() {
+            test("hybrid emits numbers", () {
+              expect(spawnHybridUri("hybrid.dart").stream.toList(),
+                  completion(equals([1, 2, 3])));
+            });
+          }
+        """),
+      d.file("hybrid.dart", """
+          import "package:stream_channel/stream_channel.dart";
+
+          void hybridMain(StreamChannel channel) {
+            channel.sink..add(1)..add(2)..add(3)..close();
+          }
+        """),
+    ]).create();
+
+    var test = await runTest(["test/dir/subdir/test.dart"]..addAll(arguments));
+    expect(test.stdout,
+        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+    await test.shouldExit(0);
+  });
+
+  test("supports absolute file: URIs", () async {
+    var url = p.toUri(p.absolute(p.join(d.sandbox, 'hybrid.dart')));
+    await d.file("test.dart", """
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(spawnHybridUri("$url").stream.toList(),
+                completion(equals([1, 2, 3])));
+          });
+        }
+      """).create();
+
+    await d.file("hybrid.dart", """
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      """).create();
+
+    var test = await runTest(["test.dart"]..addAll(arguments));
+    expect(test.stdout,
+        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+    await test.shouldExit(0);
+  });
+
+  test("supports Uri objects", () async {
+    await d.file("test.dart", """
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(spawnHybridUri(Uri.parse("hybrid.dart")).stream.toList(),
+                completion(equals([1, 2, 3])));
+          });
+        }
+      """).create();
+
+    await d.file("hybrid.dart", """
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      """).create();
+
+    var test = await runTest(["test.dart"]..addAll(arguments));
+    expect(test.stdout,
+        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+    await test.shouldExit(0);
+  });
+
+  test("rejects non-String, non-Uri objects", () {
+    expect(() => spawnHybridUri(123), throwsArgumentError);
+  });
+
+  test("passes a message to the hybrid isolate", () async {
+    await d.file("test.dart", """
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid echoes message", () {
+            expect(
+                spawnHybridUri(Uri.parse("hybrid.dart"), message: 123)
+                    .stream.first,
+                completion(equals(123)));
+
+            expect(
+                spawnHybridUri(Uri.parse("hybrid.dart"), message: "wow")
+                    .stream.first,
+                completion(equals("wow")));
+          });
+        }
+      """).create();
+
+    await d.file("hybrid.dart", """
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel channel, Object message) {
+          channel.sink..add(message)..close();
+        }
+      """).create();
+
+    var test = await runTest(["test.dart"]..addAll(arguments));
+    expect(
+        test.stdout,
+        containsInOrder(
+            ["+0: hybrid echoes message", "+1: All tests passed!"]));
+    await test.shouldExit(0);
+  });
+
+  test("emits an error from the stream channel if the isolate fails to load",
+      () {
+    expect(spawnHybridUri("non existent file").stream.first,
+        throwsA(new isInstanceOf<IsolateSpawnException>()));
   });
 }
