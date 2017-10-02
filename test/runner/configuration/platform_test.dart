@@ -116,11 +116,10 @@ void main() {
                 }))
             .create();
 
+        await d.dir("test").create();
+
         var test = await runTest([]);
-        expect(
-            test.stderr,
-            containsInOrder(
-                ["Invalid on_platform key: Undefined variable.", "^^^^^"]));
+        expect(test.stderr, containsInOrder(["Undefined variable.", "^^^^^"]));
         await test.shouldExit(exit_codes.data);
       });
 

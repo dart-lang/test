@@ -43,6 +43,10 @@ class Loader {
   /// These are passed to the plugins' async memoizers when a plugin is needed.
   final _platformCallbacks = <TestPlatform, AsyncFunction>{};
 
+  /// All plaforms supported by this [Loader].
+  List<TestPlatform> get allPlatforms =>
+      new List.unmodifiable(_platformCallbacks.keys);
+
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   ///
@@ -117,8 +121,8 @@ class Loader {
   Stream<LoadSuite> loadFile(
       String path, SuiteConfiguration suiteConfig) async* {
     try {
-      suiteConfig = suiteConfig
-          .merge(new SuiteConfiguration.fromMetadata(parseMetadata(path)));
+      suiteConfig = suiteConfig.merge(new SuiteConfiguration.fromMetadata(
+          parseMetadata(path, allPlatforms)));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.

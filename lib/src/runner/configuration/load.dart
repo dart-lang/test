@@ -13,12 +13,12 @@ import 'package:yaml/yaml.dart';
 
 import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
-import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
+import 'platform_selection.dart';
 import 'reporters.dart';
 
 /// A regular expression matching a Dart identifier.
@@ -94,7 +94,7 @@ class _ConfigurationLoader {
 
     var onPlatform = _getMap("on_platform",
         key: (keyNode) => _parseNode(keyNode, "on_platform key",
-            (value) => new PlatformSelector.parse(value)),
+            (value) => new PlatformSelector.parse(value, keyNode.span)),
         value: (valueNode) =>
             _nestedConfig(valueNode, "on_platform value", runnerConfig: false));
 
@@ -155,8 +155,7 @@ class _ConfigurationLoader {
       skip = true;
     }
 
-    var testOn =
-        _parseValue("test_on", (value) => new PlatformSelector.parse(value));
+    var testOn = _parsePlatformSelector("test_on");
 
     var addTags = _getList(
         "add_tags", (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
@@ -206,14 +205,11 @@ class _ConfigurationLoader {
 
     var concurrency = _getInt("concurrency");
 
-    var platforms = _getList("platforms", (platformNode) {
-      var name = _parseIdentifierLike(platformNode, "Platform name");
-      if (!TestPlatform.all.any((platform) => platform.identifier == name)) {
-        throw new SourceSpanFormatException(
-            'Unknown platform "$name"', platformNode.span, _source);
-      }
-      return name;
-    });
+    var platforms = _getList(
+        "platforms",
+        (platformNode) => new PlatformSelection(
+            _parseIdentifierLike(platformNode, "Platform name"),
+            platformNode.span));
 
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
@@ -408,6 +404,14 @@ class _ConfigurationLoader {
   /// Parses [node]'s value as a boolean selector.
   BooleanSelector _parseBooleanSelector(String name) =>
       _parseValue(name, (value) => new BooleanSelector.parse(value));
+
+  /// Parses [node]'s value as a platform selector.
+  PlatformSelector _parsePlatformSelector(String field) {
+    var node = _document.nodes[field];
+    if (node == null) return null;
+    return _parseNode(
+        node, field, (value) => new PlatformSelector.parse(value, node.span));
+  }
 
   /// Asserts that [node] is a string, passes its value to [parse], and returns
   /// the result.

@@ -10,6 +10,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import '../configuration.dart';
+import 'platform_selection.dart';
 import 'reporters.dart';
 import 'values.dart';
 
@@ -17,7 +18,7 @@ import 'values.dart';
 final ArgParser _parser = (() {
   var parser = new ArgParser(allowTrailingOptions: true);
 
-  var allPlatforms = TestPlatform.all.toList();
+  var allPlatforms = TestPlatform.all.toList()..remove(TestPlatform.vm);
   if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
   if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
 
@@ -62,9 +63,9 @@ final ArgParser _parser = (() {
   parser.addSeparator("======== Running Tests");
   parser.addOption("platform",
       abbr: 'p',
-      help: 'The platform(s) on which to run the tests.',
-      defaultsTo: 'vm',
-      allowed: allPlatforms.map((platform) => platform.identifier).toList(),
+      help: 'The platform(s) on which to run the tests.\n'
+          '[vm (default), '
+          '${allPlatforms.map((platform) => platform.identifier).join(", ")}]',
       allowMultiple: true);
   parser.addOption("preset",
       abbr: 'P',
@@ -220,7 +221,9 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
-        platforms: _ifParsed('platform') as List<String>,
+        platforms: (_ifParsed('platform') as List<String>)
+            ?.map((platform) => new PlatformSelection(platform))
+            ?.toList(),
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,

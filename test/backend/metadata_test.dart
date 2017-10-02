@@ -173,7 +173,7 @@ void main() {
 
     test("refuses an invalid platform selector", () {
       expect(() {
-        new Metadata.parse(onPlatform: {"invalid": new Skip()});
+        new Metadata.parse(onPlatform: {"vm &&": new Skip()});
       }, throwsFormatException);
     });
 
@@ -191,6 +191,32 @@ void main() {
           "chrome": [new Skip(), new Skip()]
         });
       }, throwsArgumentError);
+    });
+  });
+
+  group("validatePlatformSelectors", () {
+    test("succeeds if onPlatform uses valid platforms", () {
+      new Metadata.parse(onPlatform: {"vm || browser": new Skip()})
+          .validatePlatformSelectors([TestPlatform.vm]);
+    });
+
+    test("succeeds if testOn uses valid platforms", () {
+      new Metadata.parse(testOn: "vm || browser")
+          .validatePlatformSelectors([TestPlatform.vm]);
+    });
+
+    test("fails if onPlatform uses an invalid platform", () {
+      expect(() {
+        new Metadata.parse(onPlatform: {"unknown": new Skip()})
+            .validatePlatformSelectors([TestPlatform.vm]);
+      }, throwsFormatException);
+    });
+
+    test("fails if testOn uses an invalid platform", () {
+      expect(() {
+        new Metadata.parse(testOn: "unknown")
+            .validatePlatformSelectors([TestPlatform.vm]);
+      }, throwsFormatException);
     });
   });
 
