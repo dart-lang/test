@@ -194,7 +194,7 @@ class BrowserPlatform extends PlatformPlugin {
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
   Future<RunnerSuite> load(
       String path, TestPlatform browser, SuiteConfiguration suiteConfig) async {
-    assert(suiteConfig.platforms.contains(browser));
+    assert(suiteConfig.platforms.contains(browser.identifier));
 
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");

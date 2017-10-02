@@ -21,7 +21,8 @@ import '../../utils.dart';
 Loader _loader;
 
 /// A configuration that loads suites on Chrome.
-final _chrome = new SuiteConfiguration(platforms: [TestPlatform.chrome]);
+final _chrome =
+    new SuiteConfiguration(platforms: [TestPlatform.chrome.identifier]);
 
 void main() {
   setUp(() async {
@@ -124,8 +125,10 @@ Future main() {
     var suites = await _loader
         .loadFile(
             path,
-            new SuiteConfiguration(
-                platforms: [TestPlatform.vm, TestPlatform.chrome]))
+            new SuiteConfiguration(platforms: [
+              TestPlatform.vm.identifier,
+              TestPlatform.chrome.identifier
+            ]))
         .asyncMap((loadSuite) => loadSuite.getSuite())
         .toList();
     expect(suites[0].platform, equals(TestPlatform.vm));

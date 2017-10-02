@@ -51,8 +51,8 @@ class SuiteConfiguration {
   final Set<Pattern> patterns;
 
   /// The set of platforms on which to run tests.
-  List<TestPlatform> get platforms => _platforms ?? const [TestPlatform.vm];
-  final List<TestPlatform> _platforms;
+  List<String> get platforms => _platforms ?? const ["vm"];
+  final List<String> _platforms;
 
   /// Only run tests whose tags match this selector.
   ///
@@ -124,7 +124,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<String> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -172,7 +172,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       this.precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<String> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -249,7 +249,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<String> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,

@@ -206,16 +206,8 @@ class _ConfigurationLoader {
 
     var concurrency = _getInt("concurrency");
 
-    var allPlatformIdentifiers =
-        TestPlatform.all.map((platform) => platform.identifier).toSet();
-    var platforms = _getList("platforms", (platformNode) {
-      _validate(platformNode, "Platforms must be strings.",
-          (value) => value is String);
-      _validate(platformNode, 'Unknown platform "${platformNode.value}".',
-          allPlatformIdentifiers.contains);
-
-      return TestPlatform.find(platformNode.value);
-    });
+    var platforms = _getList("platforms",
+        (platformNode) => _parseIdentifierLike(platformNode, "Platform name"));
 
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));

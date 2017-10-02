@@ -220,8 +220,7 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
-        platforms:
-            (_ifParsed('platform') as List<String>)?.map(TestPlatform.find),
+        platforms: _ifParsed('platform') as List<String>,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,
