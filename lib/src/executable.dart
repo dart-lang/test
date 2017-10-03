@@ -172,6 +172,12 @@ transformers:
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
+  } on SourceSpanFormatException catch (error) {
+    stderr.writeln(error.toString(color: configuration.color));
+    exitCode = exit_codes.data;
+  } on FormatException catch (error) {
+    stderr.writeln(error.message);
+    exitCode = exit_codes.data;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(new Trace.from(stackTrace).terse);

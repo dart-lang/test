@@ -10,10 +10,12 @@ import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
 import '../backend/platform_selector.dart';
+import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/io.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/load.dart';
+import 'configuration/platform_selection.dart';
 import 'configuration/reporters.dart';
 import 'configuration/suite.dart';
 import 'configuration/values.dart';
@@ -219,7 +221,7 @@ class Configuration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<String> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -383,6 +385,14 @@ class Configuration {
   /// asynchronous callbacks transitively created by [body].
   T asCurrent<T>(T body()) => runZoned(body, zoneValues: {_currentKey: this});
 
+  /// Throws a [FormatException] if [this] refers to any undefined platforms.
+  void validatePlatforms(List<TestPlatform> allPlatforms) {
+    suiteDefaults.validatePlatforms(allPlatforms);
+    for (var config in presets.values) {
+      config.validatePlatforms(allPlatforms);
+    }
+  }
+
   /// Merges this with [other].
   ///
   /// For most fields, if both configurations have values set, [other]'s value
@@ -466,7 +476,7 @@ class Configuration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<String> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,

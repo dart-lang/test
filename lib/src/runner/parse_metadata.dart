@@ -12,20 +12,28 @@ import 'package:source_span/source_span.dart';
 
 import '../backend/metadata.dart';
 import '../backend/platform_selector.dart';
+import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/dart.dart';
 import '../utils.dart';
 
 /// Parse the test metadata for the test file at [path].
 ///
+/// The [allTestPlatforms] argument should list all test plaforms that are
+/// defined for the current test run.
+///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
-Metadata parseMetadata(String path) => new _Parser(path).parse();
+Metadata parseMetadata(String path, List<TestPlatform> allTestPlatforms) =>
+    new _Parser(path, allTestPlatforms).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
   /// The path to the test suite.
   final String _path;
+
+  /// All test plaforms that are defined for the current test run.
+  final List<TestPlatform> _allTestPlatforms;
 
   /// All annotations at the top of the file.
   List<Annotation> _annotations;
@@ -33,7 +41,7 @@ class _Parser {
   /// All prefixes defined by imports in this file.
   Set<String> _prefixes;
 
-  _Parser(String path) : _path = path {
+  _Parser(String path, this._allTestPlatforms) : _path = path {
     var contents = new File(path).readAsStringSync();
     var directives = parseDirectives(contents, name: path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
@@ -105,9 +113,17 @@ class _Parser {
   PlatformSelector _parseTestOn(Annotation annotation, String constructorName) {
     _assertConstructorName(constructorName, 'TestOn', annotation);
     _assertArguments(annotation.arguments, 'TestOn', annotation, positional: 1);
-    var literal = _parseString(annotation.arguments.arguments.first);
+    return _parsePlatformSelector(annotation.arguments.arguments.first);
+  }
+
+  /// Parses an [expression] that should contain a string representing a
+  /// [PlatformSelector].
+  PlatformSelector _parsePlatformSelector(Expression expression) {
+    var literal = _parseString(expression);
     return _contextualize(
-        literal, () => new PlatformSelector.parse(literal.stringValue));
+        literal,
+        () => new PlatformSelector.parse(literal.stringValue)
+          ..validate(_allTestPlatforms));
   }
 
   /// Parses a `@Retry` annotation.
@@ -217,9 +233,7 @@ class _Parser {
         positional: 1);
 
     return _parseMap(annotation.arguments.arguments.first, key: (key) {
-      var selector = _parseString(key);
-      return _contextualize(
-          selector, () => new PlatformSelector.parse(selector.stringValue));
+      return _parsePlatformSelector(key);
     }, value: (value) {
       var expressions = [];
       if (value is ListLiteral) {

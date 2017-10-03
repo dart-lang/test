@@ -286,6 +286,16 @@ class Metadata {
         "Dart identifiers.");
   }
 
+  /// Throws a [FormatException] if any [PlatformSelector]s use variables that
+  /// are undefined in [allPlatforms] or other sources of valid variables.
+  void validatePlatformSelectors(List<TestPlatform> allPlatforms) {
+    testOn.validate(allPlatforms);
+    onPlatform.forEach((selector, metadata) {
+      selector.validate(allPlatforms);
+      metadata.validatePlatformSelectors(allPlatforms);
+    });
+  }
+
   /// Return a new [Metadata] that merges [this] with [other].
   ///
   /// If the two [Metadata]s have conflicting properties, [other] wins. If

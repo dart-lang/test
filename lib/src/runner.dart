@@ -80,6 +80,8 @@ class Runner {
   /// This starts running tests and printing their progress. It returns whether
   /// or not they ran successfully.
   Future<bool> run() => _config.asCurrent(() async {
+        _config.validatePlatforms(_loader.allPlatforms);
+
         if (_closed) {
           throw new StateError("run() may not be called on a closed Runner.");
         }
