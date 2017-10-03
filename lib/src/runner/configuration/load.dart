@@ -206,8 +206,14 @@ class _ConfigurationLoader {
 
     var concurrency = _getInt("concurrency");
 
-    var platforms = _getList("platforms",
-        (platformNode) => _parseIdentifierLike(platformNode, "Platform name"));
+    var platforms = _getList("platforms", (platformNode) {
+      var name = _parseIdentifierLike(platformNode, "Platform name");
+      if (!TestPlatform.all.any((platform) => platform.identifier == name)) {
+        throw new SourceSpanFormatException(
+            'Unknown platform "$name"', platformNode.span, _source);
+      }
+      return name;
+    });
 
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
