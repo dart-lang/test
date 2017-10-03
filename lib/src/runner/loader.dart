@@ -137,7 +137,9 @@ class Loader {
       return;
     }
 
-    for (var platform in suiteConfig.platforms) {
+    for (var platformName in suiteConfig.platforms) {
+      var platform = TestPlatform.find(platformName);
+
       if (!suiteConfig.metadata.testOn.evaluate(platform, os: currentOS)) {
         continue;
       }

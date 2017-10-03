@@ -18,20 +18,21 @@ void main() {
         expect(merged.jsTrace, isFalse);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, isNull);
-        expect(merged.platforms, equals([TestPlatform.vm]));
+        expect(merged.platforms, equals([TestPlatform.vm.identifier]));
       });
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new SuiteConfiguration(
-            jsTrace: true,
-            runSkipped: true,
-            precompiledPath: "/tmp/js",
-            platforms: [TestPlatform.chrome]).merge(new SuiteConfiguration());
+                jsTrace: true,
+                runSkipped: true,
+                precompiledPath: "/tmp/js",
+                platforms: [TestPlatform.chrome.identifier])
+            .merge(new SuiteConfiguration());
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals("/tmp/js"));
-        expect(merged.platforms, equals([TestPlatform.chrome]));
+        expect(merged.platforms, equals([TestPlatform.chrome.identifier]));
       });
 
       test("if only the new configuration's is defined, uses it", () {
@@ -39,12 +40,12 @@ void main() {
             jsTrace: true,
             runSkipped: true,
             precompiledPath: "/tmp/js",
-            platforms: [TestPlatform.chrome]));
+            platforms: [TestPlatform.chrome.identifier]));
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals("/tmp/js"));
-        expect(merged.platforms, equals([TestPlatform.chrome]));
+        expect(merged.platforms, equals([TestPlatform.chrome.identifier]));
       });
 
       test(
@@ -54,18 +55,18 @@ void main() {
             jsTrace: false,
             runSkipped: true,
             precompiledPath: "/tmp/js",
-            platforms: [TestPlatform.chrome]);
+            platforms: [TestPlatform.chrome.identifier]);
         var newer = new SuiteConfiguration(
             jsTrace: true,
             runSkipped: false,
             precompiledPath: "../js",
-            platforms: [TestPlatform.dartium]);
+            platforms: [TestPlatform.dartium.identifier]);
         var merged = older.merge(newer);
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, equals("../js"));
-        expect(merged.platforms, equals([TestPlatform.dartium]));
+        expect(merged.platforms, equals([TestPlatform.dartium.identifier]));
       });
     });
 

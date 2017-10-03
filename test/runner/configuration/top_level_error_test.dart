@@ -281,7 +281,8 @@ void main() {
           .create();
 
       var test = await runTest(["test.dart"]);
-      expect(test.stderr, containsInOrder(["Platforms must be strings", "^^"]));
+      expect(test.stderr,
+          containsInOrder(["Platform name must be a string", "^^"]));
       await test.shouldExit(exit_codes.data);
     });
 
@@ -294,7 +295,9 @@ void main() {
               }))
           .create();
 
-      var test = await runTest(["test.dart"]);
+      await d.dir("test").create();
+
+      var test = await runTest([]);
       expect(test.stderr, containsInOrder(['Unknown platform "foo"', "^^^^^"]));
       await test.shouldExit(exit_codes.data);
     });

@@ -128,7 +128,9 @@ class Runner {
     if (testOn == PlatformSelector.all) return;
 
     var unsupportedPlatforms = _config.suiteDefaults.platforms
-        .where((platform) => !testOn.evaluate(platform, os: currentOS))
+        .map(TestPlatform.find)
+        .where((platform) =>
+            platform != null && !testOn.evaluate(platform, os: currentOS))
         .toList();
     if (unsupportedPlatforms.isEmpty) return;
 
@@ -351,7 +353,7 @@ class Runner {
   /// Loads each suite in [suites] in order, pausing after load for platforms
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    if (_config.suiteDefaults.platforms.contains(TestPlatform.vm)) {
+    if (_config.suiteDefaults.platforms.contains(TestPlatform.vm.identifier)) {
       warn("Debugging is currently unsupported on the Dart VM.",
           color: _config.color);
     }

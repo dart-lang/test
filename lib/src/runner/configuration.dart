@@ -10,7 +10,6 @@ import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
 import '../backend/platform_selector.dart';
-import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/io.dart';
 import 'configuration/args.dart' as args;
@@ -220,7 +219,7 @@ class Configuration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<String> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -467,7 +466,7 @@ class Configuration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<String> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
