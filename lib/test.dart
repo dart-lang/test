@@ -53,7 +53,7 @@ Declarer get _declarer {
   // In order to run the tests, we set up our own Declarer via
   // [_globalDeclarer], and schedule a microtask to run the tests once they're
   // finished being defined.
-  _globalDeclarer = new Declarer(TestPlatform.all);
+  _globalDeclarer = new Declarer(TestPlatform.builtIn);
   scheduleMicrotask(() async {
     var suite = new RunnerSuite(const PluginEnvironment(),
         SuiteConfiguration.empty, _globalDeclarer.build(),

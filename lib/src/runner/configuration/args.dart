@@ -18,7 +18,7 @@ import 'values.dart';
 final ArgParser _parser = (() {
   var parser = new ArgParser(allowTrailingOptions: true);
 
-  var allPlatforms = TestPlatform.all.toList()..remove(TestPlatform.vm);
+  var allPlatforms = TestPlatform.builtIn.toList()..remove(TestPlatform.vm);
   if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
   if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
 
