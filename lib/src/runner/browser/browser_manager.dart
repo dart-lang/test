@@ -201,7 +201,8 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
+  Future<RunnerSuite> load(
+      String path, Uri url, SuiteConfiguration suiteConfig, Object message,
       {StackTraceMapper mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(JSON.encode({
@@ -236,8 +237,8 @@ class BrowserManager {
       });
 
       try {
-        controller = await deserializeSuite(
-            path, _platform, suiteConfig, await _environment, suiteChannel,
+        controller = await deserializeSuite(path, _platform, suiteConfig,
+            await _environment, suiteChannel, message,
             mapper: mapper);
         _controllers.add(controller);
         return controller.suite;

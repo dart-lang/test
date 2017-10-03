@@ -192,8 +192,8 @@ class BrowserPlatform extends PlatformPlugin {
   ///
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<RunnerSuite> load(
-      String path, TestPlatform browser, SuiteConfiguration suiteConfig) async {
+  Future<RunnerSuite> load(String path, TestPlatform browser,
+      SuiteConfiguration suiteConfig, Object message) async {
     assert(suiteConfig.platforms.contains(browser.identifier));
 
     if (!browser.isBrowser) {
@@ -271,7 +271,7 @@ class BrowserPlatform extends PlatformPlugin {
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
-    var suite = await browserManager.load(path, suiteUrl, suiteConfig,
+    var suite = await browserManager.load(path, suiteUrl, suiteConfig, message,
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;

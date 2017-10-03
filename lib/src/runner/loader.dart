@@ -47,6 +47,20 @@ class Loader {
   List<TestPlatform> get allPlatforms =>
       new List.unmodifiable(_platformCallbacks.keys);
 
+  List<Map<String, Object>> get _allPlatformsSerialized {
+    if (__allPlatformsSerialized != null &&
+        __allPlatformsSerialized.length == _platformCallbacks.length) {
+      return __allPlatformsSerialized;
+    }
+
+    __allPlatformsSerialized = _platformCallbacks.keys
+        .map((platform) => platform.serialize())
+        .toList();
+    return __allPlatformsSerialized;
+  }
+
+  List<Map<String, Object>> __allPlatformsSerialized;
+
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   ///
@@ -169,7 +183,8 @@ class Loader {
 
         try {
           var plugin = await memo.runOnce(_platformCallbacks[platform]);
-          var suite = await plugin.load(path, platform, platformConfig);
+          var suite = await plugin.load(path, platform, platformConfig,
+              {"testPlatforms": _allPlatformsSerialized});
           if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {
