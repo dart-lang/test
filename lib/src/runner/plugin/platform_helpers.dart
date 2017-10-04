@@ -33,18 +33,19 @@ final _deserializeTimeout = new Duration(minutes: 8);
 ///
 /// If the suite is closed, this will close [channel].
 ///
-/// If [mapTrace] is passed, it will be used to adjust stack traces for any
-/// errors emitted by tests.
+/// The [message] parameter is an opaque object passed from the runner to
+/// [PlatformPlugin.load]. Plugins shouldn't interact with it other than to pass
+/// it on to [deserializeSuite].
 ///
-/// If [asciiSymbols] is passed, it controls whether the `symbol` package is
-/// configured to use plain ASCII or Unicode symbols. It defaults to `true` on
-/// Windows and `false` elsewhere.
+/// If [mapper] is passed, it will be used to adjust stack traces for any errors
+/// emitted by tests.
 Future<RunnerSuiteController> deserializeSuite(
     String path,
     TestPlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
+    Object message,
     {StackTraceMapper mapper}) async {
   var disconnector = new Disconnector();
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
@@ -60,7 +61,7 @@ Future<RunnerSuiteController> deserializeSuite(
     'stackTraceMapper': mapper?.serialize(),
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
-  });
+  }..addAll(message as Map));
 
   var completer = new Completer();
 

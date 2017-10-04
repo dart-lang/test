@@ -51,12 +51,12 @@ class NodePlatform extends PlatformPlugin {
       throw new UnimplementedError();
 
   Future<RunnerSuite> load(String path, TestPlatform platform,
-      SuiteConfiguration suiteConfig) async {
+      SuiteConfiguration suiteConfig, Object message) async {
     assert(platform == TestPlatform.nodeJS);
 
     var pair = await _loadChannel(path, suiteConfig);
-    var controller = await deserializeSuite(
-        path, platform, suiteConfig, new PluginEnvironment(), pair.first,
+    var controller = await deserializeSuite(path, platform, suiteConfig,
+        new PluginEnvironment(), pair.first, message,
         mapper: pair.last);
     return controller.suite;
   }

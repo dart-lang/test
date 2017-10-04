@@ -23,8 +23,8 @@ import 'platform_helpers.dart';
 /// In order to support interactive debugging, a plugin must override [load] as
 /// well, which returns a [RunnerSuite] that can contain a custom [Environment]
 /// and control debugging metadata such as [RunnerSuite.isDebugging] and
-/// [RunnerSuite.onDebugging]. To make this easier, implementations can call
-/// [deserializeSuite] in `platform_helpers.dart`.
+/// [RunnerSuite.onDebugging]. The plugin must create this suite by calling the
+/// [deserializeSuite] helper function.
 ///
 /// A platform plugin can be registered with [Loader.registerPlatformPlugin].
 abstract class PlatformPlugin {
@@ -52,16 +52,16 @@ abstract class PlatformPlugin {
   /// fine-grained control over the [RunnerSuite], including providing a custom
   /// implementation of [Environment].
   ///
-  /// It's recommended that subclasses overriding this method call
-  /// [deserializeSuite] in `platform_helpers.dart` to obtain a
-  /// [RunnerSuiteController].
+  /// Subclasses overriding this method must call [deserializeSuite] in
+  /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
+  /// pass the opaque [message] parameter to the [deserializeSuite] call.
   Future<RunnerSuite> load(String path, TestPlatform platform,
-      SuiteConfiguration suiteConfig) async {
+      SuiteConfiguration suiteConfig, Object message) async {
     // loadChannel may throw an exception. That's fine; it will cause the
     // LoadSuite to emit an error, which will be presented to the user.
     var channel = loadChannel(path, platform);
     var controller = await deserializeSuite(
-        path, platform, suiteConfig, new PluginEnvironment(), channel);
+        path, platform, suiteConfig, new PluginEnvironment(), channel, message);
     return controller.suite;
   }
 

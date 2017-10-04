@@ -77,7 +77,10 @@ class RemoteListener {
       if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
       verboseChain = metadata.verboseTrace;
-      var declarer = new Declarer(TestPlatform.all,
+      var declarer = new Declarer(
+          message['testPlatforms']
+              .map((platform) => new TestPlatform.deserialize(platform))
+              .toList(),
           metadata: metadata,
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
