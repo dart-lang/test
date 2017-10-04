@@ -320,13 +320,13 @@ Future expectTestsPass(void body()) async {
 
 /// Runs [body] with a declarer and returns the declared entries.
 List<GroupEntry> declare(void body()) {
-  var declarer = new Declarer(TestPlatform.all)..declare(body);
+  var declarer = new Declarer(TestPlatform.builtIn)..declare(body);
   return declarer.build().entries;
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
 Engine declareEngine(void body(), {bool runSkipped: false}) {
-  var declarer = new Declarer(TestPlatform.all)..declare(body);
+  var declarer = new Declarer(TestPlatform.builtIn)..declare(body);
   return new Engine.withSuites([
     new RunnerSuite(const PluginEnvironment(),
         new SuiteConfiguration(runSkipped: runSkipped), declarer.build())

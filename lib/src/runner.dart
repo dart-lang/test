@@ -130,7 +130,7 @@ class Runner {
     if (testOn == PlatformSelector.all) return;
 
     var unsupportedPlatforms = _config.suiteDefaults.platforms
-        .map(TestPlatform.find)
+        .map(_loader.findTestPlatform)
         .where((platform) =>
             platform != null && !testOn.evaluate(platform, os: currentOS))
         .toList();
@@ -145,7 +145,7 @@ class Runner {
     var unsupportedBrowsers =
         unsupportedPlatforms.where((platform) => platform.isBrowser);
     if (unsupportedBrowsers.isNotEmpty) {
-      var supportsAnyBrowser = TestPlatform.all
+      var supportsAnyBrowser = _loader.allPlatforms
           .where((platform) => platform.isBrowser)
           .any((platform) => testOn.evaluate(platform));
 

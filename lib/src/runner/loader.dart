@@ -43,6 +43,10 @@ class Loader {
   /// These are passed to the plugins' async memoizers when a plugin is needed.
   final _platformCallbacks = <TestPlatform, AsyncFunction>{};
 
+  /// A map of all platforms registered in [_platformCallbacks], indexed by
+  /// their string identifiers.
+  final _platformsByIdentifier = <String, TestPlatform>{};
+
   /// All plaforms supported by this [Loader].
   List<TestPlatform> get allPlatforms =>
       new List.unmodifiable(_platformCallbacks.keys);
@@ -98,8 +102,14 @@ class Loader {
     for (var platform in platforms) {
       _platformPlugins[platform] = memoizer;
       _platformCallbacks[platform] = getPlugin;
+      _platformsByIdentifier[platform.identifier] = platform;
     }
   }
+
+  /// Returns the [TestPlatform] registered with this loader that's identified
+  /// by [identifier], or `null` if none can be found.
+  TestPlatform findTestPlatform(String identifier) =>
+      _platformsByIdentifier[identifier];
 
   /// Loads all test suites in [dir] according to [suiteConfig].
   ///
@@ -156,7 +166,8 @@ class Loader {
     }
 
     for (var platformName in suiteConfig.platforms) {
-      var platform = TestPlatform.find(platformName);
+      var platform = findTestPlatform(platformName);
+      assert(platform != null, 'Unknown platform "$platformName".');
 
       if (!suiteConfig.metadata.testOn.evaluate(platform, os: currentOS)) {
         continue;
