@@ -154,20 +154,20 @@ transformers:
     return;
   }
 
-  var runner = new Runner(configuration);
-
+  Runner runner;
   var signalSubscription;
   close() async {
     if (signalSubscription == null) return;
     signalSubscription.cancel();
     signalSubscription = null;
     stdinLines.cancel(immediate: true);
-    await runner.close();
+    await runner?.close();
   }
 
   signalSubscription = _signals.listen((_) => close());
 
   try {
+    runner = new Runner(configuration);
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);

@@ -18,6 +18,7 @@ import '../../util/io.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
+import 'custom_platform.dart';
 import 'platform_selection.dart';
 import 'reporters.dart';
 
@@ -264,13 +265,16 @@ class _ConfigurationLoader {
     var includeTags = _parseBooleanSelector("include_tags");
     var excludeTags = _parseBooleanSelector("exclude_tags");
 
+    var definePlatforms = _loadDefinePlatforms();
+
     return new Configuration(
         pubServePort: pubServePort,
         patterns: patterns,
         paths: paths,
         filename: filename,
         includeTags: includeTags,
-        excludeTags: excludeTags);
+        excludeTags: excludeTags,
+        definePlatforms: definePlatforms);
   }
 
   /// Returns a map representation of the `fold_stack_frames` configuration.
@@ -309,6 +313,42 @@ class _ConfigurationLoader {
 
       return valueNode.value;
     });
+  }
+
+  Map<String, CustomPlatform> _loadDefinePlatforms() {
+    var platformsNode =
+        _getNode("define_platforms", "map", (value) => value is Map) as YamlMap;
+    if (platformsNode == null) return const {};
+
+    var platforms = <String, CustomPlatform>{};
+    platformsNode.nodes.forEach((identifierNode, valueNode) {
+      var identifier =
+          _parseIdentifierLike(identifierNode, "Platform identifier");
+
+      _validate(valueNode, "Platform definition must be a map.",
+          (value) => value is Map);
+      var map = valueNode as YamlMap;
+
+      var nameNode = _expect(map, "name");
+      _validate(nameNode, "Must be a string.", (value) => value is String);
+      var name = nameNode.value as String;
+
+      var parentNode = _expect(map, "extends");
+      var parent = _parseIdentifierLike(parentNode, "Platform parent");
+
+      var settings = _expect(map, "settings");
+      _validate(settings, "Must be a map.", (value) => value is Map);
+
+      platforms[identifier] = new CustomPlatform(
+          name,
+          nameNode.span,
+          identifier,
+          identifierNode.span,
+          parent,
+          parentNode.span,
+          settings as YamlMap);
+    });
+    return platforms;
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed
@@ -485,6 +525,15 @@ class _ConfigurationLoader {
               value: (_, map) => create(map));
       return create(base).change(presets: newPresets);
     }
+  }
+
+  /// Asserts that [map] has a field named [field] and returns it.
+  YamlNode _expect(YamlMap map, String field) {
+    var node = map.nodes[field];
+    if (node != null) return node;
+
+    throw new SourceSpanFormatException(
+        'Missing required field "$field".', map.span, _source);
   }
 
   /// Throws an error if a field named [field] exists at this level.
