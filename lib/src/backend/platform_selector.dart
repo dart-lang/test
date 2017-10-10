@@ -8,8 +8,8 @@ import 'package:source_span/source_span.dart';
 import 'operating_system.dart';
 import 'test_platform.dart';
 
-/// The set of statically-known valid variable names.
-final _validVariables =
+/// The set of variable names that are valid for all platform selectors.
+final _universalValidVariables =
     new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
       ..addAll(TestPlatform.builtIn.map((platform) => platform.identifier))
       ..addAll(OperatingSystem.all.map((os) => os.identifier));
@@ -63,7 +63,8 @@ class PlatformSelector {
 
     _wrapFormatException(
         () => _inner.validate((name) =>
-            _validVariables.contains(name) || validVariables.contains(name)),
+            _universalValidVariables.contains(name) ||
+            validVariables.contains(name)),
         _span);
   }
 
