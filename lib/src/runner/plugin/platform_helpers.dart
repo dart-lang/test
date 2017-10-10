@@ -51,7 +51,7 @@ Future<RunnerSuiteController> deserializeSuite(
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
 
   suiteChannel.sink.add({
-    'platform': platform.identifier,
+    'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
     'os': platform == TestPlatform.vm ? currentOS.identifier : null,
     'asciiGlyphs': Platform.isWindows,
@@ -75,7 +75,7 @@ Future<RunnerSuiteController> deserializeSuite(
       // notify the user of the error.
       loadSuiteZone.handleUncaughtError(error, stackTrace);
     } else {
-      completer.completeError(error);
+      completer.completeError(error, stackTrace);
     }
   }
 

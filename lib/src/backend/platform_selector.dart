@@ -11,6 +11,7 @@ import 'test_platform.dart';
 /// The set of statically-known valid variable names.
 final _validVariables =
     new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
+      ..addAll(TestPlatform.builtIn.map((platform) => platform.identifier))
       ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
@@ -54,17 +55,16 @@ class PlatformSelector {
     }
   }
 
-  /// Throws a [FormatException] if any variables are undefined in
-  /// [allPlatforms] or other sources of valid variables.
-  void validate(Iterable<TestPlatform> allPlatforms) {
+  /// Throws a [FormatException] if this selector uses any variables that don't
+  /// appear either in [validVariables] or in the set of variables that are
+  /// known to be valid for all selectors.
+  void validate(Set<String> validVariables) {
     if (identical(this, all)) return;
 
-    _wrapFormatException(() {
-      _inner.validate((name) {
-        if (_validVariables.contains(name)) return true;
-        return allPlatforms.any((platform) => name == platform.identifier);
-      });
-    }, _span);
+    _wrapFormatException(
+        () => _inner.validate((name) =>
+            _validVariables.contains(name) || validVariables.contains(name)),
+        _span);
   }
 
   /// Returns whether the selector matches the given [platform] and [os].

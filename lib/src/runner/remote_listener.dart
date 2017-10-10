@@ -73,15 +73,13 @@ class RemoteListener {
       }
 
       var message = await channel.stream.first;
-      var platforms = message['testPlatforms']
-          .map((platform) => new TestPlatform.deserialize(platform))
-          .toList();
 
       if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
       var metadata = new Metadata.deserialize(message['metadata']);
       verboseChain = metadata.verboseTrace;
-      var declarer = new Declarer(platforms,
+      var declarer = new Declarer(
           metadata: metadata,
+          platformVariables: message['platformVariables'].toSet(),
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
 
@@ -92,12 +90,13 @@ class RemoteListener {
 
       await declarer.declare(main);
 
-      var os =
-          message['os'] == null ? null : OperatingSystem.find(message['os']);
-      var platform = platforms
-          .firstWhere((platform) => platform.identifier == message['platform']);
       var suite = new Suite(declarer.build(),
-          platform: platform, os: os, path: message['path']);
+          platform: new TestPlatform.deserialize(message['platform']),
+          os: message['os'] == null
+              ? null
+              : OperatingSystem.find(message['os']),
+          path: message['path']);
+
       new RemoteListener._(suite, printZone)._listen(channel);
     }, onError: (error, stackTrace) {
       _sendError(channel, error, stackTrace, verboseChain);
