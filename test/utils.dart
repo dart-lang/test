@@ -13,7 +13,6 @@ import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
-import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/application_exception.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/engine.dart';
@@ -320,13 +319,13 @@ Future expectTestsPass(void body()) async {
 
 /// Runs [body] with a declarer and returns the declared entries.
 List<GroupEntry> declare(void body()) {
-  var declarer = new Declarer(TestPlatform.builtIn)..declare(body);
+  var declarer = new Declarer()..declare(body);
   return declarer.build().entries;
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
 Engine declareEngine(void body(), {bool runSkipped: false}) {
-  var declarer = new Declarer(TestPlatform.builtIn)..declare(body);
+  var declarer = new Declarer()..declare(body);
   return new Engine.withSuites([
     new RunnerSuite(const PluginEnvironment(),
         new SuiteConfiguration(runSkipped: runSkipped), declarer.build())

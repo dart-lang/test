@@ -12,28 +12,29 @@ import 'package:source_span/source_span.dart';
 
 import '../backend/metadata.dart';
 import '../backend/platform_selector.dart';
-import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/dart.dart';
 import '../utils.dart';
 
 /// Parse the test metadata for the test file at [path].
 ///
-/// The [allTestPlatforms] argument should list all test plaforms that are
-/// defined for the current test run.
+/// The [platformVariables] are the set of variables that are valid for platform
+/// selectors in suite metadata, in addition to the built-in variables that are
+/// allowed everywhere.
 ///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
-Metadata parseMetadata(String path, List<TestPlatform> allTestPlatforms) =>
-    new _Parser(path, allTestPlatforms).parse();
+Metadata parseMetadata(String path, Set<String> platformVariables) =>
+    new _Parser(path, platformVariables).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
   /// The path to the test suite.
   final String _path;
 
-  /// All test plaforms that are defined for the current test run.
-  final List<TestPlatform> _allTestPlatforms;
+  /// The set of variables that are valid for platform selectors, in addition to
+  /// the built-in variables that are allowed everywhere.
+  final Set<String> _platformVariables;
 
   /// All annotations at the top of the file.
   List<Annotation> _annotations;
@@ -41,7 +42,7 @@ class _Parser {
   /// All prefixes defined by imports in this file.
   Set<String> _prefixes;
 
-  _Parser(String path, this._allTestPlatforms) : _path = path {
+  _Parser(String path, this._platformVariables) : _path = path {
     var contents = new File(path).readAsStringSync();
     var directives = parseDirectives(contents, name: path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
@@ -123,7 +124,7 @@ class _Parser {
     return _contextualize(
         literal,
         () => new PlatformSelector.parse(literal.stringValue)
-          ..validate(_allTestPlatforms));
+          ..validate(_platformVariables));
   }
 
   /// Parses a `@Retry` annotation.

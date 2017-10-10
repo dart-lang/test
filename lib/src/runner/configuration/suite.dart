@@ -293,7 +293,9 @@ class SuiteConfiguration {
 
   /// Throws a [FormatException] if [this] refers to any undefined platforms.
   void validatePlatforms(List<TestPlatform> allPlatforms) {
-    _metadata.validatePlatformSelectors(allPlatforms);
+    var validVariables =
+        allPlatforms.map((platform) => platform.identifier).toSet();
+    _metadata.validatePlatformSelectors(validVariables);
 
     if (_platforms != null) {
       for (var selection in _platforms) {
@@ -310,7 +312,7 @@ class SuiteConfiguration {
     }
 
     onPlatform.forEach((selector, config) {
-      selector.validate(allPlatforms);
+      selector.validate(validVariables);
       config.validatePlatforms(allPlatforms);
     });
   }

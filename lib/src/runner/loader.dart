@@ -51,19 +51,10 @@ class Loader {
   List<TestPlatform> get allPlatforms =>
       new List.unmodifiable(_platformCallbacks.keys);
 
-  List<Map<String, Object>> get _allPlatformsSerialized {
-    if (__allPlatformsSerialized != null &&
-        __allPlatformsSerialized.length == _platformCallbacks.length) {
-      return __allPlatformsSerialized;
-    }
-
-    __allPlatformsSerialized = _platformCallbacks.keys
-        .map((platform) => platform.serialize())
-        .toList();
-    return __allPlatformsSerialized;
-  }
-
-  List<Map<String, Object>> __allPlatformsSerialized;
+  /// The platform variables supported by this loader, in addition the default
+  /// variables that are always supported.
+  Iterable<String> get _platformVariables =>
+      _platformCallbacks.keys.map((platform) => platform.identifier);
 
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
@@ -146,7 +137,7 @@ class Loader {
       String path, SuiteConfiguration suiteConfig) async* {
     try {
       suiteConfig = suiteConfig.merge(new SuiteConfiguration.fromMetadata(
-          parseMetadata(path, allPlatforms)));
+          parseMetadata(path, _platformVariables.toSet())));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
@@ -195,7 +186,7 @@ class Loader {
         try {
           var plugin = await memo.runOnce(_platformCallbacks[platform]);
           var suite = await plugin.load(path, platform, platformConfig,
-              {"testPlatforms": _allPlatformsSerialized});
+              {"platformVariables": _platformVariables.toList()});
           if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {
