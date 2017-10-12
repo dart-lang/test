@@ -5,9 +5,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-
+import '../../backend/test_platform.dart';
+import '../executable_settings.dart';
 import 'browser.dart';
+import 'default_settings.dart';
 
 /// A class for running an instance of Internet Explorer.
 ///
@@ -15,39 +16,15 @@ import 'browser.dart';
 class InternetExplorer extends Browser {
   final name = "Internet Explorer";
 
-  InternetExplorer(url, {String executable})
-      : super(() => _startBrowser(url, executable));
+  InternetExplorer(url, {ExecutableSettings settings})
+      : super(() => _startBrowser(url, settings));
 
   /// Starts a new instance of Internet Explorer open to the given [url], which
   /// may be a [Uri] or a [String].
-  ///
-  /// If [executable] is passed, it's used as the Internet Explorer executable.
-  /// Otherwise the default executable name for the current OS will be used.
-  static Future<Process> _startBrowser(url, [String executable]) {
-    if (executable == null) executable = _defaultExecutable();
-    return Process.start(executable, ['-extoff', url.toString()]);
-  }
+  static Future<Process> _startBrowser(url, ExecutableSettings settings) {
+    settings ??= defaultSettings[TestPlatform.dartium];
 
-  /// Return the default executable for the current operating system.
-  static String _defaultExecutable() {
-    // Internet Explorer could be installed in several places on Windows. The
-    // only way to find it is to check.
-    var prefixes = [
-      Platform.environment['PROGRAMW6432'],
-      Platform.environment['PROGRAMFILES'],
-      Platform.environment['PROGRAMFILES(X86)']
-    ];
-    var suffix = r'Internet Explorer\iexplore.exe';
-
-    for (var prefix in prefixes) {
-      if (prefix == null) continue;
-
-      var path = p.join(prefix, suffix);
-      if (new File(p.join(prefix, suffix)).existsSync()) return path;
-    }
-
-    // Fall back on looking it up on the path. This probably won't work, but at
-    // least it will fail with a useful error message.
-    return "iexplore.exe";
+    return Process.start(settings.executable,
+        ['-extoff', url.toString()]..addAll(settings.arguments));
   }
 }

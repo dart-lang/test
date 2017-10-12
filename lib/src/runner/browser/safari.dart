@@ -8,8 +8,11 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../../backend/test_platform.dart';
 import '../../util/io.dart';
+import '../executable_settings.dart';
 import 'browser.dart';
+import 'default_settings.dart';
 
 /// A class for running an instance of Safari.
 ///
@@ -17,19 +20,13 @@ import 'browser.dart';
 class Safari extends Browser {
   final name = "Safari";
 
-  Safari(url, {String executable})
-      : super(() => _startBrowser(url, executable));
+  Safari(url, {ExecutableSettings settings})
+      : super(() => _startBrowser(url, settings));
 
   /// Starts a new instance of Safari open to the given [url], which may be a
   /// [Uri] or a [String].
-  ///
-  /// If [executable] is passed, it's used as the content shell executable.
-  /// Otherwise the default executable name for the current OS will be used.
-  static Future<Process> _startBrowser(url, [String executable]) async {
-    if (executable == null) {
-      executable = '/Applications/Safari.app/Contents/MacOS/Safari';
-    }
-
+  static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
+    settings ??= defaultSettings[TestPlatform.safari];
     var dir = createTempDir();
 
     // Safari will only open files (not general URLs) via the command-line
@@ -39,7 +36,8 @@ class Safari extends Browser {
     new File(redirect).writeAsStringSync(
         "<script>location = " + JSON.encode(url.toString()) + "</script>");
 
-    var process = await Process.start(executable, [redirect]);
+    var process = await Process.start(
+        settings.executable, settings.arguments.toList()..add(redirect));
 
     process.exitCode
         .then((_) => new Directory(dir).deleteSync(recursive: true));

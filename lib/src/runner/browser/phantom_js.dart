@@ -7,10 +7,13 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../../backend/test_platform.dart';
 import '../../util/exit_codes.dart' as exit_codes;
 import '../../util/io.dart';
 import '../application_exception.dart';
+import '../executable_settings.dart';
 import 'browser.dart';
+import 'default_settings.dart';
 
 /// The PhantomJS script that opens the host page.
 final _script = """
@@ -39,26 +42,23 @@ class PhantomJS extends Browser {
 
   final Future<Uri> remoteDebuggerUrl;
 
-  factory PhantomJS(url, {String executable, bool debug: false}) {
+  factory PhantomJS(url, {ExecutableSettings settings, bool debug: false}) {
+    settings ??= defaultSettings[TestPlatform.phantomJS];
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new PhantomJS._(() async {
-      if (executable == null) {
-        executable = Platform.isWindows ? "phantomjs.exe" : "phantomjs";
-      }
-
       var dir = createTempDir();
       var script = p.join(dir, "script.js");
       new File(script).writeAsStringSync(_script);
 
       var port = debug ? await getUnsafeUnusedPort() : null;
 
-      var args = <String>[];
+      var args = settings.arguments.toList();
       if (debug) {
         args.addAll(
             ["--remote-debugger-port=$port", "--remote-debugger-autorun=yes"]);
       }
       args.addAll([script, url.toString()]);
-      var process = await Process.start(executable, args);
+      var process = await Process.start(settings.executable, args);
 
       // PhantomJS synchronously emits standard output, which means that if we
       // don't drain its stdout stream it can deadlock.

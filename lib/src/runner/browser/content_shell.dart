@@ -5,10 +5,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
+import '../executable_settings.dart';
 import 'browser.dart';
+import 'default_settings.dart';
 
 final _observatoryRegExp = new RegExp(r"^Observatory listening on ([^ ]+)");
 final _errorTimeout = const Duration(seconds: 10);
@@ -27,18 +30,18 @@ class ContentShell extends Browser {
 
   final Future<Uri> remoteDebuggerUrl;
 
-  factory ContentShell(url, {String executable, bool debug: false}) {
+  factory ContentShell(url, {ExecutableSettings settings, bool debug: false}) {
+    settings ??= defaultSettings[TestPlatform.contentShell];
     var observatoryCompleter = new Completer<Uri>.sync();
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new ContentShell._(() {
-      if (executable == null) executable = _defaultExecutable();
-
       var tryPort = ([int port]) async {
-        var args = ["--dump-render-tree", url.toString()];
+        var args = ["--dump-render-tree", url.toString()]
+          ..addAll(settings.arguments);
         if (port != null) args.add("--remote-debugging-port=$port");
 
-        var process = await Process
-            .start(executable, args, environment: {"DART_FLAGS": "--checked"});
+        var process = await Process.start(settings.executable, args,
+            environment: {"DART_FLAGS": "--checked"});
 
         if (debug) {
           observatoryCompleter.complete(lineSplitter
@@ -111,8 +114,4 @@ class ContentShell extends Browser {
   ContentShell._(Future<Process> startBrowser(), this.observatoryUrl,
       this.remoteDebuggerUrl)
       : super(startBrowser);
-
-  /// Return the default executable for the current operating system.
-  static String _defaultExecutable() =>
-      Platform.isWindows ? "content_shell.exe" : "content_shell";
 }

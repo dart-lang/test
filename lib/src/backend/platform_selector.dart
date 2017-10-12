@@ -76,6 +76,7 @@ class PlatformSelector {
 
     return _inner.evaluate((variable) {
       if (variable == platform.identifier) return true;
+      if (variable == platform.parent?.identifier) return true;
       if (variable == os.identifier) return true;
       switch (variable) {
         case "dart-vm":
