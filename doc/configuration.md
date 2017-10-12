@@ -52,6 +52,9 @@ tags:
 * [Configuring Platforms](#configuring-platforms)
   * [`on_os`](#on_os)
   * [`on_platform`](#on_platform)
+  * [`define_platform`](#define_platform)
+  * [Browser Settings](#browser-settings)
+    * [`executable`](#executable)
 * [Configuration Presets](#configuration-presets)
   * [`presets`](#presets)
   * [`add_preset`](#add_preset)
@@ -566,6 +569,93 @@ that are run on the Dart VM under that operating system. To configure all tests
 when running on a particular operating system, use [`on_os`](#on_os) instead.
 
 This field counts as [test configuration](#test-configuration).
+
+### `define_platforms`
+
+You can define new platforms in terms of old ones using the `define_platforms`
+field. This lets you define variants of existing platforms without overriding
+the old ones. This field takes a map from the new platform identifiers to
+definitions for those platforms. For example:
+
+```yaml
+define_platforms:
+  # This identifier is used to select the platform with the --platform flag.
+  chromium:
+    # A human-friendly name for the platform.
+    name: Chromium
+
+    # The identifier for the platform that this is based on.
+    extends: chrome
+
+    # Settings for the new child platform.
+    settings:
+      executable: chromium
+```
+
+Once this is defined, you can run `pub run test -p chromium` and it will run
+those tests in the Chromium browser, using the same logic it normally uses for
+Chrome. You can even use `chromium` in platform selectors; for example, you
+might pass `testOn: "chromium"` to declare that a test is Chromium-specific.
+User-defined platforms also count as their parents, so Chromium will run tests
+that say `testOn: "chrome"` as well.
+
+Each platform can define exactly which settings it supports. All browsers
+support [the same settings](#browser-settings), but the VM doesn't support any
+settings and so can't be extended.
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### Browser Settings
+
+All built-in browser platforms provide the same settings that can be set using
+[`define_platforms`](#define_platforms), which control how the browser
+executable is invoked.
+
+#### `executable`
+
+The `executable` field tells the test runner where to look for the executable to
+use to start the browser. It has three sub-keys, one for each supported operating
+system, which each take a path or an executable name:
+
+```yaml
+define_platforms:
+  chromium:
+    name: Chromium
+    extends: chrome
+
+    settings:
+      executable:
+        linux: chromium
+        mac_os: /Applications/Chromium.app/Contents/MacOS/Chromium
+        windows: Chromium\Application\chrome.exe
+```
+
+Executables can be defined in three ways:
+
+* As a plain basename, with no path separators. These executables are passed
+  directly to the OS, which looks them up using the `PATH` environment variable.
+
+* As an absolute path, which is used as-is.
+
+* **Only on Windows**, as a relative path. The test runner will look up this
+  path relative to the `LOCALAPPATA`, `PROGRAMFILES`, and `PROGRAMFILES(X86)`
+  environment variables, in that order.
+
+If a platform is omitted, it defaults to using the built-in executable location.
+
+As a shorthand, you can also define the same executable for all operating
+systems:
+
+```yaml
+define_platforms:
+  chromium:
+    name: Chromium
+    extends: chrome
+
+    settings:
+      executable: chromium
+```
 
 ## Configuration Presets
 
