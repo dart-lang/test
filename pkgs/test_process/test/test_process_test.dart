@@ -49,18 +49,15 @@ void main() {
         print("\nworld");
       ''');
 
-      expect(process.stdout,
-          emitsInOrder(['hello', '', 'world', emitsDone]));
+      expect(process.stdout, emitsInOrder(['hello', '', 'world', emitsDone]));
       expect(process.stderr, emitsInOrder(['hi', emitsDone]));
       await process.shouldExit(0);
     });
 
     test("close when the process exits", () async {
       var process = await startDartProcess('');
-      expect(expectLater(process.stdout, emits('hello')),
-          throwsTestFailure);
-      expect(expectLater(process.stderr, emits('world')),
-          throwsTestFailure);
+      expect(expectLater(process.stdout, emits('hello')), throwsTestFailure);
+      expect(expectLater(process.stderr, emits('world')), throwsTestFailure);
       await process.shouldExit(0);
     });
   });
@@ -73,19 +70,19 @@ void main() {
       print("\nworld");
     ''');
 
-      expect(process.stdoutStream(),
-          emitsInOrder(['hello', '', 'world', emitsDone]));
-      expect(process.stdoutStream(),
-          emitsInOrder(['hello', '', 'world', emitsDone]));
+    expect(process.stdoutStream(),
+        emitsInOrder(['hello', '', 'world', emitsDone]));
+    expect(process.stdoutStream(),
+        emitsInOrder(['hello', '', 'world', emitsDone]));
 
-      expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
-      expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
+    expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
+    expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
 
-      await process.shouldExit(0);
+    await process.shouldExit(0);
 
-      expect(process.stdoutStream(),
-          emitsInOrder(['hello', '', 'world', emitsDone]));
-      expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
+    expect(process.stdoutStream(),
+        emitsInOrder(['hello', '', 'world', emitsDone]));
+    expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
   });
 
   test("stdin writes to the process", () async {

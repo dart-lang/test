@@ -79,8 +79,7 @@ class TestProcess {
   /// printed to the console as they appear. This is only intended to be set
   /// temporarily to help when debugging test failures.
   static Future<TestProcess> start(
-      String executable,
-      Iterable<String> arguments,
+      String executable, Iterable<String> arguments,
       {String workingDirectory,
       Map<String, String> environment,
       bool includeParentEnvironment: true,
@@ -102,8 +101,8 @@ class TestProcess {
     }
 
     encoding ??= UTF8;
-    return new TestProcess(
-        process, description, encoding: encoding, forwardStdio: forwardStdio);
+    return new TestProcess(process, description,
+        encoding: encoding, forwardStdio: forwardStdio);
   }
 
   /// Creates a [TestProcess] for [process].
@@ -113,13 +112,15 @@ class TestProcess {
   ///
   /// This is protected, which means it should only be called by subclasses.
   @protected
-  TestProcess(Process process, this.description, {Encoding encoding,
-          bool forwardStdio: false})
+  TestProcess(Process process, this.description,
+      {Encoding encoding, bool forwardStdio: false})
       : _process = process,
         _stdoutSplitter = new StreamSplitter(process.stdout
-            .transform(encoding.decoder).transform(const LineSplitter())),
+            .transform(encoding.decoder)
+            .transform(const LineSplitter())),
         _stderrSplitter = new StreamSplitter(process.stderr
-            .transform(encoding.decoder).transform(const LineSplitter())) {
+            .transform(encoding.decoder)
+            .transform(const LineSplitter())) {
     addTearDown(_tearDown);
     expect(_process.exitCode.then((_) => _logOutput()), completes,
         reason: "Process `$description` never exited.");
