@@ -32,10 +32,12 @@ void main() {
           completion(equals('contents1')));
       expect(new File(p.join(d.sandbox, 'dir', 'file2.txt')).readAsString(),
           completion(equals('contents2')));
-      expect(new File(p.join(d.sandbox, 'dir', 'subdir', 'subfile1.txt'))
+      expect(
+          new File(p.join(d.sandbox, 'dir', 'subdir', 'subfile1.txt'))
               .readAsString(),
           completion(equals('subcontents1')));
-      expect(new File(p.join(d.sandbox, 'dir', 'subdir', 'subfile2.txt'))
+      expect(
+          new File(p.join(d.sandbox, 'dir', 'subdir', 'subfile2.txt'))
               .readAsString(),
           completion(equals('subcontents2')));
     });
@@ -78,16 +80,17 @@ void main() {
       await new File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
       await new File(p.join(dirPath, 'file2.txt')).writeAsString('contents2');
 
-      expect(d.dir('dir', [
-        d.dir('subdir', [
-          d.file('subfile1.txt', 'subcontents1'),
-          d.file('subfile2.txt', 'subcontents2')
-        ]),
-        d.file('file1.txt', 'contents1'),
-        d.file('file2.txt', 'contents2')
-      ]).validate(),
-          throwsA(toString(equals(
-              'Directory not found: "${p.join('dir', 'subdir')}".'))));
+      expect(
+          d.dir('dir', [
+            d.dir('subdir', [
+              d.file('subfile1.txt', 'subcontents1'),
+              d.file('subfile2.txt', 'subcontents2')
+            ]),
+            d.file('file1.txt', 'contents1'),
+            d.file('file2.txt', 'contents2')
+          ]).validate(),
+          throwsA(toString(
+              equals('Directory not found: "${p.join('dir', 'subdir')}".'))));
     });
 
     test("emits an error for each child that fails to validate", () async {
@@ -109,37 +112,38 @@ void main() {
           d.file('file1.txt', 'contents1'),
           d.file('file2.txt', 'contents2')
         ]).validate();
-      }, onError: expectAsync1((error) {
-        errors++;
-        controller.add(error.toString());
-        if (errors == 3) controller.close();
-      }, count: 3));
+      },
+          onError: expectAsync1((error) {
+            errors++;
+            controller.add(error.toString());
+            if (errors == 3) controller.close();
+          }, count: 3));
 
-      expect(controller.stream.toList(), completion(allOf([
-        contains('File not found: "${p.join('dir', 'subdir', 'subfile1.txt')}".'),
-        contains('File not found: "${p.join('dir', 'file2.txt')}".'),
-        contains(startsWith('File "${p.join('dir', 'subdir', 'subfile2.txt')}" '
-            'should contain:')),
-      ])));
+      expect(
+          controller.stream.toList(),
+          completion(allOf([
+            contains(
+                'File not found: "${p.join('dir', 'subdir', 'subfile1.txt')}".'),
+            contains('File not found: "${p.join('dir', 'file2.txt')}".'),
+            contains(
+                startsWith('File "${p.join('dir', 'subdir', 'subfile2.txt')}" '
+                    'should contain:')),
+          ])));
     });
   });
 
   group("load()", () {
     test("loads a file", () {
-      var dir = d.dir('dir', [
-        d.file('name.txt', 'contents'),
-        d.file('other.txt', 'wrong')
-      ]);
+      var dir = d.dir('dir',
+          [d.file('name.txt', 'contents'), d.file('other.txt', 'wrong')]);
       expect(UTF8.decodeStream(dir.load('name.txt')),
           completion(equals('contents')));
     });
 
     test("loads a deeply-nested file", () {
       var dir = d.dir('dir', [
-        d.dir('subdir', [
-          d.file('name.txt', 'subcontents'),
-          d.file('other.txt', 'wrong')
-        ]),
+        d.dir('subdir',
+            [d.file('name.txt', 'subcontents'), d.file('other.txt', 'wrong')]),
         d.dir('otherdir', [d.file('other.txt', 'wrong')]),
         d.file('name.txt', 'contents')
       ]);
@@ -156,7 +160,8 @@ void main() {
         d.file('name.txt', 'contents')
       ]);
 
-      expect(dir.load('subdir/subsubdir').toList(),
+      expect(
+          dir.load('subdir/subsubdir').toList(),
           throwsA(toString(equals('Couldn\'t find a file descriptor named '
               '"subsubdir" within "dir/subdir".'))));
     });
@@ -176,20 +181,20 @@ void main() {
         d.dir('subdir', [d.file('name.txt', 'contents')])
       ]);
 
-      expect(dir.load('subdir/not-name.txt').toList(),
+      expect(
+          dir.load('subdir/not-name.txt').toList(),
           throwsA(toString(equals('Couldn\'t find a file descriptor named '
               '"not-name.txt" within "dir/subdir".'))));
     });
 
     test("fails to load a file that exists multiple times", () {
       var dir = d.dir('dir', [
-        d.dir('subdir', [
-          d.file('name.txt', 'contents'),
-          d.file('name.txt', 'contents')
-        ])
+        d.dir('subdir',
+            [d.file('name.txt', 'contents'), d.file('name.txt', 'contents')])
       ]);
 
-      expect(dir.load('subdir/name.txt').toList(),
+      expect(
+          dir.load('subdir/name.txt').toList(),
           throwsA(toString(equals('Found multiple file descriptors named '
               '"name.txt" within "dir/subdir".'))));
     });
@@ -200,8 +205,8 @@ void main() {
         d.dir('name', [d.file('subfile', 'contents')])
       ]);
 
-      expect(UTF8.decodeStream(dir.load('name')),
-          completion(equals('contents')));
+      expect(
+          UTF8.decodeStream(dir.load('name')), completion(equals('contents')));
     });
   });
 
@@ -217,15 +222,14 @@ void main() {
     });
 
     test("lists the contents of the directory", () {
-      var dir = d.dir('dir', [
-        d.file('file1.txt', 'contents1'),
-        d.file('file2.txt', 'contents2')
-      ]);
+      var dir = d.dir('dir',
+          [d.file('file1.txt', 'contents1'), d.file('file2.txt', 'contents2')]);
 
-      expect(dir.describe(), equals(
-          "dir\n"
-          "+-- file1.txt\n"
-          "'-- file2.txt"));
+      expect(
+          dir.describe(),
+          equals("dir\n"
+              "+-- file1.txt\n"
+              "'-- file2.txt"));
     });
 
     test("lists the contents of nested directories", () {
@@ -234,22 +238,21 @@ void main() {
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
           d.file('subfile2.txt', 'subcontents2'),
-          d.dir('subsubdir', [
-            d.file('subsubfile.txt', 'subsubcontents')
-          ])
+          d.dir('subsubdir', [d.file('subsubfile.txt', 'subsubcontents')])
         ]),
         d.file('file2.txt', 'contents2')
       ]);
 
-      expect(dir.describe(), equals(
-          "dir\n"
-          "+-- file1.txt\n"
-          "+-- subdir\n"
-          "|   +-- subfile1.txt\n"
-          "|   +-- subfile2.txt\n"
-          "|   '-- subsubdir\n"
-          "|       '-- subsubfile.txt\n"
-          "'-- file2.txt"));
+      expect(
+          dir.describe(),
+          equals("dir\n"
+              "+-- file1.txt\n"
+              "+-- subdir\n"
+              "|   +-- subfile1.txt\n"
+              "|   +-- subfile2.txt\n"
+              "|   '-- subsubdir\n"
+              "|       '-- subsubfile.txt\n"
+              "'-- file2.txt"));
     });
 
     test("with no contents returns the directory name", () {
@@ -290,10 +293,8 @@ void main() {
       await descriptor.create();
 
       await d.dir('dir2', [
-        d.dir('subdir', [
-          d.file('subfile1.txt', 'subcontents1'),
-          d.nothing('.hidden')
-        ]),
+        d.dir('subdir',
+            [d.file('subfile1.txt', 'subcontents1'), d.nothing('.hidden')]),
         d.file('file1.txt', 'contents1'),
         d.nothing('.DS_Store')
       ]).validate();

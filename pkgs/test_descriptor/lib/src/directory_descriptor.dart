@@ -34,20 +34,21 @@ class DirectoryDescriptor extends Descriptor {
   /// Creates a directory descriptor named [name] that describes the physical
   /// directory at [path].
   factory DirectoryDescriptor.fromFilesystem(String name, String path) {
-    return new DirectoryDescriptor(name,
+    return new DirectoryDescriptor(
+        name,
         new Directory(path).listSync().map((entity) {
-      // Ignore hidden files.
-      if (p.basename(entity.path).startsWith(".")) return null;
+          // Ignore hidden files.
+          if (p.basename(entity.path).startsWith(".")) return null;
 
-      if (entity is Directory) {
-        return new DirectoryDescriptor.fromFilesystem(
-            p.basename(entity.path), entity.path);
-      } else if (entity is File) {
-        return new FileDescriptor(
-            p.basename(entity.path), entity.readAsBytesSync());
-      }
-      // Ignore broken symlinks.
-    }).where((path) => path != null));
+          if (entity is Directory) {
+            return new DirectoryDescriptor.fromFilesystem(
+                p.basename(entity.path), entity.path);
+          } else if (entity is File) {
+            return new FileDescriptor(
+                p.basename(entity.path), entity.readAsBytesSync());
+          }
+          // Ignore broken symlinks.
+        }).where((path) => path != null));
   }
 
   Future create([String parent]) async {
@@ -93,19 +94,17 @@ class DirectoryDescriptor extends Descriptor {
       var file = split.length == 1;
       var matchingEntries = contents.where((entry) {
         return entry.name == split.first &&
-            (file
-                ? entry is FileDescriptor
-                : entry is DirectoryDescriptor);
+            (file ? entry is FileDescriptor : entry is DirectoryDescriptor);
       }).toList();
 
       var type = file ? 'file' : 'directory';
       var parentsAndSelf = parents == null ? name : p.url.join(parents, name);
       if (matchingEntries.isEmpty) {
         fail('Couldn\'t find a $type descriptor named "${split.first}" within '
-             '"$parentsAndSelf".');
+            '"$parentsAndSelf".');
       } else if (matchingEntries.length > 1) {
         fail('Found multiple $type descriptors named "${split.first}" within '
-             '"$parentsAndSelf".');
+            '"$parentsAndSelf".');
       } else {
         var remainingPath = split.sublist(1);
         if (remainingPath.isEmpty) {
@@ -124,16 +123,16 @@ class DirectoryDescriptor extends Descriptor {
     var buffer = new StringBuffer();
     buffer.writeln(name);
     for (var entry in contents.take(contents.length - 1)) {
-      var entryString = prefixLines(
-          entry.describe(), '${glyph.verticalLine}   ',
-          first: '${glyph.teeRight}${glyph.horizontalLine}'
-              '${glyph.horizontalLine} ');
+      var entryString =
+          prefixLines(entry.describe(), '${glyph.verticalLine}   ',
+              first: '${glyph.teeRight}${glyph.horizontalLine}'
+                  '${glyph.horizontalLine} ');
       buffer.writeln(entryString);
     }
 
     var lastEntryString = prefixLines(contents.last.describe(), '    ',
         first: '${glyph.bottomLeftCorner}${glyph.horizontalLine}'
-              '${glyph.horizontalLine} ');
+            '${glyph.horizontalLine} ');
     buffer.write(lastEntryString);
     return buffer.toString();
   }

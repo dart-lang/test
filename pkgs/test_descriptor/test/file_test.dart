@@ -31,8 +31,8 @@ void main() {
     });
 
     test('fails to create a matcher file', () async {
-      expect(d.file('name.txt', contains('foo')).create(),
-          throwsUnsupportedError);
+      expect(
+          d.file('name.txt', contains('foo')).create(), throwsUnsupportedError);
     });
 
     test('overwrites an existing file', () async {
@@ -81,7 +81,8 @@ void main() {
     test("fails if the binary contents don't match", () async {
       await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([5, 4, 3, 2]);
 
-      expect(d.file('name.txt', [0, 1, 2, 3]).validate(),
+      expect(
+          d.file('name.txt', [0, 1, 2, 3]).validate(),
           throwsA(toString(equals(
               'File "name.txt" didn\'t contain the expected binary data.'))));
     });
@@ -89,9 +90,10 @@ void main() {
     test("fails if the text contents don't match the matcher", () async {
       await new File(p.join(d.sandbox, 'name.txt')).writeAsString('wrong');
 
-      expect(d.file('name.txt', contains('ent')).validate(),
-          throwsA(toString(startsWith(
-              'Invalid contents for file "name.txt":'))));
+      expect(
+          d.file('name.txt', contains('ent')).validate(),
+          throwsA(
+              toString(startsWith('Invalid contents for file "name.txt":'))));
     });
 
     test("fails if the binary contents don't match the matcher", () async {
@@ -100,16 +102,18 @@ void main() {
       expect(
           new d.FileDescriptor.binaryMatcher('name.txt', contains(1))
               .validate(),
-          throwsA(toString(startsWith(
-              'Invalid contents for file "name.txt":'))));
+          throwsA(
+              toString(startsWith('Invalid contents for file "name.txt":'))));
     });
 
     test("fails if invalid UTF-8 doesn't match a text matcher", () async {
       await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
-      expect(d.file('name.txt', isEmpty).validate(), throwsA(toString(allOf([
-        startsWith('Invalid contents for file "name.txt":'),
-        contains('�')
-      ]))));
+      expect(
+          d.file('name.txt', isEmpty).validate(),
+          throwsA(toString(allOf([
+            startsWith('Invalid contents for file "name.txt":'),
+            contains('�')
+          ]))));
     });
 
     test("fails if there's no file", () {
@@ -130,8 +134,7 @@ void main() {
     });
 
     test("read() fails for a matcher file", () {
-      expect(d.file('name.txt', contains('hi')).read,
-          throwsUnsupportedError);
+      expect(d.file('name.txt', contains('hi')).read, throwsUnsupportedError);
     });
 
     test("readAsBytes() returns the contents of a text file as a byte stream",

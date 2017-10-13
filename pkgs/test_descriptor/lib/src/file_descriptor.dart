@@ -128,8 +128,8 @@ class _StringFileDescriptor extends FileDescriptor {
     throw fail(_textMismatchMessage(prettyPath, _contents, actualContentsText));
   }
 
-  String _textMismatchMessage(String prettyPath, String expected,
-      String actual) {
+  String _textMismatchMessage(
+      String prettyPath, String expected, String actual) {
     final expectedLines = expected.split('\n');
     final actualLines = actual.split('\n');
 
@@ -183,8 +183,7 @@ class _MatcherFileDescriptor extends FileDescriptor {
   void _validate(String prettyPath, List<int> actualContents) {
     try {
       expect(
-          _isBinary ? actualContents : utf8.decode(actualContents),
-          _matcher);
+          _isBinary ? actualContents : utf8.decode(actualContents), _matcher);
     } on TestFailure catch (error) {
       throw new TestFailure(
           'Invalid contents for file "$prettyPath":\n' + error.message);

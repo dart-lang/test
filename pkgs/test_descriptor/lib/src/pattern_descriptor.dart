@@ -44,7 +44,8 @@ class PatternDescriptor extends Descriptor {
   Future validate([String parent]) async {
     var inSandbox = parent == null;
     parent ??= sandbox;
-    var matchingEntries = await new Directory(parent).list()
+    var matchingEntries = await new Directory(parent)
+        .list()
         .map((entry) =>
             entry is File ? entry.resolveSymbolicLinksSync() : entry.path)
         .where((entry) => matchesAll(pattern, p.basename(entry)))
@@ -75,8 +76,8 @@ class PatternDescriptor extends Descriptor {
       await waitAndReportErrors(results.map((result) => result.asFuture));
     } else if (successes.length > 1) {
       fail('Multiple valid entries found in $location matching '
-             '$_patternDescription:\n'
-           '${bullet(successes.map((result) => result.asValue.value))}');
+          '$_patternDescription:\n'
+          '${bullet(successes.map((result) => result.asValue.value))}');
     }
   }
 

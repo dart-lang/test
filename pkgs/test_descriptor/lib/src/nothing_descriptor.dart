@@ -16,8 +16,7 @@ import 'utils.dart';
 ///
 /// Calling [create] does nothing.
 class NothingDescriptor extends Descriptor {
-  NothingDescriptor(String name)
-      : super(name);
+  NothingDescriptor(String name) : super(name);
 
   Future create([String parent]) async {}
 

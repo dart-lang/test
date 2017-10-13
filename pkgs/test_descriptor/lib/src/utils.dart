@@ -16,9 +16,7 @@ final utf8 = const Utf8Codec(allowMalformed: true);
 
 /// Prepends a vertical bar to [text].
 String addBar(String text) => prefixLines(text, "${glyph.verticalLine} ",
-    first: "${glyph.downEnd} ",
-    last: "${glyph.upEnd} ",
-    single: "| ");
+    first: "${glyph.downEnd} ", last: "${glyph.upEnd} ", single: "| ");
 
 /// Indents [text], and adds a bullet at the beginning.
 String addBullet(String text) =>
@@ -33,8 +31,8 @@ String bullet(Iterable<String> strings) => strings.map(addBullet).join("\n");
 /// prefixed with those instead. If [single] is passed, it's used if there's
 /// only a single line; otherwise, [first], [last], or [prefix] is used, in that
 /// order of precedence.
-String prefixLines(String text, String prefix, {String first, String last,
-    String single}) {
+String prefixLines(String text, String prefix,
+    {String first, String last, String single}) {
   first ??= prefix;
   last ??= prefix;
   single ??= first ?? last ?? prefix;

@@ -16,7 +16,8 @@ String get sandbox {
   if (_sandbox != null) return _sandbox;
   // Resolve symlinks so we don't end up with inconsistent paths on Mac OS where
   // /tmp is symlinked.
-  _sandbox = Directory.systemTemp.createTempSync('dart_test_')
+  _sandbox = Directory.systemTemp
+      .createTempSync('dart_test_')
       .resolveSymbolicLinksSync();
 
   addTearDown(() async {
@@ -27,6 +28,7 @@ String get sandbox {
 
   return _sandbox;
 }
+
 String _sandbox;
 
 /// Whether [sandbox] has been created.
