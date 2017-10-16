@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 
 import '../backend/operating_system.dart';
 import '../utils.dart';
@@ -21,10 +20,6 @@ const _carriageReturn = 0xD;
 
 /// The root directory of the Dart SDK.
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
-
-/// The version of the Dart SDK currently in use.
-final Version _sdkVersion = new Version.parse(
-    new File(p.join(sdkDir, 'version')).readAsStringSync().trim());
 
 /// Returns the current operating system.
 final OperatingSystem currentOS = (() {
