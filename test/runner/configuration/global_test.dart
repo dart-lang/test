@@ -94,9 +94,10 @@ void main() {
   group("disallows local-only configuration:", () {
     for (var field in [
       "skip", "retry", "test_on", "paths", "filename", "names", "tags", //
-      "plain_names", "include_tags", "exclude_tags", "pub_serve", "add_tags"
+      "plain_names", "include_tags", "exclude_tags", "pub_serve", "add_tags",
+      "define_platforms"
     ]) {
-      test("rejects local-only configuration", () async {
+      test("for $field", () async {
         await d.file("global_test.yaml", JSON.encode({field: null})).create();
 
         await d.file("test.dart", """
