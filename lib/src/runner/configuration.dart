@@ -13,7 +13,9 @@ import '../backend/platform_selector.dart';
 import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/io.dart';
+import '../utils.dart';
 import 'configuration/args.dart' as args;
+import 'configuration/custom_platform.dart';
 import 'configuration/load.dart';
 import 'configuration/platform_selection.dart';
 import 'configuration/reporters.dart';
@@ -170,6 +172,9 @@ class Configuration {
 
   Set<String> _knownPresets;
 
+  /// Platforms defined by the user in terms of existing platforms.
+  final Map<String, CustomPlatform> definePlatforms;
+
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
@@ -213,6 +218,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
 
       // Suite-level configuration
@@ -255,6 +261,7 @@ class Configuration {
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
+        definePlatforms: definePlatforms,
         noRetry: noRetry,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
@@ -309,6 +316,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
@@ -329,6 +337,7 @@ class Configuration {
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
         presets = _map(presets),
+        definePlatforms = _map(definePlatforms),
         _noRetry = noRetry,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
@@ -387,6 +396,9 @@ class Configuration {
 
   /// Throws a [FormatException] if [this] refers to any undefined platforms.
   void validatePlatforms(List<TestPlatform> allPlatforms) {
+    // We don't need to verify [customPlatforms] here because those platforms
+    // already need to be verified and resolved to create [allPlatforms].
+
     suiteDefaults.validatePlatforms(allPlatforms);
     for (var config in presets.values) {
       config.validatePlatforms(allPlatforms);
@@ -436,6 +448,8 @@ class Configuration {
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
+        definePlatforms:
+            mergeUnmodifiableMaps(definePlatforms, other.definePlatforms),
         noRetry: other._noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
@@ -468,6 +482,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
 
       // Suite-level configuration
@@ -508,6 +523,7 @@ class Configuration {
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,
+        definePlatforms: definePlatforms ?? this.definePlatforms,
         noRetry: noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,

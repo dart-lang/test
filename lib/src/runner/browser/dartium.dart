@@ -7,11 +7,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:path/path.dart' as p;
 
+import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
+import '../executable_settings.dart';
 import 'browser.dart';
+import 'default_settings.dart';
 
 final _observatoryRegExp =
     new RegExp(r'Observatory listening (?:on|at) ([^ "]+)');
@@ -30,12 +32,11 @@ class Dartium extends Browser {
 
   final Future<Uri> remoteDebuggerUrl;
 
-  factory Dartium(url, {String executable, bool debug: false}) {
+  factory Dartium(url, {ExecutableSettings settings, bool debug: false}) {
+    settings ??= defaultSettings[TestPlatform.dartium];
     var observatoryCompleter = new Completer<Uri>.sync();
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new Dartium._(() async {
-      if (executable == null) executable = _defaultExecutable();
-
       var tryPort = ([int port]) async {
         var dir = createTempDir();
         var args = [
@@ -48,7 +49,7 @@ class Dartium extends Browser {
           "--no-default-browser-check",
           "--disable-default-apps",
           "--disable-translate"
-        ];
+        ]..addAll(settings.arguments);
 
         if (port != null) {
           args.add("--remote-debugging-port=$port");
@@ -62,8 +63,8 @@ class Dartium extends Browser {
           args.add("--vmodule=startup_browser_creator_impl=1");
         }
 
-        var process = await Process
-            .start(executable, args, environment: {"DART_FLAGS": "--checked"});
+        var process = await Process.start(settings.executable, args,
+            environment: {"DART_FLAGS": "--checked"});
 
         if (port != null) {
           // Dartium on Windows prints all standard IO to stderr, so we need to
@@ -123,47 +124,6 @@ class Dartium extends Browser {
   Dartium._(Future<Process> startBrowser(), this.observatoryUrl,
       this.remoteDebuggerUrl)
       : super(startBrowser);
-
-  /// Starts a new instance of Dartium open to the given [url], which may be a
-  /// [Uri] or a [String].
-  ///
-  /// If [executable] is passed, it's used as the Dartium executable. Otherwise
-  /// the default executable name for the current OS will be used.
-
-  /// Return the default executable for the current operating system.
-  static String _defaultExecutable() {
-    var dartium = _executableInEditor();
-    if (dartium != null) return dartium;
-    return Platform.isWindows ? "dartium.exe" : "dartium";
-  }
-
-  static String _executableInEditor() {
-    var dir = p.dirname(sdkDir);
-
-    if (Platform.isWindows) {
-      if (!new File(p.join(dir, "DartEditor.exe")).existsSync()) return null;
-
-      var dartium = p.join(dir, "chromium\\chrome.exe");
-      return new File(dartium).existsSync() ? dartium : null;
-    }
-
-    if (Platform.isMacOS) {
-      if (!new File(p.join(dir, "DartEditor.app/Contents/MacOS/DartEditor"))
-          .existsSync()) {
-        return null;
-      }
-
-      var dartium =
-          p.join(dir, "chromium/Chromium.app/Contents/MacOS/Chromium");
-      return new File(dartium).existsSync() ? dartium : null;
-    }
-
-    assert(Platform.isLinux);
-    if (!new File(p.join(dir, "DartEditor")).existsSync()) return null;
-
-    var dartium = p.join(dir, "chromium", "chrome");
-    return new File(dartium).existsSync() ? dartium : null;
-  }
 
   // TODO(nweiz): simplify this when sdk#23923 is fixed.
   /// Returns the Observatory URL for the Dartium executable with the given

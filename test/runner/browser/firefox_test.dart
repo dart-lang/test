@@ -8,6 +8,7 @@
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/runner/browser/firefox.dart';
+import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
 
 import '../../io.dart';
@@ -40,8 +41,11 @@ webSocket.addEventListener("open", function() {
   });
 
   test("reports an error in onExit", () {
-    var firefox =
-        new Firefox("http://dart-lang.org", executable: "_does_not_exist");
+    var firefox = new Firefox("http://dart-lang.org",
+        settings: new ExecutableSettings(
+            linuxExecutable: "_does_not_exist",
+            macOSExecutable: "_does_not_exist",
+            windowsExecutable: "_does_not_exist"));
     expect(
         firefox.onExit,
         throwsA(isApplicationException(

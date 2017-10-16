@@ -105,6 +105,7 @@ abstract class Browser {
       _process.then((process) => process.kill());
 
       if (stackTrace == null) stackTrace = new Trace.current();
+      if (_onExitCompleter.isCompleted) return;
       _onExitCompleter.completeError(
           new ApplicationException(
               "Failed to run $name: ${getErrorMessage(error)}."),
