@@ -52,7 +52,8 @@ tags:
 * [Configuring Platforms](#configuring-platforms)
   * [`on_os`](#on_os)
   * [`on_platform`](#on_platform)
-  * [`define_platform`](#define_platform)
+  * [`override_platforms`](#override_platforms)
+  * [`define_platforms`](#define_platforms)
   * [Browser Settings](#browser-settings)
     * [`executable`](#executable)
 * [Configuration Presets](#configuration-presets)
@@ -569,6 +570,26 @@ that are run on the Dart VM under that operating system. To configure all tests
 when running on a particular operating system, use [`on_os`](#on_os) instead.
 
 This field counts as [test configuration](#test-configuration).
+
+### `override_platforms`
+
+This field allows you to customize the settings for built-in test platforms. It
+takes a map from platform identifiers to settings for those platforms. For example:
+
+```yaml
+override_platforms:
+  chrome:
+    # The settings to override for this platform.
+    settings:
+      executable: chromium
+```
+
+This tells the test runner to use the `chromium` executable for Chrome tests. It
+calls that executable with the same logic and flags it normally uses for Chrome.
+
+Each platform can define exactly which settings it supports. All browsers
+support [the same settings](#browser-settings), but the VM doesn't support any
+settings and so can't be overridden.
 
 ### `define_platforms`
 

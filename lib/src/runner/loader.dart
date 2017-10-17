@@ -53,8 +53,9 @@ class Loader {
   /// their string identifiers.
   final _platformsByIdentifier = <String, TestPlatform>{};
 
-  /// The user-provided settings for platforms.
-  final _platformSettings = <TestPlatform, YamlMap>{};
+  /// The user-provided settings for platforms, as a list of settings that will
+  /// be merged together using [CustomizablePlatform.mergePlatformSettings].
+  final _platformSettings = <TestPlatform, List<YamlMap>>{};
 
   /// The user-provided settings for platforms.
   final _parsedPlatformSettings = <TestPlatform, Object>{};
@@ -104,6 +105,8 @@ class Loader {
     _registerCustomPlatforms();
 
     _config.validatePlatforms(allPlatforms);
+
+    _registerPlatformOverrides();
   }
 
   /// Registers a [PlatformPlugin] for [platforms].
@@ -140,7 +143,21 @@ class Loader {
       _platformCallbacks[platform] = _platformCallbacks[parent];
       _platformsByIdentifier[platform.identifier] = platform;
 
-      _platformSettings[platform] = customPlatform.settings;
+      _platformSettings[platform] = [customPlatform.settings];
+    }
+  }
+
+  /// Registers users' platform settings from [Configuration.overridePlatforms].
+  void _registerPlatformOverrides() {
+    for (var settings in _config.overridePlatforms.values) {
+      var platform = _platformsByIdentifier[settings.identifier];
+
+      // This is officially validated in [Configuration.validatePlatforms].
+      assert(platform != null);
+
+      _platformSettings
+          .putIfAbsent(platform, () => [])
+          .addAll(settings.settings);
     }
   }
 
@@ -258,7 +275,9 @@ class Loader {
     if (settings == null) return;
 
     if (plugin is CustomizablePlatform) {
-      parsed = plugin.parsePlatformSettings(settings);
+      parsed = settings
+          .map(plugin.parsePlatformSettings)
+          .reduce(plugin.mergePlatformSettings);
       plugin.customizePlatform(platform, parsed);
       _parsedPlatformSettings[platform] = parsed;
     } else {
@@ -268,9 +287,8 @@ class Loader {
         identifier = platform.parent.identifier;
         span = _config.definePlatforms[platform.identifier].parentSpan;
       } else {
-        // TODO(nweiz): Get information from [_config.overridePlatforms] when
-        // that exists.
-        throw new UnimplementedError();
+        identifier = platform.identifier;
+        span = _config.overridePlatforms[platform.identifier].identifierSpan;
       }
 
       throw new SourceSpanFormatException(

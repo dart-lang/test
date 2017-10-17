@@ -202,6 +202,10 @@ class BrowserPlatform extends PlatformPlugin
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
       new ExecutableSettings.parse(settings);
 
+  ExecutableSettings mergePlatformSettings(
+          ExecutableSettings settings1, ExecutableSettings settings2) =>
+      settings1.merge(settings2);
+
   void customizePlatform(TestPlatform platform, ExecutableSettings settings) {
     var oldSettings =
         _browserSettings[platform] ?? _browserSettings[platform.root];

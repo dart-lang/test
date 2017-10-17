@@ -20,6 +20,7 @@ import '../configuration.dart';
 import '../configuration/suite.dart';
 import 'custom_platform.dart';
 import 'platform_selection.dart';
+import 'platform_settings.dart';
 import 'reporters.dart';
 
 /// A regular expression matching a Dart identifier.
@@ -193,6 +194,7 @@ class _ConfigurationLoader {
       _disallow("plain_names");
       _disallow("platforms");
       _disallow("add_presets");
+      _disallow("override_platforms");
       return Configuration.empty;
     }
 
@@ -215,13 +217,41 @@ class _ConfigurationLoader {
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
 
+    var overridePlatforms = _loadOverridePlatforms();
+
     return new Configuration(
         pauseAfterLoad: pauseAfterLoad,
         runSkipped: runSkipped,
         reporter: reporter,
         concurrency: concurrency,
         platforms: platforms,
-        chosenPresets: chosenPresets);
+        chosenPresets: chosenPresets,
+        overridePlatforms: overridePlatforms);
+  }
+
+  /// Loads the `override_platforms` field.
+  Map<String, PlatformSettings> _loadOverridePlatforms() {
+    var platformsNode =
+        _getNode("override_platforms", "map", (value) => value is Map)
+            as YamlMap;
+    if (platformsNode == null) return const {};
+
+    var platforms = <String, PlatformSettings>{};
+    platformsNode.nodes.forEach((identifierNode, valueNode) {
+      var identifier =
+          _parseIdentifierLike(identifierNode, "Platform identifier");
+
+      _validate(valueNode, "Platform definition must be a map.",
+          (value) => value is Map);
+      var map = valueNode as YamlMap;
+
+      var settings = _expect(map, "settings");
+      _validate(settings, "Must be a map.", (value) => value is Map);
+
+      platforms[identifier] = new PlatformSettings(
+          identifier, identifierNode.span, [settings as YamlMap]);
+    });
+    return platforms;
   }
 
   /// Loads runner configuration that's not allowed in the global configuration
@@ -316,6 +346,7 @@ class _ConfigurationLoader {
     });
   }
 
+  /// Loads the `define_platforms` field.
   Map<String, CustomPlatform> _loadDefinePlatforms() {
     var platformsNode =
         _getNode("define_platforms", "map", (value) => value is Map) as YamlMap;

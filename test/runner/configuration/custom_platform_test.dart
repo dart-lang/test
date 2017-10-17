@@ -27,17 +27,323 @@ void main() {
       """).create();
   });
 
-  group("define_platforms", () {
-    group("can define a new browser", () {
-      group("without any changes", () {
-        setUp(() async {
-          await d.file("dart_test.yaml", """
+  group("override_platforms", () {
+    group("can override a browser", () {
+      test("without any changes", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chrome:
+              settings: {}
+        """).create();
+
+        var test = await runTest(["-p", "chrome", "test.dart"]);
+        expect(test.stdout, emitsThrough(contains("All tests passed!")));
+        await test.shouldExit(0);
+      }, tags: "chrome");
+
+      test("that's user-defined", () async {
+        await d.file("dart_test.yaml", """
           define_platforms:
             chromium:
               name: Chromium
               extends: chrome
               settings: {}
+
+          override_platforms:
+            chromium:
+              settings: {}
         """).create();
+
+        var test = await runTest(["-p", "chromium", "test.dart"]);
+        expect(test.stdout, emitsThrough(contains("All tests passed!")));
+        await test.shouldExit(0);
+      }, tags: "chrome");
+
+      test("with a basename-only executable", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            dartium:
+              settings:
+                executable:
+                  linux: dartium
+                  mac_os: dartium
+                  windows: dartium.exe
+        """).create();
+
+        var test = await runTest(["-p", "dartium", "test.dart"]);
+        expect(test.stdout, emitsThrough(contains("All tests passed!")));
+        await test.shouldExit(0);
+      }, tags: "dartium");
+
+      test("with an absolute-path executable", () async {
+        String path;
+        if (Platform.isLinux) {
+          var process = await TestProcess.start("which", ["google-chrome"]);
+          path = await process.stdout.next;
+          await process.shouldExit(0);
+        } else {
+          path = defaultSettings[TestPlatform.chrome].executable;
+        }
+
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chrome:
+              settings:
+                executable: $path
+        """).create();
+
+        var test = await runTest(["-p", "chrome", "test.dart"]);
+        expect(test.stdout, emitsThrough(contains("All tests passed!")));
+        await test.shouldExit(0);
+      }, tags: "chrome");
+    });
+
+    group("errors", () {
+      test("rejects a non-map value", () async {
+        await d.file("dart_test.yaml", "override_platforms: 12").create();
+
+        var test = await runTest([]);
+        expect(test.stderr,
+            containsInOrder(["override_platforms must be a map.", "^^"]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects a non-string key", () async {
+        await d
+            .file("dart_test.yaml", "override_platforms: {12: null}")
+            .create();
+
+        var test = await runTest([]);
+        expect(test.stderr,
+            containsInOrder(["Platform identifier must be a string.", "^^"]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects a non-identifier-like key", () async {
+        await d
+            .file("dart_test.yaml", "override_platforms: {foo bar: null}")
+            .create();
+
+        var test = await runTest([]);
+        expect(
+            test.stderr,
+            containsInOrder([
+              "Platform identifier must be an (optionally hyphenated) Dart "
+                  "identifier.",
+              "^^^^^^^"
+            ]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("rejects a non-map definition", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chrome: 12
+        """).create();
+
+        var test = await runTest([]);
+        expect(test.stderr,
+            containsInOrder(["Platform definition must be a map.", "^^"]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("requires a settings key", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chrome: {}
+        """).create();
+
+        var test = await runTest([]);
+        expect(test.stderr,
+            containsInOrder(['Missing required field "settings".', "^^"]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("settings must be a map", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chrome:
+              settings: null
+        """).create();
+
+        var test = await runTest([]);
+        expect(test.stderr, containsInOrder(['Must be a map.', "^^^^"]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("the overridden platform must exist", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chromium:
+              settings: {}
+        """).create();
+
+        var test = await runTest(["test.dart"]);
+        expect(test.stderr,
+            containsInOrder(['Unknown platform "chromium".', "^^^^^^"]));
+        await test.shouldExit(exit_codes.data);
+      });
+
+      test("uncustomizable platforms can't be overridden", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            vm:
+              settings: {}
+        """).create();
+
+        var test = await runTest(["-p", "vm", "test.dart"]);
+        expect(test.stdout,
+            containsInOrder(['The "vm" platform can\'t be customized.', "^^"]));
+        await test.shouldExit(1);
+      });
+
+      group("when overriding browsers", () {
+        test("executable must be a string or map", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable: 12
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(test.stdout,
+              containsInOrder(['Must be a map or a string.', "^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("executable string may not be relative on POSIX", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable: foo/bar
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(
+              test.stdout,
+              containsInOrder([
+                'Linux and Mac OS executables may not be relative paths.',
+                "^^^^^^^"
+              ]));
+          await test.shouldExit(1);
+        },
+            // We allow relative executables for Windows so that Windows users
+            // can set a global executable without having to explicitly write
+            // `windows:`.
+            testOn: "!windows");
+
+        test("Linux executable must be a string", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable:
+                    linux: 12
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(test.stdout, containsInOrder(['Must be a string.', "^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("Linux executable may not be relative", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable:
+                    linux: foo/bar
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(
+              test.stdout,
+              containsInOrder([
+                'Linux and Mac OS executables may not be relative paths.',
+                "^^^^^^^"
+              ]));
+          await test.shouldExit(1);
+        });
+
+        test("Mac OS executable must be a string", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable:
+                    mac_os: 12
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(test.stdout, containsInOrder(['Must be a string.', "^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("Mac OS executable may not be relative", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable:
+                    mac_os: foo/bar
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(
+              test.stdout,
+              containsInOrder([
+                'Linux and Mac OS executables may not be relative paths.',
+                "^^^^^^^"
+              ]));
+          await test.shouldExit(1);
+        });
+
+        test("Windows executable must be a string", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable:
+                    windows: 12
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(test.stdout, containsInOrder(['Must be a string.', "^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("executable must exist", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  executable: _does_not_exist
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(
+              test.stdout,
+              emitsThrough(
+                  contains("Failed to run Chrome: $noSuchFileMessage")));
+          await test.shouldExit(1);
+        });
+      });
+    });
+  });
+
+  group("define_platforms", () {
+    group("can define a new browser", () {
+      group("without any changes", () {
+        setUp(() async {
+          await d.file("dart_test.yaml", """
+            define_platforms:
+              chromium:
+                name: Chromium
+                extends: chrome
+                settings: {}
+          """).create();
         });
 
         test("that can be used to run tests", () async {
@@ -48,12 +354,12 @@ void main() {
 
         test("that can be used in platform selectors", () async {
           await d.file("test.dart", """
-        import 'package:test/test.dart';
+            import 'package:test/test.dart';
 
-        void main() {
-          test("success", () {}, testOn: "chromium");
-        }
-      """).create();
+            void main() {
+              test("success", () {}, testOn: "chromium");
+            }
+          """).create();
 
           var test = await runTest(["-p", "chromium", "test.dart"]);
           expect(test.stdout, emitsThrough(contains("All tests passed!")));
@@ -66,12 +372,12 @@ void main() {
 
         test("that counts as its parent", () async {
           await d.file("test.dart", """
-        import 'package:test/test.dart';
+            import 'package:test/test.dart';
 
-        void main() {
-          test("success", () {}, testOn: "chrome");
-        }
-      """).create();
+            void main() {
+              test("success", () {}, testOn: "chrome");
+            }
+          """).create();
 
           var test = await runTest(["-p", "chromium", "test.dart"]);
           expect(test.stdout, emitsThrough(contains("All tests passed!")));
