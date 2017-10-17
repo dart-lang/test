@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Stop using comment-based generics.
+
 ## 1.0.2
 
 * Declare support for `async` 2.0.0.

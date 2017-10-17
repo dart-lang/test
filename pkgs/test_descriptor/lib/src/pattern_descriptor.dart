@@ -60,7 +60,7 @@ class PatternDescriptor extends Descriptor {
     var results = await Future.wait(matchingEntries.map((entry) {
       var basename = p.basename(entry);
       return runZoned(() {
-        return Result.capture/*<String>*/(new Future.sync(() async {
+        return Result.capture(new Future.sync(() async {
           await _fn(basename).validate(parent);
           return basename;
         }));
