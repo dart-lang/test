@@ -8,6 +8,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
+import 'package:source_span/source_span.dart';
 
 import '../backend/platform_selector.dart';
 import '../backend/test_platform.dart';
@@ -18,6 +19,7 @@ import 'configuration/args.dart' as args;
 import 'configuration/custom_platform.dart';
 import 'configuration/load.dart';
 import 'configuration/platform_selection.dart';
+import 'configuration/platform_settings.dart';
 import 'configuration/reporters.dart';
 import 'configuration/suite.dart';
 import 'configuration/values.dart';
@@ -172,6 +174,9 @@ class Configuration {
 
   Set<String> _knownPresets;
 
+  /// Built-in platforms whose settings are overridden by the user.
+  final Map<String, PlatformSettings> overridePlatforms;
+
   /// Platforms defined by the user in terms of existing platforms.
   final Map<String, CustomPlatform> definePlatforms;
 
@@ -218,6 +223,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
 
@@ -261,6 +267,7 @@ class Configuration {
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
+        overridePlatforms: overridePlatforms,
         definePlatforms: definePlatforms,
         noRetry: noRetry,
         suiteDefaults: new SuiteConfiguration(
@@ -316,6 +323,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
       SuiteConfiguration suiteDefaults})
@@ -337,6 +345,7 @@ class Configuration {
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
         presets = _map(presets),
+        overridePlatforms = _map(overridePlatforms),
         definePlatforms = _map(definePlatforms),
         _noRetry = noRetry,
         suiteDefaults = pauseAfterLoad == true
@@ -399,6 +408,15 @@ class Configuration {
     // We don't need to verify [customPlatforms] here because those platforms
     // already need to be verified and resolved to create [allPlatforms].
 
+    for (var settings in overridePlatforms.values) {
+      if (!allPlatforms
+          .any((platform) => platform.identifier == settings.identifier)) {
+        throw new SourceSpanFormatException(
+            'Unknown platform "${settings.identifier}".',
+            settings.identifierSpan);
+      }
+    }
+
     suiteDefaults.validatePlatforms(allPlatforms);
     for (var config in presets.values) {
       config.validatePlatforms(allPlatforms);
@@ -448,6 +466,12 @@ class Configuration {
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
+        overridePlatforms: mergeUnmodifiableMaps(
+            overridePlatforms, other.overridePlatforms,
+            value: (settings1, settings2) => new PlatformSettings(
+                settings1.identifier,
+                settings1.identifierSpan,
+                settings1.settings.toList()..addAll(settings2.settings))),
         definePlatforms:
             mergeUnmodifiableMaps(definePlatforms, other.definePlatforms),
         noRetry: other._noRetry ?? _noRetry,
@@ -482,6 +506,7 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
 
@@ -523,6 +548,7 @@ class Configuration {
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,
+        overridePlatforms: overridePlatforms ?? this.overridePlatforms,
         definePlatforms: definePlatforms ?? this.definePlatforms,
         noRetry: noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.change(

@@ -34,6 +34,15 @@ abstract class CustomizablePlatform<T> extends PlatformPlugin {
   /// possible.
   T parsePlatformSettings(YamlMap settings);
 
+  /// Merges [settings1] with [settings2] and returns a new settings object that
+  /// includes the configuration of both.
+  ///
+  /// When the settings conflict, [settings2] should take priority.
+  ///
+  /// This is used to merge global settings with local settings, or a custom
+  /// platform's settings with its parent's.
+  T mergePlatformSettings(T settings1, T settings2);
+
   /// Defines user-provided [settings] for [platform].
   ///
   /// The [platform] is a platform this plugin was declared to accept when
