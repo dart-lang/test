@@ -238,6 +238,7 @@ class _ConfigurationLoader {
       _disallow("filename");
       _disallow("include_tags");
       _disallow("exclude_tags");
+      _disallow("define_platforms");
       return Configuration.empty;
     }
 
