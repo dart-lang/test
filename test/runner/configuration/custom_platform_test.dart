@@ -98,6 +98,18 @@ void main() {
       }, tags: "chrome");
     });
 
+    test("can override Node.js without any changes", () async {
+      await d.file("dart_test.yaml", """
+        override_platforms:
+          node:
+            settings: {}
+      """).create();
+
+      var test = await runTest(["-p", "node", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("All tests passed!")));
+      await test.shouldExit(0);
+    }, tags: "node");
+
     group("errors", () {
       test("rejects a non-map value", () async {
         await d.file("dart_test.yaml", "override_platforms: 12").create();
@@ -329,6 +341,22 @@ void main() {
                   contains("Failed to run Chrome: $noSuchFileMessage")));
           await test.shouldExit(1);
         });
+
+        test("executable must exist for Node.js", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              node:
+                settings:
+                  executable: _does_not_exist
+          """).create();
+
+          var test = await runTest(["-p", "node", "test.dart"]);
+          expect(
+              test.stdout,
+              emitsThrough(
+                  contains("Failed to run Node.js: $noSuchFileMessage")));
+          await test.shouldExit(1);
+        }, tags: "node");
       });
     });
   });
