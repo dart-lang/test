@@ -816,6 +816,53 @@ void main() {
                   contains("Failed to run Chrome: $noSuchFileMessage")));
           await test.shouldExit(1);
         });
+
+        test("arguments must be a string", () async {
+          await d.file("dart_test.yaml", """
+            define_platforms:
+              chromium:
+                name: Chromium
+                extends: chrome
+                settings:
+                  arguments: 12
+          """).create();
+
+          var test = await runTest(["-p", "chromium", "test.dart"]);
+          expect(test.stdout, containsInOrder(['Must be a string.', "^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("arguments must be shell parseable", () async {
+          await d.file("dart_test.yaml", """
+            define_platforms:
+              chromium:
+                name: Chromium
+                extends: chrome
+                settings:
+                  arguments: --foo 'bar
+          """).create();
+
+          var test = await runTest(["-p", "chromium", "test.dart"]);
+          expect(test.stdout,
+              containsInOrder(['Unmatched single quote.', "^^^^^^^^^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("with an argument that causes the browser to quit", () async {
+          await d.file("dart_test.yaml", """
+            define_platforms:
+              chromium:
+                name: Chromium
+                extends: chrome
+                settings:
+                  arguments: --version
+          """).create();
+
+          var test = await runTest(["-p", "chromium", "test.dart"]);
+          expect(test.stdout,
+              emitsThrough(contains("Chromium exited before connecting.")));
+          await test.shouldExit(0);
+        }, tags: "chrome");
       });
     });
   });

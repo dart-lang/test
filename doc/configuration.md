@@ -634,6 +634,18 @@ provide the same settings that can be set using
 [`define_platforms`](#define_platforms), which control how their executables are
 invoked.
 
+#### `arguments`
+
+The `arguments` field provides extra arguments to the executable. It takes a
+string, and parses it in the same way as the POSIX shell:
+
+```yaml
+override_platforms:
+  firefox:
+    settings:
+      arguments: -headless
+```
+
 #### `executable`
 
 The `executable` field tells the test runner where to look for the executable to
