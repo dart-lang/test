@@ -54,7 +54,7 @@ tags:
   * [`on_platform`](#on_platform)
   * [`override_platforms`](#override_platforms)
   * [`define_platforms`](#define_platforms)
-  * [Browser Settings](#browser-settings)
+  * [Browser/Node.js Settings](#browser-and-node-js-settings)
     * [`executable`](#executable)
 * [Configuration Presets](#configuration-presets)
   * [`presets`](#presets)
@@ -587,9 +587,9 @@ override_platforms:
 This tells the test runner to use the `chromium` executable for Chrome tests. It
 calls that executable with the same logic and flags it normally uses for Chrome.
 
-Each platform can define exactly which settings it supports. All browsers
-support [the same settings](#browser-settings), but the VM doesn't support any
-settings and so can't be overridden.
+Each platform can define exactly which settings it supports. All browsers and
+Node.js support [the same settings](#browser-and-node-js-settings), but the VM
+doesn't support any settings and so can't be overridden.
 
 ### `define_platforms`
 
@@ -620,24 +620,25 @@ might pass `testOn: "chromium"` to declare that a test is Chromium-specific.
 User-defined platforms also count as their parents, so Chromium will run tests
 that say `testOn: "chrome"` as well.
 
-Each platform can define exactly which settings it supports. All browsers
-support [the same settings](#browser-settings), but the VM doesn't support any
-settings and so can't be extended.
+Each platform can define exactly which settings it supports. All browsers and
+Node.js support [the same settings](#browser-and-node-js-settings), but the VM
+doesn't support any settings and so can't be extended.
 
 This field is not supported in the
 [global configuration file](#global-configuration).
 
-### Browser Settings
+### Browser and Node.js Settings
 
-All built-in browser platforms provide the same settings that can be set using
-[`define_platforms`](#define_platforms), which control how the browser
-executable is invoked.
+All built-in browser platforms, as well as the built-in Node.js platform,
+provide the same settings that can be set using
+[`define_platforms`](#define_platforms), which control how their executables are
+invoked.
 
 #### `executable`
 
 The `executable` field tells the test runner where to look for the executable to
-use to start the browser. It has three sub-keys, one for each supported operating
-system, which each take a path or an executable name:
+use to start the subprocess. It has three sub-keys, one for each supported
+operating system, which each take a path or an executable name:
 
 ```yaml
 define_platforms:
