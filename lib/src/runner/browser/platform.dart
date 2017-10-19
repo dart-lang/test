@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
@@ -41,7 +42,12 @@ class BrowserPlatform extends PlatformPlugin {
   /// the working directory.
   static Future<BrowserPlatform> start({String root}) async {
     var server = new shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return new BrowserPlatform._(server, Configuration.current, root: root);
+    return new BrowserPlatform._(
+        server,
+        Configuration.current,
+        p.fromUri(await Isolate.resolvePackageUri(
+            Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
+        root: root);
   }
 
   /// The test runner configuration.
@@ -114,7 +120,8 @@ class BrowserPlatform extends PlatformPlugin {
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = new Map<String, StackTraceMapper>();
 
-  BrowserPlatform._(this._server, Configuration config, {String root})
+  BrowserPlatform._(this._server, Configuration config, String faviconPath,
+      {String root})
       : _config = config,
         _root = root == null ? p.current : root,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
@@ -139,7 +146,10 @@ class BrowserPlatform extends PlatformPlugin {
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
-    _server.mount(pipeline);
+    _server.mount(new shelf.Cascade()
+        .add(createFileHandler(faviconPath))
+        .add(pipeline)
+        .handler);
   }
 
   /// A handler that serves wrapper files used to bootstrap tests.
