@@ -8,13 +8,18 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
+import 'package:source_span/source_span.dart';
 
 import '../backend/platform_selector.dart';
 import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
 import '../util/io.dart';
+import '../utils.dart';
 import 'configuration/args.dart' as args;
+import 'configuration/custom_platform.dart';
 import 'configuration/load.dart';
+import 'configuration/platform_selection.dart';
+import 'configuration/platform_settings.dart';
 import 'configuration/reporters.dart';
 import 'configuration/suite.dart';
 import 'configuration/values.dart';
@@ -169,6 +174,12 @@ class Configuration {
 
   Set<String> _knownPresets;
 
+  /// Built-in platforms whose settings are overridden by the user.
+  final Map<String, PlatformSettings> overridePlatforms;
+
+  /// Platforms defined by the user in terms of existing platforms.
+  final Map<String, CustomPlatform> definePlatforms;
+
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
@@ -212,6 +223,8 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, PlatformSettings> overridePlatforms,
+      Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
 
       // Suite-level configuration
@@ -220,7 +233,7 @@ class Configuration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -254,6 +267,8 @@ class Configuration {
         filename: filename,
         chosenPresets: chosenPresetSet,
         presets: _withChosenPresets(presets, chosenPresetSet),
+        overridePlatforms: overridePlatforms,
+        definePlatforms: definePlatforms,
         noRetry: noRetry,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
@@ -308,6 +323,8 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, PlatformSettings> overridePlatforms,
+      Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
@@ -328,6 +345,8 @@ class Configuration {
         chosenPresets =
             new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
         presets = _map(presets),
+        overridePlatforms = _map(overridePlatforms),
+        definePlatforms = _map(definePlatforms),
         _noRetry = noRetry,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
@@ -384,6 +403,26 @@ class Configuration {
   /// asynchronous callbacks transitively created by [body].
   T asCurrent<T>(T body()) => runZoned(body, zoneValues: {_currentKey: this});
 
+  /// Throws a [FormatException] if [this] refers to any undefined platforms.
+  void validatePlatforms(List<TestPlatform> allPlatforms) {
+    // We don't need to verify [customPlatforms] here because those platforms
+    // already need to be verified and resolved to create [allPlatforms].
+
+    for (var settings in overridePlatforms.values) {
+      if (!allPlatforms
+          .any((platform) => platform.identifier == settings.identifier)) {
+        throw new SourceSpanFormatException(
+            'Unknown platform "${settings.identifier}".',
+            settings.identifierSpan);
+      }
+    }
+
+    suiteDefaults.validatePlatforms(allPlatforms);
+    for (var config in presets.values) {
+      config.validatePlatforms(allPlatforms);
+    }
+  }
+
   /// Merges this with [other].
   ///
   /// For most fields, if both configurations have values set, [other]'s value
@@ -427,6 +466,14 @@ class Configuration {
         filename: other._filename ?? _filename,
         chosenPresets: chosenPresets.union(other.chosenPresets),
         presets: _mergeConfigMaps(presets, other.presets),
+        overridePlatforms: mergeUnmodifiableMaps(
+            overridePlatforms, other.overridePlatforms,
+            value: (settings1, settings2) => new PlatformSettings(
+                settings1.identifier,
+                settings1.identifierSpan,
+                settings1.settings.toList()..addAll(settings2.settings))),
+        definePlatforms:
+            mergeUnmodifiableMaps(definePlatforms, other.definePlatforms),
         noRetry: other._noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
@@ -459,6 +506,8 @@ class Configuration {
       Glob filename,
       Iterable<String> chosenPresets,
       Map<String, Configuration> presets,
+      Map<String, PlatformSettings> overridePlatforms,
+      Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
 
       // Suite-level configuration
@@ -467,7 +516,7 @@ class Configuration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -499,6 +548,8 @@ class Configuration {
         filename: filename ?? _filename,
         chosenPresets: chosenPresets ?? this.chosenPresets,
         presets: presets ?? this.presets,
+        overridePlatforms: overridePlatforms ?? this.overridePlatforms,
+        definePlatforms: definePlatforms ?? this.definePlatforms,
         noRetry: noRetry ?? _noRetry,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,

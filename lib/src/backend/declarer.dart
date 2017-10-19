@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/timeout.dart';
@@ -34,6 +35,10 @@ class Declarer {
   /// The metadata for this group, including the metadata of any parent groups
   /// and of the test suite.
   final Metadata _metadata;
+
+  /// The set of variables that are valid for platform selectors, in addition to
+  /// the built-in variables that are allowed everywhere.
+  final Set<String> _platformVariables;
 
   /// The stack trace for this group.
   final Trace _trace;
@@ -84,17 +89,31 @@ class Declarer {
   /// If [metadata] is passed, it's used as the metadata for the implicit root
   /// group.
   ///
+  /// The [platformVariables] are the set of variables that are valid for
+  /// platform selectors in test and group metadata, in addition to the built-in
+  /// variables that are allowed everywhere.
+  ///
   /// If [collectTraces] is `true`, this will set [GroupEntry.trace] for all
   /// entries built by the declarer. Note that this can be noticeably slow when
   /// thousands of tests are being declared (see #457).
   ///
   /// If [noRetry] is `true` tests will be run at most once.
-  Declarer({Metadata metadata, bool collectTraces: false, bool noRetry: false})
-      : this._(null, null, metadata ?? new Metadata(), collectTraces, null,
+  Declarer(
+      {Metadata metadata,
+      Set<String> platformVariables,
+      bool collectTraces: false,
+      bool noRetry: false})
+      : this._(
+            null,
+            null,
+            metadata ?? new Metadata(),
+            platformVariables ?? const UnmodifiableSetView.empty(),
+            collectTraces,
+            null,
             noRetry);
 
-  Declarer._(this._parent, this._name, this._metadata, this._collectTraces,
-      this._trace, this._noRetry);
+  Declarer._(this._parent, this._name, this._metadata, this._platformVariables,
+      this._collectTraces, this._trace, this._noRetry);
 
   /// Runs [body] with this declarer as [Declarer.current].
   ///
@@ -111,13 +130,15 @@ class Declarer {
       int retry}) {
     _checkNotBuilt("test");
 
-    var metadata = _metadata.merge(new Metadata.parse(
+    var newMetadata = new Metadata.parse(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
         onPlatform: onPlatform,
         tags: tags,
-        retry: _noRetry ? 0 : retry));
+        retry: _noRetry ? 0 : retry);
+    newMetadata.validatePlatformSelectors(_platformVariables);
+    var metadata = _metadata.merge(newMetadata);
 
     _entries.add(new LocalTest(_prefix(name), metadata, () async {
       var parents = <Declarer>[];
@@ -151,17 +172,19 @@ class Declarer {
       int retry}) {
     _checkNotBuilt("group");
 
-    var metadata = _metadata.merge(new Metadata.parse(
+    var newMetadata = new Metadata.parse(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
         onPlatform: onPlatform,
         tags: tags,
-        retry: retry));
+        retry: _noRetry ? 0 : retry);
+    newMetadata.validatePlatformSelectors(_platformVariables);
+    var metadata = _metadata.merge(newMetadata);
     var trace = _collectTraces ? new Trace.current(2) : null;
 
-    var declarer = new Declarer._(
-        this, _prefix(name), metadata, _collectTraces, trace, _noRetry);
+    var declarer = new Declarer._(this, _prefix(name), metadata,
+        _platformVariables, _collectTraces, trace, _noRetry);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.

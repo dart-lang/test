@@ -8,10 +8,10 @@ import 'package:source_span/source_span.dart';
 import 'operating_system.dart';
 import 'test_platform.dart';
 
-/// The set of all valid variable names.
-final _validVariables =
+/// The set of variable names that are valid for all platform selectors.
+final _universalValidVariables =
     new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
-      ..addAll(TestPlatform.all.map((platform) => platform.identifier))
+      ..addAll(TestPlatform.builtIn.map((platform) => platform.identifier))
       ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
@@ -27,16 +27,46 @@ class PlatformSelector {
   /// The boolean selector used to implement this selector.
   final BooleanSelector _inner;
 
+  /// The source span from which this selector was parsed.
+  final SourceSpan _span;
+
   /// Parses [selector].
   ///
-  /// This will throw a [SourceSpanFormatException] if the selector is
-  /// malformed or if it uses an undefined variable.
-  PlatformSelector.parse(String selector)
-      : _inner = new BooleanSelector.parse(selector) {
-    _inner.validate(_validVariables.contains);
+  /// If [span] is passed, it indicates the location of the text for [selector]
+  /// in a larger document. It's used for error reporting.
+  PlatformSelector.parse(String selector, [SourceSpan span])
+      : _inner = _wrapFormatException(
+            () => new BooleanSelector.parse(selector), span),
+        _span = span;
+
+  const PlatformSelector._(this._inner) : _span = null;
+
+  /// Runs [body] and wraps any [FormatException] it throws in a
+  /// [SourceSpanFormatException] using [span].
+  ///
+  /// If [span] is `null`, runs [body] as-is.
+  static T _wrapFormatException<T>(T body(), SourceSpan span) {
+    if (span == null) return body();
+
+    try {
+      return body();
+    } on FormatException catch (error) {
+      throw new SourceSpanFormatException(error.message, span);
+    }
   }
 
-  const PlatformSelector._(this._inner);
+  /// Throws a [FormatException] if this selector uses any variables that don't
+  /// appear either in [validVariables] or in the set of variables that are
+  /// known to be valid for all selectors.
+  void validate(Set<String> validVariables) {
+    if (identical(this, all)) return;
+
+    _wrapFormatException(
+        () => _inner.validate((name) =>
+            _universalValidVariables.contains(name) ||
+            validVariables.contains(name)),
+        _span);
+  }
 
   /// Returns whether the selector matches the given [platform] and [os].
   ///
@@ -46,6 +76,7 @@ class PlatformSelector {
 
     return _inner.evaluate((variable) {
       if (variable == platform.identifier) return true;
+      if (variable == platform.parent?.identifier) return true;
       if (variable == os.identifier) return true;
       switch (variable) {
         case "dart-vm":

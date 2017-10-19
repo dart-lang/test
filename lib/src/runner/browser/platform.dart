@@ -19,6 +19,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:yaml/yaml.dart';
 
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
@@ -29,13 +30,17 @@ import '../../utils.dart';
 import '../compiler_pool.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
+import '../executable_settings.dart';
 import '../load_exception.dart';
+import '../plugin/customizable_platform.dart';
 import '../plugin/platform.dart';
 import '../runner_suite.dart';
 import 'browser_manager.dart';
+import 'default_settings.dart';
 import 'polymer.dart';
 
-class BrowserPlatform extends PlatformPlugin {
+class BrowserPlatform extends PlatformPlugin
+    implements CustomizablePlatform<ExecutableSettings> {
   /// Starts the server.
   ///
   /// [root] is the root directory that the server should serve. It defaults to
@@ -100,7 +105,13 @@ class BrowserPlatform extends PlatformPlugin {
   /// [BrowserManager]s for those browsers, or `null` if they failed to load.
   ///
   /// This should only be accessed through [_browserManagerFor].
-  final _browserManagers = new Map<TestPlatform, Future<BrowserManager>>();
+  final _browserManagers = <TestPlatform, Future<BrowserManager>>{};
+
+  /// Settings for invoking each browser.
+  ///
+  /// This starts out with the default settings, which may be overridden by user settings.
+  final _browserSettings =
+      new Map<TestPlatform, ExecutableSettings>.from(defaultSettings);
 
   /// A cascade of handlers for suites' precompiled paths.
   ///
@@ -198,13 +209,27 @@ class BrowserPlatform extends PlatformPlugin {
     return new shelf.Response.notFound('Not found.');
   }
 
+  ExecutableSettings parsePlatformSettings(YamlMap settings) =>
+      new ExecutableSettings.parse(settings);
+
+  ExecutableSettings mergePlatformSettings(
+          ExecutableSettings settings1, ExecutableSettings settings2) =>
+      settings1.merge(settings2);
+
+  void customizePlatform(TestPlatform platform, ExecutableSettings settings) {
+    var oldSettings =
+        _browserSettings[platform] ?? _browserSettings[platform.root];
+    if (oldSettings != null) settings = oldSettings.merge(settings);
+    _browserSettings[platform] = settings;
+  }
+
   /// Loads the test suite at [path] on the browser [browser].
   ///
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<RunnerSuite> load(
-      String path, TestPlatform browser, SuiteConfiguration suiteConfig) async {
-    assert(suiteConfig.platforms.contains(browser));
+  Future<RunnerSuite> load(String path, TestPlatform browser,
+      SuiteConfiguration suiteConfig, Object message) async {
+    assert(suiteConfig.platforms.contains(browser.identifier));
 
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
@@ -281,7 +306,7 @@ class BrowserPlatform extends PlatformPlugin {
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
-    var suite = await browserManager.load(path, suiteUrl, suiteConfig,
+    var suite = await browserManager.load(path, suiteUrl, suiteConfig, message,
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;
@@ -427,7 +452,8 @@ class BrowserPlatform extends PlatformPlugin {
       'debug': _config.pauseAfterLoad.toString()
     });
 
-    var future = BrowserManager.start(platform, hostUrl, completer.future,
+    var future = BrowserManager.start(
+        platform, hostUrl, completer.future, _browserSettings[platform],
         debug: _config.pauseAfterLoad);
 
     // Store null values for browsers that error out so we know not to load them

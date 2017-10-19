@@ -13,12 +13,14 @@ import 'package:yaml/yaml.dart';
 
 import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
-import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
+import 'custom_platform.dart';
+import 'platform_selection.dart';
+import 'platform_settings.dart';
 import 'reporters.dart';
 
 /// A regular expression matching a Dart identifier.
@@ -94,7 +96,7 @@ class _ConfigurationLoader {
 
     var onPlatform = _getMap("on_platform",
         key: (keyNode) => _parseNode(keyNode, "on_platform key",
-            (value) => new PlatformSelector.parse(value)),
+            (value) => new PlatformSelector.parse(value, keyNode.span)),
         value: (valueNode) =>
             _nestedConfig(valueNode, "on_platform value", runnerConfig: false));
 
@@ -155,8 +157,7 @@ class _ConfigurationLoader {
       skip = true;
     }
 
-    var testOn =
-        _parseValue("test_on", (value) => new PlatformSelector.parse(value));
+    var testOn = _parsePlatformSelector("test_on");
 
     var addTags = _getList(
         "add_tags", (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
@@ -193,6 +194,7 @@ class _ConfigurationLoader {
       _disallow("plain_names");
       _disallow("platforms");
       _disallow("add_presets");
+      _disallow("override_platforms");
       return Configuration.empty;
     }
 
@@ -206,19 +208,16 @@ class _ConfigurationLoader {
 
     var concurrency = _getInt("concurrency");
 
-    var allPlatformIdentifiers =
-        TestPlatform.all.map((platform) => platform.identifier).toSet();
-    var platforms = _getList("platforms", (platformNode) {
-      _validate(platformNode, "Platforms must be strings.",
-          (value) => value is String);
-      _validate(platformNode, 'Unknown platform "${platformNode.value}".',
-          allPlatformIdentifiers.contains);
-
-      return TestPlatform.find(platformNode.value);
-    });
+    var platforms = _getList(
+        "platforms",
+        (platformNode) => new PlatformSelection(
+            _parseIdentifierLike(platformNode, "Platform name"),
+            platformNode.span));
 
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
+
+    var overridePlatforms = _loadOverridePlatforms();
 
     return new Configuration(
         pauseAfterLoad: pauseAfterLoad,
@@ -226,7 +225,33 @@ class _ConfigurationLoader {
         reporter: reporter,
         concurrency: concurrency,
         platforms: platforms,
-        chosenPresets: chosenPresets);
+        chosenPresets: chosenPresets,
+        overridePlatforms: overridePlatforms);
+  }
+
+  /// Loads the `override_platforms` field.
+  Map<String, PlatformSettings> _loadOverridePlatforms() {
+    var platformsNode =
+        _getNode("override_platforms", "map", (value) => value is Map)
+            as YamlMap;
+    if (platformsNode == null) return const {};
+
+    var platforms = <String, PlatformSettings>{};
+    platformsNode.nodes.forEach((identifierNode, valueNode) {
+      var identifier =
+          _parseIdentifierLike(identifierNode, "Platform identifier");
+
+      _validate(valueNode, "Platform definition must be a map.",
+          (value) => value is Map);
+      var map = valueNode as YamlMap;
+
+      var settings = _expect(map, "settings");
+      _validate(settings, "Must be a map.", (value) => value is Map);
+
+      platforms[identifier] = new PlatformSettings(
+          identifier, identifierNode.span, [settings as YamlMap]);
+    });
+    return platforms;
   }
 
   /// Loads runner configuration that's not allowed in the global configuration
@@ -243,6 +268,7 @@ class _ConfigurationLoader {
       _disallow("filename");
       _disallow("include_tags");
       _disallow("exclude_tags");
+      _disallow("define_platforms");
       return Configuration.empty;
     }
 
@@ -270,13 +296,16 @@ class _ConfigurationLoader {
     var includeTags = _parseBooleanSelector("include_tags");
     var excludeTags = _parseBooleanSelector("exclude_tags");
 
+    var definePlatforms = _loadDefinePlatforms();
+
     return new Configuration(
         pubServePort: pubServePort,
         patterns: patterns,
         paths: paths,
         filename: filename,
         includeTags: includeTags,
-        excludeTags: excludeTags);
+        excludeTags: excludeTags,
+        definePlatforms: definePlatforms);
   }
 
   /// Returns a map representation of the `fold_stack_frames` configuration.
@@ -315,6 +344,43 @@ class _ConfigurationLoader {
 
       return valueNode.value;
     });
+  }
+
+  /// Loads the `define_platforms` field.
+  Map<String, CustomPlatform> _loadDefinePlatforms() {
+    var platformsNode =
+        _getNode("define_platforms", "map", (value) => value is Map) as YamlMap;
+    if (platformsNode == null) return const {};
+
+    var platforms = <String, CustomPlatform>{};
+    platformsNode.nodes.forEach((identifierNode, valueNode) {
+      var identifier =
+          _parseIdentifierLike(identifierNode, "Platform identifier");
+
+      _validate(valueNode, "Platform definition must be a map.",
+          (value) => value is Map);
+      var map = valueNode as YamlMap;
+
+      var nameNode = _expect(map, "name");
+      _validate(nameNode, "Must be a string.", (value) => value is String);
+      var name = nameNode.value as String;
+
+      var parentNode = _expect(map, "extends");
+      var parent = _parseIdentifierLike(parentNode, "Platform parent");
+
+      var settings = _expect(map, "settings");
+      _validate(settings, "Must be a map.", (value) => value is Map);
+
+      platforms[identifier] = new CustomPlatform(
+          name,
+          nameNode.span,
+          identifier,
+          identifierNode.span,
+          parent,
+          parentNode.span,
+          settings as YamlMap);
+    });
+    return platforms;
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed
@@ -411,6 +477,14 @@ class _ConfigurationLoader {
   BooleanSelector _parseBooleanSelector(String name) =>
       _parseValue(name, (value) => new BooleanSelector.parse(value));
 
+  /// Parses [node]'s value as a platform selector.
+  PlatformSelector _parsePlatformSelector(String field) {
+    var node = _document.nodes[field];
+    if (node == null) return null;
+    return _parseNode(
+        node, field, (value) => new PlatformSelector.parse(value, node.span));
+  }
+
   /// Asserts that [node] is a string, passes its value to [parse], and returns
   /// the result.
   ///
@@ -483,6 +557,15 @@ class _ConfigurationLoader {
               value: (_, map) => create(map));
       return create(base).change(presets: newPresets);
     }
+  }
+
+  /// Asserts that [map] has a field named [field] and returns it.
+  YamlNode _expect(YamlMap map, String field) {
+    var node = map.nodes[field];
+    if (node != null) return node;
+
+    throw new SourceSpanFormatException(
+        'Missing required field "$field".', map.span, _source);
   }
 
   /// Throws an error if a field named [field] exists at this level.

@@ -4,12 +4,14 @@
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
+import 'package:source_span/source_span.dart';
 
 import '../../backend/metadata.dart';
 import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
+import 'platform_selection.dart';
 
 /// Suite-level configuration.
 ///
@@ -51,8 +53,10 @@ class SuiteConfiguration {
   final Set<Pattern> patterns;
 
   /// The set of platforms on which to run tests.
-  List<TestPlatform> get platforms => _platforms ?? const [TestPlatform.vm];
-  final List<TestPlatform> _platforms;
+  List<String> get platforms => _platforms == null
+      ? const ["vm"]
+      : new List.unmodifiable(_platforms.map((platform) => platform.name));
+  final List<PlatformSelection> _platforms;
 
   /// Only run tests whose tags match this selector.
   ///
@@ -124,7 +128,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -172,7 +176,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       this.precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -249,7 +253,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<TestPlatform> platforms,
+      Iterable<PlatformSelection> platforms,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -285,6 +289,32 @@ class SuiteConfiguration {
             testOn: testOn,
             tags: addTags));
     return config._resolveTags();
+  }
+
+  /// Throws a [FormatException] if [this] refers to any undefined platforms.
+  void validatePlatforms(List<TestPlatform> allPlatforms) {
+    var validVariables =
+        allPlatforms.map((platform) => platform.identifier).toSet();
+    _metadata.validatePlatformSelectors(validVariables);
+
+    if (_platforms != null) {
+      for (var selection in _platforms) {
+        if (!allPlatforms
+            .any((platform) => platform.identifier == selection.name)) {
+          if (selection.span != null) {
+            throw new SourceSpanFormatException(
+                'Unknown platform "${selection.name}".', selection.span);
+          } else {
+            throw new FormatException('Unknown platform "${selection.name}".');
+          }
+        }
+      }
+    }
+
+    onPlatform.forEach((selector, config) {
+      selector.validate(validVariables);
+      config.validatePlatforms(allPlatforms);
+    });
   }
 
   /// Returns a copy of [this] with all platform-specific configuration from

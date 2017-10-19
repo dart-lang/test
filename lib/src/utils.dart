@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:async/async.dart';
+import 'package:collection/collection.dart';
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
@@ -192,6 +193,17 @@ List flatten(Iterable nested) {
 
   helper(nested);
   return result;
+}
+
+/// Like [mergeMaps], but assumes both maps are unmodifiable and so avoids
+/// creating a new map unnecessarily.
+///
+/// The return value *may or may not* be unmodifiable.
+Map<K, V> mergeUnmodifiableMaps<K, V>(Map<K, V> map1, Map<K, V> map2,
+    {V value(V value1, V value2)}) {
+  if (map1.isEmpty) return map2;
+  if (map2.isEmpty) return map1;
+  return mergeMaps(map1, map2, value: value);
 }
 
 /// Truncates [text] to fit within [maxLength].

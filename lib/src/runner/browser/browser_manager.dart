@@ -15,6 +15,7 @@ import '../../util/stack_trace_mapper.dart';
 import '../application_exception.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';
+import '../executable_settings.dart';
 import '../plugin/platform_helpers.dart';
 import '../runner_suite.dart';
 import 'browser.dart';
@@ -93,12 +94,14 @@ class BrowserManager {
   /// [future]. If [debug] is true, starts the browser in debug mode, with its
   /// debugger interfaces on and detected.
   ///
+  /// The [settings] indicate how to invoke this browser's executable.
+  ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
-  static Future<BrowserManager> start(
-      TestPlatform platform, Uri url, Future<WebSocketChannel> future,
+  static Future<BrowserManager> start(TestPlatform platform, Uri url,
+      Future<WebSocketChannel> future, ExecutableSettings settings,
       {bool debug: false}) {
-    var browser = _newBrowser(url, platform, debug: debug);
+    var browser = _newBrowser(url, platform, settings, debug: debug);
 
     var completer = new Completer<BrowserManager>();
 
@@ -128,26 +131,27 @@ class BrowserManager {
     });
   }
 
-  /// Starts the browser identified by [browser] and has it load [url].
+  /// Starts the browser identified by [browser] using [settings] and has it load [url].
   ///
   /// If [debug] is true, starts the browser in debug mode.
-  static Browser _newBrowser(Uri url, TestPlatform browser,
+  static Browser _newBrowser(
+      Uri url, TestPlatform browser, ExecutableSettings settings,
       {bool debug: false}) {
-    switch (browser) {
+    switch (browser.root) {
       case TestPlatform.dartium:
-        return new Dartium(url, debug: debug);
+        return new Dartium(url, settings: settings, debug: debug);
       case TestPlatform.contentShell:
-        return new ContentShell(url, debug: debug);
+        return new ContentShell(url, settings: settings, debug: debug);
       case TestPlatform.chrome:
-        return new Chrome(url, debug: debug);
+        return new Chrome(url, settings: settings, debug: debug);
       case TestPlatform.phantomJS:
-        return new PhantomJS(url, debug: debug);
+        return new PhantomJS(url, settings: settings, debug: debug);
       case TestPlatform.firefox:
-        return new Firefox(url);
+        return new Firefox(url, settings: settings);
       case TestPlatform.safari:
-        return new Safari(url);
+        return new Safari(url, settings: settings);
       case TestPlatform.internetExplorer:
-        return new InternetExplorer(url);
+        return new InternetExplorer(url, settings: settings);
       default:
         throw new ArgumentError("$browser is not a browser.");
     }
@@ -201,7 +205,8 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
+  Future<RunnerSuite> load(
+      String path, Uri url, SuiteConfiguration suiteConfig, Object message,
       {StackTraceMapper mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(JSON.encode({
@@ -236,8 +241,8 @@ class BrowserManager {
       });
 
       try {
-        controller = await deserializeSuite(
-            path, _platform, suiteConfig, await _environment, suiteChannel,
+        controller = await deserializeSuite(path, _platform, suiteConfig,
+            await _environment, suiteChannel, message,
             mapper: mapper);
         _controllers.add(controller);
         return controller.suite;

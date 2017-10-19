@@ -12,6 +12,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test.dart';
 import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/runner/configuration/platform_selection.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/test.dart';
@@ -21,7 +22,8 @@ import '../../utils.dart';
 Loader _loader;
 
 /// A configuration that loads suites on Chrome.
-final _chrome = new SuiteConfiguration(platforms: [TestPlatform.chrome]);
+final _chrome = new SuiteConfiguration(
+    platforms: [new PlatformSelection(TestPlatform.chrome.identifier)]);
 
 void main() {
   setUp(() async {
@@ -124,8 +126,10 @@ Future main() {
     var suites = await _loader
         .loadFile(
             path,
-            new SuiteConfiguration(
-                platforms: [TestPlatform.vm, TestPlatform.chrome]))
+            new SuiteConfiguration(platforms: [
+              new PlatformSelection(TestPlatform.vm.identifier),
+              new PlatformSelection(TestPlatform.chrome.identifier)
+            ]))
         .asyncMap((loadSuite) => loadSuite.getSuite())
         .toList();
     expect(suites[0].platform, equals(TestPlatform.vm));

@@ -79,6 +79,7 @@ class RemoteListener {
       verboseChain = metadata.verboseTrace;
       var declarer = new Declarer(
           metadata: metadata,
+          platformVariables: message['platformVariables'].toSet(),
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
 
@@ -89,11 +90,13 @@ class RemoteListener {
 
       await declarer.declare(main);
 
-      var os =
-          message['os'] == null ? null : OperatingSystem.find(message['os']);
-      var platform = TestPlatform.find(message['platform']);
       var suite = new Suite(declarer.build(),
-          platform: platform, os: os, path: message['path']);
+          platform: new TestPlatform.deserialize(message['platform']),
+          os: message['os'] == null
+              ? null
+              : OperatingSystem.find(message['os']),
+          path: message['path']);
+
       new RemoteListener._(suite, printZone)._listen(channel);
     }, onError: (error, stackTrace) {
       _sendError(channel, error, stackTrace, verboseChain);

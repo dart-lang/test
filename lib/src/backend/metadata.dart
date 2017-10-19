@@ -286,6 +286,17 @@ class Metadata {
         "Dart identifiers.");
   }
 
+  /// Throws a [FormatException] if any [PlatformSelector]s use any variables
+  /// that don't appear either in [validVariables] or in the set of variables
+  /// that are known to be valid for all selectors.
+  void validatePlatformSelectors(Set<String> validVariables) {
+    testOn.validate(validVariables);
+    onPlatform.forEach((selector, metadata) {
+      selector.validate(validVariables);
+      metadata.validatePlatformSelectors(validVariables);
+    });
+  }
+
   /// Return a new [Metadata] that merges [this] with [other].
   ///
   /// If the two [Metadata]s have conflicting properties, [other] wins. If
