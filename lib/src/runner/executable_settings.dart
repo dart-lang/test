@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:io/io.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
@@ -64,6 +65,22 @@ class ExecutableSettings {
 
   /// Parses settings from a user-provided YAML mapping.
   factory ExecutableSettings.parse(YamlMap settings) {
+    List<String> arguments;
+    var argumentsNode = settings.nodes["arguments"];
+    if (argumentsNode != null) {
+      if (argumentsNode.value is String) {
+        try {
+          arguments = shellSplit(argumentsNode.value);
+        } on FormatException catch (error) {
+          throw new SourceSpanFormatException(
+              error.message, argumentsNode.span);
+        }
+      } else {
+        throw new SourceSpanFormatException(
+            "Must be a string.", argumentsNode.span);
+      }
+    }
+
     String linuxExecutable;
     String macOSExecutable;
     String windowsExecutable;
@@ -88,8 +105,8 @@ class ExecutableSettings {
       }
     }
 
-    // TODO(nweiz): Parse arguments once io#23 is released.
     return new ExecutableSettings(
+        arguments: arguments,
         linuxExecutable: linuxExecutable,
         macOSExecutable: macOSExecutable,
         windowsExecutable: windowsExecutable);
