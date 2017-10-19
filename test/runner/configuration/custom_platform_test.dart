@@ -861,7 +861,7 @@ void main() {
           var test = await runTest(["-p", "chromium", "test.dart"]);
           expect(test.stdout,
               emitsThrough(contains("Chromium exited before connecting.")));
-          await test.shouldExit(0);
+          await test.shouldExit(1);
         }, tags: "chrome");
       });
     });
