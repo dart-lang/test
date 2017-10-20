@@ -28,7 +28,11 @@ void main() {
 
     group("in the browser", () {
       _spawnHybridUriTests(["-p", "chrome"]);
-    }, tags: "browser");
+    }, tags: "chrome");
+
+    group("in Node.js", () {
+      _spawnHybridUriTests(["-p", "node"]);
+    }, tags: "node");
   });
 
   group("spawnHybridCode()", () {
@@ -435,6 +439,35 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
           void main() {
             test("hybrid emits numbers", () {
               expect(spawnHybridUri("hybrid.dart").stream.toList(),
+                  completion(equals([1, 2, 3])));
+            });
+          }
+        """),
+      d.file("hybrid.dart", """
+          import "package:stream_channel/stream_channel.dart";
+
+          void hybridMain(StreamChannel channel) {
+            channel.sink..add(1)..add(2)..add(3)..close();
+          }
+        """),
+    ]).create();
+
+    var test = await runTest(["test/dir/subdir/test.dart"]..addAll(arguments));
+    expect(test.stdout,
+        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+    await test.shouldExit(0);
+  });
+
+  test("resolves root-relative URIs relative to the package root", () async {
+    await d.dir("test/dir/subdir", [
+      d.file("test.dart", """
+          import "package:test/test.dart";
+
+          void main() {
+            test("hybrid emits numbers", () {
+              expect(
+                  spawnHybridUri("/test/dir/subdir/hybrid.dart")
+                      .stream.toList(),
                   completion(equals([1, 2, 3])));
             });
           }

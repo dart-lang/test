@@ -63,8 +63,11 @@ final _transformer = new StreamChannelTransformer<Object, Map>(
 /// ```
 ///
 /// If [uri] is relative, it will be interpreted relative to the `file:` URL for
-/// the test suite being executed. If it's a `package:` URL, it will be resolved
-/// using the current package's dependency constellation.
+/// the test suite being executed. If it's root-relative (that is, if it begins
+/// with `/`) it will be interpreted relative to the root of the package (the
+/// directory that contains `pubspec.yaml`, *not* the `test/` directory). If
+/// it's a `package:` URL, it will be resolved using the current package's
+/// dependency constellation.
 ///
 /// Returns a [StreamChannel] that's connected to the channel passed to
 /// `hybridMain()`. Only JSON-encodable objects may be sent through this
@@ -98,16 +101,35 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
 
   String absoluteUri;
   if (parsedUrl.scheme.isEmpty) {
+    var isRootRelative = parsedUrl.path.startsWith("/");
+
     // If we're running in a browser context, the working directory is already
     // relative to the test file, whereas on the VM the working directory is the
     // root of the package.
     if (p.style == p.Style.url) {
-      absoluteUri = p.absolute(parsedUrl.toString());
+      if (isRootRelative) {
+        // A root-relative URL is interpreted as relative to the package root,
+        // which means placing it beneath the URL secret.
+        var secret = Uri.encodeComponent(Uri.base.pathSegments[0]);
+        absoluteUri = p.absolute("/$secret$parsedUrl");
+        print("Uri.base: ${Uri.base}");
+        print("absoluteUri: ${absoluteUri}");
+      } else {
+        absoluteUri = p.absolute(parsedUrl.toString());
+      }
     } else {
-      var suitePath = Invoker.current.liveTest.suite.path;
-      absoluteUri = p.url.join(
-          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-          parsedUrl.toString());
+      if (isRootRelative) {
+        // We assume that the current path is the package root. `pub run`
+        // enforces this currently, but at some point it would probably be good
+        // to pass in an explicit root.
+        absoluteUri = p.url
+            .join(p.toUri(p.current).toString(), parsedUrl.path.substring(1));
+      } else {
+        var suitePath = Invoker.current.liveTest.suite.path;
+        absoluteUri = p.url.join(
+            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+            parsedUrl.toString());
+      }
     }
   } else {
     absoluteUri = uri.toString();

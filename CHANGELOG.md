@@ -1,3 +1,8 @@
+## 0.12.26
+
+* The `spawnHybridUri()` function now allows root-relative URLs, which are
+  interpreted as relative to the root of the package.
+
 ## 0.12.25
 
 * Add a `override_platforms` configuration field which allows test platforms'
