@@ -9,6 +9,7 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import '../backend/declarer.dart';
 import '../backend/group.dart';
+import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/metadata.dart';
 import '../backend/operating_system.dart';
@@ -97,7 +98,8 @@ class RemoteListener {
               : OperatingSystem.find(message['os']),
           path: message['path']);
 
-      new RemoteListener._(suite, printZone)._listen(channel);
+      Invoker
+          .guard(() => new RemoteListener._(suite, printZone)._listen(channel));
     }, onError: (error, stackTrace) {
       _sendError(channel, error, stackTrace, verboseChain);
     }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {

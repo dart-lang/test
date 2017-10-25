@@ -67,7 +67,7 @@ Declarer get _declarer {
     ExpandedReporter.watch(engine,
         color: true, printPath: false, printPlatform: false);
 
-    var success = await engine.run();
+    var success = await Invoker.guard(engine.run);
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');

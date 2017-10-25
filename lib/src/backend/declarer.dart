@@ -159,7 +159,7 @@ class Declarer {
         await _runSetUps();
         await body();
       });
-    }, trace: _collectTraces ? new Trace.current(2) : null));
+    }, trace: _collectTraces ? new Trace.current(2) : null, guarded: false));
   }
 
   /// Creates a group of tests.
@@ -225,6 +225,9 @@ class Declarer {
   }
 
   /// Finalizes and returns the group being declared.
+  ///
+  /// **Note**: The tests in this group must be run in a [Invoker.guard]
+  /// context; otherwise, test errors won't be captured.
   Group build() {
     _checkNotBuilt("build");
 
@@ -259,7 +262,7 @@ class Declarer {
 
     return new LocalTest(_prefix("(setUpAll)"), _metadata, () {
       return Future.forEach(_setUpAlls, (setUp) => setUp());
-    }, trace: _setUpAllTrace);
+    }, trace: _setUpAllTrace, guarded: false);
   }
 
   /// Returns a [Test] that runs the callbacks in [_tearDownAll].
@@ -270,6 +273,6 @@ class Declarer {
       return Invoker.current.unclosable(() {
         return Future.forEach(_tearDownAlls.reversed, errorsDontStopTest);
       });
-    }, trace: _tearDownAllTrace);
+    }, trace: _tearDownAllTrace, guarded: false);
   }
 }

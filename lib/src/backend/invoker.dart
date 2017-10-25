@@ -31,18 +31,29 @@ class LocalTest extends Test {
   /// The test body.
   final AsyncFunction _body;
 
-  LocalTest(this.name, this.metadata, body(), {this.trace}) : _body = body;
+  /// Whether the test is run in its own error zone.
+  final bool _guarded;
+
+  /// Creates a new [LocalTest].
+  ///
+  /// If [guarded] is `true`, the test is run in its own error zone, and any
+  /// errors that escape that zone cause the test to fail. If it's `false`, it's
+  /// the caller's responsiblity to invoke [LiveTest.run] in the context of a
+  /// call to [Invoker.guard].
+  LocalTest(this.name, this.metadata, body(), {this.trace, bool guarded: true})
+      : _body = body,
+        _guarded = guarded;
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
-    var invoker = new Invoker._(suite, this, groups: groups);
+    var invoker = new Invoker._(suite, this, groups: groups, guarded: _guarded);
     return invoker.liveTest;
   }
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
     return new LocalTest(name, metadata.forPlatform(platform, os: os), _body,
-        trace: trace);
+        trace: trace, guarded: _guarded);
   }
 }
 
@@ -57,6 +68,9 @@ class Invoker {
   /// This provides a view into the state of the test being executed.
   LiveTest get liveTest => _controller.liveTest;
   LiveTestController _controller;
+
+  /// Whether to run this test in its own error zone.
+  final bool _guarded;
 
   /// Whether the test can be closed in the current zone.
   bool get _closable => Zone.current[_closableKey];
@@ -118,6 +132,22 @@ class Invoker {
     return Zone.current[#test.invoker];
   }
 
+  /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
+  /// caught and dispatched to the appropriate [Invoker].
+  static T guard<T>(T callback()) =>
+      runZoned(callback, zoneSpecification: new ZoneSpecification(
+          // Use [handleUncaughtError] rather than [onError] so we can
+          // capture [zone] and with it the outstanding callback counter for
+          // the zone in which [error] was thrown.
+          handleUncaughtError: (self, _, zone, error, stackTrace) {
+        var invoker = zone[#test.invoker];
+        if (invoker != null) {
+          self.parent.run(() => invoker._handleError(zone, error, stackTrace));
+        } else {
+          self.parent.handleUncaughtError(error, stackTrace);
+        }
+      }));
+
   /// The zone that the top level of [_test.body] is running in.
   ///
   /// Tracking this ensures that [_timeoutTimer] isn't created in a
@@ -135,7 +165,9 @@ class Invoker {
   /// Messages to print if and when this test fails.
   final _printsOnFailure = <String>[];
 
-  Invoker._(Suite suite, LocalTest test, {Iterable<Group> groups}) {
+  Invoker._(Suite suite, LocalTest test,
+      {Iterable<Group> groups, bool guarded: true})
+      : _guarded = guarded {
     _controller = new LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete,
         groups: groups);
@@ -334,59 +366,67 @@ class Invoker {
 
     _runCount++;
     Chain.capture(() {
-      runZoned(() async {
-        _invokerZone = Zone.current;
-        _outstandingCallbackZones.add(Zone.current);
+      _guardIfGuarded(() {
+        runZoned(() async {
+          _invokerZone = Zone.current;
+          _outstandingCallbackZones.add(Zone.current);
 
-        // Run the test asynchronously so that the "running" state change has
-        // a chance to hit its event handler(s) before the test produces an
-        // error. If an error is emitted before the first state change is
-        // handled, we can end up with [onError] callbacks firing before the
-        // corresponding [onStateChkange], which violates the timing
-        // guarantees.
-        //
-        // Using [new Future] also avoids starving the DOM or other
-        // microtask-level events.
-        new Future(() async {
-          await _test._body();
-          await unclosable(_runTearDowns);
-          removeOutstandingCallback();
-        });
+          // Run the test asynchronously so that the "running" state change has
+          // a chance to hit its event handler(s) before the test produces an
+          // error. If an error is emitted before the first state change is
+          // handled, we can end up with [onError] callbacks firing before the
+          // corresponding [onStateChkange], which violates the timing
+          // guarantees.
+          //
+          // Using [new Future] also avoids starving the DOM or other
+          // microtask-level events.
+          new Future(() async {
+            await _test._body();
+            await unclosable(_runTearDowns);
+            removeOutstandingCallback();
+          });
 
-        await _outstandingCallbacks.noOutstandingCallbacks;
-        if (_timeoutTimer != null) _timeoutTimer.cancel();
+          await _outstandingCallbacks.noOutstandingCallbacks;
+          if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-        if (liveTest.state.result != Result.success &&
-            _runCount < liveTest.test.metadata.retry + 1) {
+          if (liveTest.state.result != Result.success &&
+              _runCount < liveTest.test.metadata.retry + 1) {
+            _controller
+                .message(new Message.print("Retry: ${liveTest.test.name}"));
+            _onRun();
+            return;
+          }
+
           _controller
-              .message(new Message.print("Retry: ${liveTest.test.name}"));
-          _onRun();
-          return;
-        }
+              .setState(new State(Status.complete, liveTest.state.result));
 
-        _controller.setState(new State(Status.complete, liveTest.state.result));
-
-        _controller.completer.complete();
-      },
-          zoneValues: {
-            #test.invoker: this,
-            // Use the invoker as a key so that multiple invokers can have different
-            // outstanding callback counters at once.
-            _counterKey: outstandingCallbacksForBody,
-            _closableKey: true,
-            #runCount: _runCount
-          },
-          zoneSpecification: new ZoneSpecification(
-              print: (self, parent, zone, line) =>
-                  _controller.message(new Message.print(line)),
-              // Use [handleUncaughtError] rather than [onError] so we can
-              // capture [zone] and with it the outstanding callback counter for
-              // the zone in which [error] was thrown.
-              handleUncaughtError: (self, _, zone, error, stackTrace) => self
-                  .parent
-                  .run(() => _handleError(zone, error, stackTrace))));
-    }, when: liveTest.test.metadata.chainStackTraces);
+          _controller.completer.complete();
+        },
+            zoneValues: {
+              #test.invoker: this,
+              // Use the invoker as a key so that multiple invokers can have
+              // different outstanding callback counters at once.
+              _counterKey: outstandingCallbacksForBody,
+              _closableKey: true,
+              #runCount: _runCount
+            },
+            zoneSpecification: new ZoneSpecification(
+                print: (_, __, ___, line) => _print(line)));
+      });
+    }, when: liveTest.test.metadata.chainStackTraces, errorZone: false);
   }
+
+  /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.
+  void _guardIfGuarded(void callback()) {
+    if (_guarded) {
+      Invoker.guard(callback);
+    } else {
+      callback();
+    }
+  }
+
+  /// Prints [text] as a message to [_controller].
+  void _print(String text) => _controller.message(new Message.print(text));
 
   /// Run [_tearDowns] in reverse order.
   Future _runTearDowns() async {
