@@ -1,5 +1,9 @@
 ## 0.12.27
 
+* When `addTearDown()` is called within a call to `setUpAll()`, it runs its
+  callback after *all* tests instead of running it after the `setUpAll()`
+  callback.
+
 * When running in an interactive terminal, the test runner now prints status
   lines as wide as the terminal and no wider.
 

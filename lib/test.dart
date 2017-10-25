@@ -67,7 +67,8 @@ Declarer get _declarer {
     ExpandedReporter.watch(engine,
         color: true, printPath: false, printPlatform: false);
 
-    var success = await Invoker.guard(engine.run);
+    var success = await runZoned(() => Invoker.guard(engine.run),
+        zoneValues: {#test.declarer: _globalDeclarer});
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');
@@ -252,6 +253,9 @@ void tearDown(callback()) => _declarer.tearDown(callback);
 ///
 /// The [callback] is run before any callbacks registered with [tearDown]. Like
 /// [tearDown], the most recently registered callback is run first.
+///
+/// If this is called from within a [setUpAll] or [tearDownAll] callback, it
+/// instead runs the function after *all* tests in the current test suite.
 void addTearDown(callback()) {
   if (Invoker.current == null) {
     throw new StateError("addTearDown() may only be called within a test.");

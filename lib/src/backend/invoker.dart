@@ -10,6 +10,7 @@ import '../frontend/expect.dart';
 import '../runner/load_suite.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
+import 'declarer.dart';
 import 'group.dart';
 import 'live_test.dart';
 import 'live_test_controller.dart';
@@ -28,8 +29,11 @@ class LocalTest extends Test {
   final Metadata metadata;
   final Trace trace;
 
+  /// Whether this is a test defined using `setUpAll()` or `tearDownAll()`.
+  final bool isScaffoldAll;
+
   /// The test body.
-  final AsyncFunction _body;
+  final Function() _body;
 
   /// Whether the test is run in its own error zone.
   final bool _guarded;
@@ -40,9 +44,12 @@ class LocalTest extends Test {
   /// errors that escape that zone cause the test to fail. If it's `false`, it's
   /// the caller's responsiblity to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
-  LocalTest(this.name, this.metadata, body(), {this.trace, bool guarded: true})
-      : _body = body,
-        _guarded = guarded;
+  LocalTest(this.name, this.metadata, this._body,
+      {this.trace, bool guarded: true, this.isScaffoldAll: false})
+      : _guarded = guarded;
+
+  LocalTest._(this.name, this.metadata, this._body, this.trace, this._guarded,
+      this.isScaffoldAll);
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
@@ -52,8 +59,8 @@ class LocalTest extends Test {
 
   Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
     if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new LocalTest(name, metadata.forPlatform(platform, os: os), _body,
-        trace: trace, guarded: _guarded);
+    return new LocalTest._(name, metadata.forPlatform(platform, os: os), _body,
+        trace, _guarded, isScaffoldAll);
   }
 }
 
@@ -179,7 +186,12 @@ class Invoker {
   /// run in the reverse of the order they're declared.
   void addTearDown(callback()) {
     if (closed) throw new ClosedException();
-    _tearDowns.add(callback);
+
+    if (_test.isScaffoldAll) {
+      Declarer.current.addTearDownAll(callback);
+    } else {
+      _tearDowns.add(callback);
+    }
   }
 
   /// Tells the invoker that there's a callback running that it should wait for
@@ -314,7 +326,15 @@ class Invoker {
   void _handleError(Zone zone, error, [StackTrace stackTrace]) {
     // Ignore errors propagated from previous test runs
     if (_runCount != zone[#runCount]) return;
-    if (stackTrace == null) stackTrace = new Chain.current();
+
+    // Get the chain information from the zone in which the error was thrown.
+    zone.run(() {
+      if (stackTrace == null) {
+        stackTrace = new Chain.current();
+      } else {
+        stackTrace = new Chain.forTrace(stackTrace);
+      }
+    });
 
     // Store these here because they'll change when we set the state below.
     var shouldBeDone = liveTest.state.shouldBeDone;
@@ -371,9 +391,9 @@ class Invoker {
           _invokerZone = Zone.current;
           _outstandingCallbackZones.add(Zone.current);
 
-          // Run the test asynchronously so that the "running" state change has
-          // a chance to hit its event handler(s) before the test produces an
-          // error. If an error is emitted before the first state change is
+          // Run the test asynchronously so that the "running" state change
+          // has a chance to hit its event handler(s) before the test produces
+          // an error. If an error is emitted before the first state change is
           // handled, we can end up with [onError] callbacks firing before the
           // corresponding [onStateChkange], which violates the timing
           // guarantees.
@@ -408,7 +428,7 @@ class Invoker {
               // different outstanding callback counters at once.
               _counterKey: outstandingCallbacksForBody,
               _closableKey: true,
-              #runCount: _runCount
+              #runCount: _runCount,
             },
             zoneSpecification: new ZoneSpecification(
                 print: (_, __, ___, line) => _print(line)));

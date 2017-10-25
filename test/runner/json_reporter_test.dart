@@ -447,6 +447,8 @@ void main() {
         _testDone(3, hidden: true),
         _testStart(4, "success", line: 9, column: 9),
         _testDone(4),
+        _testStart(5, "(tearDownAll)"),
+        _testDone(5, hidden: true),
         _done()
       ]);
     });
