@@ -29,7 +29,7 @@ dependencies:
   source_map_stack_trace: '^1.1.4'
   source_maps: '^0.10.2'
   source_span: '^1.4.0'
-  stack_trace: '^1.2.1'
+  stack_trace: '^1.6.0'
   stream_channel: '^1.6.0'
   string_scanner: '>=0.1.1 <2.0.0'
   term_glyph: '^1.0.0'
