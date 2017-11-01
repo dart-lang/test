@@ -51,12 +51,12 @@ abstract class Browser {
   Future get onExit => _onExitCompleter.future;
   final _onExitCompleter = new Completer();
 
-  /// IO streams for the underlying browser process.
-  final _ioStreams = <StreamSubscription>[];
+  /// Standard IO streams for the underlying browser process.
+  final _ioSubscriptions = <StreamSubscription>[];
 
   Future _drainAndIgnore(Stream s) async {
     try {
-      _ioStreams.add(s.listen(null, cancelOnError: true));
+      _ioSubscriptions.add(s.listen(null, cancelOnError: true));
     } on StateError catch (_) {}
   }
 
@@ -125,7 +125,8 @@ abstract class Browser {
 
     // If we don't manually close the stream the test runner can hang.
     // For example this happens with Chrome Headless.
-    for (var stream in _ioStreams) {
+    // See SDK issue: https://github.com/dart-lang/sdk/issues/31264
+    for (var stream in _ioSubscriptions) {
       stream.cancel();
     }
 
