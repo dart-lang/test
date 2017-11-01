@@ -51,9 +51,12 @@ abstract class Browser {
   Future get onExit => _onExitCompleter.future;
   final _onExitCompleter = new Completer();
 
+  /// IO streams for the underlying browser process.
+  final _ioStreams = <StreamSubscription>[];
+
   Future _drainAndIgnore(Stream s) async {
     try {
-      await s.drain();
+      _ioStreams.add(s.listen(null, cancelOnError: true));
     } on StateError catch (_) {}
   }
 
@@ -72,8 +75,8 @@ abstract class Browser {
       _processCompleter.complete(process);
 
       // If we don't drain the stdout and stderr the process can hang.
-      await Future.wait(
-          [_drainAndIgnore(process.stdout), _drainAndIgnore(process.stderr)]);
+      _drainAndIgnore(process.stdout);
+      _drainAndIgnore(process.stderr);
 
       var exitCode = await process.exitCode;
 
@@ -119,6 +122,12 @@ abstract class Browser {
   /// exceptions.
   Future close() {
     _closed = true;
+
+    // If we don't manually close the stream the test runner can hang.
+    // For example this happens with Chrome Headless.
+    for (var stream in _ioStreams) {
+      stream.cancel();
+    }
 
     _process.then((process) {
       // Dartium has a difficult time being killed on Linux. To ensure it is
