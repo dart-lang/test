@@ -11,16 +11,12 @@ import '../../backend/message.dart';
 import '../../backend/state.dart';
 import '../../utils.dart';
 import '../../utils.dart' as utils;
+import '../../util/io.dart';
 import '../configuration.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
-
-/// The maximum console line length.
-///
-/// Lines longer than this will be cropped.
-const _lineLength = 100;
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
@@ -251,7 +247,7 @@ class CompactReporter implements Reporter {
       stdout.write(message);
 
       // Add extra padding to overwrite any load messages.
-      if (!_printedNewline) stdout.write(" " * (_lineLength - message.length));
+      if (!_printedNewline) stdout.write(" " * (lineLength - message.length));
       stdout.writeln();
     } else if (!success) {
       _progressLine('Some tests failed.', color: _red);
@@ -268,7 +264,7 @@ class CompactReporter implements Reporter {
   /// Prints a line representing the current state of the tests.
   ///
   /// [message] goes after the progress report, and may be truncated to fit the
-  /// entire line within [_lineLength]. If [color] is passed, it's used as the
+  /// entire line within [lineLength]. If [color] is passed, it's used as the
   /// color for [message]. If [suffix] is passed, it's added to the end of
   /// [message].
   bool _progressLine(String message,
@@ -329,16 +325,16 @@ class CompactReporter implements Reporter {
     buffer.write(': ');
     buffer.write(color);
 
-    // Ensure the line fits within [_lineLength]. [buffer] includes the color
+    // Ensure the line fits within [lineLength]. [buffer] includes the color
     // escape sequences too. Because these sequences are not visible characters,
     // we make sure they are not counted towards the limit.
     var length = withoutColors(buffer.toString()).length;
-    if (truncate) message = utils.truncate(message, _lineLength - length);
+    if (truncate) message = utils.truncate(message, lineLength - length);
     buffer.write(message);
     buffer.write(_noColor);
 
     // Pad the rest of the line so that it looks erased.
-    buffer.write(' ' * (_lineLength - withoutColors(buffer.toString()).length));
+    buffer.write(' ' * (lineLength - withoutColors(buffer.toString()).length));
     stdout.write(buffer.toString());
 
     _printedNewline = false;

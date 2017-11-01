@@ -17,9 +17,6 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
 
-/// The maximum console line length.
-const _lineLength = 100;
-
 /// A typedef for a possibly-asynchronous function.
 ///
 /// The return type should only ever by [Future] or void.
@@ -139,37 +136,6 @@ String pluralize(String name, int number, {String plural}) {
 /// Returns [noun] with an indefinite article ("a" or "an") added, based on
 /// whether its first letter is a vowel.
 String a(String noun) => noun.startsWith(_vowel) ? "an $noun" : "a $noun";
-
-/// Wraps [text] so that it fits within [lineLength], which defaults to 100
-/// characters.
-///
-/// This preserves existing newlines and doesn't consider terminal color escapes
-/// part of a word's length.
-String wordWrap(String text, {int lineLength}) {
-  if (lineLength == null) lineLength = _lineLength;
-  return text.split("\n").map((originalLine) {
-    var buffer = new StringBuffer();
-    var lengthSoFar = 0;
-    for (var word in originalLine.split(" ")) {
-      var wordLength = withoutColors(word).length;
-      if (wordLength > lineLength) {
-        if (lengthSoFar != 0) buffer.writeln();
-        buffer.writeln(word);
-      } else if (lengthSoFar == 0) {
-        buffer.write(word);
-        lengthSoFar = wordLength;
-      } else if (lengthSoFar + 1 + wordLength > lineLength) {
-        buffer.writeln();
-        buffer.write(word);
-        lengthSoFar = wordLength;
-      } else {
-        buffer.write(" $word");
-        lengthSoFar += 1 + wordLength;
-      }
-    }
-    return buffer.toString();
-  }).join("\n");
-}
 
 /// A regular expression matching terminal color codes.
 final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
