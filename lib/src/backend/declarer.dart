@@ -155,11 +155,15 @@ class Declarer {
         }
       }
 
-      await Invoker.current.waitForOutstandingCallbacks(() async {
-        await _runSetUps();
-        await body();
-      });
-    }, trace: _collectTraces ? new Trace.current(2) : null));
+      await runZoned(
+          () => Invoker.current.waitForOutstandingCallbacks(() async {
+                await _runSetUps();
+                await body();
+              }),
+          // Make the declarer visible to running tests so that they'll throw
+          // useful errors when calling `test()` and `group()` within a test.
+          zoneValues: {#test.declarer: this});
+    }, trace: _collectTraces ? new Trace.current(2) : null, guarded: false));
   }
 
   /// Creates a group of tests.
@@ -224,7 +228,14 @@ class Declarer {
     _tearDownAlls.add(callback);
   }
 
+  /// Like [tearDownAll], but called from within a running [setUpAll] test to
+  /// dynamically add a [tearDownAll].
+  void addTearDownAll(callback()) => _tearDownAlls.add(callback);
+
   /// Finalizes and returns the group being declared.
+  ///
+  /// **Note**: The tests in this group must be run in a [Invoker.guard]
+  /// context; otherwise, test errors won't be captured.
   Group build() {
     _checkNotBuilt("build");
 
@@ -258,18 +269,30 @@ class Declarer {
     if (_setUpAlls.isEmpty) return null;
 
     return new LocalTest(_prefix("(setUpAll)"), _metadata, () {
-      return Future.forEach(_setUpAlls, (setUp) => setUp());
-    }, trace: _setUpAllTrace);
+      return runZoned(() => Future.forEach(_setUpAlls, (setUp) => setUp()),
+          // Make the declarer visible to running scaffolds so they can add to
+          // the declarer's `tearDownAll()` list.
+          zoneValues: {#test.declarer: this});
+    }, trace: _setUpAllTrace, guarded: false, isScaffoldAll: true);
   }
 
   /// Returns a [Test] that runs the callbacks in [_tearDownAll].
   Test get _tearDownAll {
-    if (_tearDownAlls.isEmpty) return null;
+    // We have to create a tearDownAll if there's a setUpAll, since it might
+    // dynamically add tear-down code using [addTearDownAll].
+    if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
     return new LocalTest(_prefix("(tearDownAll)"), _metadata, () {
-      return Invoker.current.unclosable(() {
-        return Future.forEach(_tearDownAlls.reversed, errorsDontStopTest);
-      });
-    }, trace: _tearDownAllTrace);
+      return runZoned(() {
+        return Invoker.current.unclosable(() async {
+          while (_tearDownAlls.isNotEmpty) {
+            await errorsDontStopTest(_tearDownAlls.removeLast());
+          }
+        });
+      },
+          // Make the declarer visible to running scaffolds so they can add to
+          // the declarer's `tearDownAll()` list.
+          zoneValues: {#test.declarer: this});
+    }, trace: _tearDownAllTrace, guarded: false, isScaffoldAll: true);
   }
 }
