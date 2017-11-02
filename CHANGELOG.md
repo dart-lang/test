@@ -3,6 +3,11 @@
 * When running in an interactive terminal, the test runner now prints status
   lines as wide as the terminal and no wider.
 
+## 0.12.26+1
+
+* Fix lower bound on package `stack_trace`. Now 1.6.0.
+* Manually close browser process streams to prevent test hangs.
+
 ## 0.12.26
 
 * The `spawnHybridUri()` function now allows root-relative URLs, which are
