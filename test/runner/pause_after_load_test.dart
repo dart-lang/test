@@ -44,8 +44,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     var nextLineFired = false;
@@ -67,8 +67,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     nextLineFired = false;
@@ -108,8 +108,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     var nextLineFired = false;
@@ -130,8 +130,8 @@ void main() {
         test.stdout,
         emitsThrough(emitsInOrder([
           "The test runner is paused. Open the dev console in Chrome and set "
-              "breakpoints. Once you're finished,",
-          "return to this terminal and press Enter."
+              "breakpoints. Once you're finished, return to this terminal and "
+              "press Enter."
         ])));
 
     nextLineFired = false;
@@ -191,8 +191,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     var nextLineFired = false;
@@ -234,8 +234,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     test.signal(ProcessSignal.SIGTERM);
@@ -266,8 +266,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     var nextLineFired = false;
@@ -309,8 +309,8 @@ void main() {
         emitsThrough(emitsInOrder([
           startsWith("Observatory URL: "),
           "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints.",
-          "Once you're finished, return to this terminal and press Enter."
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ])));
 
     var nextLineFired = false;

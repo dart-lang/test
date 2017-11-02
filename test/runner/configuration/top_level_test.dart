@@ -76,9 +76,9 @@ void main() {
           "",
           startsWith("Observatory URL: "),
           startsWith("Remote debugger URL: "),
-          "The test runner is paused. Open the remote debugger or the Observatory "
-              "and set breakpoints. Once",
-          "you're finished, return to this terminal and press Enter."
+          "The test runner is paused. Open the remote debugger or the "
+              "Observatory and set breakpoints. Once you're finished, return "
+              "to this terminal and press Enter."
         ]));
 
     var nextLineFired = false;

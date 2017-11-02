@@ -149,13 +149,15 @@ void main() {
     return _expectReport("""
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
-               'longer. A little more... okay, that should do it.',
+               'longer. Even more. We have to get to at least 200 characters. '
+               'I know that seems like a lot, but I believe in you. A little '
+               'more... okay, that should do it.',
            () => throw new TestFailure('oh no'));""", """
         +0: loading test.dart
-        +0: really ... longer than that. No, yet longer. A little more... okay, that should do it.
-        +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it. [E]
+        +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
+        +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it. [E]
           oh no
-          test.dart 9:18  main.<fn>
+          test.dart 11:18  main.<fn>
 
 
         +0 -1: Some tests failed.""");
@@ -268,14 +270,16 @@ void main() {
       return _expectReport("""
           test(
              'really gosh dang long test name. Even longer than that. No, yet '
-                 'longer. A little more... okay, that should do it.',
+                 'longer. Even more. We have to get to at least 200 '
+                 'characters. I know that seems like a lot, but I believe in '
+                 'you. A little more... okay, that should do it.',
              () => print('hello'));""", """
           +0: loading test.dart
-          +0: really ... longer than that. No, yet longer. A little more... okay, that should do it.
-          +0: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
+          +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
+          +0: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
           hello
 
-          +1: really ... longer than that. No, yet longer. A little more... okay, that should do it.
+          +1: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
           +1: All tests passed!""");
     });
 

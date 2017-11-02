@@ -14,11 +14,6 @@ import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
 
-/// The maximum console line length.
-///
-/// Lines longer than this will be cropped.
-const _lineLength = 100;
-
 /// A reporter that prints each test on its own line.
 ///
 /// This is currently used in place of [CompactReporter] by `lib/test.dart`,
@@ -238,10 +233,9 @@ class ExpandedReporter implements Reporter {
 
   /// Prints a line representing the current state of the tests.
   ///
-  /// [message] goes after the progress report, and may be truncated to fit the
-  /// entire line within [_lineLength]. If [color] is passed, it's used as the
-  /// color for [message]. If [suffix] is passed, it's added to the end of
-  /// [message].
+  /// [message] goes after the progress report. If [color] is passed, it's used
+  /// as the color for [message]. If [suffix] is passed, it's added to the end
+  /// of [message].
   void _progressLine(String message, {String color, String suffix}) {
     // Print nothing if nothing has changed since the last progress line.
     if (_engine.passed.length == _lastProgressPassed &&
