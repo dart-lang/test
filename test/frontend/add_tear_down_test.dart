@@ -7,8 +7,6 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:test/test.dart';
 
-import 'package:test/src/backend/declarer.dart';
-
 import '../utils.dart';
 
 void main() {

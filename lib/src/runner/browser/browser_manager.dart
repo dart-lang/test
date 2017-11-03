@@ -272,7 +272,7 @@ class BrowserManager {
   }
 
   /// The callback for handling messages received from the host page.
-  void _onMessage(Map message) {
+  void _onMessage(message) {
     switch (message["command"]) {
       case "ping":
         break;
