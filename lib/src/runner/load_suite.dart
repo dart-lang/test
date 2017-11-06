@@ -75,31 +75,29 @@ class LoadSuite extends Suite implements RunnerSuite {
       invoker.addOutstandingCallback();
 
       invoke(() async {
-        try {
-          var suite = await body();
-          if (completer.isCompleted) {
-            // If the load test has already been closed, close the suite it
-            // generated.
-            suite?.close();
-            return;
-          }
-
-          completer
-              .complete(suite == null ? null : new Pair(suite, Zone.current));
-          invoker.removeOutstandingCallback();
-        } catch (error, stackTrace) {
-          registerException(error, stackTrace);
-          if (!completer.isCompleted) completer.complete();
+        var suite = await body();
+        if (completer.isCompleted) {
+          // If the load test has already been closed, close the suite it
+          // generated.
+          suite?.close();
+          return;
         }
-      });
 
-      // If the test is forcibly closed, exit immediately. It doesn't have any
-      // cleanup to do that won't be handled by Loader.close.
-      invoker.onClose.then((_) {
-        if (completer.isCompleted) return;
-        completer.complete();
+        completer
+            .complete(suite == null ? null : new Pair(suite, Zone.current));
         invoker.removeOutstandingCallback();
       });
+
+      // If the test completes before the body callback, either an out-of-band
+      // error occurred or the test was canceled. Either way, we return a `null`
+      // suite.
+      invoker.liveTest.onComplete.then((_) {
+        if (!completer.isCompleted) completer.complete();
+      });
+
+      // If the test is forcibly closed, let it complete, since load tests don't
+      // have timeouts.
+      invoker.onClose.then((_) => invoker.removeOutstandingCallback());
     }, completer.future, path: path, platform: platform);
   }
 
