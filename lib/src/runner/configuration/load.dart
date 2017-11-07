@@ -286,7 +286,8 @@ class _ConfigurationLoader {
 
     var paths = _getList("paths", (pathNode) {
       _validate(pathNode, "Paths must be strings.", (value) => value is String);
-      _validate(pathNode, "Paths must be relative.", p.url.isRelative);
+      _validate(pathNode, "Paths must be relative.",
+          (value) => p.url.isRelative(value));
 
       return _parseNode(pathNode, "path", p.fromUri);
     });

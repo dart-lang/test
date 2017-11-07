@@ -15,7 +15,6 @@ import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
-import '../utils.dart';
 import 'browser/platform.dart';
 import 'configuration.dart';
 import 'configuration/suite.dart';

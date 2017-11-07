@@ -188,7 +188,7 @@ class BrowserManager {
     }));
 
     _environment = _loadBrowserEnvironment();
-    _channel.stream.listen(_onMessage, onDone: close);
+    _channel.stream.listen((message) => _onMessage(message), onDone: close);
   }
 
   /// Loads [_BrowserEnvironment].
