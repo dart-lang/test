@@ -19,6 +19,14 @@ import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
 
+/// The timeout for loading a test suite.
+///
+/// We want this to be long enough that even a very large application being
+/// compiled with dart2js doesn't trigger it, but short enough that it fires
+/// before the host kills it. For example, Google's Forge service has a
+/// 15-minute timeout.
+final _timeout = new Duration(minutes: 12);
+
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
 ///
@@ -128,9 +136,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       : super(
             new Group.root([
               new LocalTest(
-                  name,
-                  new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
-                  body)
+                  name, new Metadata(timeout: new Timeout(_timeout)), body)
             ]),
             path: path,
             platform: platform);
