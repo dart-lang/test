@@ -33,6 +33,7 @@ export 'src/frontend/test_on.dart';
 export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';
 export 'src/frontend/timeout.dart';
+export 'src/frontend/utils.dart';
 
 /// The global declarer.
 ///

@@ -223,20 +223,6 @@ class _IsApplicationException extends Matcher {
   }
 }
 
-/// Returns a [Future] that completes after pumping the event queue [times]
-/// times.
-///
-/// By default, this should pump the event queue enough times to allow any code
-/// to run, as long as it's not waiting on some external event.
-Future pumpEventQueue([int times = 20]) {
-  if (times == 0) return new Future.value();
-  // Use [new Future] future to allow microtask events to finish. The [new
-  // Future.value] constructor uses scheduleMicrotask itself and would therefore
-  // not wait for microtask callbacks that are scheduled after invoking this
-  // method.
-  return new Future(() => pumpEventQueue(times - 1));
-}
-
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
   var test = new LocalTest("test", new Metadata(), body);

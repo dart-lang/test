@@ -1,3 +1,8 @@
+## 0.12.28
+
+* Add a `pumpEventQueue()` function to make it easy to wait until all
+  asynchronous tasks are complete.
+
 ## 0.12.27+1
 
 * Increase the timeout for loading tests to 12 minutes.
