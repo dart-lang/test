@@ -1,3 +1,7 @@
+## 0.12.27+1
+
+* Increase the timeout for loading tests to 12 minutes.
+
 ## 0.12.27
 
 * When `addTearDown()` is called within a call to `setUpAll()`, it runs its
