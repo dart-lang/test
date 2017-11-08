@@ -23,8 +23,6 @@ import '../load_exception.dart';
 import '../runner_suite.dart';
 import '../runner_test.dart';
 
-final _deserializeTimeout = new Duration(minutes: 8);
-
 /// A helper method for creating a [RunnerSuiteController] containing tests
 /// that communicate over [channel].
 ///
@@ -113,13 +111,7 @@ Future<RunnerSuiteController> deserializeSuite(
       });
 
   return new RunnerSuiteController(
-      environment,
-      suiteConfig,
-      await completer.future.timeout(_deserializeTimeout, onTimeout: () {
-        throw new ApplicationException(
-            "Timed out while loading the test suite.\n"
-            "It's likely that there's a missing import or syntax error.");
-      }),
+      environment, suiteConfig, await completer.future,
       path: path,
       platform: platform,
       os: currentOS,
