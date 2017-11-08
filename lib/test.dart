@@ -23,6 +23,7 @@ export 'src/frontend/expect.dart' hide formatFailure;
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';
 export 'src/frontend/on_platform.dart';
+export 'src/frontend/never_called.dart';
 export 'src/frontend/prints_matcher.dart';
 export 'src/frontend/skip.dart';
 export 'src/frontend/spawn_hybrid.dart';
