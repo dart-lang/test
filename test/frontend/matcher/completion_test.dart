@@ -55,7 +55,7 @@ void main() {
         var completer = new Completer();
         expect(completer.future, doesNotComplete);
         new Future(() async {
-          await pumpEventQueue(10);
+          await pumpEventQueue(times: 10);
         }).then(completer.complete);
       });
 

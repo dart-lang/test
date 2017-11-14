@@ -9,6 +9,7 @@ import 'package:matcher/matcher.dart';
 import '../utils.dart';
 import 'async_matcher.dart';
 import 'expect.dart';
+import 'utils.dart';
 
 /// Matches a [Future] that completes successfully with a value.
 ///
@@ -86,31 +87,23 @@ class _Completes extends AsyncMatcher {
 /// Note that this creates an asynchronous expectation. The call to
 /// `expect()` that includes this will return immediately and execution will
 /// continue.
-final Matcher doesNotComplete = const _DoesNotComplete(20);
+final Matcher doesNotComplete = const _DoesNotComplete();
 
 class _DoesNotComplete extends Matcher {
-  final int _timesToPump;
-  const _DoesNotComplete(this._timesToPump);
-
-  // TODO(grouma) - Make this a top level function
-  Future _pumpEventQueue(times) {
-    if (times == 0) return new Future.value();
-    return new Future(() => _pumpEventQueue(times - 1));
-  }
+  const _DoesNotComplete();
 
   Description describe(Description description) {
     description.add("does not complete");
     return description;
   }
 
-  @override
   bool matches(item, Map matchState) {
     if (item is! Future) return false;
     item.then((value) {
       fail('Future was not expected to complete but completed with a value of '
           '$value');
     });
-    expect(_pumpEventQueue(_timesToPump), completes);
+    expect(pumpEventQueue(), completes);
     return true;
   }
 
