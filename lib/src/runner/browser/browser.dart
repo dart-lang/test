@@ -3,9 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
+import 'package:typed_data/typed_data.dart';
 
 import '../../utils.dart';
 import '../application_exception.dart';
@@ -74,9 +76,16 @@ abstract class Browser {
       var process = await startBrowser();
       _processCompleter.complete(process);
 
+      var output = new Uint8Buffer();
+      drainOutput(Stream<List<int>> stream) {
+        try {
+          _ioSubscriptions.add(stream.listen(output.addAll, cancelOnError: true));
+        } on StateError catch (_) {}
+      }
+
       // If we don't drain the stdout and stderr the process can hang.
-      _drainAndIgnore(process.stdout);
-      _drainAndIgnore(process.stderr);
+      drainOutput(process.stdout);
+      drainOutput(process.stderr);
 
       var exitCode = await process.exitCode;
 
@@ -95,8 +104,13 @@ abstract class Browser {
       }
 
       if (!_closed && exitCode != 0) {
-        throw new ApplicationException(
-            "$name failed with exit code $exitCode.");
+        var outputString = UTF8.decode(output);
+        var message = "$name failed with exit code $exitCode.";
+        if (outputString.isNotEmpty) {
+          message += "\nStandard output:\n$outputString";
+        }
+
+        throw new ApplicationException(message);
       }
 
       _onExitCompleter.complete();

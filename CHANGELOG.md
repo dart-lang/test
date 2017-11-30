@@ -1,3 +1,7 @@
+## 0.12.28+1
+
+* When a browser crashes, include its standard output in the error message.
+
 ## 0.12.28
 
 * Add a `pumpEventQueue()` function to make it easy to wait until all
