@@ -169,6 +169,29 @@ void main() {
     await test.shouldExit(0);
   });
 
+  test("forwards raw JS prints from the Node test", () async {
+    await d.file("test.dart", """
+      import 'dart:async';
+
+      import 'package:js/js.dart';
+      import 'package:test/test.dart';
+
+      @JS("console.log")
+      external void log(value);
+
+      void main() {
+        test("test", () {
+          log("Hello,");
+          return new Future(() => log("world!"));
+        });
+      }
+    """).create();
+
+    var test = await runTest(["-p", "node", "test.dart"]);
+    expect(test.stdout, emitsInOrder([emitsThrough("Hello,"), "world!"]));
+    await test.shouldExit(0);
+  });
+
   test("dartifies stack traces for JS-compiled tests by default", () async {
     await d.file("test.dart", _failure).create();
 
