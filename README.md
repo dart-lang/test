@@ -298,6 +298,9 @@ using [`const bool.fromEnvironment("node")`][bool.fromEnvironment].
 
 [bool.fromEnvironment]: https://api.dartlang.org/stable/1.24.2/dart-core/bool/bool.fromEnvironment.html
 
+If a top-level `node_modules` directory exists, tests running on Node.js can
+import modules from it.
+
 ## Asynchronous Tests
 
 Tests written with `async`/`await` will work automatically. The test runner
