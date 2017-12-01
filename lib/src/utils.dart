@@ -33,8 +33,10 @@ final lineSplitter = new StreamTransformer<List<int>, String>(
         .listen(null, cancelOnError: cancelOnError));
 
 /// A [StreamChannelTransformer] that converts a chunked string channel to a
-/// line-by-line channel. Note that this is only safe for channels whose
-/// messages are guaranteed not to contain newlines.
+/// line-by-line channel.
+///
+/// Note that this is only safe for channels whose messages are guaranteed not
+/// to contain newlines.
 final chunksToLines = new StreamChannelTransformer(
     const LineSplitter(),
     new StreamSinkTransformer.fromHandlers(

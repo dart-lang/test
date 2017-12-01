@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:async/async.dart';
+import 'package:multi_server_socket/multi_server_socket.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
@@ -91,15 +92,22 @@ class NodePlatform extends PlatformPlugin
   /// source map for the compiled suite.
   Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(String path,
       TestPlatform platform, SuiteConfiguration suiteConfig) async {
-    var pair = await _spawnProcess(path, platform, suiteConfig);
+    var server = await MultiServerSocket.loopback(0);
+
+    var pair = await _spawnProcess(path, platform, suiteConfig, server.port);
     var process = pair.first;
 
-    // Node normally doesn't emit any standard error, but if it does we forward
-    // it to the print handler so it's associated with the load test.
+    // Forward Node's standard IO to the print handler so it's associated with
+    // the load test.
+    //
+    // TODO(nweiz): Associate this with the current test being run, if any.
+    process.stdout.transform(lineSplitter).listen(print);
     process.stderr.transform(lineSplitter).listen(print);
 
-    var channel = new StreamChannel.withGuarantees(
-            process.stdout, process.stdin)
+    var socket = await server.first;
+    // TODO(nweiz): Remove the DelegatingStreamSink wrapper when sdk#31504 is
+    // fixed.
+    var channel = new StreamChannel(socket, new DelegatingStreamSink(socket))
         .transform(new StreamChannelTransformer.fromCodec(UTF8))
         .transform(chunksToLines)
         .transform(jsonDocument)
@@ -115,8 +123,11 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<Process, StackTraceMapper>> _spawnProcess(String path,
-      TestPlatform platform, SuiteConfiguration suiteConfig) async {
+  Future<Pair<Process, StackTraceMapper>> _spawnProcess(
+      String path,
+      TestPlatform platform,
+      SuiteConfiguration suiteConfig,
+      int socketPort) async {
     var dir = new Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(path) + ".node_test.dart.js");
 
@@ -146,7 +157,8 @@ class NodePlatform extends PlatformPlugin
             sdkRoot: p.toUri(sdkDir));
       }
 
-      return new Pair(await _startProcess(platform, jsPath), mapper);
+      return new Pair(
+          await _startProcess(platform, jsPath, socketPort), mapper);
     }
 
     var url = _config.pubServeUrl.resolveUri(
@@ -165,11 +177,12 @@ class NodePlatform extends PlatformPlugin
           sdkRoot: p.toUri('packages/\$sdk'));
     }
 
-    return new Pair(await _startProcess(platform, jsPath), mapper);
+    return new Pair(await _startProcess(platform, jsPath, socketPort), mapper);
   }
 
   /// Starts the Node.js process for [platform] with [jsPath].
-  Future<Process> _startProcess(TestPlatform platform, String jsPath) async {
+  Future<Process> _startProcess(
+      TestPlatform platform, String jsPath, int socketPort) async {
     var settings = _settings[platform];
 
     var nodeModules = p.absolute('node_modules');
@@ -177,8 +190,8 @@ class NodePlatform extends PlatformPlugin
     nodePath = nodePath == null ? nodeModules : "$nodePath:$nodeModules";
 
     try {
-      return await Process.start(
-          settings.executable, settings.arguments.toList()..add(jsPath),
+      return await Process.start(settings.executable,
+          settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
           environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
       await new Future.error(

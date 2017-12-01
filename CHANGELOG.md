@@ -3,9 +3,11 @@
 * Node.js tests can now import modules from a top-level `node_modules`
   directory, if one exists.
 
+* Raw `console.log()` calls no longer crash Node.js tests.
+
 * When a browser crashes, include its standard output in the error message.
 
-## 0.12.28
+## 0.12.28+1
 
 * Add a `pumpEventQueue()` function to make it easy to wait until all
   asynchronous tasks are complete.
