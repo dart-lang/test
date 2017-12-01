@@ -1,4 +1,7 @@
-## 0.12.28+1
+## 0.12.29
+
+* Node.js tests can now import modules from a top-level `node_modules`
+  directory, if one exists.
 
 * When a browser crashes, include its standard output in the error message.
 

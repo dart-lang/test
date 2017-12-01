@@ -171,9 +171,15 @@ class NodePlatform extends PlatformPlugin
   /// Starts the Node.js process for [platform] with [jsPath].
   Future<Process> _startProcess(TestPlatform platform, String jsPath) async {
     var settings = _settings[platform];
+
+    var nodeModules = p.absolute('node_modules');
+    var nodePath = Platform.environment["NODE_PATH"];
+    nodePath = nodePath == null ? nodeModules : "$nodePath:$nodeModules";
+
     try {
       return await Process.start(
-          settings.executable, settings.arguments.toList()..add(jsPath));
+          settings.executable, settings.arguments.toList()..add(jsPath),
+          environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
       await new Future.error(
           new ApplicationException(

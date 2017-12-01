@@ -193,6 +193,35 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test("supports node_modules in the package directory", () async {
+    await d.dir("node_modules", [
+      d.dir("my_module", [d.file("index.js", "module.exports.value = 12;")])
+    ]).create();
+
+    await d.file("test.dart", """
+      import 'package:js/js.dart';
+      import 'package:test/test.dart';
+
+      @JS()
+      external MyModule require(String name);
+
+      @JS()
+      class MyModule {
+        external int get value;
+      }
+
+      void main() {
+        test("can load from a module", () {
+          expect(require("my_module").value, equals(12));
+        });
+      }
+    """).create();
+
+    var test = await runTest(["-p", "node", "test.dart"]);
+    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    await test.shouldExit(0);
+  });
+
   group("with onPlatform", () {
     test("respects matching Skips", () async {
       await d.file("test.dart", '''
