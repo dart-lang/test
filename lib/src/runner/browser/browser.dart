@@ -56,12 +56,6 @@ abstract class Browser {
   /// Standard IO streams for the underlying browser process.
   final _ioSubscriptions = <StreamSubscription>[];
 
-  Future _drainAndIgnore(Stream s) async {
-    try {
-      _ioSubscriptions.add(s.listen(null, cancelOnError: true));
-    } on StateError catch (_) {}
-  }
-
   /// Creates a new browser.
   ///
   /// This is intended to be called by subclasses. They pass in [startBrowser],
