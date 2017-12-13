@@ -80,7 +80,7 @@ class RemoteListener {
       verboseChain = metadata.verboseTrace;
       var declarer = new Declarer(
           metadata: metadata,
-          platformVariables: message['platformVariables'].toSet(),
+          platformVariables: new Set.from(message['platformVariables']),
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
 
@@ -116,8 +116,8 @@ class RemoteListener {
     return controller.foreign;
   }
 
-  /// Returns a [Set] from a JSON serialized list.
-  static Set<String> _deserializeSet(List<String> list) {
+  /// Returns a [Set] from a JSON serialized list of strings.
+  static Set<String> _deserializeSet(List list) {
     if (list == null) return null;
     if (list.isEmpty) return null;
     return new Set.from(list);

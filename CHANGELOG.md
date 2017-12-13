@@ -1,3 +1,7 @@
+## 0.12.30
+
+* Fix strong mode runtime cast failures.
+
 ## 0.12.29
 
 * Node.js tests can now import modules from a top-level `node_modules`
@@ -88,13 +92,13 @@
 
 ## 0.12.23+1
 
-* Remove unused imports. 
+* Remove unused imports.
 
 ## 0.12.23
 
 * Add a `fold_stack_frames` field for `dart_test.yaml`. This will
   allow users to customize which packages' frames are folded.
-  
+
 ## 0.12.22+2
 
 * Properly allocate ports when debugging Chrome and Dartium in an IPv6-only
@@ -111,11 +115,11 @@
 ## 0.12.22
 
 * Add a `retry` option to `test()` and `group()` functions, as well
-  as `@Retry()`  annotation for test files and a `retry` 
+  as `@Retry()`  annotation for test files and a `retry`
   configuration field for `dart_test.yaml`.  A test with reties
   enabled will be re-run if it fails for a reason other than a
   `TestFailure`.
-  
+
 * Add a `--no-retry` runner flag that disables retries of failing tests.
 
 * Fix a "concurrent modification during iteration" error when calling
