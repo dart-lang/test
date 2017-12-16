@@ -15,7 +15,6 @@ import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
 import '../../util/stack_trace_mapper.dart';
-import '../application_exception.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';

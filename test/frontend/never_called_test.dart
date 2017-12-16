@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:term_glyph/term_glyph.dart' as glyph;
-import 'package:test/src/backend/state.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
