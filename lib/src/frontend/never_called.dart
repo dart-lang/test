@@ -62,6 +62,6 @@ T Function<T>(
                     ? " no arguments."
                     : ":\n${bullet(arguments.map(prettyPrint))}")),
         zone.run(() => new Chain.current()));
-    return null as T;
+    return null;
   };
 }
