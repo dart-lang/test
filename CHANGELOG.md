@@ -1,4 +1,4 @@
-## 0.12.29+1
+## 0.12.30
 
 * Fix strong mode runtime cast failures.
 
