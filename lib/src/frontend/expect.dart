@@ -157,6 +157,9 @@ Future _expect(actual, matcher,
     reason ??= '$e at $trace';
   }
   fail(formatter(actual, matcher, reason, matchState, verbose));
+  // Fix missing return. The above fail() will always throw, but static
+  // analysis doesn't know this.
+  throw "Unreachable";
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided

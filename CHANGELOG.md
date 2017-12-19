@@ -1,3 +1,7 @@
+## 0.12.29-dev
+
+* Fix analysis issues with `expect.dart`
+
 ## 0.12.29+1
 
 * Fix strong mode runtime cast failures.
