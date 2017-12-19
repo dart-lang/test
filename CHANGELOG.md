@@ -1,3 +1,7 @@
+## 0.12.29+2
+
+* Run Chrome in headless mode unless debugging is enabled.
+
 ## 0.12.29+1
 
 * Fix strong mode runtime cast failures.
