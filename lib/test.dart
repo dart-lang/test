@@ -13,6 +13,7 @@ import 'src/frontend/timeout.dart';
 import 'src/runner/configuration/suite.dart';
 import 'src/runner/engine.dart';
 import 'src/runner/plugin/environment.dart';
+import 'src/runner/reporter.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/utils.dart';
@@ -41,6 +42,9 @@ export 'src/frontend/utils.dart';
 /// This is used if a test file is run directly, rather than through the runner.
 Declarer _globalDeclarer;
 
+typedef Reporter ReporterCreatorCallback(Engine engine);
+ReporterCreatorCallback userDefinedReporterCreator;
+
 /// Gets the declarer for the current scope.
 ///
 /// When using the runner, this returns the [Zone]-scoped declarer that's set by
@@ -66,8 +70,12 @@ Declarer get _declarer {
     var engine = new Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(engine,
-        color: true, printPath: false, printPlatform: false);
+    if (userDefinedReporterCreator != null) {
+      userDefinedReporterCreator(engine);
+    } else {
+      ExpandedReporter.watch(engine,
+          color: true, printPath: false, printPlatform: false);
+    }
 
     var success = await runZoned(() => Invoker.guard(engine.run),
         zoneValues: {#test.declarer: _globalDeclarer});
