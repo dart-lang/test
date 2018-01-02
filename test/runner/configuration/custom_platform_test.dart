@@ -851,18 +851,18 @@ void main() {
         test("with an argument that causes the browser to quit", () async {
           await d.file("dart_test.yaml", """
             define_platforms:
-              chromium:
-                name: Chromium
-                extends: chrome
+              myfox:
+                name: My Firefox
+                extends: firefox
                 settings:
                   arguments: --version
           """).create();
 
-          var test = await runTest(["-p", "chromium", "test.dart"]);
+          var test = await runTest(["-p", "myfox", "test.dart"]);
           expect(test.stdout,
-              emitsThrough(contains("Chromium exited before connecting.")));
+              emitsThrough(contains("My Firefox exited before connecting.")));
           await test.shouldExit(1);
-        }, tags: "chrome");
+        }, tags: "firefox");
       });
     });
   });
