@@ -42,7 +42,19 @@ class Chrome extends Browser {
           "--no-default-browser-check",
           "--disable-default-apps",
           "--disable-translate",
-        ]..addAll(settings.arguments);
+        ];
+
+        if (!debug) {
+          args.addAll([
+            "--headless",
+            "--disable-gpu",
+            // We don't actually connect to the remote debugger, but Chrome will
+            // close as soon as the page is loaded if we don't turn it on.
+            "--remote-debugging-port=0"
+          ]);
+        }
+
+        args.addAll(settings.arguments);
 
         // Currently, Chrome doesn't provide any way of ensuring that this port
         // was successfully bound. It produces an error if the binding fails,
