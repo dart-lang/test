@@ -233,14 +233,14 @@ identifiers are defined:
 * `blink`: Whether the test is running in a browser that uses the Blink
   rendering engine.
 
-* `windows`: Whether the test is running on Windows. If `vm` is false, this will
-  be `false` as well.
+* `windows`: Whether the test is running on Windows. This can only be `true` if
+  either `vm` or `node` is true.
 
-* `mac-os`: Whether the test is running on Mac OS. If `vm` is false, this will
-  be `false` as well.
+* `mac-os`: Whether the test is running on Mac OS. This can only be `true` if
+  either `vm` or `node` is true.
 
-* `linux`: Whether the test is running on Linux. If `vm` is false, this will be
-  `false` as well.
+* `linux`: Whether the test is running on Linux. This can only be `true` if
+  either `vm` or `node` is true.
 
 * `android`: Whether the test is running on Android. If `vm` is false, this will
   be `false` as well, which means that this *won't* be true if the test is

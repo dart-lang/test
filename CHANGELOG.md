@@ -1,6 +1,11 @@
-## 0.12.29+2
+## 0.12.30
+
+* Platform selectors for operating systems now work for Node.js tests
+  ([#742][]).
 
 * Run Chrome in headless mode unless debugging is enabled.
+
+[#742]: https://github.com/dart-lang/test/issues/742
 
 ## 0.12.29+1
 
