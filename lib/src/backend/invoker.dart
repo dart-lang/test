@@ -395,7 +395,7 @@ class Invoker {
           // has a chance to hit its event handler(s) before the test produces
           // an error. If an error is emitted before the first state change is
           // handled, we can end up with [onError] callbacks firing before the
-          // corresponding [onStateChkange], which violates the timing
+          // corresponding [onStateChange], which violates the timing
           // guarantees.
           //
           // Using [new Future] also avoids starving the DOM or other
