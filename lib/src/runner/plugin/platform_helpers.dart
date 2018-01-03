@@ -50,7 +50,9 @@ Future<RunnerSuiteController> deserializeSuite(
   suiteChannel.sink.add({
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
-    'os': platform == TestPlatform.vm ? currentOS.identifier : null,
+    'os': (platform == TestPlatform.vm || platform == TestPlatform.nodeJS)
+        ? currentOS.identifier
+        : null,
     'asciiGlyphs': Platform.isWindows,
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json',

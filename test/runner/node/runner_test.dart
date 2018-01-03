@@ -8,6 +8,7 @@
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/test.dart';
+import 'package:test/src/util/io.dart';
 
 import '../../io.dart';
 
@@ -270,6 +271,39 @@ void main() {
 
         void main() {
           test("success", () {}, onPlatform: {"browser": new Skip()});
+        }
+      ''').create();
+
+      var test = await runTest(["-p", "node", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+      await test.shouldExit(0);
+    });
+
+    test("matches the current OS", () async {
+      await d.file("test.dart", '''
+        import 'dart:async';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("fail", () => throw 'oh no',
+              onPlatform: {"${currentOS.identifier}": new Skip()});
+        }
+      ''').create();
+
+      var test = await runTest(["-p", "node", "test.dart"]);
+      expect(test.stdout, emitsThrough(contains("+0 ~1: All tests skipped.")));
+      await test.shouldExit(0);
+    });
+
+    test("doesn't match a different OS", () async {
+      await d.file("test.dart", '''
+        import 'dart:async';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("success", () {}, onPlatform: {"${otherOS}": new Skip()});
         }
       ''').create();
 
