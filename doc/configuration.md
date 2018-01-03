@@ -402,7 +402,7 @@ This field is not supported in the
 ### `fold_stack_frames`
 
 This field controls which packages' stack frames will be folded away
-when displaying stack traces. Packages contained in the `exclude` 
+when displaying stack traces. Packages contained in the `except`
 option will be folded. If `only` is provided, all packages not
 contained in this list will be folded. By default,
 frames from the `test` package and the `stream_channel`
