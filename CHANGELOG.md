@@ -1,4 +1,7 @@
-## 0.12.29+2
+## 0.12.30
+
+* `fail()` is now typed to return `Null`, so it can be used in the same places
+  as a raw `throw`.
 
 * Run Chrome in headless mode unless debugging is enabled.
 
