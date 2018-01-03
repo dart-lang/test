@@ -162,7 +162,7 @@ Future _expect(actual, matcher,
 /// Convenience method for throwing a new [TestFailure] with the provided
 /// [message].
 @alwaysThrows
-void fail(String message) => throw new TestFailure(message);
+Null fail(String message) => throw new TestFailure(message);
 
 // The default error formatter.
 @Deprecated("Will be removed in 0.13.0.")

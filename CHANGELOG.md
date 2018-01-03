@@ -3,6 +3,9 @@
 * Platform selectors for operating systems now work for Node.js tests
   ([#742][]).
 
+* `fail()` is now typed to return `Null`, so it can be used in the same places
+  as a raw `throw`.
+
 * Run Chrome in headless mode unless debugging is enabled.
 
 [#742]: https://github.com/dart-lang/test/issues/742

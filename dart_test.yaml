@@ -1,5 +1,18 @@
-# Terse traces hide frames from test itself, which is bad.
-verbose_trace: true
+# Fold frames from helper packages we use in our tests, but not from test
+# itself.
+fold_stack_frames:
+  except:
+  - shelf_test_handler
+  - stream_channel
+  - test_descriptor
+  - test_process
+
+presets:
+  # "-P terse-trace" folds frames from test's implementation to make the output
+  # less verbose when
+  terse-trace:
+    fold_stack_frames:
+      except: [test]
 
 tags:
   browser:
