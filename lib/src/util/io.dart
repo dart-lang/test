@@ -22,8 +22,7 @@ const _carriageReturn = 0xD;
 /// stdout.
 final _defaultLineLength = int.parse(
     Platform.environment['DEFAULT_TERMINAL_LINES'] ?? '200', onError: (value) {
-  stdout.writeln(
-      'Invalid value `$value` for DEFAULT_TERMINAL_LINES, expected an int.');
+  warn('Invalid value `$value` for DEFAULT_TERMINAL_LINES, expected an int.');
   return 200;
 });
 
