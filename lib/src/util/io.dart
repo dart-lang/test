@@ -20,9 +20,11 @@ const _carriageReturn = 0xD;
 
 /// The default line length for output when there isn't a terminal attached to
 /// stdout.
-final _defaultLineLength = int.parse(
-    Platform.environment['DEFAULT_TERMINAL_LINES'] ?? '200', onError: (value) {
-  warn('Invalid value `$value` for DEFAULT_TERMINAL_LINES, expected an int.');
+final _defaultLineLength = int
+    .parse(Platform.environment['DEFAULT_TERMINAL_LINE_LENGTH'] ?? '200',
+        onError: (value) {
+  warn('Invalid value `$value` for DEFAULT_TERMINAL_LINE_LENGTH'
+      ', expected an int.');
   return 200;
 });
 
