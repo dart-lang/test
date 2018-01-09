@@ -244,6 +244,7 @@ class Configuration {
       Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
+      int lineLength,
 
       // Suite-level configuration
       bool jsTrace,
@@ -288,6 +289,7 @@ class Configuration {
         overridePlatforms: overridePlatforms,
         definePlatforms: definePlatforms,
         noRetry: noRetry,
+        lineLength: lineLength,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -344,6 +346,7 @@ class Configuration {
       Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
+      int lineLength,
       SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
@@ -366,6 +369,7 @@ class Configuration {
         overridePlatforms = _map(overridePlatforms),
         definePlatforms = _map(definePlatforms),
         _noRetry = noRetry,
+        _lineLength = lineLength,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 new SuiteConfiguration(timeout: Timeout.none)
@@ -493,6 +497,7 @@ class Configuration {
         definePlatforms:
             mergeUnmodifiableMaps(definePlatforms, other.definePlatforms),
         noRetry: other._noRetry ?? _noRetry,
+        lineLength: other._lineLength ?? _lineLength,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -569,6 +574,7 @@ class Configuration {
         overridePlatforms: overridePlatforms ?? this.overridePlatforms,
         definePlatforms: definePlatforms ?? this.definePlatforms,
         noRetry: noRetry ?? _noRetry,
+        lineLength: lineLength ?? _lineLength,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,

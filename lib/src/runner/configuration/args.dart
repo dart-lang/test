@@ -82,6 +82,8 @@ final ArgParser _parser = (() {
   parser.addOption("timeout",
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
+  parser.addOption('line-length',
+      help: 'Overrides the max width of lines to print.');
   parser.addFlag("pause-after-load",
       help: 'Pauses for debugging before any tests execute.\n'
           'Implies --concurrency=1 and --timeout=none.\n'
@@ -224,6 +226,7 @@ class _Parser {
         platforms: (_ifParsed('platform') as List<String>)
             ?.map((platform) => new PlatformSelection(platform))
             ?.toList(),
+        lineLength: _parseOption('line-length', int.parse),
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset') as List<String>,
         paths: _options.rest.isEmpty ? null : _options.rest,
