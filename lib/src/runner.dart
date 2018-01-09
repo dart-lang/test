@@ -168,7 +168,7 @@ class Runner {
       }
     }
 
-    warn("this package doesn't support running tests on " +
+    _config.warn("this package doesn't support running tests on " +
         toSentence(unsupportedNames, conjunction: "or") +
         ".");
   }
@@ -354,7 +354,7 @@ class Runner {
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
     if (_config.suiteDefaults.platforms.contains(TestPlatform.vm.identifier)) {
-      warn("Debugging is currently unsupported on the Dart VM.",
+      _config.warn("Debugging is currently unsupported on the Dart VM.",
           color: _config.color);
     }
 

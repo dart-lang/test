@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
@@ -26,6 +27,19 @@ import 'configuration/values.dart';
 
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = new Object();
+
+/// The default line length for output.
+final int _defaultLineLength = () {
+  try {
+    return stdout.terminalColumns;
+  } on UnsupportedError {
+    // This can throw an [UnsupportedError] if we're running in a JS context
+    // where `dart:io` is unavaiable.
+    return 200;
+  } on StdoutException {
+    return 200;
+  }
+}();
 
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
@@ -123,6 +137,10 @@ class Configuration {
   /// This is used to find tests within a directory.
   Glob get filename => _filename ?? defaultFilename;
   final Glob _filename;
+
+  /// The maximum length to print per line.
+  int get lineLength => _lineLength ?? _defaultLineLength;
+  final int _lineLength;
 
   /// The set of presets to use.
   ///
@@ -601,5 +619,46 @@ class Configuration {
         result.knownPresets.toSet()..addAll(this.presets.keys));
 
     return result;
+  }
+
+  /// Wraps [text] so that it fits within [lineLength].
+  ///
+  /// This preserves existing newlines and doesn't consider terminal color escapes
+  /// part of a word's length. It only splits words on spaces, not on other sorts
+  /// of whitespace.
+  String wordWrap(String text) {
+    return text.split("\n").map((originalLine) {
+      var buffer = new StringBuffer();
+      var lengthSoFar = 0;
+      for (var word in originalLine.split(" ")) {
+        var wordLength = withoutColors(word).length;
+        if (wordLength > lineLength) {
+          if (lengthSoFar != 0) buffer.writeln();
+          buffer.writeln(word);
+        } else if (lengthSoFar == 0) {
+          buffer.write(word);
+          lengthSoFar = wordLength;
+        } else if (lengthSoFar + 1 + wordLength > lineLength) {
+          buffer.writeln();
+          buffer.write(word);
+          lengthSoFar = wordLength;
+        } else {
+          buffer.write(" $word");
+          lengthSoFar += 1 + wordLength;
+        }
+      }
+      return buffer.toString();
+    }).join("\n");
+  }
+
+  /// Print a warning containing [message].
+  ///
+  /// This automatically wraps lines if they get too long. If [color] is passed,
+  /// it controls whether the warning header is color; otherwise, it defaults to
+  /// [canUseSpecialChars].
+  void warn(String message, {bool color}) {
+    if (color == null) color = canUseSpecialChars;
+    var header = color ? "\u001b[33mWarning:\u001b[0m" : "Warning:";
+    stderr.writeln(wordWrap("$header $message\n"));
   }
 }

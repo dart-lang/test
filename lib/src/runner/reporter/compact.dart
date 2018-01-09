@@ -247,7 +247,9 @@ class CompactReporter implements Reporter {
       stdout.write(message);
 
       // Add extra padding to overwrite any load messages.
-      if (!_printedNewline) stdout.write(" " * (lineLength - message.length));
+      if (!_printedNewline) {
+        stdout.write(" " * (_config.lineLength - message.length));
+      }
       stdout.writeln();
     } else if (!success) {
       _progressLine('Some tests failed.', color: _red);
@@ -329,12 +331,15 @@ class CompactReporter implements Reporter {
     // escape sequences too. Because these sequences are not visible characters,
     // we make sure they are not counted towards the limit.
     var length = withoutColors(buffer.toString()).length;
-    if (truncate) message = utils.truncate(message, lineLength - length);
+    if (truncate) {
+      message = utils.truncate(message, _config.lineLength - length);
+    }
     buffer.write(message);
     buffer.write(_noColor);
 
     // Pad the rest of the line so that it looks erased.
-    buffer.write(' ' * (lineLength - withoutColors(buffer.toString()).length));
+    buffer.write(
+        ' ' * (_config.lineLength - withoutColors(buffer.toString()).length));
     stdout.write(buffer.toString());
 
     _printedNewline = false;

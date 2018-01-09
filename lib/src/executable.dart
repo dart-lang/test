@@ -75,13 +75,13 @@ main(List<String> args) async {
   try {
     configuration = new Configuration.parse(args);
   } on FormatException catch (error) {
-    _printUsage(error.message);
+    _printUsage((line) => line, error.message);
     exitCode = exit_codes.usage;
     return;
   }
 
   if (configuration.help) {
-    _printUsage();
+    _printUsage(configuration.wordWrap);
     return;
   }
 
@@ -127,7 +127,9 @@ main(List<String> args) async {
       .where((preset) => !configuration.knownPresets.contains(preset))
       .toList();
   if (undefinedPresets.isNotEmpty) {
-    _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
+    _printUsage(
+        configuration.wordWrap,
+        "Undefined ${pluralize('preset', undefinedPresets.length)} "
         "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
     exitCode = exit_codes.usage;
     return;
@@ -148,7 +150,9 @@ transformers:
 
   if (!configuration.explicitPaths &&
       !new Directory(configuration.paths.single).existsSync()) {
-    _printUsage('No test files were passed and the default "test/" '
+    _printUsage(
+        configuration.wordWrap,
+        'No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
     return;
@@ -200,7 +204,7 @@ transformers:
 ///
 /// If [error] is passed, it's used in place of the usage message and the whole
 /// thing is printed to stderr instead of stdout.
-void _printUsage([String error]) {
+void _printUsage(String wordWrap(String message), [String error]) {
   var output = stdout;
 
   var message = "Runs tests in this package.";
