@@ -11,7 +11,6 @@ import '../../backend/message.dart';
 import '../../backend/state.dart';
 import '../../utils.dart';
 import '../../utils.dart' as utils;
-import '../../util/io.dart';
 import '../configuration.dart';
 import '../engine.dart';
 import '../load_exception.dart';
