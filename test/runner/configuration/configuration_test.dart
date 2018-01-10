@@ -8,6 +8,7 @@ import 'package:test/test.dart';
 
 import 'package:test/src/runner/configuration.dart';
 import 'package:test/src/runner/configuration/reporters.dart';
+import 'package:test/src/runner/configuration/values.dart';
 import 'package:test/src/util/io.dart';
 
 void main() {
@@ -26,21 +27,24 @@ void main() {
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
         expect(merged.paths, equals(["test"]));
+        expect(merged.lineLength, equals(defaultLineLength));
       });
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new Configuration(
-            help: true,
-            version: true,
-            pauseAfterLoad: true,
-            color: true,
-            configurationPath: "special_test.yaml",
-            dart2jsPath: "/tmp/dart2js",
-            reporter: "json",
-            pubServePort: 1234,
-            shardIndex: 3,
-            totalShards: 10,
-            paths: ["bar"]).merge(new Configuration());
+                help: true,
+                version: true,
+                pauseAfterLoad: true,
+                color: true,
+                configurationPath: "special_test.yaml",
+                dart2jsPath: "/tmp/dart2js",
+                reporter: "json",
+                pubServePort: 1234,
+                shardIndex: 3,
+                totalShards: 10,
+                paths: ["bar"],
+                lineLength: 20)
+            .merge(new Configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -53,6 +57,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.paths, equals(["bar"]));
+        expect(merged.lineLength, equals(20));
       });
 
       test("if only the new configuration's is defined, uses it", () {
@@ -67,7 +72,8 @@ void main() {
             pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
-            paths: ["bar"]));
+            paths: ["bar"],
+            lineLength: 20));
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -80,6 +86,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.paths, equals(["bar"]));
+        expect(merged.lineLength, equals(20));
       });
 
       test(
@@ -96,7 +103,8 @@ void main() {
             pubServePort: 1234,
             shardIndex: 2,
             totalShards: 4,
-            paths: ["bar"]);
+            paths: ["bar"],
+            lineLength: 10);
         var newer = new Configuration(
             help: false,
             version: true,
@@ -108,7 +116,8 @@ void main() {
             pubServePort: 5678,
             shardIndex: 3,
             totalShards: 10,
-            paths: ["blech"]);
+            paths: ["blech"],
+            lineLength: 20);
         var merged = older.merge(newer);
 
         expect(merged.help, isFalse);
@@ -122,6 +131,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.paths, equals(["blech"]));
+        expect(merged.lineLength, equals(20));
       });
     });
 
