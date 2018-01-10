@@ -242,4 +242,11 @@ void main() {
       });
     });
   });
+
+  test('wordWrap respects lineLength', () async {
+    var configuration = new Configuration(lineLength: 22);
+    var wrapped = configuration
+        .wordWrap('this message should break before the word break');
+    expect(wrapped, equals(wrapped.replaceAll(' break', '\nbreak')));
+  });
 }
