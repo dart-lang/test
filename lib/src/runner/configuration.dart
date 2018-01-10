@@ -28,19 +28,6 @@ import 'configuration/values.dart';
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = new Object();
 
-/// The default line length for output.
-final int _defaultLineLength = () {
-  try {
-    return stdout.terminalColumns;
-  } on UnsupportedError {
-    // This can throw an [UnsupportedError] if we're running in a JS context
-    // where `dart:io` is unavaiable.
-    return 200;
-  } on StdoutException {
-    return 200;
-  }
-}();
-
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
   /// An empty configuration with only default values.
@@ -139,7 +126,9 @@ class Configuration {
   final Glob _filename;
 
   /// The maximum length to print per line.
-  int get lineLength => _lineLength ?? _defaultLineLength;
+  ///
+  /// TODO: Make this a global again once dart-lang/sdk#24716 is fixed.
+  int get lineLength => _lineLength ?? defaultLineLength;
   final int _lineLength;
 
   /// The set of presets to use.

@@ -75,13 +75,13 @@ main(List<String> args) async {
   try {
     configuration = new Configuration.parse(args);
   } on FormatException catch (error) {
-    _printUsage((line) => line, error.message);
+    _printUsage(error: error.message);
     exitCode = exit_codes.usage;
     return;
   }
 
   if (configuration.help) {
-    _printUsage(configuration.wordWrap);
+    _printUsage(configuration: configuration);
     return;
   }
 
@@ -128,9 +128,9 @@ main(List<String> args) async {
       .toList();
   if (undefinedPresets.isNotEmpty) {
     _printUsage(
-        configuration.wordWrap,
-        "Undefined ${pluralize('preset', undefinedPresets.length)} "
-        "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
+        configuration: configuration,
+        error: "Undefined ${pluralize('preset', undefinedPresets.length)} "
+            "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
     exitCode = exit_codes.usage;
     return;
   }
@@ -151,9 +151,9 @@ transformers:
   if (!configuration.explicitPaths &&
       !new Directory(configuration.paths.single).existsSync()) {
     _printUsage(
-        configuration.wordWrap,
-        'No test files were passed and the default "test/" '
-        "directory doesn't exist.");
+        configuration: configuration,
+        error: 'No test files were passed and the default "test/" '
+            "directory doesn't exist.");
     exitCode = exit_codes.data;
     return;
   }
@@ -204,7 +204,8 @@ transformers:
 ///
 /// If [error] is passed, it's used in place of the usage message and the whole
 /// thing is printed to stderr instead of stdout.
-void _printUsage(String wordWrap(String message), [String error]) {
+void _printUsage({Configuration configuration, String error}) {
+  var wordWrap = configuration?.wordWrap ?? (message) => message;
   var output = stdout;
 
   var message = "Runs tests in this package.";
