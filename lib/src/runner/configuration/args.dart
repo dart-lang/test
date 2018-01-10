@@ -82,14 +82,15 @@ final ArgParser _parser = (() {
   parser.addOption("timeout",
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
+  // Overrides the max width of lines to print.
+  //
   // This is a temporary option which will be removed in the future. Please
   // notify the package:test authors if you are using this option so you can be
   // notified before it is removed.
   //
   // Existing users:
   //   - package:build_runner
-  parser.addOption('line-length',
-      help: 'Overrides the max width of lines to print.', hide: true);
+  parser.addOption('line-length', hide: true);
   parser.addFlag("pause-after-load",
       help: 'Pauses for debugging before any tests execute.\n'
           'Implies --concurrency=1 and --timeout=none.\n'
