@@ -205,7 +205,6 @@ transformers:
 /// If [error] is passed, it's used in place of the usage message and the whole
 /// thing is printed to stderr instead of stdout.
 void _printUsage(Configuration configuration, [String error]) {
-  var wordWrap = configuration?.wordWrap ?? (message) => message;
   var output = stdout;
 
   var message = "Runs tests in this package.";
@@ -214,7 +213,7 @@ void _printUsage(Configuration configuration, [String error]) {
     output = stderr;
   }
 
-  output.write("""${wordWrap(message)}
+  output.write("""${configuration.wordWrap(message)}
 
 Usage: pub run test [files or directories...]
 

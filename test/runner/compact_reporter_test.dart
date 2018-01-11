@@ -164,8 +164,7 @@ void main() {
   });
 
   test("Respects the --line-length argument", () {
-    return _expectReport("""
-        test('A test with a pretty long name', () {});""", """
+    return _expectReport("test('A test with a pretty long name', () {});", """
         +0: loading test.dart
         +0: A ... with a pretty long name
         +1: A ... with a pretty long name
