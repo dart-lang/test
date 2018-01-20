@@ -1,3 +1,7 @@
+## 0.12.31
+
+* Internal changes.
+
 ## 0.12.30
 
 * Platform selectors for operating systems now work for Node.js tests
