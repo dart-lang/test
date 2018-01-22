@@ -14,8 +14,8 @@ import "../utils.dart";
 
 /// A sink transformer that wraps data and error events so that errors can be
 /// decoded after being JSON-serialized.
-final _transformer =
-    new StreamSinkTransformer.fromHandlers(handleData: (data, sink) {
+final _transformer = new StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
+    handleData: (data, sink) {
   ensureJsonEncodable(data);
   sink.add({"type": "data", "data": data});
 }, handleError: (error, stackTrace, sink) {
