@@ -150,8 +150,15 @@ class Dartium extends Browser {
     /// check whether it's actually connected to an isolate, indicating that
     /// it's the observatory for the main page. Once we find the one that is, we
     /// cancel the other requests and return it.
-    return (await inCompletionOrder(operations)
-        .firstWhere((url) => url != null, defaultValue: () => null)) as Uri;
+    ///
+    /// Use try/catch rather than `defaultValue` in `firstWhere` since the
+    /// parameter name will change in Dart 2.0.
+    try {
+      return (await inCompletionOrder(operations)
+          .firstWhere((url) => url != null)) as Uri;
+    } on StateError catch (_) {
+      return null;
+    }
   }
 
   /// If the URL returned by [future] corresponds to the correct Observatory
