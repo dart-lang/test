@@ -124,7 +124,7 @@ class Loader {
     for (var customPlatform in _config.definePlatforms.values) {
       if (_platformsByIdentifier.containsKey(customPlatform.identifier)) {
         throw new SourceSpanFormatException(
-            wordWrap(
+            _config.wordWrap(
                 'The platform "${customPlatform.identifier}" already exists. '
                 'Use override_platforms to override it.'),
             customPlatform.identifierSpan);

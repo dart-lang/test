@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
@@ -124,6 +125,12 @@ class Configuration {
   Glob get filename => _filename ?? defaultFilename;
   final Glob _filename;
 
+  /// The maximum length to print per line.
+  ///
+  /// TODO: Make this a global again once dart-lang/sdk#24716 is fixed.
+  int get lineLength => _lineLength ?? defaultLineLength;
+  final int _lineLength;
+
   /// The set of presets to use.
   ///
   /// Any chosen presets for the parent configuration are added to the chosen
@@ -226,6 +233,7 @@ class Configuration {
       Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
+      int lineLength,
 
       // Suite-level configuration
       bool jsTrace,
@@ -270,6 +278,7 @@ class Configuration {
         overridePlatforms: overridePlatforms,
         definePlatforms: definePlatforms,
         noRetry: noRetry,
+        lineLength: lineLength,
         suiteDefaults: new SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -326,6 +335,7 @@ class Configuration {
       Map<String, PlatformSettings> overridePlatforms,
       Map<String, CustomPlatform> definePlatforms,
       bool noRetry,
+      int lineLength,
       SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
@@ -348,6 +358,7 @@ class Configuration {
         overridePlatforms = _map(overridePlatforms),
         definePlatforms = _map(definePlatforms),
         _noRetry = noRetry,
+        _lineLength = lineLength,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 new SuiteConfiguration(timeout: Timeout.none)
@@ -475,6 +486,7 @@ class Configuration {
         definePlatforms:
             mergeUnmodifiableMaps(definePlatforms, other.definePlatforms),
         noRetry: other._noRetry ?? _noRetry,
+        lineLength: other._lineLength ?? _lineLength,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -551,6 +563,7 @@ class Configuration {
         overridePlatforms: overridePlatforms ?? this.overridePlatforms,
         definePlatforms: definePlatforms ?? this.definePlatforms,
         noRetry: noRetry ?? _noRetry,
+        lineLength: lineLength ?? _lineLength,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -601,5 +614,46 @@ class Configuration {
         result.knownPresets.toSet()..addAll(this.presets.keys));
 
     return result;
+  }
+
+  /// Wraps [text] so that it fits within [lineLength].
+  ///
+  /// This preserves existing newlines and doesn't consider terminal color escapes
+  /// part of a word's length. It only splits words on spaces, not on other sorts
+  /// of whitespace.
+  String wordWrap(String text) {
+    return text.split("\n").map((originalLine) {
+      var buffer = new StringBuffer();
+      var lengthSoFar = 0;
+      for (var word in originalLine.split(" ")) {
+        var wordLength = withoutColors(word).length;
+        if (wordLength > lineLength) {
+          if (lengthSoFar != 0) buffer.writeln();
+          buffer.writeln(word);
+        } else if (lengthSoFar == 0) {
+          buffer.write(word);
+          lengthSoFar = wordLength;
+        } else if (lengthSoFar + 1 + wordLength > lineLength) {
+          buffer.writeln();
+          buffer.write(word);
+          lengthSoFar = wordLength;
+        } else {
+          buffer.write(" $word");
+          lengthSoFar += 1 + wordLength;
+        }
+      }
+      return buffer.toString();
+    }).join("\n");
+  }
+
+  /// Print a warning containing [message].
+  ///
+  /// This automatically wraps lines if they get too long. If [color] is passed,
+  /// it controls whether the warning header is color; otherwise, it defaults to
+  /// [canUseSpecialChars].
+  void warn(String message, {bool color}) {
+    if (color == null) color = canUseSpecialChars;
+    var header = color ? "\u001b[33mWarning:\u001b[0m" : "Warning:";
+    stderr.writeln(wordWrap("$header $message\n"));
   }
 }

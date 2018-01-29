@@ -163,7 +163,7 @@ class _Debugger {
         buffer.write("and set breakpoints. Once you're finished, return to "
             "this terminal and press Enter.");
 
-        print(wordWrap(buffer.toString()));
+        print(_config.wordWrap(buffer.toString()));
       }
 
       await inCompletionOrder([
@@ -201,7 +201,7 @@ class _Debugger {
     var liveTest = _engine.active.single;
     _engine.restartTest(liveTest);
     if (!_json) {
-      print(wordWrap(
+      print(_config.wordWrap(
           'Will restart "${liveTest.test.name}" once it finishes running.'));
     }
   }

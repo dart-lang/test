@@ -163,6 +163,14 @@ void main() {
         +0 -1: Some tests failed.""");
   });
 
+  test("Respects the --line-length argument", () {
+    return _expectReport("test('A test with a pretty long name', () {});", """
+        +0: loading test.dart
+        +0: A ... with a pretty long name
+        +1: A ... with a pretty long name
+        +1: All tests passed!""", args: ['--line-length', '40']);
+  });
+
   group("print:", () {
     test("handles multiple prints", () {
       return _expectReport("""
