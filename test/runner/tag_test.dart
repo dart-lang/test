@@ -97,6 +97,22 @@ void main() {
       await test.shouldExit(0);
     });
 
+    test("dosn't load a suite with an excluded tag", () async {
+      await d.file("test.dart", """
+        @Tags(const ["a"])
+
+        import 'package:test/test.dart';
+
+        void main() {
+          throw "error";
+        }
+      """).create();
+
+      var test = await runTest(["--exclude-tags=a", "test.dart"]);
+      expect(test.stdout, emits("No tests ran."));
+      await test.shouldExit(0);
+    });
+
     test("allows unused tags", () async {
       var test = await runTest(["--exclude-tags=b,z", "test.dart"]);
       expect(test.stdout, tagWarnings(['a', 'c']));

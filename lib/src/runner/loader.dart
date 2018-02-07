@@ -211,6 +211,10 @@ class Loader {
       return;
     }
 
+    if (_config.suiteDefaults.excludeTags.evaluate(suiteConfig.metadata.tags)) {
+      return;
+    }
+
     if (_config.pubServeUrl != null && !p.isWithin('test', path)) {
       yield new LoadSuite.forLoadException(
           new LoadException(
