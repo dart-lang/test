@@ -35,7 +35,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            "Expected a declaration, but got 'invalid'",
+            "Error: Compilation failed.",
             '-1: compiling test.dart [E]',
             'Failed to load "test.dart": dart2js failed.'
           ]));
