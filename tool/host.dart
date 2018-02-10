@@ -48,6 +48,9 @@ external set _jsApi(_JSApi api);
 /// The iframes created for each loaded test suite, indexed by the suite id.
 final _iframes = new Map<int, IFrameElement>();
 
+/// Subscriptions created for each loaded test suite, indexed by the suite id.
+final _subscriptions = new Map<int, List<StreamSubscription>>();
+
 /// The URL for the current page.
 final _currentUrl = Uri.parse(window.location.href);
 
@@ -124,7 +127,11 @@ void main() {
         document.body.classes.remove('paused');
       } else {
         assert(message['command'] == 'closeSuite');
-        _iframes[message['id']].remove();
+        _iframes.remove(message['id']).remove();
+
+        for (var subscription in _subscriptions.remove(message['id'])) {
+          subscription.cancel();
+        }
       }
     });
 
@@ -184,9 +191,12 @@ StreamChannel _connectToIframe(String url, int id) {
   // message to us. This ensures that no messages get dropped on the floor.
   var readyCompleter = new Completer();
 
+  var subscriptions = <StreamSubscription>[];
+  _subscriptions[id] = subscriptions;
+
   // TODO(nweiz): use MessageChannel once Firefox supports it
   // (http://caniuse.com/#search=MessageChannel).
-  window.onMessage.listen((message) {
+  subscriptions.add(window.onMessage.listen((message) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
@@ -205,13 +215,13 @@ StreamChannel _connectToIframe(String url, int id) {
     } else {
       controller.local.sink.add(message.data["data"]);
     }
-  });
+  }));
 
-  controller.local.stream.listen((message) async {
+  subscriptions.add(controller.local.stream.listen((message) async {
     await readyCompleter.future;
 
     iframe.contentWindow.postMessage(message, window.location.origin);
-  });
+  }));
 
   return controller.foreign;
 }
