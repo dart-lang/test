@@ -60,6 +60,7 @@ Future<RunnerSuiteController> deserializeSuite(
     'stackTraceMapper': mapper?.serialize(),
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
+    'jsTrace': suiteConfig.jsTrace
   }..addAll(message as Map));
 
   var completer = new Completer();

@@ -21,6 +21,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/compiler.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
@@ -98,6 +99,32 @@ class BrowserPlatform extends PlatformPlugin
   /// The HTTP client to use when caching JS files in `pub serve`.
   final HttpClient _http;
 
+  /// The directory in which the build package generates output.
+  final _buildOutput = '.dart_tool/build/generated';
+
+  /// A list of the paths to all DDC modules included in the build output.
+  ///
+  /// A "module" here refers to a collection of files generated from a single
+  /// Dart file, such as a `.linked.sum` file or a `.ddc.js` file. The paths
+  /// don't have any particular extension, and no particular extension is
+  /// guaranteed to exist.
+  Future<List<String>> get _ddcModules =>
+      _ddcModulesMemo.runOnce(() => new Directory(_buildOutput)
+          .list(recursive: true)
+          .map((entry) {
+            if (entry is! File) return null;
+            if (entry.path.endsWith(".ddc.js")) {
+              return trimSuffix(entry.path, ".ddc.js");
+            } else if (entry.path.endsWith(".ddc.js.errors")) {
+              return trimSuffix(entry.path, ".ddc.js.errors");
+            } else {
+              return null;
+            }
+          })
+          .where((path) => path != null)
+          .toList());
+  final _ddcModulesMemo = new AsyncMemoizer<List<String>>();
+
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
 
@@ -151,6 +178,11 @@ class BrowserPlatform extends PlatformPlugin
               _precompiledCascade?.handler(request) ??
               new shelf.Response.notFound(null))
           .add(_wrapperHandler);
+
+      if (buildDirExists) {
+        cascade = cascade.add(_createBuildHandler()).add(PathHandler.nestedIn(
+            "packages/\$sdk")(createStaticHandler(p.join(sdkDir, 'lib'))));
+      }
     }
 
     var pipeline = new shelf.Pipeline()
@@ -163,12 +195,45 @@ class BrowserPlatform extends PlatformPlugin
         .handler);
   }
 
+  /// Returns a handler that serves files from .dart_tool/build/generated.
+  ///
+  /// This rewrites URLs like so:
+  ///
+  /// * `packages/foo/...` -> `foo/lib/...`
+  /// * `foo/...` -> `${rootPackageName}/foo/...`
+  shelf.Handler _createBuildHandler() {
+    var inner = createStaticHandler(_buildOutput);
+
+    return (request) {
+      if (request.method != 'GET' || !request.url.path.contains(".ddc.js")) {
+        return new shelf.Response.notFound('Not found.');
+      }
+
+      String newPath;
+      if (request.url.path.startsWith("packages/")) {
+        var components = p.url.split(request.url.path);
+        var package = components[1];
+        newPath = p.url.joinAll([package, 'lib']..addAll(components.skip(2)));
+      } else {
+        newPath = p.url.join(rootPackageName, request.url.path);
+      }
+
+      return inner(new shelf.Request(
+          request.method,
+          request.requestedUri
+              .replace(path: p.url.join(request.handlerPath, newPath)),
+          headers: request.headers,
+          handlerPath: request.handlerPath,
+          context: request.context));
+    };
+  }
+
   /// A handler that serves wrapper files used to bootstrap tests.
-  shelf.Response _wrapperHandler(shelf.Request request) {
+  Future<shelf.Response> _wrapperHandler(shelf.Request request) async {
     var path = p.fromUri(request.url);
 
     if (path.endsWith(".browser_test.dart")) {
-      var testPath = p.basename(p.withoutExtension(p.withoutExtension(path)));
+      var testPath = p.basename(trimSuffix(path, ".browser_test.dart"));
       return new shelf.Response.ok('''
         import "package:stream_channel/stream_channel.dart";
 
@@ -184,26 +249,111 @@ class BrowserPlatform extends PlatformPlugin
       ''', headers: {'Content-Type': 'application/dart'});
     }
 
+    if (path.endsWith(".ddc.dart.browser_test.dart.js")) {
+      var modulePaths = {
+        "dart_sdk": "packages/\$sdk/dev_compiler/amd/dart_sdk"
+      };
+      for (var path in await _ddcModules) {
+        var components = p.split(p.relative(path, from: _buildOutput));
+        Uri url;
+        if (components[1] == 'lib') {
+          var package = components.first;
+          var pathInLib = p.joinAll(components.skip(2));
+          url = p.toUri(p.join('packages', package, pathInLib));
+        } else {
+          assert(components.first == rootPackageName);
+          url = p.toUri(p.joinAll(components.skip(1)));
+        }
+        modulePaths[url.toString()] = "$url.ddc";
+      }
+
+      var moduleName =
+          trimSuffix(request.url.path, ".ddc.dart.browser_test.dart.js");
+
+      var requires = [
+        moduleName,
+        "packages/test/src/bootstrap/browser",
+        "dart_sdk"
+      ];
+      var moduleIdentifier =
+          p.url.split(moduleName).skip(1).join('__').replaceAll('.', '\$46');
+
+      return new shelf.Response.ok('''
+        (function() {
+          let oldOnError = requirejs.onError;
+          requirejs.onError = function(e) {
+            if (e.originalError && e.originalError.srcElement) {
+              let xhr = new XMLHttpRequest();
+              xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                  console.error(this.responseText);
+                  window.parent.postMessage({
+                    "href": window.location.href,
+                    "data": [
+                      0,
+                      {"type": "loadException", "message": this.responseText}
+                    ]
+                  }, window.location.origin);
+                }
+              };
+              xhr.open("GET", e.originalError.srcElement.src + ".errors", true);
+              xhr.send();
+            }
+
+            // Also handle errors the normal way.
+            if (oldOnError) oldOnError(e);
+          };
+
+          require.config({
+            baseUrl: ${JSON.encode(url.toString())},
+            waitSeconds: 0,
+            paths: ${JSON.encode(modulePaths)}
+          });
+
+          require(${JSON.encode(requires)}, function(app, bootstrap, dart_sdk) {
+            dart_sdk._isolate_helper.startRootIsolate(() => {}, []);
+            dart_sdk._debugger.registerDevtoolsFormatter();
+            window.\$dartTestGetSourceMap = dart_sdk.dart.getSourceMap;
+            window.postMessage({type: "DDC_STATE_CHANGE", state: "start"}, "*");
+
+            bootstrap.src__bootstrap__browser.internalBootstrapBrowserTest(
+                function() {
+              return app.$moduleIdentifier.main;
+            });
+          });
+        })();
+      ''', headers: {'Content-Type': 'application/javascript'});
+    }
+
     if (path.endsWith(".html")) {
       var test = p.withoutExtension(path) + ".dart";
 
-      // Link to the Dart wrapper on Dartium and the compiled JS version
-      // elsewhere.
       var scriptBase =
           "${HTML_ESCAPE.convert(p.basename(test))}.browser_test.dart";
-      var script = request.headers['user-agent'].contains('(Dart)')
-          ? 'type="application/dart" src="$scriptBase"'
-          : 'src="$scriptBase.js"';
+
+      String scriptTags;
+      if (path.endsWith(".ddc.html")) {
+        var requireUrl = "/$_secret/packages/\$sdk/dev_compiler/amd/require.js";
+        scriptTags =
+            '<script data-main="$scriptBase" src="$requireUrl" defer></script>';
+      } else {
+        // Link to the Dart wrapper on Dartium and the compiled JS version
+        // elsewhere.
+        var script = request.headers['user-agent'].contains('(Dart)')
+            ? 'type="application/dart" src="$scriptBase"'
+            : 'src="$scriptBase.js"';
+        scriptTags = "<script $script></script>";
+      }
 
       return new shelf.Response.ok('''
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${HTML_ESCAPE.convert(test)} Test</title>
-          <script $script></script>
-        </head>
-        </html>
-      ''', headers: {'Content-Type': 'text/html'});
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>${HTML_ESCAPE.convert(test)} Test</title>
+            $scriptTags
+          </head>
+          </html>
+        ''', headers: {'Content-Type': 'text/html'});
     }
 
     return new shelf.Response.notFound('Not found.');
@@ -231,8 +381,20 @@ class BrowserPlatform extends PlatformPlugin
       SuiteConfiguration suiteConfig, Object message) async {
     assert(suiteConfig.platforms.contains(browser.identifier));
 
+    // TODO(nweiz): Find a more principled way of passing CLI
+    // configuration to plugins.
+    var compiler = Compiler.find((message as Map)['compiler'] as String);
+
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
+    }
+
+    if (compiler == Compiler.build && !buildDirExists) {
+      throw "The build package's output directory doesn't exist.\n"
+          "Make sure the build_runner package is installed, then run `pub run "
+          "build_runner build`.\n"
+          "See https://github.com/dart-lang/test/blob/master/README.md"
+          "#build_runner";
     }
 
     var htmlPath = p.withoutExtension(path) + '.html';
@@ -270,6 +432,7 @@ class BrowserPlatform extends PlatformPlugin
       await _pubServeSuite(path, dartUrl, browser, suiteConfig);
       suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
+      var extension = ".html";
       if (browser.isJS) {
         if (_precompiled(suiteConfig, path)) {
           if (_precompiledPaths.add(suiteConfig.precompiledPath)) {
@@ -291,13 +454,19 @@ class BrowserPlatform extends PlatformPlugin
                 .add(createStaticHandler(suiteConfig.precompiledPath));
           }
         } else {
-          await _compileSuite(path, suiteConfig);
+          assert(compiler != Compiler.none);
+          if (compiler == Compiler.dart2js) {
+            await _compileSuite(path, suiteConfig);
+          } else {
+            await _compileBootstrap();
+            extension = ".ddc.html";
+          }
         }
       }
 
       if (_closed) return null;
-      suiteUrl = url.resolveUri(
-          p.toUri(p.withoutExtension(p.relative(path, from: _root)) + ".html"));
+      suiteUrl = url.resolveUri(p.toUri(
+          p.withoutExtension(p.relative(path, from: _root)) + extension));
     }
 
     if (_closed) return null;
@@ -435,6 +604,76 @@ class BrowserPlatform extends PlatformPlugin
     });
   }
 
+  /// Compiles "package:test/src/bootstrap/browser.dart" to JS using DDC and
+  /// adds the compiled output to the server.
+  Future _compileBootstrap() async {
+    var result = await _compileBootstrapMemo.runOnce(() async {
+      var ddcDir = p.join(_compiledDir, 'ddc');
+      var packagesDir = p.join(ddcDir, 'packages');
+      new Directory(packagesDir).createSync(recursive: true);
+
+      // Copy the DDC summaries into the target directory so module root stuff
+      // will work properly.
+      await streamWait(
+          new Directory(_buildOutput).list(),
+          (entry) => new Link(p.join(packagesDir, p.basename(entry.path)))
+              .create(p.join(p.absolute(entry.path), 'lib')));
+
+      var jsPath = p.join(ddcDir, 'bootstrap.dart.js');
+      var arguments = [
+        "--module-root=$ddcDir",
+        "--library-root=$ddcDir",
+        "--summary-extension=linked.sum",
+        "--out=$jsPath",
+        "package:test/src/bootstrap/browser.dart"
+      ];
+      arguments.addAll((await _ddcModules).expand((path) {
+        var components = p.split(p.relative(path, from: _buildOutput));
+        if (components[1] != 'lib') return [];
+
+        var package = components.first;
+        var pathInLib = p.joinAll(components.skip(2));
+        var summaryPath =
+            p.join(ddcDir, "packages", package, "$pathInLib.linked.sum");
+        if (!new File(summaryPath).existsSync()) return [];
+
+        return ["--summary", summaryPath];
+      }));
+
+      var buffer = new StringBuffer();
+      var process =
+          await Process.start(p.join(sdkDir, 'bin', 'dartdevc'), arguments);
+      await Future.wait([
+        UTF8.decoder.bind(process.stdout).listen(buffer.write).asFuture(),
+        UTF8.decoder.bind(process.stderr).listen(buffer.write).asFuture()
+      ]);
+
+      var exitCode = await process.exitCode;
+      if (_closed) return true;
+
+      var output = buffer.toString();
+      if (output.isNotEmpty) print(output);
+
+      if (exitCode != 0) return false;
+
+      _jsHandler.add(
+          "packages/test/src/bootstrap/browser.js",
+          (request) => new shelf.Response.ok(
+              new File(jsPath).readAsStringSync(),
+              headers: {'Content-Type': 'application/javascript'}));
+      return true;
+    });
+
+    // Throw outside the [AsyncMemoizer] so the error doesn't cross error-zone
+    // boundaries between different load suites.
+    if (!result) {
+      throw "DDC failed to compile test infrastructure.\n"
+          "You may need to re-run `pub run build_runner build`.";
+    }
+  }
+
+  final _compileBootstrapMemo = new AsyncMemoizer<bool>();
+
   /// Returns the [BrowserManager] for [platform], which should be a browser.
   ///
   /// If no browser manager is running yet, starts one.
@@ -496,7 +735,7 @@ class BrowserPlatform extends PlatformPlugin
         await Future.wait(futures);
 
         if (_config.pubServeUrl == null) {
-          new Directory(_compiledDir).deleteSync(recursive: true);
+          //new Directory(_compiledDir).deleteSync(recursive: true);
         } else {
           _http.close();
         }

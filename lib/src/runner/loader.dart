@@ -271,7 +271,10 @@ class Loader {
           platform: platform));
     }
 
-    var name = (platform.isJS ? "compiling " : "loading ") + path;
+    var name = (platform.isJS && compiler != Compiler.build
+            ? "compiling "
+            : "loading ") +
+        path;
     return new LoadSuite(name, platformConfig, () async {
       var memo = _platformPlugins[platform];
 

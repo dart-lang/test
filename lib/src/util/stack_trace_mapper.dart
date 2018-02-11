@@ -32,6 +32,14 @@ class StackTraceMapper {
         _packageResolver = packageResolver,
         _sdkRoot = sdkRoot;
 
+  /// Creates a [StackTraceMapper] from a mapping that's already parsed.
+  StackTraceMapper.parsed(this._mapping,
+      {SyncPackageResolver packageResolver, Uri sdkRoot})
+      : _mapContents = null,
+        _mapUrl = null,
+        _packageResolver = packageResolver,
+        _sdkRoot = sdkRoot;
+
   /// Converts [trace] into a Dart stack trace.
   StackTrace mapStackTrace(StackTrace trace) {
     _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);

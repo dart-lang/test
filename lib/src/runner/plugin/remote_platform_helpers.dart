@@ -5,6 +5,7 @@
 import 'package:stream_channel/stream_channel.dart';
 
 import '../remote_listener.dart';
+import '../../util/stack_trace_mapper.dart';
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].
@@ -21,5 +22,9 @@ import '../remote_listener.dart';
 /// suite will not be forwarded to the parent zone's print handler. However, the
 /// caller may want them to be forwarded in (for example) a browser context
 /// where they'll be visible in the development console.
-StreamChannel serializeSuite(Function getMain(), {bool hidePrints: true}) =>
-    RemoteListener.start(getMain, hidePrints: hidePrints);
+///
+/// The [stackTraceMapper] is intended for internal use only.
+StreamChannel serializeSuite(Function getMain(),
+        {bool hidePrints: true, StackTraceMapper stackTraceMapper}) =>
+    RemoteListener.start(getMain,
+        hidePrints: hidePrints, stackTraceMapper: stackTraceMapper);

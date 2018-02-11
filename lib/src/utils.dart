@@ -289,6 +289,17 @@ Stream errorStream(error, StackTrace stackTrace) {
   return controller.stream;
 }
 
+/// Like [Future.wait], but takes a [Stream] rather than an [Iterable].
+Future<List<T>> streamWait<S, T>(
+    Stream<S> stream, Future<T> callback(S element)) {
+  var group = new FutureGroup<T>();
+  stream.listen((event) => group.add(callback(event)),
+      onError: (error, stackTrace) =>
+          group.add(new Future.error(error, stackTrace)),
+      onDone: group.close);
+  return group.future;
+}
+
 /// Runs [fn] and discards its return value.
 ///
 /// This is useful for making a block of code async without forcing the
@@ -349,6 +360,14 @@ void ensureJsonEncodable(Object message) {
   } else {
     throw new ArgumentError.value("$message can't be JSON-encoded.");
   }
+}
+
+/// Removes [suffix] from the end of [string].
+///
+/// Asserts that [suffix] is indeed a suffix of [string].
+String trimSuffix(String string, String suffix) {
+  assert(string.endsWith(suffix));
+  return string.substring(0, string.length - suffix.length);
 }
 
 /// Prepends a vertical bar to [text].

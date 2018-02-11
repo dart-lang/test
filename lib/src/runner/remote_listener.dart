@@ -42,7 +42,12 @@ class RemoteListener {
   /// suite will not be forwarded to the parent zone's print handler. However,
   /// the caller may want them to be forwarded in (for example) a browser
   /// context where they'll be visible in the development console.
-  static StreamChannel start(AsyncFunction getMain(), {bool hidePrints: true}) {
+  ///
+  /// If [StackTraceMapper] is passed, it's used to convert JS to Dart stack
+  /// traces. Otherwise, a mapper is deserialized from the hash
+  /// parameter.
+  static StreamChannel start(AsyncFunction getMain(),
+      {bool hidePrints: true, StackTraceMapper stackTraceMapper}) {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
@@ -85,10 +90,13 @@ class RemoteListener {
           collectTraces: message['collectTraces'],
           noRetry: message['noRetry']);
 
-      configureTestChaining(
-          mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
-          exceptPackages: _deserializeSet(message['foldTraceExcept']),
-          onlyPackages: _deserializeSet(message['foldTraceOnly']));
+      if (!(message['jsTrace'] as bool)) {
+        configureTestChaining(
+            mapper: stackTraceMapper ??
+                StackTraceMapper.deserialize(message['stackTraceMapper']),
+            exceptPackages: _deserializeSet(message['foldTraceExcept']),
+            onlyPackages: _deserializeSet(message['foldTraceOnly']));
+      }
 
       await declarer.declare(main);
 

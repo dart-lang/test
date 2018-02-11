@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 
 import '../backend/operating_system.dart';
 import '../utils.dart';
@@ -70,6 +71,13 @@ final _tempDir = Platform.environment.containsKey("_UNITTEST_TEMP_DIR")
 /// characters should be used.
 bool get canUseSpecialChars =>
     Platform.operatingSystem != 'windows' && !inTestTests;
+
+/// The name of the package being tested.
+final rootPackageName =
+    loadYaml(new File('pubspec.yaml').readAsStringSync())['name'] as String;
+
+/// Whether the build package's generated directory exists.
+final buildDirExists = new Directory('.dart_tool/build/generated').existsSync();
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() => new Directory(_tempDir)
