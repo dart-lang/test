@@ -10,6 +10,7 @@ import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 
+import '../backend/compiler.dart';
 import '../backend/platform_selector.dart';
 import '../backend/test_platform.dart';
 import '../frontend/timeout.dart';
@@ -234,6 +235,7 @@ class Configuration {
       String precompiledPath,
       Iterable<Pattern> patterns,
       Iterable<PlatformSelection> platforms,
+      Iterable<Compiler> compilers,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -277,6 +279,7 @@ class Configuration {
             precompiledPath: precompiledPath,
             patterns: patterns,
             platforms: platforms,
+            compilers: compilers,
             includeTags: includeTags,
             excludeTags: excludeTags,
             tags: tags,
@@ -517,6 +520,7 @@ class Configuration {
       String precompiledPath,
       Iterable<Pattern> patterns,
       Iterable<PlatformSelection> platforms,
+      Iterable<Compiler> compilers,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -558,6 +562,7 @@ class Configuration {
             precompiledPath: precompiledPath,
             patterns: patterns,
             platforms: platforms,
+            compilers: compilers,
             includeTags: includeTags,
             excludeTags: excludeTags,
             tags: tags,

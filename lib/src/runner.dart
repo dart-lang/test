@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 
+import 'backend/compiler.dart';
 import 'backend/group.dart';
 import 'backend/group_entry.dart';
 import 'backend/operating_system.dart';
@@ -129,9 +130,16 @@ class Runner {
 
     var unsupportedPlatforms = _config.suiteDefaults.platforms
         .map(_loader.findTestPlatform)
-        .where((platform) =>
-            platform != null && !testOn.evaluate(platform, os: currentOS))
-        .toList();
+        .expand((platform) {
+      if (platform == null) return [];
+      return _config.suiteDefaults.compilers.map((compiler) {
+        if (testOn.evaluate(platform, os: currentOS, compiler: compiler)) {
+          return null;
+        } else {
+          return new Pair(platform, compiler);
+        }
+      }).where((pair) => pair != null);
+    }).toList();
     if (unsupportedPlatforms.isEmpty) return;
 
     // Human-readable names for all unsupported platforms.
@@ -141,15 +149,23 @@ class Runner {
     // whether we should warn about the individual browsers or whether all
     // browsers are unsupported.
     var unsupportedBrowsers =
-        unsupportedPlatforms.where((platform) => platform.isBrowser);
+        unsupportedPlatforms.where((pair) => pair.first.isBrowser).toList();
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = _loader.allPlatforms
           .where((platform) => platform.isBrowser)
-          .any((platform) => testOn.evaluate(platform));
+          .any((platform) => Compiler.all.any(
+              (compiler) => testOn.evaluate(platform, compiler: compiler)));
 
       if (supportsAnyBrowser) {
-        unsupportedNames
-            .addAll(unsupportedBrowsers.map((platform) => platform.name));
+        for (var pair in unsupportedBrowsers) {
+          var supportsAnyCompiler = Compiler.all.any(
+              (compiler) => testOn.evaluate(pair.first, compiler: compiler));
+          if (supportsAnyCompiler) {
+            unsupportedNames.add(pair.first.name);
+          } else {
+            unsupportedNames.add("${pair.first} compiled with ${pair.last}");
+          }
+        }
       } else {
         unsupportedNames.add("browsers");
       }
@@ -157,7 +173,7 @@ class Runner {
 
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
-    if (unsupportedPlatforms.contains(TestPlatform.vm)) {
+    if (unsupportedPlatforms.any((pair) => pair.first == TestPlatform.vm)) {
       var supportsAnyOS = OperatingSystem.all
           .any((os) => testOn.evaluate(TestPlatform.vm, os: os));
 

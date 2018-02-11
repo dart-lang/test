@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'compiler.dart';
 import 'group.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
@@ -23,6 +24,12 @@ class Suite {
   /// This will always be `null` if [platform] is `null`.
   final OperatingSystem os;
 
+  /// The compiler with which the suite was compiled running, or `null` if that
+  /// compiler is unknown.
+  ///
+  /// This will always be `null` if [platform] is `null`.
+  final Compiler compiler;
+
   /// The path to the Dart test suite, or `null` if that path is unknown.
   final String path;
 
@@ -36,27 +43,35 @@ class Suite {
 
   /// Creates a new suite containing [entires].
   ///
-  /// If [platform] and/or [os] are passed, [group] is filtered to match that
-  /// platform information.
+  /// If [platform], [os] and/or [compiler] are passed, [group] is filtered to
+  /// match that platform information.
   ///
-  /// If [os] is passed without [platform], throws an [ArgumentError].
-  Suite(Group group, {this.path, TestPlatform platform, OperatingSystem os})
+  /// If [os] or [compiler] is passed without [platform], throws an
+  /// [ArgumentError].
+  Suite(Group group,
+      {this.path, TestPlatform platform, OperatingSystem os, Compiler compiler})
       : platform = platform,
         os = os,
-        group = _filterGroup(group, platform, os);
+        compiler = compiler,
+        group = _filterGroup(group, platform, os, compiler);
 
-  /// Returns [entries] filtered according to [platform] and [os].
+  /// Returns [entries] filtered according to [platform], [os], and [compiler].
   ///
   /// Gracefully handles [platform] being null.
-  static Group _filterGroup(
-      Group group, TestPlatform platform, OperatingSystem os) {
-    if (platform == null && os != null) {
-      throw new ArgumentError.value(
-          null, "os", "If os is passed, platform must be passed as well");
+  static Group _filterGroup(Group group, TestPlatform platform,
+      OperatingSystem os, Compiler compiler) {
+    if (platform == null) {
+      if (os != null) {
+        throw new ArgumentError.value(
+            os, "os", "must be null if platform is null");
+      } else if (compiler != null) {
+        throw new ArgumentError.value(
+            compiler, "compiler", "must be null if platform is null");
+      }
     }
 
     if (platform == null) return group;
-    var filtered = group.forPlatform(platform, os: os);
+    var filtered = group.forPlatform(platform, os: os, compiler: compiler);
     if (filtered != null) return filtered;
     return new Group.root([], metadata: group.metadata);
   }
@@ -68,6 +83,7 @@ class Suite {
   Suite filter(bool callback(Test test)) {
     var filtered = group.filter(callback);
     if (filtered == null) filtered = new Group.root([], metadata: metadata);
-    return new Suite(filtered, platform: platform, os: os, path: path);
+    return new Suite(filtered,
+        platform: platform, os: os, compiler: compiler, path: path);
   }
 }

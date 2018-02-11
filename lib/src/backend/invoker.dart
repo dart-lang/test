@@ -10,6 +10,7 @@ import '../frontend/expect.dart';
 import '../runner/load_suite.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
+import 'compiler.dart';
 import 'declarer.dart';
 import 'group.dart';
 import 'live_test.dart';
@@ -57,10 +58,19 @@ class LocalTest extends Test {
     return invoker.liveTest;
   }
 
-  Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new LocalTest._(name, metadata.forPlatform(platform, os: os), _body,
-        trace, _guarded, isScaffoldAll);
+  Test forPlatform(TestPlatform platform,
+      {OperatingSystem os, Compiler compiler}) {
+    if (metadata.testOn.evaluate(platform, os: os, compiler: compiler)) {
+      return new LocalTest._(
+          name,
+          metadata.forPlatform(platform, os: os, compiler: compiler),
+          _body,
+          trace,
+          _guarded,
+          isScaffoldAll);
+    } else {
+      return null;
+    }
   }
 }
 

@@ -40,7 +40,7 @@ class OperatingSystem {
 
   /// Finds an operating system by its name.
   ///
-  /// If no operating system is found, returns [none].
+  /// If no operating system is found, returns `null`.
   static OperatingSystem find(String identifier) =>
       all.firstWhere((platform) => platform.identifier == identifier,
           orElse: () => null);

@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import '../backend/compiler.dart';
 import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/test_platform.dart';
@@ -227,43 +228,68 @@ class Loader {
       var platform = findTestPlatform(platformName);
       assert(platform != null, 'Unknown platform "$platformName".');
 
-      if (!suiteConfig.metadata.testOn.evaluate(platform, os: currentOS)) {
-        continue;
-      }
-
-      var platformConfig = suiteConfig.forPlatform(platform, os: currentOS);
-
-      // Don't load a skipped suite.
-      if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
-        yield new LoadSuite.forSuite(new RunnerSuite(
-            const PluginEnvironment(),
-            platformConfig,
-            new Group.root(
-                [new LocalTest("(suite)", platformConfig.metadata, () {})],
-                metadata: platformConfig.metadata),
-            path: path,
-            platform: platform));
-        continue;
-      }
-
-      var name = (platform.isJS ? "compiling " : "loading ") + path;
-      yield new LoadSuite(name, platformConfig, () async {
-        var memo = _platformPlugins[platform];
-
-        try {
-          var plugin = await memo.runOnce(_platformCallbacks[platform]);
-          _customizePlatform(plugin, platform);
-          var suite = await plugin.load(path, platform, platformConfig,
-              {"platformVariables": _platformVariables.toList()});
-          if (suite != null) _suites.add(suite);
-          return suite;
-        } catch (error, stackTrace) {
-          if (error is LoadException) rethrow;
-          await new Future.error(new LoadException(path, error), stackTrace);
-          return null;
+      if (!platform.isJS) {
+        var suite = await _loadFileOnPlatform(
+            path, suiteConfig, platform, Compiler.none);
+        if (suite != null) yield suite;
+      } else {
+        for (var compiler in suiteConfig.compilers) {
+          var suite =
+              await _loadFileOnPlatform(path, suiteConfig, platform, compiler);
+          if (suite != null) yield suite;
         }
-      }, path: path, platform: platform);
+      }
     }
+  }
+
+  /// Loads a single suite from the file at [path] according to [suiteConfig] on
+  /// [platform], compiled with [compiler].
+  ///
+  /// If the suite doesn't support [platform] and/or [compiler], returns `null`.
+  Future<LoadSuite> _loadFileOnPlatform(
+      String path,
+      SuiteConfiguration suiteConfig,
+      TestPlatform platform,
+      Compiler compiler) async {
+    if (!suiteConfig.metadata.testOn
+        .evaluate(platform, os: currentOS, compiler: compiler)) {
+      return null;
+    }
+
+    var platformConfig =
+        suiteConfig.forPlatform(platform, os: currentOS, compiler: compiler);
+
+    // Don't load a skipped suite.
+    if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
+      return new LoadSuite.forSuite(new RunnerSuite(
+          const PluginEnvironment(),
+          platformConfig,
+          new Group.root(
+              [new LocalTest("(suite)", platformConfig.metadata, () {})],
+              metadata: platformConfig.metadata),
+          path: path,
+          platform: platform));
+    }
+
+    var name = (platform.isJS ? "compiling " : "loading ") + path;
+    return new LoadSuite(name, platformConfig, () async {
+      var memo = _platformPlugins[platform];
+
+      try {
+        var plugin = await memo.runOnce(_platformCallbacks[platform]);
+        _customizePlatform(plugin, platform);
+        var suite = await plugin.load(path, platform, platformConfig, {
+          "compiler": platform.isJS ? compiler.identifier : null,
+          "platformVariables": _platformVariables.toList()
+        });
+        if (suite != null) _suites.add(suite);
+        return suite;
+      } catch (error, stackTrace) {
+        if (error is LoadException) rethrow;
+        await new Future.error(new LoadException(path, error), stackTrace);
+        return null;
+      }
+    }, path: path, platform: platform);
   }
 
   /// Passes user-defined settings to [plugin] if necessary.

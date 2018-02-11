@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
+import '../backend/compiler.dart';
 import '../backend/group.dart';
 import '../backend/operating_system.dart';
 import '../backend/suite.dart';
@@ -52,20 +53,27 @@ class RunnerSuite extends Suite {
       {String path,
       TestPlatform platform,
       OperatingSystem os,
+      Compiler compiler,
       AsyncFunction onClose}) {
     var controller = new RunnerSuiteController(environment, config, group,
-        path: path, platform: platform, os: os, onClose: onClose);
+        path: path,
+        platform: platform,
+        os: os,
+        compiler: compiler,
+        onClose: onClose);
     return controller.suite;
   }
 
   RunnerSuite._(this._controller, Group group, String path,
-      TestPlatform platform, OperatingSystem os)
-      : super(group, path: path, platform: platform, os: os);
+      TestPlatform platform, OperatingSystem os, Compiler compiler)
+      : super(group,
+            path: path, platform: platform, os: os, compiler: compiler);
 
   RunnerSuite filter(bool callback(Test test)) {
     var filtered = group.filter(callback);
     filtered ??= new Group.root([], metadata: metadata);
-    return new RunnerSuite._(_controller, filtered, path, platform, os);
+    return new RunnerSuite._(
+        _controller, filtered, path, platform, os, compiler);
   }
 
   /// Closes the suite and releases any resources associated with it.
@@ -97,9 +105,10 @@ class RunnerSuiteController {
       {String path,
       TestPlatform platform,
       OperatingSystem os,
+      Compiler compiler,
       AsyncFunction onClose})
       : _onClose = onClose {
-    _suite = new RunnerSuite._(this, group, path, platform, os);
+    _suite = new RunnerSuite._(this, group, path, platform, os, compiler);
   }
 
   /// Sets whether the suite is paused for debugging.

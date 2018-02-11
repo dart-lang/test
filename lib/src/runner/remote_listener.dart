@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
+import '../backend/compiler.dart';
 import '../backend/declarer.dart';
 import '../backend/group.dart';
 import '../backend/invoker.dart';
@@ -96,6 +97,9 @@ class RemoteListener {
           os: message['os'] == null
               ? null
               : OperatingSystem.find(message['os']),
+          compiler: message['compiler'] == null
+              ? null
+              : Compiler.find(message['compiler']),
           path: message['path']);
 
       runZoned(() {

@@ -5,6 +5,7 @@
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import '../backend/compiler.dart';
 import '../backend/group.dart';
 import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
@@ -97,9 +98,16 @@ class RunnerTest extends Test {
     return controller.liveTest;
   }
 
-  Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new RunnerTest._(
-        name, metadata.forPlatform(platform, os: os), trace, _channel);
+  Test forPlatform(TestPlatform platform,
+      {OperatingSystem os, Compiler compiler}) {
+    if (metadata.testOn.evaluate(platform, os: os, compiler: compiler)) {
+      return new RunnerTest._(
+          name,
+          metadata.forPlatform(platform, os: os, compiler: compiler),
+          trace,
+          _channel);
+    } else {
+      return null;
+    }
   }
 }

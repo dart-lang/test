@@ -4,6 +4,7 @@
 
 import 'package:stack_trace/stack_trace.dart';
 
+import 'compiler.dart';
 import 'group.dart';
 import 'group_entry.dart';
 import 'live_test.dart';
@@ -32,7 +33,8 @@ abstract class Test implements GroupEntry {
   /// defaults to just containing `suite.group`.
   LiveTest load(Suite suite, {Iterable<Group> groups});
 
-  Test forPlatform(TestPlatform platform, {OperatingSystem os});
+  Test forPlatform(TestPlatform platform,
+      {OperatingSystem os, Compiler compiler});
 
   Test filter(bool callback(Test test)) => callback(this) ? this : null;
 }

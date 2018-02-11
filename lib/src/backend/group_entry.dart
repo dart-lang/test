@@ -4,6 +4,7 @@
 
 import 'package:stack_trace/stack_trace.dart';
 
+import 'compiler.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
 import 'test.dart';
@@ -30,7 +31,8 @@ abstract class GroupEntry {
   /// Removes any tests and groups with [Metadata.testOn] selectors that don't
   /// match [platform] and [selector]. Returns `null` if this entry's selector
   /// doesn't match.
-  GroupEntry forPlatform(TestPlatform platform, {OperatingSystem os});
+  GroupEntry forPlatform(TestPlatform platform,
+      {OperatingSystem os, Compiler compiler});
 
   /// Returns a copy of [this] with all tests that don't match [callback]
   /// removed.

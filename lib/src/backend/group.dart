@@ -4,6 +4,7 @@
 
 import 'package:stack_trace/stack_trace.dart';
 
+import 'compiler.dart';
 import 'group_entry.dart';
 import 'metadata.dart';
 import 'operating_system.dart';
@@ -52,10 +53,16 @@ class Group implements GroupEntry {
       : entries = new List<GroupEntry>.unmodifiable(entries),
         metadata = metadata == null ? new Metadata() : metadata;
 
-  Group forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    var newMetadata = metadata.forPlatform(platform, os: os);
-    var filtered = _map((entry) => entry.forPlatform(platform, os: os));
+  Group forPlatform(TestPlatform platform,
+      {OperatingSystem os, Compiler compiler}) {
+    if (!metadata.testOn.evaluate(platform, os: os, compiler: compiler)) {
+      return null;
+    }
+
+    var newMetadata =
+        metadata.forPlatform(platform, os: os, compiler: compiler);
+    var filtered = _map(
+        (entry) => entry.forPlatform(platform, os: os, compiler: compiler));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
     return new Group(name, filtered,
         metadata: newMetadata,

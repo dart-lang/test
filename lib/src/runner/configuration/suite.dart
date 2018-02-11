@@ -6,6 +6,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
 
+import '../../backend/compiler.dart';
 import '../../backend/metadata.dart';
 import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
@@ -57,6 +58,10 @@ class SuiteConfiguration {
       ? const ["vm"]
       : new List.unmodifiable(_platforms.map((platform) => platform.name));
   final List<PlatformSelection> _platforms;
+
+  /// The set of compilers with which to compile tests.
+  List<Compiler> get compilers => _compilers ?? const [Compiler.dart2js];
+  final List<Compiler> _compilers;
 
   /// Only run tests whose tags match this selector.
   ///
@@ -129,6 +134,7 @@ class SuiteConfiguration {
       String precompiledPath,
       Iterable<Pattern> patterns,
       Iterable<PlatformSelection> platforms,
+      Iterable<Compiler> compilers,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -150,6 +156,7 @@ class SuiteConfiguration {
         precompiledPath: precompiledPath,
         patterns: patterns,
         platforms: platforms,
+        compilers: compilers,
         includeTags: includeTags,
         excludeTags: excludeTags,
         tags: tags,
@@ -177,6 +184,7 @@ class SuiteConfiguration {
       this.precompiledPath,
       Iterable<Pattern> patterns,
       Iterable<PlatformSelection> platforms,
+      Iterable<Compiler> compilers,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -187,6 +195,7 @@ class SuiteConfiguration {
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
         patterns = new UnmodifiableSetView(patterns?.toSet() ?? new Set()),
         _platforms = _list(platforms),
+        _compilers = _list(compilers),
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
         tags = _map(tags),
@@ -235,6 +244,7 @@ class SuiteConfiguration {
         precompiledPath: other.precompiledPath ?? precompiledPath,
         patterns: patterns.union(other.patterns),
         platforms: other._platforms ?? _platforms,
+        compilers: other._compilers ?? _compilers,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
         tags: _mergeConfigMaps(tags, other.tags),
@@ -254,6 +264,7 @@ class SuiteConfiguration {
       String precompiledPath,
       Iterable<Pattern> patterns,
       Iterable<PlatformSelection> platforms,
+      Iterable<Compiler> compilers,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -275,6 +286,7 @@ class SuiteConfiguration {
         precompiledPath: precompiledPath ?? this.precompiledPath,
         patterns: patterns ?? this.patterns,
         platforms: platforms ?? _platforms,
+        compilers: compilers ?? _compilers,
         includeTags: includeTags ?? this.includeTags,
         excludeTags: excludeTags ?? this.excludeTags,
         tags: tags ?? this.tags,
@@ -319,13 +331,15 @@ class SuiteConfiguration {
 
   /// Returns a copy of [this] with all platform-specific configuration from
   /// [onPlatform] resolved.
-  SuiteConfiguration forPlatform(TestPlatform platform, {OperatingSystem os}) {
+  SuiteConfiguration forPlatform(TestPlatform platform,
+      {OperatingSystem os, Compiler compiler}) {
     if (onPlatform.isEmpty) return this;
 
     var config = this;
     onPlatform.forEach((platformSelector, platformConfig) {
-      if (!platformSelector.evaluate(platform, os: os)) return;
-      config = config.merge(platformConfig);
+      if (platformSelector.evaluate(platform, os: os, compiler: compiler)) {
+        config = config.merge(platformConfig);
+      }
     });
     return config.change(onPlatform: {});
   }
