@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/compiler.dart';
 import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
 import '../../frontend/timeout.dart';
@@ -193,6 +194,7 @@ class _ConfigurationLoader {
       _disallow("names");
       _disallow("plain_names");
       _disallow("platforms");
+      _disallow("compilers");
       _disallow("add_presets");
       _disallow("override_platforms");
       return Configuration.empty;
@@ -214,6 +216,17 @@ class _ConfigurationLoader {
             _parseIdentifierLike(platformNode, "Platform name"),
             platformNode.span));
 
+    var allCompilerIdentifiers =
+        Compiler.all.map((compiler) => compiler.identifier).toSet();
+    var compilers = _getList("compilers", (compilerNode) {
+      _validate(compilerNode, "Compiler names must be strings.",
+          (value) => value is String);
+      _validate(compilerNode, 'Unknown compiler "${compilerNode.value}".',
+          allCompilerIdentifiers.contains);
+
+      return Compiler.find(compilerNode.value);
+    });
+
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
 
@@ -225,6 +238,7 @@ class _ConfigurationLoader {
         reporter: reporter,
         concurrency: concurrency,
         platforms: platforms,
+        compilers: compilers,
         chosenPresets: chosenPresets,
         overridePlatforms: overridePlatforms);
   }
