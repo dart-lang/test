@@ -13,7 +13,7 @@ import 'package:source_span/source_span.dart';
 @JS('\$dartTestGetSourceMap')
 external Object _getSourceMap(String module);
 
-/// The URL beneath which test files are served.
+/// The URL beneath which test files are served on the browser.
 final _rootUrl = p.joinAll(p.split(p.current).take(2));
 
 /// A source mapping that loads source maps as-needed using [_getSourceMap].

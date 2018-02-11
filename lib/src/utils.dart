@@ -37,7 +37,7 @@ final lineSplitter = new StreamTransformer<List<int>, String>(
 ///
 /// Note that this is only safe for channels whose messages are guaranteed not
 /// to contain newlines.
-final chunksToLines = new StreamChannelTransformer(
+final chunksToLines = new StreamChannelTransformer<String, String>(
     const LineSplitter(),
     new StreamSinkTransformer.fromHandlers(
         handleData: (data, sink) => sink.add("$data\n")));

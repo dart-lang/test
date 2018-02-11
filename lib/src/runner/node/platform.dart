@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:convert';
 
 import 'package:async/async.dart';
@@ -14,11 +15,13 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/compiler.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
+import '../build.dart' as build;
 import '../compiler_pool.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
@@ -79,7 +82,9 @@ class NodePlatform extends PlatformPlugin
       SuiteConfiguration suiteConfig, Object message) async {
     assert(platform == TestPlatform.nodeJS);
 
-    var pair = await _loadChannel(path, platform, suiteConfig);
+    var compiler = Compiler.find((message as Map)['compiler'] as String);
+
+    var pair = await _loadChannel(path, platform, compiler, suiteConfig);
     var controller = await deserializeSuite(path, platform, suiteConfig,
         new PluginEnvironment(), pair.first, message,
         mapper: pair.last);
@@ -90,11 +95,15 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(String path,
-      TestPlatform platform, SuiteConfiguration suiteConfig) async {
+  Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(
+      String path,
+      TestPlatform platform,
+      Compiler compiler,
+      SuiteConfiguration suiteConfig) async {
     var server = await MultiServerSocket.loopback(0);
 
-    var pair = await _spawnProcess(path, platform, suiteConfig, server.port);
+    var pair =
+        await _spawnProcess(path, platform, compiler, suiteConfig, server.port);
     var process = pair.first;
 
     // Forward Node's standard IO to the print handler so it's associated with
@@ -126,19 +135,97 @@ class NodePlatform extends PlatformPlugin
   Future<Pair<Process, StackTraceMapper>> _spawnProcess(
       String path,
       TestPlatform platform,
+      Compiler compiler,
       SuiteConfiguration suiteConfig,
       int socketPort) async {
     var dir = new Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(path) + ".node_test.dart.js");
 
     StackTraceMapper mapper;
-    if (_config.pubServeUrl == null) {
-      mapper = await _compileSuite(path, jsPath, suiteConfig);
-    } else {
+    if (_config.pubServeUrl != null) {
       mapper = await _downloadPubServeSuite(path, jsPath, suiteConfig);
+    } else if (compiler == Compiler.build) {
+      await _writeBuildSuite(path, jsPath);
+    } else {
+      mapper = await _compileSuite(path, jsPath, suiteConfig);
     }
 
     return new Pair(await _startProcess(platform, jsPath, socketPort), mapper);
+  }
+
+  /// Compiles the test suite at [dartPath] to JavaScript at [jsPath] from `pub
+  /// serve`.
+  ///
+  /// If [suiteConfig.jsTrace] is `true`, returns a [StackTraceMapper] that will
+  /// convert JS stack traces to Dart.
+  Future<StackTraceMapper> _downloadPubServeSuite(
+      String dartPath, String jsPath, SuiteConfiguration suiteConfig) async {
+    var url = _config.pubServeUrl.resolveUri(
+        p.toUri(p.relative(dartPath, from: 'test') + '.node_test.dart.js'));
+
+    var js = await _get(url, dartPath);
+    await new File(jsPath)
+        .writeAsString(preamble.getPreamble(minified: true) + js);
+    if (suiteConfig.jsTrace) return null;
+
+    var mapUrl = url.replace(path: url.path + '.map');
+    return new StackTraceMapper(await _get(mapUrl, dartPath),
+        mapUrl: mapUrl,
+        packageResolver: new SyncPackageResolver.root('packages'),
+        sdkRoot: p.toUri('packages/\$sdk'));
+  }
+
+  Future _writeBuildSuite(String dartPath, String jsPath) async {
+    var bootstrapPath = await _compileBootstrap();
+
+    var modulePaths = {
+      "dart_sdk": p.join(sdkDir, 'lib/dev_compiler/amd/dart_sdk'),
+      "packages/test/src/bootstrap/node": p.withoutExtension(bootstrapPath)
+    };
+    for (var path in build.ddcModules) {
+      var components = p.split(p.relative(path, from: build.generatedDir));
+      Uri module;
+      if (components[1] == 'lib') {
+        var package = components.first;
+        var pathInLib = p.joinAll(components.skip(2));
+        module = p.toUri(p.join('packages', package, pathInLib));
+      } else {
+        assert(components.first == rootPackageName);
+        module = p.toUri(p.joinAll(components.skip(1)));
+      }
+      modulePaths[module.toString()] = p.absolute("$path.ddc");
+    }
+
+    var moduleName = p.withoutExtension(dartPath);
+
+    var requires = [moduleName, "packages/test/src/bootstrap/node", "dart_sdk"];
+    var moduleIdentifier =
+        p.url.split(moduleName).skip(1).join('__').replaceAll('.', '\$46');
+
+    var requirejsPath = p.fromUri(await Isolate.resolvePackageUri(
+        Uri.parse('package:test/src/runner/node/vendor/r.js')));
+
+    new File(jsPath).writeAsStringSync('''
+      ${preamble.getPreamble()}
+
+      (function() {
+        let requirejs = require(${JSON.encode(requirejsPath)});
+        requirejs.config({waitSeconds: 0, paths: ${JSON.encode(modulePaths)}});
+
+        requirejs(${JSON.encode(requires)}, function(app, bootstrap, dart_sdk) {
+          dart_sdk._isolate_helper.startRootIsolate(() => {}, []);
+          dart_sdk._debugger.registerDevtoolsFormatter();
+          dart_sdk.dart.global = self;
+          global.self = self;
+          self.\$dartTestGetSourceMap = dart_sdk.dart.getSourceMap;
+
+          bootstrap.src__bootstrap__node.internalBootstrapNodeTest(
+              function() {
+            return app.$moduleIdentifier.main;
+          });
+        });
+      })();
+    ''');
   }
 
   /// Compiles the test suite at [dartPath] to JavaScript at [jsPath] using
@@ -172,28 +259,6 @@ class NodePlatform extends PlatformPlugin
         sdkRoot: p.toUri(sdkDir));
   }
 
-  /// Compiles the test suite at [dartPath] to JavaScript at [jsPath] from `pub
-  /// serve`.
-  ///
-  /// If [suiteConfig.jsTrace] is `true`, returns a [StackTraceMapper] that will
-  /// convert JS stack traces to Dart.
-  Future<StackTraceMapper> _downloadPubServeSuite(
-      String dartPath, String jsPath, SuiteConfiguration suiteConfig) async {
-    var url = _config.pubServeUrl.resolveUri(
-        p.toUri(p.relative(dartPath, from: 'test') + '.node_test.dart.js'));
-
-    var js = await _get(url, dartPath);
-    await new File(jsPath)
-        .writeAsString(preamble.getPreamble(minified: true) + js);
-    if (suiteConfig.jsTrace) return null;
-
-    var mapUrl = url.replace(path: url.path + '.map');
-    return new StackTraceMapper(await _get(mapUrl, dartPath),
-        mapUrl: mapUrl,
-        packageResolver: new SyncPackageResolver.root('packages'),
-        sdkRoot: p.toUri('packages/\$sdk'));
-  }
-
   /// Starts the Node.js process for [platform] with [jsPath].
   Future<Process> _startProcess(
       TestPlatform platform, String jsPath, int socketPort) async {
@@ -215,6 +280,23 @@ class NodePlatform extends PlatformPlugin
       return null;
     }
   }
+
+  /// Compiles "package:test/src/bootstrap/node.dart" to JS using DDC and
+  /// returns the path to the compiled result.
+  Future<String> _compileBootstrap() async {
+    // Pass the error through a result to avoid cross-zone issues.
+    var result = await _compileBootstrapMemo.runOnce(() {
+      return Result.capture(new Future(() async {
+        var js = await build.compile("package:test/src/bootstrap/node.dart");
+        var jsPath = p.join(_compiledDir, 'bootstrap.dart.js');
+        new File(jsPath).writeAsStringSync(js);
+        return jsPath;
+      }));
+    });
+    return await result.asFuture;
+  }
+
+  final _compileBootstrapMemo = new AsyncMemoizer<Result<String>>();
 
   /// Runs an HTTP GET on [url].
   ///

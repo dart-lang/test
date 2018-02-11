@@ -12,7 +12,7 @@ import '../utils.dart';
 import '../util/io.dart';
 
 /// The directory in which the build package generates output.
-final generatedDir = '.dart_tool/build/generated';
+final generatedDir = p.absolute('.dart_tool/build/generated');
 
 /// Whether this package uses the build package.
 final isInUse = new Directory(generatedDir).existsSync();
