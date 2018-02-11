@@ -131,53 +131,67 @@ class NodePlatform extends PlatformPlugin
     var dir = new Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(path) + ".node_test.dart.js");
 
-    if (_config.pubServeUrl == null) {
-      await _compilers.compile('''
-        import "package:test/src/bootstrap/node.dart";
-
-        import "${p.toUri(p.absolute(path))}" as test;
-
-        void main() {
-          internalBootstrapNodeTest(() => test.main);
-        }
-      ''', jsPath, suiteConfig);
-
-      // Add the Node.js preamble to ensure that the dart2js output is
-      // compatible. Use the minified version so the source map remains valid.
-      var jsFile = new File(jsPath);
-      await jsFile.writeAsString(
-          preamble.getPreamble(minified: true) + await jsFile.readAsString());
-
-      StackTraceMapper mapper;
-      if (!suiteConfig.jsTrace) {
-        var mapPath = jsPath + '.map';
-        mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
-            mapUrl: p.toUri(mapPath),
-            packageResolver: await PackageResolver.current.asSync,
-            sdkRoot: p.toUri(sdkDir));
-      }
-
-      return new Pair(
-          await _startProcess(platform, jsPath, socketPort), mapper);
-    }
-
-    var url = _config.pubServeUrl.resolveUri(
-        p.toUri(p.relative(path, from: 'test') + '.node_test.dart.js'));
-
-    var js = await _get(url, path);
-    await new File(jsPath)
-        .writeAsString(preamble.getPreamble(minified: true) + js);
-
     StackTraceMapper mapper;
-    if (!suiteConfig.jsTrace) {
-      var mapUrl = url.replace(path: url.path + '.map');
-      mapper = new StackTraceMapper(await _get(mapUrl, path),
-          mapUrl: mapUrl,
-          packageResolver: new SyncPackageResolver.root('packages'),
-          sdkRoot: p.toUri('packages/\$sdk'));
+    if (_config.pubServeUrl == null) {
+      mapper = await _compileSuite(path, jsPath, suiteConfig);
+    } else {
+      mapper = await _downloadPubServeSuite(path, jsPath, suiteConfig);
     }
 
     return new Pair(await _startProcess(platform, jsPath, socketPort), mapper);
+  }
+
+  /// Compiles the test suite at [dartPath] to JavaScript at [jsPath] using
+  /// dart2js.
+  ///
+  /// If [suiteConfig.jsTrace] is `true`, returns a [StackTraceMapper] that will
+  /// convert JS stack traces to Dart.
+  Future<StackTraceMapper> _compileSuite(
+      String dartPath, String jsPath, SuiteConfiguration suiteConfig) async {
+    await _compilers.compile('''
+      import "package:test/src/bootstrap/node.dart";
+
+      import "${p.toUri(p.absolute(dartPath))}" as test;
+
+      void main() {
+        internalBootstrapNodeTest(() => test.main);
+      }
+    ''', jsPath, suiteConfig);
+
+    // Add the Node.js preamble to ensure that the dart2js output is
+    // compatible. Use the minified version so the source map remains valid.
+    var jsFile = new File(jsPath);
+    await jsFile.writeAsString(
+        preamble.getPreamble(minified: true) + await jsFile.readAsString());
+    if (suiteConfig.jsTrace) return null;
+
+    var mapPath = jsPath + '.map';
+    return new StackTraceMapper(await new File(mapPath).readAsString(),
+        mapUrl: p.toUri(mapPath),
+        packageResolver: await PackageResolver.current.asSync,
+        sdkRoot: p.toUri(sdkDir));
+  }
+
+  /// Compiles the test suite at [dartPath] to JavaScript at [jsPath] from `pub
+  /// serve`.
+  ///
+  /// If [suiteConfig.jsTrace] is `true`, returns a [StackTraceMapper] that will
+  /// convert JS stack traces to Dart.
+  Future<StackTraceMapper> _downloadPubServeSuite(
+      String dartPath, String jsPath, SuiteConfiguration suiteConfig) async {
+    var url = _config.pubServeUrl.resolveUri(
+        p.toUri(p.relative(dartPath, from: 'test') + '.node_test.dart.js'));
+
+    var js = await _get(url, dartPath);
+    await new File(jsPath)
+        .writeAsString(preamble.getPreamble(minified: true) + js);
+    if (suiteConfig.jsTrace) return null;
+
+    var mapUrl = url.replace(path: url.path + '.map');
+    return new StackTraceMapper(await _get(mapUrl, dartPath),
+        mapUrl: mapUrl,
+        packageResolver: new SyncPackageResolver.root('packages'),
+        sdkRoot: p.toUri('packages/\$sdk'));
   }
 
   /// Starts the Node.js process for [platform] with [jsPath].

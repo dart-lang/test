@@ -534,7 +534,7 @@ class BrowserPlatform extends PlatformPlugin
     });
   }
 
-  /// Compile the test suite at [dartPath] to JavaScript.
+  /// Compile the test suite at [dartPath] to JavaScript with dart2js.
   ///
   /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
   /// served.
@@ -587,15 +587,15 @@ class BrowserPlatform extends PlatformPlugin
       return Result.capture(new Future(() async {
         var js = await build.compile("package:test/src/bootstrap/browser.dart");
 
-      _jsHandler.add(
-          "packages/test/src/bootstrap/browser.js",
-          (request) => new shelf.Response.ok(
-              js,
-              headers: {'Content-Type': 'application/javascript'}));
+        _jsHandler.add(
+            "packages/test/src/bootstrap/browser.js",
+            (request) => new shelf.Response.ok(js,
+                headers: {'Content-Type': 'application/javascript'}));
       }));
     });
     await result.asFuture;
   }
+
   final _compileBootstrapMemo = new AsyncMemoizer<Result>();
 
   /// Returns the [BrowserManager] for [platform], which should be a browser.
