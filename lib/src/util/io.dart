@@ -76,9 +76,6 @@ bool get canUseSpecialChars =>
 final rootPackageName =
     loadYaml(new File('pubspec.yaml').readAsStringSync())['name'] as String;
 
-/// Whether the build package's generated directory exists.
-final buildDirExists = new Directory('.dart_tool/build/generated').existsSync();
-
 /// Creates a temporary directory and returns its path.
 String createTempDir() => new Directory(_tempDir)
     .createTempSync('dart_test_')

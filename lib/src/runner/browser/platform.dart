@@ -28,6 +28,7 @@ import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
+import '../build.dart' as build;
 import '../compiler_pool.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
@@ -99,32 +100,6 @@ class BrowserPlatform extends PlatformPlugin
   /// The HTTP client to use when caching JS files in `pub serve`.
   final HttpClient _http;
 
-  /// The directory in which the build package generates output.
-  final _buildOutput = '.dart_tool/build/generated';
-
-  /// A list of the paths to all DDC modules included in the build output.
-  ///
-  /// A "module" here refers to a collection of files generated from a single
-  /// Dart file, such as a `.linked.sum` file or a `.ddc.js` file. The paths
-  /// don't have any particular extension, and no particular extension is
-  /// guaranteed to exist.
-  Future<List<String>> get _ddcModules =>
-      _ddcModulesMemo.runOnce(() => new Directory(_buildOutput)
-          .list(recursive: true)
-          .map((entry) {
-            if (entry is! File) return null;
-            if (entry.path.endsWith(".ddc.js")) {
-              return trimSuffix(entry.path, ".ddc.js");
-            } else if (entry.path.endsWith(".ddc.js.errors")) {
-              return trimSuffix(entry.path, ".ddc.js.errors");
-            } else {
-              return null;
-            }
-          })
-          .where((path) => path != null)
-          .toList());
-  final _ddcModulesMemo = new AsyncMemoizer<List<String>>();
-
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
 
@@ -179,7 +154,7 @@ class BrowserPlatform extends PlatformPlugin
               new shelf.Response.notFound(null))
           .add(_wrapperHandler);
 
-      if (buildDirExists) {
+      if (build.isInUse) {
         cascade = cascade.add(_createBuildHandler()).add(PathHandler.nestedIn(
             "packages/\$sdk")(createStaticHandler(p.join(sdkDir, 'lib'))));
       }
@@ -202,7 +177,7 @@ class BrowserPlatform extends PlatformPlugin
   /// * `packages/foo/...` -> `foo/lib/...`
   /// * `foo/...` -> `${rootPackageName}/foo/...`
   shelf.Handler _createBuildHandler() {
-    var inner = createStaticHandler(_buildOutput);
+    var inner = createStaticHandler(build.generatedDir);
 
     return (request) {
       if (request.method != 'GET' || !request.url.path.contains(".ddc.js")) {
@@ -229,7 +204,7 @@ class BrowserPlatform extends PlatformPlugin
   }
 
   /// A handler that serves wrapper files used to bootstrap tests.
-  Future<shelf.Response> _wrapperHandler(shelf.Request request) async {
+  shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(request.url);
 
     if (path.endsWith(".browser_test.dart")) {
@@ -253,8 +228,8 @@ class BrowserPlatform extends PlatformPlugin
       var modulePaths = {
         "dart_sdk": "packages/\$sdk/dev_compiler/amd/dart_sdk"
       };
-      for (var path in await _ddcModules) {
-        var components = p.split(p.relative(path, from: _buildOutput));
+      for (var path in build.ddcModules) {
+        var components = p.split(p.relative(path, from: build.generatedDir));
         Uri url;
         if (components[1] == 'lib') {
           var package = components.first;
@@ -389,7 +364,7 @@ class BrowserPlatform extends PlatformPlugin
       throw new ArgumentError("$browser is not a browser.");
     }
 
-    if (compiler == Compiler.build && !buildDirExists) {
+    if (compiler == Compiler.build && !build.isInUse) {
       throw "The build package's output directory doesn't exist.\n"
           "Make sure the build_runner package is installed, then run `pub run "
           "build_runner build`.\n"
@@ -607,72 +582,21 @@ class BrowserPlatform extends PlatformPlugin
   /// Compiles "package:test/src/bootstrap/browser.dart" to JS using DDC and
   /// adds the compiled output to the server.
   Future _compileBootstrap() async {
-    var result = await _compileBootstrapMemo.runOnce(() async {
-      var ddcDir = p.join(_compiledDir, 'ddc');
-      var packagesDir = p.join(ddcDir, 'packages');
-      new Directory(packagesDir).createSync(recursive: true);
-
-      // Copy the DDC summaries into the target directory so module root stuff
-      // will work properly.
-      await streamWait(
-          new Directory(_buildOutput).list(),
-          (entry) => new Link(p.join(packagesDir, p.basename(entry.path)))
-              .create(p.join(p.absolute(entry.path), 'lib')));
-
-      var jsPath = p.join(ddcDir, 'bootstrap.dart.js');
-      var arguments = [
-        "--module-root=$ddcDir",
-        "--library-root=$ddcDir",
-        "--summary-extension=linked.sum",
-        "--out=$jsPath",
-        "package:test/src/bootstrap/browser.dart"
-      ];
-      arguments.addAll((await _ddcModules).expand((path) {
-        var components = p.split(p.relative(path, from: _buildOutput));
-        if (components[1] != 'lib') return [];
-
-        var package = components.first;
-        var pathInLib = p.joinAll(components.skip(2));
-        var summaryPath =
-            p.join(ddcDir, "packages", package, "$pathInLib.linked.sum");
-        if (!new File(summaryPath).existsSync()) return [];
-
-        return ["--summary", summaryPath];
-      }));
-
-      var buffer = new StringBuffer();
-      var process =
-          await Process.start(p.join(sdkDir, 'bin', 'dartdevc'), arguments);
-      await Future.wait([
-        UTF8.decoder.bind(process.stdout).listen(buffer.write).asFuture(),
-        UTF8.decoder.bind(process.stderr).listen(buffer.write).asFuture()
-      ]);
-
-      var exitCode = await process.exitCode;
-      if (_closed) return true;
-
-      var output = buffer.toString();
-      if (output.isNotEmpty) print(output);
-
-      if (exitCode != 0) return false;
+    // Pass the error through a result to avoid cross-zone issues.
+    var result = await _compileBootstrapMemo.runOnce(() {
+      return Result.capture(new Future(() async {
+        var js = await build.compile("package:test/src/bootstrap/browser.dart");
 
       _jsHandler.add(
           "packages/test/src/bootstrap/browser.js",
           (request) => new shelf.Response.ok(
-              new File(jsPath).readAsStringSync(),
+              js,
               headers: {'Content-Type': 'application/javascript'}));
-      return true;
+      }));
     });
-
-    // Throw outside the [AsyncMemoizer] so the error doesn't cross error-zone
-    // boundaries between different load suites.
-    if (!result) {
-      throw "DDC failed to compile test infrastructure.\n"
-          "You may need to re-run `pub run build_runner build`.";
-    }
+    await result.asFuture;
   }
-
-  final _compileBootstrapMemo = new AsyncMemoizer<bool>();
+  final _compileBootstrapMemo = new AsyncMemoizer<Result>();
 
   /// Returns the [BrowserManager] for [platform], which should be a browser.
   ///
