@@ -155,7 +155,7 @@ class Dartium extends Browser {
     /// parameter name will change in Dart 2.0.
     try {
       return (await inCompletionOrder(operations)
-          .firstWhere((url) => url != null)) as Uri;
+          .firstWhere((url) => url != null));
     } on StateError catch (_) {
       return null;
     }
