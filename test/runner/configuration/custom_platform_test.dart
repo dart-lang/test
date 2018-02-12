@@ -62,18 +62,18 @@ void main() {
       test("with a basename-only executable", () async {
         await d.file("dart_test.yaml", """
           override_platforms:
-            dartium:
+            firefox:
               settings:
                 executable:
-                  linux: dartium
-                  mac_os: dartium
-                  windows: dartium.exe
+                  linux: firefox
+                  mac_os: firefox
+                  windows: firefox.exe
         """).create();
 
-        var test = await runTest(["-p", "dartium", "test.dart"]);
+        var test = await runTest(["-p", "firefox", "test.dart"]);
         expect(test.stdout, emitsThrough(contains("All tests passed!")));
         await test.shouldExit(0);
-      }, tags: "dartium");
+      }, tags: "firefox");
 
       test("with an absolute-path executable", () async {
         String path;
@@ -416,20 +416,20 @@ void main() {
       test("with a basename-only executable", () async {
         await d.file("dart_test.yaml", """
           define_platforms:
-            my-dartium:
-              name: My Dartium
-              extends: dartium
+            my-firefox:
+              name: My Firefox
+              extends: firefox
               settings:
                 executable:
-                  linux: dartium
-                  mac_os: dartium
-                  windows: dartium.exe
+                  linux: firefox
+                  mac_os: firefox
+                  windows: firefox.exe
         """).create();
 
-        var test = await runTest(["-p", "my-dartium", "test.dart"]);
+        var test = await runTest(["-p", "my-firefox", "test.dart"]);
         expect(test.stdout, emitsThrough(contains("All tests passed!")));
         await test.shouldExit(0);
-      }, tags: "dartium");
+      }, tags: "firefox");
 
       test("with an absolute-path executable", () async {
         String path;
