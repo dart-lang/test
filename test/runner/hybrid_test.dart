@@ -69,13 +69,13 @@ void main() {
         }
       """).create();
 
-      var test = await runTest(["-p", "content-shell", "test.dart"]);
+      var test = await runTest(["-p", "chrome", "test.dart"]);
       expect(
           test.stdout,
           containsInOrder(
               ["+0: hybrid loads dart:io", "+1: All tests passed!"]));
       await test.shouldExit(0);
-    }, tags: ["content-shell"]);
+    }, tags: ["chrome"]);
 
     test("forwards data from the test to the hybrid isolate", () async {
       var channel = spawnHybridCode("""
@@ -199,13 +199,13 @@ void main() {
         }
       """).create();
 
-      var test = await runTest(["-p", "content-shell", "test.dart"]);
+      var test = await runTest(["-p", "chrome", "test.dart"]);
       expect(
           test.stdout,
           containsInOrder(
               ["+0: invalid message to hybrid", "+1: All tests passed!"]));
       await test.shouldExit(0);
-    }, tags: ['content-shell']);
+    }, tags: ['chrome']);
 
     test("gracefully handles an unserializable message in the hybrid isolate",
         () {

@@ -21,7 +21,7 @@ void main() {
               "dart_test.yaml",
               JSON.encode({
                 "on_platform": {
-                  "content-shell": {"timeout": "0s"}
+                  "chrome": {"timeout": "0s"}
                 }
               }))
           .create();
@@ -36,15 +36,13 @@ void main() {
         }
       """).create();
 
-      var test = await runTest(["-p", "content-shell,vm", "test.dart"]);
+      var test = await runTest(["-p", "chrome,vm", "test.dart"]);
       expect(
           test.stdout,
-          containsInOrder([
-            "-1: [Dartium Content Shell] test [E]",
-            "+1 -1: Some tests failed."
-          ]));
+          containsInOrder(
+              ["-1: [Chrome] test [E]", "+1 -1: Some tests failed."]));
       await test.shouldExit(1);
-    }, tags: ['content-shell']);
+    }, tags: ['chrome']);
 
     test("supports platform selectors", () async {
       await d
@@ -52,7 +50,7 @@ void main() {
               "dart_test.yaml",
               JSON.encode({
                 "on_platform": {
-                  "content-shell || vm": {"timeout": "0s"}
+                  "chrome || vm": {"timeout": "0s"}
                 }
               }))
           .create();
@@ -67,16 +65,16 @@ void main() {
         }
       """).create();
 
-      var test = await runTest(["-p", "content-shell,vm", "test.dart"]);
+      var test = await runTest(["-p", "chrome,vm", "test.dart"]);
       expect(
           test.stdout,
           containsInOrder([
             "-1: [VM] test [E]",
-            "-2: [Dartium Content Shell] test [E]",
+            "-2: [Chrome] test [E]",
             "-2: Some tests failed."
           ]));
       await test.shouldExit(1);
-    }, tags: ['content-shell']);
+    }, tags: ['chrome']);
 
     group("errors", () {
       test("rejects an invalid selector type", () async {

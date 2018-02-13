@@ -26,10 +26,10 @@ void main() {
     test("doesn't run a test suite on a non-matching platform", () async {
       await _writeTestFile("vm_test.dart", suiteTestOn: "vm");
 
-      var test = await runTest(["--platform", "content-shell", "vm_test.dart"]);
+      var test = await runTest(["--platform", "chrome", "vm_test.dart"]);
       expect(test.stdout, emitsThrough(contains("No tests ran.")));
       await test.shouldExit(0);
-    }, tags: 'content-shell');
+    }, tags: 'chrome');
 
     test("runs a test suite on a matching operating system", () async {
       await _writeTestFile("os_test.dart", suiteTestOn: currentOS.identifier);
@@ -84,19 +84,18 @@ void main() {
     test("runs a browser group on a browser", () async {
       await _writeTestFile("browser_test.dart", groupTestOn: "browser");
 
-      var test =
-          await runTest(["--platform", "content-shell", "browser_test.dart"]);
+      var test = await runTest(["--platform", "chrome", "browser_test.dart"]);
       expect(test.stdout, emitsThrough(contains("All tests passed!")));
       await test.shouldExit(0);
-    }, tags: 'content-shell');
+    }, tags: 'chrome');
 
     test("doesn't run a VM group on a browser", () async {
       await _writeTestFile("vm_test.dart", groupTestOn: "vm");
 
-      var test = await runTest(["--platform", "content-shell", "vm_test.dart"]);
+      var test = await runTest(["--platform", "chrome", "vm_test.dart"]);
       expect(test.stdout, emitsThrough(contains("No tests ran.")));
       await test.shouldExit(0);
-    }, tags: 'content-shell');
+    }, tags: 'chrome');
   });
 
   group("for test", () {
@@ -119,19 +118,18 @@ void main() {
     test("runs a browser test on a browser", () async {
       await _writeTestFile("browser_test.dart", testTestOn: "browser");
 
-      var test =
-          await runTest(["--platform", "content-shell", "browser_test.dart"]);
+      var test = await runTest(["--platform", "chrome", "browser_test.dart"]);
       expect(test.stdout, emitsThrough(contains("All tests passed!")));
       await test.shouldExit(0);
-    }, tags: 'content-shell');
+    }, tags: 'chrome');
 
     test("doesn't run a VM test on a browser", () async {
       await _writeTestFile("vm_test.dart", testTestOn: "vm");
 
-      var test = await runTest(["--platform", "content-shell", "vm_test.dart"]);
+      var test = await runTest(["--platform", "chrome", "vm_test.dart"]);
       expect(test.stdout, emitsThrough(contains("No tests ran.")));
       await test.shouldExit(0);
-    }, tags: 'content-shell');
+    }, tags: 'chrome');
   });
 
   group("with suite, group, and test selectors", () {

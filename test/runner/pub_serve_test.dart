@@ -102,13 +102,13 @@ void main() {
       await pub.kill();
     }, tags: 'node');
 
-    test("runs those tests on content shell", () async {
+    test("runs those tests on Dartium", () async {
       var pub = await runPubServe();
-      var test = await runTest([_pubServeArg, '-p', 'content-shell']);
+      var test = await runTest([_pubServeArg, '-p', 'dartium']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
       await pub.kill();
-    }, tags: 'content-shell');
+    }, tags: 'dartium');
 
     test(
         "gracefully handles pub serve running on the wrong directory for "
@@ -151,11 +151,11 @@ void main() {
         await pub.kill();
       }, tags: 'chrome');
 
-      test("when run on content shell", () async {
+      test("when run on Dartium", () async {
         await d.dir("web").create();
 
         var pub = await runPubServe(args: ['web']);
-        var test = await runTest([_pubServeArg, '-p', 'content-shell']);
+        var test = await runTest([_pubServeArg, '-p', 'dartium']);
         expect(
             test.stdout,
             containsInOrder([
@@ -167,7 +167,7 @@ void main() {
         await test.shouldExit(1);
 
         await pub.kill();
-      }, tags: 'content-shell');
+      }, tags: 'dartium');
     });
 
     test(
@@ -249,13 +249,13 @@ void main() {
       await pub.kill();
     }, tags: 'chrome');
 
-    test("on content shell", () async {
+    test("on Dartium", () async {
       var pub = await runPubServe();
-      var test = await runTest([_pubServeArg, '-p', 'content-shell']);
+      var test = await runTest([_pubServeArg, '-p', 'dartium']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
       await pub.kill();
-    }, tags: 'content-shell');
+    }, tags: 'dartium');
   });
 
   group("with a failing test", () {
