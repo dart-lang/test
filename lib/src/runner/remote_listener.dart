@@ -14,10 +14,10 @@ import '../backend/invoker.dart';
 import '../backend/live_test.dart';
 import '../backend/metadata.dart';
 import '../backend/operating_system.dart';
+import '../backend/stack_trace_formatter.dart';
 import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
-import '../frontend/test_chain.dart';
 import '../util/remote_exception.dart';
 import '../util/stack_trace_mapper.dart';
 import '../utils.dart';
@@ -59,74 +59,77 @@ class RemoteListener {
       channel.sink.add({"type": "print", "line": line});
     });
 
-    runZoned(() {
-      new SuiteChannelManager().asCurrent(() async {
-        var main;
-        try {
-          main = getMain();
-        } on NoSuchMethodError catch (_) {
-          _sendLoadException(channel, "No top-level main() function defined.");
-          return;
-        } catch (error, stackTrace) {
+    new SuiteChannelManager().asCurrent(() {
+      new StackTraceFormatter().asCurrent(() {
+        runZoned(() async {
+          var main;
+          try {
+            main = getMain();
+          } on NoSuchMethodError catch (_) {
+            _sendLoadException(
+                channel, "No top-level main() function defined.");
+            return;
+          } catch (error, stackTrace) {
+            _sendError(channel, error, stackTrace, verboseChain);
+            return;
+          }
+
+          if (main is! Function) {
+            _sendLoadException(
+                channel, "Top-level main getter is not a function.");
+            return;
+          } else if (main is! AsyncFunction) {
+            _sendLoadException(
+                channel, "Top-level main() function takes arguments.");
+            return;
+          }
+
+          var queue = new StreamQueue(channel.stream);
+          var message = await queue.next;
+          assert(message['type'] == 'initial');
+
+          queue.rest.listen((message) {
+            assert(message["type"] == "suiteChannel");
+            SuiteChannelManager.current.connectIn(
+                message['name'], channel.virtualChannel(message['id']));
+          });
+
+          if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
+          var metadata = new Metadata.deserialize(message['metadata']);
+          verboseChain = metadata.verboseTrace;
+          var declarer = new Declarer(
+              metadata: metadata,
+              platformVariables: new Set.from(message['platformVariables']),
+              collectTraces: message['collectTraces'],
+              noRetry: message['noRetry']);
+
+          StackTraceFormatter.current.configure(
+              mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
+              except: _deserializeSet(message['foldTraceExcept']),
+              only: _deserializeSet(message['foldTraceOnly']));
+
+          await declarer.declare(main);
+
+          var suite = new Suite(declarer.build(),
+              platform: new TestPlatform.deserialize(message['platform']),
+              os: message['os'] == null
+                  ? null
+                  : OperatingSystem.find(message['os']),
+              path: message['path']);
+
+          runZoned(() {
+            Invoker.guard(
+                () => new RemoteListener._(suite, printZone)._listen(channel));
+          },
+              // Make the declarer visible to running tests so that they'll throw
+              // useful errors when calling `test()` and `group()` within a test,
+              // and so they can add to the declarer's `tearDownAll()` list.
+              zoneValues: {#test.declarer: declarer});
+        }, onError: (error, stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
-          return;
-        }
-
-        if (main is! Function) {
-          _sendLoadException(
-              channel, "Top-level main getter is not a function.");
-          return;
-        } else if (main is! AsyncFunction) {
-          _sendLoadException(
-              channel, "Top-level main() function takes arguments.");
-          return;
-        }
-
-        var queue = new StreamQueue(channel.stream);
-        var message = await queue.next;
-        assert(message['type'] == 'initial');
-
-        queue.rest.listen((message) {
-          assert(message["type"] == "suiteChannel");
-          SuiteChannelManager.current.connectIn(
-              message['name'], channel.virtualChannel(message['id']));
-        });
-
-        if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
-        var metadata = new Metadata.deserialize(message['metadata']);
-        verboseChain = metadata.verboseTrace;
-        var declarer = new Declarer(
-            metadata: metadata,
-            platformVariables: new Set.from(message['platformVariables']),
-            collectTraces: message['collectTraces'],
-            noRetry: message['noRetry']);
-
-        configureTestChaining(
-            mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
-            exceptPackages: _deserializeSet(message['foldTraceExcept']),
-            onlyPackages: _deserializeSet(message['foldTraceOnly']));
-
-        await declarer.declare(main);
-
-        var suite = new Suite(declarer.build(),
-            platform: new TestPlatform.deserialize(message['platform']),
-            os: message['os'] == null
-                ? null
-                : OperatingSystem.find(message['os']),
-            path: message['path']);
-
-        runZoned(() {
-          Invoker.guard(
-              () => new RemoteListener._(suite, printZone)._listen(channel));
-        },
-            // Make the declarer visible to running tests so that they'll throw
-            // useful errors when calling `test()` and `group()` within a test,
-            // and so they can add to the declarer's `tearDownAll()` list.
-            zoneValues: {#test.declarer: declarer});
+        }, zoneSpecification: spec);
       });
-    }, onError: (error, stackTrace) {
-      _sendError(channel, error, stackTrace, verboseChain);
-    }, zoneSpecification: spec);
+    });
 
     return controller.foreign;
   }
@@ -151,7 +154,9 @@ class RemoteListener {
     channel.sink.add({
       "type": "error",
       "error": RemoteException.serialize(
-          error, terseChain(stackTrace, verbose: verboseChain))
+          error,
+          StackTraceFormatter.current
+              .formatStackTrace(stackTrace, verbose: verboseChain))
     });
   }
 
@@ -230,7 +235,7 @@ class RemoteListener {
         "type": "error",
         "error": RemoteException.serialize(
             asyncError.error,
-            terseChain(asyncError.stackTrace,
+            StackTraceFormatter.current.formatStackTrace(asyncError.stackTrace,
                 verbose: liveTest.test.metadata.verboseTrace))
       });
     });
