@@ -8,8 +8,7 @@ dart:
  - stable
  - 1.23.0
 
-env:
- - FORCE_TEST_EXIT=true
+env: FORCE_TEST_EXIT=true DARTIUM_EXPIRATION_TIME=1550044800LL
 
 # Content shell needs these fonts.
 addons:
