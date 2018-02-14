@@ -5,6 +5,7 @@
 import 'package:stream_channel/stream_channel.dart';
 
 import '../remote_listener.dart';
+import '../suite_channel_manager.dart';
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].
@@ -23,3 +24,20 @@ import '../remote_listener.dart';
 /// where they'll be visible in the development console.
 StreamChannel serializeSuite(Function getMain(), {bool hidePrints: true}) =>
     RemoteListener.start(getMain, hidePrints: hidePrints);
+
+/// Returns a channel that communicates with a plugin in the test runner.
+///
+/// This connects to a channel created by code in the test runner calling
+/// `RunnerSuite.channel()` with the same name. It can be used used to send and
+/// receive any JSON-serializable object.
+///
+/// Throws a [StateError] if [name] has already been used for a channel.
+StreamChannel suiteChannel(String name) {
+  var manager = SuiteChannelManager.current;
+  if (manager == null) {
+    throw new StateError(
+        'suiteChannel() may only be called within a test worker.');
+  }
+
+  return manager.connectOut(name);
+}

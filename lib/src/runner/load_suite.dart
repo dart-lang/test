@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import '../../test.dart';
 import '../backend/group.dart';
@@ -192,6 +193,9 @@ class LoadSuite extends Suite implements RunnerSuite {
     if (filtered == null) filtered = new Group.root([], metadata: metadata);
     return new LoadSuite._filtered(this, filtered);
   }
+
+  StreamChannel channel(String name) =>
+      throw new UnsupportedError("LoadSuite.channel() is not supported.");
 
   Future close() async {}
 }

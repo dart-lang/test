@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import '../backend/group.dart';
 import '../backend/operating_system.dart';
@@ -45,15 +46,22 @@ class RunnerSuite extends Suite {
   /// The event is `true` when debugging starts and `false` when it ends.
   Stream<bool> get onDebugging => _controller._onDebuggingController.stream;
 
+  /// Returns a channel that communicates with the remote suite.
+  ///
+  /// This connects to a channel created by code in the test worker calling
+  /// `suiteChannel()` from `remote_platform_helpers.dart` with the same name.
+  /// It can be used used to send and receive any JSON-serializable object.
+  StreamChannel channel(String name) => _controller.channel(name);
+
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
-  /// debugging mode.
+  /// debugging mode and doesn't support suite channels.
   factory RunnerSuite(
       Environment environment, SuiteConfiguration config, Group group,
       {String path,
       TestPlatform platform,
       OperatingSystem os,
       AsyncFunction onClose}) {
-    var controller = new RunnerSuiteController(environment, config, group,
+    var controller = new RunnerSuiteController(environment, config, null, group,
         path: path, platform: platform, os: os, onClose: onClose);
     return controller.suite;
   }
@@ -84,6 +92,9 @@ class RunnerSuiteController {
   /// The configuration for this suite.
   final SuiteConfiguration _config;
 
+  /// A channel that communicates with the remote suite.
+  final MultiChannel _suiteChannel;
+
   /// The function to call when the suite is closed.
   final AsyncFunction _onClose;
 
@@ -93,7 +104,11 @@ class RunnerSuiteController {
   /// The controller for [suite.onDebugging].
   final _onDebuggingController = new StreamController<bool>.broadcast();
 
-  RunnerSuiteController(this._environment, this._config, Group group,
+  /// The channel names that have already been used.
+  final _channelNames = new Set<String>();
+
+  RunnerSuiteController(
+      this._environment, this._config, this._suiteChannel, Group group,
       {String path,
       TestPlatform platform,
       OperatingSystem os,
@@ -110,6 +125,27 @@ class RunnerSuiteController {
     if (debugging == _isDebugging) return;
     _isDebugging = debugging;
     _onDebuggingController.add(debugging);
+  }
+
+  /// Returns a channel that communicates with the remote suite.
+  ///
+  /// This connects to a channel created by code in the test worker calling
+  /// `suiteChannel()` from `remote_platform_helpers.dart` with the same name.
+  /// It can be used used to send and receive any JSON-serializable object.
+  ///
+  /// This is exposed on the [RunnerSuiteController] so that runner plugins can
+  /// communicate with the workers they spawn before the associated [suite] is
+  /// fully loaded.
+  StreamChannel channel(String name) {
+    if (!_channelNames.add(name)) {
+      throw new StateError(
+          'Duplicate RunnerSuite.channel() connection "$name".');
+    }
+
+    var channel = _suiteChannel.virtualChannel();
+    _suiteChannel.sink
+        .add({"type": "suiteChannel", "name": name, "id": channel.id});
+    return channel;
   }
 
   /// The backing function for [suite.close].

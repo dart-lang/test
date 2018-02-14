@@ -48,6 +48,7 @@ Future<RunnerSuiteController> deserializeSuite(
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
 
   suiteChannel.sink.add({
+    'type': 'initial',
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
     'os': (platform == TestPlatform.vm || platform == TestPlatform.nodeJS)
@@ -112,7 +113,7 @@ Future<RunnerSuiteController> deserializeSuite(
       });
 
   return new RunnerSuiteController(
-      environment, suiteConfig, await completer.future,
+      environment, suiteConfig, suiteChannel, await completer.future,
       path: path,
       platform: platform,
       os: currentOS,
