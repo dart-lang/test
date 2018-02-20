@@ -198,7 +198,7 @@ class Invoker {
   /// before considering the test successful.
   ///
   /// Each call to [addOutstandingCallback] should be followed by a call to
-  /// [removeOutstandingCallback] once the callbak is no longer running. Note
+  /// [removeOutstandingCallback] once the callback is no longer running. Note
   /// that only successful tests wait for outstanding callbacks; as soon as a
   /// test experiences an error, any further calls to [addOutstandingCallback]
   /// or [removeOutstandingCallback] will do nothing.
