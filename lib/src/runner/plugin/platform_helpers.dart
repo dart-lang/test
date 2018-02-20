@@ -14,7 +14,6 @@ import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
-import '../../util/stack_trace_mapper.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';
@@ -42,8 +41,7 @@ RunnerSuiteController deserializeSuite(
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
-    Object message,
-    {StackTraceMapper mapper}) {
+    Object message) {
   var disconnector = new Disconnector();
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
 
@@ -58,7 +56,6 @@ RunnerSuiteController deserializeSuite(
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json',
     'noRetry': Configuration.current.noRetry,
-    'stackTraceMapper': mapper?.serialize(),
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
   }..addAll(message as Map));

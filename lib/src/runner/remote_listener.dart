@@ -19,7 +19,6 @@ import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../util/remote_exception.dart';
-import '../util/stack_trace_mapper.dart';
 import '../utils.dart';
 import 'suite_channel_manager.dart';
 
@@ -43,7 +42,11 @@ class RemoteListener {
   /// suite will not be forwarded to the parent zone's print handler. However,
   /// the caller may want them to be forwarded in (for example) a browser
   /// context where they'll be visible in the development console.
-  static StreamChannel start(AsyncFunction getMain(), {bool hidePrints: true}) {
+  ///
+  /// If [beforeLoad] is passed, it's called before the tests have been declared
+  /// for this worker.
+  static StreamChannel start(AsyncFunction getMain(),
+      {bool hidePrints: true, Future beforeLoad()}) {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
@@ -104,9 +107,10 @@ class RemoteListener {
               noRetry: message['noRetry']);
 
           StackTraceFormatter.current.configure(
-              mapper: StackTraceMapper.deserialize(message['stackTraceMapper']),
               except: _deserializeSet(message['foldTraceExcept']),
               only: _deserializeSet(message['foldTraceOnly']));
+
+          if (beforeLoad != null) await beforeLoad();
 
           await declarer.declare(main);
 
