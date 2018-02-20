@@ -60,9 +60,9 @@ abstract class PlatformPlugin {
     // loadChannel may throw an exception. That's fine; it will cause the
     // LoadSuite to emit an error, which will be presented to the user.
     var channel = loadChannel(path, platform);
-    var controller = await deserializeSuite(
+    var controller = deserializeSuite(
         path, platform, suiteConfig, new PluginEnvironment(), channel, message);
-    return controller.suite;
+    return await controller.suite;
   }
 
   Future closeEphemeral() async {}

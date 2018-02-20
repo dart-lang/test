@@ -36,14 +36,14 @@ import '../runner_test.dart';
 ///
 /// If [mapper] is passed, it will be used to adjust stack traces for any errors
 /// emitted by tests.
-Future<RunnerSuiteController> deserializeSuite(
+RunnerSuiteController deserializeSuite(
     String path,
     TestPlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
     Object message,
-    {StackTraceMapper mapper}) async {
+    {StackTraceMapper mapper}) {
   var disconnector = new Disconnector();
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
 
@@ -113,7 +113,7 @@ Future<RunnerSuiteController> deserializeSuite(
       });
 
   return new RunnerSuiteController(
-      environment, suiteConfig, suiteChannel, await completer.future,
+      environment, suiteConfig, suiteChannel, completer.future,
       path: path,
       platform: platform,
       os: currentOS,

@@ -61,9 +61,11 @@ class RunnerSuite extends Suite {
       TestPlatform platform,
       OperatingSystem os,
       AsyncFunction onClose}) {
-    var controller = new RunnerSuiteController(environment, config, null, group,
-        path: path, platform: platform, os: os, onClose: onClose);
-    return controller.suite;
+    var controller =
+        new RunnerSuiteController._local(environment, config, onClose: onClose);
+    var suite = new RunnerSuite._(controller, group, path, platform, os);
+    controller._suite = new Future.value(suite);
+    return suite;
   }
 
   RunnerSuite._(this._controller, Group group, String path,
@@ -83,8 +85,8 @@ class RunnerSuite extends Suite {
 /// A class that exposes and controls a [RunnerSuite].
 class RunnerSuiteController {
   /// The suite controlled by this controller.
-  RunnerSuite get suite => _suite;
-  RunnerSuite _suite;
+  Future<RunnerSuite> get suite => _suite;
+  Future<RunnerSuite> _suite;
 
   /// The backing value for [suite.environment].
   final Environment _environment;
@@ -107,15 +109,23 @@ class RunnerSuiteController {
   /// The channel names that have already been used.
   final _channelNames = new Set<String>();
 
-  RunnerSuiteController(
-      this._environment, this._config, this._suiteChannel, Group group,
+  RunnerSuiteController(this._environment, this._config, this._suiteChannel,
+      Future<Group> groupFuture,
       {String path,
       TestPlatform platform,
       OperatingSystem os,
       AsyncFunction onClose})
       : _onClose = onClose {
-    _suite = new RunnerSuite._(this, group, path, platform, os);
+    _suite = groupFuture
+        .then((group) => new RunnerSuite._(this, group, path, platform, os));
   }
+
+  /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
+  /// an external source.
+  RunnerSuiteController._local(this._environment, this._config,
+      {AsyncFunction onClose})
+      : _suiteChannel = null,
+        _onClose = onClose;
 
   /// Sets whether the suite is paused for debugging.
   ///
