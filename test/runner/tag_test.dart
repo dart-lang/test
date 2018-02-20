@@ -276,7 +276,7 @@ void main() {
         }
       """).create();
 
-      var test = await runTest(["-p", "vm,content-shell", "test.dart"]);
+      var test = await runTest(["-p", "vm,chrome", "test.dart"]);
       expect(
           test.stdout,
           emitsThrough(lines(
@@ -284,7 +284,7 @@ void main() {
               '  a was used in the test "foo"')));
       expect(test.stdout, neverEmits(startsWith("Warning:")));
       await test.shouldExit(0);
-    }, tags: "content-shell");
+    }, tags: "chrome");
   });
 
   group("invalid tags", () {

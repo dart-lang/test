@@ -35,7 +35,7 @@ class Firefox extends Browser {
   /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
   static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
-    settings ??= defaultSettings[TestPlatform.dartium];
+    settings ??= defaultSettings[TestPlatform.firefox];
     var dir = createTempDir();
     new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 

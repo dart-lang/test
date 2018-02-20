@@ -23,12 +23,12 @@ void main() {
 """).create();
 
     var test = await runTest([
-      "-r", "expanded", "-p", "content-shell", "-p", "vm", "-j", "1", //
+      "-r", "expanded", "-p", "chrome", "-p", "vm", "-j", "1", //
       "test.dart"
     ]);
 
     expect(test.stdoutStream(), emitsThrough(contains("[VM]")));
-    expect(test.stdout, emitsThrough(contains("[Dartium Content Shell]")));
+    expect(test.stdout, emitsThrough(contains("[Chrome]")));
     await test.shouldExit(0);
-  }, tags: ['content-shell']);
+  }, tags: ['chrome']);
 }

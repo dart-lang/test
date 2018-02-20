@@ -151,12 +151,12 @@ void main() {
 }
 """).create();
 
-      var test = await _runTest(["-p", "content-shell", "test.dart"]);
+      var test = await _runTest(["-p", "chrome", "test.dart"]);
       await expectLater(test.stdout, emitsThrough("running test"));
       await signalAndQuit(test);
 
       expectTempDirEmpty(skip: "Failing on Travis.");
-    }, tags: "content-shell");
+    }, tags: "chrome");
 
     test("kills a VM test immediately if ^C is sent twice", () async {
       await d.file("test.dart", """

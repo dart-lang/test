@@ -68,17 +68,17 @@ void main() {
 }
 """).create();
 
-    var test = await runTest(["-p", "content-shell", "test.dart"]);
+    var test = await runTest(["-p", "chrome", "test.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test!"));
     await expectLater(
         test.stdout,
         emitsInOrder([
           "",
-          startsWith("Observatory URL: "),
-          startsWith("Remote debugger URL: "),
-          "The test runner is paused. Open the remote debugger or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
+          equalsIgnoringWhitespace("""
+            The test runner is paused. Open the dev console in Chrome and set
+            breakpoints. Once you're finished, return to this terminal and press
+            Enter.
+          """)
         ]));
 
     var nextLineFired = false;
@@ -96,7 +96,7 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+1: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: 'content-shell');
+  }, tags: 'chrome');
 
   test("runs skipped tests with run_skipped: true", () async {
     await d.file("dart_test.yaml", JSON.encode({"run_skipped": true})).create();
@@ -469,7 +469,7 @@ transformers:
         .file(
             "dart_test.yaml",
             JSON.encode({
-              "platforms": ["vm", "content-shell"]
+              "platforms": ["vm", "chrome"]
             }))
         .create();
 
@@ -482,10 +482,9 @@ transformers:
     """).create();
 
     var test = await runTest(["test.dart"]);
-    expect(test.stdout,
-        containsInOrder(["[VM] success", "[Dartium Content Shell] success"]));
+    expect(test.stdout, containsInOrder(["[VM] success", "[Chrome] success"]));
     await test.shouldExit(0);
-  }, tags: "content-shell");
+  }, tags: "chrome");
 
   test("command line args take precedence", () async {
     await d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();

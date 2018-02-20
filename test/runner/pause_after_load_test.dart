@@ -37,16 +37,13 @@ void main() {
 """).create();
 
     var test = await runTest(
-        ["--pause-after-load", "-p", "dartium", "test1.dart", "test2.dart"]);
+        ["--pause-after-load", "-p", "chrome", "test1.dart", "test2.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test 1!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Chrome and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     var nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
@@ -62,14 +59,11 @@ void main() {
     test.stdin.writeln();
 
     await expectLater(test.stdout, emitsThrough("loaded test 2!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Chrome and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
@@ -86,7 +80,7 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+2: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: 'dartium');
+  }, tags: 'chrome');
 
   test("pauses the test runner for each platform until the user presses enter",
       () async {
@@ -101,20 +95,17 @@ void main() {
 """).create();
 
     var test = await runTest(
-        ["--pause-after-load", "-p", "dartium", "-p", "chrome", "test.dart"]);
+        ["--pause-after-load", "-p", "firefox", "-p", "chrome", "test.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Firefox and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     var nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains("+0: [Dartium] success"));
+      expect(line, contains("+0: [Firefox] success"));
       nextLineFired = true;
     }));
 
@@ -149,7 +140,7 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+2: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: ['dartium', 'chrome']);
+  }, tags: ['firefox', 'chrome']);
 
   test("prints a warning and doesn't pause for unsupported platforms",
       () async {
@@ -181,23 +172,20 @@ void main() {
 """).create();
 
     var test = await runTest(
-        ["--pause-after-load", "-p", "dartium", "-p", "vm", "test.dart"]);
+        ["--pause-after-load", "-p", "chrome", "-p", "vm", "test.dart"]);
     await expectLater(test.stderr,
         emits("Warning: Debugging is currently unsupported on the Dart VM."));
 
     await expectLater(test.stdout, emitsThrough("loaded test!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Chrome and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     var nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains("+0: [Dartium] success"));
+      expect(line, contains("+0: [Chrome] success"));
       nextLineFired = true;
     }));
 
@@ -213,7 +201,7 @@ void main() {
         containsInOrder(
             ["loaded test!", "+1: [VM] success", "+2: All tests passed!"]));
     await test.shouldExit(0);
-  }, tags: 'dartium');
+  }, tags: 'chrome');
 
   test("stops immediately if killed while paused", () async {
     await d.file("test.dart", """
@@ -227,21 +215,18 @@ void main() {
 """).create();
 
     var test =
-        await runTest(["--pause-after-load", "-p", "dartium", "test.dart"]);
+        await runTest(["--pause-after-load", "-p", "chrome", "test.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Chrome and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     test.signal(ProcessSignal.SIGTERM);
     await test.shouldExit();
     await expectLater(test.stderr, emitsDone);
-  }, tags: 'dartium', testOn: "!windows");
+  }, tags: 'chrome', testOn: "!windows");
 
   test("disables timeouts", () async {
     await d.file("test.dart", """
@@ -259,16 +244,13 @@ void main() {
 """).create();
 
     var test = await runTest(
-        ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
+        ["--pause-after-load", "-p", "chrome", "-n", "success", "test.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test 1!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Chrome and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     var nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
@@ -285,7 +267,7 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+1: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: 'dartium');
+  }, tags: 'chrome');
 
   // Regression test for #304.
   test("supports test name patterns", () async {
@@ -302,16 +284,13 @@ void main() {
 """).create();
 
     var test = await runTest(
-        ["--pause-after-load", "-p", "dartium", "-n", "success", "test.dart"]);
+        ["--pause-after-load", "-p", "chrome", "-n", "success", "test.dart"]);
     await expectLater(test.stdout, emitsThrough("loaded test 1!"));
-    await expectLater(
-        test.stdout,
-        emitsThrough(emitsInOrder([
-          startsWith("Observatory URL: "),
-          "The test runner is paused. Open the dev console in Dartium or the "
-              "Observatory and set breakpoints. Once you're finished, return "
-              "to this terminal and press Enter."
-        ])));
+    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
+      The test runner is paused. Open the dev console in Chrome and set
+      breakpoints. Once you're finished, return to this terminal and press
+      Enter.
+    """)));
 
     var nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
@@ -328,5 +307,5 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+1: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: 'dartium');
+  }, tags: 'chrome');
 }

@@ -65,14 +65,14 @@ void main() {
             runSkipped: false,
             precompiledPath: "../js",
             platforms: [
-              new PlatformSelection(TestPlatform.dartium.identifier)
+              new PlatformSelection(TestPlatform.firefox.identifier)
             ]);
         var merged = older.merge(newer);
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, equals("../js"));
-        expect(merged.platforms, equals([TestPlatform.dartium.identifier]));
+        expect(merged.platforms, equals([TestPlatform.firefox.identifier]));
       });
     });
 
