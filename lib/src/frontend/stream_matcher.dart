@@ -8,8 +8,8 @@ import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
 
 import '../utils.dart';
-import 'test_chain.dart';
 import 'async_matcher.dart';
+import 'format_stack_trace.dart';
 
 /// The type for [_StreamMatcher._matchQueue].
 typedef Future<String> _MatchQueue(StreamQueue queue);
@@ -165,7 +165,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
           return addBullet(event.asValue.value.toString());
         } else {
           var error = event.asError;
-          var chain = testChain(error.stackTrace);
+          var chain = formatStackTrace(error.stackTrace);
           var text = "${error.error}\n$chain";
           return prefixLines(text, "  ", first: "! ");
         }

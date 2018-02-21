@@ -14,7 +14,6 @@ import '../../backend/test.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/remote_exception.dart';
-import '../../util/stack_trace_mapper.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';
@@ -36,18 +35,18 @@ import '../runner_test.dart';
 ///
 /// If [mapper] is passed, it will be used to adjust stack traces for any errors
 /// emitted by tests.
-Future<RunnerSuiteController> deserializeSuite(
+RunnerSuiteController deserializeSuite(
     String path,
     TestPlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
-    Object message,
-    {StackTraceMapper mapper}) async {
+    Object message) {
   var disconnector = new Disconnector();
   var suiteChannel = new MultiChannel(channel.transform(disconnector));
 
   suiteChannel.sink.add({
+    'type': 'initial',
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
     'os': (platform == TestPlatform.vm || platform == TestPlatform.nodeJS)
@@ -57,7 +56,6 @@ Future<RunnerSuiteController> deserializeSuite(
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json',
     'noRetry': Configuration.current.noRetry,
-    'stackTraceMapper': mapper?.serialize(),
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
   }..addAll(message as Map));
@@ -112,7 +110,7 @@ Future<RunnerSuiteController> deserializeSuite(
       });
 
   return new RunnerSuiteController(
-      environment, suiteConfig, await completer.future,
+      environment, suiteConfig, suiteChannel, completer.future,
       path: path,
       platform: platform,
       os: currentOS,

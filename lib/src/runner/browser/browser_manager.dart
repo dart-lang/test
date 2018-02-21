@@ -241,11 +241,13 @@ class BrowserManager {
       });
 
       try {
-        controller = await deserializeSuite(path, _platform, suiteConfig,
-            await _environment, suiteChannel, message,
-            mapper: mapper);
+        controller = deserializeSuite(path, _platform, suiteConfig,
+            await _environment, suiteChannel, message);
+
+        controller.channel("test.browser.mapper").sink.add(mapper?.serialize());
+
         _controllers.add(controller);
-        return controller.suite;
+        return await controller.suite;
       } catch (_) {
         closeIframe();
         rethrow;

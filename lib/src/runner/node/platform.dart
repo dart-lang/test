@@ -80,10 +80,12 @@ class NodePlatform extends PlatformPlugin
     assert(platform == TestPlatform.nodeJS);
 
     var pair = await _loadChannel(path, platform, suiteConfig);
-    var controller = await deserializeSuite(path, platform, suiteConfig,
-        new PluginEnvironment(), pair.first, message,
-        mapper: pair.last);
-    return controller.suite;
+    var controller = deserializeSuite(path, platform, suiteConfig,
+        new PluginEnvironment(), pair.first, message);
+
+    controller.channel("test.node.mapper").sink.add(pair.last?.serialize());
+
+    return await controller.suite;
   }
 
   /// Loads a [StreamChannel] communicating with the test suite at [path].
