@@ -15,10 +15,9 @@ import 'platform_helpers.dart';
 
 /// A class that defines a platform for which test suites can be loaded.
 ///
-/// A minimal plugin must define [platforms], which indicates the platforms it
-/// supports, and [loadChannel], which connects to a client in which the tests
-/// are defined. This is enough to support most of the test runner's
-/// functionality.
+/// A minimal plugin must define [loadChannel], which connects to a client in
+/// which the tests are defined. This is enough to support most of the test
+/// runner's functionality.
 ///
 /// In order to support interactive debugging, a plugin must override [load] as
 /// well, which returns a [RunnerSuite] that can contain a custom [Environment]
@@ -26,7 +25,8 @@ import 'platform_helpers.dart';
 /// [RunnerSuite.onDebugging]. The plugin must create this suite by calling the
 /// [deserializeSuite] helper function.
 ///
-/// A platform plugin can be registered with [Loader.registerPlatformPlugin].
+/// A platform plugin can be registered by passing it to [new Loader]'s
+/// `plugins` parameter.
 abstract class PlatformPlugin {
   /// Loads and establishes a connection with the test file at [path] using
   /// [platform].
@@ -41,7 +41,8 @@ abstract class PlatformPlugin {
   /// indicates that the suite is no longer needed and its resources may be
   /// released.
   ///
-  /// The [platform] is guaranteed to be a member of [platforms].
+  /// The [platform] is guaranteed to be one of the platforms associated with
+  /// this plugin in [new Loader]'s `plugins` parameter.
   StreamChannel loadChannel(String path, TestPlatform platform);
 
   /// Loads the runner suite for the test file at [path] using [platform], with
