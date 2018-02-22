@@ -8,8 +8,8 @@ import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
+import 'src/backend/runtime.dart';
 import 'src/backend/suite_platform.dart';
-import 'src/backend/test_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/configuration/suite.dart';
 import 'src/runner/engine.dart';
@@ -62,7 +62,7 @@ Declarer get _declarer {
         const PluginEnvironment(),
         SuiteConfiguration.empty,
         _globalDeclarer.build(),
-        new SuitePlatform(TestPlatform.vm, os: currentOSGuess),
+        new SuitePlatform(Runtime.vm, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
 
     var engine = new Engine();

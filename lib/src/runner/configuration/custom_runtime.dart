@@ -5,30 +5,30 @@
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
-/// A user-defined test platform, based on an existing platform but with
+/// A user-defined test runtime, based on an existing runtime but with
 /// different configuration.
-class CustomPlatform {
-  /// The human-friendly name of the platform.
+class CustomRuntime {
+  /// The human-friendly name of the runtime.
   final String name;
 
   /// The location that [name] was defined in the configuration file.
   final SourceSpan nameSpan;
 
-  /// The identifier used to look up the platform.
+  /// The identifier used to look up the runtime.
   final String identifier;
 
   /// The location that [identifier] was defined in the configuration file.
   final SourceSpan identifierSpan;
 
-  /// The identifier of the platform that this extends.
+  /// The identifier of the runtime that this extends.
   final String parent;
 
   /// The location that [parent] was defined in the configuration file.
   final SourceSpan parentSpan;
 
-  /// The user's settings for this platform.
+  /// The user's settings for this runtime.
   final YamlMap settings;
 
-  CustomPlatform(this.name, this.nameSpan, this.identifier, this.identifierSpan,
+  CustomRuntime(this.name, this.nameSpan, this.identifier, this.identifierSpan,
       this.parent, this.parentSpan, this.settings);
 }

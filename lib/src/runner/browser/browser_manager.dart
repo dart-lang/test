@@ -10,8 +10,8 @@ import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../backend/runtime.dart';
 import '../../backend/suite_platform.dart';
-import '../../backend/test_platform.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../application_exception.dart';
 import '../configuration/suite.dart';
@@ -38,8 +38,8 @@ class BrowserManager {
 
   // TODO(nweiz): Consider removing the duplication between this and
   // [_browser.name].
-  /// The [TestPlatform] for [_browser].
-  final TestPlatform _platform;
+  /// The [Runtime] for [_browser].
+  final Runtime _runtime;
 
   /// The channel used to communicate with the browser.
   ///
@@ -88,7 +88,7 @@ class BrowserManager {
   // this lets us detect whether they're debugging reasonably accurately.
   RestartableTimer _timer;
 
-  /// Starts the browser identified by [platform] and has it connect to [url].
+  /// Starts the browser identified by [runtime] and has it connect to [url].
   ///
   /// [url] should serve a page that establishes a WebSocket connection with
   /// this process. That connection, once established, should be emitted via
@@ -99,10 +99,10 @@ class BrowserManager {
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
-  static Future<BrowserManager> start(TestPlatform platform, Uri url,
+  static Future<BrowserManager> start(Runtime runtime, Uri url,
       Future<WebSocketChannel> future, ExecutableSettings settings,
       {bool debug: false}) {
-    var browser = _newBrowser(url, platform, settings, debug: debug);
+    var browser = _newBrowser(url, runtime, settings, debug: debug);
 
     var completer = new Completer<BrowserManager>();
 
@@ -110,7 +110,7 @@ class BrowserManager {
     // tests complete.
     browser.onExit.then((_) {
       throw new ApplicationException(
-          "${platform.name} exited before connecting.");
+          "${runtime.name} exited before connecting.");
     }).catchError((error, stackTrace) {
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
@@ -118,7 +118,7 @@ class BrowserManager {
 
     future.then((webSocket) {
       if (completer.isCompleted) return;
-      completer.complete(new BrowserManager._(browser, platform, webSocket));
+      completer.complete(new BrowserManager._(browser, runtime, webSocket));
     }).catchError((error, stackTrace) {
       browser.close();
       if (completer.isCompleted) return;
@@ -128,7 +128,7 @@ class BrowserManager {
     return completer.future.timeout(new Duration(seconds: 30), onTimeout: () {
       browser.close();
       throw new ApplicationException(
-          "Timed out waiting for ${platform.name} to connect.");
+          "Timed out waiting for ${runtime.name} to connect.");
     });
   }
 
@@ -136,22 +136,22 @@ class BrowserManager {
   ///
   /// If [debug] is true, starts the browser in debug mode.
   static Browser _newBrowser(
-      Uri url, TestPlatform browser, ExecutableSettings settings,
+      Uri url, Runtime browser, ExecutableSettings settings,
       {bool debug: false}) {
     switch (browser.root) {
-      case TestPlatform.dartium:
+      case Runtime.dartium:
         return new Dartium(url, settings: settings, debug: debug);
-      case TestPlatform.contentShell:
+      case Runtime.contentShell:
         return new ContentShell(url, settings: settings, debug: debug);
-      case TestPlatform.chrome:
+      case Runtime.chrome:
         return new Chrome(url, settings: settings, debug: debug);
-      case TestPlatform.phantomJS:
+      case Runtime.phantomJS:
         return new PhantomJS(url, settings: settings, debug: debug);
-      case TestPlatform.firefox:
+      case Runtime.firefox:
         return new Firefox(url, settings: settings);
-      case TestPlatform.safari:
+      case Runtime.safari:
         return new Safari(url, settings: settings);
-      case TestPlatform.internetExplorer:
+      case Runtime.internetExplorer:
         return new InternetExplorer(url, settings: settings);
       default:
         throw new ArgumentError("$browser is not a browser.");
@@ -160,7 +160,7 @@ class BrowserManager {
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
-  BrowserManager._(this._browser, this._platform, WebSocketChannel webSocket) {
+  BrowserManager._(this._browser, this._runtime, WebSocketChannel webSocket) {
     // The duration should be short enough that the debugging console is open as
     // soon as the user is done setting breakpoints, but long enough that a test
     // doing a lot of synchronous work doesn't trigger a false positive.
@@ -212,7 +212,7 @@ class BrowserManager {
     url = url.replace(
         fragment: Uri.encodeFull(JSON.encode({
       "metadata": suiteConfig.metadata.serialize(),
-      "browser": _platform.identifier
+      "browser": _runtime.identifier
     })));
 
     var suiteID = _suiteID++;
@@ -242,7 +242,7 @@ class BrowserManager {
       });
 
       try {
-        controller = deserializeSuite(path, new SuitePlatform(_platform),
+        controller = deserializeSuite(path, new SuitePlatform(_runtime),
             suiteConfig, await _environment, suiteChannel, message);
 
         controller.channel("test.browser.mapper").sink.add(mapper?.serialize());

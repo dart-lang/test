@@ -3,29 +3,28 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'operating_system.dart';
-import 'test_platform.dart';
+import 'runtime.dart';
 
 /// The platform on which a test suite is loaded.
 class SuitePlatform {
-  /// The platform on which the suite is running.
-  final TestPlatform platform;
+  /// The runtime that hosts the suite.
+  final Runtime runtime;
 
   /// The operating system on which the suite is running.
   ///
-  /// This will always be [OperatingSystem.none] if `platform.isBrowser` is
+  /// This will always be [OperatingSystem.none] if `runtime.isBrowser` is
   /// true.
   final OperatingSystem os;
 
-  /// Creates a new platform with the given [platform] and [os], which defaults
+  /// Creates a new platform with the given [runtime] and [os], which defaults
   /// to [OperatingSystem.none].
   ///
-  /// Throws an [ArgumentError] if [platform] is a browser and [os] is not
+  /// Throws an [ArgumentError] if [runtime] is a browser and [os] is not
   /// `null` or [OperatingSystem.none].
-  SuitePlatform(this.platform, {OperatingSystem os})
+  SuitePlatform(this.runtime, {OperatingSystem os})
       : os = os ?? OperatingSystem.none {
-    if (platform.isBrowser && this.os != OperatingSystem.none) {
-      throw new ArgumentError(
-          'No OS should be passed for platform "$platform".');
+    if (runtime.isBrowser && this.os != OperatingSystem.none) {
+      throw new ArgumentError('No OS should be passed for runtime "$runtime".');
     }
   }
 
@@ -33,11 +32,11 @@ class SuitePlatform {
   /// [SuitePlatform].
   factory SuitePlatform.deserialize(Object serialized) {
     var map = serialized as Map;
-    return new SuitePlatform(new TestPlatform.deserialize(map['platform']),
+    return new SuitePlatform(new Runtime.deserialize(map['runtime']),
         os: OperatingSystem.find(map['os']));
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
   /// [SuitePlatform] using [new SuitePlatform.deserialize].
-  Object serialize() => {'platform': platform.serialize(), 'os': os.identifier};
+  Object serialize() => {'runtime': runtime.serialize(), 'os': os.identifier};
 }

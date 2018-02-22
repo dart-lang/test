@@ -9,7 +9,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test.dart';
-import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/test.dart';
@@ -51,7 +51,7 @@ void main() {
 
     test("returns a suite with the file path and platform", () {
       expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
-      expect(suite.platform.platform, equals(TestPlatform.vm));
+      expect(suite.platform.runtime, equals(Runtime.vm));
     });
 
     test("returns entries with the correct names and platforms", () {

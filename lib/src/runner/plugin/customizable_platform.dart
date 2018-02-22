@@ -4,24 +4,23 @@
 
 import 'package:yaml/yaml.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import 'platform.dart';
 
 /// An interface for [PlatformPlugin]s that support per-platform customization.
 ///
 /// If a [PlatformPlugin] implements this, the user will be able to override the
-/// [TestPlatform]s it supports using the
+/// [Runtime]s it supports using the
 /// [`override_platforms`][override_platforms] configuration field, and define
-/// new platforms based on them using the [`define_platforms`][define_platforms]
+/// new runtimes based on them using the [`define_platforms`][define_platforms]
 /// field. The custom settings will be passed to the plugin using
 /// [customizePlatform].
 ///
 /// [override_platforms]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#override_platforms
 /// [define_platforms]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#define_platforms
 ///
-/// Plugins that implement this **must** support children of recognized
-/// platforms (created by [TestPlatform.extend]) in their [loadChannel] or
-/// [load] methods.
+/// Plugins that implement this **must** support children of recognized runtimes
+/// (created by [Runtime.extend]) in their [loadChannel] or [load] methods.
 abstract class CustomizablePlatform<T> extends PlatformPlugin {
   /// Parses user-provided [settings] for a custom platform into a
   /// plugin-defined format.
@@ -43,14 +42,14 @@ abstract class CustomizablePlatform<T> extends PlatformPlugin {
   /// platform's settings with its parent's.
   T mergePlatformSettings(T settings1, T settings2);
 
-  /// Defines user-provided [settings] for [platform].
+  /// Defines user-provided [settings] for [runtime].
   ///
-  /// The [platform] is a platform this plugin was declared to accept when
-  /// registered with [Loader.registerPlatformPlugin], or a platform whose
-  /// [TestPlatform.parent] is one of those platforms. Subclasses should
-  /// customize the behavior for these platforms when [loadChannel] or [load] is
-  /// called with the given [platform], using the [settings] which are parsed by
+  /// The [runtime] is a runtime this plugin was declared to accept when
+  /// registered with [Loader.registerPlatformPlugin], or a runtime whose
+  /// [Runtime.parent] is one of those runtimes. Subclasses should customize the
+  /// behavior for these runtimes when [loadChannel] or [load] is called with
+  /// the given [runtime], using the [settings] which are parsed by
   /// [parsePlatformSettings]. This is guaranteed to be called before either
   /// `load` method.
-  void customizePlatform(TestPlatform platform, T settings);
+  void customizePlatform(Runtime runtime, T settings);
 }

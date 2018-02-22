@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
@@ -31,7 +31,7 @@ class ContentShell extends Browser {
   final Future<Uri> remoteDebuggerUrl;
 
   factory ContentShell(url, {ExecutableSettings settings, bool debug: false}) {
-    settings ??= defaultSettings[TestPlatform.contentShell];
+    settings ??= defaultSettings[Runtime.contentShell];
     var observatoryCompleter = new Completer<Uri>.sync();
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new ContentShell._(() {

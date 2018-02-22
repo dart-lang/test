@@ -8,8 +8,8 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
+import '../../backend/runtime.dart';
 import '../../backend/suite_platform.dart';
-import '../../backend/test_platform.dart';
 import '../../util/dart.dart' as dart;
 import '../configuration.dart';
 import '../load_exception.dart';
@@ -23,7 +23,7 @@ class VMPlatform extends PlatformPlugin {
   VMPlatform();
 
   StreamChannel loadChannel(String path, SuitePlatform platform) {
-    assert(platform.platform == TestPlatform.vm);
+    assert(platform.runtime == Runtime.vm);
 
     var isolate;
     var channel = StreamChannelCompleter.fromFuture(() async {

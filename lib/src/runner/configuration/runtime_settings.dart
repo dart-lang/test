@@ -7,20 +7,20 @@ import 'package:yaml/yaml.dart';
 
 import '../plugin/customizable_platform.dart';
 
-/// User-defined settings for a built-in test platform.
-class PlatformSettings {
-  /// The identifier used to look up the platform being overridden.
+/// User-defined settings for a built-in test runtime.
+class RuntimeSettings {
+  /// The identifier used to look up the runtime being overridden.
   final String identifier;
 
   /// The location that [identifier] was defined in the configuration file.
   final SourceSpan identifierSpan;
 
-  /// The user's settings for this platform.
+  /// The user's settings for this runtime.
   ///
   /// This is a list of settings, from most global to most specific, that will
   /// eventually be merged using [CustomizablePlatform.mergePlatformSettings].
   final List<YamlMap> settings;
 
-  PlatformSettings(this.identifier, this.identifierSpan, List<YamlMap> settings)
+  RuntimeSettings(this.identifier, this.identifierSpan, List<YamlMap> settings)
       : settings = new List.unmodifiable(settings);
 }

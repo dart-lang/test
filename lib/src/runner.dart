@@ -11,10 +11,10 @@ import 'backend/group.dart';
 import 'backend/group_entry.dart';
 import 'backend/operating_system.dart';
 import 'backend/platform_selector.dart';
+import 'backend/runtime.dart';
 import 'backend/suite.dart';
 import 'backend/suite_platform.dart';
 import 'backend/test.dart';
-import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
@@ -128,31 +128,31 @@ class Runner {
     var testOn = _config.suiteDefaults.metadata.testOn;
     if (testOn == PlatformSelector.all) return;
 
-    var unsupportedPlatforms = _config.suiteDefaults.platforms
-        .map(_loader.findTestPlatform)
-        .where((platform) =>
-            platform != null &&
-            !testOn.evaluate(new SuitePlatform(platform,
-                os: platform.isBrowser ? null : currentOS)))
+    var unsupportedRuntimes = _config.suiteDefaults.runtimes
+        .map(_loader.findRuntime)
+        .where((runtime) =>
+            runtime != null &&
+            !testOn.evaluate(new SuitePlatform(runtime,
+                os: runtime.isBrowser ? null : currentOS)))
         .toList();
-    if (unsupportedPlatforms.isEmpty) return;
+    if (unsupportedRuntimes.isEmpty) return;
 
-    // Human-readable names for all unsupported platforms.
+    // Human-readable names for all unsupported runtimes.
     var unsupportedNames = [];
 
     // If the user tried to run on one or moe unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
     // browsers are unsupported.
     var unsupportedBrowsers =
-        unsupportedPlatforms.where((platform) => platform.isBrowser);
+        unsupportedRuntimes.where((platform) => platform.isBrowser);
     if (unsupportedBrowsers.isNotEmpty) {
-      var supportsAnyBrowser = _loader.allPlatforms
-          .where((platform) => platform.isBrowser)
-          .any((platform) => testOn.evaluate(new SuitePlatform(platform)));
+      var supportsAnyBrowser = _loader.allRuntimes
+          .where((runtime) => runtime.isBrowser)
+          .any((runtime) => testOn.evaluate(new SuitePlatform(runtime)));
 
       if (supportsAnyBrowser) {
         unsupportedNames
-            .addAll(unsupportedBrowsers.map((platform) => platform.name));
+            .addAll(unsupportedBrowsers.map((runtime) => runtime.name));
       } else {
         unsupportedNames.add("browsers");
       }
@@ -160,9 +160,9 @@ class Runner {
 
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
-    if (unsupportedPlatforms.contains(TestPlatform.vm)) {
-      var supportsAnyOS = OperatingSystem.all.any(
-          (os) => testOn.evaluate(new SuitePlatform(TestPlatform.vm, os: os)));
+    if (unsupportedRuntimes.contains(Runtime.vm)) {
+      var supportsAnyOS = OperatingSystem.all
+          .any((os) => testOn.evaluate(new SuitePlatform(Runtime.vm, os: os)));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);
@@ -353,10 +353,10 @@ class Runner {
     return filtered;
   }
 
-  /// Loads each suite in [suites] in order, pausing after load for platforms
+  /// Loads each suite in [suites] in order, pausing after load for runtimes
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    if (_config.suiteDefaults.platforms.contains(TestPlatform.vm.identifier)) {
+    if (_config.suiteDefaults.runtimes.contains(Runtime.vm.identifier)) {
       warn("Debugging is currently unsupported on the Dart VM.",
           color: _config.color);
     }

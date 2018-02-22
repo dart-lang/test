@@ -6,13 +6,13 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:source_span/source_span.dart';
 
 import 'operating_system.dart';
+import 'runtime.dart';
 import 'suite_platform.dart';
-import 'test_platform.dart';
 
 /// The set of variable names that are valid for all platform selectors.
 final _universalValidVariables =
     new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
-      ..addAll(TestPlatform.builtIn.map((platform) => platform.identifier))
+      ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
       ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
@@ -69,23 +69,23 @@ class PlatformSelector {
         _span);
   }
 
-  /// Returns whether the selector matches the given [platform] and [os].
+  /// Returns whether the selector matches the given [platform].
   ///
   /// [os] defaults to [OperatingSystem.none].
   bool evaluate(SuitePlatform platform) {
     return _inner.evaluate((variable) {
-      if (variable == platform.platform.identifier) return true;
-      if (variable == platform.platform.parent?.identifier) return true;
+      if (variable == platform.runtime.identifier) return true;
+      if (variable == platform.runtime.parent?.identifier) return true;
       if (variable == platform.os.identifier) return true;
       switch (variable) {
         case "dart-vm":
-          return platform.platform.isDartVM;
+          return platform.runtime.isDartVM;
         case "browser":
-          return platform.platform.isBrowser;
+          return platform.runtime.isBrowser;
         case "js":
-          return platform.platform.isJS;
+          return platform.runtime.isJS;
         case "blink":
-          return platform.platform.isBlink;
+          return platform.runtime.isBlink;
         case "posix":
           return platform.os.isPosix;
         default:

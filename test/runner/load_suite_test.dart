@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test.dart';
-import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
@@ -124,7 +124,7 @@ void main() {
       expect(suite.group.entries, hasLength(1));
 
       var newSuite = suite.changeSuite((suite) => suite);
-      expect(newSuite.platform.platform, equals(TestPlatform.vm));
+      expect(newSuite.platform.runtime, equals(Runtime.vm));
       expect(newSuite.group.entries.single.name,
           equals(suite.group.entries.single.name));
     });

@@ -11,10 +11,10 @@ import 'package:test/src/backend/group_entry.dart';
 import 'package:test/src/backend/invoker.dart';
 import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
+import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
 import 'package:test/src/backend/suite_platform.dart';
-import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/application_exception.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/engine.dart';
@@ -30,7 +30,7 @@ import 'package:test/test.dart';
 final String closureString = (() {}).toString();
 
 /// A dummy suite platform to use for testing suites.
-final suitePlatform = new SuitePlatform(TestPlatform.vm);
+final suitePlatform = new SuitePlatform(Runtime.vm);
 
 // The last state change detected via [expectStates].
 State lastState;
