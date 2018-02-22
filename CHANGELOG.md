@@ -1,3 +1,7 @@
+## 0.12.30+4
+
+* Don't hang when a Node.js test fails to compile.
+
 ## 0.12.30+3
 
 * Fix a memory leak when loading browser tests.
