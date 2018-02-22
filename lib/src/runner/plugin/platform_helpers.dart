@@ -10,9 +10,8 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '../../backend/group.dart';
 import '../../backend/metadata.dart';
+import '../../backend/suite_platform.dart';
 import '../../backend/test.dart';
-import '../../backend/test_platform.dart';
-import '../../util/io.dart';
 import '../../util/remote_exception.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
@@ -37,7 +36,7 @@ import '../runner_test.dart';
 /// emitted by tests.
 RunnerSuiteController deserializeSuite(
     String path,
-    TestPlatform platform,
+    SuitePlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
@@ -49,9 +48,6 @@ RunnerSuiteController deserializeSuite(
     'type': 'initial',
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
-    'os': (platform == TestPlatform.vm || platform == TestPlatform.nodeJS)
-        ? currentOS.identifier
-        : null,
     'asciiGlyphs': Platform.isWindows,
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json',
@@ -110,10 +106,8 @@ RunnerSuiteController deserializeSuite(
       });
 
   return new RunnerSuiteController(
-      environment, suiteConfig, suiteChannel, completer.future,
+      environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
-      platform: platform,
-      os: currentOS,
       onClose: () => disconnector.disconnect().catchError(handleError));
 }
 

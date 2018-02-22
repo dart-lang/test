@@ -132,17 +132,18 @@ class _Debugger {
         var noColor = _config.color ? '\u001b[0m' : '';
         print('');
 
-        if (_suite.platform.isDartVM) {
+        var platform = _suite.platform.platform;
+        if (platform.isDartVM) {
           var url = _suite.environment.observatoryUrl;
           if (url == null) {
             print("${yellow}Observatory URL not found. Make sure you're using "
-                "${_suite.platform.name} 1.11 or later.$noColor");
+                "${platform.name} 1.11 or later.$noColor");
           } else {
             print("Observatory URL: $bold$url$noColor");
           }
         }
 
-        if (_suite.platform.isHeadless) {
+        if (platform.isHeadless) {
           var url = _suite.environment.remoteDebuggerUrl;
           if (url == null) {
             print("${yellow}Remote debugger URL not found.$noColor");
@@ -153,12 +154,12 @@ class _Debugger {
 
         var buffer =
             new StringBuffer("${bold}The test runner is paused.${noColor} ");
-        if (!_suite.platform.isHeadless) {
-          buffer.write("Open the dev console in ${_suite.platform} ");
+        if (!platform.isHeadless) {
+          buffer.write("Open the dev console in $platform ");
         } else {
           buffer.write("Open the remote debugger ");
         }
-        if (_suite.platform.isDartVM) buffer.write("or the Observatory ");
+        if (platform.isDartVM) buffer.write("or the Observatory ");
 
         buffer.write("and set breakpoints. Once you're finished, return to "
             "this terminal and press Enter.");

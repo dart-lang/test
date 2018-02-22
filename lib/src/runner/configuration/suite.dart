@@ -7,8 +7,8 @@ import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
 
 import '../../backend/metadata.dart';
-import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
+import '../../backend/suite_platform.dart';
 import '../../backend/test_platform.dart';
 import '../../frontend/timeout.dart';
 import 'platform_selection.dart';
@@ -319,12 +319,12 @@ class SuiteConfiguration {
 
   /// Returns a copy of [this] with all platform-specific configuration from
   /// [onPlatform] resolved.
-  SuiteConfiguration forPlatform(TestPlatform platform, {OperatingSystem os}) {
+  SuiteConfiguration forPlatform(SuitePlatform platform) {
     if (onPlatform.isEmpty) return this;
 
     var config = this;
     onPlatform.forEach((platformSelector, platformConfig) {
-      if (!platformSelector.evaluate(platform, os: os)) return;
+      if (!platformSelector.evaluate(platform)) return;
       config = config.merge(platformConfig);
     });
     return config.change(onPlatform: {});

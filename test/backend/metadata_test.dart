@@ -6,6 +6,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/platform_selector.dart';
+import 'package:test/src/backend/suite_platform.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/frontend/skip.dart';
 import 'package:test/src/frontend/timeout.dart';
@@ -144,14 +145,14 @@ void main() {
       });
 
       var key = metadata.onPlatform.keys.first;
-      expect(key.evaluate(TestPlatform.chrome), isTrue);
-      expect(key.evaluate(TestPlatform.vm), isFalse);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.chrome)), isTrue);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.vm)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
       key = metadata.onPlatform.keys.last;
-      expect(key.evaluate(TestPlatform.vm), isTrue);
-      expect(key.evaluate(TestPlatform.chrome), isFalse);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.vm)), isTrue);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.chrome)), isFalse);
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));

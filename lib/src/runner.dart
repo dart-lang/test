@@ -12,6 +12,7 @@ import 'backend/group_entry.dart';
 import 'backend/operating_system.dart';
 import 'backend/platform_selector.dart';
 import 'backend/suite.dart';
+import 'backend/suite_platform.dart';
 import 'backend/test.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
@@ -130,7 +131,9 @@ class Runner {
     var unsupportedPlatforms = _config.suiteDefaults.platforms
         .map(_loader.findTestPlatform)
         .where((platform) =>
-            platform != null && !testOn.evaluate(platform, os: currentOS))
+            platform != null &&
+            !testOn.evaluate(new SuitePlatform(platform,
+                os: platform.isBrowser ? null : currentOS)))
         .toList();
     if (unsupportedPlatforms.isEmpty) return;
 
@@ -145,7 +148,7 @@ class Runner {
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = _loader.allPlatforms
           .where((platform) => platform.isBrowser)
-          .any((platform) => testOn.evaluate(platform));
+          .any((platform) => testOn.evaluate(new SuitePlatform(platform)));
 
       if (supportsAnyBrowser) {
         unsupportedNames
@@ -158,8 +161,8 @@ class Runner {
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
     if (unsupportedPlatforms.contains(TestPlatform.vm)) {
-      var supportsAnyOS = OperatingSystem.all
-          .any((os) => testOn.evaluate(TestPlatform.vm, os: os));
+      var supportsAnyOS = OperatingSystem.all.any(
+          (os) => testOn.evaluate(new SuitePlatform(TestPlatform.vm, os: os)));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);

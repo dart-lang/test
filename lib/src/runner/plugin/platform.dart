@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/suite_platform.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';
 import '../runner_suite.dart';
@@ -41,9 +41,9 @@ abstract class PlatformPlugin {
   /// indicates that the suite is no longer needed and its resources may be
   /// released.
   ///
-  /// The [platform] is guaranteed to be one of the platforms associated with
-  /// this plugin in [new Loader]'s `plugins` parameter.
-  StreamChannel loadChannel(String path, TestPlatform platform);
+  /// The `platform.platform` is guaranteed to be one of the platforms
+  /// associated with this plugin in [new Loader]'s `plugins` parameter.
+  StreamChannel loadChannel(String path, SuitePlatform platform);
 
   /// Loads the runner suite for the test file at [path] using [platform], with
   /// [suiteConfig] encoding the suite-specific configuration.
@@ -56,7 +56,7 @@ abstract class PlatformPlugin {
   /// Subclasses overriding this method must call [deserializeSuite] in
   /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
   /// pass the opaque [message] parameter to the [deserializeSuite] call.
-  Future<RunnerSuite> load(String path, TestPlatform platform,
+  Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     // loadChannel may throw an exception. That's fine; it will cause the
     // LoadSuite to emit an error, which will be presented to the user.

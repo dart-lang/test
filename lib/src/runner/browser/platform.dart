@@ -21,6 +21,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/suite_platform.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
@@ -223,12 +224,13 @@ class BrowserPlatform extends PlatformPlugin
     _browserSettings[platform] = settings;
   }
 
-  /// Loads the test suite at [path] on the browser [browser].
+  /// Loads the test suite at [path] on the platform [platform].
   ///
   /// This will start a browser to load the suite if one isn't already running.
-  /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<RunnerSuite> load(String path, TestPlatform browser,
+  /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
+  Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
+    var browser = platform.platform;
     assert(suiteConfig.platforms.contains(browser.identifier));
 
     if (!browser.isBrowser) {
@@ -321,7 +323,7 @@ class BrowserPlatform extends PlatformPlugin
     return new File(htmlPath).existsSync();
   }
 
-  StreamChannel loadChannel(String path, TestPlatform platform) =>
+  StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw new UnimplementedError();
 
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].

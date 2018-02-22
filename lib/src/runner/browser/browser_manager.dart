@@ -10,6 +10,7 @@ import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../backend/suite_platform.dart';
 import '../../backend/test_platform.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../application_exception.dart';
@@ -241,8 +242,8 @@ class BrowserManager {
       });
 
       try {
-        controller = deserializeSuite(path, _platform, suiteConfig,
-            await _environment, suiteChannel, message);
+        controller = deserializeSuite(path, new SuitePlatform(_platform),
+            suiteConfig, await _environment, suiteChannel, message);
 
         controller.channel("test.browser.mapper").sink.add(mapper?.serialize());
 

@@ -6,6 +6,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:source_span/source_span.dart';
 
 import 'operating_system.dart';
+import 'suite_platform.dart';
 import 'test_platform.dart';
 
 /// The set of variable names that are valid for all platform selectors.
@@ -71,24 +72,22 @@ class PlatformSelector {
   /// Returns whether the selector matches the given [platform] and [os].
   ///
   /// [os] defaults to [OperatingSystem.none].
-  bool evaluate(TestPlatform platform, {OperatingSystem os}) {
-    os ??= OperatingSystem.none;
-
+  bool evaluate(SuitePlatform platform) {
     return _inner.evaluate((variable) {
-      if (variable == platform.identifier) return true;
-      if (variable == platform.parent?.identifier) return true;
-      if (variable == os.identifier) return true;
+      if (variable == platform.platform.identifier) return true;
+      if (variable == platform.platform.parent?.identifier) return true;
+      if (variable == platform.os.identifier) return true;
       switch (variable) {
         case "dart-vm":
-          return platform.isDartVM;
+          return platform.platform.isDartVM;
         case "browser":
-          return platform.isBrowser;
+          return platform.platform.isBrowser;
         case "js":
-          return platform.isJS;
+          return platform.platform.isJS;
         case "blink":
-          return platform.isBlink;
+          return platform.platform.isBlink;
         case "posix":
-          return os.isPosix;
+          return platform.os.isPosix;
         default:
           return false;
       }

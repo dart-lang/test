@@ -8,10 +8,9 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../backend/group.dart';
-import '../backend/operating_system.dart';
 import '../backend/suite.dart';
+import '../backend/suite_platform.dart';
 import '../backend/test.dart';
-import '../backend/test_platform.dart';
 import '../utils.dart';
 import 'configuration/suite.dart';
 import 'environment.dart';
@@ -55,27 +54,24 @@ class RunnerSuite extends Suite {
 
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode and doesn't support suite channels.
-  factory RunnerSuite(
-      Environment environment, SuiteConfiguration config, Group group,
-      {String path,
-      TestPlatform platform,
-      OperatingSystem os,
-      AsyncFunction onClose}) {
+  factory RunnerSuite(Environment environment, SuiteConfiguration config,
+      Group group, SuitePlatform platform,
+      {String path, AsyncFunction onClose}) {
     var controller =
         new RunnerSuiteController._local(environment, config, onClose: onClose);
-    var suite = new RunnerSuite._(controller, group, path, platform, os);
+    var suite = new RunnerSuite._(controller, group, path, platform);
     controller._suite = new Future.value(suite);
     return suite;
   }
 
-  RunnerSuite._(this._controller, Group group, String path,
-      TestPlatform platform, OperatingSystem os)
-      : super(group, path: path, platform: platform, os: os);
+  RunnerSuite._(
+      this._controller, Group group, String path, SuitePlatform platform)
+      : super(group, platform, path: path);
 
   RunnerSuite filter(bool callback(Test test)) {
     var filtered = group.filter(callback);
     filtered ??= new Group.root([], metadata: metadata);
-    return new RunnerSuite._(_controller, filtered, path, platform, os);
+    return new RunnerSuite._(_controller, filtered, path, platform);
   }
 
   /// Closes the suite and releases any resources associated with it.
@@ -110,14 +106,11 @@ class RunnerSuiteController {
   final _channelNames = new Set<String>();
 
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
-      Future<Group> groupFuture,
-      {String path,
-      TestPlatform platform,
-      OperatingSystem os,
-      AsyncFunction onClose})
+      Future<Group> groupFuture, SuitePlatform platform,
+      {String path, AsyncFunction onClose})
       : _onClose = onClose {
     _suite = groupFuture
-        .then((group) => new RunnerSuite._(this, group, path, platform, os));
+        .then((group) => new RunnerSuite._(this, group, path, platform));
   }
 
   /// Used by [new RunnerSuite] to create a runner suite that's not loaded from

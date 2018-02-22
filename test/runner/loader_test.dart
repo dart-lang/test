@@ -51,7 +51,7 @@ void main() {
 
     test("returns a suite with the file path and platform", () {
       expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
-      expect(suite.platform, equals(TestPlatform.vm));
+      expect(suite.platform.platform, equals(TestPlatform.vm));
     });
 
     test("returns entries with the correct names and platforms", () {

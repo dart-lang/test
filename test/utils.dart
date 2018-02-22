@@ -13,6 +13,8 @@ import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/suite.dart';
+import 'package:test/src/backend/suite_platform.dart';
+import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/application_exception.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/engine.dart';
@@ -26,6 +28,9 @@ import 'package:test/test.dart';
 ///
 /// This differs between dart2js and the VM.
 final String closureString = (() {}).toString();
+
+/// A dummy suite platform to use for testing suites.
+final suitePlatform = new SuitePlatform(TestPlatform.vm);
 
 // The last state change detected via [expectStates].
 State lastState;
@@ -226,7 +231,7 @@ class _IsApplicationException extends Matcher {
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
   var test = new LocalTest("test", new Metadata(), body);
-  var suite = new Suite(new Group.root([test]));
+  var suite = new Suite(new Group.root([test]), suitePlatform);
   return test.load(suite);
 }
 
@@ -313,11 +318,14 @@ List<GroupEntry> declare(void body()) {
 Engine declareEngine(void body(), {bool runSkipped: false}) {
   var declarer = new Declarer()..declare(body);
   return new Engine.withSuites([
-    new RunnerSuite(const PluginEnvironment(),
-        new SuiteConfiguration(runSkipped: runSkipped), declarer.build())
+    new RunnerSuite(
+        const PluginEnvironment(),
+        new SuiteConfiguration(runSkipped: runSkipped),
+        declarer.build(),
+        suitePlatform)
   ]);
 }
 
 /// Returns a [RunnerSuite] with a default environment and configuration.
-RunnerSuite runnerSuite(Group root) =>
-    new RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty, root);
+RunnerSuite runnerSuite(Group root) => new RunnerSuite(
+    const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);

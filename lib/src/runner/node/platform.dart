@@ -14,6 +14,7 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../backend/suite_platform.dart';
 import '../../backend/test_platform.dart';
 import '../../util/io.dart';
 import '../../util/stack_trace_mapper.dart';
@@ -72,14 +73,14 @@ class NodePlatform extends PlatformPlugin
     _settings[platform] = settings;
   }
 
-  StreamChannel loadChannel(String path, TestPlatform platform) =>
+  StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw new UnimplementedError();
 
-  Future<RunnerSuite> load(String path, TestPlatform platform,
+  Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
-    assert(platform == TestPlatform.nodeJS);
+    assert(platform.platform == TestPlatform.nodeJS);
 
-    var pair = await _loadChannel(path, platform, suiteConfig);
+    var pair = await _loadChannel(path, platform.platform, suiteConfig);
     var controller = deserializeSuite(path, platform, suiteConfig,
         new PluginEnvironment(), pair.first, message);
 

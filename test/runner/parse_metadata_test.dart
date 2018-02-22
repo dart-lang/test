@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test/src/backend/platform_selector.dart';
+import 'package:test/src/backend/suite_platform.dart';
 import 'package:test/src/backend/test_platform.dart';
 import 'package:test/src/runner/parse_metadata.dart';
 import 'package:test/src/util/io.dart';
@@ -42,16 +43,20 @@ void main() {
     new File(_path).writeAsStringSync("@foo.TestOn('vm')\n"
         "import 'package:test/test.dart' as foo;");
     var metadata = parseMetadata(_path, new Set());
-    expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
-    expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
+    expect(
+        metadata.testOn.evaluate(new SuitePlatform(TestPlatform.vm)), isTrue);
+    expect(metadata.testOn.evaluate(new SuitePlatform(TestPlatform.chrome)),
+        isFalse);
   });
 
   group("@TestOn:", () {
     test("parses a valid annotation", () {
       new File(_path).writeAsStringSync("@TestOn('vm')\nlibrary foo;");
       var metadata = parseMetadata(_path, new Set());
-      expect(metadata.testOn.evaluate(TestPlatform.vm), isTrue);
-      expect(metadata.testOn.evaluate(TestPlatform.chrome), isFalse);
+      expect(
+          metadata.testOn.evaluate(new SuitePlatform(TestPlatform.vm)), isTrue);
+      expect(metadata.testOn.evaluate(new SuitePlatform(TestPlatform.chrome)),
+          isFalse);
     });
 
     test("ignores a constructor named TestOn", () {
@@ -359,14 +364,14 @@ library foo;""");
       var metadata = parseMetadata(_path, new Set());
 
       var key = metadata.onPlatform.keys.first;
-      expect(key.evaluate(TestPlatform.chrome), isTrue);
-      expect(key.evaluate(TestPlatform.vm), isFalse);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.chrome)), isTrue);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.vm)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
       key = metadata.onPlatform.keys.last;
-      expect(key.evaluate(TestPlatform.vm), isTrue);
-      expect(key.evaluate(TestPlatform.chrome), isFalse);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.vm)), isTrue);
+      expect(key.evaluate(new SuitePlatform(TestPlatform.chrome)), isFalse);
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));

@@ -131,7 +131,7 @@ class JsonReporter implements Reporter {
             "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
           },
           liveTest.test,
-          liveTest.suite.platform)
+          liveTest.suite.platform.platform)
     });
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -182,7 +182,7 @@ class JsonReporter implements Reporter {
     _emit("suite", {
       "suite": {
         "id": id,
-        "platform": suite.platform?.identifier,
+        "platform": suite.platform.platform.identifier,
         "path": suite.path
       }
     });
@@ -218,7 +218,7 @@ class JsonReporter implements Reporter {
               "testCount": group.testCount
             },
             group,
-            suite.platform)
+            suite.platform.platform)
       });
       parentID = id;
       return id;

@@ -13,6 +13,7 @@ import 'package:yaml/yaml.dart';
 
 import '../backend/group.dart';
 import '../backend/invoker.dart';
+import '../backend/suite_platform.dart';
 import '../backend/test_platform.dart';
 import '../util/io.dart';
 import 'browser/platform.dart';
@@ -224,14 +225,16 @@ class Loader {
     }
 
     for (var platformName in suiteConfig.platforms) {
-      var platform = findTestPlatform(platformName);
-      assert(platform != null, 'Unknown platform "$platformName".');
+      var runtime = findTestPlatform(platformName);
+      assert(runtime != null, 'Unknown platform "$platformName".');
 
-      if (!suiteConfig.metadata.testOn.evaluate(platform, os: currentOS)) {
+      var platform =
+          new SuitePlatform(runtime, os: runtime.isBrowser ? null : currentOS);
+      if (!suiteConfig.metadata.testOn.evaluate(platform)) {
         continue;
       }
 
-      var platformConfig = suiteConfig.forPlatform(platform, os: currentOS);
+      var platformConfig = suiteConfig.forPlatform(platform);
 
       // Don't load a skipped suite.
       if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
@@ -241,18 +244,19 @@ class Loader {
             new Group.root(
                 [new LocalTest("(suite)", platformConfig.metadata, () {})],
                 metadata: platformConfig.metadata),
-            path: path,
-            platform: platform));
+            platform,
+            path: path));
         continue;
       }
 
-      var name = (platform.isJS ? "compiling " : "loading ") + path;
-      yield new LoadSuite(name, platformConfig, () async {
-        var memo = _platformPlugins[platform];
+      var name = (platform.platform.isJS ? "compiling " : "loading ") + path;
+      yield new LoadSuite(name, platformConfig, platform, () async {
+        var memo = _platformPlugins[platform.platform];
 
         try {
-          var plugin = await memo.runOnce(_platformCallbacks[platform]);
-          _customizePlatform(plugin, platform);
+          var plugin =
+              await memo.runOnce(_platformCallbacks[platform.platform]);
+          _customizePlatform(plugin, platform.platform);
           var suite = await plugin.load(path, platform, platformConfig,
               {"platformVariables": _platformVariables.toList()});
           if (suite != null) _suites.add(suite);
@@ -262,7 +266,7 @@ class Loader {
           await new Future.error(new LoadException(path, error), stackTrace);
           return null;
         }
-      }, path: path, platform: platform);
+      }, path: path);
     }
   }
 
