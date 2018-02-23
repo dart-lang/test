@@ -63,6 +63,12 @@ class ExecutableSettings {
         _windowsExecutable);
   }
 
+  /// Whether to invoke the browser in headless mode.
+  ///
+  /// This is currently only supported by Chrome.
+  bool get headless => _headless ?? true;
+  final bool _headless;
+
   /// Parses settings from a user-provided YAML mapping.
   factory ExecutableSettings.parse(YamlMap settings) {
     List<String> arguments;
@@ -105,11 +111,23 @@ class ExecutableSettings {
       }
     }
 
+    var headless = true;
+    var headlessNode = settings.nodes["headless"];
+    if (headlessNode != null) {
+      if (headlessNode.value is bool) {
+        headless = headlessNode.value;
+      } else {
+        throw new SourceSpanFormatException(
+            "Must be a boolean.", headlessNode.span);
+      }
+    }
+
     return new ExecutableSettings(
         arguments: arguments,
         linuxExecutable: linuxExecutable,
         macOSExecutable: macOSExecutable,
-        windowsExecutable: windowsExecutable);
+        windowsExecutable: windowsExecutable,
+        headless: headless);
   }
 
   /// Asserts that [executableNode] is a string or `null` and returns it.
@@ -146,16 +164,19 @@ class ExecutableSettings {
       {Iterable<String> arguments,
       String linuxExecutable,
       String macOSExecutable,
-      String windowsExecutable})
+      String windowsExecutable,
+      bool headless})
       : arguments =
             arguments == null ? const [] : new List.unmodifiable(arguments),
         _linuxExecutable = linuxExecutable,
         _macOSExecutable = macOSExecutable,
-        _windowsExecutable = windowsExecutable;
+        _windowsExecutable = windowsExecutable,
+        _headless = headless;
 
   /// Merges [this] with [other], with [other]'s settings taking priority.
   ExecutableSettings merge(ExecutableSettings other) => new ExecutableSettings(
       arguments: arguments.toList()..addAll(other.arguments),
+      headless: other._headless ?? _headless,
       linuxExecutable: other._linuxExecutable ?? _linuxExecutable,
       macOSExecutable: other._macOSExecutable ?? _macOSExecutable,
       windowsExecutable: other._windowsExecutable ?? _windowsExecutable);

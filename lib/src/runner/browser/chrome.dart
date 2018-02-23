@@ -44,8 +44,9 @@ class Chrome extends Browser {
           "--disable-translate",
         ];
 
-        if (!debug) {
+        if (!debug && settings.headless) {
           args.addAll([
+            "--headless",
             "--disable-gpu",
             // We don't actually connect to the remote debugger, but Chrome will
             // close as soon as the page is loaded if we don't turn it on.
