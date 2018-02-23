@@ -1,6 +1,12 @@
-## 0.12.30+4
+## 0.12.30+5
 
 * Don't hang when a Node.js test fails to compile.
+
+## 0.12.30+4
+
+* No longer run with headless mode as there are issues with the browser.
+  The headless option will be added in the future when issues are
+  resolved. 
 
 ## 0.12.30+3
 
