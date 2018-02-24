@@ -4,6 +4,8 @@
 
 * Re-enable headless mode for Chrome by default.
 
+* Don't hang when a Node.js test fails to compile.
+
 ## 0.12.30+4
 
 * Stop running Chrome in headless mode temporarily to work around a browser bug.
