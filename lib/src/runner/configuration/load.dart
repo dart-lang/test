@@ -49,13 +49,18 @@ Configuration load(String path, {bool global: false}) {
 
   if (document.value == null) return Configuration.empty;
 
-  if (document is! Map) {
-    throw new SourceSpanFormatException(
-        "The configuration must be a YAML map.", document.span, source);
+  if (document is YamlMap) {
+    var loader = new _ConfigurationLoader(document, source, global: global);
+    var config = loader.load();
+    if (config.includePath != null) {
+      var basePath = p.normalize(p.join(path, '../', config.includePath));
+      var base = load(basePath);
+      config = base.merge(config);
+    }
+    return config;
   }
-
-  var loader = new _ConfigurationLoader(document, source, global: global);
-  return loader.load();
+  throw new SourceSpanFormatException(
+      "The configuration must be a YAML map.", document.span, source);
 }
 
 /// A helper for [load] that tracks the YAML document.
@@ -218,8 +223,10 @@ class _ConfigurationLoader {
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
 
     var overridePlatforms = _loadOverridePlatforms();
+    var includePath = _getString("include");
 
     return new Configuration(
+        includePath: includePath,
         pauseAfterLoad: pauseAfterLoad,
         runSkipped: runSkipped,
         reporter: reporter,
