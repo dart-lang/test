@@ -55,7 +55,9 @@ tags:
   * [`override_platforms`](#override_platforms)
   * [`define_platforms`](#define_platforms)
   * [Browser/Node.js Settings](#browser-and-node-js-settings)
+    * [`arguments`](#arguments)
     * [`executable`](#executable)
+    * [`headless`](#headless)
 * [Configuration Presets](#configuration-presets)
   * [`presets`](#presets)
   * [`add_preset`](#add_preset)
@@ -690,6 +692,20 @@ define_platforms:
     settings:
       executable: chromium
 ```
+
+#### `headless`
+
+The `headless` field says whether or not to run the browser in headless mode.
+It defaults to `true`. It's currently only supported for Chrome:
+
+```yaml
+override_platforms:
+  chrome:
+    settings:
+      headless: false
+```
+
+Note that headless mode is always disabled when debugging.
 
 ## Configuration Presets
 

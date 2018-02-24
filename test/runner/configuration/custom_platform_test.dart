@@ -96,6 +96,32 @@ void main() {
         expect(test.stdout, emitsThrough(contains("All tests passed!")));
         await test.shouldExit(0);
       }, tags: "chrome");
+
+      test("with non-headless mode", () async {
+        await d.file("dart_test.yaml", """
+          override_platforms:
+            chrome:
+              settings:
+                headless: false
+        """).create();
+
+        await d.file("test.dart", """
+          import 'dart:html';
+
+          import 'package:test/test.dart';
+
+          void main() {
+            test("is not headless", () {
+              expect(window.navigator.userAgent,
+                  isNot(contains('HeadlessChrome')));
+            });
+          }
+        """).create();
+
+        var test = await runTest(["-p", "chrome", "test.dart"]);
+        expect(test.stdout, emitsThrough(contains("All tests passed!")));
+        await test.shouldExit(0);
+      }, tags: "chrome");
     });
 
     test("can override Node.js without any changes", () async {
@@ -357,6 +383,22 @@ void main() {
                   contains("Failed to run Node.js: $noSuchFileMessage")));
           await test.shouldExit(1);
         }, tags: "node");
+
+        test("headless must be a boolean", () async {
+          await d.file("dart_test.yaml", """
+            override_platforms:
+              chrome:
+                settings:
+                  headless: definitely
+          """).create();
+
+          var test = await runTest(["-p", "chrome", "test.dart"]);
+          expect(
+              test.stdout,
+              emitsThrough(
+                  containsInOrder(["Must be a boolean.", "^^^^^^^^^^"])));
+          await test.shouldExit(1);
+        });
       });
     });
   });
@@ -845,6 +887,24 @@ void main() {
           var test = await runTest(["-p", "chromium", "test.dart"]);
           expect(test.stdout,
               containsInOrder(['Unmatched single quote.', "^^^^^^^^^^"]));
+          await test.shouldExit(1);
+        });
+
+        test("headless must be a boolean", () async {
+          await d.file("dart_test.yaml", """
+            define_platforms:
+              chromium:
+                name: Chromium
+                extends: chrome
+                settings:
+                  headless: definitely
+          """).create();
+
+          var test = await runTest(["-p", "chromium", "test.dart"]);
+          expect(
+              test.stdout,
+              emitsThrough(
+                  containsInOrder(["Must be a boolean.", "^^^^^^^^^^"])));
           await test.shouldExit(1);
         });
 
