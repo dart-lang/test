@@ -33,6 +33,7 @@ tags:
   * [`retry`](#retry)
   * [`test_on`](#test_on)
 * [Runner Configuration](#runner-configuration)
+  * [`include`](#include)
   * [`paths`](#paths)
   * [`filename`](#filename)
   * [`names`](#names)
@@ -194,6 +195,38 @@ This field is not supported in the
 Unlike [test configuration](#test-configuration), runner configuration affects
 the test runner as a whole rather than individual tests. It can only be used at
 the top level of the configuration file.
+
+### `include`
+
+This field indicates the relative location of another file in the format of
+`dart_test.yaml`. This is especially useful for repositories have that have
+multiple packages.
+
+Imagine you have a repository with the following folder structure:
+
+```
+repo/
+  dart_test_base.yaml
+  package/
+    lib/
+    dart_test.yaml
+    pubspec.yaml
+```
+
+```yaml
+# repo/dart_test_base.yaml
+filename: "test_*.dart"
+```
+
+```yaml
+# repo/package/dart_test.yaml
+include: ../dart_test_base.yaml
+
+concurrency: 3
+```
+
+... when executing `pub run test` in the `package` directory, it will assume a
+merged configuration, where both `filename` and `concurrency` is set.
 
 ### `paths`
 

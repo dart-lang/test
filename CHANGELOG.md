@@ -1,3 +1,7 @@
+* Added an `include` field for configuration, which may specify another YAML
+  file in the format of `dart_test.yaml` in order to use it as a base
+  configuration. See `doc/configuration.md` for details.
+
 ## 0.12.31
 
 * Add a `headless` configuration option for Chrome.
