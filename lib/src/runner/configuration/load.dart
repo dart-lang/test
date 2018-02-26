@@ -52,8 +52,15 @@ Configuration load(String path, {bool global: false}) {
   if (document is YamlMap) {
     var loader = new _ConfigurationLoader(document, source, global: global);
     var config = loader.load();
-    if (config.includePath != null) {
-      var basePath = p.normalize(p.join(path, '../', config.includePath));
+    var includePathNode = document.nodes["include"];
+    if (includePathNode != null && includePathNode.value is! String) {
+      throw new SourceSpanFormatException(
+          "The 'include' field must be omitted or a String",
+          includePathNode.span,
+          source);
+    }
+    if (includePathNode != null) {
+      var basePath = p.join(p.dirname(path), includePathNode.value);
       var base = load(basePath);
       config = base.merge(config);
     }
@@ -200,6 +207,7 @@ class _ConfigurationLoader {
       _disallow("platforms");
       _disallow("add_presets");
       _disallow("override_platforms");
+      _disallow("include");
       return Configuration.empty;
     }
 
@@ -223,10 +231,8 @@ class _ConfigurationLoader {
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
 
     var overridePlatforms = _loadOverridePlatforms();
-    var includePath = _getString("include");
 
     return new Configuration(
-        includePath: includePath,
         pauseAfterLoad: pauseAfterLoad,
         runSkipped: runSkipped,
         reporter: reporter,

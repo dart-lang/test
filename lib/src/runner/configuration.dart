@@ -50,9 +50,6 @@ class Configuration {
   bool get pauseAfterLoad => _pauseAfterLoad ?? false;
   final bool _pauseAfterLoad;
 
-  /// The path to a file to load as a base configuration before this one.
-  final String includePath;
-
   /// The path to the file from which to load more configuration information.
   ///
   /// This is *not* resolved automatically.
@@ -213,7 +210,6 @@ class Configuration {
       bool version,
       bool pauseAfterLoad,
       bool color,
-      String includePath,
       String configurationPath,
       String dart2jsPath,
       String reporter,
@@ -258,7 +254,6 @@ class Configuration {
         version: version,
         pauseAfterLoad: pauseAfterLoad,
         color: color,
-        includePath: includePath,
         configurationPath: configurationPath,
         dart2jsPath: dart2jsPath,
         reporter: reporter,
@@ -315,7 +310,6 @@ class Configuration {
       bool version,
       bool pauseAfterLoad,
       bool color,
-      this.includePath,
       String configurationPath,
       String dart2jsPath,
       String reporter,
@@ -460,7 +454,6 @@ class Configuration {
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
         configurationPath: other._configurationPath ?? _configurationPath,
-        includePath: other.includePath ?? includePath,
         dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         reporter: other._reporter ?? _reporter,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
@@ -500,7 +493,6 @@ class Configuration {
       bool version,
       bool pauseAfterLoad,
       bool color,
-      String includePath,
       String configurationPath,
       String dart2jsPath,
       String reporter,
@@ -543,7 +535,6 @@ class Configuration {
         version: version ?? _version,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,
-        includePath: includePath ?? this.includePath,
         configurationPath: configurationPath ?? _configurationPath,
         dart2jsPath: dart2jsPath ?? _dart2jsPath,
         reporter: reporter ?? _reporter,
