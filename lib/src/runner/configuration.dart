@@ -543,7 +543,7 @@ class Configuration {
         version: version ?? _version,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,
-        includePath: includePath ?? _includePath,
+        includePath: includePath ?? this.includePath,
         configurationPath: configurationPath ?? _configurationPath,
         dart2jsPath: dart2jsPath ?? _dart2jsPath,
         reporter: reporter ?? _reporter,
