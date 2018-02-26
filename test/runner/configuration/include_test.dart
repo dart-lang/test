@@ -83,6 +83,7 @@ void main() {
   });
 
   test('should not allow an include field in a test config context', () async {
-    expect(() => new Configuration.parse(['--include=dart_test.yaml']), throwsFormatException);
+    expect(() => new Configuration.parse(['--include=dart_test.yaml']),
+        throwsFormatException);
   });
 }
