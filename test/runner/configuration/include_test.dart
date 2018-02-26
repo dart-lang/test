@@ -83,7 +83,30 @@ void main() {
   });
 
   test('should not allow an include field in a test config context', () async {
-    expect(() => new Configuration.parse(['--include=dart_test.yaml']),
-        throwsFormatException);
+    await d.dir('repo', [
+      d.dir('pkg', [
+        d.file('dart_test.yaml', r'''
+          tags:
+            foo:
+              include: ../dart_test.yaml
+        '''),
+      ]),
+    ]).create();
+    var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
+    expect(() => new Configuration.load(path), throwsFormatException);
+  });
+
+  test('should allow an include field in a runner config context', () async {
+    await d.dir('repo', [
+      d.dir('pkg', [
+        d.file('dart_test.yaml', r'''
+          presets:
+            foo:
+              include: ../dart_test.yaml
+        '''),
+      ]),
+    ]).create();
+    var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
+    expect(() => new Configuration.load(path), returnsNormally);
   });
 }
