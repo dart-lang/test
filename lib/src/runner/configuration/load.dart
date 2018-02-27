@@ -78,8 +78,8 @@ class _ConfigurationLoader {
         _runnerConfig = runnerConfig;
 
   /// Loads the configuration in [_document].
-  Configuration load() => _loadGlobalTestConfig()
-      .merge(_loadIncludeConfig())
+  Configuration load() => _loadIncludeConfig()
+      .merge(_loadGlobalTestConfig())
       .merge(_loadLocalTestConfig())
       .merge(_loadGlobalRunnerConfig())
       .merge(_loadLocalRunnerConfig());
