@@ -82,6 +82,30 @@ void main() {
     expect(() => new Configuration.load(path), throwsFormatException);
   });
 
+  test('should handle a missing include gracefully', () async {
+    await d.dir('repo', [
+      d.dir('pkg', [
+        d.file('dart_test.yaml', r'''
+          include: other_test.yaml # Oops!
+        '''),
+      ]),
+    ]).create();
+    var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
+    expect(() => new Configuration.load(path), throwsFormatException);
+  });
+
+  test('should handle a non-relative include gracefully', () async {
+    await d.dir('repo', [
+      d.dir('pkg', [
+        d.file('dart_test.yaml', r'''
+          include: file://tmp/absolute.yaml # Oops!
+        '''),
+      ]),
+    ]).create();
+    var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
+    expect(() => new Configuration.load(path), throwsFormatException);
+  });
+
   test('should not allow an include field in a test config context', () async {
     await d.dir('repo', [
       d.dir('pkg', [
@@ -101,12 +125,19 @@ void main() {
       d.dir('pkg', [
         d.file('dart_test.yaml', r'''
           presets:
-            foo:
-              include: ../dart_test.yaml
+            bar:
+              include: other_dart_test.yaml
+              pause_after_load: true
+        '''),
+        d.file('other_dart_test.yaml', r'''
+          reporter: expanded
         '''),
       ]),
     ]).create();
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    expect(() => new Configuration.load(path), returnsNormally);
+    var config = new Configuration.load(path);
+    var presetBar = config.presets['bar'];
+    expect(presetBar.pauseAfterLoad, isTrue);
+    expect(presetBar.reporter,  'expanded');
   });
 }
