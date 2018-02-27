@@ -16,12 +16,11 @@ import 'live_test.dart';
 import 'live_test_controller.dart';
 import 'message.dart';
 import 'metadata.dart';
-import 'operating_system.dart';
 import 'outstanding_callback_counter.dart';
 import 'state.dart';
 import 'suite.dart';
+import 'suite_platform.dart';
 import 'test.dart';
-import 'test_platform.dart';
 
 /// A test in this isolate.
 class LocalTest extends Test {
@@ -57,10 +56,10 @@ class LocalTest extends Test {
     return invoker.liveTest;
   }
 
-  Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    return new LocalTest._(name, metadata.forPlatform(platform, os: os), _body,
-        trace, _guarded, isScaffoldAll);
+  Test forPlatform(SuitePlatform platform) {
+    if (!metadata.testOn.evaluate(platform)) return null;
+    return new LocalTest._(name, metadata.forPlatform(platform), _body, trace,
+        _guarded, isScaffoldAll);
   }
 }
 

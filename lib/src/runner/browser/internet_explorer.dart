@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../executable_settings.dart';
 import 'browser.dart';
 import 'default_settings.dart';
@@ -22,7 +22,7 @@ class InternetExplorer extends Browser {
   /// Starts a new instance of Internet Explorer open to the given [url], which
   /// may be a [Uri] or a [String].
   static Future<Process> _startBrowser(url, ExecutableSettings settings) {
-    settings ??= defaultSettings[TestPlatform.internetExplorer];
+    settings ??= defaultSettings[Runtime.internetExplorer];
 
     return Process.start(settings.executable,
         ['-extoff', url.toString()]..addAll(settings.arguments));

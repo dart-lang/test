@@ -8,9 +8,8 @@ import 'group.dart';
 import 'group_entry.dart';
 import 'live_test.dart';
 import 'metadata.dart';
-import 'operating_system.dart';
 import 'suite.dart';
-import 'test_platform.dart';
+import 'suite_platform.dart';
 
 /// A single test.
 ///
@@ -32,7 +31,7 @@ abstract class Test implements GroupEntry {
   /// defaults to just containing `suite.group`.
   LiveTest load(Suite suite, {Iterable<Group> groups});
 
-  Test forPlatform(TestPlatform platform, {OperatingSystem os});
+  Test forPlatform(SuitePlatform platform);
 
   Test filter(bool callback(Test test)) => callback(this) ? this : null;
 }

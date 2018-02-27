@@ -11,7 +11,7 @@ import '../../backend/live_test.dart';
 import '../../backend/metadata.dart';
 import '../../backend/state.dart';
 import '../../backend/suite.dart';
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../frontend/expect.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
@@ -131,7 +131,7 @@ class JsonReporter implements Reporter {
             "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
           },
           liveTest.test,
-          liveTest.suite.platform)
+          liveTest.suite.platform.runtime)
     });
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -182,7 +182,7 @@ class JsonReporter implements Reporter {
     _emit("suite", {
       "suite": {
         "id": id,
-        "platform": suite.platform?.identifier,
+        "platform": suite.platform.runtime.identifier,
         "path": suite.path
       }
     });
@@ -218,7 +218,7 @@ class JsonReporter implements Reporter {
               "testCount": group.testCount
             },
             group,
-            suite.platform)
+            suite.platform.runtime)
       });
       parentID = id;
       return id;
@@ -284,9 +284,9 @@ class JsonReporter implements Reporter {
   ///
   /// Returns [map].
   Map<String, dynamic> _addFrameInfo(SuiteConfiguration suiteConfig,
-      Map<String, dynamic> map, GroupEntry entry, TestPlatform platform) {
+      Map<String, dynamic> map, GroupEntry entry, Runtime runtime) {
     var frame = entry.trace?.frames?.first;
-    if (suiteConfig.jsTrace && platform.isJS) frame = null;
+    if (suiteConfig.jsTrace && runtime.isJS) frame = null;
 
     map["line"] = frame?.line;
     map["column"] = frame?.column;

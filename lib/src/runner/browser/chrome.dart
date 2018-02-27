@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../util/io.dart';
 import '../executable_settings.dart';
 import 'browser.dart';
@@ -27,7 +27,7 @@ class Chrome extends Browser {
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
   factory Chrome(url, {ExecutableSettings settings, bool debug: false}) {
-    settings ??= defaultSettings[TestPlatform.chrome];
+    settings ??= defaultSettings[Runtime.chrome];
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new Chrome._(() async {
       var tryPort = ([int port]) async {

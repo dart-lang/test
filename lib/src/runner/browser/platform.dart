@@ -21,7 +21,8 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
+import '../../backend/suite_platform.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
 import '../../util/path_handler.dart';
@@ -105,13 +106,13 @@ class BrowserPlatform extends PlatformPlugin
   /// [BrowserManager]s for those browsers, or `null` if they failed to load.
   ///
   /// This should only be accessed through [_browserManagerFor].
-  final _browserManagers = <TestPlatform, Future<BrowserManager>>{};
+  final _browserManagers = <Runtime, Future<BrowserManager>>{};
 
   /// Settings for invoking each browser.
   ///
   /// This starts out with the default settings, which may be overridden by user settings.
   final _browserSettings =
-      new Map<TestPlatform, ExecutableSettings>.from(defaultSettings);
+      new Map<Runtime, ExecutableSettings>.from(defaultSettings);
 
   /// A cascade of handlers for suites' precompiled paths.
   ///
@@ -216,20 +217,21 @@ class BrowserPlatform extends PlatformPlugin
           ExecutableSettings settings1, ExecutableSettings settings2) =>
       settings1.merge(settings2);
 
-  void customizePlatform(TestPlatform platform, ExecutableSettings settings) {
+  void customizePlatform(Runtime runtime, ExecutableSettings settings) {
     var oldSettings =
-        _browserSettings[platform] ?? _browserSettings[platform.root];
+        _browserSettings[runtime] ?? _browserSettings[runtime.root];
     if (oldSettings != null) settings = oldSettings.merge(settings);
-    _browserSettings[platform] = settings;
+    _browserSettings[runtime] = settings;
   }
 
-  /// Loads the test suite at [path] on the browser [browser].
+  /// Loads the test suite at [path] on the platform [platform].
   ///
   /// This will start a browser to load the suite if one isn't already running.
-  /// Throws an [ArgumentError] if [browser] isn't a browser platform.
-  Future<RunnerSuite> load(String path, TestPlatform browser,
+  /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
+  Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
-    assert(suiteConfig.platforms.contains(browser.identifier));
+    var browser = platform.runtime;
+    assert(suiteConfig.runtimes.contains(browser.identifier));
 
     if (!browser.isBrowser) {
       throw new ArgumentError("$browser is not a browser.");
@@ -321,14 +323,14 @@ class BrowserPlatform extends PlatformPlugin
     return new File(htmlPath).existsSync();
   }
 
-  StreamChannel loadChannel(String path, TestPlatform platform) =>
+  StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw new UnimplementedError();
 
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
-  Future _pubServeSuite(String path, Uri dartUrl, TestPlatform browser,
+  Future _pubServeSuite(String path, Uri dartUrl, Runtime browser,
       SuiteConfiguration suiteConfig) {
     return _pubServePool.withResource(() async {
       var timer = new Timer(new Duration(seconds: 1), () {
@@ -435,11 +437,11 @@ class BrowserPlatform extends PlatformPlugin
     });
   }
 
-  /// Returns the [BrowserManager] for [platform], which should be a browser.
+  /// Returns the [BrowserManager] for [runtime], which should be a browser.
   ///
   /// If no browser manager is running yet, starts one.
-  Future<BrowserManager> _browserManagerFor(TestPlatform platform) {
-    var managerFuture = _browserManagers[platform];
+  Future<BrowserManager> _browserManagerFor(Runtime browser) {
+    var managerFuture = _browserManagers[browser];
     if (managerFuture != null) return managerFuture;
 
     var completer = new Completer<WebSocketChannel>.sync();
@@ -453,12 +455,12 @@ class BrowserPlatform extends PlatformPlugin
     });
 
     var future = BrowserManager.start(
-        platform, hostUrl, completer.future, _browserSettings[platform],
+        browser, hostUrl, completer.future, _browserSettings[browser],
         debug: _config.pauseAfterLoad);
 
     // Store null values for browsers that error out so we know not to load them
     // again.
-    _browserManagers[platform] = future.catchError((_) => null);
+    _browserManagers[browser] = future.catchError((_) => null);
 
     return future;
   }

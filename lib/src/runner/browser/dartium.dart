@@ -8,7 +8,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
 import '../executable_settings.dart';
@@ -33,7 +33,7 @@ class Dartium extends Browser {
   final Future<Uri> remoteDebuggerUrl;
 
   factory Dartium(url, {ExecutableSettings settings, bool debug: false}) {
-    settings ??= defaultSettings[TestPlatform.dartium];
+    settings ??= defaultSettings[Runtime.dartium];
     var observatoryCompleter = new Completer<Uri>.sync();
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new Dartium._(() async {

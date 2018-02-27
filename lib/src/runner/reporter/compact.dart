@@ -360,9 +360,9 @@ class CompactReporter implements Reporter {
       name = "${liveTest.suite.path}: $name";
     }
 
-    if (_config.suiteDefaults.platforms.length > 1 &&
+    if (_config.suiteDefaults.runtimes.length > 1 &&
         liveTest.suite.platform != null) {
-      name = "[${liveTest.suite.platform.name}] $name";
+      name = "[${liveTest.suite.platform.runtime.name}] $name";
     }
 
     if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";

@@ -14,7 +14,8 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
+import '../../backend/suite_platform.dart';
 import '../../util/io.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
@@ -45,10 +46,10 @@ class NodePlatform extends PlatformPlugin
   /// The HTTP client to use when fetching JS files for `pub serve`.
   final HttpClient _http;
 
-  /// Executable settings for [TestPlatform.nodeJS] and platforms that extend
+  /// Executable settings for [Runtime.nodeJS] and runtimes that extend
   /// it.
   final _settings = {
-    TestPlatform.nodeJS: new ExecutableSettings(
+    Runtime.nodeJS: new ExecutableSettings(
         linuxExecutable: "node",
         macOSExecutable: "node",
         windowsExecutable: "node.exe")
@@ -66,20 +67,18 @@ class NodePlatform extends PlatformPlugin
           ExecutableSettings settings1, ExecutableSettings settings2) =>
       settings1.merge(settings2);
 
-  void customizePlatform(TestPlatform platform, ExecutableSettings settings) {
-    var oldSettings = _settings[platform] ?? _settings[platform.root];
+  void customizePlatform(Runtime runtime, ExecutableSettings settings) {
+    var oldSettings = _settings[runtime] ?? _settings[runtime.root];
     if (oldSettings != null) settings = oldSettings.merge(settings);
-    _settings[platform] = settings;
+    _settings[runtime] = settings;
   }
 
-  StreamChannel loadChannel(String path, TestPlatform platform) =>
+  StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw new UnimplementedError();
 
-  Future<RunnerSuite> load(String path, TestPlatform platform,
+  Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
-    assert(platform == TestPlatform.nodeJS);
-
-    var pair = await _loadChannel(path, platform, suiteConfig);
+    var pair = await _loadChannel(path, platform.runtime, suiteConfig);
     var controller = deserializeSuite(path, platform, suiteConfig,
         new PluginEnvironment(), pair.first, message);
 
@@ -92,12 +91,12 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(String path,
-      TestPlatform platform, SuiteConfiguration suiteConfig) async {
+  Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(
+      String path, Runtime runtime, SuiteConfiguration suiteConfig) async {
     var server = await MultiServerSocket.loopback(0);
 
     try {
-      var pair = await _spawnProcess(path, platform, suiteConfig, server.port);
+      var pair = await _spawnProcess(path, runtime, suiteConfig, server.port);
       var process = pair.first;
 
       // Forward Node's standard IO to the print handler so it's associated with
@@ -131,11 +130,8 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<Process, StackTraceMapper>> _spawnProcess(
-      String path,
-      TestPlatform platform,
-      SuiteConfiguration suiteConfig,
-      int socketPort) async {
+  Future<Pair<Process, StackTraceMapper>> _spawnProcess(String path,
+      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = new Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(path) + ".node_test.dart.js");
 
@@ -165,8 +161,7 @@ class NodePlatform extends PlatformPlugin
             sdkRoot: p.toUri(sdkDir));
       }
 
-      return new Pair(
-          await _startProcess(platform, jsPath, socketPort), mapper);
+      return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
     }
 
     var url = _config.pubServeUrl.resolveUri(
@@ -185,13 +180,13 @@ class NodePlatform extends PlatformPlugin
           sdkRoot: p.toUri('packages/\$sdk'));
     }
 
-    return new Pair(await _startProcess(platform, jsPath, socketPort), mapper);
+    return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
   }
 
-  /// Starts the Node.js process for [platform] with [jsPath].
+  /// Starts the Node.js process for [runtime] with [jsPath].
   Future<Process> _startProcess(
-      TestPlatform platform, String jsPath, int socketPort) async {
-    var settings = _settings[platform];
+      Runtime runtime, String jsPath, int socketPort) async {
+    var settings = _settings[runtime];
 
     var nodeModules = p.absolute('node_modules');
     var nodePath = Platform.environment["NODE_PATH"];
@@ -204,7 +199,7 @@ class NodePlatform extends PlatformPlugin
     } catch (error, stackTrace) {
       await new Future.error(
           new ApplicationException(
-              "Failed to run ${platform.name}: ${getErrorMessage(error)}"),
+              "Failed to run ${runtime.name}: ${getErrorMessage(error)}"),
           stackTrace);
       return null;
     }

@@ -35,7 +35,7 @@ final _allReporters = <String, ReporterDetails>{
           color: config.color,
           printPath: config.paths.length > 1 ||
               new Directory(config.paths.single).existsSync(),
-          printPlatform: config.suiteDefaults.platforms.length > 1)),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
   "compact": new ReporterDetails("A single line, updated continuously.",
       (_, engine) => CompactReporter.watch(engine)),
   "json": new ReporterDetails(

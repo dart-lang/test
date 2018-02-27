@@ -7,11 +7,11 @@ import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
 
 import '../../backend/metadata.dart';
-import '../../backend/operating_system.dart';
 import '../../backend/platform_selector.dart';
-import '../../backend/test_platform.dart';
+import '../../backend/suite_platform.dart';
+import '../../backend/runtime.dart';
 import '../../frontend/timeout.dart';
-import 'platform_selection.dart';
+import 'runtime_selection.dart';
 
 /// Suite-level configuration.
 ///
@@ -42,7 +42,7 @@ class SuiteConfiguration {
   /// Additional arguments to pass to dart2js.
   ///
   /// Note that this if multiple suites run the same JavaScript on different
-  /// platforms, and they have different [dart2jsArgs], only one (undefined)
+  /// runtimes, and they have different [dart2jsArgs], only one (undefined)
   /// suite's arguments will be used.
   final List<String> dart2jsArgs;
 
@@ -52,11 +52,11 @@ class SuiteConfiguration {
   /// All patterns must match in order for a test to be run.
   final Set<Pattern> patterns;
 
-  /// The set of platforms on which to run tests.
-  List<String> get platforms => _platforms == null
+  /// The set of runtimes on which to run tests.
+  List<String> get runtimes => _runtimes == null
       ? const ["vm"]
-      : new List.unmodifiable(_platforms.map((platform) => platform.name));
-  final List<PlatformSelection> _platforms;
+      : new List.unmodifiable(_runtimes.map((runtime) => runtime.name));
+  final List<RuntimeSelection> _runtimes;
 
   /// Only run tests whose tags match this selector.
   ///
@@ -128,7 +128,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<PlatformSelection> platforms,
+      Iterable<RuntimeSelection> runtimes,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -149,7 +149,7 @@ class SuiteConfiguration {
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
         patterns: patterns,
-        platforms: platforms,
+        runtimes: runtimes,
         includeTags: includeTags,
         excludeTags: excludeTags,
         tags: tags,
@@ -176,7 +176,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       this.precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<PlatformSelection> platforms,
+      Iterable<RuntimeSelection> runtimes,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -186,7 +186,7 @@ class SuiteConfiguration {
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
         patterns = new UnmodifiableSetView(patterns?.toSet() ?? new Set()),
-        _platforms = _list(platforms),
+        _runtimes = _list(runtimes),
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
         tags = _map(tags),
@@ -234,7 +234,7 @@ class SuiteConfiguration {
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
         precompiledPath: other.precompiledPath ?? precompiledPath,
         patterns: patterns.union(other.patterns),
-        platforms: other._platforms ?? _platforms,
+        runtimes: other._runtimes ?? _runtimes,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
         tags: _mergeConfigMaps(tags, other.tags),
@@ -253,7 +253,7 @@ class SuiteConfiguration {
       Iterable<String> dart2jsArgs,
       String precompiledPath,
       Iterable<Pattern> patterns,
-      Iterable<PlatformSelection> platforms,
+      Iterable<RuntimeSelection> runtimes,
       BooleanSelector includeTags,
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
@@ -274,7 +274,7 @@ class SuiteConfiguration {
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         precompiledPath: precompiledPath ?? this.precompiledPath,
         patterns: patterns ?? this.patterns,
-        platforms: platforms ?? _platforms,
+        runtimes: runtimes ?? _runtimes,
         includeTags: includeTags ?? this.includeTags,
         excludeTags: excludeTags ?? this.excludeTags,
         tags: tags ?? this.tags,
@@ -291,16 +291,16 @@ class SuiteConfiguration {
     return config._resolveTags();
   }
 
-  /// Throws a [FormatException] if [this] refers to any undefined platforms.
-  void validatePlatforms(List<TestPlatform> allPlatforms) {
+  /// Throws a [FormatException] if [this] refers to any undefined runtimes.
+  void validateRuntimes(List<Runtime> allRuntimes) {
     var validVariables =
-        allPlatforms.map((platform) => platform.identifier).toSet();
+        allRuntimes.map((runtime) => runtime.identifier).toSet();
     _metadata.validatePlatformSelectors(validVariables);
 
-    if (_platforms != null) {
-      for (var selection in _platforms) {
-        if (!allPlatforms
-            .any((platform) => platform.identifier == selection.name)) {
+    if (_runtimes != null) {
+      for (var selection in _runtimes) {
+        if (!allRuntimes
+            .any((runtime) => runtime.identifier == selection.name)) {
           if (selection.span != null) {
             throw new SourceSpanFormatException(
                 'Unknown platform "${selection.name}".', selection.span);
@@ -313,18 +313,18 @@ class SuiteConfiguration {
 
     onPlatform.forEach((selector, config) {
       selector.validate(validVariables);
-      config.validatePlatforms(allPlatforms);
+      config.validateRuntimes(allRuntimes);
     });
   }
 
   /// Returns a copy of [this] with all platform-specific configuration from
   /// [onPlatform] resolved.
-  SuiteConfiguration forPlatform(TestPlatform platform, {OperatingSystem os}) {
+  SuiteConfiguration forPlatform(SuitePlatform platform) {
     if (onPlatform.isEmpty) return this;
 
     var config = this;
     onPlatform.forEach((platformSelector, platformConfig) {
-      if (!platformSelector.evaluate(platform, os: os)) return;
+      if (!platformSelector.evaluate(platform)) return;
       config = config.merge(platformConfig);
     });
     return config.change(onPlatform: {});

@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../util/exit_codes.dart' as exit_codes;
 import '../../util/io.dart';
 import '../application_exception.dart';
@@ -43,7 +43,7 @@ class PhantomJS extends Browser {
   final Future<Uri> remoteDebuggerUrl;
 
   factory PhantomJS(url, {ExecutableSettings settings, bool debug: false}) {
-    settings ??= defaultSettings[TestPlatform.phantomJS];
+    settings ??= defaultSettings[Runtime.phantomJS];
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new PhantomJS._(() async {
       var dir = createTempDir();

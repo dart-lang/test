@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../util/io.dart';
 import '../executable_settings.dart';
 import 'browser.dart';
@@ -35,7 +35,7 @@ class Firefox extends Browser {
   /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
   static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
-    settings ??= defaultSettings[TestPlatform.firefox];
+    settings ??= defaultSettings[Runtime.firefox];
     var dir = createTempDir();
     new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 

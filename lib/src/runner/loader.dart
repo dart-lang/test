@@ -13,7 +13,8 @@ import 'package:yaml/yaml.dart';
 
 import '../backend/group.dart';
 import '../backend/invoker.dart';
-import '../backend/test_platform.dart';
+import '../backend/runtime.dart';
+import '../backend/suite_platform.dart';
 import '../util/io.dart';
 import 'browser/platform.dart';
 import 'configuration.dart';
@@ -40,33 +41,33 @@ class Loader {
   /// All suites that have been created by the loader.
   final _suites = new Set<RunnerSuite>();
 
-  /// Memoizers for platform plugins, indexed by the platforms they support.
-  final _platformPlugins = <TestPlatform, AsyncMemoizer<PlatformPlugin>>{};
+  /// Memoizers for platform plugins, indexed by the runtimes they support.
+  final _platformPlugins = <Runtime, AsyncMemoizer<PlatformPlugin>>{};
 
   /// The functions to use to load [_platformPlugins].
   ///
   /// These are passed to the plugins' async memoizers when a plugin is needed.
-  final _platformCallbacks = <TestPlatform, _PlatformPluginFunction>{};
+  final _platformCallbacks = <Runtime, _PlatformPluginFunction>{};
 
-  /// A map of all platforms registered in [_platformCallbacks], indexed by
+  /// A map of all runtimes registered in [_platformCallbacks], indexed by
   /// their string identifiers.
-  final _platformsByIdentifier = <String, TestPlatform>{};
+  final _runtimesByIdentifier = <String, Runtime>{};
 
-  /// The user-provided settings for platforms, as a list of settings that will
+  /// The user-provided settings for runtimes, as a list of settings that will
   /// be merged together using [CustomizablePlatform.mergePlatformSettings].
-  final _platformSettings = <TestPlatform, List<YamlMap>>{};
+  final _runtimeSettings = <Runtime, List<YamlMap>>{};
 
-  /// The user-provided settings for platforms.
-  final _parsedPlatformSettings = <TestPlatform, Object>{};
+  /// The user-provided settings for runtimes.
+  final _parsedRuntimeSettings = <Runtime, Object>{};
 
   /// All plaforms supported by this [Loader].
-  List<TestPlatform> get allPlatforms =>
+  List<Runtime> get allRuntimes =>
       new List.unmodifiable(_platformCallbacks.keys);
 
-  /// The platform variables supported by this loader, in addition the default
+  /// The runtime variables supported by this loader, in addition the default
   /// variables that are always supported.
-  Iterable<String> get _platformVariables =>
-      _platformCallbacks.keys.map((platform) => platform.identifier);
+  Iterable<String> get _runtimeVariables =>
+      _platformCallbacks.keys.map((runtime) => runtime.identifier);
 
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
@@ -75,95 +76,90 @@ class Loader {
   /// defaults to the working directory.
   ///
   /// The [plugins] register [PlatformPlugin]s that are associated with the
-  /// provided platforms. When the runner first requests that a suite be loaded
-  /// for one of the given platforms, the lodaer will call the associated
+  /// provided runtimes. When the runner first requests that a suite be loaded
+  /// for one of the given runtimes, the lodaer will call the associated
   /// callback to load the platform plugin. That plugin is then preserved and
-  /// used to load all suites for all matching platforms. Platform plugins may
-  /// override built-in platforms.
+  /// used to load all suites for all matching runtimes. Platform plugins may
+  /// override built-in runtimes.
   Loader(
-      {String root,
-      Map<Iterable<TestPlatform>, _PlatformPluginFunction> plugins}) {
-    _registerPlatformPlugin([TestPlatform.vm], () => new VMPlatform());
-    _registerPlatformPlugin([TestPlatform.nodeJS], () => new NodePlatform());
+      {String root, Map<Iterable<Runtime>, _PlatformPluginFunction> plugins}) {
+    _registerPlatformPlugin([Runtime.vm], () => new VMPlatform());
+    _registerPlatformPlugin([Runtime.nodeJS], () => new NodePlatform());
     _registerPlatformPlugin([
-      TestPlatform.dartium,
-      TestPlatform.contentShell,
-      TestPlatform.chrome,
-      TestPlatform.phantomJS,
-      TestPlatform.firefox,
-      TestPlatform.safari,
-      TestPlatform.internetExplorer
+      Runtime.dartium,
+      Runtime.contentShell,
+      Runtime.chrome,
+      Runtime.phantomJS,
+      Runtime.firefox,
+      Runtime.safari,
+      Runtime.internetExplorer
     ], () => BrowserPlatform.start(root: root));
 
-    platformCallbacks.forEach((platform, plugin) {
-      _registerPlatformPlugin([platform], plugin);
+    platformCallbacks.forEach((runtime, plugin) {
+      _registerPlatformPlugin([runtime], plugin);
     });
 
     plugins?.forEach(_registerPlatformPlugin);
 
-    _registerCustomPlatforms();
+    _registerCustomRuntimes();
 
-    _config.validatePlatforms(allPlatforms);
+    _config.validateRuntimes(allRuntimes);
 
-    _registerPlatformOverrides();
+    _registerRuntimeOverrides();
   }
 
-  /// Registers a [PlatformPlugin] for [platforms].
+  /// Registers a [PlatformPlugin] for [runtimes].
   void _registerPlatformPlugin(
-      Iterable<TestPlatform> platforms, FutureOr<PlatformPlugin> getPlugin()) {
+      Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> getPlugin()) {
     var memoizer = new AsyncMemoizer<PlatformPlugin>();
-    for (var platform in platforms) {
-      _platformPlugins[platform] = memoizer;
-      _platformCallbacks[platform] = getPlugin;
-      _platformsByIdentifier[platform.identifier] = platform;
+    for (var runtime in runtimes) {
+      _platformPlugins[runtime] = memoizer;
+      _platformCallbacks[runtime] = getPlugin;
+      _runtimesByIdentifier[runtime.identifier] = runtime;
     }
   }
 
-  /// Registers user-defined platforms from [Configuration.definePlatforms].
-  void _registerCustomPlatforms() {
-    for (var customPlatform in _config.definePlatforms.values) {
-      if (_platformsByIdentifier.containsKey(customPlatform.identifier)) {
+  /// Registers user-defined runtimes from [Configuration.defineRuntimes].
+  void _registerCustomRuntimes() {
+    for (var customRuntime in _config.defineRuntimes.values) {
+      if (_runtimesByIdentifier.containsKey(customRuntime.identifier)) {
         throw new SourceSpanFormatException(
             wordWrap(
-                'The platform "${customPlatform.identifier}" already exists. '
+                'The platform "${customRuntime.identifier}" already exists. '
                 'Use override_platforms to override it.'),
-            customPlatform.identifierSpan);
+            customRuntime.identifierSpan);
       }
 
-      var parent = _platformsByIdentifier[customPlatform.parent];
+      var parent = _runtimesByIdentifier[customRuntime.parent];
       if (parent == null) {
         throw new SourceSpanFormatException(
-            'Unknown platform.', customPlatform.parentSpan);
+            'Unknown platform.', customRuntime.parentSpan);
       }
 
-      var platform =
-          parent.extend(customPlatform.name, customPlatform.identifier);
-      _platformPlugins[platform] = _platformPlugins[parent];
-      _platformCallbacks[platform] = _platformCallbacks[parent];
-      _platformsByIdentifier[platform.identifier] = platform;
+      var runtime = parent.extend(customRuntime.name, customRuntime.identifier);
+      _platformPlugins[runtime] = _platformPlugins[parent];
+      _platformCallbacks[runtime] = _platformCallbacks[parent];
+      _runtimesByIdentifier[runtime.identifier] = runtime;
 
-      _platformSettings[platform] = [customPlatform.settings];
+      _runtimeSettings[runtime] = [customRuntime.settings];
     }
   }
 
-  /// Registers users' platform settings from [Configuration.overridePlatforms].
-  void _registerPlatformOverrides() {
-    for (var settings in _config.overridePlatforms.values) {
-      var platform = _platformsByIdentifier[settings.identifier];
+  /// Registers users' runtime settings from [Configuration.overrideRuntimes].
+  void _registerRuntimeOverrides() {
+    for (var settings in _config.overrideRuntimes.values) {
+      var runtime = _runtimesByIdentifier[settings.identifier];
 
-      // This is officially validated in [Configuration.validatePlatforms].
-      assert(platform != null);
+      // This is officially validated in [Configuration.validateRuntimes].
+      assert(runtime != null);
 
-      _platformSettings
-          .putIfAbsent(platform, () => [])
-          .addAll(settings.settings);
+      _runtimeSettings.putIfAbsent(runtime, () => []).addAll(settings.settings);
     }
   }
 
-  /// Returns the [TestPlatform] registered with this loader that's identified
+  /// Returns the [Runtime] registered with this loader that's identified
   /// by [identifier], or `null` if none can be found.
-  TestPlatform findTestPlatform(String identifier) =>
-      _platformsByIdentifier[identifier];
+  Runtime findRuntime(String identifier) => _runtimesByIdentifier[identifier];
 
   /// Loads all test suites in [dir] according to [suiteConfig].
   ///
@@ -200,7 +196,7 @@ class Loader {
       String path, SuiteConfiguration suiteConfig) async* {
     try {
       suiteConfig = suiteConfig.merge(new SuiteConfiguration.fromMetadata(
-          parseMetadata(path, _platformVariables.toSet())));
+          parseMetadata(path, _runtimeVariables.toSet())));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
@@ -223,15 +219,17 @@ class Loader {
       return;
     }
 
-    for (var platformName in suiteConfig.platforms) {
-      var platform = findTestPlatform(platformName);
-      assert(platform != null, 'Unknown platform "$platformName".');
+    for (var runtimeName in suiteConfig.runtimes) {
+      var runtime = findRuntime(runtimeName);
+      assert(runtime != null, 'Unknown platform "$runtimeName".');
 
-      if (!suiteConfig.metadata.testOn.evaluate(platform, os: currentOS)) {
+      var platform =
+          new SuitePlatform(runtime, os: runtime.isBrowser ? null : currentOS);
+      if (!suiteConfig.metadata.testOn.evaluate(platform)) {
         continue;
       }
 
-      var platformConfig = suiteConfig.forPlatform(platform, os: currentOS);
+      var platformConfig = suiteConfig.forPlatform(platform);
 
       // Don't load a skipped suite.
       if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
@@ -241,20 +239,20 @@ class Loader {
             new Group.root(
                 [new LocalTest("(suite)", platformConfig.metadata, () {})],
                 metadata: platformConfig.metadata),
-            path: path,
-            platform: platform));
+            platform,
+            path: path));
         continue;
       }
 
-      var name = (platform.isJS ? "compiling " : "loading ") + path;
-      yield new LoadSuite(name, platformConfig, () async {
-        var memo = _platformPlugins[platform];
+      var name = (platform.runtime.isJS ? "compiling " : "loading ") + path;
+      yield new LoadSuite(name, platformConfig, platform, () async {
+        var memo = _platformPlugins[platform.runtime];
 
         try {
-          var plugin = await memo.runOnce(_platformCallbacks[platform]);
-          _customizePlatform(plugin, platform);
+          var plugin = await memo.runOnce(_platformCallbacks[platform.runtime]);
+          _customizePlatform(plugin, platform.runtime);
           var suite = await plugin.load(path, platform, platformConfig,
-              {"platformVariables": _platformVariables.toList()});
+              {"platformVariables": _runtimeVariables.toList()});
           if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {
@@ -262,36 +260,36 @@ class Loader {
           await new Future.error(new LoadException(path, error), stackTrace);
           return null;
         }
-      }, path: path, platform: platform);
+      }, path: path);
     }
   }
 
   /// Passes user-defined settings to [plugin] if necessary.
-  void _customizePlatform(PlatformPlugin plugin, TestPlatform platform) {
-    var parsed = _parsedPlatformSettings[platform];
+  void _customizePlatform(PlatformPlugin plugin, Runtime runtime) {
+    var parsed = _parsedRuntimeSettings[runtime];
     if (parsed != null) {
-      (plugin as CustomizablePlatform).customizePlatform(platform, parsed);
+      (plugin as CustomizablePlatform).customizePlatform(runtime, parsed);
       return;
     }
 
-    var settings = _platformSettings[platform];
+    var settings = _runtimeSettings[runtime];
     if (settings == null) return;
 
     if (plugin is CustomizablePlatform) {
       parsed = settings
           .map(plugin.parsePlatformSettings)
           .reduce(plugin.mergePlatformSettings);
-      plugin.customizePlatform(platform, parsed);
-      _parsedPlatformSettings[platform] = parsed;
+      plugin.customizePlatform(runtime, parsed);
+      _parsedRuntimeSettings[runtime] = parsed;
     } else {
       String identifier;
       SourceSpan span;
-      if (platform.isChild) {
-        identifier = platform.parent.identifier;
-        span = _config.definePlatforms[platform.identifier].parentSpan;
+      if (runtime.isChild) {
+        identifier = runtime.parent.identifier;
+        span = _config.defineRuntimes[runtime.identifier].parentSpan;
       } else {
-        identifier = platform.identifier;
-        span = _config.overridePlatforms[platform.identifier].identifierSpan;
+        identifier = runtime.identifier;
+        span = _config.overrideRuntimes[runtime.identifier].identifierSpan;
       }
 
       throw new SourceSpanFormatException(
