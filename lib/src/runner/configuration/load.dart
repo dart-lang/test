@@ -208,6 +208,10 @@ class _ConfigurationLoader {
 
     var concurrency = _getInt("concurrency");
 
+    // The UI term "platform" corresponds with the implementation term
+    // "runtime". The [Runtime] class used to be called [TestPlatform], but it
+    // was changed to avoid conflicting with [SuitePlatform]. We decided not to
+    // also change the UI to avoid a painful migration.
     var runtimes = _getList(
         "platforms",
         (runtimeNode) => new RuntimeSelection(

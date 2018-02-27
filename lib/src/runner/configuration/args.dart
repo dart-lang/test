@@ -61,6 +61,11 @@ final ArgParser _parser = (() {
       help: 'Run skipped tests instead of skipping them.');
 
   parser.addSeparator("======== Running Tests");
+
+  // The UI term "platform" corresponds with the implementation term "runtime".
+  // The [Runtime] class used to be called [TestPlatform], but it was changed to
+  // avoid conflicting with [SuitePlatform]. We decided not to also change the
+  // UI to avoid a painful migration.
   parser.addOption("platform",
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.\n'
