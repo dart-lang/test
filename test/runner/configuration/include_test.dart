@@ -128,4 +128,21 @@ void main() {
     expect(presetBar.pauseAfterLoad, isTrue);
     expect(presetBar.reporter,  'expanded');
   });
+
+  test('local configuration should take precedence after merging', () async {
+    await d.dir('repo', [
+      d.dir('pkg', [
+        d.file('dart_test.yaml', r'''
+          include: other_dart_test.yaml
+          concurrency: 5
+        '''),
+        d.file('other_dart_test.yaml', r'''
+          concurrency: 10
+        '''),
+      ]),
+    ]).create();
+    var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
+    var config = new Configuration.load(path);
+    expect(config.concurrency, 5);
+  });
 }
