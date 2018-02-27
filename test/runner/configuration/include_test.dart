@@ -43,7 +43,7 @@ void main() {
     ]).create();
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
     var config = new Configuration.load(path);
-    expect(config.knownTags, ['hello', 'world']);
+    expect(config.knownTags, unorderedEquals(['hello', 'world']));
   });
 
   test('should allow an included file to include a file', () async {
@@ -87,18 +87,6 @@ void main() {
       d.dir('pkg', [
         d.file('dart_test.yaml', r'''
           include: other_test.yaml # Oops!
-        '''),
-      ]),
-    ]).create();
-    var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    expect(() => new Configuration.load(path), throwsFormatException);
-  });
-
-  test('should handle a non-relative include gracefully', () async {
-    await d.dir('repo', [
-      d.dir('pkg', [
-        d.file('dart_test.yaml', r'''
-          include: file://tmp/absolute.yaml # Oops!
         '''),
       ]),
     ]).create();

@@ -19,6 +19,7 @@ import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import 'custom_platform.dart';
+import 'load.dart' as self;
 import 'platform_selection.dart';
 import 'platform_settings.dart';
 import 'reporters.dart';
@@ -46,55 +47,13 @@ final _packageName = new RegExp(
 Configuration load(String path, {bool global: false}) {
   var source = new File(path).readAsStringSync();
   var document = loadYamlNode(source, sourceUrl: p.toUri(path));
-
   if (document.value == null) return Configuration.empty;
-
   if (document is YamlMap) {
     var loader = new _ConfigurationLoader(document, source, global: global);
-    return _processIncludeIfAny(loader.load(), document);
+    return loader.load();
   }
   throw new SourceSpanFormatException(
       "The configuration must be a YAML map.", document.span, source);
-}
-
-/// If an `include` node is contained in [node], merges and returns [config].
-Configuration _processIncludeIfAny(Configuration config, YamlMap node) {
-  var source = node.span.sourceUrl.toFilePath(windows: Platform.isWindows);
-  var includePathNode = node.nodes["include"];
-  if (includePathNode != null && includePathNode.value is! String) {
-    throw new SourceSpanFormatException(
-        "The 'include' field must be omitted or a String",
-        includePathNode.span);
-  }
-  if (includePathNode != null) {
-    Uri includeValue;
-    try {
-      includeValue = Uri.parse(includePathNode.value);
-    } on FormatException catch (_) {
-      throw new SourceSpanFormatException(
-          "Not a valid file URL: \"${includePathNode.value}\"",
-          includePathNode.span,
-          source);
-    }
-    if (includeValue.isAbsolute) {
-      throw new SourceSpanFormatException(
-          "The 'include' field must be a relative file URL",
-          includePathNode.span,
-          source);
-    }
-    var includePath = includeValue.toFilePath(windows: Platform.isWindows);
-    var basePath = p.join(p.dirname(source), includePath);
-    try {
-      var base = load(basePath);
-      config = base.merge(config);
-    } on FileSystemException catch (e) {
-      throw new SourceSpanFormatException(
-          "Could not read the file \"$basePath\": $e",
-          includePathNode.span,
-          source);
-    }
-  }
-  return config;
 }
 
 /// A helper for [load] that tracks the YAML document.
@@ -122,7 +81,41 @@ class _ConfigurationLoader {
   Configuration load() => _loadGlobalTestConfig()
       .merge(_loadLocalTestConfig())
       .merge(_loadGlobalRunnerConfig())
-      .merge(_loadLocalRunnerConfig());
+      .merge(_loadLocalRunnerConfig())
+      .merge(_loadIncludeConfig());
+
+  /// If an `include` node is contained in [node], merges and returns [config].
+  Configuration _loadIncludeConfig() {
+    var source = p.fromUri(_document.span.sourceUrl);
+    var includePathNode = _document.nodes["include"];
+    if (includePathNode != null && includePathNode.value is! String) {
+      throw new SourceSpanFormatException(
+          "The 'include' field must be omitted or a String",
+          includePathNode.span);
+    }
+    if (includePathNode != null) {
+      Uri includeValue;
+      try {
+        includeValue = Uri.parse(includePathNode.value);
+      } on FormatException catch (_) {
+        throw new SourceSpanFormatException(
+            "Not a valid file URL: \"${includePathNode.value}\"",
+            includePathNode.span,
+            source);
+      }
+      var includePath = p.fromUri(includeValue);
+      var basePath = p.join(p.dirname(source), includePath);
+      try {
+        return self.load(basePath);
+      } on FileSystemException catch (e) {
+        throw new SourceSpanFormatException(
+            "Could not read the file \"$basePath\": $e",
+            includePathNode.span,
+            source);
+      }
+    }
+    return Configuration.empty;
+  }
 
   /// Loads test configuration that's allowed in the global configuration file.
   Configuration _loadGlobalTestConfig() {
@@ -564,12 +557,7 @@ class _ConfigurationLoader {
     _validate(node, "$name must be a map.", (value) => value is Map);
     var loader = new _ConfigurationLoader(node, _source,
         global: _global, runnerConfig: runnerConfig ?? _runnerConfig);
-    var config = loader.load();
-    var include = (node.value as YamlMap)['include'];
-    if (include != null) {
-      config = _processIncludeIfAny(config, node);
-    }
-    return config;
+    return loader.load();
   }
 
   /// Takes a map that contains [Configuration]s and extracts any
