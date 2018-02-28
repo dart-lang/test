@@ -105,7 +105,10 @@ void main() {
       ]),
     ]).create();
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    expect(() => new Configuration.load(path), throwsFormatException);
+    expect(
+        () => new Configuration.load(path),
+        throwsA(allOf(isFormatException,
+            predicate((e) => '$e'.contains('include isn\'t supported here')))));
   });
 
   test('should allow an include field in a runner config context', () async {
@@ -126,7 +129,7 @@ void main() {
     var config = new Configuration.load(path);
     var presetBar = config.presets['bar'];
     expect(presetBar.pauseAfterLoad, isTrue);
-    expect(presetBar.reporter,  'expanded');
+    expect(presetBar.reporter, 'expanded');
   });
 
   test('local configuration should take precedence after merging', () async {

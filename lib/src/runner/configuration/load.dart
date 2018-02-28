@@ -91,6 +91,9 @@ class _ConfigurationLoader {
     if (includeNode == null) {
       return Configuration.empty;
     }
+    if (!_runnerConfig) {
+      _disallow("include");
+    }
     var includePath = _parseNode(includeNode, "include path", p.fromUri);
     var basePath = p.join(p.dirname(source), includePath);
     try {
