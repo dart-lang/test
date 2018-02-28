@@ -1,3 +1,8 @@
+## 0.12.32
+
+* Add a `google` platform selector variable that's only true on Google's
+  internal infrastructure.
+
 ## 0.12.31
 
 * Add a `headless` configuration option for Chrome.

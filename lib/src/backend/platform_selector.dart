@@ -10,10 +10,10 @@ import 'runtime.dart';
 import 'suite_platform.dart';
 
 /// The set of variable names that are valid for all platform selectors.
-final _universalValidVariables =
-    new Set<String>.from(["posix", "dart-vm", "browser", "js", "blink"])
-      ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
-      ..addAll(OperatingSystem.all.map((os) => os.identifier));
+final _universalValidVariables = new Set<String>.from(
+    ["posix", "dart-vm", "browser", "js", "blink", "google"])
+  ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
+  ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.
@@ -88,6 +88,8 @@ class PlatformSelector {
           return platform.runtime.isBlink;
         case "posix":
           return platform.os.isPosix;
+        case "google":
+          return platform.inGoogle;
         default:
           return false;
       }

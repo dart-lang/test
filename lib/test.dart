@@ -62,7 +62,8 @@ Declarer get _declarer {
         const PluginEnvironment(),
         SuiteConfiguration.empty,
         _globalDeclarer.build(),
-        new SuitePlatform(Runtime.vm, os: currentOSGuess),
+        new SuitePlatform(Runtime.vm,
+            os: currentOSGuess, inGoogle: inGoogleGuess),
         path: p.prettyUri(Uri.base));
 
     var engine = new Engine();
