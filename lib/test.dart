@@ -8,7 +8,8 @@ import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
-import 'src/backend/test_platform.dart';
+import 'src/backend/runtime.dart';
+import 'src/backend/suite_platform.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/configuration/suite.dart';
 import 'src/runner/engine.dart';
@@ -57,11 +58,12 @@ Declarer get _declarer {
   // finished being defined.
   _globalDeclarer = new Declarer();
   scheduleMicrotask(() async {
-    var suite = new RunnerSuite(const PluginEnvironment(),
-        SuiteConfiguration.empty, _globalDeclarer.build(),
-        path: p.prettyUri(Uri.base),
-        platform: TestPlatform.vm,
-        os: currentOSGuess);
+    var suite = new RunnerSuite(
+        const PluginEnvironment(),
+        SuiteConfiguration.empty,
+        _globalDeclarer.build(),
+        new SuitePlatform(Runtime.vm, os: currentOSGuess),
+        path: p.prettyUri(Uri.base));
 
     var engine = new Engine();
     engine.suiteSink.add(suite);

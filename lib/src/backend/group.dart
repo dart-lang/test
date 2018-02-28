@@ -6,9 +6,8 @@ import 'package:stack_trace/stack_trace.dart';
 
 import 'group_entry.dart';
 import 'metadata.dart';
-import 'operating_system.dart';
+import 'suite_platform.dart';
 import 'test.dart';
-import 'test_platform.dart';
 
 /// A group contains one or more tests and subgroups.
 ///
@@ -52,10 +51,10 @@ class Group implements GroupEntry {
       : entries = new List<GroupEntry>.unmodifiable(entries),
         metadata = metadata == null ? new Metadata() : metadata;
 
-  Group forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
-    var newMetadata = metadata.forPlatform(platform, os: os);
-    var filtered = _map((entry) => entry.forPlatform(platform, os: os));
+  Group forPlatform(SuitePlatform platform) {
+    if (!metadata.testOn.evaluate(platform)) return null;
+    var newMetadata = metadata.forPlatform(platform);
+    var filtered = _map((entry) => entry.forPlatform(platform));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
     return new Group(name, filtered,
         metadata: newMetadata,

@@ -17,7 +17,7 @@ Suite _suite;
 
 void main() {
   setUp(() {
-    _suite = new Suite(new Group.root([]));
+    _suite = new Suite(new Group.root([]), suitePlatform);
   });
 
   group(".test()", () {

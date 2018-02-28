@@ -9,10 +9,10 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
+import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test.dart';
-import 'package:test/src/backend/test_platform.dart';
-import 'package:test/src/runner/configuration/platform_selection.dart';
+import 'package:test/src/runner/configuration/runtime_selection.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
 import 'package:test/test.dart';
@@ -23,7 +23,7 @@ Loader _loader;
 
 /// A configuration that loads suites on Chrome.
 final _chrome = new SuiteConfiguration(
-    platforms: [new PlatformSelection(TestPlatform.chrome.identifier)]);
+    runtimes: [new RuntimeSelection(Runtime.chrome.identifier)]);
 
 void main() {
   setUp(() async {
@@ -58,7 +58,7 @@ void main() {
 
     test("returns a suite with the file path and platform", () {
       expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
-      expect(suite.platform, equals(TestPlatform.chrome));
+      expect(suite.platform.runtime, equals(Runtime.chrome));
     });
 
     test("returns tests with the correct names", () {
@@ -126,15 +126,15 @@ Future main() {
     var suites = await _loader
         .loadFile(
             path,
-            new SuiteConfiguration(platforms: [
-              new PlatformSelection(TestPlatform.vm.identifier),
-              new PlatformSelection(TestPlatform.chrome.identifier)
+            new SuiteConfiguration(runtimes: [
+              new RuntimeSelection(Runtime.vm.identifier),
+              new RuntimeSelection(Runtime.chrome.identifier)
             ]))
         .asyncMap((loadSuite) => loadSuite.getSuite())
         .toList();
-    expect(suites[0].platform, equals(TestPlatform.vm));
+    expect(suites[0].platform.runtime, equals(Runtime.vm));
     expect(suites[0].path, equals(path));
-    expect(suites[1].platform, equals(TestPlatform.chrome));
+    expect(suites[1].platform.runtime, equals(Runtime.chrome));
     expect(suites[1].path, equals(path));
 
     for (var suite in suites) {

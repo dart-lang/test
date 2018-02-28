@@ -12,8 +12,10 @@ import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
 import '../backend/suite.dart';
+import '../backend/suite_platform.dart';
 import '../backend/test.dart';
-import '../backend/test_platform.dart';
+import '../backend/runtime.dart';
+import '../util/io.dart';
 import '../utils.dart';
 import 'configuration/suite.dart';
 import 'load_exception.dart';
@@ -75,11 +77,11 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
-  factory LoadSuite(
-      String name, SuiteConfiguration config, FutureOr<RunnerSuite> body(),
-      {String path, TestPlatform platform}) {
+  factory LoadSuite(String name, SuiteConfiguration config,
+      SuitePlatform platform, FutureOr<RunnerSuite> body(),
+      {String path}) {
     var completer = new Completer<Pair<RunnerSuite, Zone>>.sync();
-    return new LoadSuite._(name, config, () {
+    return new LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker.addOutstandingCallback();
 
@@ -107,7 +109,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       // If the test is forcibly closed, let it complete, since load tests don't
       // have timeouts.
       invoker.onClose.then((_) => invoker.removeOutstandingCallback());
-    }, completer.future, path: path, platform: platform);
+    }, completer.future, path: path);
   }
 
   /// A utility constructor for a load suite that just throws [exception].
@@ -115,43 +117,44 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// The suite's name will be based on [exception]'s path.
   factory LoadSuite.forLoadException(
       LoadException exception, SuiteConfiguration config,
-      {StackTrace stackTrace, TestPlatform platform}) {
+      {SuitePlatform platform, StackTrace stackTrace}) {
     if (stackTrace == null) stackTrace = new Trace.current();
 
     return new LoadSuite(
         "loading ${exception.path}",
         config ?? SuiteConfiguration.empty,
+        platform ?? new SuitePlatform(Runtime.vm, os: currentOS),
         () => new Future.error(exception, stackTrace),
-        path: exception.path,
-        platform: platform);
+        path: exception.path);
   }
 
   /// A utility constructor for a load suite that just emits [suite].
   factory LoadSuite.forSuite(RunnerSuite suite) {
-    return new LoadSuite("loading ${suite.path}", suite.config, () => suite,
-        path: suite.path, platform: suite.platform);
+    return new LoadSuite(
+        "loading ${suite.path}", suite.config, suite.platform, () => suite,
+        path: suite.path);
   }
 
-  LoadSuite._(String name, this.config, void body(), this._suiteAndZone,
-      {String path, TestPlatform platform})
+  LoadSuite._(String name, this.config, SuitePlatform platform, void body(),
+      this._suiteAndZone, {String path})
       : super(
             new Group.root([
               new LocalTest(
                   name, new Metadata(timeout: new Timeout(_timeout)), body)
             ]),
-            path: path,
-            platform: platform);
+            platform,
+            path: path);
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
       : config = old.config,
-        super(old.group, path: old.path, platform: old.platform);
+        super(old.group, old.platform, path: old.path);
 
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
       : config = old.config,
         _suiteAndZone = old._suiteAndZone,
-        super(old.group, path: old.path, platform: old.platform);
+        super(old.group, old.platform, path: old.path);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.

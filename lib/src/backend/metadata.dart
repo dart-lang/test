@@ -10,9 +10,8 @@ import 'package:collection/collection.dart';
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';
 import '../utils.dart';
-import 'operating_system.dart';
 import 'platform_selector.dart';
-import 'test_platform.dart';
+import 'suite_platform.dart';
 
 /// Metadata for a test or test suite.
 ///
@@ -353,12 +352,12 @@ class Metadata {
 
   /// Returns a copy of [this] with all platform-specific metadata from
   /// [onPlatform] resolved.
-  Metadata forPlatform(TestPlatform platform, {OperatingSystem os}) {
+  Metadata forPlatform(SuitePlatform platform) {
     if (onPlatform.isEmpty) return this;
 
     var metadata = this;
     onPlatform.forEach((platformSelector, platformMetadata) {
-      if (!platformSelector.evaluate(platform, os: os)) return;
+      if (!platformSelector.evaluate(platform)) return;
       metadata = metadata.merge(platformMetadata);
     });
     return metadata.change(onPlatform: {});

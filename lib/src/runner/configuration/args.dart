@@ -7,10 +7,10 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/runtime.dart';
 import '../../frontend/timeout.dart';
 import '../configuration.dart';
-import 'platform_selection.dart';
+import 'runtime_selection.dart';
 import 'reporters.dart';
 import 'values.dart';
 
@@ -18,9 +18,9 @@ import 'values.dart';
 final ArgParser _parser = (() {
   var parser = new ArgParser(allowTrailingOptions: true);
 
-  var allPlatforms = TestPlatform.builtIn.toList()..remove(TestPlatform.vm);
-  if (!Platform.isMacOS) allPlatforms.remove(TestPlatform.safari);
-  if (!Platform.isWindows) allPlatforms.remove(TestPlatform.internetExplorer);
+  var allRuntimes = Runtime.builtIn.toList()..remove(Runtime.vm);
+  if (!Platform.isMacOS) allRuntimes.remove(Runtime.safari);
+  if (!Platform.isWindows) allRuntimes.remove(Runtime.internetExplorer);
 
   parser.addFlag("help",
       abbr: "h", negatable: false, help: "Shows this usage information.");
@@ -61,11 +61,16 @@ final ArgParser _parser = (() {
       help: 'Run skipped tests instead of skipping them.');
 
   parser.addSeparator("======== Running Tests");
+
+  // The UI term "platform" corresponds with the implementation term "runtime".
+  // The [Runtime] class used to be called [TestPlatform], but it was changed to
+  // avoid conflicting with [SuitePlatform]. We decided not to also change the
+  // UI to avoid a painful migration.
   parser.addOption("platform",
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.\n'
           '[vm (default), '
-          '${allPlatforms.map((platform) => platform.identifier).join(", ")}]',
+          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]',
       allowMultiple: true);
   parser.addOption("preset",
       abbr: 'P',
@@ -221,8 +226,8 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
-        platforms: (_ifParsed('platform') as List<String>)
-            ?.map((platform) => new PlatformSelection(platform))
+        runtimes: (_ifParsed('platform') as List<String>)
+            ?.map((runtime) => new RuntimeSelection(runtime))
             ?.toList(),
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset') as List<String>,

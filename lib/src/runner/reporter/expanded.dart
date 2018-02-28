@@ -306,8 +306,8 @@ class ExpandedReporter implements Reporter {
       name = "${liveTest.suite.path}: $name";
     }
 
-    if (_printPlatform && liveTest.suite.platform != null) {
-      name = "[${liveTest.suite.platform.name}] $name";
+    if (_printPlatform) {
+      name = "[${liveTest.suite.platform.runtime.name}] $name";
     }
 
     if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";

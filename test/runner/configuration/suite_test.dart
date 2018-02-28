@@ -7,8 +7,8 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
 
 import 'package:test/src/backend/platform_selector.dart';
-import 'package:test/src/backend/test_platform.dart';
-import 'package:test/src/runner/configuration/platform_selection.dart';
+import 'package:test/src/backend/runtime.dart';
+import 'package:test/src/runner/configuration/runtime_selection.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 
 void main() {
@@ -19,22 +19,21 @@ void main() {
         expect(merged.jsTrace, isFalse);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, isNull);
-        expect(merged.platforms, equals([TestPlatform.vm.identifier]));
+        expect(merged.runtimes, equals([Runtime.vm.identifier]));
       });
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = new SuiteConfiguration(
-            jsTrace: true,
-            runSkipped: true,
-            precompiledPath: "/tmp/js",
-            platforms: [
-              new PlatformSelection(TestPlatform.chrome.identifier)
-            ]).merge(new SuiteConfiguration());
+                jsTrace: true,
+                runSkipped: true,
+                precompiledPath: "/tmp/js",
+                runtimes: [new RuntimeSelection(Runtime.chrome.identifier)])
+            .merge(new SuiteConfiguration());
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals("/tmp/js"));
-        expect(merged.platforms, equals([TestPlatform.chrome.identifier]));
+        expect(merged.runtimes, equals([Runtime.chrome.identifier]));
       });
 
       test("if only the new configuration's is defined, uses it", () {
@@ -42,14 +41,12 @@ void main() {
             jsTrace: true,
             runSkipped: true,
             precompiledPath: "/tmp/js",
-            platforms: [
-              new PlatformSelection(TestPlatform.chrome.identifier)
-            ]));
+            runtimes: [new RuntimeSelection(Runtime.chrome.identifier)]));
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals("/tmp/js"));
-        expect(merged.platforms, equals([TestPlatform.chrome.identifier]));
+        expect(merged.runtimes, equals([Runtime.chrome.identifier]));
       });
 
       test(
@@ -59,20 +56,18 @@ void main() {
             jsTrace: false,
             runSkipped: true,
             precompiledPath: "/tmp/js",
-            platforms: [new PlatformSelection(TestPlatform.chrome.identifier)]);
+            runtimes: [new RuntimeSelection(Runtime.chrome.identifier)]);
         var newer = new SuiteConfiguration(
             jsTrace: true,
             runSkipped: false,
             precompiledPath: "../js",
-            platforms: [
-              new PlatformSelection(TestPlatform.firefox.identifier)
-            ]);
+            runtimes: [new RuntimeSelection(Runtime.firefox.identifier)]);
         var merged = older.merge(newer);
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, equals("../js"));
-        expect(merged.platforms, equals([TestPlatform.firefox.identifier]));
+        expect(merged.runtimes, equals([Runtime.firefox.identifier]));
       });
     });
 

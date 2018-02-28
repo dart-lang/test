@@ -5,9 +5,8 @@
 import 'package:stack_trace/stack_trace.dart';
 
 import 'metadata.dart';
-import 'operating_system.dart';
+import 'suite_platform.dart';
 import 'test.dart';
-import 'test_platform.dart';
 
 /// A [Test] or [Group].
 abstract class GroupEntry {
@@ -28,9 +27,8 @@ abstract class GroupEntry {
   /// Returns a copy of [this] with all platform-specific metadata resolved.
   ///
   /// Removes any tests and groups with [Metadata.testOn] selectors that don't
-  /// match [platform] and [selector]. Returns `null` if this entry's selector
-  /// doesn't match.
-  GroupEntry forPlatform(TestPlatform platform, {OperatingSystem os});
+  /// match [platform]. Returns `null` if this entry's selector doesn't match.
+  GroupEntry forPlatform(SuitePlatform platform);
 
   /// Returns a copy of [this] with all tests that don't match [callback]
   /// removed.

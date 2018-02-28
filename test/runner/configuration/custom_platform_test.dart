@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
-import 'package:test/src/backend/test_platform.dart';
+import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/runner/browser/default_settings.dart';
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
@@ -82,7 +82,7 @@ void main() {
           path = await process.stdout.next;
           await process.shouldExit(0);
         } else {
-          path = defaultSettings[TestPlatform.chrome].executable;
+          path = defaultSettings[Runtime.chrome].executable;
         }
 
         await d.file("dart_test.yaml", """
@@ -480,7 +480,7 @@ void main() {
           path = await process.stdout.next;
           await process.shouldExit(0);
         } else {
-          path = defaultSettings[TestPlatform.chrome].executable;
+          path = defaultSettings[Runtime.chrome].executable;
         }
 
         await d.file("dart_test.yaml", """

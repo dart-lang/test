@@ -4,19 +4,19 @@
 
 import 'package:source_span/source_span.dart';
 
-/// A platform on which the user has chosen to run tests.
-class PlatformSelection {
-  /// The name of the platform.
+/// A runtime on which the user has chosen to run tests.
+class RuntimeSelection {
+  /// The name of the runtime.
   final String name;
 
-  /// The location in the configuration file of this platform string, or `null`
+  /// The location in the configuration file of this runtime string, or `null`
   /// if it was defined outside a configuration file (for example, on the
   /// command line).
   final SourceSpan span;
 
-  PlatformSelection(this.name, [this.span]);
+  RuntimeSelection(this.name, [this.span]);
 
-  bool operator ==(other) => other is PlatformSelection && other.name == name;
+  bool operator ==(other) => other is RuntimeSelection && other.name == name;
 
   int get hashCode => name.hashCode;
 }

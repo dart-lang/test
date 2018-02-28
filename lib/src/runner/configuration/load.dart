@@ -18,11 +18,11 @@ import '../../util/io.dart';
 import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
-import 'custom_platform.dart';
+import 'custom_runtime.dart';
 import 'load.dart' as self;
-import 'platform_selection.dart';
-import 'platform_settings.dart';
 import 'reporters.dart';
+import 'runtime_selection.dart';
+import 'runtime_settings.dart';
 
 /// A regular expression matching a Dart identifier.
 ///
@@ -227,36 +227,40 @@ class _ConfigurationLoader {
 
     var concurrency = _getInt("concurrency");
 
-    var platforms = _getList(
+    // The UI term "platform" corresponds with the implementation term
+    // "runtime". The [Runtime] class used to be called [TestPlatform], but it
+    // was changed to avoid conflicting with [SuitePlatform]. We decided not to
+    // also change the UI to avoid a painful migration.
+    var runtimes = _getList(
         "platforms",
-        (platformNode) => new PlatformSelection(
-            _parseIdentifierLike(platformNode, "Platform name"),
-            platformNode.span));
+        (runtimeNode) => new RuntimeSelection(
+            _parseIdentifierLike(runtimeNode, "Platform name"),
+            runtimeNode.span));
 
     var chosenPresets = _getList("add_presets",
         (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
 
-    var overridePlatforms = _loadOverridePlatforms();
+    var overrideRuntimes = _loadOverrideRuntimes();
 
     return new Configuration(
         pauseAfterLoad: pauseAfterLoad,
         runSkipped: runSkipped,
         reporter: reporter,
         concurrency: concurrency,
-        platforms: platforms,
+        runtimes: runtimes,
         chosenPresets: chosenPresets,
-        overridePlatforms: overridePlatforms);
+        overrideRuntimes: overrideRuntimes);
   }
 
   /// Loads the `override_platforms` field.
-  Map<String, PlatformSettings> _loadOverridePlatforms() {
-    var platformsNode =
+  Map<String, RuntimeSettings> _loadOverrideRuntimes() {
+    var runtimesNode =
         _getNode("override_platforms", "map", (value) => value is Map)
             as YamlMap;
-    if (platformsNode == null) return const {};
+    if (runtimesNode == null) return const {};
 
-    var platforms = <String, PlatformSettings>{};
-    platformsNode.nodes.forEach((identifierNode, valueNode) {
+    var runtimes = <String, RuntimeSettings>{};
+    runtimesNode.nodes.forEach((identifierNode, valueNode) {
       var identifier =
           _parseIdentifierLike(identifierNode, "Platform identifier");
 
@@ -267,10 +271,10 @@ class _ConfigurationLoader {
       var settings = _expect(map, "settings");
       _validate(settings, "Must be a map.", (value) => value is Map);
 
-      platforms[identifier] = new PlatformSettings(
+      runtimes[identifier] = new RuntimeSettings(
           identifier, identifierNode.span, [settings as YamlMap]);
     });
-    return platforms;
+    return runtimes;
   }
 
   /// Loads runner configuration that's not allowed in the global configuration
@@ -316,7 +320,7 @@ class _ConfigurationLoader {
     var includeTags = _parseBooleanSelector("include_tags");
     var excludeTags = _parseBooleanSelector("exclude_tags");
 
-    var definePlatforms = _loadDefinePlatforms();
+    var defineRuntimes = _loadDefineRuntimes();
 
     return new Configuration(
         pubServePort: pubServePort,
@@ -325,7 +329,7 @@ class _ConfigurationLoader {
         filename: filename,
         includeTags: includeTags,
         excludeTags: excludeTags,
-        definePlatforms: definePlatforms);
+        defineRuntimes: defineRuntimes);
   }
 
   /// Returns a map representation of the `fold_stack_frames` configuration.
@@ -367,13 +371,13 @@ class _ConfigurationLoader {
   }
 
   /// Loads the `define_platforms` field.
-  Map<String, CustomPlatform> _loadDefinePlatforms() {
-    var platformsNode =
+  Map<String, CustomRuntime> _loadDefineRuntimes() {
+    var runtimesNode =
         _getNode("define_platforms", "map", (value) => value is Map) as YamlMap;
-    if (platformsNode == null) return const {};
+    if (runtimesNode == null) return const {};
 
-    var platforms = <String, CustomPlatform>{};
-    platformsNode.nodes.forEach((identifierNode, valueNode) {
+    var runtimes = <String, CustomRuntime>{};
+    runtimesNode.nodes.forEach((identifierNode, valueNode) {
       var identifier =
           _parseIdentifierLike(identifierNode, "Platform identifier");
 
@@ -391,16 +395,10 @@ class _ConfigurationLoader {
       var settings = _expect(map, "settings");
       _validate(settings, "Must be a map.", (value) => value is Map);
 
-      platforms[identifier] = new CustomPlatform(
-          name,
-          nameNode.span,
-          identifier,
-          identifierNode.span,
-          parent,
-          parentNode.span,
-          settings as YamlMap);
+      runtimes[identifier] = new CustomRuntime(name, nameNode.span, identifier,
+          identifierNode.span, parent, parentNode.span, settings as YamlMap);
     });
-    return platforms;
+    return runtimes;
   }
 
   /// Throws an exception with [message] if [test] returns `false` when passed

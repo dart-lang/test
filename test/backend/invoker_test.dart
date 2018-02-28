@@ -19,7 +19,7 @@ void main() {
   var suite;
   setUp(() {
     lastState = null;
-    suite = new Suite(new Group.root([]));
+    suite = new Suite(new Group.root([]), suitePlatform);
   });
 
   group("Invoker.current", () {

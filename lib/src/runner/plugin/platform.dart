@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../backend/test_platform.dart';
+import '../../backend/suite_platform.dart';
 import '../configuration/suite.dart';
 import '../environment.dart';
 import '../runner_suite.dart';
@@ -15,10 +15,9 @@ import 'platform_helpers.dart';
 
 /// A class that defines a platform for which test suites can be loaded.
 ///
-/// A minimal plugin must define [platforms], which indicates the platforms it
-/// supports, and [loadChannel], which connects to a client in which the tests
-/// are defined. This is enough to support most of the test runner's
-/// functionality.
+/// A minimal plugin must define [loadChannel], which connects to a client in
+/// which the tests are defined. This is enough to support most of the test
+/// runner's functionality.
 ///
 /// In order to support interactive debugging, a plugin must override [load] as
 /// well, which returns a [RunnerSuite] that can contain a custom [Environment]
@@ -26,7 +25,8 @@ import 'platform_helpers.dart';
 /// [RunnerSuite.onDebugging]. The plugin must create this suite by calling the
 /// [deserializeSuite] helper function.
 ///
-/// A platform plugin can be registered with [Loader.registerPlatformPlugin].
+/// A platform plugin can be registered by passing it to [new Loader]'s
+/// `plugins` parameter.
 abstract class PlatformPlugin {
   /// Loads and establishes a connection with the test file at [path] using
   /// [platform].
@@ -41,8 +41,9 @@ abstract class PlatformPlugin {
   /// indicates that the suite is no longer needed and its resources may be
   /// released.
   ///
-  /// The [platform] is guaranteed to be a member of [platforms].
-  StreamChannel loadChannel(String path, TestPlatform platform);
+  /// The `platform.platform` is guaranteed to be one of the platforms
+  /// associated with this plugin in [new Loader]'s `plugins` parameter.
+  StreamChannel loadChannel(String path, SuitePlatform platform);
 
   /// Loads the runner suite for the test file at [path] using [platform], with
   /// [suiteConfig] encoding the suite-specific configuration.
@@ -55,7 +56,7 @@ abstract class PlatformPlugin {
   /// Subclasses overriding this method must call [deserializeSuite] in
   /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
   /// pass the opaque [message] parameter to the [deserializeSuite] call.
-  Future<RunnerSuite> load(String path, TestPlatform platform,
+  Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     // loadChannel may throw an exception. That's fine; it will cause the
     // LoadSuite to emit an error, which will be presented to the user.

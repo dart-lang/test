@@ -10,11 +10,10 @@ import '../backend/live_test.dart';
 import '../backend/live_test_controller.dart';
 import '../backend/message.dart';
 import '../backend/metadata.dart';
-import '../backend/operating_system.dart';
 import '../backend/state.dart';
 import '../backend/suite.dart';
+import '../backend/suite_platform.dart';
 import '../backend/test.dart';
-import '../backend/test_platform.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
 import 'spawn_hybrid.dart';
@@ -97,9 +96,9 @@ class RunnerTest extends Test {
     return controller.liveTest;
   }
 
-  Test forPlatform(TestPlatform platform, {OperatingSystem os}) {
-    if (!metadata.testOn.evaluate(platform, os: os)) return null;
+  Test forPlatform(SuitePlatform platform) {
+    if (!metadata.testOn.evaluate(platform)) return null;
     return new RunnerTest._(
-        name, metadata.forPlatform(platform, os: os), trace, _channel);
+        name, metadata.forPlatform(platform), trace, _channel);
   }
 }
