@@ -198,17 +198,17 @@ the top level of the configuration file.
 
 ### `include`
 
-This field indicates the relative location of another file in the format of
-`dart_test.yaml`. This is especially useful for repositories have that have
-multiple packages.
+This field loads another configuration file. It's useful for repositories that
+contain multiple packages and want to share configuration among them. It takes a
+(usually relative) `file:` URL.
 
-Imagine you have a repository with the following folder structure:
+If you have a repository with the following structure:
 
 ```
 repo/
   dart_test_base.yaml
   package/
-    lib/
+    test/
     dart_test.yaml
     pubspec.yaml
 ```
@@ -221,12 +221,13 @@ filename: "test_*.dart"
 ```yaml
 # repo/package/dart_test.yaml
 include: ../dart_test_base.yaml
-
-concurrency: 3
 ```
 
-... when executing `pub run test` in the `package` directory, it will assume a
-merged configuration, where both `filename` and `concurrency` is set.
+...tests in the `package` directory will use configuration from both
+`dart_test_base.yaml` and `dart_test.yaml`.
+
+The local configuration file's fields take precedence over those from an
+included file, so it's possible to override a base configuration.
 
 ### `paths`
 

@@ -47,13 +47,16 @@ final _packageName = new RegExp(
 Configuration load(String path, {bool global: false}) {
   var source = new File(path).readAsStringSync();
   var document = loadYamlNode(source, sourceUrl: p.toUri(path));
+
   if (document.value == null) return Configuration.empty;
-  if (document is YamlMap) {
-    var loader = new _ConfigurationLoader(document, source, global: global);
-    return loader.load();
+
+  if (document is! Map) {
+    throw new SourceSpanFormatException(
+        "The configuration must be a YAML map.", document.span, source);
   }
-  throw new SourceSpanFormatException(
-      "The configuration must be a YAML map.", document.span, source);
+
+  var loader = new _ConfigurationLoader(document, source, global: global);
+  return loader.load();
 }
 
 /// A helper for [load] that tracks the YAML document.
@@ -86,23 +89,22 @@ class _ConfigurationLoader {
 
   /// If an `include` node is contained in [node], merges and returns [config].
   Configuration _loadIncludeConfig() {
-    var source = p.fromUri(_document.span.sourceUrl);
-    var includeNode = _document.nodes["include"];
-    if (includeNode == null) {
-      return Configuration.empty;
-    }
     if (!_runnerConfig) {
       _disallow("include");
+      return Configuration.empty;
     }
+
+    var includeNode = _document.nodes["include"];
+    if (includeNode == null) return Configuration.empty;
+
     var includePath = _parseNode(includeNode, "include path", p.fromUri);
-    var basePath = p.join(p.dirname(source), includePath);
+    var basePath =
+        p.join(p.dirname(p.fromUri(_document.span.sourceUrl)), includePath);
     try {
       return self.load(basePath);
-    } on FileSystemException catch (e) {
+    } on FileSystemException catch (error) {
       throw new SourceSpanFormatException(
-          "Could not read the file \"$basePath\": $e",
-          includeNode.span,
-          source);
+          getErrorMessage(error), includeNode.span, _source);
     }
   }
 

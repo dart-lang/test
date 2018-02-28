@@ -1,8 +1,7 @@
 ## 0.12.32
 
-* Added an `include` field for configuration, which may specify another YAML
-  file in the format of `dart_test.yaml` in order to use it as a base
-  configuration. See `doc/configuration.md` for details.
+* Add an `include` configuration field which specifies the path to another
+  configuration file whose configuration should be used.
 
 ## 0.12.31
 
