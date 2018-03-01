@@ -64,15 +64,15 @@ matrix:
     # Split the tests into five shards to help parallelize them across Travis workers.
     # Don't run Dartium tests on dev because 2.0.0 doesn't support Dartium anymore.
     - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 0 -x dartium -x content-shell}
+      dart_task: {test: --preset travis --total-shards 5 --shard-index 0 -x dartium}
     - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 1 -x dartium -x content-shell}
+      dart_task: {test: --preset travis --total-shards 5 --shard-index 1 -x dartium}
     - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 2 -x dartium -x content-shell}
+      dart_task: {test: --preset travis --total-shards 5 --shard-index 2 -x dartium}
     - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 3 -x dartium -x content-shell}
+      dart_task: {test: --preset travis --total-shards 5 --shard-index 3 -x dartium}
     - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 4 -x dartium -x content-shell}
+      dart_task: {test: --preset travis --total-shards 5 --shard-index 4 -x dartium}
 
     - dart: dev
       dart_task: dartfmt
