@@ -19,6 +19,7 @@ import '../../utils.dart';
 import '../configuration.dart';
 import '../configuration/suite.dart';
 import 'custom_runtime.dart';
+import 'load.dart' as self;
 import 'reporters.dart';
 import 'runtime_selection.dart';
 import 'runtime_settings.dart';
@@ -80,10 +81,32 @@ class _ConfigurationLoader {
         _runnerConfig = runnerConfig;
 
   /// Loads the configuration in [_document].
-  Configuration load() => _loadGlobalTestConfig()
+  Configuration load() => _loadIncludeConfig()
+      .merge(_loadGlobalTestConfig())
       .merge(_loadLocalTestConfig())
       .merge(_loadGlobalRunnerConfig())
       .merge(_loadLocalRunnerConfig());
+
+  /// If an `include` node is contained in [node], merges and returns [config].
+  Configuration _loadIncludeConfig() {
+    if (!_runnerConfig) {
+      _disallow("include");
+      return Configuration.empty;
+    }
+
+    var includeNode = _document.nodes["include"];
+    if (includeNode == null) return Configuration.empty;
+
+    var includePath = _parseNode(includeNode, "include path", p.fromUri);
+    var basePath =
+        p.join(p.dirname(p.fromUri(_document.span.sourceUrl)), includePath);
+    try {
+      return self.load(basePath);
+    } on FileSystemException catch (error) {
+      throw new SourceSpanFormatException(
+          getErrorMessage(error), includeNode.span, _source);
+    }
+  }
 
   /// Loads test configuration that's allowed in the global configuration file.
   Configuration _loadGlobalTestConfig() {
@@ -195,6 +218,7 @@ class _ConfigurationLoader {
       _disallow("platforms");
       _disallow("add_presets");
       _disallow("override_platforms");
+      _disallow("include");
       return Configuration.empty;
     }
 

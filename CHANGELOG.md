@@ -1,5 +1,8 @@
 ## 0.12.32
 
+* Add an `include` configuration field which specifies the path to another
+  configuration file whose configuration should be used.
+
 * Add a `google` platform selector variable that's only true on Google's
   internal infrastructure.
 
