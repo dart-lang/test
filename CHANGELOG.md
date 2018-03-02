@@ -1,3 +1,8 @@
+## 0.12.32
+
+* Add an `include` configuration field which specifies the path to another
+  configuration file whose configuration should be used.
+
 ## 0.12.31
 
 * Add a `headless` configuration option for Chrome.

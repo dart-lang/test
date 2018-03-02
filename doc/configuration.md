@@ -33,6 +33,7 @@ tags:
   * [`retry`](#retry)
   * [`test_on`](#test_on)
 * [Runner Configuration](#runner-configuration)
+  * [`include`](#include)
   * [`paths`](#paths)
   * [`filename`](#filename)
   * [`names`](#names)
@@ -194,6 +195,39 @@ This field is not supported in the
 Unlike [test configuration](#test-configuration), runner configuration affects
 the test runner as a whole rather than individual tests. It can only be used at
 the top level of the configuration file.
+
+### `include`
+
+This field loads another configuration file. It's useful for repositories that
+contain multiple packages and want to share configuration among them. It takes a
+(usually relative) `file:` URL.
+
+If you have a repository with the following structure:
+
+```
+repo/
+  dart_test_base.yaml
+  package/
+    test/
+    dart_test.yaml
+    pubspec.yaml
+```
+
+```yaml
+# repo/dart_test_base.yaml
+filename: "test_*.dart"
+```
+
+```yaml
+# repo/package/dart_test.yaml
+include: ../dart_test_base.yaml
+```
+
+...tests in the `package` directory will use configuration from both
+`dart_test_base.yaml` and `dart_test.yaml`.
+
+The local configuration file's fields take precedence over those from an
+included file, so it's possible to override a base configuration.
 
 ### `paths`
 
