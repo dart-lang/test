@@ -65,7 +65,10 @@ void main() {
     ]).create();
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    expect(() => new Configuration.load(path), throwsFormatException);
+    var config = new Configuration.load(path);
+    expect(config.knownTags, ['tag']);
+    expect(config.filename.pattern, 'test_*.dart');
+    expect(config.concurrency, 3);
   });
 
   test('should not allow an include field in a test config context', () async {
