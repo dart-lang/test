@@ -223,8 +223,7 @@ class Loader {
       var runtime = findRuntime(runtimeName);
       assert(runtime != null, 'Unknown platform "$runtimeName".');
 
-      var platform =
-          new SuitePlatform(runtime, os: runtime.isBrowser ? null : currentOS);
+      var platform = new SuitePlatform.current(runtime);
       if (!suiteConfig.metadata.testOn.evaluate(platform)) {
         continue;
       }

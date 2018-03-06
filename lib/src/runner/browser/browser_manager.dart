@@ -242,7 +242,7 @@ class BrowserManager {
       });
 
       try {
-        controller = deserializeSuite(path, new SuitePlatform(_runtime),
+        controller = deserializeSuite(path, new SuitePlatform.current(_runtime),
             suiteConfig, await _environment, suiteChannel, message);
 
         controller.channel("test.browser.mapper").sink.add(mapper?.serialize());

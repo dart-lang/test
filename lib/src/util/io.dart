@@ -22,6 +22,9 @@ const _carriageReturn = 0xD;
 /// stdout.
 const _defaultLineLength = 200;
 
+/// Whether the test runner is running on Google-internal infrastructure.
+final bool inGoogle = Platform.version.contains("(google3)");
+
 /// The maximum line length for output.
 final int lineLength = () {
   try {

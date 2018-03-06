@@ -15,7 +15,6 @@ import '../backend/suite.dart';
 import '../backend/suite_platform.dart';
 import '../backend/test.dart';
 import '../backend/runtime.dart';
-import '../util/io.dart';
 import '../utils.dart';
 import 'configuration/suite.dart';
 import 'load_exception.dart';
@@ -123,7 +122,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     return new LoadSuite(
         "loading ${exception.path}",
         config ?? SuiteConfiguration.empty,
-        platform ?? new SuitePlatform(Runtime.vm, os: currentOS),
+        platform ?? new SuitePlatform.current(Runtime.vm),
         () => new Future.error(exception, stackTrace),
         path: exception.path);
   }

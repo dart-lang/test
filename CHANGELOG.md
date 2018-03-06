@@ -3,6 +3,9 @@
 * Add an `include` configuration field which specifies the path to another
   configuration file whose configuration should be used.
 
+* Add a `google` platform selector variable that's only true on Google's
+  internal infrastructure.
+
 ## 0.12.31
 
 * Add a `headless` configuration option for Chrome.
