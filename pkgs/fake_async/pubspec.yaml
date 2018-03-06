@@ -1,0 +1,8 @@
+name: fake_async
+version: 1.0.0-dev
+description: Fake asynchronous events such as timers and microtasks for deterministic testing.
+author: Dart Team <misc@dartlang.org>
+homepage: https://github.com/dart-lang/fake_async
+
+environment:
+  sdk: '>=1.24.0 <2.0.0'
