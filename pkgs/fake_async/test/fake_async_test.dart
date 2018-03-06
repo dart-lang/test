@@ -35,7 +35,7 @@ main() {
     test('should elapse time by the specified amount', () {
       var async = new FakeAsync();
       async.elapseBlocking(elapseBy);
-      expect(async.getClock(initialTime).now(), initialTime.add(elapseBy));
+      expect(async.elapsed, elapseBy);
     });
 
     test('should throw when called with a negative duration', () {
@@ -48,7 +48,7 @@ main() {
     test('should elapse time by the specified amount', () {
       new FakeAsync().run((async) {
         async.elapse(elapseBy);
-        expect(async.getClock(initialTime).now(), initialTime.add(elapseBy));
+        expect(async.elapsed, elapseBy);
       });
     });
 
@@ -80,25 +80,22 @@ main() {
           new Timer(elapseBy, () => async.elapseBlocking(elapseBy));
           new Timer(elapseBy * 2, expectAsync0(() {}));
           async.elapse(elapseBy);
-          expect(
-              async.getClock(initialTime).now(), initialTime.add(elapseBy * 2));
+          expect(async.elapsed, elapseBy * 2);
         });
       });
 
       test('should call timers at their scheduled time', () {
         new FakeAsync().run((async) {
           new Timer(elapseBy ~/ 2, expectAsync0(() {
-            expect(async.getClock(initialTime).now(),
-                initialTime.add(elapseBy ~/ 2));
+            expect(async.elapsed, elapseBy ~/ 2);
           }));
 
           var periodicCalledAt = <DateTime>[];
-          new Timer.periodic(elapseBy ~/ 2,
-              (_) => periodicCalledAt.add(async.getClock(initialTime).now()));
+          new Timer.periodic(
+              elapseBy ~/ 2, (_) => periodicCalledAt.add(async.elapsed));
 
           async.elapse(elapseBy);
-          expect(
-              periodicCalledAt, [elapseBy ~/ 2, elapseBy].map(initialTime.add));
+          expect(periodicCalledAt, [elapseBy ~/ 2, elapseBy]);
         });
       });
 
@@ -188,7 +185,7 @@ main() {
       test('should call microtasks before advancing time', () {
         new FakeAsync().run((async) {
           scheduleMicrotask(expectAsync0(() {
-            expect(async.getClock(initialTime).now(), initialTime);
+            expect(async.elapsed, Duration.ZERO);
           }));
           async.elapse(new Duration(minutes: 1));
         });
@@ -198,7 +195,7 @@ main() {
         new FakeAsync().run((async) {
           var controller = new StreamController();
           expect(controller.stream.first.then((_) {
-            expect(async.getClock(initialTime).now(), initialTime);
+            expect(async.elapsed, Duration.ZERO);
           }), completes);
           controller.add(null);
           async.elapse(new Duration(minutes: 1));
@@ -209,7 +206,7 @@ main() {
         new FakeAsync().run((async) {
           var negativeDuration = new Duration(days: -1);
           new Timer(negativeDuration, expectAsync0(() {
-            expect(async.getClock(initialTime).now(), initialTime);
+            expect(async.elapsed, Duration.ZERO);
           }));
           async.elapse(new Duration(minutes: 1));
         });
@@ -219,8 +216,7 @@ main() {
         new FakeAsync().run((async) {
           new Timer(Duration.ZERO, () => async.elapseBlocking(elapseBy * 5));
           async.elapse(elapseBy);
-          expect(
-              async.getClock(initialTime).now(), initialTime.add(elapseBy * 5));
+          expect(async.elapsed, elapseBy * 5);
         });
       });
 
@@ -354,7 +350,7 @@ main() {
 
         async.flushTimers(timeout: elapseBy * 2);
         expect(log, [1, 2, 3]);
-        expect(async.getClock(initialTime).now(), initialTime.add(elapseBy));
+        expect(async.elapsed, elapseBy);
       });
     });
 

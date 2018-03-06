@@ -32,6 +32,7 @@ typedef void _Microtask();
 class FakeAsync {
   /// The amount of fake time that's elapsed since this [FakeAsync] was
   /// created.
+  Duration get elapsed => _elapsed;
   var _elapsed = Duration.ZERO;
 
   /// The fake time at which the current call to [elapse] will finish running.
