@@ -10,14 +10,12 @@ import 'dart:typed_data';
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:matcher/matcher.dart';
+import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
-// Prefix this import to avoid accidentally using IO stuff in cross-platform
-// contexts.
-import 'util/io.dart' as io;
 
 /// A typedef for a possibly-asynchronous function.
 ///
@@ -51,16 +49,24 @@ final _exceptionPrefix = new RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
 /// A regular expression matching a single vowel.
 final _vowel = new RegExp('[aeiou]');
 
-/// Returns the best guess for the current operating system without relying on
+/// Directories that are specific to OS X.
+///
+/// This is used to try to distinguish OS X and Linux in [currentOSGuess].
+final _macOSDirectories = new Set<String>.from(
+    ["/Applications", "/Library", "/Network", "/System", "/Users"]);
+
+/// Returns the best guess for the current operating system without using
 /// `dart:io`.
 ///
 /// This is useful for running test files directly and skipping tests as
-/// appropriate.
-final currentOSGuess = _ifSupported(() => io.currentOS, OperatingSystem.none);
-
-/// Returns the best guess for whether we're running on internal Google
-/// infrastructure without relying on `dart:io`.
-final inGoogleGuess = _ifSupported(() => io.inGoogle, false);
+/// appropriate. The only OS-specific information we have is the current path,
+/// which we try to use to figure out the OS.
+final OperatingSystem currentOSGuess = (() {
+  if (p.style == p.Style.url) return OperatingSystem.none;
+  if (p.style == p.Style.windows) return OperatingSystem.windows;
+  if (_macOSDirectories.any(p.current.startsWith)) return OperatingSystem.macOS;
+  return OperatingSystem.linux;
+})();
 
 /// A regular expression matching a hyphenated identifier.
 ///
@@ -88,16 +94,6 @@ class Pair<E, F> {
   }
 
   int get hashCode => first.hashCode ^ last.hashCode;
-}
-
-/// Returns [callback]'s return value, unless it throws an [UnsupportedError] in
-/// which case returns [fallback].
-T _ifSupported<T>(T callback(), T fallback) {
-  try {
-    return callback();
-  } on UnsupportedError {
-    return fallback;
-  }
 }
 
 /// Get a string description of an exception.
