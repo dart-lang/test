@@ -6,3 +6,11 @@ homepage: https://github.com/dart-lang/fake_async
 
 environment:
   sdk: '>=1.24.0 <2.0.0'
+
+dependencies:
+  collection: '^1.8.0'
+  quiver: '^0.28.0'
+
+dev_dependencies:
+  test: '^0.12.28'
+
