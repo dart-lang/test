@@ -90,7 +90,7 @@ main() {
             expect(async.elapsed, elapseBy ~/ 2);
           }));
 
-          var periodicCalledAt = <DateTime>[];
+          var periodicCalledAt = <Duration>[];
           new Timer.periodic(
               elapseBy ~/ 2, (_) => periodicCalledAt.add(async.elapsed));
 
