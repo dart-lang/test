@@ -40,8 +40,7 @@ class FakeAsync {
   /// This is `null` if there's no current call to [elapse].
   Duration _elapsingTo;
 
-  /// The queue of microtasks that are scheduled to run when fake time
-  /// progresses.
+  /// Tasks that are scheduled to run when fake time progresses.
   final _microtasks = new Queue<_Microtask>();
 
   /// All timers created within [run].
