@@ -44,5 +44,5 @@ them to use the same notion of time as `dart:async` classes.
 [`new DateTime.now()`]: https://api.dartlang.org/stable/dart-core/DateTime/DateTime.now.html
 [`Stopwatch`]: https://api.dartlang.org/stable/dart-core/Stopwatch-class.html
 [`clock`]: https://pub.dartlang.org/packages/clock
-[`clock.now`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
+[`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
 [`clock.getStopwatch()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/getStopwatch.html
