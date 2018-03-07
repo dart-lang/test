@@ -10,6 +10,8 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 
 import '../backend/operating_system.dart';
+import '../backend/runtime.dart';
+import '../backend/suite_platform.dart';
 import '../utils.dart';
 
 /// The ASCII code for a newline character.
@@ -49,6 +51,17 @@ final OperatingSystem currentOS = (() {
 
   throw new UnsupportedError('Unsupported operating system "$name".');
 })();
+
+// TODO(nweiz): Make this `new SuitePlatform.current()` once we only support
+// Dart 2 and we can import `dart:io` from within cross-platform libraries. See
+// commit 4ffda6d2.
+/// Returns a [SuitePlatform] with the given [runtime], and with [os] and
+/// [inGoogle] determined automatically.
+///
+/// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
+SuitePlatform currentPlatform(Runtime runtime) => new SuitePlatform(runtime,
+    os: runtime.isBrowser ? OperatingSystem.none : currentOS,
+    inGoogle: inGoogle);
 
 /// A queue of lines of standard input.
 final stdinLines = new StreamQueue(lineSplitter.bind(stdin));

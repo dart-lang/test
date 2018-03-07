@@ -131,8 +131,7 @@ class Runner {
     var unsupportedRuntimes = _config.suiteDefaults.runtimes
         .map(_loader.findRuntime)
         .where((runtime) =>
-            runtime != null &&
-            !testOn.evaluate(new SuitePlatform.current(runtime)))
+            runtime != null && !testOn.evaluate(currentPlatform(runtime)))
         .toList();
     if (unsupportedRuntimes.isEmpty) return;
 
@@ -147,8 +146,7 @@ class Runner {
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = _loader.allRuntimes
           .where((runtime) => runtime.isBrowser)
-          .any(
-              (runtime) => testOn.evaluate(new SuitePlatform.current(runtime)));
+          .any((runtime) => testOn.evaluate(currentPlatform(runtime)));
 
       if (supportsAnyBrowser) {
         unsupportedNames

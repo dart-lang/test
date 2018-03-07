@@ -1,3 +1,7 @@
+## 0.12.32+1
+
+* Fix a bug that broke content shell on Dart 1.24.
+
 ## 0.12.32
 
 * Add an `include` configuration field which specifies the path to another

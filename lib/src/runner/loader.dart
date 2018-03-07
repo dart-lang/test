@@ -14,7 +14,6 @@ import 'package:yaml/yaml.dart';
 import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/runtime.dart';
-import '../backend/suite_platform.dart';
 import '../util/io.dart';
 import 'browser/platform.dart';
 import 'configuration.dart';
@@ -223,7 +222,7 @@ class Loader {
       var runtime = findRuntime(runtimeName);
       assert(runtime != null, 'Unknown platform "$runtimeName".');
 
-      var platform = new SuitePlatform.current(runtime);
+      var platform = currentPlatform(runtime);
       if (!suiteConfig.metadata.testOn.evaluate(platform)) {
         continue;
       }
