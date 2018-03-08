@@ -14,6 +14,7 @@
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:fake_async/fake_async.dart';
 
 import 'package:test/test.dart';
@@ -506,4 +507,60 @@ main() {
       });
     });
   });
+
+  group('clock', () {
+    test('updates following elapse()', () {
+      new FakeAsync().run((async) {
+        var before = clock.now();
+        async.elapse(elapseBy);
+        expect(clock.now(), before.add(elapseBy));
+      });
+    });
+
+    test('updates following elapseBlocking()', () {
+      new FakeAsync().run((async) {
+        var before = clock.now();
+        async.elapseBlocking(elapseBy);
+        expect(clock.now(), before.add(elapseBy));
+      });
+    });
+
+    group('starts at', () {
+      test('the time at which the FakeAsync was created', () {
+        var start = new DateTime.now();
+        new FakeAsync().run((async) {
+          expect(clock.now(), _closeToTime(start));
+          async.elapse(elapseBy);
+          expect(clock.now(), _closeToTime(start.add(elapseBy)));
+        });
+      });
+
+      test('the value of clock.now()', () {
+        var start = new DateTime(1990, 8, 11);
+        withClock(new Clock.fixed(start), () {
+          new FakeAsync().run((async) {
+            expect(clock.now(), start);
+            async.elapse(elapseBy);
+            expect(clock.now(), start.add(elapseBy));
+          });
+        });
+      });
+
+      test('an explicit value', () {
+        var start = new DateTime(1990, 8, 11);
+        new FakeAsync(initialTime: start).run((async) {
+          expect(clock.now(), start);
+          async.elapse(elapseBy);
+          expect(clock.now(), start.add(elapseBy));
+        });
+      });
+    });
+  });
 }
+
+/// Returns a matcher that asserts that a [DateTime] is within 100ms of
+/// [expected].
+Matcher _closeToTime(DateTime expected) => predicate(
+    (actual) =>
+        expected.difference(actual as DateTime).inMilliseconds.abs() < 100,
+    "is close to $expected");

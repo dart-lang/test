@@ -15,8 +15,8 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
-import 'package:quiver/time.dart';
 
 /// The type of a microtask callback.
 typedef void _Microtask();
@@ -30,6 +30,9 @@ typedef void _Microtask();
 /// The synchronous passage of time (as from blocking or expensive calls) can
 /// also be simulated using [elapseBlocking].
 class FakeAsync {
+  /// The value of [clock] within [run].
+  Clock _clock;
+
   /// The amount of fake time that's elapsed since this [FakeAsync] was
   /// created.
   Duration get elapsed => _elapsed;
@@ -57,12 +60,29 @@ class FakeAsync {
   /// The number of pending microtasks scheduled within a call to [run].
   int get microtaskCount => _microtasks.length;
 
+  /// Creates a [FakeAsync].
+  ///
+  /// Within [run], the [`clock`][] property will start at [initialTime] and
+  /// move forward as fake time elapses.
+  ///
+  /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
+  FakeAsync({DateTime initialTime}) {
+    initialTime ??= clock.now();
+    _clock = new Clock(() => initialTime.add(elapsed));
+  }
+
   /// Returns a fake [Clock] whose time can is elapsed by calls to [elapse] and
   /// [elapseBlocking].
   ///
   /// The returned clock starts at [initialTime] plus the fake time that's
   /// already been elapsed. Further calls to [elapse] and [elapseBlocking] will
   /// advance the clock as well.
+  ///
+  /// Note that it's usually easier to use the top-level [`clock`][] property.
+  /// Only call this function if you want a different [initialTime] than the
+  /// default.
+  ///
+  /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
   Clock getClock(DateTime initialTime) =>
       new Clock(() => initialTime.add(_elapsed));
 
@@ -110,15 +130,24 @@ class FakeAsync {
   /// asynchronous features used within [callback] are controlled by calls to
   /// [elapse] rather than the passing of real time.
   ///
+  /// The [`clock`][] property will be set to a clock that reports the fake
+  /// elapsed time. By default, it starts at the time the [FakeAsync] was
+  /// created (according to [`clock.now()`][]), but this can be controlled by
+  /// passing `initialTime` to [new FakeAsync].
+  ///
+  /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
+  /// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
+  ///
   /// Calls [callback] with `this` as argument and returns its result.
-  T run<T>(T callback(FakeAsync self)) => runZoned(() => callback(this),
-      zoneSpecification: new ZoneSpecification(
-          createTimer: (_, __, ___, duration, callback) =>
-              _createTimer(duration, callback, false),
-          createPeriodicTimer: (_, __, ___, duration, callback) =>
-              _createTimer(duration, callback, true),
-          scheduleMicrotask: (_, __, ___, microtask) =>
-              _microtasks.add(microtask)));
+  T run<T>(T callback(FakeAsync self)) =>
+      runZoned(() => withClock(_clock, () => callback(this)),
+          zoneSpecification: new ZoneSpecification(
+              createTimer: (_, __, ___, duration, callback) =>
+                  _createTimer(duration, callback, false),
+              createPeriodicTimer: (_, __, ___, duration, callback) =>
+                  _createTimer(duration, callback, true),
+              scheduleMicrotask: (_, __, ___, microtask) =>
+                  _microtasks.add(microtask)));
 
   /// Runs all pending microtasks scheduled within a call to [run] until there
   /// are no more microtasks scheduled.
