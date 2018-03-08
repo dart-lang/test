@@ -4,6 +4,11 @@ This release contains the `FakeAsync` class that was defined in [`quiver`][].
 It's backwards-compatible with both the `quiver` version *and* the old version
 of the `fake_async` package.
 
+### New Features
+
+* A top-level `fakeAsync()` function was added that encapsulates
+  `new FakeAsync().run(...)`.
+
 ### New Features Relative to `quiver`
 
 * `FakeAsync.elapsed` returns the total amount of fake time elapsed since the

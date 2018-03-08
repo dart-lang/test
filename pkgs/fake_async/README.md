@@ -17,11 +17,11 @@ import 'package:test/test.dart';
 
 void main() {
   test("Future.timeout() throws an error once the timeout is up", () {
-    // Any code run within [FakeAsync.run] is run within the context of that
-    // [FakeAsync] object.
-    new FakeAsync().run((async) {
+    // Any code run within [fakeAsync] is run within the context of the
+    // [FakeAsync] object passed to the callback.
+    fakeAsync((async) {
       // All asynchronous features that rely on timing are automatically
-      // controlled by [FakeAsync].
+      // controlled by [fakeAsync].
       expect(new Completer().future.timeout(new Duration(seconds: 5)),
           throwsA(new isInstanceOf<TimeoutException>()));
 

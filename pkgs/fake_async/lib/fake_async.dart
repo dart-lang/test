@@ -21,6 +21,25 @@ import 'package:collection/collection.dart';
 /// The type of a microtask callback.
 typedef void _Microtask();
 
+/// Runs [callback] in a [Zone] where all asynchrony is controlled by an
+/// instance of [FakeAsync].
+///
+/// All [Future]s, [Stream]s, [Timer]s, microtasks, and other time-based
+/// asynchronous features used within [callback] are controlled by calls to
+/// [FakeAsync.elapse] rather than the passing of real time.
+///
+/// The [`clock`][] property will be set to a clock that reports the fake
+/// elapsed time. By default, it starts at the time [fakeAsync] was created
+/// (according to [`clock.now()`][]), but this can be controlled by passing
+/// [initialTime].
+///
+/// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
+/// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
+///
+/// Returns the result of [callback].
+T fakeAsync<T>(T callback(FakeAsync async), {DateTime initialTime}) =>
+    new FakeAsync(initialTime: initialTime).run(callback);
+
 /// A class that mocks out the passage of time within a [Zone].
 ///
 /// Test code can be passed as a callback to [run], which causes it to be run in
@@ -49,15 +68,18 @@ class FakeAsync {
   /// All timers created within [run].
   final _timers = new Set<_FakeTimer>();
 
-  /// The number of active periodic timers created within a call to [run].
+  /// The number of active periodic timers created within a call to [run] or
+  /// [fakeAsync].
   int get periodicTimerCount =>
       _timers.where((timer) => timer._isPeriodic).length;
 
-  /// The number of active non-periodic timers created within a call to [run].
+  /// The number of active non-periodic timers created within a call to [run] or
+  /// [fakeAsync].
   int get nonPeriodicTimerCount =>
       _timers.where((timer) => !timer._isPeriodic).length;
 
-  /// The number of pending microtasks scheduled within a call to [run].
+  /// The number of pending microtasks scheduled within a call to [run] or
+  /// [fakeAsync].
   int get microtaskCount => _microtasks.length;
 
   /// Creates a [FakeAsync].
@@ -66,6 +88,9 @@ class FakeAsync {
   /// move forward as fake time elapses.
   ///
   /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
+  ///
+  /// Note: it's usually more convenient to use [fakeAsync] rather than creating
+  /// a [FakeAsync] object and calling [run] manually.
   FakeAsync({DateTime initialTime}) {
     initialTime ??= clock.now();
     _clock = new Clock(() => initialTime.add(elapsed));
@@ -91,9 +116,9 @@ class FakeAsync {
   /// Throws an [ArgumentError] if [duration] is negative. Throws a [StateError]
   /// if a previous call to [elapse] has not yet completed.
   ///
-  /// Any timers created within [run] will fire if their time is within
-  /// [duration]. The microtask queue is processed before and after each timer
-  /// fires.
+  /// Any timers created within [run] or [fakeAsync] will fire if their time is
+  /// within [duration]. The microtask queue is processed before and after each
+  /// timer fires.
   void elapse(Duration duration) {
     if (duration.inMicroseconds < 0) {
       throw new ArgumentError.value(
@@ -139,6 +164,9 @@ class FakeAsync {
   /// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
   ///
   /// Calls [callback] with `this` as argument and returns its result.
+  ///
+  /// Note: it's usually more convenient to use [fakeAsync] rather than creating
+  /// a [FakeAsync] object and calling [run] manually.
   T run<T>(T callback(FakeAsync self)) =>
       runZoned(() => withClock(_clock, () => callback(this)),
           zoneSpecification: new ZoneSpecification(
@@ -149,8 +177,8 @@ class FakeAsync {
               scheduleMicrotask: (_, __, ___, microtask) =>
                   _microtasks.add(microtask)));
 
-  /// Runs all pending microtasks scheduled within a call to [run] until there
-  /// are no more microtasks scheduled.
+  /// Runs all pending microtasks scheduled within a call to [run] or
+  /// [fakeAsync] until there are no more microtasks scheduled.
   ///
   /// Does not run timers.
   void flushMicrotasks() {
