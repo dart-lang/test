@@ -1,6 +1,6 @@
 ## 0.12.32+2
 
-* Provide a work around for dart-lang/sdk/issues/32556.
+* Work around an SDK bug that caused timeouts in asynchronous code.
 
 ## 0.12.32+1
 
