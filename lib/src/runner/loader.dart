@@ -248,6 +248,11 @@ class Loader {
 
         try {
           var plugin = await memo.runOnce(_platformCallbacks[platform.runtime]);
+          if (platformConfig.precompiledPath != null &&
+              !platform.runtime.isBrowser) {
+            throw "--precompiled is only supported for browser platforms.";
+          }
+
           _customizePlatform(plugin, platform.runtime);
           var suite = await plugin.load(path, platform, platformConfig,
               {"platformVariables": _runtimeVariables.toList()});
