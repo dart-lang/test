@@ -273,7 +273,15 @@ class BrowserPlatform extends PlatformPlugin
       suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (browser.isJS) {
-        if (_precompiled(suiteConfig, path)) {
+        if (suiteConfig.precompiledPath != null) {
+          var relativeHtmlPath =
+              p.relative(p.withoutExtension(path) + ".html", from: _root);
+          var htmlPath = p.join(suiteConfig.precompiledPath, relativeHtmlPath);
+          if (!new File(htmlPath).existsSync()) {
+            throw "Could not find $relativeHtmlPath within "
+                "${suiteConfig.precompiledPath}.";
+          }
+
           if (_precompiledPaths.add(suiteConfig.precompiledPath)) {
             if (!suiteConfig.jsTrace) {
               var jsPath = p.join(suiteConfig.precompiledPath,
