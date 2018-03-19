@@ -1,3 +1,7 @@
+## 0.12.32+2
+
+* Provide a work around for dart-lang/sdk/issues/32556.
+
 ## 0.12.32+1
 
 * Fix a bug that broke content shell on Dart 1.24.
