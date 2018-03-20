@@ -435,17 +435,18 @@ $_usage""");
     await test.shouldExit(1);
   });
 
-  test("doesn't run VM tests with --precompiled", () async {
+  test("warns for VM tests with --precompiled", () async {
     await d.file("test.dart", _success).create();
 
     var test = await runTest(["--precompiled=.", "test.dart"]);
-    expect(test.stdout, containsInOrder([
-      '-1: loading test.dart [E]',
-      'Failed to load "test.dart": --precompiled is only supported for browser '
-      'platforms.',
-      '-1: Some tests failed.'
-    ]));
-    await test.shouldExit(1);
+    expect(
+        test.stdout,
+        containsInOrder([
+          '+0: loading test.dart',
+          'Warning: --precompiled is only supported for browser platforms.',
+          '+1: All tests passed!'
+        ]));
+    await test.shouldExit(0);
   });
 
   group("with a top-level @Skip declaration", () {
