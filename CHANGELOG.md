@@ -1,3 +1,7 @@
+## 0.12.32+2
+
+* Work around an SDK bug that caused timeouts in asynchronous code.
+
 ## 0.12.32+1
 
 * Fix a bug that broke content shell on Dart 1.24.
