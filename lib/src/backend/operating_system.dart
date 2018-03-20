@@ -17,6 +17,9 @@ class OperatingSystem {
   /// GNU/Linux.
   static const linux = const OperatingSystem._("Linux", "linux");
 
+  /// Fuchsia.
+  static const fuchsia = const OperatingSystem._("Fuchsia", "fuchsia");
+
   /// Android.
   ///
   /// Since this is the operating system the test runner is running on, this
@@ -36,7 +39,7 @@ class OperatingSystem {
   static const none = const OperatingSystem._("none", "none");
 
   /// A list of all instances of [OperatingSystem] other than [none].
-  static const all = const [windows, macOS, linux, android, iOS];
+  static const all = const [windows, macOS, linux, fuchsia, android, iOS];
 
   /// Finds an operating system by its name.
   ///
@@ -57,6 +60,8 @@ class OperatingSystem {
         return macOS;
       case "linux":
         return linux;
+      case "fuchsia":
+        return fuchsia;
       case "android":
         return android;
       case "ios":
