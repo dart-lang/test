@@ -415,7 +415,7 @@ void main() {
   });
 
   test("the compiler uses colors if the test runner uses colors", () async {
-    await d.file("test.dart", "String main() => 12;\n").create();
+    await d.file("test.dart", "{").create();
 
     var test = await runTest(["--color", "-p", "chrome", "test.dart"]);
     expect(test.stdout, emitsThrough(contains('\u001b[35m')));
