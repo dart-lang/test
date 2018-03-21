@@ -1,3 +1,8 @@
+## 0.12.32+3
+
+* Don't crash when attempting to format stack traces when running via
+  `dart path/to/test.dart`.
+
 ## 0.12.32+2
 
 * Work around an SDK bug that caused timeouts in asynchronous code.
