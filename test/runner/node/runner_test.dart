@@ -217,6 +217,20 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test("prints a warning with --precompiled", () async {
+    await d.file("test.dart", _success).create();
+
+    var test = await runTest(["-p", "node", "--precompiled=.", "test.dart"]);
+    expect(
+        test.stdout,
+        containsInOrder([
+          '+0: compiling test.dart',
+          'Warning: --precompiled is only supported for browser platforms.',
+          '+1: All tests passed!'
+        ]));
+    await test.shouldExit(0);
+  });
+
   test("supports node_modules in the package directory", () async {
     await d.dir("node_modules", [
       d.dir("my_module", [d.file("index.js", "module.exports.value = 12;")])

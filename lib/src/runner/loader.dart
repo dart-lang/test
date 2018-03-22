@@ -244,6 +244,12 @@ class Loader {
 
       var name = (platform.runtime.isJS ? "compiling " : "loading ") + path;
       yield new LoadSuite(name, platformConfig, platform, () async {
+        if (platformConfig.precompiledPath != null &&
+            !platform.runtime.isBrowser) {
+          warn("--precompiled is only supported for browser platforms.",
+              print: true);
+        }
+
         var memo = _platformPlugins[platform.runtime];
 
         try {
