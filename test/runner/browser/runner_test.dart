@@ -415,7 +415,7 @@ void main() {
   });
 
   test("the compiler uses colors if the test runner uses colors", () async {
-    await d.file("test.dart", "String main() => 12;\n").create();
+    await d.file("test.dart", "{").create();
 
     var test = await runTest(["--color", "-p", "chrome", "test.dart"]);
     expect(test.stdout, emitsThrough(contains('\u001b[35m')));
@@ -450,7 +450,7 @@ void main() {
         containsInOrder(
             [" main.<fn>", "package:test", "dart:async/zone.dart"]));
     await test.shouldExit(1);
-  }, tags: 'chrome');
+  }, tags: 'chrome', skip: 'Broken by sdk#32633');
 
   test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
       () async {
