@@ -63,4 +63,20 @@ void main() {
         test.stdout, containsInOrder(["+0: success", "+1: All tests passed!"]));
     await test.shouldExit(0);
   });
+
+  test("fails gracefully if the precompiled HTML file doesn't exist", () async {
+    await d.dir("precompiled").create();
+    await d.file("test.dart", "invalid dart}").create();
+
+    var test = await runTest(
+        ["-p", "chrome", "--precompiled=precompiled/", "test.dart"]);
+    expect(
+        test.stdout,
+        containsInOrder([
+          "-1: compiling test.dart [E]",
+          "Could not find test.html within precompiled/.",
+          "-1: Some tests failed."
+        ]));
+    await test.shouldExit(1);
+  });
 }
