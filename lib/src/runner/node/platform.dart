@@ -38,7 +38,7 @@ class NodePlatform extends PlatformPlugin
   final Configuration _config;
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = new CompilerPool(["-Dnode=true"]);
+  final _compilers = new CompilerPool(["-Dnode=true", "--categories=Server"]);
 
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();
