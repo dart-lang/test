@@ -46,7 +46,7 @@ class NodePlatform extends PlatformPlugin
   final _compilers = () {
     var arguments = ["-Dnode=true"];
     if (sdkVersion >= _firstServerSdk) arguments.add("--categories=Server");
-    new CompilerPool(arguments);
+    return new CompilerPool(arguments);
   }();
 
   /// The temporary directory in which compiled JS is emitted.
