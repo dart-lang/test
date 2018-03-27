@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:multi_server_socket/multi_server_socket.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
@@ -31,6 +32,10 @@ import '../plugin/platform.dart';
 import '../plugin/platform_helpers.dart';
 import '../runner_suite.dart';
 
+/// The first Dart SDK version where `--categories=Server` disables `dart:html`
+/// rather than disabling all JS-specific libraries.
+final _firstServerSdk = new Version.parse("2.0.0-dev.42.0");
+
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
     implements CustomizablePlatform<ExecutableSettings> {
@@ -38,7 +43,11 @@ class NodePlatform extends PlatformPlugin
   final Configuration _config;
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = new CompilerPool(["-Dnode=true"]);
+  final _compilers = () {
+    var arguments = ["-Dnode=true"];
+    if (sdkVersion >= _firstServerSdk) arguments.add("--categories=Server");
+    return new CompilerPool(arguments);
+  }();
 
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();

@@ -1,4 +1,7 @@
-## 0.12.32+3
+## 0.12.33
+
+* Pass `--categories=Server` to `dart2js` when compiling tests for Node.js. This
+  tells it that `dart:html` is unavailable.
 
 * Don't crash when attempting to format stack traces when running via
   `dart path/to/test.dart`.

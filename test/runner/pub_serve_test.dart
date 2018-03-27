@@ -12,6 +12,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
 import '../io.dart';
@@ -406,11 +407,7 @@ final Iterable<String> _compilers = () {
 
 /// Whether or not the dartdevc compiler is supported on the current
 /// [Platform.version].
-final bool _sdkSupportsDartDevc = () {
-  var sdkVersion = new Version.parse(Platform.version.split(' ').first);
-  var minDartDevcVersion = new Version(1, 24, 0);
-  return sdkVersion >= minDartDevcVersion;
-}();
+final bool _sdkSupportsDartDevc = sdkVersion >= new Version(1, 24, 0);
 
 /// Runs the test described by [testFn] once for each supported compiler on the
 /// current [Platform.version], passing the relevant compiler args for pub serve
