@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
@@ -52,7 +53,38 @@ class VMPlatform extends PlatformPlugin {
   /// This isolate connects an [IsolateChannel] to [message] and sends the
   /// serialized tests over that channel.
   Future<Isolate> _spawnIsolate(String path, SendPort message) async {
-    if (_config.pubServeUrl == null) {
+    if (_config.suiteDefaults.precompiledPath != null) {
+      path = p.join(_config.suiteDefaults.precompiledPath, path);
+      final resolver = await PackageResolver.loadConfig(new Uri.file(
+          p.join(_config.suiteDefaults.precompiledPath, 'test', '.packages')));
+      return await Isolate.spawnUri(
+          p.toUri(p.absolute(path + '.vm_test.dart')), [], message,
+          packageRoot: await resolver.packageRoot,
+          packageConfig: await resolver.packageConfigUri,
+          checked: true);
+    } else if (_config.pubServeUrl != null) {
+      var url = _config.pubServeUrl.resolveUri(
+          p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
+
+      try {
+        return await Isolate.spawnUri(url, [], message, checked: true);
+      } on IsolateSpawnException catch (error) {
+        if (error.message.contains("OS Error: Connection refused") ||
+            error.message.contains("The remote computer refused")) {
+          throw new LoadException(
+              path,
+              "Error getting $url: Connection refused\n"
+              'Make sure "pub serve" is running.');
+        } else if (error.message.contains("404 Not Found")) {
+          throw new LoadException(
+              path,
+              "Error getting $url: 404 Not Found\n"
+              'Make sure "pub serve" is serving the test/ directory.');
+        }
+
+        throw new LoadException(path, error);
+      }
+    } else {
       return await dart.runInIsolate('''
         import "dart:isolate";
 
@@ -71,28 +103,6 @@ class VMPlatform extends PlatformPlugin {
           new IsolateChannel.connectSend(message).pipe(channel);
         }
       ''', message, checked: true);
-    }
-
-    var url = _config.pubServeUrl
-        .resolveUri(p.toUri(p.relative(path, from: 'test') + '.vm_test.dart'));
-
-    try {
-      return await Isolate.spawnUri(url, [], message, checked: true);
-    } on IsolateSpawnException catch (error) {
-      if (error.message.contains("OS Error: Connection refused") ||
-          error.message.contains("The remote computer refused")) {
-        throw new LoadException(
-            path,
-            "Error getting $url: Connection refused\n"
-            'Make sure "pub serve" is running.');
-      } else if (error.message.contains("404 Not Found")) {
-        throw new LoadException(
-            path,
-            "Error getting $url: 404 Not Found\n"
-            'Make sure "pub serve" is serving the test/ directory.');
-      }
-
-      throw new LoadException(path, error);
     }
   }
 }

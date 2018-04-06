@@ -225,7 +225,8 @@ void main() {
         test.stdout,
         containsInOrder([
           '+0: compiling test.dart',
-          'Warning: --precompiled is only supported for browser platforms.',
+          'Warning: --precompiled is only supported for browser and vm '
+              'platforms.',
           '+1: All tests passed!'
         ]));
     await test.shouldExit(0);
