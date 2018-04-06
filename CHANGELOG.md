@@ -1,7 +1,9 @@
 ## 0.12.34-dev
 
-* The `--precompiled` flag now serves all sources directly from the precompiled
-  directory, and will never attempt to do its own compilation.
+* The `--precompiled` flag is now supported for the vm platform.
+* On browser platforms the `--precompiled` flag now serves all sources directly
+  from the precompiled directory, and will never attempt to do its own
+  compilation.
 
 ## 0.12.33
 
