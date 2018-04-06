@@ -39,7 +39,7 @@ class Runner {
   final _config = Configuration.current;
 
   /// The loader that loads the test suites from the filesystem.
-  final Loader _loader;
+  final _loader = new Loader();
 
   /// The engine that runs the test suites.
   final Engine _engine;
@@ -71,12 +71,10 @@ class Runner {
         var engine = new Engine(concurrency: config.concurrency);
 
         var reporterDetails = allReporters[config.reporter];
-        var loader = new Loader(root: config.suiteDefaults.precompiledPath);
-        return new Runner._(
-            engine, reporterDetails.factory(config, engine), loader);
+        return new Runner._(engine, reporterDetails.factory(config, engine));
       });
 
-  Runner._(this._engine, this._reporter, this._loader);
+  Runner._(this._engine, this._reporter);
 
   /// Starts the runner.
   ///

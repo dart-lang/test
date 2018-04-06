@@ -136,7 +136,8 @@ class BrowserPlatform extends PlatformPlugin
       cascade = cascade
           .add(packagesDirHandler())
           .add(_jsHandler.handler)
-          .add(createStaticHandler(_root))
+          .add(createStaticHandler(
+              config.suiteDefaults.precompiledPath ?? _root))
           .add(_wrapperHandler);
     }
 
@@ -265,7 +266,8 @@ class BrowserPlatform extends PlatformPlugin
       }
 
       if (_closed) return null;
-      suiteUrl = url.resolveUri(p.toUri(p.withoutExtension(path) + ".html"));
+      suiteUrl = url.resolveUri(
+          p.toUri(p.withoutExtension(p.relative(path, from: _root)) + ".html"));
     }
 
     if (_closed) return null;
