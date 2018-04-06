@@ -56,7 +56,7 @@ class VMPlatform extends PlatformPlugin {
     if (_config.suiteDefaults.precompiledPath != null) {
       path = p.join(_config.suiteDefaults.precompiledPath, path);
       final resolver = await PackageResolver.loadConfig(new Uri.file(
-          p.join(_config.suiteDefaults.precompiledPath, 'test', '.packages')));
+          p.join(_config.suiteDefaults.precompiledPath, '.packages')));
       return await Isolate.spawnUri(
           p.toUri(p.absolute(path + '.vm_test.dart')), [], message,
           packageRoot: await resolver.packageRoot,
