@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-@Tags(const ["chrome"])
 
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
@@ -64,7 +63,7 @@ void main() {
           containsInOrder(["+0: success", "+1: All tests passed!"]));
       await test.shouldExit(0);
     });
-  });
+  }, tags: const ["chrome"]);
 
   group("vm tests", () {
     test("run in the precompiled directory", () async {
