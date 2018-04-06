@@ -1,3 +1,8 @@
+## 0.12.34-dev
+
+* The `--precompiled` flag now serves all sources directly from the precompiled
+  directory, and will never attempt to do its own compilation.
+
 ## 0.12.33
 
 * Pass `--categories=Server` to `dart2js` when compiling tests for Node.js. This

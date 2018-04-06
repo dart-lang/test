@@ -114,14 +114,6 @@ class BrowserPlatform extends PlatformPlugin
   final _browserSettings =
       new Map<Runtime, ExecutableSettings>.from(defaultSettings);
 
-  /// A cascade of handlers for suites' precompiled paths.
-  ///
-  /// This is `null` if there are no precompiled suites yet.
-  shelf.Cascade _precompiledCascade;
-
-  /// The precompiled paths that have handlers in [_precompiledHandler].
-  final _precompiledPaths = new Set<String>();
-
   /// A map from test suite paths to Futures that will complete once those
   /// suites are finished compiling.
   ///
@@ -144,13 +136,8 @@ class BrowserPlatform extends PlatformPlugin
       cascade = cascade
           .add(packagesDirHandler())
           .add(_jsHandler.handler)
-          .add(createStaticHandler(_root))
-
-          // Add this before the wrapper handler so that its HTML takes
-          // precedence over the test runner's.
-          .add((request) =>
-              _precompiledCascade?.handler(request) ??
-              new shelf.Response.notFound(null))
+          .add(createStaticHandler(
+              config.suiteDefaults.precompiledPath ?? _root))
           .add(_wrapperHandler);
     }
 
@@ -273,26 +260,7 @@ class BrowserPlatform extends PlatformPlugin
       suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (browser.isJS) {
-        if (_precompiled(suiteConfig, path)) {
-          if (_precompiledPaths.add(suiteConfig.precompiledPath)) {
-            if (!suiteConfig.jsTrace) {
-              var jsPath = p.join(suiteConfig.precompiledPath,
-                  p.relative(path + ".browser_test.dart.js", from: _root));
-
-              var sourceMapPath = '${jsPath}.map';
-              if (new File(sourceMapPath).existsSync()) {
-                _mappers[path] = new StackTraceMapper(
-                    new File(sourceMapPath).readAsStringSync(),
-                    mapUrl: p.toUri(sourceMapPath),
-                    packageResolver: await PackageResolver.current.asSync,
-                    sdkRoot: p.toUri(sdkDir));
-              }
-            }
-            _precompiledCascade ??= new shelf.Cascade();
-            _precompiledCascade = _precompiledCascade
-                .add(createStaticHandler(suiteConfig.precompiledPath));
-          }
-        } else {
+        if (suiteConfig.precompiledPath == null) {
           await _compileSuite(path, suiteConfig);
         }
       }
@@ -312,15 +280,6 @@ class BrowserPlatform extends PlatformPlugin
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;
-  }
-
-  /// Returns whether the test at [path] has precompiled HTML available
-  /// underneath [suiteConfig.precompiledPath].
-  bool _precompiled(SuiteConfiguration suiteConfig, String path) {
-    if (suiteConfig.precompiledPath == null) return false;
-    var htmlPath = p.join(suiteConfig.precompiledPath,
-        p.relative(p.withoutExtension(path) + ".html", from: _root));
-    return new File(htmlPath).existsSync();
   }
 
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
