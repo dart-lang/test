@@ -246,7 +246,7 @@ class NodePlatform extends PlatformPlugin
     try {
       return await Process.start(settings.executable,
           settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
-          environment: {'NODE_PATH': nodePath}w);
+          environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
       await new Future.error(
           new ApplicationException(
