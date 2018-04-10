@@ -6,7 +6,6 @@ dist: trusty
 
 dart:
  - stable
- - 1.23.0
 
 env: FORCE_TEST_EXIT=true DARTIUM_EXPIRATION_TIME=1550044800LL
 
