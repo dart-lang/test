@@ -140,7 +140,7 @@ void main() {
         test("first test", () async {
           await firstTestCompleter.future;
           firstTestFinished = true;
-        }, timeout: new Timeout(Duration.ZERO));
+        }, timeout: new Timeout(Duration.zero));
       });
 
       test("second test", () {

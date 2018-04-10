@@ -19,7 +19,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "on_platform": {
                   "chrome": {"timeout": "0s"}
                 }
@@ -32,7 +32,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -48,7 +48,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "on_platform": {
                   "chrome || vm": {"timeout": "0s"}
                 }
@@ -61,7 +61,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -90,7 +90,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_platform": {"foo bar": null}
                 }))
             .create();
@@ -109,7 +109,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_platform": {"foo": null}
                 }))
             .create();
@@ -125,7 +125,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_platform": {"linux": 12}
                 }))
             .create();
@@ -140,7 +140,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_platform": {
                     "linux": {"timeout": "12p"}
                   }
@@ -157,7 +157,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_platform": {
                     "linux": {"filename": "*_blorp"}
                   }
@@ -177,7 +177,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "on_os": {
                   currentOS.identifier: {"filename": "test_*.dart"}
                 }
@@ -213,7 +213,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "on_os": {
                   otherOS: {"filename": "test_*.dart"}
                 }
@@ -258,7 +258,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_os": {"foo": null}
                 }))
             .create();
@@ -275,7 +275,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_os": {"linux": 12}
                 }))
             .create();
@@ -290,7 +290,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_os": {
                     "linux": {"timeout": "12p"}
                   }

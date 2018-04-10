@@ -240,7 +240,7 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     var client = new HttpClient();
     var request = await client.getUrl(base.resolve("/json/list"));
     var response = await request.close();
-    var json = await JSON.fuse(UTF8).decoder.bind(response).single as List;
+    var json = await json.fuse(UTF8).decoder.bind(response).single as List;
     return base.resolve(json.first["devtoolsFrontendUrl"]);
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return

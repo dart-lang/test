@@ -19,7 +19,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"}
                 }
@@ -32,7 +32,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -43,7 +43,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"}
                 }
@@ -56,7 +56,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -70,7 +70,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"},
                   "bar": {
@@ -86,7 +86,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -100,7 +100,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"},
                   "bar": {"timeout": "30s"}
@@ -114,7 +114,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -130,7 +130,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"}
                 },
@@ -144,7 +144,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -156,7 +156,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "30s"}
                 },
@@ -171,7 +171,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "tags": {
                   "foo": {
                     "presets": {
@@ -188,8 +188,8 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test 1", () => new Future.delayed(Duration.ZERO), tags: "foo");
-          test("test 2", () => new Future.delayed(Duration.ZERO));
+          test("test 1", () => new Future.delayed(Duration.zero), tags: "foo");
+          test("test 2", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -201,7 +201,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "30s"}
                 },
@@ -218,7 +218,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"}
                 },
@@ -232,7 +232,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -246,7 +246,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"},
                   "bar": {"timeout": "30s"}
@@ -261,7 +261,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -270,7 +270,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {"timeout": "0s"},
                   "bar": {"timeout": "30s"}
@@ -289,7 +289,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {
                     "add_presets": ["bar"]
@@ -305,7 +305,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.ZERO));
+          test("test", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -319,7 +319,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "presets": {
                   "foo": {
                     "add_presets": ["bar"]
@@ -360,7 +360,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "presets": {"foo bar": null}
                 }))
             .create();
@@ -376,7 +376,7 @@ void main() {
       });
 
       test("rejects an invalid preset map", () async {
-        await d.file("dart_test.yaml", JSON.encode({"presets": 12})).create();
+        await d.file("dart_test.yaml", jsonEncode({"presets": 12})).create();
 
         var test = await runTest([]);
         expect(test.stderr, containsInOrder(["presets must be a map", "^^"]));
@@ -387,7 +387,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "presets": {
                     "foo": {"timeout": "12p"}
                   }
@@ -404,7 +404,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "tags": {
                     "foo": {
                       "presets": {
@@ -431,7 +431,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "add_presets": ["foo", "bar"]
                 }))
             .create();
@@ -447,7 +447,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "on_os": {
                     currentOS.identifier: {
                       "add_presets": ["bar"]
@@ -465,7 +465,7 @@ void main() {
     group("add_presets", () {
       test("rejects an invalid list type", () async {
         await d
-            .file("dart_test.yaml", JSON.encode({"add_presets": "foo"}))
+            .file("dart_test.yaml", jsonEncode({"add_presets": "foo"}))
             .create();
 
         var test = await runTest(["test.dart"]);
@@ -478,7 +478,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "add_presets": [12]
                 }))
             .create();
@@ -493,7 +493,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "add_presets": ["foo bar"]
                 }))
             .create();

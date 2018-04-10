@@ -21,7 +21,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("timeout", () async {
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
   });
 }
 ''').create();
@@ -42,7 +42,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("timeout", () async {
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
   });
 }
 ''').create();

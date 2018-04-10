@@ -28,7 +28,7 @@ typedef void Callback();
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = new StreamTransformer<List<int>, String>(
     (stream, cancelOnError) => stream
-        .transform(UTF8.decoder)
+        .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen(null, cancelOnError: cancelOnError));
 
@@ -324,7 +324,7 @@ String randomBase64(int bytes, {int seed}) {
   for (var i = 0; i < bytes; i++) {
     data[i] = random.nextInt(256);
   }
-  return BASE64.encode(data);
+  return base64Encode(data);
 }
 
 /// Throws an [ArgumentError] if [message] isn't recursively JSON-safe.

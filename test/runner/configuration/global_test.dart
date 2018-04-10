@@ -32,7 +32,7 @@ void main() {
 
   test("uses supported test configuration", () async {
     await d
-        .file("global_test.yaml", JSON.encode({"verbose_trace": true}))
+        .file("global_test.yaml", jsonEncode({"verbose_trace": true}))
         .create();
 
     await d.file("test.dart", """
@@ -51,7 +51,7 @@ void main() {
 
   test("uses supported runner configuration", () async {
     await d
-        .file("global_test.yaml", JSON.encode({"reporter": "json"}))
+        .file("global_test.yaml", jsonEncode({"reporter": "json"}))
         .create();
 
     await d.file("test.dart", """
@@ -70,11 +70,11 @@ void main() {
 
   test("local configuration takes precedence", () async {
     await d
-        .file("global_test.yaml", JSON.encode({"verbose_trace": true}))
+        .file("global_test.yaml", jsonEncode({"verbose_trace": true}))
         .create();
 
     await d
-        .file("dart_test.yaml", JSON.encode({"verbose_trace": false}))
+        .file("dart_test.yaml", jsonEncode({"verbose_trace": false}))
         .create();
 
     await d.file("test.dart", """
@@ -98,7 +98,7 @@ void main() {
       "define_platforms"
     ]) {
       test("for $field", () async {
-        await d.file("global_test.yaml", JSON.encode({field: null})).create();
+        await d.file("global_test.yaml", jsonEncode({field: null})).create();
 
         await d.file("test.dart", """
           import 'package:test/test.dart';

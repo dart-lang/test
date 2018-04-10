@@ -474,7 +474,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("timeout", () => new Future.delayed(Duration.ZERO));
+  test("timeout", () => new Future.delayed(Duration.zero));
 }
 ''').create();
 
@@ -527,10 +527,10 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     throw 'oh no';
   }, onPlatform: {
-    "browser": new Timeout(Duration.ZERO)
+    "browser": new Timeout(Duration.zero)
   });
 }
 ''').create();
@@ -637,7 +637,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     throw 'oh no';
   });
 }

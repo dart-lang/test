@@ -155,7 +155,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
           .listen(events.add, onDone: () => events.add(null));
 
       // Wait on a timer tick so all buffered events are emitted.
-      await new Future.delayed(Duration.ZERO);
+      await new Future.delayed(Duration.zero);
       subscription.cancel();
 
       var eventsString = events.map((event) {
