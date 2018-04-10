@@ -1,6 +1,7 @@
 ## 0.12.34-dev
 
-* The `--precompiled` flag is now supported for the vm platform.
+* The `--precompiled` flag is now supported for the vm platform and the node
+  platform.
 * On browser platforms the `--precompiled` flag now serves all sources directly
   from the precompiled directory, and will never attempt to do its own
   compilation.

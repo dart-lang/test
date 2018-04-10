@@ -141,49 +141,93 @@ class NodePlatform extends PlatformPlugin
   /// source map for the compiled suite.
   Future<Pair<Process, StackTraceMapper>> _spawnProcess(String path,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
-    var dir = new Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(path) + ".node_test.dart.js");
+    if (_config.suiteDefaults.precompiledPath != null) {
+      return _spawnPrecompiledProcess(path, runtime, suiteConfig, socketPort,
+          _config.suiteDefaults.precompiledPath);
+    } else if (_config.pubServeUrl != null) {
+      return _spawnPubServeProcess(path, runtime, suiteConfig, socketPort);
+    } else {
+      return _spawnNormalProcess(path, runtime, suiteConfig, socketPort);
+    }
+  }
 
-    if (_config.pubServeUrl == null) {
-      await _compilers.compile('''
+  /// Compiles [testPath] with dart2js, adds the node preamble, and then spawns
+  /// a Node.js process that loads that Dart test suite.
+  Future<Pair<Process, StackTraceMapper>> _spawnNormalProcess(String testPath,
+      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
+    var dir = new Directory(_compiledDir).createTempSync('test_').path;
+    var jsPath = p.join(dir, p.basename(testPath) + ".node_test.dart.js");
+    await _compilers.compile('''
         import "package:test/src/bootstrap/node.dart";
 
-        import "${p.toUri(p.absolute(path))}" as test;
+        import "${p.toUri(p.absolute(testPath))}" as test;
 
         void main() {
           internalBootstrapNodeTest(() => test.main);
         }
       ''', jsPath, suiteConfig);
 
-      // Add the Node.js preamble to ensure that the dart2js output is
-      // compatible. Use the minified version so the source map remains valid.
-      var jsFile = new File(jsPath);
-      await jsFile.writeAsString(
-          preamble.getPreamble(minified: true) + await jsFile.readAsString());
+    // Add the Node.js preamble to ensure that the dart2js output is
+    // compatible. Use the minified version so the source map remains valid.
+    var jsFile = new File(jsPath);
+    await jsFile.writeAsString(
+        preamble.getPreamble(minified: true) + await jsFile.readAsString());
 
-      StackTraceMapper mapper;
-      if (!suiteConfig.jsTrace) {
-        var mapPath = jsPath + '.map';
-        mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
-            mapUrl: p.toUri(mapPath),
-            packageResolver: await PackageResolver.current.asSync,
-            sdkRoot: p.toUri(sdkDir));
-      }
-
-      return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+    StackTraceMapper mapper;
+    if (!suiteConfig.jsTrace) {
+      var mapPath = jsPath + '.map';
+      mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
+          mapUrl: p.toUri(mapPath),
+          packageResolver: await PackageResolver.current.asSync,
+          sdkRoot: p.toUri(sdkDir));
     }
 
-    var url = _config.pubServeUrl.resolveUri(
-        p.toUri(p.relative(path, from: 'test') + '.node_test.dart.js'));
+    return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+  }
 
-    var js = await _get(url, path);
+  /// Spawns a Node.js process that loads the Dart test suite at [testPath]
+  /// under [precompiledPath].
+  Future<Pair<Process, StackTraceMapper>> _spawnPrecompiledProcess(
+      String testPath,
+      Runtime runtime,
+      SuiteConfiguration suiteConfig,
+      int socketPort,
+      String precompiledPath) async {
+    StackTraceMapper mapper;
+    var jsPath =
+        p.join(precompiledPath, p.basename(testPath) + ".node_test.dart.js");
+
+    if (!suiteConfig.jsTrace) {
+      var mapPath = jsPath + '.map';
+      var resolver = await SyncPackageResolver
+          .loadConfig(p.toUri(p.join(precompiledPath, '.packages')));
+      mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
+          mapUrl: p.toUri(mapPath),
+          packageResolver: resolver,
+          sdkRoot: p.toUri(sdkDir));
+    }
+
+    return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+  }
+
+  /// Requests the compiled js for [testPath] from the pub serve url, prepends
+  /// the node preamble, and then spawns a Node.js process that loads that Dart
+  /// test suite.
+  Future<Pair<Process, StackTraceMapper>> _spawnPubServeProcess(String testPath,
+      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
+    var dir = new Directory(_compiledDir).createTempSync('test_').path;
+    var jsPath = p.join(dir, p.basename(testPath) + ".node_test.dart.js");
+    var url = _config.pubServeUrl.resolveUri(
+        p.toUri(p.relative(testPath, from: 'test') + '.node_test.dart.js'));
+
+    var js = await _get(url, testPath);
     await new File(jsPath)
         .writeAsString(preamble.getPreamble(minified: true) + js);
 
     StackTraceMapper mapper;
     if (!suiteConfig.jsTrace) {
       var mapUrl = url.replace(path: url.path + '.map');
-      mapper = new StackTraceMapper(await _get(mapUrl, path),
+      mapper = new StackTraceMapper(await _get(mapUrl, testPath),
           mapUrl: mapUrl,
           packageResolver: new SyncPackageResolver.root('packages'),
           sdkRoot: p.toUri('packages/\$sdk'));
