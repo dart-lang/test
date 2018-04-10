@@ -3,7 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
+import 'dart:async';
+import 'dart:io';
 
+import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -16,7 +19,7 @@ import '../io.dart';
 
 void main() {
   group("browser tests", () {
-    test("runs a precompiled version of a test rather than recompiling",
+    test("run a precompiled version of a test rather than recompiling",
         () async {
       await d.file("to_precompile.dart", """
         import "package:stream_channel/stream_channel.dart";
@@ -65,6 +68,45 @@ void main() {
     });
   }, tags: const ["chrome"]);
 
+  group("node tests", () {
+    test("run a precompiled version of a test rather than recompiling",
+        () async {
+      await d.file("test.dart", """
+          import "package:test/src/bootstrap/node.dart";
+          import "package:test/test.dart";
+
+          void main() {
+            internalBootstrapNodeTest(() => () => test("success", () {
+              expect(true, isTrue);
+            }));
+          }""").create();
+      await _writePackagesFile();
+
+      var jsPath = p.join(d.sandbox, "test.dart.node_test.dart.js");
+      var dart2js = await TestProcess.start(
+          p.join(sdkDir, "bin", "dart2js"),
+          [
+            await PackageResolver.current.processArgument,
+            "test.dart",
+            "--out=$jsPath",
+          ],
+          workingDirectory: d.sandbox);
+      await dart2js.shouldExit(0);
+
+      var jsFile = new File(jsPath);
+      await jsFile.writeAsString(
+          preamble.getPreamble(minified: true) + await jsFile.readAsString());
+
+      await d.file("test.dart", "invalid dart}").create();
+
+      var test = await runTest(
+          ["-p", "node", "--precompiled", d.sandbox, "test.dart"]);
+      expect(test.stdout,
+          containsInOrder(["+0: success", "+1: All tests passed!"]));
+      await test.shouldExit(0);
+    });
+  }, tags: const ["node"]);
+
   group("vm tests", () {
     test("run in the precompiled directory", () async {
       await d.dir('test', [
@@ -85,12 +127,7 @@ void main() {
           }
         """),
       ]).create();
-      var currentPackages = await PackageResolver.current.packageConfigMap;
-      var packagesFileContent = new StringBuffer();
-      currentPackages.forEach((package, location) {
-        packagesFileContent.writeln('$package:$location');
-      });
-      await d.file(".packages", packagesFileContent.toString()).create();
+      await _writePackagesFile();
 
       var test = await runTest(
           ["-p", "vm", '--precompiled=${d.sandbox}', 'test/test.dart']);
@@ -99,4 +136,13 @@ void main() {
       await test.shouldExit(0);
     });
   });
+}
+
+Future<Null> _writePackagesFile() async {
+  var currentPackages = await PackageResolver.current.packageConfigMap;
+  var packagesFileContent = new StringBuffer();
+  currentPackages.forEach((package, location) {
+    packagesFileContent.writeln('$package:$location');
+  });
+  await d.file(".packages", packagesFileContent.toString()).create();
 }
