@@ -71,7 +71,8 @@ void main() {
   group("node tests", () {
     test("run a precompiled version of a test rather than recompiling",
         () async {
-      await d.file("test.dart", """
+      await d.dir("test", [
+        d.file("test.dart", """
           import "package:test/src/bootstrap/node.dart";
           import "package:test/test.dart";
 
@@ -79,15 +80,16 @@ void main() {
             internalBootstrapNodeTest(() => () => test("success", () {
               expect(true, isTrue);
             }));
-          }""").create();
+          }""")
+      ]).create();
       await _writePackagesFile();
 
-      var jsPath = p.join(d.sandbox, "test.dart.node_test.dart.js");
+      var jsPath = p.join(d.sandbox, "test", "test.dart.node_test.dart.js");
       var dart2js = await TestProcess.start(
           p.join(sdkDir, "bin", "dart2js"),
           [
             await PackageResolver.current.processArgument,
-            "test.dart",
+            p.join("test", "test.dart"),
             "--out=$jsPath",
           ],
           workingDirectory: d.sandbox);
@@ -97,10 +99,15 @@ void main() {
       await jsFile.writeAsString(
           preamble.getPreamble(minified: true) + await jsFile.readAsString());
 
-      await d.file("test.dart", "invalid dart}").create();
+      await d.dir("test", [d.file("test.dart", "invalid dart}")]).create();
 
-      var test = await runTest(
-          ["-p", "node", "--precompiled", d.sandbox, "test.dart"]);
+      var test = await runTest([
+        "-p",
+        "node",
+        "--precompiled",
+        d.sandbox,
+        p.join("test", "test.dart")
+      ]);
       expect(test.stdout,
           containsInOrder(["+0: success", "+1: All tests passed!"]));
       await test.shouldExit(0);
