@@ -281,7 +281,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {
-    expect(document.query('#foo'), isNotNull);
+    expect(document.querySelector('#foo'), isNotNull);
   });
 }
 """).create();
@@ -382,7 +382,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("failure", () {
-    expect(document.query('#foo'), isNull);
+    expect(document.querySelector('#foo'), isNull);
   });
 }
 """).create();

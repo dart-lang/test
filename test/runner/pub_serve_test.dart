@@ -225,7 +225,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("failure", () {
-    expect(document.query('#foo'), isNull);
+    expect(document.querySelector('#foo'), isNull);
   });
 }
 """),
