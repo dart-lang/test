@@ -1,3 +1,7 @@
+## 0.12.34+1
+
+* Fixed an issue `--precompiled` node tests in subdirectories.
+
 ## 0.12.34
 
 * Requires at least Dart 1.24.0.
