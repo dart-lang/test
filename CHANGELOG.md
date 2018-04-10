@@ -1,4 +1,4 @@
-## 0.12.34-dev
+## 0.12.34
 
 * Requires at least Dart 1.24.0.
 * The `--precompiled` flag is now supported for the vm platform and the node
