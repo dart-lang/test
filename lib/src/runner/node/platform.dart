@@ -194,7 +194,7 @@ class NodePlatform extends PlatformPlugin
       int socketPort,
       String precompiledPath) async {
     StackTraceMapper mapper;
-    var jsPath = p.join(precompiledPath, testPath + ".node_test.dart.js");
+    var jsPath = p.join(precompiledPath, '$testPath.node_test.dart.js');
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
       var resolver = await SyncPackageResolver
