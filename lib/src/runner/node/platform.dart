@@ -119,7 +119,7 @@ class NodePlatform extends PlatformPlugin
       // TODO(nweiz): Remove the DelegatingStreamSink wrapper when sdk#31504 is
       // fixed.
       var channel = new StreamChannel(socket, new DelegatingStreamSink(socket))
-          .transform(new StreamChannelTransformer.fromCodec(UTF8))
+          .transform(new StreamChannelTransformer.fromCodec(utf8))
           .transform(chunksToLines)
           .transform(jsonDocument)
           .transformStream(
@@ -233,7 +233,7 @@ class NodePlatform extends PlatformPlugin
             'Make sure "pub serve" is serving the test/ directory.');
       }
 
-      return await UTF8.decodeStream(response);
+      return await utf8.decodeStream(response);
     } on IOException catch (error) {
       var message = getErrorMessage(error);
       if (error is SocketException) {
