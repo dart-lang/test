@@ -111,7 +111,8 @@ class _OrderedEquals extends Matcher {
 /// Returns a matcher which matches [Iterable]s that have the same length and
 /// the same elements as [expected], but not necessarily in the same order.
 ///
-/// Note that this is O(n^2) so should only be used on small objects.
+/// Note that this is worst case O(n^2) runtime and memory usage so it should
+/// only be used on small iterables.
 Matcher unorderedEquals(Iterable expected) => new _UnorderedEquals(expected);
 
 class _UnorderedEquals extends _UnorderedMatches {
@@ -145,7 +146,8 @@ abstract class _IterableMatcher extends Matcher {
 /// Returns a matcher which matches [Iterable]s whose elements match the
 /// matchers in [expected], but not necessarily in the same order.
 ///
-///  Note that this is `O(n^2)` and so should only be used on small objects.
+/// Note that this is worst case O(n^2) runtime and memory usage so it should
+/// only be used on small iterables.
 Matcher unorderedMatches(Iterable expected) => new _UnorderedMatches(expected);
 
 class _UnorderedMatches extends Matcher {
@@ -155,45 +157,50 @@ class _UnorderedMatches extends Matcher {
       : _expected = expected.map(wrapMatcher).toList();
 
   String _test(item) {
-    if (item is Iterable) {
-      var list = item.toList();
+    if (item is! Iterable) return 'not iterable';
 
-      // Check the lengths are the same.
-      if (_expected.length > list.length) {
-        return 'has too few elements (${list.length} < ${_expected.length})';
-      } else if (_expected.length < list.length) {
-        return 'has too many elements (${list.length} > ${_expected.length})';
-      }
+    var values = item.toList();
 
-      var matched = new List<bool>.filled(list.length, false);
-      var expectedPosition = 0;
-      for (var expectedMatcher in _expected) {
-        var actualPosition = 0;
-        var gotMatch = false;
-        for (var actualElement in list) {
-          if (!matched[actualPosition]) {
-            if (expectedMatcher.matches(actualElement, {})) {
-              matched[actualPosition] = gotMatch = true;
-              break;
-            }
-          }
-          ++actualPosition;
-        }
-
-        if (!gotMatch) {
-          return new StringDescription()
-              .add('has no match for ')
-              .addDescriptionOf(expectedMatcher)
-              .add(' at index $expectedPosition')
-              .toString();
-        }
-
-        ++expectedPosition;
-      }
-      return null;
-    } else {
-      return 'not iterable';
+    // Check the lengths are the same.
+    if (_expected.length > values.length) {
+      return 'has too few elements (${values.length} < ${_expected.length})';
+    } else if (_expected.length < values.length) {
+      return 'has too many elements (${values.length} > ${_expected.length})';
     }
+
+    var edges =
+        new List.generate(values.length, (_) => <int>[], growable: false);
+    for (int v = 0; v < values.length; v++) {
+      for (int m = 0; m < _expected.length; m++) {
+        if (_expected[m].matches(values[v], {})) {
+          edges[v].add(m);
+        }
+      }
+    }
+    // The index into `values` matched with each matcher or `null` if no value
+    // has been matched yet.
+    var matched = new List<int>(_expected.length);
+    for (int valueIndex = 0; valueIndex < values.length; valueIndex++) {
+      _findPairing(edges, valueIndex, matched);
+    }
+    for (int matcherIndex = 0;
+        matcherIndex < _expected.length;
+        matcherIndex++) {
+      if (matched[matcherIndex] == null) {
+        final description = new StringDescription()
+            .add('has no match for ')
+            .addDescriptionOf(_expected[matcherIndex])
+            .add(' at index $matcherIndex');
+        final remainingUnmatched =
+            matched.sublist(matcherIndex + 1).where((m) => m == null).length;
+        return remainingUnmatched == 0
+            ? description.toString()
+            : description
+                .add(' along with $remainingUnmatched other unmatched')
+                .toString();
+      }
+    }
+    return null;
   }
 
   bool matches(item, Map mismatchState) => _test(item) == null;
@@ -206,6 +213,31 @@ class _UnorderedMatches extends Matcher {
   Description describeMismatch(item, Description mismatchDescription,
           Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item));
+
+  /// Returns [true] if the value at [valueIndex] can be paired with some
+  /// unmatched matcher and updates the state of [matched].
+  ///
+  /// If there is a conflic where multiple values may match the same matcher
+  /// recursively looks for a new place to match the old value. [reserved]
+  /// tracks the matchers that have been used _during_ this search.
+  bool _findPairing(List<List<int>> edges, int valueIndex, List<int> matched,
+      [Set<int> reserved]) {
+    reserved ??= new Set<int>();
+    final possiblePairings =
+        edges[valueIndex].where((m) => !reserved.contains(m));
+    for (final matcherIndex in possiblePairings) {
+      reserved.add(matcherIndex);
+      final previouslyMatched = matched[matcherIndex];
+      if (previouslyMatched == null ||
+          // If the matcher isn't already free, check whether the existing value
+          // occupying the matcher can be bumped to another one.
+          _findPairing(edges, matched[matcherIndex], matched, reserved)) {
+        matched[matcherIndex] = valueIndex;
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 /// A pairwise matcher for [Iterable]s.

@@ -1,5 +1,5 @@
 name: matcher
-version: 0.12.1+4
+version: 0.12.2-dev
 author: Dart Team <misc@dartlang.org>
 description: Support for specifying test expectations
 homepage: https://github.com/dart-lang/matcher
@@ -9,3 +9,6 @@ dependencies:
   stack_trace: '^1.2.0'
 dev_dependencies:
   test: '>=0.12.0 <0.13.0'
+
+dependency_overrides:
+  test: ^0.12.0

@@ -1,3 +1,9 @@
+## 0.12.2
+
+* Fixed `unorderedMatches` in cases where the matchers may match more than one
+  element and order of the elements doesn't line up with the order of the
+  matchers.
+
 ## 0.12.1+4
 
 * Fixed SDK constraint to allow edge builds.
