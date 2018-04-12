@@ -152,9 +152,11 @@ Matcher unorderedMatches(Iterable expected) => new _UnorderedMatches(expected);
 
 class _UnorderedMatches extends Matcher {
   final List<Matcher> _expected;
+  final bool _allowUnmatchedValues;
 
-  _UnorderedMatches(Iterable expected)
-      : _expected = expected.map(wrapMatcher).toList();
+  _UnorderedMatches(Iterable expected, {bool allowUnmatchedValues})
+      : _expected = expected.map(wrapMatcher).toList(),
+        _allowUnmatchedValues = allowUnmatchedValues ?? false;
 
   String _test(item) {
     if (item is! Iterable) return 'not iterable';
@@ -164,7 +166,7 @@ class _UnorderedMatches extends Matcher {
     // Check the lengths are the same.
     if (_expected.length > values.length) {
       return 'has too few elements (${values.length} < ${_expected.length})';
-    } else if (_expected.length < values.length) {
+    } else if (!_allowUnmatchedValues && _expected.length < values.length) {
       return 'has too many elements (${values.length} > ${_expected.length})';
     }
 
@@ -300,11 +302,43 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
 }
 
 /// Matches [Iterable]s which contain an element matching every value in
+/// [expected] in any order, and may contain additional values.
+///
+/// For example: `[0, 1, 0, 2, 0]` matches `containsAll([1, 2])` and
+/// `containsAll([2, 1])` but not `containsAll([1, 2, 3])`.
+///
+/// Will only match values which implement [Iterable].
+///
+/// Each element in the value will only be considered a match for a single
+/// matcher in [expected] even if it could satisfy more than one. For instance
+/// `containsAll([greaterThan(1), greaterThan(2)])` will not be satisfied by
+/// `[3]`. To check that all matchers are satisfied within an iterable and allow
+/// the same element to satisfy multiple matchers use
+/// `allOf(matchers.map(contains))`.
+///
+/// Note that this is worst case O(n^2) runtime and memory usage so it should
+/// only be used on small iterables.
+Matcher containsAll(Iterable expected) => new _ContainsAll(expected);
+
+class _ContainsAll extends _UnorderedMatches {
+  final Iterable _unwrappedExpected;
+
+  _ContainsAll(Iterable expected)
+      : _unwrappedExpected = expected,
+        super(expected.map(wrapMatcher), allowUnmatchedValues: true);
+  @override
+  Description describe(Description description) =>
+      description.add('contains all of ').addDescriptionOf(_unwrappedExpected);
+}
+
+/// Matches [Iterable]s which contain an element matching every value in
 /// [expected] in the same order, but may contain additional values interleaved
 /// throughout.
 ///
 /// For example: `[0, 1, 0, 2, 0]` matches `containsAllInOrder([1, 2])` but not
 /// `containsAllInOrder([2, 1])` or `containsAllInOrder([1, 2, 3])`.
+///
+/// Will only match values which implement [Iterable].
 Matcher containsAllInOrder(Iterable expected) =>
     new _ContainsAllInOrder(expected);
 

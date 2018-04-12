@@ -4,6 +4,10 @@
   element and order of the elements doesn't line up with the order of the
   matchers.
 
+* Add containsAll matcher for Iterables. This Matcher checks that all
+  values/matchers in an expected iterable are satisfied by an element in the
+  value without allowing the same value to satisfy multiple matchers.
+
 ## 0.12.1+4
 
 * Fixed SDK constraint to allow edge builds.

@@ -199,6 +199,33 @@ void main() {
         "Which: has no match for a value greater than <3> at index 0");
   });
 
+  test('containsAll', () {
+    var d = [0, 1, 2];
+    shouldPass(d, containsAll([1, 2]));
+    shouldPass(d, containsAll([2, 1]));
+    shouldPass(d, containsAll([greaterThan(0), greaterThan(1)]));
+    shouldPass([2, 1], containsAll([greaterThan(0), greaterThan(1)]));
+    shouldFail(
+        d,
+        containsAll([1, 2, 3]),
+        "Expected: contains all of [1, 2, 3] "
+        "Actual: [0, 1, 2] "
+        "Which: has no match for <3> at index 2");
+    shouldFail(
+        1,
+        containsAll([1]),
+        "Expected: contains all of [1] "
+        "Actual: <1> "
+        "Which: not iterable");
+    shouldFail(
+        [-1, 2],
+        containsAll([greaterThan(0), greaterThan(1)]),
+        "Expected: contains all of [<a value greater than <0>>, "
+        "<a value greater than <1>>] "
+        "Actual: [-1, 2] "
+        "Which: has no match for a value greater than <1> at index 1");
+  });
+
   test('containsAllInOrder', () {
     var d = [0, 1, 0, 2];
     shouldPass(d, containsAllInOrder([1, 2]));
