@@ -1,6 +1,9 @@
 ## 0.12.34+1
 
 * Fixed an issue `--precompiled` node tests in subdirectories.
+* Fixed default custom html handler so it correctly includes the
+  packages/test/dart.js file. This allows you to get proper errors instead of
+  timeouts if there are load exceptions in the browser.
 
 ## 0.12.34
 
