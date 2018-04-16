@@ -1,5 +1,8 @@
-## 0.12.34+1
+## 0.12.35
 
+* Dropped support for Dart 1. Going forward only Dart 2 will be supported.
+  * If you experience blocking issues and are still on the Dart 1 sdk, we will
+    consider bug fixes on a per-case basis based on severity and impact.
 * Fixed an issue `--precompiled` node tests in subdirectories.
 * Fixed some dart2 issues with node test bootstrapping code so that dartdevc
   tests can run.
