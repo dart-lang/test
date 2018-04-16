@@ -43,16 +43,11 @@ dart_task:
  - dart_task: dartanalyzer
 
  # Split the tests into five shards to help parallelize them across Travis workers.
- - test: --preset travis --total-shards 5 --shard-index 0
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 1
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 2
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 3
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 4
-   install_dartium: true
+ - test: --preset travis --total-shards 5 --shard-index 0 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 1 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 2 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 3 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 4 -x dartium
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
