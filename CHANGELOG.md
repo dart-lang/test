@@ -1,6 +1,8 @@
 ## 0.12.34+1
 
 * Fixed an issue `--precompiled` node tests in subdirectories.
+* Fixed some dart2 issues with node test bootstrapping code so that dartdevc
+  tests can run.
 
 ## 0.12.34
 
