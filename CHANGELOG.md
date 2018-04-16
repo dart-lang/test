@@ -3,6 +3,9 @@
 * Fixed an issue `--precompiled` node tests in subdirectories.
 * Fixed some dart2 issues with node test bootstrapping code so that dartdevc
   tests can run.
+* Fixed default custom html handler so it correctly includes the
+  packages/test/dart.js file. This allows you to get proper errors instead of
+  timeouts if there are load exceptions in the browser.
 
 ## 0.12.34
 
