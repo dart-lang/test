@@ -99,7 +99,7 @@ abstract class Browser {
       }
 
       if (!_closed && exitCode != 0) {
-        var outputString = UTF8.decode(output);
+        var outputString = utf8.decode(output);
         var message = "$name failed with exit code $exitCode.";
         if (outputString.isNotEmpty) {
           message += "\nStandard output:\n$outputString";

@@ -181,7 +181,7 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
 StreamChannel spawnHybridCode(String dartCode,
     {Object message, bool stayAlive: false}) {
   var uri = new Uri.dataFromString(dartCode,
-      encoding: UTF8, mimeType: 'application/dart');
+      encoding: utf8, mimeType: 'application/dart');
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 

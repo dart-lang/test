@@ -53,11 +53,11 @@ void main() {
 
     var liveTest = (suite.group.entries.single as Test).load(suite);
     expect(liveTest.run(), completes);
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     expect(liveTest.state.status, equals(Status.running));
 
     completer.complete(innerSuite);
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     expectTestPassed(liveTest);
   });
 
@@ -83,7 +83,7 @@ void main() {
 
     var liveTest = (suite.group.entries.single as Test).load(suite);
     expect(liveTest.run(), completes);
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     expect(liveTest.state.status, equals(Status.running));
 
     expect(liveTest.close(), completes);

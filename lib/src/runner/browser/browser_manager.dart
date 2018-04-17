@@ -204,7 +204,7 @@ class BrowserManager {
       String path, Uri url, SuiteConfiguration suiteConfig, Object message,
       {StackTraceMapper mapper}) async {
     url = url.replace(
-        fragment: Uri.encodeFull(JSON.encode({
+        fragment: Uri.encodeFull(jsonEncode({
       "metadata": suiteConfig.metadata.serialize(),
       "browser": _runtime.identifier
     })));

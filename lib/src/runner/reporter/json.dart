@@ -276,7 +276,7 @@ class JsonReporter implements Reporter {
   void _emit(String type, Map attributes) {
     attributes["type"] = type;
     attributes["time"] = _stopwatch.elapsed.inMilliseconds;
-    print(JSON.encode(attributes));
+    print(jsonEncode(attributes));
   }
 
   /// Modifies [map] to include line, column, and URL information from the first

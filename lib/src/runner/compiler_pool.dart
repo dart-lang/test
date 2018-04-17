@@ -112,7 +112,7 @@ class CompilerPool {
   /// Fix up the source map at [mapPath] so that it points to absolute file:
   /// URIs that are resolvable by the browser.
   void _fixSourceMap(String mapPath) {
-    var map = JSON.decode(new File(mapPath).readAsStringSync());
+    var map = jsonDecode(new File(mapPath).readAsStringSync());
     var root = map['sourceRoot'];
 
     map['sources'] = map['sources'].map((source) {
@@ -122,14 +122,14 @@ class CompilerPool {
       return p.toUri(mapPath).resolveUri(url).toString();
     }).toList();
 
-    new File(mapPath).writeAsStringSync(JSON.encode(map));
+    new File(mapPath).writeAsStringSync(jsonEncode(map));
   }
 
   /// Sanitizes the bytes emitted by [stream], converts them to text, and writes
   /// them to [buffer].
   Future _printOutputStream(Stream<List<int>> stream, StringBuffer buffer) {
     return sanitizeForWindows(stream)
-        .listen((data) => buffer.write(UTF8.decode(data)))
+        .listen((data) => buffer.write(utf8.decode(data)))
         .asFuture();
   }
 

@@ -503,10 +503,10 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     throw 'oh no';
   }, onPlatform: {
-    "vm": new Timeout(Duration.ZERO)
+    "vm": new Timeout(Duration.zero)
   });
 }
 ''').create();
@@ -633,7 +633,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
     throw 'oh no';
   });
 }

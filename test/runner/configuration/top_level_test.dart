@@ -34,9 +34,9 @@ void main() {
 
   test("loads configuration from the path passed to --configuration", () async {
     // Make sure dart_test.yaml is ignored.
-    await d.file("dart_test.yaml", JSON.encode({"run_skipped": true})).create();
+    await d.file("dart_test.yaml", jsonEncode({"run_skipped": true})).create();
 
-    await d.file("special_test.yaml", JSON.encode({"skip": true})).create();
+    await d.file("special_test.yaml", jsonEncode({"skip": true})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -55,7 +55,7 @@ void main() {
   test("pauses the test runner after a suite loads with pause_after_load: true",
       () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"pause_after_load": true}))
+        .file("dart_test.yaml", jsonEncode({"pause_after_load": true}))
         .create();
 
     await d.file("test.dart", """
@@ -99,7 +99,7 @@ void main() {
   }, tags: 'chrome');
 
   test("runs skipped tests with run_skipped: true", () async {
-    await d.file("dart_test.yaml", JSON.encode({"run_skipped": true})).create();
+    await d.file("dart_test.yaml", jsonEncode({"run_skipped": true})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -117,7 +117,7 @@ void main() {
 
   test("includes the full stack with verbose_trace: true", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"verbose_trace": true}))
+        .file("dart_test.yaml", jsonEncode({"verbose_trace": true}))
         .create();
 
     await d.file("test.dart", """
@@ -136,7 +136,7 @@ void main() {
   test("disables stack trace chaining with chain_stack_traces: false",
       () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"chain_stack_traces": false}))
+        .file("dart_test.yaml", jsonEncode({"chain_stack_traces": false}))
         .create();
 
     await d.file("test.dart", """
@@ -167,7 +167,7 @@ void main() {
 
   test("doesn't dartify stack traces for JS-compiled tests with js_trace: true",
       () async {
-    await d.file("dart_test.yaml", JSON.encode({"js_trace": true})).create();
+    await d.file("dart_test.yaml", jsonEncode({"js_trace": true})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -186,7 +186,7 @@ void main() {
   }, tags: 'chrome');
 
   test("retries tests with retry: 1", () async {
-    await d.file("dart_test.yaml", JSON.encode({"retry": 1})).create();
+    await d.file("dart_test.yaml", jsonEncode({"retry": 1})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -210,7 +210,7 @@ void main() {
   });
 
   test("skips tests with skip: true", () async {
-    await d.file("dart_test.yaml", JSON.encode({"skip": true})).create();
+    await d.file("dart_test.yaml", jsonEncode({"skip": true})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -227,7 +227,7 @@ void main() {
 
   test("skips tests with skip: reason", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"skip": "Tests are boring."}))
+        .file("dart_test.yaml", jsonEncode({"skip": "Tests are boring."}))
         .create();
 
     await d.file("test.dart", """
@@ -246,7 +246,7 @@ void main() {
 
   group("test_on", () {
     test("runs tests on a platform matching platform", () async {
-      await d.file("dart_test.yaml", JSON.encode({"test_on": "vm"})).create();
+      await d.file("dart_test.yaml", jsonEncode({"test_on": "vm"})).create();
 
       await d.file("test.dart", """
         import 'package:test/test.dart';
@@ -263,7 +263,7 @@ void main() {
 
     test("warns about the VM when no OSes are supported", () async {
       await d
-          .file("dart_test.yaml", JSON.encode({"test_on": "chrome"}))
+          .file("dart_test.yaml", jsonEncode({"test_on": "chrome"}))
           .create();
 
       await d.file("test.dart", """
@@ -285,9 +285,7 @@ void main() {
     });
 
     test("warns about the OS when some OSes are supported", () async {
-      await d
-          .file("dart_test.yaml", JSON.encode({"test_on": otherOS}))
-          .create();
+      await d.file("dart_test.yaml", jsonEncode({"test_on": otherOS})).create();
 
       await d.file("test.dart", """
         import 'package:test/test.dart';
@@ -308,7 +306,7 @@ void main() {
 
     test("warns about browsers in general when no browsers are supported",
         () async {
-      await d.file("dart_test.yaml", JSON.encode({"test_on": "vm"})).create();
+      await d.file("dart_test.yaml", jsonEncode({"test_on": "vm"})).create();
 
       await d.file("test.dart", """
         import 'package:test/test.dart';
@@ -331,7 +329,7 @@ void main() {
         "warns about specific browsers when specific browsers are "
         "supported", () async {
       await d
-          .file("dart_test.yaml", JSON.encode({"test_on": "safari"}))
+          .file("dart_test.yaml", jsonEncode({"test_on": "safari"}))
           .create();
 
       await d.file("test.dart", """
@@ -354,7 +352,7 @@ void main() {
   });
 
   test("uses the specified reporter", () async {
-    await d.file("dart_test.yaml", JSON.encode({"reporter": "json"})).create();
+    await d.file("dart_test.yaml", jsonEncode({"reporter": "json"})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -416,7 +414,7 @@ transformers:
     var pub = await runPubServe();
 
     await d
-        .file("dart_test.yaml", JSON.encode({"pub_serve": pubServePort}))
+        .file("dart_test.yaml", jsonEncode({"pub_serve": pubServePort}))
         .create();
 
     var test = await runTest([]);
@@ -426,7 +424,7 @@ transformers:
   }, tags: 'pub');
 
   test("uses the specified concurrency", () async {
-    await d.file("dart_test.yaml", JSON.encode({"concurrency": 2})).create();
+    await d.file("dart_test.yaml", jsonEncode({"concurrency": 2})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';
@@ -444,7 +442,7 @@ transformers:
   });
 
   test("uses the specified timeout", () async {
-    await d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();
+    await d.file("dart_test.yaml", jsonEncode({"timeout": "0s"})).create();
 
     await d.file("test.dart", """
       import 'dart:async';
@@ -452,7 +450,7 @@ transformers:
       import 'package:test/test.dart';
 
       void main() {
-        test("success", () => new Future.delayed(Duration.ZERO));
+        test("success", () => new Future.delayed(Duration.zero));
       }
     """).create();
 
@@ -468,7 +466,7 @@ transformers:
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "platforms": ["vm", "chrome"]
             }))
         .create();
@@ -487,7 +485,7 @@ transformers:
   }, tags: "chrome");
 
   test("command line args take precedence", () async {
-    await d.file("dart_test.yaml", JSON.encode({"timeout": "0s"})).create();
+    await d.file("dart_test.yaml", jsonEncode({"timeout": "0s"})).create();
 
     await d.file("test.dart", """
       import 'dart:async';
@@ -495,7 +493,7 @@ transformers:
       import 'package:test/test.dart';
 
       void main() {
-        test("success", () => new Future.delayed(Duration.ZERO));
+        test("success", () => new Future.delayed(Duration.zero));
       }
     """).create();
 
@@ -508,7 +506,7 @@ transformers:
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "names": ["z[ia]p", "a"]
             }))
         .create();
@@ -532,7 +530,7 @@ transformers:
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "names": ["z", "a"]
             }))
         .create();
@@ -556,7 +554,7 @@ transformers:
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "paths": ["zip", "zap"]
             }))
         .create();
@@ -598,7 +596,7 @@ transformers:
 
   test("uses the specified filename", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"filename": "test_*.dart"}))
+        .file("dart_test.yaml", jsonEncode({"filename": "test_*.dart"}))
         .create();
 
     await d.dir("test", [

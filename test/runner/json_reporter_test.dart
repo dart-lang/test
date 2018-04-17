@@ -537,14 +537,14 @@ $tests
   var stdoutLines = await test.stdoutStream().toList();
 
   expect(stdoutLines.length, equals(expected.length),
-      reason: "Expected $stdoutLines to match ${JSON.encode(expected)}.");
+      reason: "Expected $stdoutLines to match ${jsonEncode(expected)}.");
 
   // TODO(nweiz): validate each event against the JSON schema when
   // patefacio/json_schema#4 is merged.
 
   // Remove excess trailing whitespace.
   for (var i = 0; i < stdoutLines.length; i++) {
-    var event = JSON.decode(stdoutLines[i]);
+    var event = jsonDecode(stdoutLines[i]);
     expect(event.remove("time"), new isInstanceOf<int>());
     event.remove("stackTrace");
     expect(event, equals(expected[i]));
