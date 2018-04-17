@@ -4,7 +4,6 @@
 * [Running Tests](#running-tests)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
-  * [Running Tests on Dartium](#running-tests-on-dartium)
   * [Running Tests on Node.js](#running-tests-on-nodejs)
 * [Asynchronous Tests](#asynchronous-tests)
   * [Stream Matchers](#stream-matchers)
@@ -204,11 +203,6 @@ identifiers are defined:
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
-* `dartium`: Whether the test is running on Dartium.
-
-* `content-shell`: Whether the test is running on the headless Dartium content
-  shell.
-
 * `chrome`: Whether the test is running on Google Chrome.
 
 * `phantomjs`: Whether the test is running on
@@ -222,8 +216,8 @@ identifiers are defined:
 
 * `node`: Whether the test is running on Node.js.
 
-* `dart-vm`: Whether the test is running on the Dart VM in any context,
-  including Dartium. It's identical to `!js`.
+* `dart-vm`: Whether the test is running on the Dart VM in any context. It's
+  identical to `!js`.
 
 * `browser`: Whether the test is running in any browser.
 
@@ -255,30 +249,6 @@ identifiers are defined:
 
 For example, if you wanted to run a test on every browser but Chrome, you would
 write `@TestOn("browser && !chrome")`.
-
-### Running Tests on Dartium
-
-Tests can be run on [Dartium][] by passing the `-p dartium` flag. If you're
-using Mac OS, you can [install Dartium using Homebrew][homebrew]. Otherwise,
-make sure there's an executable called `dartium` (on Mac OS or Linux) or
-`dartium.exe` (on Windows) on your system path.
-
-[Dartium]: https://www.dartlang.org/tools/dartium/
-[homebrew]: https://github.com/dart-lang/homebrew-dart
-
-Similarly, tests can be run on the headless Dartium content shell by passing `-p
-content-shell`. The content shell is installed along with Dartium when using
-Homebrew. Otherwise, you can downloaded it manually [from this
-page][content_shell]; if you do, make sure the executable named `content_shell`
-(on Mac OS or Linux) or `content_shell.exe` (on Windows) is on your system path.
-Note content_shell on linux requires the font packages ttf-kochi-mincho and ttf-kochi-gothic.
-
-[content_shell]: http://gsdview.appspot.com/dart-archive/channels/stable/release/latest/dartium/
-
-[In the future][issue 63], there will be a more explicit way to configure the
-location of both the Dartium and content shell executables.
-
-[issue 63]: https://github.com/dart-lang/test/issues/63
 
 ### Running Tests on Node.js
 
@@ -708,14 +678,13 @@ passed as command-line arguments:
 # This package's tests are very slow. Double the default timeout.
 timeout: 2x
 
-# This is a browser-only package, so test on content shell by default.
-platforms: [content-shell]
+# This is a browser-only package, so test on chrome by default.
+platforms: [chrome]
 ```
 
 The configuration file sets new defaults. These defaults can still be overridden
 by command-line arguments, just like the built-in defaults. In the example
-above, you could pass `--platform chrome` to run on Chrome instead of the
-Dartium content shell.
+above, you could pass `--platform firefox` to run on Firefox.
 
 A configuration file can do much more than just set global defaults. See
 [the full documentation][package config] for more details.
@@ -724,18 +693,16 @@ A configuration file can do much more than just set global defaults. See
 
 ## Debugging
 
-Tests can be debugged interactively using browsers' built-in development tools,
-including Observatory when you're using Dartium. Currently there's no support
-for interactively debugging command-line VM tests, but it will be added
-[in the future][issue 50].
+Tests can be debugged interactively using browsers' built-in development tools.
+Currently there's no support for interactively debugging command-line VM tests,
+but it will be added [in the future][issue 50].
 
 [issue 50]: https://github.com/dart-lang/test/issues/50
 
 The first step when debugging is to pass the `--pause-after-load` flag to the
 test runner. This pauses the browser after each test suite has loaded, so that
-you have time to open the development tools and set breakpoints. For Dartium,
-the test runner will print the Observatory URL for you. For PhantomJS, it will
-print the remote debugger URL. For content shell, it'll print both!
+you have time to open the development tools and set breakpoints. For PhantomJS,
+it will print the remote debugger URL.
 
 Once you've set breakpoints, either click the big arrow in the middle of the web
 page or press Enter in your terminal to start the tests running. When you hit a

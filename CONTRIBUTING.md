@@ -38,13 +38,8 @@ new tests, use the existing tests as a guideline for what they should look like.
 Before you send your pull request, make sure all the tests pass! To run all the
 tests, you'll need:
 
-* A recent version of [Dartium][] on your path as `dartium`.
-* A recent version of the Dartium content shell on your path as `content_shell`.
-  See [the README][] for installation instructions.
 * [PhantomJS][] version 2.0.0 or higher.
 
-[Dartium]: https://webdev.dartlang.org/tools/dartium
-[the README]: https://github.com/dart-lang/test/blob/master/README.md#running-tests-on-dartium
 [PhantomJS]: http://phantomjs.org/
 
 Once you have these, just run `pub run test`.

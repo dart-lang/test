@@ -21,8 +21,6 @@ import '../plugin/platform_helpers.dart';
 import '../runner_suite.dart';
 import 'browser.dart';
 import 'chrome.dart';
-import 'content_shell.dart';
-import 'dartium.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
 import 'phantom_js.dart';
@@ -139,10 +137,6 @@ class BrowserManager {
       Uri url, Runtime browser, ExecutableSettings settings,
       {bool debug: false}) {
     switch (browser.root) {
-      case Runtime.dartium:
-        return new Dartium(url, settings: settings, debug: debug);
-      case Runtime.contentShell:
-        return new ContentShell(url, settings: settings, debug: debug);
       case Runtime.chrome:
         return new Chrome(url, settings: settings, debug: debug);
       case Runtime.phantomJS:

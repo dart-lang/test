@@ -12,8 +12,8 @@ example:
 # This package's tests are very slow. Double the default timeout.
 timeout: 2x
 
-# This is a browser-only package, so test on content shell by default.
-platforms: [content-shell]
+# This is a browser-only package, so test on chrome by default.
+platforms: [chrome]
 
 tags:
   # Integration tests are even slower, so increase the timeout again.
@@ -359,7 +359,7 @@ platforms are included, the test runner will default to running tests on all of
 them. This defaults to `[vm]`.
 
 ```yaml
-platforms: [content_shell]
+platforms: [chrome]
 
 platforms:
 - chrome

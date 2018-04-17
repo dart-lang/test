@@ -14,14 +14,6 @@ final defaultSettings = new UnmodifiableMapView({
       macOSExecutable:
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       windowsExecutable: r'Google\Chrome\Application\chrome.exe'),
-  Runtime.contentShell: new ExecutableSettings(
-      linuxExecutable: 'content_shell',
-      macOSExecutable: 'content_shell',
-      windowsExecutable: 'content_shell.exe'),
-  Runtime.dartium: new ExecutableSettings(
-      linuxExecutable: 'dartium',
-      macOSExecutable: 'dartium',
-      windowsExecutable: 'dartium.exe'),
   Runtime.firefox: new ExecutableSettings(
       linuxExecutable: 'firefox',
       macOSExecutable: '/Applications/Firefox.app/Contents/MacOS/firefox-bin',

@@ -199,9 +199,8 @@ takes more control over the loading process. It emits its own
 Whereas the [`VMPlatform`][VMPlatform] loads each separate suite in isolation,
 the `BrowserPlatform` shares a substantial amount of resources between suites.
 All suites load their code from a single HTTP server, which is managed by the
-platform. This server provides access to Dart entrypoint wrappers for Dartium
-and content shell, to compiled JavaScript for other browsers, and to HTML files
-that bootstrap the tests.
+platform. This server provides access to compiled JavaScript for other browsers,
+and to HTML files that bootstrap the tests.
 
 In addition to sharing a server, when multiple suites are loaded for the same
 browser, they all share a tab within that browser. Each separate browser is

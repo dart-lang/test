@@ -85,8 +85,6 @@ class Loader {
     _registerPlatformPlugin([Runtime.vm], () => new VMPlatform());
     _registerPlatformPlugin([Runtime.nodeJS], () => new NodePlatform());
     _registerPlatformPlugin([
-      Runtime.dartium,
-      Runtime.contentShell,
       Runtime.chrome,
       Runtime.phantomJS,
       Runtime.firefox,

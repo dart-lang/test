@@ -103,14 +103,6 @@ void main() {
       await pub.kill();
     }, tags: 'node');
 
-    test("runs those tests on Dartium", () async {
-      var pub = await runPubServe();
-      var test = await runTest([_pubServeArg, '-p', 'dartium']);
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-      await test.shouldExit(0);
-      await pub.kill();
-    }, tags: 'dartium');
-
     test(
         "gracefully handles pub serve running on the wrong directory for "
         "VM tests", () async {
@@ -151,24 +143,6 @@ void main() {
 
         await pub.kill();
       }, tags: 'chrome');
-
-      test("when run on Dartium", () async {
-        await d.dir("web").create();
-
-        var pub = await runPubServe(args: ['web']);
-        var test = await runTest([_pubServeArg, '-p', 'dartium']);
-        expect(
-            test.stdout,
-            containsInOrder([
-              '-1: loading ${p.join("test", "my_test.dart")} [E]',
-              'Failed to load "${p.join("test", "my_test.dart")}":',
-              '404 Not Found',
-              'Make sure "pub serve" is serving the test/ directory.'
-            ]));
-        await test.shouldExit(1);
-
-        await pub.kill();
-      }, tags: 'dartium');
     });
 
     test(
@@ -249,14 +223,6 @@ void main() {
       await test.shouldExit(0);
       await pub.kill();
     }, tags: 'chrome');
-
-    test("on Dartium", () async {
-      var pub = await runPubServe();
-      var test = await runTest([_pubServeArg, '-p', 'dartium']);
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-      await test.shouldExit(0);
-      await pub.kill();
-    }, tags: 'dartium');
   });
 
   group("with a failing test", () {
