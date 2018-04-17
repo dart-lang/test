@@ -26,7 +26,7 @@ Future<Isolate> runInIsolate(String code, message,
   resolver ??= PackageResolver.current;
   return await Isolate.spawnUri(
       new Uri.dataFromString(code,
-          mimeType: 'application/dart', encoding: UTF8),
+          mimeType: 'application/dart', encoding: utf8),
       [],
       message,
       packageRoot: await resolver.packageRoot,

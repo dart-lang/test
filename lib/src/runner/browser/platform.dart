@@ -323,7 +323,7 @@ class BrowserPlatform extends PlatformPlugin
 
         if (getSourceMap && !suiteConfig.jsTrace) {
           _mappers[path] = new StackTraceMapper(
-              await UTF8.decodeStream(response),
+              await utf8.decodeStream(response),
               mapUrl: url,
               packageResolver: new SyncPackageResolver.root('packages'),
               sdkRoot: p.toUri('packages/\$sdk'));

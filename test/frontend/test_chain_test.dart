@@ -31,7 +31,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "fold_stack_frames": {
                 "except": ["stream_channel"]
               }
@@ -53,7 +53,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "fold_stack_frames": {
                 "only": ["test"]
               }
@@ -68,7 +68,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "fold_stack_frames": {
                 "only": ["test"]
               }

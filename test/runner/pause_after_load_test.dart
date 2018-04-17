@@ -238,8 +238,8 @@ void main() {
   print('loaded test 1!');
 
   test("success", () async {
-    await new Future.delayed(Duration.ZERO);
-  }, timeout: new Timeout(Duration.ZERO));
+    await new Future.delayed(Duration.zero);
+  }, timeout: new Timeout(Duration.zero));
 }
 """).create();
 

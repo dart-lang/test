@@ -18,7 +18,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "add_tags": ["foo", "bar"]
             }))
         .create();
@@ -49,7 +49,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "tags": {"foo": null}
               }))
           .create();
@@ -71,7 +71,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "tags": {
                   "foo": {"timeout": "0s"}
                 }
@@ -84,8 +84,8 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
-          test("test 2", () => new Future.delayed(Duration.ZERO));
+          test("test 1", () => new Future.delayed(Duration.zero), tags: ['foo']);
+          test("test 2", () => new Future.delayed(Duration.zero));
         }
       """).create();
 
@@ -99,7 +99,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "tags": {
                   "foo && bar": {"timeout": "0s"}
                 }
@@ -112,9 +112,9 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test 1", () => new Future.delayed(Duration.ZERO), tags: ['foo']);
-          test("test 2", () => new Future.delayed(Duration.ZERO), tags: ['bar']);
-          test("test 3", () => new Future.delayed(Duration.ZERO),
+          test("test 1", () => new Future.delayed(Duration.zero), tags: ['foo']);
+          test("test 2", () => new Future.delayed(Duration.zero), tags: ['bar']);
+          test("test 3", () => new Future.delayed(Duration.zero),
               tags: ['foo', 'bar']);
         }
       """).create();
@@ -129,7 +129,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "tags": {
                   "foo": null,
                   "bar": {
@@ -158,7 +158,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "tags": {
                   "foo": {"skip": "some reason"}
                 }
@@ -185,7 +185,7 @@ void main() {
   group("include_tags and exclude_tags", () {
     test("only runs tests with the included tags", () async {
       await d
-          .file("dart_test.yaml", JSON.encode({"include_tags": "foo && bar"}))
+          .file("dart_test.yaml", jsonEncode({"include_tags": "foo && bar"}))
           .create();
 
       await d.file("test.dart", """
@@ -206,7 +206,7 @@ void main() {
 
     test("doesn't run tests with the excluded tags", () async {
       await d
-          .file("dart_test.yaml", JSON.encode({"exclude_tags": "foo && bar"}))
+          .file("dart_test.yaml", jsonEncode({"exclude_tags": "foo && bar"}))
           .create();
 
       await d.file("test.dart", """
@@ -241,7 +241,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "tags": {"foo bar": null}
                 }))
             .create();
@@ -255,7 +255,7 @@ void main() {
       });
 
       test("rejects an invalid tag map", () async {
-        await d.file("dart_test.yaml", JSON.encode({"tags": 12})).create();
+        await d.file("dart_test.yaml", jsonEncode({"tags": 12})).create();
 
         var test = await runTest([]);
         expect(test.stderr, containsInOrder(["tags must be a map", "^^"]));
@@ -266,7 +266,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "tags": {
                     "foo": {"timeout": "12p"}
                   }
@@ -283,7 +283,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "tags": {
                     "foo": {"filename": "*_blorp.dart"}
                   }
@@ -300,7 +300,7 @@ void main() {
     group("add_tags", () {
       test("rejects an invalid list type", () async {
         await d
-            .file("dart_test.yaml", JSON.encode({"add_tags": "foo"}))
+            .file("dart_test.yaml", jsonEncode({"add_tags": "foo"}))
             .create();
 
         var test = await runTest(["test.dart"]);
@@ -313,7 +313,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "add_tags": [12]
                 }))
             .create();
@@ -328,7 +328,7 @@ void main() {
         await d
             .file(
                 "dart_test.yaml",
-                JSON.encode({
+                jsonEncode({
                   "add_tags": ["foo bar"]
                 }))
             .create();
@@ -347,7 +347,7 @@ void main() {
     group("include_tags", () {
       test("rejects an invalid type", () async {
         await d
-            .file("dart_test.yaml", JSON.encode({"include_tags": 12}))
+            .file("dart_test.yaml", jsonEncode({"include_tags": 12}))
             .create();
 
         var test = await runTest(["test.dart"]);
@@ -358,7 +358,7 @@ void main() {
 
       test("rejects an invalid selector", () async {
         await d
-            .file("dart_test.yaml", JSON.encode({"include_tags": "foo bar"}))
+            .file("dart_test.yaml", jsonEncode({"include_tags": "foo bar"}))
             .create();
 
         var test = await runTest([]);
@@ -373,7 +373,7 @@ void main() {
     group("exclude_tags", () {
       test("rejects an invalid type", () async {
         await d
-            .file("dart_test.yaml", JSON.encode({"exclude_tags": 12}))
+            .file("dart_test.yaml", jsonEncode({"exclude_tags": 12}))
             .create();
 
         var test = await runTest(["test.dart"]);
@@ -384,7 +384,7 @@ void main() {
 
       test("rejects an invalid selector", () async {
         await d
-            .file("dart_test.yaml", JSON.encode({"exclude_tags": "foo bar"}))
+            .file("dart_test.yaml", jsonEncode({"exclude_tags": "foo bar"}))
             .create();
 
         var test = await runTest([]);

@@ -15,7 +15,7 @@ import '../../io.dart';
 void main() {
   test("rejects an invalid fold_stack_frames", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"fold_stack_frames": "flup"}))
+        .file("dart_test.yaml", jsonEncode({"fold_stack_frames": "flup"}))
         .create();
 
     var test = await runTest(["test.dart"]);
@@ -28,7 +28,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "fold_stack_frames": {
                 "except": ["blah"],
                 "only": ["blah"]
@@ -48,7 +48,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "fold_stack_frames": {"invalid": "blah"}
             }))
         .create();
@@ -63,7 +63,7 @@ void main() {
     await d
         .file(
             "dart_test.yaml",
-            JSON.encode({
+            jsonEncode({
               "fold_stack_frames": {"only": "blah"}
             }))
         .create();
@@ -76,7 +76,7 @@ void main() {
 
   test("rejects an invalid pause_after_load", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"pause_after_load": "flup"}))
+        .file("dart_test.yaml", jsonEncode({"pause_after_load": "flup"}))
         .create();
 
     var test = await runTest(["test.dart"]);
@@ -87,7 +87,7 @@ void main() {
 
   test("rejects an invalid verbose_trace", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"verbose_trace": "flup"}))
+        .file("dart_test.yaml", jsonEncode({"verbose_trace": "flup"}))
         .create();
 
     var test = await runTest(["test.dart"]);
@@ -98,7 +98,7 @@ void main() {
 
   test("rejects an invalid chain_stack_traces", () async {
     await d
-        .file("dart_test.yaml", JSON.encode({"chain_stack_traces": "flup"}))
+        .file("dart_test.yaml", jsonEncode({"chain_stack_traces": "flup"}))
         .create();
 
     var test = await runTest(["test.dart"]);
@@ -108,7 +108,7 @@ void main() {
   });
 
   test("rejects an invalid retry", () async {
-    await d.file("dart_test.yaml", JSON.encode({"retry": "flup"})).create();
+    await d.file("dart_test.yaml", jsonEncode({"retry": "flup"})).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stderr,
@@ -117,7 +117,7 @@ void main() {
   });
 
   test("rejects an negative retry values", () async {
-    await d.file("dart_test.yaml", JSON.encode({"retry": -1})).create();
+    await d.file("dart_test.yaml", jsonEncode({"retry": -1})).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stderr,
@@ -126,7 +126,7 @@ void main() {
   });
 
   test("rejects an invalid js_trace", () async {
-    await d.file("dart_test.yaml", JSON.encode({"js_trace": "flup"})).create();
+    await d.file("dart_test.yaml", jsonEncode({"js_trace": "flup"})).create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -136,7 +136,7 @@ void main() {
 
   group("reporter", () {
     test("rejects an invalid type", () async {
-      await d.file("dart_test.yaml", JSON.encode({"reporter": 12})).create();
+      await d.file("dart_test.yaml", jsonEncode({"reporter": 12})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr, containsInOrder(["reporter must be a string", "^^"]));
@@ -145,7 +145,7 @@ void main() {
 
     test("rejects an invalid name", () async {
       await d
-          .file("dart_test.yaml", JSON.encode({"reporter": "non-existent"}))
+          .file("dart_test.yaml", jsonEncode({"reporter": "non-existent"}))
           .create();
 
       var test = await runTest(["test.dart"]);
@@ -158,7 +158,7 @@ void main() {
   });
 
   test("rejects an invalid pub serve port", () async {
-    await d.file("dart_test.yaml", JSON.encode({"pub_serve": "foo"})).create();
+    await d.file("dart_test.yaml", jsonEncode({"pub_serve": "foo"})).create();
 
     var test = await runTest(["test.dart"]);
     expect(test.stderr, containsInOrder(["pub_serve must be an int", "^^^^^"]));
@@ -166,9 +166,7 @@ void main() {
   });
 
   test("rejects an invalid concurrency", () async {
-    await d
-        .file("dart_test.yaml", JSON.encode({"concurrency": "foo"}))
-        .create();
+    await d.file("dart_test.yaml", jsonEncode({"concurrency": "foo"})).create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -178,7 +176,7 @@ void main() {
 
   group("timeout", () {
     test("rejects an invalid type", () async {
-      await d.file("dart_test.yaml", JSON.encode({"timeout": 12})).create();
+      await d.file("dart_test.yaml", jsonEncode({"timeout": 12})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr, containsInOrder(["timeout must be a string", "^^"]));
@@ -186,7 +184,7 @@ void main() {
     });
 
     test("rejects an invalid format", () async {
-      await d.file("dart_test.yaml", JSON.encode({"timeout": "12p"})).create();
+      await d.file("dart_test.yaml", jsonEncode({"timeout": "12p"})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr,
@@ -197,7 +195,7 @@ void main() {
 
   group("names", () {
     test("rejects an invalid list type", () async {
-      await d.file("dart_test.yaml", JSON.encode({"names": "vm"})).create();
+      await d.file("dart_test.yaml", jsonEncode({"names": "vm"})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr, containsInOrder(["names must be a list", "^^^^"]));
@@ -208,7 +206,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "names": [12]
               }))
           .create();
@@ -222,7 +220,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "names": ["(foo"]
               }))
           .create();
@@ -237,7 +235,7 @@ void main() {
   group("plain_names", () {
     test("rejects an invalid list type", () async {
       await d
-          .file("dart_test.yaml", JSON.encode({"plain_names": "vm"}))
+          .file("dart_test.yaml", jsonEncode({"plain_names": "vm"}))
           .create();
 
       var test = await runTest(["test.dart"]);
@@ -250,7 +248,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "plain_names": [12]
               }))
           .create();
@@ -263,7 +261,7 @@ void main() {
 
   group("platforms", () {
     test("rejects an invalid list type", () async {
-      await d.file("dart_test.yaml", JSON.encode({"platforms": "vm"})).create();
+      await d.file("dart_test.yaml", jsonEncode({"platforms": "vm"})).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -275,7 +273,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "platforms": [12]
               }))
           .create();
@@ -290,7 +288,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "platforms": ["foo"]
               }))
           .create();
@@ -305,7 +303,7 @@ void main() {
 
   group("paths", () {
     test("rejects an invalid list type", () async {
-      await d.file("dart_test.yaml", JSON.encode({"paths": "test"})).create();
+      await d.file("dart_test.yaml", jsonEncode({"paths": "test"})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr, containsInOrder(["paths must be a list", "^^^^^^"]));
@@ -316,7 +314,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "paths": [12]
               }))
           .create();
@@ -330,7 +328,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "paths": ["/foo"]
               }))
           .create();
@@ -345,7 +343,7 @@ void main() {
       await d
           .file(
               "dart_test.yaml",
-              JSON.encode({
+              jsonEncode({
                 "paths": ["[invalid]"]
               }))
           .create();
@@ -359,7 +357,7 @@ void main() {
 
   group("filename", () {
     test("rejects an invalid type", () async {
-      await d.file("dart_test.yaml", JSON.encode({"filename": 12})).create();
+      await d.file("dart_test.yaml", jsonEncode({"filename": 12})).create();
 
       var test = await runTest(["test.dart"]);
       expect(
@@ -368,9 +366,7 @@ void main() {
     });
 
     test("rejects an invalid format", () async {
-      await d
-          .file("dart_test.yaml", JSON.encode({"filename": "{foo"}))
-          .create();
+      await d.file("dart_test.yaml", jsonEncode({"filename": "{foo"})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr,

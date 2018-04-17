@@ -190,19 +190,19 @@ class Dartium extends Browser {
           return null;
         }
 
-        webSocket.add(JSON.encode({
+        webSocket.add(jsonEncode({
           "jsonrpc": "2.0",
           "method": "streamListen",
           "params": {"streamId": "Isolate"},
           "id": "0"
         }));
 
-        webSocket.add(JSON.encode(
+        webSocket.add(jsonEncode(
             {"jsonrpc": "2.0", "method": "getVM", "params": {}, "id": "1"}));
 
         webSocket.listen((response) {
           try {
-            response = JSON.decode(response);
+            response = jsonDecode(response);
           } on FormatException catch (_) {
             giveUp();
             return;
