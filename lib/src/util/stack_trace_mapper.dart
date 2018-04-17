@@ -60,8 +60,8 @@ class StackTraceMapper {
         sdkRoot: Uri.parse(serialized['sdkRoot']),
         packageResolver: packageRoot.isNotEmpty
             ? new SyncPackageResolver.root(Uri.parse(serialized['packageRoot']))
-            : new SyncPackageResolver.config(
-                _deserializePackageConfigMap(serialized['packageConfigMap'])),
+            : new SyncPackageResolver.config(_deserializePackageConfigMap(
+                serialized['packageConfigMap'].cast<String, String>())),
         mapUrl: Uri.parse(serialized['mapUrl']));
   }
 

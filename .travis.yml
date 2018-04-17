@@ -25,10 +25,8 @@ before_install:
   - ln -s `which chromium-browser` bin/google-chrome
 
 dart_task:
-
- - dart_task: dartfmt
- - dart_task: dartanalyzer
-
+ - dartfmt
+ - dartanalyzer
  # Split the tests into five shards to help parallelize them across Travis workers.
  - test: --preset travis --total-shards 5 --shard-index 0
  - test: --preset travis --total-shards 5 --shard-index 1

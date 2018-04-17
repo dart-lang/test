@@ -4,6 +4,8 @@
   * If you experience blocking issues and are still on the Dart 1 sdk, we will
     consider bug fixes on a per-case basis based on severity and impact.
 * Fixed an issue `--precompiled` node tests in subdirectories.
+* Fixed some dart2 issues with node test bootstrapping code so that dartdevc
+  tests can run.
 * Fixed default custom html handler so it correctly includes the
   packages/test/dart.js file. This allows you to get proper errors instead of
   timeouts if there are load exceptions in the browser.
