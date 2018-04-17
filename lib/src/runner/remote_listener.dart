@@ -49,8 +49,8 @@ class RemoteListener {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
-    var controller =
-        new StreamChannelController(allowForeignErrors: false, sync: true);
+    var controller = new StreamChannelController<Object>(
+        allowForeignErrors: false, sync: true);
     var channel = new MultiChannel(controller.local);
 
     var verboseChain = true;

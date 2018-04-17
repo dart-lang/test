@@ -30,7 +30,6 @@ tags:
   firefox: {add_tags: [dart2js]}
   chrome: {add_tags: [dart2js]}
   phantomjs: {add_tags: [dart2js]}
-  dartium: {add_tags: [browser]}
 
   safari:
     add_tags: [dart2js]
