@@ -27,7 +27,7 @@ before_install:
 jobs:
   include:
     - stage: analyze_and_format
-      script: dartfmt_and_analyze.sh
+      script: tool/dartfmt_and_analyze.sh
     - stage: unit_test
       script: pub run test --preset travis --total-shards 5 --shard-index 0
     - stage: unit_test
