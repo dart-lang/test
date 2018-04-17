@@ -21,7 +21,6 @@ import '../plugin/platform_helpers.dart';
 import '../runner_suite.dart';
 import 'browser.dart';
 import 'chrome.dart';
-import 'content_shell.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
 import 'phantom_js.dart';
