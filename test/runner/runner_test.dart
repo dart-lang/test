@@ -50,11 +50,10 @@ void main() {
 
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
-final _browsers =
-    "[vm (default), chrome, phantomjs, firefox" +
-        (Platform.isMacOS ? ", safari" : "") +
-        (Platform.isWindows ? ", ie" : "") +
-        ", node]";
+final _browsers = "[vm (default), chrome, phantomjs, firefox" +
+    (Platform.isMacOS ? ", safari" : "") +
+    (Platform.isWindows ? ", ie" : "") +
+    ", node]";
 
 final _usage = """
 Usage: pub run test [files or directories...]
