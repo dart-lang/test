@@ -5,10 +5,9 @@ sudo: required
 dist: trusty
 
 dart:
- - stable
- - 1.23.0
+ - dev
 
-env: FORCE_TEST_EXIT=true DARTIUM_EXPIRATION_TIME=1550044800LL
+env: FORCE_TEST_EXIT=true
 
 # Content shell needs these fonts.
 addons:
@@ -39,45 +38,14 @@ before_install:
   - ln -s `pwd`/`echo drt-linux-*`/content_shell bin/content_shell
 
 dart_task:
- # Browser tests take particularly long on Dartium, so we split them up into different tasks.
- - test: --platform dartium
-   install_dartium: true
-
+ - dartfmt
+ - dartanalyzer
  # Split the tests into five shards to help parallelize them across Travis workers.
- - test: --preset travis --total-shards 5 --shard-index 0
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 1
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 2
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 3
-   install_dartium: true
- - test: --preset travis --total-shards 5 --shard-index 4
-   install_dartium: true
-
-matrix:
-  include:
-    # Browser tests take particularly long, so we split them up into different tasks.
-    - dart: dev
-      dart_task: {test: --platform chrome}
-
-    # Split the tests into five shards to help parallelize them across Travis workers.
-    # Don't run Dartium tests on dev because 2.0.0 doesn't support Dartium anymore.
-    - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 0 -x dartium}
-    - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 1 -x dartium}
-    - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 2 -x dartium}
-    - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 3 -x dartium}
-    - dart: dev
-      dart_task: {test: --preset travis --total-shards 5 --shard-index 4 -x dartium}
-
-    - dart: dev
-      dart_task: dartfmt
-    - dart: dev
-      dart_task: dartanalyzer
+ - test: --preset travis --total-shards 5 --shard-index 0 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 1 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 2 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 3 -x dartium
+ - test: --preset travis --total-shards 5 --shard-index 4 -x dartium
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

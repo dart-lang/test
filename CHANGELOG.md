@@ -1,6 +1,20 @@
-## 0.12.34-dev
+## 0.12.35
 
-* The `--precompiled` flag is now supported for the vm platform.
+* Dropped support for Dart 1. Going forward only Dart 2 will be supported.
+  * If you experience blocking issues and are still on the Dart 1 sdk, we will
+    consider bug fixes on a per-case basis based on severity and impact.
+* Fixed an issue `--precompiled` node tests in subdirectories.
+* Fixed some dart2 issues with node test bootstrapping code so that dartdevc
+  tests can run.
+* Fixed default custom html handler so it correctly includes the
+  packages/test/dart.js file. This allows you to get proper errors instead of
+  timeouts if there are load exceptions in the browser.
+
+## 0.12.34
+
+* Requires at least Dart 1.24.0.
+* The `--precompiled` flag is now supported for the vm platform and the node
+  platform.
 * On browser platforms the `--precompiled` flag now serves all sources directly
   from the precompiled directory, and will never attempt to do its own
   compilation.

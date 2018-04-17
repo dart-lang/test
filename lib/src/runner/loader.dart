@@ -244,12 +244,6 @@ class Loader {
 
       var name = (platform.runtime.isJS ? "compiling " : "loading ") + path;
       yield new LoadSuite(name, platformConfig, platform, () async {
-        if (platformConfig.precompiledPath != null &&
-            (!platform.runtime.isBrowser && !platform.runtime.isDartVM)) {
-          warn("--precompiled is only supported for browser and vm platforms.",
-              print: true);
-        }
-
         var memo = _platformPlugins[platform.runtime];
 
         try {

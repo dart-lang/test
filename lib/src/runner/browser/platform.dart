@@ -177,18 +177,16 @@ class BrowserPlatform extends PlatformPlugin
 
       // Link to the Dart wrapper on Dartium and the compiled JS version
       // elsewhere.
-      var scriptBase =
-          "${HTML_ESCAPE.convert(p.basename(test))}.browser_test.dart";
-      var script = request.headers['user-agent'].contains('(Dart)')
-          ? 'type="application/dart" src="$scriptBase"'
-          : 'src="$scriptBase.js"';
+      var scriptBase = HTML_ESCAPE.convert(p.basename(test));
+      var link = '<link rel="x-dart-test" href="$scriptBase">';
 
       return new shelf.Response.ok('''
         <!DOCTYPE html>
         <html>
         <head>
           <title>${HTML_ESCAPE.convert(test)} Test</title>
-          <script $script></script>
+          $link
+          <script src="packages/test/dart.js"></script>
         </head>
         </html>
       ''', headers: {'Content-Type': 'text/html'});
