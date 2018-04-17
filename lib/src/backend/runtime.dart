@@ -10,15 +10,6 @@ class Runtime {
   /// The command-line Dart VM.
   static const Runtime vm = const Runtime("VM", "vm", isDartVM: true);
 
-  /// Dartium.
-  static const Runtime dartium = const Runtime("Dartium", "dartium",
-      isBrowser: true, isBlink: true, isDartVM: true);
-
-  /// Dartium content shell.
-  static const Runtime contentShell = const Runtime(
-      "Dartium Content Shell", "content-shell",
-      isBrowser: true, isBlink: true, isDartVM: true, isHeadless: true);
-
   /// Google Chrome.
   static const Runtime chrome = const Runtime("Chrome", "chrome",
       isBrowser: true, isJS: true, isBlink: true);
@@ -45,8 +36,6 @@ class Runtime {
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = const [
     Runtime.vm,
-    Runtime.dartium,
-    Runtime.contentShell,
     Runtime.chrome,
     Runtime.phantomJS,
     Runtime.firefox,

@@ -50,8 +50,7 @@ CancelableOperation debug(
 }
 
 // TODO(nweiz): Test using the console and restarting a test once sdk#25369 is
-// fixed and the VM service client is released and we can set Dartium
-// breakpoints.
+// fixed and the VM service client is released
 /// A debugger for a single test suite.
 class _Debugger {
   /// The test runner configuration.

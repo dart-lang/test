@@ -212,15 +212,6 @@ void main() {
   });
 
   group("runs successful tests", () {
-    test("on a JS and non-JS browser", () async {
-      await d.file("test.dart", _success).create();
-      var test = await runTest(["-p", "dartium", "-p", "chrome", "test.dart"]);
-
-      expect(test.stdoutStream(), neverEmits(contains("[Dartium] compiling")));
-      expect(test.stdout, emitsThrough(contains("[Chrome] compiling")));
-      await test.shouldExit(0);
-    }, tags: ['chrome', 'dartium']);
-
     test("on a browser and the VM", () async {
       await d.file("test.dart", _success).create();
       var test = await runTest(["-p", "chrome", "-p", "vm", "test.dart"]);
@@ -298,12 +289,6 @@ void main() {
 </html>
 """).create();
       });
-
-      test("on Dartium", () async {
-        var test = await runTest(["-p", "dartium", "test.dart"]);
-        expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
-        await test.shouldExit(0);
-      }, tags: 'dartium');
 
       test("on Chrome", () async {
         var test = await runTest(["-p", "chrome", "test.dart"]);
@@ -399,12 +384,6 @@ void main() {
 </html>
 """).create();
       });
-
-      test("on Dartium", () async {
-        var test = await runTest(["-p", "dartium", "test.dart"]);
-        expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
-        await test.shouldExit(1);
-      }, tags: 'dartium');
 
       test("on Chrome", () async {
         var test = await runTest(["-p", "chrome", "test.dart"]);
