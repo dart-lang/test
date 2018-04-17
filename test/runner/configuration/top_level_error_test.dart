@@ -166,9 +166,7 @@ void main() {
   });
 
   test("rejects an invalid concurrency", () async {
-    await d
-        .file("dart_test.yaml", jsonEncode({"concurrency": "foo"}))
-        .create();
+    await d.file("dart_test.yaml", jsonEncode({"concurrency": "foo"})).create();
 
     var test = await runTest(["test.dart"]);
     expect(
@@ -368,9 +366,7 @@ void main() {
     });
 
     test("rejects an invalid format", () async {
-      await d
-          .file("dart_test.yaml", jsonEncode({"filename": "{foo"}))
-          .create();
+      await d.file("dart_test.yaml", jsonEncode({"filename": "{foo"})).create();
 
       var test = await runTest(["test.dart"]);
       expect(test.stderr,

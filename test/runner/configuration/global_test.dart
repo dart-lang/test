@@ -50,9 +50,7 @@ void main() {
   });
 
   test("uses supported runner configuration", () async {
-    await d
-        .file("global_test.yaml", jsonEncode({"reporter": "json"}))
-        .create();
+    await d.file("global_test.yaml", jsonEncode({"reporter": "json"})).create();
 
     await d.file("test.dart", """
       import 'package:test/test.dart';

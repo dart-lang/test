@@ -285,9 +285,7 @@ void main() {
     });
 
     test("warns about the OS when some OSes are supported", () async {
-      await d
-          .file("dart_test.yaml", jsonEncode({"test_on": otherOS}))
-          .create();
+      await d.file("dart_test.yaml", jsonEncode({"test_on": otherOS})).create();
 
       await d.file("test.dart", """
         import 'package:test/test.dart';
