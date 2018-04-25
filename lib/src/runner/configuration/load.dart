@@ -27,7 +27,7 @@ import 'runtime_settings.dart';
 /// A regular expression matching a Dart identifier.
 ///
 /// This also matches a package name, since they must be Dart identifiers.
-final identifierRegExp = new RegExp(r"[a-zA-Z_]\w*");
+final _identifierRegExp = new RegExp(r"[a-zA-Z_]\w*");
 
 /// A regular expression matching allowed package names.
 ///
@@ -35,7 +35,7 @@ final identifierRegExp = new RegExp(r"[a-zA-Z_]\w*");
 /// compatibility with Google's internal Dart packages, but they may not be used
 /// when publishing a package to pub.dartlang.org.
 final _packageName = new RegExp(
-    "^${identifierRegExp.pattern}(\\.${identifierRegExp.pattern})*\$");
+    "^${_identifierRegExp.pattern}(\\.${_identifierRegExp.pattern})*\$");
 
 /// Loads configuration information from a YAML file at [path].
 ///

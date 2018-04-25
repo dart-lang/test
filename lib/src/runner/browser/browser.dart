@@ -12,8 +12,6 @@ import 'package:typed_data/typed_data.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
 
-typedef Future<Process> StartBrowserFn();
-
 /// An interface for running browser instances.
 ///
 /// This is intentionally coarse-grained: browsers are controlled primary from
