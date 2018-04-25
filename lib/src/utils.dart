@@ -22,9 +22,6 @@ import 'backend/operating_system.dart';
 /// The return type should only ever by [Future] or void.
 typedef AsyncFunction();
 
-/// A typedef for a zero-argument callback function.
-typedef void Callback();
-
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = new StreamTransformer<List<int>, String>(
     (stream, cancelOnError) => stream
@@ -72,12 +69,12 @@ final OperatingSystem currentOSGuess = (() {
 ///
 /// This is like a standard Dart identifier, except that it can also contain
 /// hyphens.
-final hyphenatedIdentifier = new RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
+final _hyphenatedIdentifier = new RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
 
-/// Like [hyphenatedIdentifier], but anchored so that it must match the entire
+/// Like [_hyphenatedIdentifier], but anchored so that it must match the entire
 /// string.
 final anchoredHyphenatedIdentifier =
-    new RegExp("^${hyphenatedIdentifier.pattern}\$");
+    new RegExp("^${_hyphenatedIdentifier.pattern}\$");
 
 /// A pair of values.
 class Pair<E, F> {
@@ -144,24 +141,6 @@ final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
 
 /// Returns [str] without any color codes.
 String withoutColors(String str) => str.replaceAll(_colorCode, '');
-
-/// Flattens nested [Iterable]s inside an [Iterable] into a single [List]
-/// containing only non-[Iterable] elements.
-List flatten(Iterable nested) {
-  var result = [];
-  helper(iter) {
-    for (var element in iter) {
-      if (element is Iterable) {
-        helper(element);
-      } else {
-        result.add(element);
-      }
-    }
-  }
-
-  helper(nested);
-  return result;
-}
 
 /// Like [mergeMaps], but assumes both maps are unmodifiable and so avoids
 /// creating a new map unnecessarily.
@@ -234,25 +213,6 @@ String niceDuration(Duration duration) {
   return buffer.toString();
 }
 
-/// Returns the first value [stream] emits, or `null` if [stream] closes before
-/// emitting a value.
-Future maybeFirst(Stream stream) {
-  var completer = new Completer();
-
-  var subscription;
-  subscription = stream.listen((data) {
-    completer.complete(data);
-    subscription.cancel();
-  }, onError: (error, stackTrace) {
-    completer.completeError(error, stackTrace);
-    subscription.cancel();
-  }, onDone: () {
-    completer.complete();
-  });
-
-  return completer.future;
-}
-
 /// Returns a single-subscription stream that emits the results of [operations]
 /// in the order they complete.
 ///
@@ -276,16 +236,6 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
     });
   }
 
-  return controller.stream;
-}
-
-/// Returns a stream that emits [error] and [stackTrace], then closes.
-///
-/// This is useful for adding errors to streams defined via `async*`.
-Stream errorStream(error, StackTrace stackTrace) {
-  var controller = new StreamController();
-  controller.addError(error, stackTrace);
-  controller.close();
   return controller.stream;
 }
 
@@ -350,10 +300,6 @@ void ensureJsonEncodable(Object message) {
     throw new ArgumentError.value("$message can't be JSON-encoded.");
   }
 }
-
-/// Prepends a vertical bar to [text].
-String addBar(String text) => prefixLines(text, "${glyph.verticalLine} ",
-    first: "${glyph.downEnd} ", last: "${glyph.upEnd} ", single: "| ");
 
 /// Indents [text], and adds a bullet at the beginning.
 String addBullet(String text) =>
