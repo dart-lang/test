@@ -335,8 +335,7 @@ class SuiteConfiguration {
   /// Any overlapping keys in the maps have their configurations merged in the
   /// returned map.
   Map<T, SuiteConfiguration> _mergeConfigMaps<T>(
-          Map<T, SuiteConfiguration> map1,
-          Map<T, SuiteConfiguration> map2) =>
+          Map<T, SuiteConfiguration> map1, Map<T, SuiteConfiguration> map2) =>
       mergeMaps(map1, map2,
           value: (config1, config2) => config1.merge(config2));
 
