@@ -56,7 +56,7 @@ RunnerSuiteController deserializeSuite(
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
   }..addAll(message as Map));
 
-  var completer = new Completer();
+  var completer = new Completer<Group>();
 
   var loadSuiteZone = Zone.current;
   handleError(error, stackTrace) {

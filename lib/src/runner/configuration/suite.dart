@@ -237,8 +237,10 @@ class SuiteConfiguration {
         runtimes: other._runtimes ?? _runtimes,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
-        tags: _mergeConfigMaps(tags, other.tags),
-        onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
+        tags: _mergeConfigMaps(tags, other.tags)
+            .cast<BooleanSelector, SuiteConfiguration>(),
+        onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform)
+            .cast<PlatformSelector, SuiteConfiguration>(),
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
   }
