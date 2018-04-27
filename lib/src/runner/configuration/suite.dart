@@ -237,10 +237,8 @@ class SuiteConfiguration {
         runtimes: other._runtimes ?? _runtimes,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
-        tags: _mergeConfigMaps(tags, other.tags)
-            .cast<BooleanSelector, SuiteConfiguration>(),
-        onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform)
-            .cast<PlatformSelector, SuiteConfiguration>(),
+        tags: _mergeConfigMaps(tags, other.tags),
+        onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
   }
@@ -336,9 +334,9 @@ class SuiteConfiguration {
   ///
   /// Any overlapping keys in the maps have their configurations merged in the
   /// returned map.
-  Map<Object, SuiteConfiguration> _mergeConfigMaps(
-          Map<Object, SuiteConfiguration> map1,
-          Map<Object, SuiteConfiguration> map2) =>
+  Map<T, SuiteConfiguration> _mergeConfigMaps<T>(
+          Map<T, SuiteConfiguration> map1,
+          Map<T, SuiteConfiguration> map2) =>
       mergeMaps(map1, map2,
           value: (config1, config2) => config1.merge(config2));
 
