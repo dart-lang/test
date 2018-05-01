@@ -29,7 +29,7 @@ main() {
 
   group('elapseBlocking', () {
     test('should elapse time without calling timers', () {
-      new Timer(elapseBy ~/ 2, neverCalled);
+      new Timer(elapseBy ~/ 2, neverCalledVoid);
       new FakeAsync().elapseBlocking(elapseBy);
     });
 
@@ -102,14 +102,14 @@ main() {
 
       test('should not call timers expiring after end time', () {
         new FakeAsync().run((async) {
-          new Timer(elapseBy * 2, neverCalled);
+          new Timer(elapseBy * 2, neverCalledVoid);
           async.elapse(elapseBy);
         });
       });
 
       test('should not call canceled timers', () {
         new FakeAsync().run((async) {
-          var timer = new Timer(elapseBy ~/ 2, neverCalled);
+          var timer = new Timer(elapseBy ~/ 2, neverCalledVoid);
           timer.cancel();
           async.elapse(elapseBy);
         });
@@ -564,3 +564,9 @@ Matcher _closeToTime(DateTime expected) => predicate(
     (actual) =>
         expected.difference(actual as DateTime).inMilliseconds.abs() < 100,
     "is close to $expected");
+
+/// A wrapper for [neverCalled] that works around sdk#33015.
+void Function() get neverCalledVoid {
+  var function = neverCalled;
+  return () => neverCalled();
+}
