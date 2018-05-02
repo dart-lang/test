@@ -792,6 +792,16 @@ void main() {
 
 ## Support for Other Packages
 
+### `build_runner`
+
+If you are using `package:build_runner` to build your package, then you will
+need a dependency on `build_test` in your `dev_dependencies`, and then you can
+use the `pub run build_runner test` command to run tests.
+
+To supply arguments to `package:test`, you need to separate them from your build
+args with a `--` argument. For example, running all web tests in release mode
+would look like this `pub run build_runner test --release -- -p vm`.
+
 ### `term_glyph`
 
 The [`term_glyph`][term_glyph] package provides getters for Unicode glyphs with
@@ -801,16 +811,6 @@ testing libraries can use Unicode on POSIX operating systems without breaking
 Windows users.
 
 [term_glyph]: https://pub.dartlang.org/packages/term_glyph
-
-### `build_runner`
-
-If you are using `package:build_runner` to build your package, then you will
-need a dependency on `package:build_test` to your `dev_dependencies`, and then
-you can use the `pub run build_runner test` command to run tests.
-
-To supply arguments to `package:test`, you need to separate them from your build
-args with a `--` argument. For example, running all web tests in release mode
-would look like this `pub run build_runner test --release -- -p vm`.
 
 ## Further Reading
 
