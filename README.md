@@ -802,25 +802,15 @@ Windows users.
 
 [term_glyph]: https://pub.dartlang.org/packages/term_glyph
 
-## Integration with build systems
+### `build_runner`
 
-If you are using a build system (such as `package:build_runner`) to generate
-your js files (or other files), you will need to create a fully valid package
-in a directory, with the fully compiled tests. You can pass this directory using
-the `--precompiled` flag.
+If you are using `package:build_runner` to build your package, then you will
+need a dependency on `package:build_test` to your `dev_dependencies`, and then
+you can use the `pub run build_runner test` command to run tests.
 
-It is recommended that you wrap this logic up in a script of your own, which
-performs a build and then calls `pub run test --precompiled <output-dir>`. For
-instance `package:build_runner` provides a `test` command which does exactly
-that.
-
-All tests must be bootstrapped with a new Dart file, using the platform specific
-imports under `package:test/bootstrap/<platform>.dart`. The created bootstrap
-file path should be the original test name with `.<platform>_test.dart`
-appended.
-
-For the `node` and `browser` platforms, there must also be a corresponding `.js`
-file for each test.
+To supply arguments to `package:test`, you need to separate them from your build
+args with a `--` argument. For example, running all web tests in release mode
+would look like this `pub run build_runner test --release -- -p vm`.
 
 ## Further Reading
 
