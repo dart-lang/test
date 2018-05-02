@@ -421,7 +421,7 @@ transformers:
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
     await pub.kill();
-  }, tags: 'pub');
+  }, tags: 'pub', skip: 'https://github.com/dart-lang/test/issues/821');
 
   test("uses the specified concurrency", () async {
     await d.file("dart_test.yaml", jsonEncode({"concurrency": 2})).create();

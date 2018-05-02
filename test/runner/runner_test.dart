@@ -58,60 +58,60 @@ final _browsers = "[vm (default), chrome, phantomjs, firefox" +
 final _usage = """
 Usage: pub run test [files or directories...]
 
--h, --help                       Shows this usage information.
-    --version                    Shows the package's version.
+-h, --help                        Shows this usage information.
+    --version                     Shows the package's version.
 
 ======== Selecting Tests
--n, --name                       A substring of the name of the test to run.
-                                 Regular expression syntax is supported.
-                                 If passed multiple times, tests must match all substrings.
+-n, --name                        A substring of the name of the test to run.
+                                  Regular expression syntax is supported.
+                                  If passed multiple times, tests must match all substrings.
 
--N, --plain-name                 A plain-text substring of the name of the test to run.
-                                 If passed multiple times, tests must match all substrings.
+-N, --plain-name                  A plain-text substring of the name of the test to run.
+                                  If passed multiple times, tests must match all substrings.
 
--t, --tags                       Run only tests with all of the specified tags.
-                                 Supports boolean selector syntax.
+-t, --tags                        Run only tests with all of the specified tags.
+                                  Supports boolean selector syntax.
 
--x, --exclude-tags               Don't run tests with any of the specified tags.
-                                 Supports boolean selector syntax.
+-x, --exclude-tags                Don't run tests with any of the specified tags.
+                                  Supports boolean selector syntax.
 
-    --[no-]run-skipped           Run skipped tests instead of skipping them.
+    --[no-]run-skipped            Run skipped tests instead of skipping them.
 
 ======== Running Tests
--p, --platform                   The platform(s) on which to run the tests.
-                                 $_browsers
+-p, --platform                    The platform(s) on which to run the tests.
+                                  $_browsers
 
--P, --preset                     The configuration preset(s) to use.
--j, --concurrency=<threads>      The number of concurrent test suites run.
-                                 (defaults to "$_defaultConcurrency")
+-P, --preset                      The configuration preset(s) to use.
+-j, --concurrency=<threads>       The number of concurrent test suites run.
+                                  (defaults to "$_defaultConcurrency")
 
-    --pub-serve=<port>           The port of a pub serve instance serving "test/".
-    --timeout                    The default test timeout. For example: 15s, 2x, none
-                                 (defaults to "30s")
+    --pub-serve=<port>            The port of a pub serve instance serving "test/".
+    --timeout                     The default test timeout. For example: 15s, 2x, none
+                                  (defaults to "30s")
 
-    --pause-after-load           Pauses for debugging before any tests execute.
-                                 Implies --concurrency=1 and --timeout=none.
-                                 Currently only supported for browser tests.
+    --pause-after-load            Pauses for debugging before any tests execute.
+                                  Implies --concurrency=1 and --timeout=none.
+                                  Currently only supported for browser tests.
 
-    --[no-]chain-stack-traces    Chained stack traces to provide greater exception details
-                                 especially for asynchronous code. It may be useful to disable
-                                 to provide improved test performance but at the cost of
-                                 debuggability.
-                                 (defaults to on)
+    --[no-]chain-stack-traces     Chained stack traces to provide greater exception details
+                                  especially for asynchronous code. It may be useful to disable
+                                  to provide improved test performance but at the cost of
+                                  debuggability.
+                                  (defaults to on)
 
-    --no-retry                   Don't re-run tests that have retry set.
+    --no-retry                    Don't re-run tests that have retry set.
 
 ======== Output
--r, --reporter                   The runner used to print test results.
+-r, --reporter                    The runner used to print test results.
 
-          [compact]              A single line, updated continuously.
-          [expanded]             A separate line for each update.
-          [json]                 A machine-readable format (see https://goo.gl/gBsV1a).
+          [compact]               A single line, updated continuously.
+          [expanded] (default)    A separate line for each update.
+          [json]                  A machine-readable format (see https://goo.gl/gBsV1a).
 
-    --verbose-trace              Whether to emit stack traces with core library frames.
-    --js-trace                   Whether to emit raw JavaScript stack traces for browser tests.
-    --[no-]color                 Whether to use terminal colors.
-                                 (auto-detected by default)
+    --verbose-trace               Whether to emit stack traces with core library frames.
+    --js-trace                    Whether to emit raw JavaScript stack traces for browser tests.
+    --[no-]color                  Whether to use terminal colors.
+                                  (auto-detected by default)
 """;
 
 void main() {

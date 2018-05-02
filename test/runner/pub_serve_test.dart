@@ -4,6 +4,7 @@
 
 @TestOn("vm")
 @Tags(const ["pub"])
+@Skip('https://github.com/dart-lang/test/issues/821')
 
 import 'dart:io';
 

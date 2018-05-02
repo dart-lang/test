@@ -1,3 +1,8 @@
+## 0.12.36
+
+* Expose the test bootstrapping methods, so that build systems can precompile
+  tests without relying on internal apis.
+
 ## 0.12.35
 
 * Dropped support for Dart 1. Going forward only Dart 2 will be supported.
@@ -11,6 +16,7 @@
 * Fixed default custom html handler so it correctly includes the
   packages/test/dart.js file. This allows you to get proper errors instead of
   timeouts if there are load exceptions in the browser.
+* Upgrade to package:matcher 0.12.2
 
 ## 0.12.34
 
