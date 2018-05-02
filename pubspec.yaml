@@ -9,7 +9,6 @@ dependencies:
   analyzer: '>=0.26.4 <0.32.0'
   args: '>=0.13.1 <2.0.0'
   async: '>=1.13.0 <3.0.0'
-  barback: '>=0.14.0 <0.16.0'
   boolean_selector: '^1.0.0'
   collection: '^1.8.0'
   glob: '^1.0.0'
