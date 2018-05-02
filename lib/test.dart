@@ -10,6 +10,7 @@ import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
 import 'src/backend/runtime.dart';
 import 'src/backend/suite_platform.dart';
+import 'src/frontend/is_test.dart';
 import 'src/frontend/timeout.dart';
 import 'src/runner/configuration/suite.dart';
 import 'src/runner/engine.dart';
@@ -23,6 +24,7 @@ export 'package:matcher/matcher.dart';
 export 'src/frontend/expect.dart' hide formatFailure;
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';
+export 'src/frontend/is_test.dart';
 export 'src/frontend/on_platform.dart';
 export 'src/frontend/never_called.dart';
 export 'src/frontend/prints_matcher.dart';
@@ -130,6 +132,7 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
+@isTest
 void test(description, body(),
     {String testOn,
     Timeout timeout,
@@ -199,6 +202,7 @@ void test(description, body(),
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
+@isTestGroup
 void group(description, body(),
     {String testOn,
     Timeout timeout,
