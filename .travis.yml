@@ -27,16 +27,22 @@ before_install:
 jobs:
   include:
     - stage: analyze_and_format
+      before_script: xvfb-run -s "-screen 0 1024x768x24"
       script: tool/dartfmt_and_analyze.sh
     - stage: unit_test
+      before_script: xvfb-run -s "-screen 0 1024x768x24"
       script: pub run test --preset travis --total-shards 5 --shard-index 0
     - stage: unit_test
+      before_script: xvfb-run -s "-screen 0 1024x768x24"
       script: pub run test --preset travis --total-shards 5 --shard-index 1
     - stage: unit_test
+      before_script: xvfb-run -s "-screen 0 1024x768x24"
       script: pub run test --preset travis --total-shards 5 --shard-index 2
     - stage: unit_test
+      before_script: xvfb-run -s "-screen 0 1024x768x24"
       script: pub run test --preset travis --total-shards 5 --shard-index 3
     - stage: unit_test
+      before_script: xvfb-run -s "-screen 0 1024x768x24"
       script: pub run test --preset travis --total-shards 5 --shard-index 4
 
 # Only building master means that we don't run two builds for each pull request.
