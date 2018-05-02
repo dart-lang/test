@@ -1,3 +1,8 @@
+## 0.12.36
+
+* Expose the test bootstrapping methods, so that build systems can precompile
+  tests without relying on internal apis.
+
 ## 0.12.35
 
 * Dropped support for Dart 1. Going forward only Dart 2 will be supported.
