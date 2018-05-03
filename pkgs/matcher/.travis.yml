@@ -1,7 +1,6 @@
 language: dart
 
 dart:
-  - stable
   - dev
 
 dart_task:
@@ -9,11 +8,7 @@ dart_task:
     xvfb: false
   - test: -p firefox
   - dartanalyzer
-
-matrix:
-  include:
-  - dart: stable
-    dart_task: dartfmt
+  - dartfmt
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
