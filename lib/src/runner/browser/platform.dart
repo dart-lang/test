@@ -38,7 +38,6 @@ import '../plugin/platform.dart';
 import '../runner_suite.dart';
 import 'browser_manager.dart';
 import 'default_settings.dart';
-import 'polymer.dart';
 
 class BrowserPlatform extends PlatformPlugin
     implements CustomizablePlatform<ExecutableSettings> {
@@ -177,14 +176,14 @@ class BrowserPlatform extends PlatformPlugin
 
       // Link to the Dart wrapper on Dartium and the compiled JS version
       // elsewhere.
-      var scriptBase = HTML_ESCAPE.convert(p.basename(test));
+      var scriptBase = htmlEscape.convert(p.basename(test));
       var link = '<link rel="x-dart-test" href="$scriptBase">';
 
       return new shelf.Response.ok('''
         <!DOCTYPE html>
         <html>
         <head>
-          <title>${HTML_ESCAPE.convert(test)} Test</title>
+          <title>${htmlEscape.convert(test)} Test</title>
           $link
           <script src="packages/test/dart.js"></script>
         </head>
@@ -240,19 +239,8 @@ class BrowserPlatform extends PlatformPlugin
               p.withoutExtension(p.relative(path, from: p.join(_root, 'test'))))
           .path;
 
-      var dartUrl;
-      // Polymer generates a bootstrap entrypoint that wraps the entrypoint we
-      // see on disk, and modifies the HTML file to point to the bootstrap
-      // instead. To make sure we get the right source maps and wait for the
-      // right file to compile, we have some Polymer-specific logic here to load
-      // the boostrap instead of the unwrapped file.
-      if (isPolymerEntrypoint(path)) {
-        dartUrl = _config.pubServeUrl.resolve(
-            "$suitePrefix.html.polymer.bootstrap.dart.browser_test.dart");
-      } else {
-        dartUrl =
-            _config.pubServeUrl.resolve('$suitePrefix.dart.browser_test.dart');
-      }
+      var dartUrl =
+          _config.pubServeUrl.resolve('$suitePrefix.dart.browser_test.dart');
 
       await _pubServeSuite(path, dartUrl, browser, suiteConfig);
       suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));

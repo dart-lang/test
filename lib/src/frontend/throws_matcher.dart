@@ -16,6 +16,7 @@ import 'format_stack_trace.dart';
 /// at least the type of the error, but you can write `throwsA(anything)` to
 /// mimic the behavior of this matcher.
 @Deprecated("Will be removed in 0.13.0")
+// ignore: deprecated_member_use
 const Matcher throws = const Throws();
 
 /// This can be used to match three kinds of objects:
@@ -35,7 +36,9 @@ const Matcher throws = const Throws();
 /// In all three cases, when an exception is thrown, this will test that the
 /// exception object matches [matcher]. If [matcher] is not an instance of
 /// [Matcher], it will implicitly be treated as `equals(matcher)`.
-Matcher throwsA(matcher) => new Throws(wrapMatcher(matcher));
+Matcher throwsA(matcher) =>
+    // ignore: deprecated_member_use
+    new Throws(wrapMatcher(matcher));
 
 /// Use the [throwsA] function instead.
 @Deprecated("Will be removed in 0.13.0")

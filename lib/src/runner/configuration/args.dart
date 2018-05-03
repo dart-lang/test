@@ -32,31 +32,27 @@ final ArgParser _parser = (() {
   // merges properly with the config file.
 
   parser.addSeparator("======== Selecting Tests");
-  parser.addOption("name",
+  parser.addMultiOption("name",
       abbr: 'n',
       help: 'A substring of the name of the test to run.\n'
           'Regular expression syntax is supported.\n'
           'If passed multiple times, tests must match all substrings.',
-      allowMultiple: true,
       splitCommas: false);
-  parser.addOption("plain-name",
+  parser.addMultiOption("plain-name",
       abbr: 'N',
       help: 'A plain-text substring of the name of the test to run.\n'
           'If passed multiple times, tests must match all substrings.',
-      allowMultiple: true,
       splitCommas: false);
-  parser.addOption("tags",
+  parser.addMultiOption("tags",
       abbr: 't',
       help: 'Run only tests with all of the specified tags.\n'
-          'Supports boolean selector syntax.',
-      allowMultiple: true);
-  parser.addOption("tag", hide: true, allowMultiple: true);
-  parser.addOption("exclude-tags",
+          'Supports boolean selector syntax.');
+  parser.addMultiOption("tag", hide: true);
+  parser.addMultiOption("exclude-tags",
       abbr: 'x',
       help: "Don't run tests with any of the specified tags.\n"
-          "Supports boolean selector syntax.",
-      allowMultiple: true);
-  parser.addOption("exclude-tag", hide: true, allowMultiple: true);
+          "Supports boolean selector syntax.");
+  parser.addMultiOption("exclude-tag", hide: true);
   parser.addFlag("run-skipped",
       help: 'Run skipped tests instead of skipping them.');
 
@@ -66,16 +62,13 @@ final ArgParser _parser = (() {
   // The [Runtime] class used to be called [TestPlatform], but it was changed to
   // avoid conflicting with [SuitePlatform]. We decided not to also change the
   // UI to avoid a painful migration.
-  parser.addOption("platform",
+  parser.addMultiOption("platform",
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.\n'
           '[vm (default), '
-          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]',
-      allowMultiple: true);
-  parser.addOption("preset",
-      abbr: 'P',
-      help: 'The configuration preset(s) to use.',
-      allowMultiple: true);
+          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]');
+  parser.addMultiOption("preset",
+      abbr: 'P', help: 'The configuration preset(s) to use.');
   parser.addOption("concurrency",
       abbr: 'j',
       help: 'The number of concurrent test suites run.',
@@ -131,10 +124,8 @@ final ArgParser _parser = (() {
       help: 'The path to the configuration file.', hide: true);
   parser.addOption("dart2js-path",
       help: 'The path to the dart2js executable.', hide: true);
-  parser.addOption("dart2js-args",
-      help: 'Extra arguments to pass to dart2js.',
-      allowMultiple: true,
-      hide: true);
+  parser.addMultiOption("dart2js-args",
+      help: 'Extra arguments to pass to dart2js.', hide: true);
   parser.addOption("total-shards",
       help: 'The total number of invocations of the test runner being run.',
       hide: true);

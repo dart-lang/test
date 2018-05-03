@@ -52,10 +52,6 @@ typedef String ErrorFormatter(
 /// If [skip] is a string, it should explain why the assertion is skipped; this
 /// reason will be printed when running the test.
 ///
-/// In some cases extra diagnostic info can be produced on failure (for
-/// example, stack traces on mismatched exceptions). To enable these,
-/// [verbose] should be specified as `true`.
-///
 /// Certain matchers, like [completion] and [throwsA], either match or fail
 /// asynchronously. When you use [expect] with these matchers, it ensures that
 /// the test doesn't complete until the matcher has either matched or failed. If
@@ -65,6 +61,7 @@ void expect(actual, matcher,
     {String reason,
     skip,
     @Deprecated("Will be removed in 0.13.0.") bool verbose: false,
+    // ignore: deprecated_member_use
     @Deprecated("Will be removed in 0.13.0.") ErrorFormatter formatter}) {
   _expect(actual, matcher,
       reason: reason, skip: skip, verbose: verbose, formatter: formatter);
@@ -86,11 +83,16 @@ Future expectLater(actual, matcher, {String reason, skip}) =>
 
 /// The implementation of [expect] and [expectLater].
 Future _expect(actual, matcher,
-    {String reason, skip, bool verbose: false, ErrorFormatter formatter}) {
+    {String reason,
+    skip,
+    bool verbose: false,
+    // ignore: deprecated_member_use
+    ErrorFormatter formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = new StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
 
+    // ignore: deprecated_member_use
     return formatFailure(matcher, actual, mismatchDescription.toString(),
         reason: reason);
   };
@@ -134,11 +136,13 @@ Future _expect(actual, matcher,
         reason: "matchAsync() may only return a String, a Future, or null.");
 
     if (result is String) {
+      // ignore: deprecated_member_use
       fail(formatFailure(matcher, actual, result, reason: reason));
     } else if (result is Future) {
       Invoker.current.addOutstandingCallback();
       return result.then((realResult) {
         if (realResult == null) return;
+        // ignore: deprecated_member_use
         fail(formatFailure(matcher, actual, realResult, reason: reason));
       }).whenComplete(() {
         // Always remove this, in case the failure is caught and handled

@@ -329,6 +329,7 @@ void main() {
     test("works with no arguments", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
+        // ignore: deprecated_member_use
         expectAsync(() {
           callbackRun = true;
         })();
@@ -341,6 +342,7 @@ void main() {
     test("works with arguments", () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
+        // ignore: deprecated_member_use
         expectAsync((arg1, arg2) {
           callbackRun = true;
         })(1, 2);
@@ -351,6 +353,7 @@ void main() {
     });
 
     test("doesn't support a function with 7 arguments", () {
+      // ignore: deprecated_member_use
       expect(() => expectAsync((_1, _2, _3, _4, _5, _6, _7) {}),
           throwsArgumentError);
     });
