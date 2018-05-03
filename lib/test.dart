@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
@@ -130,6 +131,7 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
+@isTest
 void test(description, body(),
     {String testOn,
     Timeout timeout,
@@ -199,6 +201,7 @@ void test(description, body(),
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
+@isTestGroup
 void group(description, body(),
     {String testOn,
     Timeout timeout,
