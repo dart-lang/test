@@ -21,9 +21,7 @@ addons:
   chrome: stable
 
 before_install:
-  - mkdir -p bin
-  - export PATH="$PATH:`pwd`/bin/"
-  - ln -s `which chromium-browser` bin/google-chrome
+  - before_install.sh
 
 jobs:
   include:
