@@ -170,7 +170,7 @@ class LiveTestController {
     } else {
       // Make sure all messages get surfaced one way or another to aid in
       // debugging.
-      Zone.ROOT.print(message.text);
+      Zone.root.print(message.text);
     }
   }
 

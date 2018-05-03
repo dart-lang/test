@@ -34,8 +34,6 @@ final Matcher completes = const _Completes(null);
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
 ///
-/// The [description] parameter is deprecated and shouldn't be used.
-///
 /// This returns an [AsyncMatcher], so [expect] won't complete until the matched
 /// future does.
 Matcher completion(matcher, [@deprecated String description]) =>
