@@ -24,7 +24,7 @@ import 'utils.dart';
 ///
 /// This also ensures that the test doesn't complete until a call to
 /// [pumpEventQueue] finishes, so that the callback has a chance to be called.
-T Function<T>(
+Null Function(
     [Object,
     Object,
     Object,
@@ -40,7 +40,7 @@ T Function<T>(
   expect(pumpEventQueue(), completes);
 
   var zone = Zone.current;
-  return <T>(
+  return (
       [a1 = placeholder,
       a2 = placeholder,
       a3 = placeholder,
