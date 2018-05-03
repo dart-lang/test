@@ -1,3 +1,7 @@
+## 0.12.38
+
+* Give `neverCalled` a type that works in Dart 2 semantics.
+
 ## 0.12.37
 
 * Removed the transformer, and the `pub_serve.dart` entrypoint. This is not
