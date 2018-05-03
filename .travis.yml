@@ -12,7 +12,7 @@ env: FORCE_TEST_EXIT=true
 addons:
   chrome: stable
 
-before_install:
+before_script:
   - tool/before_install.sh
 
 jobs:
