@@ -21,7 +21,7 @@ addons:
   chrome: stable
 
 before_install:
-  - before_install.sh
+  - tool/before_install.sh
 
 jobs:
   include:
