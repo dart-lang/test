@@ -1,3 +1,10 @@
+## 0.12.37
+
+* Removed the transformer, and the `pub_serve.dart` entrypoint. This is not
+  being treated as a breaking change because the minimum sdk constraint now
+  points to an sdk which does not support pub serve or barback any more anyways.
+* Drop the dependency on `barback`.
+
 ## 0.12.36
 
 * Expose the test bootstrapping methods, so that build systems can precompile
