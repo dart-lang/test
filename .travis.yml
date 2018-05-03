@@ -2,22 +2,14 @@ language: dart
 sudo: required
 
 # We require PhantomJS 2.x, which is only available on Trusty.
-dist: trusty
+# dist: trusty
 
 dart:
  - dev
 
 env: FORCE_TEST_EXIT=true
 
-# Content shell needs these fonts.
 addons:
-  apt:
-    packages:
-    - ttf-kochi-mincho
-    - ttf-kochi-gothic
-    - ttf-dejavu
-    - ttf-indic-fonts
-    - fonts-tlwg-garuda
   chrome: stable
 
 before_install:
