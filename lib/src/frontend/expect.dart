@@ -12,12 +12,6 @@ import '../backend/invoker.dart';
 import '../utils.dart';
 import 'async_matcher.dart';
 
-/// A future that emits `null`.
-///
-/// We cache and re-use this value to avoid adding a new microtask hit for each
-/// call to `expect()`.
-final _emptyFuture = new Future.value();
-
 /// An exception thrown when a test assertion fails.
 class TestFailure {
   final String message;
@@ -120,7 +114,7 @@ Future _expect(actual, matcher,
     }
 
     Invoker.current.skip(message);
-    return _emptyFuture;
+    return new Future.value();
   }
 
   if (matcher is AsyncMatcher) {
@@ -151,12 +145,12 @@ Future _expect(actual, matcher,
       });
     }
 
-    return _emptyFuture;
+    return new Future.value();
   }
 
   var matchState = {};
   try {
-    if (matcher.matches(actual, matchState)) return _emptyFuture;
+    if (matcher.matches(actual, matchState)) return new Future.value();
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
