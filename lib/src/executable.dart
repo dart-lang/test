@@ -28,9 +28,9 @@ import 'utils.dart';
 /// Otherwise, they'll be handled by Dart's default signal handler, which
 /// terminates the program immediately.
 final _signals = Platform.isWindows
-    ? ProcessSignal.SIGINT.watch()
+    ? ProcessSignal.sigint.watch()
     : StreamGroup
-        .merge([ProcessSignal.SIGTERM.watch(), ProcessSignal.SIGINT.watch()]);
+        .merge([ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
 /// Returns whether the current package has a pubspec which uses the
 /// `test/pub_serve` transformer.
