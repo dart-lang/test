@@ -114,7 +114,7 @@ Future _expect(actual, matcher,
     }
 
     Invoker.current.skip(message);
-    return new Future.value();
+    return new Future.sync(() {});
   }
 
   if (matcher is AsyncMatcher) {
@@ -145,12 +145,12 @@ Future _expect(actual, matcher,
       });
     }
 
-    return new Future.value();
+    return new Future.sync(() {});
   }
 
   var matchState = {};
   try {
-    if (matcher.matches(actual, matchState)) return new Future.value();
+    if (matcher.matches(actual, matchState)) return new Future.sync(() {});
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
