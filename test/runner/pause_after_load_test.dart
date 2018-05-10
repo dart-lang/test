@@ -223,7 +223,7 @@ void main() {
       Enter.
     """)));
 
-    test.signal(ProcessSignal.SIGTERM);
+    test.signal(ProcessSignal.sigterm);
     await test.shouldExit();
     await expectLater(test.stderr, emitsDone);
   }, tags: 'chrome', testOn: "!windows");

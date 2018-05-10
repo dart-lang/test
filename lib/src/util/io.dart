@@ -216,14 +216,14 @@ Future<int> getUnsafeUnusedPort() async {
   var socket;
   if (_maySupportIPv6) {
     try {
-      socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
+      socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0,
           v6Only: true);
     } on SocketException {
       _maySupportIPv6 = false;
     }
   }
   if (!_maySupportIPv6) {
-    socket = await RawServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    socket = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
   }
   var port = socket.port;
   await socket.close();
