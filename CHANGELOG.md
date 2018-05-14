@@ -1,6 +1,7 @@
 ## 0.12.38
 
 * Give `neverCalled` a type that works in Dart 2 semantics.
+* Support `package:analyzer` `0.32.0`.
 
 ## 0.12.37
 
