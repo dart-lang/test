@@ -119,7 +119,7 @@ Future<TestProcess> startDartProcess(String script) {
     import 'dart:io';
 
     var stdinLines = stdin
-        .transform(UTF8.decoder)
+        .transform(utf8.decoder)
         .transform(new LineSplitter());
 
     void main() {
