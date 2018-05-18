@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 
@@ -33,7 +34,7 @@ class OneOffHandler {
   }
 
   /// Dispatches [request] to the appropriate handler.
-  _onRequest(shelf.Request request) {
+  FutureOr<shelf.Response> _onRequest(shelf.Request request) {
     var components = p.url.split(request.url.path);
     if (components.isEmpty) return new shelf.Response.notFound(null);
 

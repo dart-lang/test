@@ -371,7 +371,7 @@ class _ConfigurationLoader {
           (valueList) =>
               valueList.every((value) => _packageName.hasMatch(value)));
 
-      return valueNode.value;
+      return new List<String>.from(valueNode.value);
     });
   }
 

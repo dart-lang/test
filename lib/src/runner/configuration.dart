@@ -393,7 +393,7 @@ class Configuration {
 
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
   static Map<K, V> _map<K, V>(Map<K, V> input) {
-    if (input == null || input.isEmpty) return const {};
+    input ??= {};
     return new Map.unmodifiable(input);
   }
 
@@ -576,8 +576,8 @@ class Configuration {
   ///
   /// Any overlapping keys in the maps have their configurations merged in the
   /// returned map.
-  Map<Object, Configuration> _mergeConfigMaps(
-          Map<Object, Configuration> map1, Map<Object, Configuration> map2) =>
+  Map<String, Configuration> _mergeConfigMaps(
+          Map<String, Configuration> map1, Map<String, Configuration> map2) =>
       mergeMaps(map1, map2,
           value: (config1, config2) => config1.merge(config2));
 
