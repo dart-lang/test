@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 
@@ -34,9 +35,9 @@ class PathHandler {
     node.handler = handler;
   }
 
-  _onRequest(shelf.Request request) {
-    var handler;
-    var handlerIndex;
+  FutureOr<shelf.Response> _onRequest(shelf.Request request) {
+    shelf.Handler handler;
+    int handlerIndex;
     var node = _paths;
     var components = p.url.split(request.url.path);
     for (var i = 0; i < components.length; i++) {

@@ -1,3 +1,7 @@
+## 0.12.38+1
+
+* Fix several Dart 2 runtime type errors.
+
 ## 0.12.38
 
 * Give `neverCalled` a type that works in Dart 2 semantics.
