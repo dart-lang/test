@@ -104,18 +104,6 @@ class AnalysisSessionManager {
     return parseResult.unit;
   }
 
-  /// Return import and export directives in the file with the given [path].
-  List<UriBasedDirective> parseImportsAndExports(String path) {
-    var unit = parse(path);
-    var uriDirectives = <UriBasedDirective>[];
-    for (var directive in unit.directives) {
-      if (directive is UriBasedDirective) {
-        uriDirectives.add(directive);
-      }
-    }
-    return uriDirectives;
-  }
-
   AnalysisSession _getSession(String path) {
     _throwIfNotAbsolutePath(path);
 
