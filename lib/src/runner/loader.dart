@@ -5,10 +5,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:analyzer/analyzer.dart' hide Configuration;
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
+import 'package:test/src/util/dart.dart';
 import 'package:yaml/yaml.dart';
 
 import '../backend/group.dart';
@@ -67,6 +67,9 @@ class Loader {
   /// variables that are always supported.
   Iterable<String> get _runtimeVariables =>
       _platformCallbacks.keys.map((runtime) => runtime.identifier);
+
+  /// The manager for analysis contexts, reused to parse multiple files.
+  AnalysisSessionManager _analysisSessionManager = new AnalysisSessionManager();
 
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
@@ -192,8 +195,10 @@ class Loader {
   Stream<LoadSuite> loadFile(
       String path, SuiteConfiguration suiteConfig) async* {
     try {
+      var absolutePath = p.absolute(path);
       suiteConfig = suiteConfig.merge(new SuiteConfiguration.fromMetadata(
-          parseMetadata(path, _runtimeVariables.toSet())));
+          parseMetadata(absolutePath, _runtimeVariables.toSet(),
+              _analysisSessionManager)));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.

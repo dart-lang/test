@@ -6,8 +6,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:analyzer/dart/analysis/context_builder.dart';
+import 'package:analyzer/dart/analysis/context_locator.dart';
+import 'package:analyzer/dart/analysis/session.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/error/error.dart';
+import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:package_resolver/package_resolver.dart';
+import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 
 import 'string_literal_iterator.dart';
@@ -77,4 +85,85 @@ SourceSpan contextualizeSpan(
   }
 
   return file.span(start, contextRunes.offset);
+}
+
+class AnalysisSessionManager {
+  final ResourceProvider resourceProvider;
+  final List<AnalysisContext> _contexts = [];
+
+  AnalysisSessionManager({ResourceProvider resourceProvider})
+      : resourceProvider =
+            resourceProvider ?? PhysicalResourceProvider.INSTANCE;
+
+  /// Parse the file with the given [path] into AST.
+  CompilationUnit parse(String path) {
+    var parseResult = _getSession(path).getParsedAstSync(path);
+    if (parseResult.errors.isNotEmpty) {
+      throw new AnalyzerErrorGroup(parseResult.errors);
+    }
+    return parseResult.unit;
+  }
+
+  /// Return import and export directives in the file with the given [path].
+  List<UriBasedDirective> parseImportsAndExports(String path) {
+    var unit = parse(path);
+    var uriDirectives = <UriBasedDirective>[];
+    for (var directive in unit.directives) {
+      if (directive is UriBasedDirective) {
+        uriDirectives.add(directive);
+      }
+    }
+    return uriDirectives;
+  }
+
+  AnalysisSession _getSession(String path) {
+    _throwIfNotAbsolutePath(path);
+
+    for (var context in _contexts) {
+      if (context.contextRoot.isAnalyzed(path)) {
+        return context.currentSession;
+      }
+    }
+
+    var dirPath = p.dirname(path);
+
+    var contextLocator = new ContextLocator(resourceProvider: resourceProvider);
+    var roots = contextLocator.locateRoots(includedPaths: [dirPath]);
+    for (var root in roots) {
+      var contextBuilder =
+          new ContextBuilder(resourceProvider: resourceProvider);
+      var context = contextBuilder.createContext(contextRoot: root);
+      _contexts.add(context);
+    }
+
+    for (var context in _contexts) {
+      if (context.contextRoot.isAnalyzed(path)) {
+        return context.currentSession;
+      }
+    }
+
+    throw new StateError('Unable to find the context to $path');
+  }
+
+  /**
+   * The driver supports only absolute paths, this method is used to validate
+   * any input paths to prevent errors later.
+   */
+  void _throwIfNotAbsolutePath(String path) {
+    if (!p.isAbsolute(path)) {
+      throw new ArgumentError('Only absolute paths are supported: $path');
+    }
+  }
+}
+
+/// An error class that contains multiple [AnalysisError]s.
+class AnalyzerErrorGroup implements Exception {
+  final List<AnalysisError> errors;
+
+  AnalyzerErrorGroup(this.errors);
+
+  String get message => toString();
+
+  @override
+  String toString() => errors.join("\n");
 }

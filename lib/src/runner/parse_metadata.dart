@@ -4,7 +4,6 @@
 
 import 'dart:io';
 
-import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
@@ -24,8 +23,9 @@ import '../utils.dart';
 ///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
-Metadata parseMetadata(String path, Set<String> platformVariables) =>
-    new _Parser(path, platformVariables).parse();
+Metadata parseMetadata(String path, Set<String> platformVariables,
+        AnalysisSessionManager analysisSessionManager) =>
+    new _Parser(path, platformVariables, analysisSessionManager).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
@@ -36,15 +36,17 @@ class _Parser {
   /// the built-in variables that are allowed everywhere.
   final Set<String> _platformVariables;
 
+  final AnalysisSessionManager _analysisSessionManager;
+
   /// All annotations at the top of the file.
   List<Annotation> _annotations;
 
   /// All prefixes defined by imports in this file.
   Set<String> _prefixes;
 
-  _Parser(String path, this._platformVariables) : _path = path {
-    var contents = new File(path).readAsStringSync();
-    var directives = parseDirectives(contents, name: path).directives;
+  _Parser(String path, this._platformVariables, this._analysisSessionManager)
+      : _path = path {
+    var directives = _analysisSessionManager.parse(path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
 
     // We explicitly *don't* just look for "package:test" imports here,

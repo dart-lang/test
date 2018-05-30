@@ -3,9 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'package:analyzer/analyzer.dart';
-import 'package:test/test.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:test/src/util/dart.dart';
 import 'package:test/src/util/string_literal_iterator.dart';
+import 'package:test/test.dart';
+
+import 'fusion_file_system.dart';
 
 final _offset = "final str = ".length;
 
@@ -238,9 +241,15 @@ Matcher _isRune(String char) {
 /// Parses [dart], which should be a string literal, into a
 /// [StringLiteralIterator].
 StringLiteralIterator _parse(String dart) {
-  var declaration = parseCompilationUnit("final str = $dart;")
-      .declarations
-      .single as TopLevelVariableDeclaration;
+  var resourceProvider = new FusionResourceProvider();
+
+  var path = resourceProvider.memory.convertPath('/test/test.dart');
+  resourceProvider.memory.newFile(path, "final str = $dart;");
+
+  var unit = new AnalysisSessionManager(resourceProvider: resourceProvider)
+      .parse(path);
+
+  var declaration = unit.declarations.single as TopLevelVariableDeclaration;
   var literal = declaration.variables.variables.single.initializer;
   return new StringLiteralIterator(literal);
 }
