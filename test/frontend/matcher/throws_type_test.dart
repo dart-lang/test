@@ -85,7 +85,7 @@ void main() {
   group('[throwsNoSuchMethodError]', () {
     test("passes when a NoSuchMethodError is thrown", () {
       expect(() {
-        throw new NoSuchMethodError(null, #name, null, null);
+        (1 as dynamic).notAMethodOnInt();
       }, throwsNoSuchMethodError);
     });
 
