@@ -171,7 +171,7 @@ class BrowserManager {
     // Whenever we get a message, no matter which child channel it's for, we the
     // know browser is still running code which means the user isn't debugging.
     _channel = new MultiChannel(
-        webSocket.transform(jsonDocument).changeStream((stream) {
+        webSocket.cast<String>().transform(jsonDocument).changeStream((stream) {
       return stream.map((message) {
         if (!_closed) _timer.reset();
         for (var controller in _controllers) {
@@ -219,15 +219,15 @@ class BrowserManager {
 
     // The virtual channel will be closed when the suite is closed, in which
     // case we should unload the iframe.
-    var suiteChannel = _channel.virtualChannel();
-    var suiteChannelID = suiteChannel.id;
-    suiteChannel = suiteChannel
+    var virtualChannel = _channel.virtualChannel();
+    var suiteChannelID = virtualChannel.id;
+    var suiteChannel = virtualChannel
         .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
       closeIframe();
       sink.close();
     }));
 
-    return await _pool.withResource<Future<RunnerSuite>>(() async {
+    return await _pool.withResource<RunnerSuite>(() async {
       _channel.sink.add({
         "command": "loadSuite",
         "url": url.toString(),
