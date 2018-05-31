@@ -26,7 +26,7 @@ class Chrome extends Browser {
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
-  factory Chrome(url, {ExecutableSettings settings, bool debug: false}) {
+  factory Chrome(Uri url, {ExecutableSettings settings, bool debug: false}) {
     settings ??= defaultSettings[Runtime.chrome];
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new Chrome._(() async {
