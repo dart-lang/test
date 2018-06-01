@@ -90,8 +90,8 @@ class CompilerPool {
         var buffer = new StringBuffer();
 
         await Future.wait([
-          _printOutputStream(process.stdout, buffer),
-          _printOutputStream(process.stderr, buffer),
+          process.stdout.map(utf8.decode).listen(buffer.write).asFuture(),
+          process.stderr.map(utf8.decode).listen(buffer.write).asFuture(),
         ]);
 
         var exitCode = await process.exitCode;
@@ -123,14 +123,6 @@ class CompilerPool {
     }).toList();
 
     new File(mapPath).writeAsStringSync(jsonEncode(map));
-  }
-
-  /// Sanitizes the bytes emitted by [stream], converts them to text, and writes
-  /// them to [buffer].
-  Future _printOutputStream(Stream<List<int>> stream, StringBuffer buffer) {
-    return sanitizeForWindows(stream)
-        .listen((data) => buffer.write(utf8.decode(data)))
-        .asFuture();
   }
 
   /// Closes the compiler pool.

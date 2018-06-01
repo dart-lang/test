@@ -114,34 +114,6 @@ Future withTempDir(Future fn(String path)) {
   });
 }
 
-/// Return a transformation of [input] with all null bytes removed.
-///
-/// This works around the combination of issue 23295 and 22667 by removing null
-/// bytes. This workaround can be removed when either of those are fixed in the
-/// oldest supported SDK.
-///
-/// It also somewhat works around issue 23303 by removing any carriage returns
-/// that are followed by newlines, to ensure that carriage returns aren't
-/// doubled up in the output. This can be removed when the issue is fixed in the
-/// oldest supported SDk.
-Stream<List<int>> sanitizeForWindows(Stream<List<int>> input) {
-  if (!Platform.isWindows) return input;
-
-  return input.map((list) {
-    var previous;
-    return list.reversed
-        .where((byte) {
-          if (byte == 0) return false;
-          if (byte == _carriageReturn && previous == _newline) return false;
-          previous = byte;
-          return true;
-        })
-        .toList()
-        .reversed
-        .toList();
-  });
-}
-
 /// Wraps [text] so that it fits within [lineLength].
 ///
 /// This preserves existing newlines and doesn't consider terminal color escapes
