@@ -1,3 +1,8 @@
+## 0.12.38+3
+
+* Fix Dart 2 runtime errors around communicating with browsers.
+
+
 ## 0.12.38+2
 
 * Fix more Dart 2 runtime type errors.
