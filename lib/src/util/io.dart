@@ -17,12 +17,6 @@ import '../backend/runtime.dart';
 import '../backend/suite_platform.dart';
 import '../utils.dart';
 
-/// The ASCII code for a newline character.
-const _newline = 0xA;
-
-/// The ASCII code for a carriage return character.
-const _carriageReturn = 0xD;
-
 /// The default line length for output when there isn't a terminal attached to
 /// stdout.
 const _defaultLineLength = 200;
@@ -111,34 +105,6 @@ Future withTempDir(Future fn(String path)) {
     var tempDir = createTempDir();
     return new Future.sync(() => fn(tempDir))
         .whenComplete(() => new Directory(tempDir).deleteSync(recursive: true));
-  });
-}
-
-/// Return a transformation of [input] with all null bytes removed.
-///
-/// This works around the combination of issue 23295 and 22667 by removing null
-/// bytes. This workaround can be removed when either of those are fixed in the
-/// oldest supported SDK.
-///
-/// It also somewhat works around issue 23303 by removing any carriage returns
-/// that are followed by newlines, to ensure that carriage returns aren't
-/// doubled up in the output. This can be removed when the issue is fixed in the
-/// oldest supported SDk.
-Stream<List<int>> sanitizeForWindows(Stream<List<int>> input) {
-  if (!Platform.isWindows) return input;
-
-  return input.map((list) {
-    var previous;
-    return list.reversed
-        .where((byte) {
-          if (byte == 0) return false;
-          if (byte == _carriageReturn && previous == _newline) return false;
-          previous = byte;
-          return true;
-        })
-        .toList()
-        .reversed
-        .toList();
   });
 }
 
