@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../backend/runtime.dart';
@@ -221,11 +222,8 @@ class BrowserManager {
     // case we should unload the iframe.
     var virtualChannel = _channel.virtualChannel();
     var suiteChannelID = virtualChannel.id;
-    var suiteChannel = virtualChannel
-        .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
-      closeIframe();
-      sink.close();
-    }));
+    var suiteChannel =
+        virtualChannel.transformStream(tap(null, onDone: closeIframe));
 
     return await _pool.withResource<RunnerSuite>(() async {
       _channel.sink.add({

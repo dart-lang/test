@@ -12,6 +12,7 @@ import 'package:collection/collection.dart';
 import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/invoker.dart';
@@ -23,11 +24,7 @@ import 'backend/operating_system.dart';
 typedef AsyncFunction();
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
-final lineSplitter = new StreamTransformer<List<int>, String>(
-    (stream, cancelOnError) => stream
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen(null, cancelOnError: cancelOnError));
+final lineSplitter = chain(utf8.decoder, const LineSplitter());
 
 /// A [StreamChannelTransformer] that converts a chunked string channel to a
 /// line-by-line channel.
@@ -36,8 +33,8 @@ final lineSplitter = new StreamTransformer<List<int>, String>(
 /// to contain newlines.
 final chunksToLines = new StreamChannelTransformer<String, String>(
     const LineSplitter(),
-    new StreamSinkTransformer.fromHandlers(
-        handleData: (data, sink) => sink.add("$data\n")));
+    new StreamSinkTransformer.fromStreamTransformer(
+        forMap((data) => "$data\n")));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
