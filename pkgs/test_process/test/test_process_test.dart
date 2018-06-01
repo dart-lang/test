@@ -99,12 +99,12 @@ void main() {
 
   test("signal sends a signal to the process", () async {
     var process = await startDartProcess(r'''
-      ProcessSignal.SIGHUP.watch().listen((_) => print("HUP"));
+      ProcessSignal.sighup.watch().listen((_) => print("HUP"));
       print("ready");
     ''');
 
     await expectLater(process.stdout, emits('ready'));
-    process.signal(ProcessSignal.SIGHUP);
+    process.signal(ProcessSignal.sighup);
     await expectLater(process.stdout, emits('HUP'));
     process.kill();
   }, testOn: "!windows");

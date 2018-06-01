@@ -149,7 +149,7 @@ class TestProcess {
     // If the process is already dead, do nothing.
     if (await _exitCodeOrNull != null) return;
 
-    _process.kill(ProcessSignal.SIGKILL);
+    _process.kill(ProcessSignal.sigkill);
 
     // Log output now rather than waiting for the exitCode callback so that
     // it's visible even if we time out waiting for the process to die.
@@ -217,7 +217,7 @@ class TestProcess {
   ///
   /// If this is called after the process is already dead, it does nothing.
   Future kill() async {
-    _process.kill(ProcessSignal.SIGKILL);
+    _process.kill(ProcessSignal.sigkill);
     await exitCode;
   }
 
