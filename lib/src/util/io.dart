@@ -17,12 +17,6 @@ import '../backend/runtime.dart';
 import '../backend/suite_platform.dart';
 import '../utils.dart';
 
-/// The ASCII code for a newline character.
-const _newline = 0xA;
-
-/// The ASCII code for a carriage return character.
-const _carriageReturn = 0xD;
-
 /// The default line length for output when there isn't a terminal attached to
 /// stdout.
 const _defaultLineLength = 200;
