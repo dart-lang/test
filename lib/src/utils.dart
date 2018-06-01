@@ -24,7 +24,7 @@ import 'backend/operating_system.dart';
 typedef AsyncFunction();
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
-final lineSplitter = chain(utf8.decoder, const LineSplitter());
+final lineSplitter = chainTransformers(utf8.decoder, const LineSplitter());
 
 /// A [StreamChannelTransformer] that converts a chunked string channel to a
 /// line-by-line channel.
@@ -33,8 +33,7 @@ final lineSplitter = chain(utf8.decoder, const LineSplitter());
 /// to contain newlines.
 final chunksToLines = new StreamChannelTransformer<String, String>(
     const LineSplitter(),
-    new StreamSinkTransformer.fromStreamTransformer(
-        forMap((data) => "$data\n")));
+    new StreamSinkTransformer.fromStreamTransformer(map((data) => "$data\n")));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
