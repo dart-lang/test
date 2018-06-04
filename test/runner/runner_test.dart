@@ -13,6 +13,7 @@ import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
 
 import '../io.dart';
+import '../utils.dart';
 
 final _success = """
 import 'dart:async';
@@ -158,15 +159,27 @@ $_usage""");
       await d.file("test.dart", "invalid Dart file").create();
       var test = await runTest(["test.dart"]);
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart":',
-            "line 1 pos 1: unexpected token 'invalid'",
-            "invalid Dart file",
-            "^"
-          ]));
+      if (isDart2) {
+        expect(
+            test.stdout,
+            containsInOrder([
+              'Failed to load "test.dart":',
+              "Unable to spawn isolate: test.dart:1:14: Error: "
+                  "Expected ';' before this.",
+              'invalid Dart file'
+            ]));
+      } else {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart":',
+              "line 1 pos 1: unexpected token 'invalid'",
+              "invalid Dart file",
+              "^"
+            ]));
+      }
+
       await test.shouldExit(1);
     });
 
@@ -176,15 +189,27 @@ $_usage""");
       await d.file("test.dart", "void main() {foo}").create();
       var test = await runTest(["test.dart"]);
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart":',
-            'line 1 pos 17: semicolon expected',
-            'void main() {foo}',
-            '                ^'
-          ]));
+      if (isDart2) {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart":',
+              "Unable to spawn isolate: test.dart:1:17: "
+                  "Error: Expected ';' before this"
+            ]));
+      } else {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart":',
+              'line 1 pos 17: semicolon expected',
+              'void main() {foo}',
+              '                ^'
+            ]));
+      }
+
       await test.shouldExit(1);
     });
 
@@ -194,15 +219,28 @@ $_usage""");
       await d.file("test.dart", "@TestOn)").create();
       var test = await runTest(["test.dart"]);
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart":',
-            "line 1 pos 8: unexpected token ')'",
-            "@TestOn)",
-            "       ^"
-          ]));
+      if (isDart2) {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart":',
+              "Unable to spawn isolate: test.dart:1:8: Error: "
+                  "Expected a declaration, but got ')'",
+              '@TestOn)',
+            ]));
+      } else {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart":',
+              "line 1 pos 8: unexpected token ')'",
+              "@TestOn)",
+              "       ^"
+            ]));
+      }
+
       await test.shouldExit(1);
     });
 
@@ -255,12 +293,22 @@ $_usage""");
       await d.file("test.dart", "void foo() {}").create();
       var test = await runTest(["test.dart"]);
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": No top-level main() function defined.'
-          ]));
+      if (isDart2) {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              "Error: Getter not found: 'main'",
+            ]));
+      } else {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart": No top-level main() function defined.'
+            ]));
+      }
+
       await test.shouldExit(1);
     });
 
@@ -268,12 +316,23 @@ $_usage""");
       await d.file("test.dart", "int main;").create();
       var test = await runTest(["test.dart"]);
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Top-level main getter is not a function.'
-          ]));
+      if (isDart2) {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              "A value of type 'dart.core::int' can't be assigned to a "
+                  "variable of type 'dart.core::Function'",
+            ]));
+      } else {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading test.dart [E]',
+              'Failed to load "test.dart": Top-level main getter is not a function.'
+            ]));
+      }
+
       await test.shouldExit(1);
     });
 
@@ -294,17 +353,29 @@ $_usage""");
       await d.file("test.dart", "invalid Dart file").create();
       var test = await runTest(["test.dart", "nonexistent.dart"]);
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            'loading nonexistent.dart',
-            'Failed to load "nonexistent.dart": Does not exist.',
-            'loading test.dart',
-            'Failed to load "test.dart":',
-            "line 1 pos 1: unexpected token 'invalid'",
-            "invalid Dart file",
-            "^"
-          ]));
+      if (isDart2) {
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: loading nonexistent.dart [E]',
+              'Failed to load "nonexistent.dart": Does not exist',
+              '-2: loading test.dart [E]',
+              'Failed to load "test.dart"',
+            ]));
+      } else {
+        expect(
+            test.stdout,
+            containsInOrder([
+              'loading nonexistent.dart',
+              'Failed to load "nonexistent.dart": Does not exist.',
+              'loading test.dart',
+              'Failed to load "test.dart":',
+              "line 1 pos 1: unexpected token 'invalid'",
+              "invalid Dart file",
+              "^"
+            ]));
+      }
+
       await test.shouldExit(1);
     });
 
