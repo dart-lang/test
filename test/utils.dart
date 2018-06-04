@@ -329,3 +329,9 @@ Engine declareEngine(void body(), {bool runSkipped: false}) {
 /// Returns a [RunnerSuite] with a default environment and configuration.
 RunnerSuite runnerSuite(Group root) => new RunnerSuite(
     const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);
+
+/// Whether Pub is running with Dart 2 runtime semantics.
+final bool isDart2 = () {
+  Type checkType<T>() => T;
+  return checkType<String>() == String;
+}();
