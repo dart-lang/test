@@ -7,6 +7,7 @@ import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 import '../../backend/runtime.dart';
 import '../../backend/suite_platform.dart';
@@ -40,10 +41,8 @@ class VMPlatform extends PlatformPlugin {
     }());
 
     // Once the connection is closed by either end, kill the isolate.
-    return channel
-        .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
+    return channel.transformStream(tap(null, onDone: () {
       if (isolate != null) isolate.kill();
-      sink.close();
     }));
   }
 

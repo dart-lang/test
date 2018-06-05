@@ -7,6 +7,7 @@ import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 import '../util/dart.dart' as dart;
 import "../util/remote_exception.dart";
@@ -42,13 +43,12 @@ StreamChannel spawnHybridUri(String url, Object message) {
 
       return new IsolateChannel.connectReceive(port)
           .transform(disconnector)
-          .transformSink(
-              new StreamSinkTransformer.fromHandlers(handleDone: (sink) {
-        // If the user closes the stream channel, kill the isolate.
-        isolate.kill();
-        onExitPort.close();
-        sink.close();
-      }));
+          .transformSink(new StreamSinkTransformer.fromStreamTransformer(
+              tap(null, onDone: () {
+            // If the user closes the stream channel, kill the isolate.
+            isolate.kill();
+            onExitPort.close();
+          })));
     } catch (error, stackTrace) {
       port.close();
       onExitPort.close();

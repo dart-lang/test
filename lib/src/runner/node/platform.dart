@@ -9,10 +9,11 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:multi_server_socket/multi_server_socket.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../backend/runtime.dart';
@@ -122,11 +123,9 @@ class NodePlatform extends PlatformPlugin
           .transform(new StreamChannelTransformer.fromCodec(utf8))
           .transform(chunksToLines)
           .transform(jsonDocument)
-          .transformStream(
-              new StreamTransformer.fromHandlers(handleDone: (sink) {
-        if (process != null) process.kill();
-        sink.close();
-      }));
+          .transformStream(tap(null, onDone: () {
+            if (process != null) process.kill();
+          }));
 
       return new Pair(channel, pair.last);
     } catch (_) {
