@@ -78,14 +78,9 @@ final _tempDir = Platform.environment.containsKey("_UNITTEST_TEMP_DIR")
     ? Platform.environment["_UNITTEST_TEMP_DIR"]
     : Directory.systemTemp.path;
 
-// TODO(nweiz): Make this check [stdioType] once that works within "pub run".
-/// Whether "special" strings such as Unicode characters or color escapes are
-/// safe to use.
-///
-/// On Windows or when not printing to a terminal, only printable ASCII
-/// characters should be used.
-bool get canUseSpecialChars =>
-    Platform.operatingSystem != 'windows' && !inTestTests;
+// Whether or not the current terminal supports ansi escape codes. Otherwise
+/// only printable ASCII characters should be used.
+bool get canUseSpecialChars => stdout.supportsAnsiEscapes && !inTestTests;
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() => new Directory(_tempDir)
