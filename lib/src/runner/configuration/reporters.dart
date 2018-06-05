@@ -44,7 +44,7 @@ final _allReporters = <String, ReporterDetails>{
 };
 
 final defaultReporter =
-    inTestTests ? 'expanded' : (Platform.isWindows ? 'expanded' : 'compact');
+    inTestTests ? 'expanded' : canUseSpecialChars ? 'compact' : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.

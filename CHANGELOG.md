@@ -1,3 +1,9 @@
+## 0.12.39
+
+* Change the default reporter and color defaults to be based on
+  `stdout.supportsAnsiEscapes` instead of based on platform (previously both
+  were disabled on windows).
+
 ## 0.12.38+3
 
 * Fix Dart 2 runtime errors around communicating with browsers.
