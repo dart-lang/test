@@ -32,7 +32,7 @@ final _transformer = new StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
 ///
 /// The [data] argument contains two values: a [SendPort] that communicates with
 /// the main isolate, and a message to pass to `hybridMain()`.
-void listen(AsyncFunction getMain(), List data) {
+void listen(Function getMain(), List data) {
   var channel = new IsolateChannel.connectSend(data.first as SendPort);
   var message = data.last;
 
@@ -52,9 +52,10 @@ void listen(AsyncFunction getMain(), List data) {
       if (main is! Function) {
         _sendError(channel, "Top-level hybridMain is not a function.");
         return;
-      } else if (main is! ZoneUnaryCallback && main is! ZoneBinaryCallback) {
+      } else if (main is! Function(StreamChannel) &&
+          main is! Function(StreamChannel, Null)) {
         _sendError(channel,
-            "Top-level hybridMain() function must take one or two arguments.");
+            "Top-level hybridMain() function must take one or two arguments. ${main.runtimeType}");
         return;
       }
 
@@ -62,7 +63,7 @@ void listen(AsyncFunction getMain(), List data) {
       // errors and distinguish user data events from control events sent by the
       // listener.
       var transformedChannel = channel.transformSink(_transformer);
-      if (main is ZoneUnaryCallback) {
+      if (main is Function(StreamChannel)) {
         main(transformedChannel);
       } else {
         main(transformedChannel, message);

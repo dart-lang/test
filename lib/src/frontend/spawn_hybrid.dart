@@ -20,7 +20,7 @@ import '../utils.dart';
 /// The spawned isolate sends three kinds of messages. Data messages are emitted
 /// as data events, error messages are emitted as error events, and print
 /// messages are printed using `print()`.
-final _transformer = new StreamChannelTransformer<Object, Map>(
+final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
   switch (message["type"]) {
     case "data":
@@ -198,12 +198,13 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
 
   ensureJsonEncodable(message);
 
-  var isolateChannel = channel.virtualChannel();
+  var virtualChannel = channel.virtualChannel();
+  StreamChannel isolateChannel = virtualChannel;
   channel.sink.add({
     "type": "spawn-hybrid-uri",
     "url": uri,
     "message": message,
-    "channel": isolateChannel.id
+    "channel": virtualChannel.id
   });
 
   if (!stayAlive) {
