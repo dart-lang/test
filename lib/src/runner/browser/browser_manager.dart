@@ -99,7 +99,7 @@ class BrowserManager {
   /// connection fails to be established.
   static Future<BrowserManager> start(Runtime runtime, Uri url,
       Future<WebSocketChannel> future, ExecutableSettings settings,
-      {bool debug: false}) {
+      {bool debug = false}) {
     var browser = _newBrowser(url, runtime, settings, debug: debug);
 
     var completer = new Completer<BrowserManager>();
@@ -135,7 +135,7 @@ class BrowserManager {
   /// If [debug] is true, starts the browser in debug mode.
   static Browser _newBrowser(
       Uri url, Runtime browser, ExecutableSettings settings,
-      {bool debug: false}) {
+      {bool debug = false}) {
     switch (browser.root) {
       case Runtime.chrome:
         return new Chrome(url, settings: settings, debug: debug);

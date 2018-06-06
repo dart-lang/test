@@ -89,7 +89,7 @@ final _transformer = new StreamChannelTransformer<Object, Map>(
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
+StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive = false}) {
   Uri parsedUrl;
   if (uri is Uri) {
     parsedUrl = uri;
@@ -179,7 +179,7 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive: false}) {
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
 StreamChannel spawnHybridCode(String dartCode,
-    {Object message, bool stayAlive: false}) {
+    {Object message, bool stayAlive = false}) {
   var uri = new Uri.dataFromString(dartCode,
       encoding: utf8, mimeType: 'application/dart');
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
@@ -187,7 +187,7 @@ StreamChannel spawnHybridCode(String dartCode,
 
 /// Like [spawnHybridUri], but doesn't take [Uri] objects and doesn't handle
 /// relative URLs.
-StreamChannel _spawn(String uri, Object message, {bool stayAlive: false}) {
+StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel;
   if (channel == null) {
     // TODO(nweiz): Link to an issue tracking support when running the test file

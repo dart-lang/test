@@ -66,7 +66,7 @@ Future<TestProcess> runTest(Iterable<String> args,
     {String reporter,
     int concurrency,
     Map<String, String> environment,
-    bool forwardStdio: false}) async {
+    bool forwardStdio = false}) async {
   concurrency ??= 1;
 
   var allArgs = [
@@ -89,7 +89,7 @@ Future<TestProcess> runTest(Iterable<String> args,
 Future<TestProcess> runDart(Iterable<String> args,
     {Map<String, String> environment,
     String description,
-    bool forwardStdio: false}) async {
+    bool forwardStdio = false}) async {
   var allArgs = <String>[]
     ..addAll(Platform.executableArguments.where((arg) =>
         !arg.startsWith("--package-root=") && !arg.startsWith("--packages=")))

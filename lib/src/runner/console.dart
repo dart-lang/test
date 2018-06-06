@@ -36,7 +36,7 @@ class Console {
   /// Creates a new [Console].
   ///
   /// If [color] is true, this uses Unix terminal colors.
-  Console({bool color: true})
+  Console({bool color = true})
       : _red = color ? '\u001b[31m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {

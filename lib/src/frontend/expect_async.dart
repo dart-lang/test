@@ -232,7 +232,7 @@ class _ExpectedFunction<T> {
 /// [expectAsync6] instead.
 @Deprecated("Will be removed in 0.13.0")
 Function expectAsync(Function callback,
-    {int count: 1, int max: 0, String id, String reason}) {
+    {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync() may only be called within a test.");
   }
@@ -263,7 +263,7 @@ Function expectAsync(Function callback,
 /// [expectAsync1], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func0<T> expectAsync0<T>(T callback(),
-    {int count: 1, int max: 0, String id, String reason}) {
+    {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync0() may only be called within a test.");
   }
@@ -294,7 +294,7 @@ Func0<T> expectAsync0<T>(T callback(),
 /// [expectAsync0], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func1<T, A> expectAsync1<T, A>(T callback(A a),
-    {int count: 1, int max: 0, String id, String reason}) {
+    {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync1() may only be called within a test.");
   }
@@ -325,7 +325,7 @@ Func1<T, A> expectAsync1<T, A>(T callback(A a),
 /// [expectAsync0], [expectAsync1], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func2<T, A, B> expectAsync2<T, A, B>(T callback(A a, B b),
-    {int count: 1, int max: 0, String id, String reason}) {
+    {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync2() may only be called within a test.");
   }
@@ -356,7 +356,7 @@ Func2<T, A, B> expectAsync2<T, A, B>(T callback(A a, B b),
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func3<T, A, B, C> expectAsync3<T, A, B, C>(T callback(A a, B b, C c),
-    {int count: 1, int max: 0, String id, String reason}) {
+    {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync3() may only be called within a test.");
   }
@@ -387,7 +387,7 @@ Func3<T, A, B, C> expectAsync3<T, A, B, C>(T callback(A a, B b, C c),
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(T callback(A a, B b, C c, D d),
-    {int count: 1, int max: 0, String id, String reason}) {
+    {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
     throw new StateError("expectAsync4() may only be called within a test.");
   }
@@ -419,8 +419,8 @@ Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(T callback(A a, B b, C c, D d),
 /// [expectAsync4], and [expectAsync6] for callbacks with different arity.
 Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
     T callback(A a, B b, C c, D d, E e),
-    {int count: 1,
-    int max: 0,
+    {int count = 1,
+    int max = 0,
     String id,
     String reason}) {
   if (Invoker.current == null) {
@@ -454,8 +454,8 @@ Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
 /// [expectAsync4], and [expectAsync5] for callbacks with different arity.
 Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
     T callback(A a, B b, C c, D d, E e, F f),
-    {int count: 1,
-    int max: 0,
+    {int count = 1,
+    int max = 0,
     String id,
     String reason}) {
   if (Invoker.current == null) {

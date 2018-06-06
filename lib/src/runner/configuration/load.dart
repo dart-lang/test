@@ -44,7 +44,7 @@ final _packageName = new RegExp(
 ///
 /// Throws a [FormatException] if the configuration is invalid, and a
 /// [FileSystemException] if it can't be read.
-Configuration load(String path, {bool global: false}) {
+Configuration load(String path, {bool global = false}) {
   var source = new File(path).readAsStringSync();
   var document = loadYamlNode(source, sourceUrl: p.toUri(path));
 
@@ -76,7 +76,7 @@ class _ConfigurationLoader {
   final bool _runnerConfig;
 
   _ConfigurationLoader(this._document, this._source,
-      {bool global: false, bool runnerConfig: true})
+      {bool global = false, bool runnerConfig = true})
       : _global = global,
         _runnerConfig = runnerConfig;
 
