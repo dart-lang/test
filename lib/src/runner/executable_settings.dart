@@ -135,7 +135,7 @@ class ExecutableSettings {
   /// If [allowRelative] is `false` (the default), asserts that the value isn't
   /// a relative path.
   static String _getExecutable(YamlNode executableNode,
-      {bool allowRelative: false}) {
+      {bool allowRelative = false}) {
     if (executableNode == null || executableNode.value == null) return null;
     if (executableNode.value is! String) {
       throw new SourceSpanFormatException(

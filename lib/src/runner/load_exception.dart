@@ -21,7 +21,7 @@ class LoadException implements Exception {
 
   LoadException(this.path, this.innerError);
 
-  String toString({bool color: false}) {
+  String toString({bool color = false}) {
     var buffer = new StringBuffer();
     if (color) buffer.write('\u001b[31m'); // red
     buffer.write('Failed to load "$path":');

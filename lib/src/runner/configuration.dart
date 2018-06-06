@@ -202,7 +202,7 @@ class Configuration {
   ///
   /// Throws an [IOException] if [path] does not exist or cannot be read. Throws
   /// a [FormatException] if its contents are invalid.
-  factory Configuration.load(String path, {bool global: false}) =>
+  factory Configuration.load(String path, {bool global = false}) =>
       load(path, global: global);
 
   factory Configuration(

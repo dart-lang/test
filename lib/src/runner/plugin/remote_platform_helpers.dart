@@ -30,7 +30,7 @@ import '../suite_channel_manager.dart';
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
 StreamChannel serializeSuite(Function getMain(),
-        {bool hidePrints: true, Future beforeLoad()}) =>
+        {bool hidePrints = true, Future beforeLoad()}) =>
     RemoteListener.start(getMain,
         hidePrints: hidePrints, beforeLoad: beforeLoad);
 

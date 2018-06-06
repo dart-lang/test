@@ -268,7 +268,7 @@ class CompactReporter implements Reporter {
   /// color for [message]. If [suffix] is passed, it's added to the end of
   /// [message].
   bool _progressLine(String message,
-      {String color, bool truncate: true, String suffix}) {
+      {String color, bool truncate = true, String suffix}) {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.

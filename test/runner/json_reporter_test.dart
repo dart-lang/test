@@ -661,7 +661,7 @@ Map _print(int id, String message, {String type}) {
 ///
 /// The [isFailure] parameter indicates whether the error was a [TestFailure] or
 /// not.
-Map _error(int id, String error, {bool isFailure: false}) {
+Map _error(int id, String error, {bool isFailure = false}) {
   return {
     "type": "error",
     "testID": id,
@@ -680,7 +680,7 @@ Map _error(int id, String error, {bool isFailure: false}) {
 /// after finishing. The [skipped] parameter indicates whether the test was
 /// skipped.
 Map _testDone(int id,
-    {String result, bool hidden: false, bool skipped: false}) {
+    {String result, bool hidden = false, bool skipped = false}) {
   result ??= "success";
   return {
     "type": "testDone",
@@ -693,7 +693,7 @@ Map _testDone(int id,
 
 /// Returns the event emitted by the JSON reporter indicating that the entire
 /// run finished.
-Map _done({bool success: true}) => {"type": "done", "success": success};
+Map _done({bool success = true}) => {"type": "done", "success": success};
 
 /// Returns the serialized metadata corresponding to [skip].
 Map _metadata({skip}) {

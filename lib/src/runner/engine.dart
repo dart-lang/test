@@ -341,7 +341,7 @@ class Engine {
   /// If [countSuccess] is `true` (the default), the test is put into [passed]
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
   Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
-      {bool countSuccess: true}) async {
+      {bool countSuccess = true}) async {
     await _onUnpaused;
     _active.add(liveTest);
 

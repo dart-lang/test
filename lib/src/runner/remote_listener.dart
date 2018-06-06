@@ -45,7 +45,7 @@ class RemoteListener {
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
   static StreamChannel start(AsyncFunction getMain(),
-      {bool hidePrints: true, Future beforeLoad()}) {
+      {bool hidePrints = true, Future beforeLoad()}) {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.

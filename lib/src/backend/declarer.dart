@@ -101,8 +101,8 @@ class Declarer {
   Declarer(
       {Metadata metadata,
       Set<String> platformVariables,
-      bool collectTraces: false,
-      bool noRetry: false})
+      bool collectTraces = false,
+      bool noRetry = false})
       : this._(
             null,
             null,
