@@ -55,7 +55,7 @@ void listen(Function getMain(), List data) {
       } else if (main is! Function(StreamChannel) &&
           main is! Function(StreamChannel, Null)) {
         _sendError(channel,
-            "Top-level hybridMain() function must take one or two arguments. ${main.runtimeType}");
+            "Top-level hybridMain() function must take one or two arguments.");
         return;
       }
 
