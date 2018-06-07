@@ -1,3 +1,10 @@
+## 0.12.40
+
+* Added some new optional fields to the json reporter, `root_line`,
+  `root_column`, and `root_url`. These will be present if `url` is not the same
+  as the suite url, and will represent the location in the original test suite
+  from which the call to `test` originated.
+
 ## 0.12.39
 
 * Change the default reporter and color defaults to be based on

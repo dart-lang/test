@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:path/path.dart' as p;
+
 import '../../backend/group.dart';
 import '../../backend/group_entry.dart';
 import '../../backend/live_test.dart';
@@ -131,7 +133,8 @@ class JsonReporter implements Reporter {
             "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
           },
           liveTest.test,
-          liveTest.suite.platform.runtime)
+          liveTest.suite.platform.runtime,
+          liveTest.suite.path)
     });
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -218,7 +221,8 @@ class JsonReporter implements Reporter {
               "testCount": group.testCount
             },
             group,
-            suite.platform.runtime)
+            suite.platform.runtime,
+            suite.path)
       });
       parentID = id;
       return id;
@@ -280,17 +284,32 @@ class JsonReporter implements Reporter {
   }
 
   /// Modifies [map] to include line, column, and URL information from the first
-  /// frame of [entry.trace].
+  /// frame of [entry.trace], as well as the first line in the original file.
   ///
   /// Returns [map].
-  Map<String, dynamic> _addFrameInfo(SuiteConfiguration suiteConfig,
-      Map<String, dynamic> map, GroupEntry entry, Runtime runtime) {
+  Map<String, dynamic> _addFrameInfo(
+      SuiteConfiguration suiteConfig,
+      Map<String, dynamic> map,
+      GroupEntry entry,
+      Runtime runtime,
+      String suitePath) {
     var frame = entry.trace?.frames?.first;
-    if (suiteConfig.jsTrace && runtime.isJS) frame = null;
+    var rootFrame = entry.trace?.frames?.firstWhere(
+        (frame) => frame.uri.path == p.absolute(suitePath),
+        orElse: () => null);
+    if (suiteConfig.jsTrace && runtime.isJS) {
+      frame = null;
+      rootFrame = null;
+    }
 
     map["line"] = frame?.line;
     map["column"] = frame?.column;
     map["url"] = frame?.uri?.toString();
+    if (rootFrame != null && rootFrame != frame) {
+      map["root_line"] = rootFrame.line;
+      map["root_column"] = rootFrame.column;
+      map["root_url"] = rootFrame.uri.toString();
+    }
     return map;
   }
 }

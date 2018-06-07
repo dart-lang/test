@@ -343,6 +343,23 @@ class Test {
   // The URL for the file in which the test was defined, or `null`.
   String url;
 
+  // The (1-based) line in the original test suite from which the test
+  // originated.
+  //
+  // Will only be present if `root_url` is different from `url`.
+  int root_line;
+
+  // The (1-based) line on in the original test suite from which the test
+  // originated.
+  //
+  // Will only be present if `root_url` is different from `url`.
+  int root_column;
+
+  // The URL for the original test suite in which the test was defined.
+  //
+  // Will only be present if different from `url`.
+  String root_url;
+
   // This field is deprecated and should not be used.
   Metadata metadata;
 }
