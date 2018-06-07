@@ -20,8 +20,7 @@ import '../utils.dart';
 /// The spawned isolate sends three kinds of messages. Data messages are emitted
 /// as data events, error messages are emitted as error events, and print
 /// messages are printed using `print()`.
-// TODO(grouma) - Restore the type here and correctly flow it throughout.
-final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
+final _transformer = new StreamChannelTransformer<Object, Map>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
   switch (message["type"]) {
     case "data":
@@ -189,7 +188,7 @@ StreamChannel spawnHybridCode(String dartCode,
 /// Like [spawnHybridUri], but doesn't take [Uri] objects and doesn't handle
 /// relative URLs.
 StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
-  var channel = Zone.current[#test.runner.test_channel] as MultiChannel;
+  var channel = Zone.current[#test.runner.test_channel] as MultiChannel<Map>;
   if (channel == null) {
     // TODO(nweiz): Link to an issue tracking support when running the test file
     // directly.
@@ -200,7 +199,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   ensureJsonEncodable(message);
 
   var virtualChannel = channel.virtualChannel();
-  StreamChannel isolateChannel = virtualChannel;
+  StreamChannel<Map> isolateChannel = virtualChannel;
   channel.sink.add({
     "type": "spawn-hybrid-uri",
     "url": uri,
@@ -209,7 +208,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   });
 
   if (!stayAlive) {
-    var disconnector = new Disconnector();
+    var disconnector = new Disconnector<Map>();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }
