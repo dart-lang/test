@@ -45,7 +45,7 @@ void main() {
 
     var test = await runTest(["test.dart"],
         environment: {"DART_TEST_CONFIG": "global_test.yaml"});
-    expect(test.stdout, emitsThrough(contains("dart:isolate-patch")));
+    expect(test.stdout, emitsThrough(contains("dart:async")));
     await test.shouldExit(1);
   });
 
