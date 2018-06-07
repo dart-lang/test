@@ -79,11 +79,11 @@ class Runtime {
   Runtime get root => parent ?? this;
 
   const Runtime(this.name, this.identifier,
-      {this.isDartVM: false,
-      this.isBrowser: false,
-      this.isJS: false,
-      this.isBlink: false,
-      this.isHeadless: false})
+      {this.isDartVM = false,
+      this.isBrowser = false,
+      this.isJS = false,
+      this.isBlink = false,
+      this.isHeadless = false})
       : parent = null;
 
   Runtime._child(this.name, this.identifier, this.parent)

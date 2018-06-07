@@ -44,7 +44,7 @@ class LocalTest extends Test {
   /// the caller's responsiblity to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
   LocalTest(this.name, this.metadata, this._body,
-      {this.trace, bool guarded: true, this.isScaffoldAll: false})
+      {this.trace, bool guarded = true, this.isScaffoldAll = false})
       : _guarded = guarded;
 
   LocalTest._(this.name, this.metadata, this._body, this.trace, this._guarded,
@@ -172,7 +172,7 @@ class Invoker {
   final _printsOnFailure = <String>[];
 
   Invoker._(Suite suite, LocalTest test,
-      {Iterable<Group> groups, bool guarded: true})
+      {Iterable<Group> groups, bool guarded = true})
       : _guarded = guarded {
     _controller = new LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete,

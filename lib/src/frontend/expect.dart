@@ -54,7 +54,7 @@ typedef String ErrorFormatter(
 void expect(actual, matcher,
     {String reason,
     skip,
-    @Deprecated("Will be removed in 0.13.0.") bool verbose: false,
+    @Deprecated("Will be removed in 0.13.0.") bool verbose = false,
     // ignore: deprecated_member_use
     @Deprecated("Will be removed in 0.13.0.") ErrorFormatter formatter}) {
   _expect(actual, matcher,
@@ -79,7 +79,7 @@ Future expectLater(actual, matcher, {String reason, skip}) =>
 Future _expect(actual, matcher,
     {String reason,
     skip,
-    bool verbose: false,
+    bool verbose = false,
     // ignore: deprecated_member_use
     ErrorFormatter formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {

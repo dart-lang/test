@@ -142,7 +142,7 @@ String wordWrap(String text) {
 ///
 /// If [print] is `true`, this prints the message using [print] to associate it
 /// with the current test. Otherwise, it prints it using [stderr].
-void warn(String message, {bool color, bool print: false}) {
+void warn(String message, {bool color, bool print = false}) {
   if (color == null) color = canUseSpecialChars;
   var header = color ? "\u001b[33mWarning:\u001b[0m" : "Warning:";
   (print ? core.print : stderr.writeln)(wordWrap("$header $message\n"));

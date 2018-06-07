@@ -180,7 +180,7 @@ Future _writeTestFile(String filename,
     {String suiteTestOn,
     String groupTestOn,
     String testTestOn,
-    bool loadable: true}) {
+    bool loadable = true}) {
   var buffer = new StringBuffer();
   if (suiteTestOn != null) buffer.writeln("@TestOn('$suiteTestOn')");
   if (!loadable) buffer.writeln("import 'dart:html';");

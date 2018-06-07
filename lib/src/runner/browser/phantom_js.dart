@@ -42,7 +42,7 @@ class PhantomJS extends Browser {
 
   final Future<Uri> remoteDebuggerUrl;
 
-  factory PhantomJS(url, {ExecutableSettings settings, bool debug: false}) {
+  factory PhantomJS(url, {ExecutableSettings settings, bool debug = false}) {
     settings ??= defaultSettings[Runtime.phantomJS];
     var remoteDebuggerCompleter = new Completer<Uri>.sync();
     return new PhantomJS._(() async {

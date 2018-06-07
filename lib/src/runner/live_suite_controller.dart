@@ -107,7 +107,7 @@ class LiveSuiteController {
   /// Otherwise, it's removed from [liveTests] entirely.
   ///
   /// Throws a [StateError] if called after [noMoreLiveTests].
-  void reportLiveTest(LiveTest liveTest, {bool countSuccess: true}) {
+  void reportLiveTest(LiveTest liveTest, {bool countSuccess = true}) {
     if (_onTestStartedController.isClosed) {
       throw new StateError("Can't call reportLiveTest() after noMoreTests().");
     }
