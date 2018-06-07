@@ -20,6 +20,7 @@ import '../utils.dart';
 /// The spawned isolate sends three kinds of messages. Data messages are emitted
 /// as data events, error messages are emitted as error events, and print
 /// messages are printed using `print()`.
+// TODO(grouma) - Restore the type here and correctly flow it throughout.
 final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
   switch (message["type"]) {
