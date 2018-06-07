@@ -308,7 +308,7 @@ class JsonReporter implements Reporter {
     if (rootFrame != null && rootFrame != frame) {
       map["root_line"] = rootFrame.line;
       map["root_column"] = rootFrame.column;
-      map["root_package_url"] = rootFrame.uri.toString();
+      map["root_url"] = rootFrame.uri.toString();
     }
     return map;
   }

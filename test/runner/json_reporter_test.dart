@@ -492,6 +492,37 @@ void main() {
         "chrome"
       ]);
     }, tags: ["chrome"], skip: "Broken by sdk#29693.");
+
+    test("the root suite if applicable", () {
+      return _expectReport("""
+      customTest('success 1', () {});
+      test('success 2', () {});
+    """, [
+        _start,
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _allSuites(),
+        _group(2, testCount: 2),
+        _testStart(3, "success 1",
+            line: 3,
+            column: 50,
+            url: p.toUri(p.join(d.sandbox, "common.dart")).toString(),
+            root_column: 7,
+            root_line: 7,
+            root_url: p.toUri(p.join(d.sandbox, "test.dart")).toString()),
+        _testDone(1, hidden: true),
+        _testDone(3),
+        _testStart(4, "success 2", line: 8, column: 7),
+        _testDone(4),
+        _done()
+      ], externalLibraries: {
+        'common.dart': """
+import 'package:test/test.dart';
+
+void customTest(String name, Function testFn) => test(name, testFn);
+""",
+      });
+    });
   });
 
   test(
@@ -519,19 +550,29 @@ void main() {
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
 /// [expected].
+///
+/// If [externalLibraries] are provided it should be a map of relative file
+/// paths to contents. All libraries will be added as imports to the test, and
+/// files will be created for them.
 Future _expectReport(String tests, List<Map> expected,
-    {List<String> args}) async {
-  d.file("test.dart", """
-    import 'dart:async';
+    {List<String> args, Map<String, String> externalLibraries}) async {
+  args ??= [];
+  externalLibraries ??= {};
+  var testContent = new StringBuffer("""
+import 'dart:async';
 
-    import 'package:test/test.dart';
+import 'package:test/test.dart';
 
-    void main() {
-$tests
-    }
-  """).create();
+""");
+  for (var entry in externalLibraries.entries) {
+    testContent.writeln("import '${entry.key}';");
+    await d.file(entry.key, entry.value).create();
+  }
+  testContent..writeln("void main() {")..writeln(tests)..writeln("}");
 
-  var test = await runTest(["test.dart"]..addAll(args ?? []), reporter: "json");
+  await d.file("test.dart", testContent.toString()).create();
+
+  var test = await runTest(["test.dart"]..addAll(args), reporter: "json");
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();
@@ -622,13 +663,23 @@ Map _group(int id,
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
 Map _testStart(int id, String name,
-    {int suiteID, Iterable<int> groupIDs, int line, int column, skip}) {
+    {int suiteID,
+    Iterable<int> groupIDs,
+    int line,
+    int column,
+    String url,
+    skip,
+    int root_line,
+    int root_column,
+    String root_url}) {
   if ((line == null) != (column == null)) {
     throw new ArgumentError(
         "line and column must either both be null or both be passed");
   }
 
-  return {
+  url ??=
+      line == null ? null : p.toUri(p.join(d.sandbox, "test.dart")).toString();
+  var expected = {
     "type": "testStart",
     "test": {
       "id": id,
@@ -638,11 +689,20 @@ Map _testStart(int id, String name,
       "metadata": _metadata(skip: skip),
       "line": line,
       "column": column,
-      "url": line == null
-          ? null
-          : p.toUri(p.join(d.sandbox, "test.dart")).toString()
+      "url": url,
     }
   };
+  var testObj = expected['test'] as Map<String, dynamic>;
+  if (root_line != null) {
+    testObj['root_line'] = root_line;
+  }
+  if (root_column != null) {
+    testObj['root_column'] = root_column;
+  }
+  if (root_url != null) {
+    testObj['root_url'] = root_url;
+  }
+  return expected;
 }
 
 /// Returns the event emitted by the JSON reporter indicating that a test
