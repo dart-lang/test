@@ -30,20 +30,21 @@ void main() {
       test('success 2', () {});
       test('success 3', () {});
     """, [
-      _start,
-      _allSuites(),
-      _suite(0),
-      _testStart(1, "loading test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 3),
-      _testStart(3, "success 1", line: 6, column: 7),
-      _testDone(3),
-      _testStart(4, "success 2", line: 7, column: 7),
-      _testDone(4),
-      _testStart(5, "success 3", line: 8, column: 7),
-      _testDone(5),
-      _done()
-    ]);
+      [
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+      ],
+      [
+        _group(2, testCount: 3),
+        _testStart(3, "success 1", line: 6, column: 7),
+        _testDone(3),
+        _testStart(4, "success 2", line: 7, column: 7),
+        _testDone(4),
+        _testStart(5, "success 3", line: 8, column: 7),
+        _testDone(5),
+      ]
+    ], _done());
   });
 
   test("runs several failing tests and reports when each fails", () {
@@ -52,23 +53,24 @@ void main() {
       test('failure 2', () => throw new TestFailure('oh no'));
       test('failure 3', () => throw new TestFailure('oh no'));
     """, [
-      _start,
-      _allSuites(),
-      _suite(0),
-      _testStart(1, "loading test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 3),
-      _testStart(3, "failure 1", line: 6, column: 7),
-      _error(3, "oh no", isFailure: true),
-      _testDone(3, result: "failure"),
-      _testStart(4, "failure 2", line: 7, column: 7),
-      _error(4, "oh no", isFailure: true),
-      _testDone(4, result: "failure"),
-      _testStart(5, "failure 3", line: 8, column: 7),
-      _error(5, "oh no", isFailure: true),
-      _testDone(5, result: "failure"),
-      _done(success: false)
-    ]);
+      [
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+      ],
+      [
+        _group(2, testCount: 3),
+        _testStart(3, "failure 1", line: 6, column: 7),
+        _error(3, "oh no", isFailure: true),
+        _testDone(3, result: "failure"),
+        _testStart(4, "failure 2", line: 7, column: 7),
+        _error(4, "oh no", isFailure: true),
+        _testDone(4, result: "failure"),
+        _testStart(5, "failure 3", line: 8, column: 7),
+        _error(5, "oh no", isFailure: true),
+        _testDone(5, result: "failure"),
+      ]
+    ], _done(success: false));
   });
 
   test("includes the full stack trace with --verbose-trace", () async {
@@ -84,7 +86,7 @@ void main() {
 
     var test =
         await runTest(["--verbose-trace", "test.dart"], reporter: "json");
-    expect(test.stdout, emitsThrough(contains("dart:isolate-patch")));
+    expect(test.stdout, emitsThrough(contains("dart:async")));
     await test.shouldExit(1);
   });
 
@@ -95,24 +97,25 @@ void main() {
       test('failure 2', () => throw new TestFailure('oh no'));
       test('success 2', () {});
     """, [
-      _start,
-      _allSuites(),
-      _suite(0),
-      _testStart(1, "loading test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 4),
-      _testStart(3, "failure 1", line: 6, column: 7),
-      _error(3, "oh no", isFailure: true),
-      _testDone(3, result: "failure"),
-      _testStart(4, "success 1", line: 7, column: 7),
-      _testDone(4),
-      _testStart(5, "failure 2", line: 8, column: 7),
-      _error(5, "oh no", isFailure: true),
-      _testDone(5, result: "failure"),
-      _testStart(6, "success 2", line: 9, column: 7),
-      _testDone(6),
-      _done(success: false)
-    ]);
+      [
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+      ],
+      [
+        _group(2, testCount: 4),
+        _testStart(3, "failure 1", line: 6, column: 7),
+        _error(3, "oh no", isFailure: true),
+        _testDone(3, result: "failure"),
+        _testStart(4, "success 1", line: 7, column: 7),
+        _testDone(4),
+        _testStart(5, "failure 2", line: 8, column: 7),
+        _error(5, "oh no", isFailure: true),
+        _testDone(5, result: "failure"),
+        _testStart(6, "success 2", line: 9, column: 7),
+        _testDone(6),
+      ]
+    ], _done(success: false));
   });
 
   test("gracefully handles multiple test failures in a row", () {
@@ -128,21 +131,22 @@ void main() {
       });
       test('wait', () => completer.future);
     """, [
-      _start,
-      _allSuites(),
-      _suite(0),
-      _testStart(1, "loading test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 2),
-      _testStart(3, "failures", line: 9, column: 7),
-      _error(3, "first error"),
-      _error(3, "second error"),
-      _error(3, "third error"),
-      _testDone(3, result: "error"),
-      _testStart(4, "wait", line: 15, column: 7),
-      _testDone(4),
-      _done(success: false)
-    ]);
+      [
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+      ],
+      [
+        _group(2, testCount: 2),
+        _testStart(3, "failures", line: 9, column: 7),
+        _error(3, "first error"),
+        _error(3, "second error"),
+        _error(3, "third error"),
+        _testDone(3, result: "error"),
+        _testStart(4, "wait", line: 15, column: 7),
+        _testDone(4),
+      ]
+    ], _done(success: false));
   });
 
   test("gracefully handles a test failing after completion", () {
@@ -163,24 +167,25 @@ void main() {
         return testDone.future;
       });
     """, [
-      _start,
-      _allSuites(),
-      _suite(0),
-      _testStart(1, "loading test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 2),
-      _testStart(3, "failure", line: 11, column: 7),
-      _testDone(3),
-      _testStart(4, "wait", line: 17, column: 7),
-      _error(3, "oh no"),
-      _error(
-          3,
-          "This test failed after it had already completed. Make sure to "
-          "use [expectAsync]\n"
-          "or the [completes] matcher when testing async code."),
-      _testDone(4),
-      _done(success: false)
-    ]);
+      [
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+      ],
+      [
+        _group(2, testCount: 2),
+        _testStart(3, "failure", line: 11, column: 7),
+        _testDone(3),
+        _testStart(4, "wait", line: 17, column: 7),
+        _error(3, "oh no"),
+        _error(
+            3,
+            "This test failed after it had already completed. Make sure to "
+            "use [expectAsync]\n"
+            "or the [completes] matcher when testing async code."),
+        _testDone(4),
+      ]
+    ], _done(success: false));
   });
 
   test("reports each test in its proper groups", () {
@@ -196,24 +201,26 @@ void main() {
         test('success', () {});
       });
     """, [
-      _start,
-      _allSuites(),
-      _suite(0),
-      _testStart(1, "loading test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 3),
-      _group(3, name: "group 1", parentID: 2, testCount: 3, line: 6, column: 7),
-      _group(4, name: "group 1 .2", parentID: 3, line: 7, column: 9),
-      _group(5, name: "group 1 .2 .3", parentID: 4, line: 8, column: 11),
-      _testStart(6, 'group 1 .2 .3 success',
-          groupIDs: [2, 3, 4, 5], line: 9, column: 13),
-      _testDone(6),
-      _testStart(7, 'group 1 success', groupIDs: [2, 3], line: 13, column: 9),
-      _testDone(7),
-      _testStart(8, 'group 1 success', groupIDs: [2, 3], line: 14, column: 9),
-      _testDone(8),
-      _done()
-    ]);
+      [
+        _suite(0),
+        _testStart(1, "loading test.dart", groupIDs: []),
+        _testDone(1, hidden: true),
+      ],
+      [
+        _group(2, testCount: 3),
+        _group(3,
+            name: "group 1", parentID: 2, testCount: 3, line: 6, column: 7),
+        _group(4, name: "group 1 .2", parentID: 3, line: 7, column: 9),
+        _group(5, name: "group 1 .2 .3", parentID: 4, line: 8, column: 11),
+        _testStart(6, 'group 1 .2 .3 success',
+            groupIDs: [2, 3, 4, 5], line: 9, column: 13),
+        _testDone(6),
+        _testStart(7, 'group 1 success', groupIDs: [2, 3], line: 13, column: 9),
+        _testDone(7),
+        _testStart(8, 'group 1 success', groupIDs: [2, 3], line: 14, column: 9),
+        _testDone(8),
+      ]
+    ], _done());
   });
 
   group("print:", () {
@@ -226,20 +233,21 @@ void main() {
           print("four");
         });
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2),
-        _testStart(3, 'test', line: 6, column: 9),
-        _print(3, "one"),
-        _print(3, "two"),
-        _print(3, "three"),
-        _print(3, "four"),
-        _testDone(3),
-        _done()
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2),
+          _testStart(3, 'test', line: 6, column: 9),
+          _print(3, "one"),
+          _print(3, "two"),
+          _print(3, "three"),
+          _print(3, "four"),
+          _testDone(3),
+        ]
+      ], _done());
     });
 
     test("handles a print after the test completes", () {
@@ -263,22 +271,23 @@ void main() {
           return testDone.future;
         });
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 2),
-        _testStart(3, 'test', line: 10, column: 9),
-        _testDone(3),
-        _testStart(4, 'wait', line: 20, column: 9),
-        _print(3, "one"),
-        _print(3, "two"),
-        _print(3, "three"),
-        _print(3, "four"),
-        _testDone(4),
-        _done()
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2, testCount: 2),
+          _testStart(3, 'test', line: 10, column: 9),
+          _testDone(3),
+          _testStart(4, 'wait', line: 20, column: 9),
+          _print(3, "one"),
+          _print(3, "two"),
+          _print(3, "three"),
+          _print(3, "four"),
+          _testDone(4),
+        ]
+      ], _done());
     });
 
     test("interleaves prints and errors", () {
@@ -306,26 +315,27 @@ void main() {
 
         test('wait', () => completer.future);
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 2),
-        _testStart(3, 'test', line: 9, column: 9),
-        _print(3, "one"),
-        _print(3, "two"),
-        _error(3, "first error"),
-        _print(3, "three"),
-        _print(3, "four"),
-        _error(3, "second error"),
-        _print(3, "five"),
-        _print(3, "six"),
-        _testDone(3, result: "error"),
-        _testStart(4, 'wait', line: 27, column: 9),
-        _testDone(4),
-        _done(success: false)
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2, testCount: 2),
+          _testStart(3, 'test', line: 9, column: 9),
+          _print(3, "one"),
+          _print(3, "two"),
+          _error(3, "first error"),
+          _print(3, "three"),
+          _print(3, "four"),
+          _error(3, "second error"),
+          _print(3, "five"),
+          _print(3, "six"),
+          _testDone(3, result: "error"),
+          _testStart(4, 'wait', line: 27, column: 9),
+          _testDone(4),
+        ]
+      ], _done(success: false));
     });
   });
 
@@ -336,20 +346,21 @@ void main() {
         test('skip 2', () {}, skip: true);
         test('skip 3', () {}, skip: true);
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 3),
-        _testStart(3, "skip 1", skip: true, line: 6, column: 9),
-        _testDone(3, skipped: true),
-        _testStart(4, "skip 2", skip: true, line: 7, column: 9),
-        _testDone(4, skipped: true),
-        _testStart(5, "skip 3", skip: true, line: 8, column: 9),
-        _testDone(5, skipped: true),
-        _done()
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2, testCount: 3),
+          _testStart(3, "skip 1", skip: true, line: 6, column: 9),
+          _testDone(3, skipped: true),
+          _testStart(4, "skip 2", skip: true, line: 7, column: 9),
+          _testDone(4, skipped: true),
+          _testStart(5, "skip 3", skip: true, line: 8, column: 9),
+          _testDone(5, skipped: true),
+        ]
+      ], _done());
     });
 
     test("reports skipped groups", () {
@@ -360,30 +371,31 @@ void main() {
           test('success 3', () {});
         }, skip: true);
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 3),
-        _group(3,
-            name: "skip",
-            parentID: 2,
-            skip: true,
-            testCount: 3,
-            line: 6,
-            column: 9),
-        _testStart(4, "skip success 1",
-            groupIDs: [2, 3], skip: true, line: 7, column: 11),
-        _testDone(4, skipped: true),
-        _testStart(5, "skip success 2",
-            groupIDs: [2, 3], skip: true, line: 8, column: 11),
-        _testDone(5, skipped: true),
-        _testStart(6, "skip success 3",
-            groupIDs: [2, 3], skip: true, line: 9, column: 11),
-        _testDone(6, skipped: true),
-        _done()
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2, testCount: 3),
+          _group(3,
+              name: "skip",
+              parentID: 2,
+              skip: true,
+              testCount: 3,
+              line: 6,
+              column: 9),
+          _testStart(4, "skip success 1",
+              groupIDs: [2, 3], skip: true, line: 7, column: 11),
+          _testDone(4, skipped: true),
+          _testStart(5, "skip success 2",
+              groupIDs: [2, 3], skip: true, line: 8, column: 11),
+          _testDone(5, skipped: true),
+          _testStart(6, "skip success 3",
+              groupIDs: [2, 3], skip: true, line: 9, column: 11),
+          _testDone(6, skipped: true),
+        ]
+      ], _done());
     });
 
     test("reports the skip reason if available", () {
@@ -391,41 +403,45 @@ void main() {
         test('skip 1', () {}, skip: 'some reason');
         test('skip 2', () {}, skip: 'or another');
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 2),
-        _testStart(3, "skip 1", skip: "some reason", line: 6, column: 9),
-        _print(3, "Skip: some reason", type: "skip"),
-        _testDone(3, skipped: true),
-        _testStart(4, "skip 2", skip: "or another", line: 7, column: 9),
-        _print(4, "Skip: or another", type: "skip"),
-        _testDone(4, skipped: true),
-        _done()
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2, testCount: 2),
+          _testStart(3, "skip 1", skip: "some reason", line: 6, column: 9),
+          _print(3, "Skip: some reason", type: "skip"),
+          _testDone(3, skipped: true),
+          _testStart(4, "skip 2", skip: "or another", line: 7, column: 9),
+          _print(4, "Skip: or another", type: "skip"),
+          _testDone(4, skipped: true),
+        ]
+      ], _done());
     });
 
     test("runs skipped tests with --run-skipped", () {
-      return _expectReport("""
+      return _expectReport(
+          """
         test('skip 1', () {}, skip: 'some reason');
         test('skip 2', () {}, skip: 'or another');
-      """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 2),
-        _testStart(3, "skip 1", line: 6, column: 9),
-        _testDone(3),
-        _testStart(4, "skip 2", line: 7, column: 9),
-        _testDone(4),
-        _done()
-      ], args: [
-        "--run-skipped"
-      ]);
+      """,
+          [
+            [
+              _suite(0),
+              _testStart(1, "loading test.dart", groupIDs: []),
+              _testDone(1, hidden: true),
+            ],
+            [
+              _group(2, testCount: 2),
+              _testStart(3, "skip 1", line: 6, column: 9),
+              _testDone(3),
+              _testStart(4, "skip 2", line: 7, column: 9),
+              _testDone(4),
+            ]
+          ],
+          _done(),
+          args: ["--run-skipped"]);
     });
   });
 
@@ -437,20 +453,21 @@ void main() {
         setUpAll(() {});
         test('success', () {});
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 1),
-        _testStart(3, "(setUpAll)", line: 6, column: 9),
-        _testDone(3, hidden: true),
-        _testStart(4, "success", line: 9, column: 9),
-        _testDone(4),
-        _testStart(5, "(tearDownAll)"),
-        _testDone(5, hidden: true),
-        _done()
-      ]);
+        [
+          _suite(0),
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _group(2, testCount: 1),
+          _testStart(3, "(setUpAll)", line: 6, column: 9),
+          _testDone(3, hidden: true),
+          _testStart(4, "success", line: 9, column: 9),
+          _testDone(4),
+          _testStart(5, "(tearDownAll)"),
+          _testDone(5, hidden: true),
+        ]
+      ], _done());
     });
 
     test("the first call to tearDownAll()", () {
@@ -460,91 +477,100 @@ void main() {
         tearDownAll(() {});
         test('success', () {});
       """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 1),
-        _testStart(3, "success", line: 9, column: 9),
-        _testDone(3),
-        _testStart(4, "(tearDownAll)", line: 6, column: 9),
-        _testDone(4, hidden: true),
-        _done()
-      ]);
+        [
+          _testStart(1, "loading test.dart", groupIDs: []),
+          _testDone(1, hidden: true),
+        ],
+        [
+          _suite(0),
+          _group(2, testCount: 1),
+          _testStart(3, "success", line: 9, column: 9),
+          _testDone(3),
+          _testStart(4, "(tearDownAll)", line: 6, column: 9),
+          _testDone(4, hidden: true),
+        ]
+      ], _done());
     });
 
     test("a test compiled to JS", () {
-      return _expectReport("""
+      return _expectReport(
+          """
         test('success', () {});
-      """, [
-        _start,
-        _allSuites(),
-        _suite(0, platform: "chrome"),
-        _testStart(1, "compiling test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 1),
-        _testStart(3, "success", line: 6, column: 9),
-        _testDone(3),
-        _done()
-      ], args: [
-        "-p",
-        "chrome"
-      ]);
+      """,
+          [
+            [
+              _suite(0, platform: "chrome"),
+              _testStart(1, "compiling test.dart", groupIDs: []),
+              _testDone(1, hidden: true),
+            ],
+            [
+              _group(2, testCount: 1),
+              _testStart(3, "success", line: 6, column: 9),
+              _testDone(3),
+            ]
+          ],
+          _done(),
+          args: ["-p", "chrome"]);
     }, tags: ["chrome"], skip: "Broken by sdk#29693.");
 
     test("the root suite if applicable", () {
-      return _expectReport("""
+      return _expectReport(
+          """
       customTest('success 1', () {});
       test('success 2', () {});
-    """, [
-        _start,
-        _allSuites(),
-        _suite(0),
-        _testStart(1, "loading test.dart", groupIDs: []),
-        _testDone(1, hidden: true),
-        _group(2, testCount: 2),
-        _testStart(3, "success 1",
-            line: 3,
-            column: 50,
-            url: p.toUri(p.join(d.sandbox, "common.dart")).toString(),
-            root_column: 7,
-            root_line: 7,
-            root_url: p.toUri(p.join(d.sandbox, "test.dart")).toString()),
-        _testDone(3),
-        _testStart(4, "success 2", line: 8, column: 7),
-        _testDone(4),
-        _done()
-      ], externalLibraries: {
-        'common.dart': """
+    """,
+          [
+            [
+              _suite(0),
+              _testStart(1, "loading test.dart", groupIDs: []),
+              _testDone(1, hidden: true),
+            ],
+            [
+              _group(2, testCount: 2),
+              _testStart(3, "success 1",
+                  line: 3,
+                  column: 50,
+                  url: p.toUri(p.join(d.sandbox, "common.dart")).toString(),
+                  root_column: 7,
+                  root_line: 7,
+                  root_url: p.toUri(p.join(d.sandbox, "test.dart")).toString()),
+              _testDone(3),
+              _testStart(4, "success 2", line: 8, column: 7),
+              _testDone(4),
+            ]
+          ],
+          _done(),
+          externalLibraries: {
+            'common.dart': """
 import 'package:test/test.dart';
 
 void customTest(String name, Function testFn) => test(name, testFn);
 """,
-      });
+          });
     });
   });
 
   test(
       "doesn't report line and column information for a test compiled to JS "
       "with --js-trace", () {
-    return _expectReport("""
+    return _expectReport(
+        """
       test('success', () {});
-    """, [
-      _start,
-      _allSuites(),
-      _suite(0, platform: "chrome"),
-      _testStart(1, "compiling test.dart", groupIDs: []),
-      _testDone(1, hidden: true),
-      _group(2, testCount: 1),
-      _testStart(3, "success"),
-      _testDone(3),
-      _done()
-    ], args: [
-      "-p",
-      "chrome",
-      "--js-trace"
-    ]);
+    """,
+        [
+          [
+            _suite(0, platform: "chrome"),
+            _testStart(1, "compiling test.dart", groupIDs: []),
+            _testDone(1, hidden: true),
+          ],
+          [
+            _group(2, testCount: 1),
+            _testStart(3, "success"),
+            _testDone(3),
+          ],
+        ],
+        _done(),
+        args: ["-p", "chrome", "--js-trace"]);
   }, tags: ["chrome"], skip: "Broken by sdk#29693.");
 }
 
@@ -554,7 +580,7 @@ void customTest(String name, Function testFn) => test(name, testFn);
 /// If [externalLibraries] are provided it should be a map of relative file
 /// paths to contents. All libraries will be added as imports to the test, and
 /// files will be created for them.
-Future _expectReport(String tests, List<Map> expected,
+Future _expectReport(String tests, List<List<Map>> expected, Map done,
     {List<String> args, Map<String, String> externalLibraries}) async {
   args ??= [];
   externalLibraries ??= {};
@@ -576,19 +602,27 @@ import 'package:test/test.dart';
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();
-
-  expect(stdoutLines.length, equals(expected.length),
+  // Ensure the output is of the same length, including start, done and all
+  // suites messages.
+  expect(stdoutLines.length, equals(expected.fold(3, (a, m) => a + m.length)),
       reason: "Expected $stdoutLines to match ${jsonEncode(expected)}.");
 
   // TODO(nweiz): validate each event against the JSON schema when
   // patefacio/json_schema#4 is merged.
 
-  // Remove excess trailing whitespace.
-  for (var i = 0; i < stdoutLines.length; i++) {
-    var event = jsonDecode(stdoutLines[i]);
-    expect(event.remove("time"), new isInstanceOf<int>());
-    event.remove("stackTrace");
-    expect(event, equals(expected[i]));
+  decodeLine(l) => jsonDecode(l)..remove("time")..remove("stackTrace");
+
+  // Should contain all suites message.
+  expect(stdoutLines.map(decodeLine), containsAll([_allSuites()]));
+
+  // A single start event is emitted first.
+  expect(decodeLine(stdoutLines.first), equals(_start));
+
+  // A single done event is emmited last.
+  expect(decodeLine(stdoutLines.last), equals(done));
+
+  for (var value in expected) {
+    expect(stdoutLines.map(decodeLine), containsAllInOrder(value));
   }
 }
 
