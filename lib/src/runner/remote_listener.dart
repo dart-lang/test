@@ -51,7 +51,7 @@ class RemoteListener {
     // which will cause the send to fail entirely.
     var controller = new StreamChannelController<Object>(
         allowForeignErrors: false, sync: true);
-    var channel = new MultiChannel<Map>(controller.local);
+    var channel = new MultiChannel(controller.local);
 
     var verboseChain = true;
 
@@ -168,7 +168,7 @@ class RemoteListener {
 
   /// Send information about [_suite] across [channel] and start listening for
   /// commands to run the tests.
-  void _listen(MultiChannel<Map> channel) {
+  void _listen(MultiChannel channel) {
     channel.sink.add({
       "type": "success",
       "root": _serializeGroup(channel, _suite.group, [])
@@ -179,7 +179,7 @@ class RemoteListener {
   ///
   /// [parents] lists the groups that contain [group].
   Map _serializeGroup(
-      MultiChannel<Map> channel, Group group, Iterable<Group> parents) {
+      MultiChannel channel, Group group, Iterable<Group> parents) {
     parents = parents.toList()..add(group);
     return {
       "type": "group",
@@ -200,8 +200,7 @@ class RemoteListener {
   ///
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
-  Map _serializeTest(
-      MultiChannel<Map> channel, Test test, Iterable<Group> groups) {
+  Map _serializeTest(MultiChannel channel, Test test, Iterable<Group> groups) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
@@ -221,7 +220,7 @@ class RemoteListener {
   }
 
   /// Runs [liveTest] and sends the results across [channel].
-  void _runLiveTest(LiveTest liveTest, MultiChannel<Map> channel) {
+  void _runLiveTest(LiveTest liveTest, MultiChannel channel) {
     channel.stream.listen((message) {
       assert(message['command'] == 'close');
       liveTest.close();

@@ -20,7 +20,9 @@ import '../utils.dart';
 /// The spawned isolate sends three kinds of messages. Data messages are emitted
 /// as data events, error messages are emitted as error events, and print
 /// messages are printed using `print()`.
-final _transformer = new StreamChannelTransformer<Object, Map>(
+// package:test will only send a `Map` across this channel, but users of
+// `hybridMain` can send any json encodeable type.
+final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
   switch (message["type"]) {
     case "data":
@@ -188,7 +190,7 @@ StreamChannel spawnHybridCode(String dartCode,
 /// Like [spawnHybridUri], but doesn't take [Uri] objects and doesn't handle
 /// relative URLs.
 StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
-  var channel = Zone.current[#test.runner.test_channel] as MultiChannel<Map>;
+  var channel = Zone.current[#test.runner.test_channel] as MultiChannel;
   if (channel == null) {
     // TODO(nweiz): Link to an issue tracking support when running the test file
     // directly.
@@ -199,7 +201,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   ensureJsonEncodable(message);
 
   var virtualChannel = channel.virtualChannel();
-  StreamChannel<Map> isolateChannel = virtualChannel;
+  StreamChannel isolateChannel = virtualChannel;
   channel.sink.add({
     "type": "spawn-hybrid-uri",
     "url": uri,
@@ -208,7 +210,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   });
 
   if (!stayAlive) {
-    var disconnector = new Disconnector<Map>();
+    var disconnector = new Disconnector();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }
