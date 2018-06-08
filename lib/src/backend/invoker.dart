@@ -166,7 +166,7 @@ class Invoker {
   Timer _timeoutTimer;
 
   /// The tear-down functions to run when this test finishes.
-  final _tearDowns = <AsyncFunction>[];
+  final _tearDowns = <Function()>[];
 
   /// Messages to print if and when this test fails.
   final _printsOnFailure = <String>[];

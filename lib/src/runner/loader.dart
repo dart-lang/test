@@ -29,9 +29,6 @@ import 'plugin/platform.dart';
 import 'runner_suite.dart';
 import 'vm/platform.dart';
 
-// TODO(nweiz): Use inline function types when sdk#30858 is fixed.
-typedef FutureOr<PlatformPlugin> _PlatformPluginFunction();
-
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
   /// The test runner configuration.
@@ -46,7 +43,7 @@ class Loader {
   /// The functions to use to load [_platformPlugins].
   ///
   /// These are passed to the plugins' async memoizers when a plugin is needed.
-  final _platformCallbacks = <Runtime, _PlatformPluginFunction>{};
+  final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 
   /// A map of all runtimes registered in [_platformCallbacks], indexed by
   /// their string identifiers.
@@ -81,7 +78,8 @@ class Loader {
   /// used to load all suites for all matching runtimes. Platform plugins may
   /// override built-in runtimes.
   Loader(
-      {String root, Map<Iterable<Runtime>, _PlatformPluginFunction> plugins}) {
+      {String root,
+      Map<Iterable<Runtime>, FutureOr<PlatformPlugin> Function()> plugins}) {
     _registerPlatformPlugin([Runtime.vm], () => new VMPlatform());
     _registerPlatformPlugin([Runtime.nodeJS], () => new NodePlatform());
     _registerPlatformPlugin([
@@ -107,11 +105,11 @@ class Loader {
 
   /// Registers a [PlatformPlugin] for [runtimes].
   void _registerPlatformPlugin(
-      Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> getPlugin()) {
+      Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> Function() plugin) {
     var memoizer = new AsyncMemoizer<PlatformPlugin>();
     for (var runtime in runtimes) {
       _platformPlugins[runtime] = memoizer;
-      _platformCallbacks[runtime] = getPlugin;
+      _platformCallbacks[runtime] = plugin;
       _runtimesByIdentifier[runtime.identifier] = runtime;
     }
   }

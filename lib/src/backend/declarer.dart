@@ -50,13 +50,13 @@ class Declarer {
   final bool _noRetry;
 
   /// The set-up functions to run for each test in this group.
-  final _setUps = new List<AsyncFunction>();
+  final _setUps = new List<Function()>();
 
   /// The tear-down functions to run for each test in this group.
-  final _tearDowns = new List<AsyncFunction>();
+  final _tearDowns = new List<Function()>();
 
   /// The set-up functions to run once for this group.
-  final _setUpAlls = new List<AsyncFunction>();
+  final _setUpAlls = new List<Function()>();
 
   /// The trace for the first call to [setUpAll].
   ///
@@ -66,7 +66,7 @@ class Declarer {
   Trace _setUpAllTrace;
 
   /// The tear-down functions to run once for this group.
-  final _tearDownAlls = new List<AsyncFunction>();
+  final _tearDownAlls = new List<Function()>();
 
   /// The trace for the first call to [tearDownAll].
   ///

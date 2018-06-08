@@ -11,7 +11,6 @@ import '../backend/group.dart';
 import '../backend/suite.dart';
 import '../backend/suite_platform.dart';
 import '../backend/test.dart';
-import '../utils.dart';
 import 'configuration/suite.dart';
 import 'environment.dart';
 
@@ -56,7 +55,7 @@ class RunnerSuite extends Suite {
   /// debugging mode and doesn't support suite channels.
   factory RunnerSuite(Environment environment, SuiteConfiguration config,
       Group group, SuitePlatform platform,
-      {String path, AsyncFunction onClose}) {
+      {String path, Function() onClose}) {
     var controller =
         new RunnerSuiteController._local(environment, config, onClose: onClose);
     var suite = new RunnerSuite._(controller, group, path, platform);
@@ -94,7 +93,7 @@ class RunnerSuiteController {
   final MultiChannel _suiteChannel;
 
   /// The function to call when the suite is closed.
-  final AsyncFunction _onClose;
+  final Function() _onClose;
 
   /// The backing value for [suite.isDebugging].
   bool _isDebugging = false;
@@ -107,7 +106,7 @@ class RunnerSuiteController {
 
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
       Future<Group> groupFuture, SuitePlatform platform,
-      {String path, AsyncFunction onClose})
+      {String path, Function() onClose})
       : _onClose = onClose {
     _suite = groupFuture
         .then((group) => new RunnerSuite._(this, group, path, platform));
@@ -116,7 +115,7 @@ class RunnerSuiteController {
   /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
   /// an external source.
   RunnerSuiteController._local(this._environment, this._config,
-      {AsyncFunction onClose})
+      {Function() onClose})
       : _suiteChannel = null,
         _onClose = onClose;
 
