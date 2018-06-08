@@ -48,4 +48,5 @@ dev_dependencies:
 
 dependency_overrides:
   stream_channel:
-    path: ../stream_channel
+    git:
+      url: https://github.com/dart-lang/stream_channel.git
