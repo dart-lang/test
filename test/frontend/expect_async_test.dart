@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:test/src/backend/state.dart';
 import 'package:test/test.dart';
 
@@ -172,7 +170,7 @@ void main() {
       liveTest = createTest(() {
         var callback = expectAsync0(() {}, count: 3);
 
-        future = new Future.sync(() async {
+        future = () async {
           await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
@@ -184,7 +182,7 @@ void main() {
           await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
-        });
+        }();
       });
 
       await liveTest.run();
@@ -272,7 +270,7 @@ void main() {
         var done = false;
         var callback = expectAsyncUntil0(() {}, () => done);
 
-        future = new Future.sync(() async {
+        future = () async {
           await pumpEventQueue();
           expect(liveTest.state.status, equals(Status.running));
           callback();
@@ -280,7 +278,7 @@ void main() {
           expect(liveTest.state.status, equals(Status.running));
           done = true;
           callback();
-        });
+        }();
       });
 
       await liveTest.run();
