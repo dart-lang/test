@@ -252,7 +252,7 @@ class Engine {
       _addedSuites.add(suite);
       _onSuiteAddedController.add(suite);
 
-      _group.add(new Future.sync(() async {
+      _group.add(() async {
         var loadResource = await _loadPool.request();
 
         var controller;
@@ -275,7 +275,7 @@ class Engine {
           controller.noMoreLiveTests();
           loadResource.allowRelease(() => controller.close());
         });
-      }));
+      }());
     }, onDone: () {
       _subscriptions.remove(subscription);
       _onSuiteAddedController.close();
