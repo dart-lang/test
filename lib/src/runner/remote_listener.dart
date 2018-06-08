@@ -200,7 +200,8 @@ class RemoteListener {
   ///
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
-  Map _serializeTest(MultiChannel<Map> channel, Test test, Iterable<Group> groups) {
+  Map _serializeTest(
+      MultiChannel<Map> channel, Test test, Iterable<Group> groups) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
