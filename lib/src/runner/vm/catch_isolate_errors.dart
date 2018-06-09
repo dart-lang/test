@@ -17,9 +17,10 @@ void catchIsolateErrors() {
   errorPort.listen((message) {
     // Masquerade as an IsolateSpawnException because that's what this would
     // be if the error had been detected statically.
-    var error = new IsolateSpawnException(message[0]);
-    var stackTrace =
-        message[1] == null ? new Trace([]) : new Trace.parse(message[1]);
+    var error = new IsolateSpawnException(message[0] as String);
+    var stackTrace = message[1] == null
+        ? new Trace([])
+        : new Trace.parse(message[1] as String);
     Zone.current.handleUncaughtError(error, stackTrace);
   });
 }

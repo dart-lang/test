@@ -89,8 +89,7 @@ class StringLiteralIterator extends Iterator<int> {
         if (string is StringInterpolation) {
           throw new ArgumentError("Can't iterate over an interpolated string.");
         }
-        assert(string is SimpleStringLiteral);
-        _strings.add(string);
+        _strings.add(string as SimpleStringLiteral);
       }
     }
 

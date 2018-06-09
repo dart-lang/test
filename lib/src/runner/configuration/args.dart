@@ -168,19 +168,21 @@ class _Parser {
         .toList()
           ..addAll(_options['plain-name'] as List<String>);
 
-    var includeTagSet = new Set.from(_options['tags'] ?? [])
-      ..addAll(_options['tag'] ?? []);
+    var includeTagSet = new Set.from(_options['tags'] as Iterable ?? [])
+      ..addAll(_options['tag'] as Iterable ?? []);
 
-    var includeTags = includeTagSet.fold(BooleanSelector.all, (selector, tag) {
-      var tagSelector = new BooleanSelector.parse(tag);
+    var includeTags = includeTagSet.fold(BooleanSelector.all,
+        (BooleanSelector selector, tag) {
+      var tagSelector = new BooleanSelector.parse(tag as String);
       return selector.intersection(tagSelector);
     });
 
-    var excludeTagSet = new Set.from(_options['exclude-tags'] ?? [])
-      ..addAll(_options['exclude-tag'] ?? []);
+    var excludeTagSet = new Set.from(_options['exclude-tags'] as Iterable ?? [])
+      ..addAll(_options['exclude-tag'] as Iterable ?? []);
 
-    var excludeTags = excludeTagSet.fold(BooleanSelector.none, (selector, tag) {
-      var tagSelector = new BooleanSelector.parse(tag);
+    var excludeTags = excludeTagSet.fold(BooleanSelector.none,
+        (BooleanSelector selector, tag) {
+      var tagSelector = new BooleanSelector.parse(tag as String);
       return selector.union(tagSelector);
     });
 
@@ -208,7 +210,7 @@ class _Parser {
         color: _ifParsed('color'),
         configurationPath: _ifParsed('configuration'),
         dart2jsPath: _ifParsed('dart2js-path'),
-        dart2jsArgs: _ifParsed('dart2js-args') as List<String>,
+        dart2jsArgs: _ifParsed('dart2js-args'),
         precompiledPath: _ifParsed('precompiled'),
         reporter: _ifParsed('reporter'),
         pubServePort: _parseOption('pub-serve', int.parse),
@@ -217,11 +219,11 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
         patterns: patterns,
-        runtimes: (_ifParsed('platform') as List<String>)
+        runtimes: _ifParsed<List<String>>('platform')
             ?.map((runtime) => new RuntimeSelection(runtime))
             ?.toList(),
         runSkipped: _ifParsed('run-skipped'),
-        chosenPresets: _ifParsed('preset') as List<String>,
+        chosenPresets: _ifParsed('preset'),
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,
         excludeTags: excludeTags,
@@ -233,7 +235,8 @@ class _Parser {
   /// If the user hasn't explicitly chosen a value, we want to pass null values
   /// to [new Configuration] so that it considers those fields unset when
   /// merging with configuration from the config file.
-  _ifParsed(String name) => _options.wasParsed(name) ? _options[name] : null;
+  T _ifParsed<T>(String name) =>
+      _options.wasParsed(name) ? _options[name] as T : null;
 
   /// Runs [parse] on the value of the option [name], and wraps any
   /// [FormatException] it throws with additional information.

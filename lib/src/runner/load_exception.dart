@@ -54,8 +54,9 @@ class LoadException implements Exception {
       innerString = innerString.split("Stack Trace:\n").first.trim();
     }
     if (innerError is SourceSpanException) {
-      innerString =
-          innerError.toString(color: color).replaceFirst(" of $path", "");
+      innerString = (innerError as SourceSpanException)
+          .toString(color: color)
+          .replaceFirst(" of $path", "");
     }
 
     buffer.write(innerString.contains("\n") ? "\n" : " ");

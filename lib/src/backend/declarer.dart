@@ -81,7 +81,7 @@ class Declarer {
   bool _built = false;
 
   /// The current zone-scoped declarer.
-  static Declarer get current => Zone.current[#test.declarer];
+  static Declarer get current => Zone.current[#test.declarer] as Declarer;
 
   /// Creates a new declarer for the root group.
   ///

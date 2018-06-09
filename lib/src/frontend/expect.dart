@@ -131,13 +131,14 @@ Future _expect(actual, matcher,
 
     if (result is String) {
       // ignore: deprecated_member_use
-      fail(formatFailure(matcher, actual, result, reason: reason));
+      fail(formatFailure(matcher as Matcher, actual, result, reason: reason));
     } else if (result is Future) {
       Invoker.current.addOutstandingCallback();
       return result.then((realResult) {
         if (realResult == null) return;
         // ignore: deprecated_member_use
-        fail(formatFailure(matcher, actual, realResult, reason: reason));
+        fail(formatFailure(matcher as Matcher, actual, realResult as String,
+            reason: reason));
       }).whenComplete(() {
         // Always remove this, in case the failure is caught and handled
         // gracefully.
@@ -150,11 +151,12 @@ Future _expect(actual, matcher,
 
   var matchState = {};
   try {
-    if (matcher.matches(actual, matchState)) return new Future.sync(() {});
+    if ((matcher as Matcher).matches(actual, matchState))
+      return new Future.sync(() {});
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
-  fail(formatter(actual, matcher, reason, matchState, verbose));
+  fail(formatter(actual, matcher as Matcher, reason, matchState, verbose));
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided

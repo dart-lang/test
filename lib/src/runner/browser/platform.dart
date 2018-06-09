@@ -232,7 +232,7 @@ class BrowserPlatform extends PlatformPlugin
           '</script>.');
     }
 
-    var suiteUrl;
+    Uri suiteUrl;
     if (_config.pubServeUrl != null) {
       var suitePrefix = p
           .toUri(

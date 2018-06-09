@@ -79,7 +79,7 @@ class Invoker {
   final bool _guarded;
 
   /// Whether the test can be closed in the current zone.
-  bool get _closable => Zone.current[_closableKey];
+  bool get _closable => Zone.current[_closableKey] as bool;
 
   /// An opaque object used as a key in the zone value map to identify
   /// [_closable].
@@ -108,7 +108,7 @@ class Invoker {
 
   /// The outstanding callback counter for the current zone.
   OutstandingCallbackCounter get _outstandingCallbacks {
-    var counter = Zone.current[_counterKey];
+    var counter = Zone.current[_counterKey] as OutstandingCallbackCounter;
     if (counter != null) return counter;
     throw new StateError("Can't add or remove outstanding callbacks outside "
         "of a test body.");
@@ -135,7 +135,7 @@ class Invoker {
   /// An invoker is only set within the zone scope of a running test.
   static Invoker get current {
     // TODO(nweiz): Use a private symbol when dart2js supports it (issue 17526).
-    return Zone.current[#test.invoker];
+    return Zone.current[#test.invoker] as Invoker;
   }
 
   /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
@@ -241,7 +241,7 @@ class Invoker {
   Future waitForOutstandingCallbacks(fn()) {
     heartbeat();
 
-    var zone;
+    Zone zone;
     var counter = new OutstandingCallbackCounter();
     runZoned(() async {
       zone = Zone.current;

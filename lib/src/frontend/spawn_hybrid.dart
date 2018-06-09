@@ -23,7 +23,7 @@ import '../utils.dart';
 // TODO(grouma) - Restore the type here and correctly flow it throughout.
 final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
     new StreamTransformer.fromHandlers(handleData: (message, sink) {
-  switch (message["type"]) {
+  switch (message["type"] as String) {
     case "data":
       sink.add(message["data"]);
       break;

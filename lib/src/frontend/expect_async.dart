@@ -76,7 +76,7 @@ class _ExpectedFunction<T> {
   int _actualCalls = 0;
 
   /// The test invoker in which this function was wrapped.
-  Invoker get _invoker => _zone[#test.invoker];
+  Invoker get _invoker => _zone[#test.invoker] as Invoker;
 
   /// The zone in which this function was wrapped.
   final Zone _zone;

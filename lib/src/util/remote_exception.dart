@@ -67,16 +67,16 @@ class RemoteException implements Exception {
   /// error and a [Chain] as its stack trace.
   static AsyncError deserialize(serialized) {
     return new AsyncError(_deserializeException(serialized),
-        new Chain.parse(serialized['stackChain']));
+        new Chain.parse(serialized['stackChain'] as String));
   }
 
   /// Deserializes the exception portion of [serialized].
   static RemoteException _deserializeException(serialized) {
-    var message = serialized['message'];
-    var type = serialized['type'];
-    var toString = serialized['toString'];
+    String message = serialized['message'];
+    String type = serialized['type'];
+    String toString = serialized['toString'];
 
-    switch (serialized['supertype']) {
+    switch (serialized['supertype'] as String) {
       case 'TestFailure':
         return new _RemoteTestFailure(message, type, toString);
       case 'IsolateSpawnException':
