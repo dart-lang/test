@@ -43,9 +43,10 @@ abstract class AsyncMatcher extends Matcher {
     if (result is Future) {
       Invoker.current.addOutstandingCallback();
       result.then((realResult) {
-        // ignore: deprecated_member_use
-        if (realResult != null)
+        if (realResult != null) {
+          // ignore: deprecated_member_use
           fail(formatFailure(this, item, realResult as String));
+        }
         Invoker.current.removeOutstandingCallback();
       });
     } else if (result is String) {
