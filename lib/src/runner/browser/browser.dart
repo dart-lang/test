@@ -127,7 +127,7 @@ abstract class Browser {
   ///
   /// Returns the same [Future] as [onExit], except that it won't emit
   /// exceptions.
-  Future close() {
+  Future close() async {
     _closed = true;
 
     // If we don't manually close the stream the test runner can hang.
@@ -137,23 +137,12 @@ abstract class Browser {
       stream.cancel();
     }
 
-    _process.then((process) {
-      // Dartium has a difficult time being killed on Linux. To ensure it is
-      // properly closed, find all children processes and kill those first.
-      try {
-        if (Platform.isLinux) {
-          var result = Process.runSync('pgrep', ['-P', '${process.pid}']);
-          for (var pid in '${result.stdout}'.split('\n')) {
-            Process.runSync('kill', ['-9', pid]);
-          }
-        }
-      } catch (e) {
-        print('Failed to kill browser children: $e');
-      }
-      process.kill();
-    });
+    (await _process).kill();
 
     // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.catchError((_) {});
+    return onExit.catchError((_) {}).timeout(new Duration(seconds: 15),
+        onTimeout: () {
+      throw new ApplicationException("Failed to close the browser.");
+    });
   }
 }
