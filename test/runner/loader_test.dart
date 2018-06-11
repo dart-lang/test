@@ -5,6 +5,7 @@
 @TestOn("vm")
 
 import 'package:path/path.dart' as p;
+import 'package:test/src/runner/runner_suite.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/backend/state.dart';
@@ -123,7 +124,8 @@ void main() {
       });
 
       test("can run tests in those suites", () {
-        var suite = suites.firstWhere((suite) => suite.path.contains("a_test"));
+        var suite = suites
+            .firstWhere((RunnerSuite suite) => suite.path.contains("a_test"));
         var liveTest = suite.group.entries[1].load(suite);
         expectSingleFailure(liveTest);
         return liveTest.run().whenComplete(() => liveTest.close());
