@@ -294,8 +294,8 @@ class Configuration {
     return configuration._resolvePresets();
   }
 
-  static Map<Object, Configuration> _withChosenPresets(
-      Map<Object, Configuration> map, Set<String> chosenPresets) {
+  static Map<String, Configuration> _withChosenPresets(
+      Map<String, Configuration> map, Set<String> chosenPresets) {
     if (map == null || chosenPresets == null) return map;
     return mapMap(map,
         value: (_, config) => config.change(
