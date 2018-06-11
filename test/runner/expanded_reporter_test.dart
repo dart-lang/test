@@ -67,7 +67,7 @@ void main() {
 """).create();
 
     var test = await runTest(["--verbose-trace", "test.dart"]);
-    expect(test.stdout, emitsThrough(contains("dart:isolate-patch")));
+    expect(test.stdout, emitsThrough(contains("dart:async")));
     await test.shouldExit(1);
   });
 
