@@ -4,7 +4,6 @@
 
 /// An annotation for marking a test to be retried.
 ///
-///
 /// A test with reties enabled will be re-run if it fails for a reason
 /// other than [TestFailure].
 class Retry {
