@@ -87,8 +87,9 @@ class SuiteConfiguration {
   Metadata get metadata {
     if (tags.isEmpty && onPlatform.isEmpty) return _metadata;
     return _metadata.change(
-        forTag: mapMap(tags, value: (_, config) => config.metadata),
-        onPlatform: mapMap(onPlatform, value: (_, config) => config.metadata));
+        forTag: tags.map((key, config) => new MapEntry(key, config.metadata)),
+        onPlatform: onPlatform
+            .map((key, config) => new MapEntry(key, config.metadata)));
   }
 
   final Metadata _metadata;
@@ -197,10 +198,10 @@ class SuiteConfiguration {
   /// [metadata].
   factory SuiteConfiguration.fromMetadata(Metadata metadata) =>
       new SuiteConfiguration._(
-          tags: mapMap(metadata.forTag,
-              value: (_, child) => new SuiteConfiguration.fromMetadata(child)),
-          onPlatform: mapMap(metadata.onPlatform,
-              value: (_, child) => new SuiteConfiguration.fromMetadata(child)),
+          tags: metadata.forTag.map((key, child) =>
+              new MapEntry(key, new SuiteConfiguration.fromMetadata(child))),
+          onPlatform: metadata.onPlatform.map((key, child) =>
+              new MapEntry(key, new SuiteConfiguration.fromMetadata(child))),
           metadata: metadata.change(forTag: {}, onPlatform: {}));
 
   /// Returns an unmodifiable copy of [input].
@@ -287,7 +288,7 @@ class SuiteConfiguration {
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
-            tags: addTags));
+            tags: addTags?.toSet()));
     return config._resolveTags();
   }
 
@@ -346,7 +347,7 @@ class SuiteConfiguration {
 
     // Otherwise, resolve the tag-specific components.
     var newTags = new Map<BooleanSelector, SuiteConfiguration>.from(tags);
-    var merged = tags.keys.fold(empty, (merged, selector) {
+    var merged = tags.keys.fold(empty, (SuiteConfiguration merged, selector) {
       if (!selector.evaluate(_metadata.tags)) return merged;
       return merged.merge(newTags.remove(selector));
     });

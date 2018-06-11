@@ -29,7 +29,7 @@ final String testVersion = (() {
   var source = package["source"];
   if (source is! String) return null;
 
-  switch (source) {
+  switch (source as String) {
     case "hosted":
       var version = package["version"];
       if (version is! String) return null;

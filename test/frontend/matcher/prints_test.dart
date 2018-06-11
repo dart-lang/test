@@ -90,7 +90,7 @@ void main() {
           liveTest,
           "Expected: prints contains 'Goodbye'\n"
           "  Actual: <10>\n"
-          "   Which: was not a Function\n");
+          "   Which: was not a unary Function\n");
     });
   });
 

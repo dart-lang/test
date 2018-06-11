@@ -62,7 +62,7 @@ class Engine {
   /// This is `null` if close hasn't been called and the tests are still
   /// running, `true` if close was called before the tests finished running, and
   /// `false` if the tests finished running before close was called.
-  var _closedBeforeDone;
+  bool _closedBeforeDone;
 
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
@@ -255,7 +255,7 @@ class Engine {
       _group.add(() async {
         var loadResource = await _loadPool.request();
 
-        var controller;
+        LiveSuiteController controller;
         if (suite is LoadSuite) {
           await _onUnpaused;
           controller = await _addLoadSuite(suite);
@@ -314,7 +314,7 @@ class Engine {
           if (entry is Group) {
             await _runGroup(suiteController, entry, parents);
           } else if (!suiteConfig.runSkipped && entry.metadata.skip) {
-            await _runSkippedTest(suiteController, entry, parents);
+            await _runSkippedTest(suiteController, entry as Test, parents);
           } else {
             var test = entry as Test;
             await _runLiveTest(suiteController,
@@ -390,7 +390,7 @@ class Engine {
     var skipped =
         new LocalTest(test.name, test.metadata, () {}, trace: test.trace);
 
-    var controller;
+    LiveTestController controller;
     controller =
         new LiveTestController(suiteController.liveSuite.suite, skipped, () {
       controller.setState(const State(Status.running, Result.success));

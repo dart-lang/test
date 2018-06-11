@@ -54,12 +54,12 @@ RunnerSuiteController deserializeSuite(
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
-  }..addAll(message as Map));
+  }..addAll(message as Map<String, dynamic>));
 
   var completer = new Completer<Group>();
 
   var loadSuiteZone = Zone.current;
-  handleError(error, stackTrace) {
+  handleError(error, StackTrace stackTrace) {
     disconnector.disconnect();
 
     if (completer.isCompleted) {
@@ -74,7 +74,7 @@ RunnerSuiteController deserializeSuite(
 
   suiteChannel.stream.listen(
       (response) {
-        switch (response["type"]) {
+        switch (response["type"] as String) {
           case "print":
             print(response["line"]);
             break;
@@ -92,7 +92,8 @@ RunnerSuiteController deserializeSuite(
 
           case "success":
             var deserializer = new _Deserializer(suiteChannel);
-            completer.complete(deserializer.deserializeGroup(response["root"]));
+            completer.complete(
+                deserializer.deserializeGroup(response["root"] as Map));
             break;
         }
       },
@@ -122,16 +123,18 @@ class _Deserializer {
   Group deserializeGroup(Map group) {
     var metadata = new Metadata.deserialize(group['metadata']);
     return new Group(
-        group['name'],
+        group['name'] as String,
         (group['entries'] as List).map((entry) {
           var map = entry as Map;
           if (map['type'] == 'group') return deserializeGroup(map);
           return _deserializeTest(map);
         }),
         metadata: metadata,
-        trace: group['trace'] == null ? null : new Trace.parse(group['trace']),
-        setUpAll: _deserializeTest(group['setUpAll']),
-        tearDownAll: _deserializeTest(group['tearDownAll']));
+        trace: group['trace'] == null
+            ? null
+            : new Trace.parse(group['trace'] as String),
+        setUpAll: _deserializeTest(group['setUpAll'] as Map),
+        tearDownAll: _deserializeTest(group['tearDownAll'] as Map));
   }
 
   /// Deserializes [test] into a concrete [Test] class.
@@ -141,8 +144,9 @@ class _Deserializer {
     if (test == null) return null;
 
     var metadata = new Metadata.deserialize(test['metadata']);
-    var trace = test['trace'] == null ? null : new Trace.parse(test['trace']);
+    var trace =
+        test['trace'] == null ? null : new Trace.parse(test['trace'] as String);
     var testChannel = _channel.virtualChannel(test['channel']);
-    return new RunnerTest(test['name'], metadata, trace, testChannel);
+    return new RunnerTest(test['name'] as String, metadata, trace, testChannel);
   }
 }

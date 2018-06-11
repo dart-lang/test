@@ -32,8 +32,8 @@ class RunnerTest extends Test {
   RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
-    var controller;
-    var testChannel;
+    LiveTestController controller;
+    VirtualChannel testChannel;
     controller = new LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
@@ -41,7 +41,7 @@ class RunnerTest extends Test {
       _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
       testChannel.stream.listen((message) {
-        switch (message['type']) {
+        switch (message['type'] as String) {
           case 'error':
             var asyncError = RemoteException.deserialize(message['error']);
             var stackTrace = asyncError.stackTrace;
@@ -49,14 +49,15 @@ class RunnerTest extends Test {
             break;
 
           case 'state-change':
-            controller.setState(new State(new Status.parse(message['status']),
-                new Result.parse(message['result'])));
+            controller.setState(new State(
+                new Status.parse(message['status'] as String),
+                new Result.parse(message['result'] as String)));
             break;
 
           case 'message':
             controller.message(new Message(
-                new MessageType.parse(message['message-type']),
-                message['text']));
+                new MessageType.parse(message['message-type'] as String),
+                message['text'] as String));
             break;
 
           case 'complete':
@@ -67,7 +68,7 @@ class RunnerTest extends Test {
             // When we kill the isolate that the test lives in, that will close
             // this virtual channel and cause the spawned isolate to close as
             // well.
-            spawnHybridUri(message['url'], message['message'])
+            spawnHybridUri(message['url'] as String, message['message'])
                 .pipe(testChannel.virtualChannel(message['channel']));
             break;
         }

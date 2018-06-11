@@ -175,20 +175,22 @@ var _maySupportIPv6 = true;
 /// any time after this call has returned. If at all possible, callers should
 /// use [getUnusedPort] instead.
 Future<int> getUnsafeUnusedPort() async {
-  var socket;
+  int port;
   if (_maySupportIPv6) {
     try {
-      socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0,
+      final socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0,
           v6Only: true);
+      port = socket.port;
+      await socket.close();
     } on SocketException {
       _maySupportIPv6 = false;
     }
   }
   if (!_maySupportIPv6) {
-    socket = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final socket = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    port = socket.port;
+    await socket.close();
   }
-  var port = socket.port;
-  await socket.close();
   return port;
 }
 
@@ -204,7 +206,7 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     var response = await request.close();
     var jsonObject =
         await json.fuse(utf8).decoder.bind(response).single as List;
-    return base.resolve(jsonObject.first["devtoolsFrontendUrl"]);
+    return base.resolve(jsonObject.first["devtoolsFrontendUrl"] as String);
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.

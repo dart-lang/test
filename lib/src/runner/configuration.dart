@@ -188,7 +188,7 @@ class Configuration {
   ///
   /// The current configuration is set using [asCurrent].
   static Configuration get current =>
-      Zone.current[_currentKey] ?? new Configuration();
+      Zone.current[_currentKey] as Configuration ?? new Configuration();
 
   /// Parses the configuration from [args].
   ///
@@ -294,12 +294,13 @@ class Configuration {
     return configuration._resolvePresets();
   }
 
-  static Map<Object, Configuration> _withChosenPresets(
-      Map<Object, Configuration> map, Set<String> chosenPresets) {
+  static Map<String, Configuration> _withChosenPresets(
+      Map<String, Configuration> map, Set<String> chosenPresets) {
     if (map == null || chosenPresets == null) return map;
-    return mapMap(map,
-        value: (_, config) => config.change(
-            chosenPresets: config.chosenPresets.union(chosenPresets)));
+    return map.map((key, config) => new MapEntry(
+        key,
+        config.change(
+            chosenPresets: config.chosenPresets.union(chosenPresets))));
   }
 
   /// Creates new Configuration.
@@ -589,7 +590,7 @@ class Configuration {
     var newPresets = new Map<String, Configuration>.from(presets);
     var merged = chosenPresets.fold(
         empty,
-        (merged, preset) =>
+        (Configuration merged, preset) =>
             merged.merge(newPresets.remove(preset) ?? Configuration.empty));
 
     if (merged == empty) return this;

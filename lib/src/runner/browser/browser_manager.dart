@@ -109,7 +109,7 @@ class BrowserManager {
     browser.onExit.then((_) {
       throw new ApplicationException(
           "${runtime.name} exited before connecting.");
-    }).catchError((error, stackTrace) {
+    }).catchError((error, StackTrace stackTrace) {
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
     });
@@ -117,7 +117,7 @@ class BrowserManager {
     future.then((webSocket) {
       if (completer.isCompleted) return;
       completer.complete(new BrowserManager._(browser, runtime, webSocket));
-    }).catchError((error, stackTrace) {
+    }).catchError((error, StackTrace stackTrace) {
       browser.close();
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
@@ -183,7 +183,8 @@ class BrowserManager {
     }));
 
     _environment = _loadBrowserEnvironment();
-    _channel.stream.listen((message) => _onMessage(message), onDone: close);
+    _channel.stream
+        .listen((message) => _onMessage(message as Map), onDone: close);
   }
 
   /// Loads [_BrowserEnvironment].
@@ -210,7 +211,7 @@ class BrowserManager {
     })));
 
     var suiteID = _suiteID++;
-    var controller;
+    RunnerSuiteController controller;
     closeIframe() {
       if (_closed) return;
       _controllers.remove(controller);
@@ -270,7 +271,7 @@ class BrowserManager {
 
   /// The callback for handling messages received from the host page.
   void _onMessage(Map message) {
-    switch (message["command"]) {
+    switch (message["command"] as String) {
       case "ping":
         break;
 

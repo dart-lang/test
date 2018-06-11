@@ -13,7 +13,8 @@ import "../util/stack_trace_mapper.dart";
 void internalBootstrapBrowserTest(Function getMain()) {
   var channel =
       serializeSuite(getMain, hidePrints: false, beforeLoad: () async {
-    var serialized = await suiteChannel("test.browser.mapper").stream.first;
+    var serialized =
+        await suiteChannel("test.browser.mapper").stream.first as Map;
     if (serialized == null) return;
     setStackTraceMapper(StackTraceMapper.deserialize(serialized));
   });

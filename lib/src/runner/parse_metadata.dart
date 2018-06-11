@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 
@@ -236,7 +235,7 @@ class _Parser {
     return _parseMap(annotation.arguments.arguments.first, key: (key) {
       return _parsePlatformSelector(key);
     }, value: (value) {
-      var expressions = [];
+      var expressions = <AstNode>[];
       if (value is ListLiteral) {
         expressions = _parseList(value);
       } else if (value is InstanceCreationExpression ||
@@ -247,8 +246,8 @@ class _Parser {
             'Expected a Timeout, Skip, or List of those.', _spanFor(value));
       }
 
-      var timeout;
-      var skip;
+      Timeout timeout;
+      dynamic skip;
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
           var className = _resolveConstructor(
@@ -300,8 +299,8 @@ class _Parser {
       'microseconds'
     ]);
 
-    var values =
-        mapMap(valueExpressions, value: (_, value) => _parseInt(value));
+    var values = valueExpressions
+        .map((key, value) => new MapEntry(key, _parseInt(value)));
 
     return new Duration(
         days: values["days"] == null ? 0 : values["days"],
@@ -516,8 +515,8 @@ class _Parser {
           "Map literals must be const.", _spanFor(map));
     }
 
-    return new Map.fromIterable(map.entries,
-        key: (entry) => key(entry.key), value: (entry) => value(entry.value));
+    return new Map.fromIterables(map.entries.map((e) => key(e.key)),
+        map.entries.map((e) => value(e.value)));
   }
 
   /// Parses a List literal.
@@ -569,7 +568,7 @@ class _Parser {
 
   /// Runs [fn] and contextualizes any [SourceSpanFormatException]s that occur
   /// in it relative to [literal].
-  _contextualize(StringLiteral literal, fn()) {
+  T _contextualize<T>(StringLiteral literal, T fn()) {
     try {
       return fn();
     } on SourceSpanFormatException catch (error) {
