@@ -2,7 +2,7 @@ language: dart
 sudo: required
 
 dart:
- - 2.0.0-dev.60.0
+ - dev
 
 env: FORCE_TEST_EXIT=true
 
