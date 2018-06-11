@@ -268,7 +268,7 @@ void main() {
 
       // Expect that the socket disconnects at some point (presumably when the
       // isolate closes).
-      var port = await channel.stream.first;
+      var port = await channel.stream.first as int;
       var socket = await Socket.connect("localhost", port);
       expect(socket.listen(null).asFuture(), completes);
 
@@ -294,7 +294,7 @@ void main() {
 
       // Expect that the socket disconnects at some point (presumably when the
       // isolate closes).
-      var port = await channel.stream.first;
+      var port = await channel.stream.first as int;
       var socket = await Socket.connect("localhost", port);
       expect(socket.listen(null).asFuture(), completes);
       channel.sink.add(null);

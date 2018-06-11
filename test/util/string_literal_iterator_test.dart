@@ -242,5 +242,5 @@ StringLiteralIterator _parse(String dart) {
       .declarations
       .single as TopLevelVariableDeclaration;
   var literal = declaration.variables.variables.single.initializer;
-  return new StringLiteralIterator(literal);
+  return new StringLiteralIterator(literal as StringLiteral);
 }
