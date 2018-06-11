@@ -53,7 +53,7 @@ class _Completes extends AsyncMatcher {
 
       String result;
       if (_matcher is AsyncMatcher) {
-        result = await (_matcher as AsyncMatcher).matchAsync(value);
+        result = await (_matcher as AsyncMatcher).matchAsync(value) as String;
         if (result == null) return null;
       } else {
         var matchState = {};

@@ -108,16 +108,16 @@ class Runtime {
       // a separately-deserialized parent platform. This should be fine, though,
       // since we only deserialize platforms in the remote execution context
       // where they're only used to evaluate platform selectors.
-      return new Runtime._child(
-          map["name"], map["identifier"], new Runtime.deserialize(parent));
+      return new Runtime._child(map["name"] as String,
+          map["identifier"] as String, new Runtime.deserialize(parent));
     }
 
-    return new Runtime(map["name"], map["identifier"],
-        isDartVM: map["isDartVM"],
-        isBrowser: map["isBrowser"],
-        isJS: map["isJS"],
-        isBlink: map["isBlink"],
-        isHeadless: map["isHeadless"]);
+    return new Runtime(map["name"] as String, map["identifier"] as String,
+        isDartVM: map["isDartVM"] as bool,
+        isBrowser: map["isBrowser"] as bool,
+        isJS: map["isJS"] as bool,
+        isBlink: map["isBlink"] as bool,
+        isHeadless: map["isHeadless"] as bool);
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a

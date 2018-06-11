@@ -212,7 +212,8 @@ class CompactReporter implements Reporter {
       return;
     }
 
-    print(indent(error.toString(color: _config.color)));
+    // TODO - what type is this?
+    print(indent(error.toString(color: _config.color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IOException &&

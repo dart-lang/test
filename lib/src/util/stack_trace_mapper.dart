@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:collection/collection.dart';
 import 'package:package_resolver/package_resolver.dart';
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
@@ -56,13 +55,15 @@ class StackTraceMapper {
   static StackTraceMapper deserialize(Map serialized) {
     if (serialized == null) return null;
     String packageRoot = serialized['packageRoot'] as String ?? '';
-    return new StackTraceMapper(serialized['mapContents'],
-        sdkRoot: Uri.parse(serialized['sdkRoot']),
+    return new StackTraceMapper(serialized['mapContents'] as String,
+        sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
         packageResolver: packageRoot.isNotEmpty
-            ? new SyncPackageResolver.root(Uri.parse(serialized['packageRoot']))
+            ? new SyncPackageResolver.root(
+                Uri.parse(serialized['packageRoot'] as String))
             : new SyncPackageResolver.config(_deserializePackageConfigMap(
-                serialized['packageConfigMap'].cast<String, String>())),
-        mapUrl: Uri.parse(serialized['mapUrl']));
+                (serialized['packageConfigMap'] as Map)
+                    .cast<String, String>())),
+        mapUrl: Uri.parse(serialized['mapUrl'] as String));
   }
 
   /// Converts a [packageConfigMap] into a format suitable for JSON
@@ -70,7 +71,7 @@ class StackTraceMapper {
   static Map<String, String> _serializePackageConfigMap(
       Map<String, Uri> packageConfigMap) {
     if (packageConfigMap == null) return null;
-    return mapMap(packageConfigMap, value: (_, value) => '$value');
+    return packageConfigMap.map((key, value) => new MapEntry(key, '$value'));
   }
 
   /// Converts a serialized package config map into a format suitable for
@@ -78,6 +79,6 @@ class StackTraceMapper {
   static Map<String, Uri> _deserializePackageConfigMap(
       Map<String, String> serialized) {
     if (serialized == null) return null;
-    return mapMap(serialized, value: (_, value) => Uri.parse(value));
+    return serialized.map((key, value) => new MapEntry(key, Uri.parse(value)));
   }
 }

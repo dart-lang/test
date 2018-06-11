@@ -84,8 +84,8 @@ class Metadata {
 
       var selector = new PlatformSelector.parse(platform);
 
-      var timeout;
-      var skip;
+      Timeout timeout;
+      dynamic skip;
       for (var metadatum in metadata) {
         if (metadatum is Timeout) {
           if (timeout != null) {
@@ -123,11 +123,11 @@ class Metadata {
           tags, "tags", "must be either a String or an Iterable.");
     }
 
-    if (tags.any((tag) => tag is! String)) {
+    if ((tags as Iterable).any((tag) => tag is! String)) {
       throw new ArgumentError.value(tags, "tags", "must contain only Strings.");
     }
 
-    return new Set.from(tags);
+    return new Set.from(tags as Iterable);
   }
 
   /// Creates new Metadata.
@@ -171,7 +171,7 @@ class Metadata {
     // we only have to resolve suite- or group-level tags once, rather than
     // doing it for every test individually.
     var empty = new Metadata._();
-    var merged = forTag.keys.toList().fold(empty, (merged, selector) {
+    var merged = forTag.keys.toList().fold(empty, (Metadata merged, selector) {
       if (!selector.evaluate(tags)) return merged;
       return merged.merge(forTag.remove(selector));
     });
@@ -215,7 +215,7 @@ class Metadata {
   Metadata.parse(
       {String testOn,
       Timeout timeout,
-      skip,
+      dynamic skip,
       bool verboseTrace,
       bool chainStackTraces,
       int retry,
@@ -247,27 +247,28 @@ class Metadata {
   Metadata.deserialize(serialized)
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
-            : new PlatformSelector.parse(serialized['testOn']),
+            : new PlatformSelector.parse(serialized['testOn'] as String),
         timeout = _deserializeTimeout(serialized['timeout']),
-        _skip = serialized['skip'],
-        skipReason = serialized['skipReason'],
-        _verboseTrace = serialized['verboseTrace'],
-        _chainStackTraces = serialized['chainStackTraces'],
-        _retry = serialized['retry'],
-        tags = new Set.from(serialized['tags']),
-        onPlatform = new Map.fromIterable(serialized['onPlatform'],
-            key: (pair) => new PlatformSelector.parse(pair.first),
+        _skip = serialized['skip'] as bool,
+        skipReason = serialized['skipReason'] as String,
+        _verboseTrace = serialized['verboseTrace'] as bool,
+        _chainStackTraces = serialized['chainStackTraces'] as bool,
+        _retry = serialized['retry'] as int,
+        tags = new Set.from(serialized['tags'] as Iterable),
+        onPlatform = new Map.fromIterable(serialized['onPlatform'] as Iterable,
+            key: (pair) => new PlatformSelector.parse(pair.first as String),
             value: (pair) => new Metadata.deserialize(pair.last)),
-        forTag = mapMap(serialized['forTag'],
-            key: (key, _) => new BooleanSelector.parse(key),
-            value: (_, nested) => new Metadata.deserialize(nested));
+        forTag = (serialized['forTag'] as Map).map((key, nested) =>
+            new MapEntry(new BooleanSelector.parse(key as String),
+                new Metadata.deserialize(nested)));
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
-  static _deserializeTimeout(serialized) {
+  static Timeout _deserializeTimeout(serialized) {
     if (serialized == 'none') return Timeout.none;
     var scaleFactor = serialized['scaleFactor'];
-    if (scaleFactor != null) return new Timeout.factor(scaleFactor);
-    return new Timeout(new Duration(microseconds: serialized['duration']));
+    if (scaleFactor != null) return new Timeout.factor(scaleFactor as num);
+    return new Timeout(
+        new Duration(microseconds: serialized['duration'] as int));
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
@@ -382,9 +383,8 @@ class Metadata {
       'retry': _retry,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
-      'forTag': mapMap(forTag,
-          key: (selector, _) => selector.toString(),
-          value: (_, metadata) => metadata.serialize())
+      'forTag': forTag.map((selector, metadata) =>
+          new MapEntry(selector.toString(), metadata.serialize()))
     };
   }
 

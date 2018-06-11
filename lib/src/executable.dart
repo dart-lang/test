@@ -51,7 +51,7 @@ bool get _usesTransformer {
   if (transformers == null) return false;
   if (transformers is! List) return false;
 
-  return transformers.any((transformer) {
+  return (transformers as List).any((transformer) {
     if (transformer is String) return transformer == 'test/pub_serve';
     if (transformer is! Map) return false;
     if (transformer.keys.length != 1) return false;

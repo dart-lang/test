@@ -31,10 +31,10 @@ class _Prints extends AsyncMatcher {
   // Avoid async/await so we synchronously fail if the function is
   // synchronous.
   /*FutureOr<String>*/ matchAsync(item) {
-    if (item is! Function) return "was not a Function";
+    if (item is! Function()) return "was not a unary Function";
 
     var buffer = new StringBuffer();
-    var result = runZoned(item,
+    var result = runZoned(item as Function(),
         zoneSpecification: new ZoneSpecification(print: (_, __, ____, line) {
       buffer.writeln(line);
     }));

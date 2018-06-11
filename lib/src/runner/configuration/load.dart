@@ -5,7 +5,6 @@
 import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
@@ -55,7 +54,8 @@ Configuration load(String path, {bool global = false}) {
         "The configuration must be a YAML map.", document.span, source);
   }
 
-  var loader = new _ConfigurationLoader(document, source, global: global);
+  var loader =
+      new _ConfigurationLoader(document as YamlMap, source, global: global);
   return loader.load();
 }
 
@@ -128,7 +128,7 @@ class _ConfigurationLoader {
           _validate(keyNode, "on_os key must be a string.",
               (value) => value is String);
 
-          var os = OperatingSystem.find(keyNode.value);
+          var os = OperatingSystem.find(keyNode.value as String);
           if (os != null) return os;
 
           throw new SourceSpanFormatException(
@@ -172,12 +172,15 @@ class _ConfigurationLoader {
       return Configuration.empty;
     }
 
-    var skip = _getValue("skip", "boolean or string",
+    var skipRaw = _getValue("skip", "boolean or string",
         (value) => value is bool || value is String);
-    var skipReason;
-    if (skip is String) {
-      skipReason = skip;
+    String skipReason;
+    bool skip;
+    if (skipRaw is String) {
+      skipReason = skipRaw;
       skip = true;
+    } else {
+      skip = skipRaw as bool;
     }
 
     var testOn = _parsePlatformSelector("test_on");
@@ -266,8 +269,8 @@ class _ConfigurationLoader {
 
     var runtimes = <String, RuntimeSettings>{};
     runtimesNode.nodes.forEach((identifierNode, valueNode) {
-      var identifier =
-          _parseIdentifierLike(identifierNode, "Platform identifier");
+      var identifier = _parseIdentifierLike(
+          identifierNode as YamlNode, "Platform identifier");
 
       _validate(valueNode, "Platform definition must be a map.",
           (value) => value is Map);
@@ -277,7 +280,7 @@ class _ConfigurationLoader {
       _validate(settings, "Must be a map.", (value) => value is Map);
 
       runtimes[identifier] = new RuntimeSettings(
-          identifier, identifierNode.span, [settings as YamlMap]);
+          identifier, (identifierNode as YamlNode).span, [settings as YamlMap]);
     });
     return runtimes;
   }
@@ -309,13 +312,13 @@ class _ConfigurationLoader {
       ..addAll(_getList("plain_names", (nameNode) {
         _validate(
             nameNode, "Names must be strings.", (value) => value is String);
-        return nameNode.value;
+        return _parseNode(nameNode, "name", (value) => new RegExp(value));
       }));
 
     var paths = _getList("paths", (pathNode) {
       _validate(pathNode, "Paths must be strings.", (value) => value is String);
       _validate(pathNode, "Paths must be relative.",
-          (value) => p.url.isRelative(value));
+          (value) => p.url.isRelative(value as String));
 
       return _parseNode(pathNode, "path", p.fromUri);
     });
@@ -356,7 +359,7 @@ class _ConfigurationLoader {
             _source);
       }
       foldOptionSet = true;
-      return keyNode.value;
+      return keyNode.value as String;
     }, value: (valueNode) {
       _validate(
           valueNode,
@@ -368,10 +371,10 @@ class _ConfigurationLoader {
       _validate(
           valueNode,
           "Invalid package name.",
-          (valueList) =>
-              valueList.every((value) => _packageName.hasMatch(value)));
+          (valueList) => (valueList as Iterable)
+              .every((value) => _packageName.hasMatch(value as String)));
 
-      return new List<String>.from(valueNode.value);
+      return new List<String>.from(valueNode.value as Iterable);
     });
   }
 
@@ -383,8 +386,8 @@ class _ConfigurationLoader {
 
     var runtimes = <String, CustomRuntime>{};
     runtimesNode.nodes.forEach((identifierNode, valueNode) {
-      var identifier =
-          _parseIdentifierLike(identifierNode, "Platform identifier");
+      var identifier = _parseIdentifierLike(
+          identifierNode as YamlNode, "Platform identifier");
 
       _validate(valueNode, "Platform definition must be a map.",
           (value) => value is Map);
@@ -400,8 +403,14 @@ class _ConfigurationLoader {
       var settings = _expect(map, "settings");
       _validate(settings, "Must be a map.", (value) => value is Map);
 
-      runtimes[identifier] = new CustomRuntime(name, nameNode.span, identifier,
-          identifierNode.span, parent, parentNode.span, settings as YamlMap);
+      runtimes[identifier] = new CustomRuntime(
+          name,
+          nameNode.span,
+          identifier,
+          (identifierNode as YamlNode).span,
+          parent,
+          parentNode.span,
+          settings as YamlMap);
     });
     return runtimes;
   }
@@ -435,19 +444,20 @@ class _ConfigurationLoader {
   }
 
   /// Asserts that [field] is an int and returns its value.
-  int _getInt(String field) => _getValue(field, "int", (value) => value is int);
+  int _getInt(String field) =>
+      _getValue(field, "int", (value) => value is int) as int;
 
   /// Asserts that [field] is a non-negative int and returns its value.
   int _getNonNegativeInt(String field) => _getValue(
-      field, "non-negative int", (value) => value is int && value >= 0);
+      field, "non-negative int", (value) => value is int && value >= 0) as int;
 
   /// Asserts that [field] is a boolean and returns its value.
   bool _getBool(String field) =>
-      _getValue(field, "boolean", (value) => value is bool);
+      _getValue(field, "boolean", (value) => value is bool) as bool;
 
   /// Asserts that [field] is a string and returns its value.
   String _getString(String field) =>
-      _getValue(field, "string", (value) => value is String);
+      _getValue(field, "string", (value) => value is String) as String;
 
   /// Asserts that [field] is a list and runs [forElement] for each element it
   /// contains.
@@ -482,9 +492,8 @@ class _ConfigurationLoader {
       return valueNode.value as V;
     };
 
-    return mapMap(node.nodes,
-        key: (keyNode, _) => key(keyNode),
-        value: (_, valueNode) => value(valueNode));
+    return node.nodes.map((keyNode, valueNode) =>
+        new MapEntry(key(keyNode as YamlNode), value(valueNode)));
   }
 
   /// Verifies that [node]'s value is an optionally hyphenated Dart identifier,
@@ -492,8 +501,8 @@ class _ConfigurationLoader {
   String _parseIdentifierLike(YamlNode node, String name) {
     _validate(node, "$name must be a string.", (value) => value is String);
     _validate(node, "$name must be an (optionally hyphenated) Dart identifier.",
-        (value) => value.contains(anchoredHyphenatedIdentifier));
-    return node.value;
+        (value) => (value as String).contains(anchoredHyphenatedIdentifier));
+    return node.value as String;
   }
 
   /// Parses [node]'s value as a boolean selector.
@@ -517,7 +526,7 @@ class _ConfigurationLoader {
     _validate(node, "$name must be a string.", (value) => value is String);
 
     try {
-      return parse(node.value);
+      return parse(node.value as String);
     } on FormatException catch (error) {
       throw new SourceSpanFormatException(
           'Invalid $name: ${error.message}', node.span, _source);
@@ -544,7 +553,7 @@ class _ConfigurationLoader {
     if (node == null || node.value == null) return Configuration.empty;
 
     _validate(node, "$name must be a map.", (value) => value is Map);
-    var loader = new _ConfigurationLoader(node, _source,
+    var loader = new _ConfigurationLoader(node as YamlMap, _source,
         global: _global, runnerConfig: runnerConfig ?? _runnerConfig);
     return loader.load();
   }
@@ -575,9 +584,7 @@ class _ConfigurationLoader {
       return base.isEmpty ? Configuration.empty : create(base);
     } else {
       var newPresets =
-          mapMap<String, Map<T, SuiteConfiguration>, String, Configuration>(
-              presets,
-              value: (_, map) => create(map));
+          presets.map((key, map) => new MapEntry(key, create(map)));
       return create(base).change(presets: newPresets);
     }
   }
@@ -598,7 +605,9 @@ class _ConfigurationLoader {
     throw new SourceSpanFormatException(
         "$field isn't supported here.",
         // We need the key as a [YamlNode] to get its span.
-        _document.nodes.keys.firstWhere((key) => key.value == field).span,
+        (_document.nodes.keys.firstWhere((key) => key.value == field)
+                as YamlNode)
+            .span,
         _source);
   }
 

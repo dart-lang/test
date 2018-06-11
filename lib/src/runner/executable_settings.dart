@@ -74,9 +74,10 @@ class ExecutableSettings {
     List<String> arguments;
     var argumentsNode = settings.nodes["arguments"];
     if (argumentsNode != null) {
-      if (argumentsNode.value is String) {
+      var value = argumentsNode.value;
+      if (value is String) {
         try {
-          arguments = shellSplit(argumentsNode.value);
+          arguments = shellSplit(value);
         } on FormatException catch (error) {
           throw new SourceSpanFormatException(
               error.message, argumentsNode.span);
@@ -92,14 +93,16 @@ class ExecutableSettings {
     String windowsExecutable;
     var executableNode = settings.nodes["executable"];
     if (executableNode != null) {
-      if (executableNode.value is String) {
+      var value = executableNode.value;
+      if (value is String) {
         // Don't check this on Windows because people may want to set relative
         // paths in their global config.
-        if (!Platform.isWindows) _assertNotRelative(executableNode);
+        if (!Platform.isWindows)
+          _assertNotRelative(executableNode as YamlScalar);
 
-        linuxExecutable = executableNode.value;
-        macOSExecutable = executableNode.value;
-        windowsExecutable = executableNode.value;
+        linuxExecutable = value;
+        macOSExecutable = value;
+        windowsExecutable = value;
       } else if (executableNode is YamlMap) {
         linuxExecutable = _getExecutable(executableNode.nodes["linux"]);
         macOSExecutable = _getExecutable(executableNode.nodes["mac_os"]);
@@ -114,8 +117,9 @@ class ExecutableSettings {
     var headless = true;
     var headlessNode = settings.nodes["headless"];
     if (headlessNode != null) {
-      if (headlessNode.value is bool) {
-        headless = headlessNode.value;
+      var value = headlessNode.value;
+      if (value is bool) {
+        headless = value;
       } else {
         throw new SourceSpanFormatException(
             "Must be a boolean.", headlessNode.span);
@@ -141,8 +145,8 @@ class ExecutableSettings {
       throw new SourceSpanFormatException(
           "Must be a string.", executableNode.span);
     }
-    if (!allowRelative) _assertNotRelative(executableNode);
-    return executableNode.value;
+    if (!allowRelative) _assertNotRelative(executableNode as YamlScalar);
+    return executableNode.value as String;
   }
 
   /// Throws a [SourceSpanFormatException] if [executableNode]'s value is a

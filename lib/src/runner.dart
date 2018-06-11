@@ -299,7 +299,7 @@ class Runner {
     var unknownTags = <String, List<GroupEntry>>{};
     var currentTags = new Set<String>();
 
-    collect(entry) {
+    collect(GroupEntry entry) {
       var newTags = new Set<String>();
       for (var unknownTag
           in entry.metadata.tags.difference(_config.knownTags)) {
@@ -309,9 +309,10 @@ class Runner {
       }
 
       if (entry is! Group) return;
+      var group = entry as Group;
 
       currentTags.addAll(newTags);
-      for (var child in entry.entries) {
+      for (var child in group.entries) {
         collect(child);
       }
       currentTags.removeAll(newTags);
@@ -335,7 +336,7 @@ class Runner {
   /// index. This makes the tests pretty tests across shards, and since the
   /// tests are continuous, makes us more likely to be able to re-use
   /// `setUpAll()` logic.
-  Suite _shardSuite(Suite suite) {
+  T _shardSuite<T extends Suite>(T suite) {
     if (_config.totalShards == null) return suite;
 
     var shardSize = suite.group.testCount / _config.totalShards;
@@ -348,7 +349,7 @@ class Runner {
       return count >= shardStart && count < shardEnd;
     });
 
-    return filtered;
+    return filtered as T;
   }
 
   /// Loads each suite in [suites] in order, pausing after load for runtimes
@@ -368,6 +369,6 @@ class Runner {
       _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
       _engine.run()
     ], eagerError: true);
-    return results.last;
+    return results.last as bool;
   }
 }

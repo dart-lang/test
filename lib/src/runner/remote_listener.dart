@@ -67,7 +67,7 @@ class RemoteListener {
     new SuiteChannelManager().asCurrent(() {
       new StackTraceFormatter().asCurrent(() {
         runZoned(() async {
-          var main;
+          dynamic main;
           try {
             main = getMain();
           } on NoSuchMethodError catch (_) {
@@ -95,30 +95,31 @@ class RemoteListener {
 
           queue.rest.listen((message) {
             assert(message["type"] == "suiteChannel");
-            SuiteChannelManager.current.connectIn(
-                message['name'], channel.virtualChannel(message['id']));
+            SuiteChannelManager.current.connectIn(message['name'] as String,
+                channel.virtualChannel(message['id']));
           });
 
-          if (message['asciiGlyphs'] ?? false) glyph.ascii = true;
+          if ((message['asciiGlyphs'] as bool) ?? false) glyph.ascii = true;
           var metadata = new Metadata.deserialize(message['metadata']);
           verboseChain = metadata.verboseTrace;
           var declarer = new Declarer(
               metadata: metadata,
-              platformVariables: new Set.from(message['platformVariables']),
-              collectTraces: message['collectTraces'],
-              noRetry: message['noRetry']);
+              platformVariables:
+                  new Set.from(message['platformVariables'] as Iterable),
+              collectTraces: message['collectTraces'] as bool,
+              noRetry: message['noRetry'] as bool);
 
           StackTraceFormatter.current.configure(
-              except: _deserializeSet(message['foldTraceExcept']),
-              only: _deserializeSet(message['foldTraceOnly']));
+              except: _deserializeSet(message['foldTraceExcept'] as List),
+              only: _deserializeSet(message['foldTraceOnly'] as List));
 
           if (beforeLoad != null) await beforeLoad();
 
-          await declarer.declare(main);
+          await declarer.declare(main as Function());
 
           var suite = new Suite(declarer.build(),
               new SuitePlatform.deserialize(message['platform']),
-              path: message['path']);
+              path: message['path'] as String);
 
           runZoned(() {
             Invoker.guard(
@@ -128,7 +129,7 @@ class RemoteListener {
               // useful errors when calling `test()` and `group()` within a test,
               // and so they can add to the declarer's `tearDownAll()` list.
               zoneValues: {#test.declarer: declarer});
-        }, onError: (error, stackTrace) {
+        }, onError: (error, StackTrace stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
         }, zoneSpecification: spec);
       });
@@ -190,7 +191,7 @@ class RemoteListener {
       "entries": group.entries.map((entry) {
         return entry is Group
             ? _serializeGroup(channel, entry, parents)
-            : _serializeTest(channel, entry, parents);
+            : _serializeTest(channel, entry as Test, parents);
       }).toList()
     };
   }

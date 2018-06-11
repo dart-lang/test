@@ -200,7 +200,8 @@ class ExpandedReporter implements Reporter {
       return;
     }
 
-    print(indent(error.toString(color: _color)));
+    // TODO - what type is this?
+    print(indent((error as dynamic).toString(color: _color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IsolateSpawnException &&

@@ -36,7 +36,8 @@ class SuitePlatform {
   factory SuitePlatform.deserialize(Object serialized) {
     var map = serialized as Map;
     return new SuitePlatform(new Runtime.deserialize(map['runtime']),
-        os: OperatingSystem.find(map['os']), inGoogle: map['inGoogle']);
+        os: OperatingSystem.find(map['os'] as String),
+        inGoogle: map['inGoogle'] as bool);
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
