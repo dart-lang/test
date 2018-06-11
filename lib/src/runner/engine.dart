@@ -528,7 +528,7 @@ class Engine {
   /// the engine indicates that no more output should be emitted.
   Future close() async {
     // TODO(grouma) - Remove this unecessary await.
-    await null;
+    await new Future(() {});
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
     _onSuiteAddedController.close();
