@@ -288,7 +288,7 @@ class SuiteConfiguration {
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
-            tags: addTags.toSet()));
+            tags: addTags?.toSet()));
     return config._resolveTags();
   }
 
