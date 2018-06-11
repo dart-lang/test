@@ -369,6 +369,6 @@ class Runner {
       _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
       _engine.run()
     ], eagerError: true);
-    return results.last as Future<bool>;
+    return results.last as bool;
   }
 }
