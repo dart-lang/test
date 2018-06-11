@@ -18,7 +18,6 @@ import '../backend/suite.dart';
 import '../backend/suite_platform.dart';
 import '../backend/test.dart';
 import '../util/remote_exception.dart';
-import '../utils.dart';
 import 'suite_channel_manager.dart';
 
 class RemoteListener {
@@ -44,7 +43,7 @@ class RemoteListener {
   ///
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
-  static StreamChannel start(AsyncFunction getMain(),
+  static StreamChannel start(Function getMain(),
       {bool hidePrints = true, Future beforeLoad()}) {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
@@ -84,7 +83,7 @@ class RemoteListener {
             _sendLoadException(
                 channel, "Top-level main getter is not a function.");
             return;
-          } else if (main is! AsyncFunction) {
+          } else if (main is! Function()) {
             _sendLoadException(
                 channel, "Top-level main() function takes arguments.");
             return;

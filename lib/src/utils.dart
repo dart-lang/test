@@ -17,11 +17,6 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
 
-/// A typedef for a possibly-asynchronous function.
-///
-/// The return type should only ever by [Future] or void.
-typedef AsyncFunction();
-
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = new StreamTransformer<List<int>, String>(
     (stream, cancelOnError) => stream

@@ -2,18 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:collection';
 
 import '../../backend/runtime.dart';
-import '../../utils.dart';
 import 'platform.dart';
 
 /// The functions to use to load [_platformPlugins] in all loaders.
 ///
 /// **Do not access this outside the test package**.
 final platformCallbacks =
-    new UnmodifiableMapView<Runtime, AsyncFunction>(_platformCallbacks);
-final _platformCallbacks = <Runtime, AsyncFunction>{};
+    new UnmodifiableMapView<Runtime, FutureOr<PlatformPlugin> Function()>(
+        _platformCallbacks);
+final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 
 /// **Do not call this function without express permission from the test package
 /// authors**.
@@ -22,13 +23,14 @@ final _platformCallbacks = <Runtime, AsyncFunction>{};
 ///
 /// This globally registers a plugin for all [Loader]s. When the runner first
 /// requests that a suite be loaded for one of the given runtimes, this will
-/// call [getPlugin] to load the platform plugin. It may return either a
+/// call [plugin] to load the platform plugin. It may return either a
 /// [PlatformPlugin] or a [Future<PlatformPlugin>]. That plugin is then
 /// preserved and used to load all suites for all matching runtimes.
 ///
 /// This overwrites the default plugins for those runtimes.
-void registerPlatformPlugin(Iterable<Runtime> runtimes, getPlugin()) {
+void registerPlatformPlugin(
+    Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> Function() plugin) {
   for (var runtime in runtimes) {
-    _platformCallbacks[runtime] = getPlugin;
+    _platformCallbacks[runtime] = plugin;
   }
 }
