@@ -7,11 +7,6 @@ import 'package:test/test.dart' show test, group;
 
 import 'test_utils.dart';
 
-class BadCustomMatcher extends CustomMatcher {
-  BadCustomMatcher() : super("feature", "description", {1: "a"});
-  featureValueOf(actual) => throw new Exception("bang");
-}
-
 void main() {
   test('isTrue', () {
     shouldPass(true, isTrue);
