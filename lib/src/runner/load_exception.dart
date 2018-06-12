@@ -17,7 +17,7 @@ final _isolateFileRegExp =
 class LoadException implements Exception {
   final String path;
 
-  final innerError;
+  final Object innerError;
 
   LoadException(this.path, this.innerError);
 
