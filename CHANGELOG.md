@@ -1,3 +1,7 @@
+## 0.12.41
+
+* Add support for debugging VM tests.
+
 ## 0.12.40
 
 * Added some new optional fields to the json reporter, `root_line`,

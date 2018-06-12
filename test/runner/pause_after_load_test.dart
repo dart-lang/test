@@ -94,8 +94,16 @@ void main() {
 }
 """).create();
 
-    var test = await runTest(
-        ["--pause-after-load", "-p", "firefox", "-p", "chrome", "test.dart"]);
+    var test = await runTest([
+      "--pause-after-load",
+      "-p",
+      "firefox",
+      "-p",
+      "chrome",
+      "-p",
+      "vm",
+      "test.dart"
+    ]);
     await expectLater(test.stdout, emitsThrough("loaded test!"));
     await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
       The test runner is paused. Open the dev console in Firefox and set
@@ -137,55 +145,18 @@ void main() {
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
-    await expectLater(
-        test.stdout, emitsThrough(contains("+2: All tests passed!")));
-    await test.shouldExit(0);
-  }, tags: ['firefox', 'chrome']);
-
-  test("prints a warning and doesn't pause for unsupported platforms",
-      () async {
-    await d.file("test.dart", """
-import 'package:test/test.dart';
-
-void main() {
-  test("success", () {});
-}
-""").create();
-
-    var test = await runTest(["--pause-after-load", "-p", "vm", "test.dart"]);
-    await expectLater(test.stderr,
-        emits("Warning: Debugging is currently unsupported on the Dart VM."));
-    await expectLater(
-        test.stdout, emitsThrough(contains("+1: All tests passed!")));
-    await test.shouldExit(0);
-  });
-
-  test("can mix supported and unsupported platforms", () async {
-    await d.file("test.dart", """
-import 'package:test/test.dart';
-
-void main() {
-  print('loaded test!');
-
-  test("success", () {});
-}
-""").create();
-
-    var test = await runTest(
-        ["--pause-after-load", "-p", "chrome", "-p", "vm", "test.dart"]);
-    await expectLater(test.stderr,
-        emits("Warning: Debugging is currently unsupported on the Dart VM."));
-
     await expectLater(test.stdout, emitsThrough("loaded test!"));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace("""
-      The test runner is paused. Open the dev console in Chrome and set
-      breakpoints. Once you're finished, return to this terminal and press
-      Enter.
-    """)));
+    await expectLater(
+        test.stdout,
+        emitsThrough(emitsInOrder([
+          "The test runner is paused. Open the Observatory and set "
+              "breakpoints. Once you're finished, return to this terminal "
+              "and press Enter."
+        ])));
 
-    var nextLineFired = false;
+    nextLineFired = false;
     test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains("+0: [Chrome] success"));
+      expect(line, contains("+2: [VM] success"));
       nextLineFired = true;
     }));
 
@@ -197,11 +168,31 @@ void main() {
     test.stdin.writeln();
 
     await expectLater(
-        test.stdout,
-        containsInOrder(
-            ["loaded test!", "+1: [VM] success", "+2: All tests passed!"]));
+        test.stdout, emitsThrough(contains("+3: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: 'chrome');
+  }, tags: ['firefox', 'chrome', "vm"]);
+
+  test("warns if SILENT_OBSERVATORY isn't set when trying to debug the vm",
+      () async {
+    await d.file("test.dart", """
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+""").create();
+
+    var test = await runTest(["--pause-after-load", "-p", "vm", "test.dart"]);
+    await expectLater(
+        test.stderr,
+        emits("Warning: You should set `SILENT_OBSERVATORY` to true when "
+            "debugging the VM as it will output the observatory URL by "
+            "default."));
+    test.stdin.writeln();
+    await expectLater(
+        test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    await test.shouldExit(0);
+  });
 
   test("stops immediately if killed while paused", () async {
     await d.file("test.dart", """

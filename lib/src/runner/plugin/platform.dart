@@ -43,6 +43,8 @@ abstract class PlatformPlugin {
   ///
   /// The `platform.platform` is guaranteed to be one of the platforms
   /// associated with this plugin in [new Loader]'s `plugins` parameter.
+  // TODO(grouma) - Remove this method from the API as no platforms implement
+  // it.
   StreamChannel loadChannel(String path, SuitePlatform platform);
 
   /// Loads the runner suite for the test file at [path] using [platform], with

@@ -29,6 +29,8 @@ import 'runner/reporter/expanded.dart';
 import 'util/io.dart';
 import 'utils.dart';
 
+final _silentObservatory = const bool.fromEnvironment('SILENT_OBSERVATORY');
+
 /// A class that loads and runs tests based on a [Configuration].
 ///
 /// This maintains a [Loader] and an [Engine] and passes test suites from one to
@@ -88,6 +90,18 @@ class Runner {
         _warnForUnsupportedPlatforms();
 
         var suites = _loadSuites();
+
+        var runTimes = _config.suiteDefaults.runtimes.map(_loader.findRuntime);
+
+        if (!_silentObservatory &&
+            runTimes.contains(Runtime.vm) &&
+            _config.pauseAfterLoad) {
+          warn('You should set `SILENT_OBSERVATORY` to true when debugging the '
+              'VM as it will output the observatory URL by '
+              'default.\nThis breaks the various reporter contracts.'
+              '\nTo set the value define '
+              '`DART_VM_OPTIONS=-DSILENT_OBSERVATORY=true`.');
+        }
 
         bool success;
         if (_config.pauseAfterLoad) {
@@ -355,11 +369,6 @@ class Runner {
   /// Loads each suite in [suites] in order, pausing after load for runtimes
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    if (_config.suiteDefaults.runtimes.contains(Runtime.vm.identifier)) {
-      warn("Debugging is currently unsupported on the Dart VM.",
-          color: _config.color);
-    }
-
     _suiteSubscription = suites.asyncMap((loadSuite) async {
       _debugOperation = debug(_engine, _reporter, loadSuite);
       await _debugOperation.valueOrCancellation();

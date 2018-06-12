@@ -693,16 +693,17 @@ A configuration file can do much more than just set global defaults. See
 
 ## Debugging
 
-Tests can be debugged interactively using browsers' built-in development tools.
-Currently there's no support for interactively debugging command-line VM tests,
-but it will be added [in the future][issue 50].
+Tests can be debugged interactively using platforms' built-in development tools.
+Tests running on browsers can use those browsers' development consoles to inspect
+the document, set breakpoints, and step through code. Those running on the Dart 
+VM use [the Dart Observatory][observatory]'s .
 
-[issue 50]: https://github.com/dart-lang/test/issues/50
+[observatory]: https://dart-lang.github.io/observatory/
 
 The first step when debugging is to pass the `--pause-after-load` flag to the
 test runner. This pauses the browser after each test suite has loaded, so that
 you have time to open the development tools and set breakpoints. For PhantomJS,
-it will print the remote debugger URL.
+and the Dart VM it will print the remote debugger URL.
 
 Once you've set breakpoints, either click the big arrow in the middle of the web
 page or press Enter in your terminal to start the tests running. When you hit a
