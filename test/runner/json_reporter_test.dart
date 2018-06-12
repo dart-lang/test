@@ -512,7 +512,7 @@ void main() {
           ],
           _done(),
           args: ["-p", "chrome"]);
-    }, tags: ["chrome"], skip: 'Reported line is incorrect');
+    }, tags: ["chrome"], skip: "https://github.com/dart-lang/test/issues/872");
 
     test("the root suite if applicable", () {
       return _expectReport(
