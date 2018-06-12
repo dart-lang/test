@@ -43,8 +43,8 @@ final _allReporters = <String, ReporterDetails>{
       (_, engine) => JsonReporter.watch(engine)),
 };
 
-final defaultReporter =
-    inTestTests ? 'expanded' : canUseSpecialChars ? 'compact' : 'expanded';
+final defaultReporter = environmentReporter ??
+    (inTestTests ? 'expanded' : canUseSpecialChars ? 'compact' : 'expanded');
 
 /// **Do not call this function without express permission from the test package
 /// authors**.
