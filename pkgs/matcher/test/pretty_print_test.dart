@@ -244,8 +244,11 @@ void main() {
 
   group('with an iterable', () {
     test("that's not a list", () {
-      expect(prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
-          equals("MappedListIterable:[2, 4, 6, 8]"));
+      expect(
+          prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
+          equals(_isDart2
+              ? "MappedListIterable<int, int>:[2, 4, 6, 8]"
+              : "MappedListIterable:[2, 4, 6, 8]"));
     });
 
     test("that's not a list and has a private name", () {
@@ -253,3 +256,8 @@ void main() {
     });
   });
 }
+
+final _isDart2 = () {
+  Type checkType<T>() => T;
+  return checkType<String>() == String;
+}();
