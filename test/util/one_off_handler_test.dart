@@ -9,10 +9,11 @@ import 'package:test/src/util/one_off_handler.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var handler;
+  OneOffHandler handler;
   setUp(() => handler = new OneOffHandler());
 
-  _handle(request) => new Future.sync(() => handler.handler(request));
+  _handle(shelf.Request request) =>
+      new Future.sync(() => handler.handler(request));
 
   test("returns a 404 for a root URL", () async {
     var request = new shelf.Request("GET", Uri.parse("http://localhost/"));

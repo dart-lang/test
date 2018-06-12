@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:fake_async/fake_async.dart';
 import 'package:test/src/backend/group.dart';
 import 'package:test/src/backend/invoker.dart';
+import 'package:test/src/backend/live_test.dart';
 import 'package:test/src/backend/message.dart';
 import 'package:test/src/backend/metadata.dart';
 import 'package:test/src/backend/state.dart';
@@ -29,7 +30,7 @@ void main() {
     });
 
     test("returns the current invoker in a test body", () async {
-      var invoker;
+      Invoker invoker;
       var liveTest = _localTest(() {
         invoker = Invoker.current;
       }).load(suite);
@@ -41,7 +42,7 @@ void main() {
 
     test("returns the current invoker in a test body after the test completes",
         () async {
-      var status;
+      Status status;
       var completer = new Completer();
       var liveTest = _localTest(() {
         // Use [new Future] in particular to wait longer than a microtask for
@@ -62,8 +63,8 @@ void main() {
 
   group("in a successful test,", () {
     test("the state changes from pending to running to complete", () async {
-      var stateInTest;
-      var liveTest;
+      State stateInTest;
+      LiveTest liveTest;
       liveTest = _localTest(() {
         stateInTest = liveTest.state;
       }).load(suite);

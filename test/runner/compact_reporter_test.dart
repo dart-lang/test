@@ -432,7 +432,7 @@ $tests
 
   // Skip the first CR, remove excess trailing whitespace, and trim off
   // timestamps.
-  var lastLine;
+  String lastLine;
   var actual = stdoutLines.skip(1).map((line) {
     if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
 

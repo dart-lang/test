@@ -307,7 +307,7 @@ void main() {
     });
 
     test("swallows them and returns null", () async {
-      var returnValue;
+      Function returnValue;
       var caughtError = false;
       var liveTest = await runTestBody(() {
         try {

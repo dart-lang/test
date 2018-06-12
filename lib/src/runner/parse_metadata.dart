@@ -65,7 +65,7 @@ class _Parser {
   Metadata parse() {
     Timeout timeout;
     PlatformSelector testOn;
-    var skip;
+    dynamic /*String|bool*/ skip;
     Map<PlatformSelector, Metadata> onPlatform;
     Set<String> tags;
     int retry;

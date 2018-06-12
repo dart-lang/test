@@ -9,10 +9,11 @@ import 'package:test/src/util/path_handler.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var handler;
+  PathHandler handler;
   setUp(() => handler = new PathHandler());
 
-  _handle(request) => new Future.sync(() => handler.handler(request));
+  _handle(shelf.Request request) =>
+      new Future.sync(() => handler.handler(request));
 
   test("returns a 404 for a root URL", () async {
     var request = new shelf.Request("GET", Uri.parse("http://localhost/"));

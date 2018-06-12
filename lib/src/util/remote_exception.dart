@@ -31,7 +31,7 @@ class RemoteException implements Exception {
   /// Other than JSON- and isolate-safety, no guarantees are made about the
   /// serialized format.
   static serialize(error, StackTrace stackTrace) {
-    var message;
+    String message;
     if (error is String) {
       message = error;
     } else {
@@ -45,7 +45,7 @@ class RemoteException implements Exception {
     // It's possible (although unlikely) for a user-defined class to have
     // multiple of these supertypes. That's fine, though, since we only care
     // about core-library-raised IsolateSpawnExceptions anyway.
-    var supertype;
+    String supertype;
     if (error is TestFailure) {
       supertype = 'TestFailure';
     } else if (error is IsolateSpawnException) {
