@@ -119,7 +119,8 @@ void main() {
     serverChannel.stream.listen((message) {
       if (message['command'] == 'loadSuite') {
         var suiteChannel = serverChannel.virtualChannel(message['channel']);
-        var iframeChannel = _connectToIframe(message['url'], message['id']);
+        var iframeChannel =
+            _connectToIframe(message['url'] as String, message['id'] as int);
         suiteChannel.pipe(iframeChannel);
       } else if (message['command'] == 'displayPause') {
         document.body.classes.add('paused');
@@ -152,7 +153,7 @@ void main() {
     }), restartCurrent: allowInterop(() {
       serverChannel.sink.add({"command": "restart"});
     }));
-  }, onError: (error, stackTrace) {
+  }, onError: (error, StackTrace stackTrace) {
     print("$error\n${new Trace.from(stackTrace).terse}");
   });
 }
@@ -166,7 +167,7 @@ MultiChannel _connectToServer() {
 
   var controller = new StreamChannelController(sync: true);
   webSocket.onMessage.listen((message) {
-    controller.local.sink.add(jsonDecode(message.data));
+    controller.local.sink.add(jsonDecode(message.data as String));
   });
 
   controller.local.stream

@@ -275,8 +275,8 @@ void expectTestFailed(LiveTest liveTest, message) {
 ///
 /// [stopBlocking] is passed the return value of [test].
 Future expectTestBlocks(test(), stopBlocking(value)) async {
-  var liveTest;
-  var future;
+  LiveTest liveTest;
+  Future future;
   liveTest = createTest(() {
     var value = test();
     future = pumpEventQueue().then((_) {

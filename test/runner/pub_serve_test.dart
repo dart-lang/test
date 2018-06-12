@@ -381,7 +381,8 @@ final bool _sdkSupportsDartDevc = sdkVersion >= new Version(1, 24, 0);
 /// as the first argument.
 void testWithCompiler(String name, testFn(List<String> compilerArgs), {tags}) {
   for (var compiler in _compilers) {
-    var compilerArgs = _sdkSupportsDartDevc ? ['--web-compiler', compiler] : [];
+    var compilerArgs =
+        _sdkSupportsDartDevc ? ['--web-compiler', compiler] : <String>[];
     test("$name with $compiler", () => testFn(compilerArgs), tags: tags);
   }
 }

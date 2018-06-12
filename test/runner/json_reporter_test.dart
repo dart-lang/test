@@ -610,7 +610,7 @@ import 'package:test/test.dart';
   // TODO(nweiz): validate each event against the JSON schema when
   // patefacio/json_schema#4 is merged.
 
-  decodeLine(l) => jsonDecode(l)..remove("time")..remove("stackTrace");
+  decodeLine(String l) => jsonDecode(l)..remove("time")..remove("stackTrace");
 
   // Should contain all suites message.
   expect(stdoutLines.map(decodeLine), containsAll([_allSuites()]));

@@ -16,7 +16,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  var suite;
+  Suite suite;
   setUp(() {
     lastState = null;
     suite = new Suite(new Group.root([]), suitePlatform);

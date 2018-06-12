@@ -15,6 +15,8 @@ import 'package:test/src/backend/test.dart';
 import 'package:test/src/runner/configuration/runtime_selection.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
+import 'package:test/src/runner/runner_suite.dart';
+import 'package:test/src/runner/runner_test.dart';
 import 'package:test/test.dart';
 
 import '../../utils.dart';
@@ -45,7 +47,7 @@ void main() {
   tearDown(() => _loader.close());
 
   group(".loadFile()", () {
-    var suite;
+    RunnerSuite suite;
     setUp(() async {
       var suites = await _loader
           .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
@@ -69,7 +71,7 @@ void main() {
     });
 
     test("can load and run a successful test", () {
-      var liveTest = suite.group.entries[0].load(suite);
+      var liveTest = (suite.group.entries[0] as RunnerTest).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
@@ -81,7 +83,7 @@ void main() {
     });
 
     test("can load and run a failing test", () {
-      var liveTest = suite.group.entries[1].load(suite);
+      var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
       expectSingleFailure(liveTest);
       return liveTest.run().whenComplete(() => liveTest.close());
     });

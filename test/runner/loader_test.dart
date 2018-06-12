@@ -5,14 +5,15 @@
 @TestOn("vm")
 
 import 'package:path/path.dart' as p;
-import 'package:test/src/runner/runner_suite.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
+import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/backend/state.dart';
 import 'package:test/src/backend/test.dart';
-import 'package:test/src/backend/runtime.dart';
 import 'package:test/src/runner/configuration/suite.dart';
 import 'package:test/src/runner/loader.dart';
+import 'package:test/src/runner/runner_suite.dart';
+import 'package:test/src/runner/runner_test.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -39,7 +40,7 @@ void main() {
   tearDown(() => _loader.close());
 
   group(".loadFile()", () {
-    var suite;
+    RunnerSuite suite;
     setUp(() async {
       await d.file('a_test.dart', _tests).create();
       var suites = await _loader
@@ -63,7 +64,7 @@ void main() {
     });
 
     test("can load and run a successful test", () {
-      var liveTest = suite.group.entries[0].load(suite);
+      var liveTest = (suite.group.entries[0] as RunnerTest).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
@@ -75,7 +76,7 @@ void main() {
     });
 
     test("can load and run a failing test", () {
-      var liveTest = suite.group.entries[1].load(suite);
+      var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
       expectSingleFailure(liveTest);
       return liveTest.run().whenComplete(() => liveTest.close());
     });
@@ -101,7 +102,7 @@ void main() {
     });
 
     group("with suites loaded from a directory", () {
-      var suites;
+      List<RunnerSuite> suites;
       setUp(() async {
         await d.file('a_test.dart', _tests).create();
         await d.file('another_test.dart', _tests).create();
@@ -124,9 +125,8 @@ void main() {
       });
 
       test("can run tests in those suites", () {
-        var suite = suites
-            .firstWhere((RunnerSuite suite) => suite.path.contains("a_test"));
-        var liveTest = suite.group.entries[1].load(suite);
+        var suite = suites.firstWhere((suite) => suite.path.contains("a_test"));
+        var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
         expectSingleFailure(liveTest);
         return liveTest.run().whenComplete(() => liveTest.close());
       });

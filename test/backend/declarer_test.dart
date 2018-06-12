@@ -32,7 +32,7 @@ void main() {
       expect(tests, hasLength(1));
       expect(tests.single.name, equals("description"));
 
-      await _runTest(tests[0]);
+      await _runTest(tests[0] as Test);
       expect(bodyRun, isTrue);
     });
 
@@ -79,8 +79,8 @@ void main() {
             }, max: 1));
       });
 
-      await _runTest(tests[0]);
-      await _runTest(tests[1]);
+      await _runTest(tests[0] as Test);
+      await _runTest(tests[1] as Test);
     });
 
     test("can return a Future", () {
@@ -97,7 +97,7 @@ void main() {
             }, max: 1));
       });
 
-      return _runTest(tests.single);
+      return _runTest(tests.single as Test);
     });
 
     test("runs in call order within a group", () async {
@@ -130,7 +130,7 @@ void main() {
         }));
       });
 
-      await _runTest(tests.single);
+      await _runTest(tests.single as Test);
     });
   });
 
@@ -154,9 +154,9 @@ void main() {
             }, max: 1));
       });
 
-      await _runTest(tests[0]);
+      await _runTest(tests[0] as Test);
       expect(tearDownRun, isTrue);
-      await _runTest(tests[1]);
+      await _runTest(tests[1] as Test);
       expect(tearDownRun, isTrue);
     });
 
@@ -174,7 +174,7 @@ void main() {
             }, max: 1));
       });
 
-      await _runTest(tests.single, shouldFail: true);
+      await _runTest(tests.single as Test, shouldFail: true);
       expect(tearDownRun, isTrue);
     });
 
@@ -192,7 +192,7 @@ void main() {
             }, max: 1));
       });
 
-      await _runTest(tests.single);
+      await _runTest(tests.single as Test);
       expect(tearDownRun, isTrue);
     });
 
@@ -213,7 +213,7 @@ void main() {
         });
       });
 
-      await _runTest(tests.single);
+      await _runTest(tests.single as Test);
       expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
     });
 
@@ -231,7 +231,7 @@ void main() {
         test("description", () {});
       });
 
-      await _runTest(tests.single);
+      await _runTest(tests.single as Test);
       expect(outstandingCallbackRemoved, isTrue);
     });
 
@@ -267,7 +267,7 @@ void main() {
             }, max: 1));
       });
 
-      await _runTest(tests.single);
+      await _runTest(tests.single as Test);
     });
 
     test("runs further tearDowns in a group even if one fails", () async {
@@ -281,7 +281,7 @@ void main() {
         test("description", expectAsync0(() {}));
       });
 
-      await _runTest(tests.single, shouldFail: true);
+      await _runTest(tests.single as Test, shouldFail: true);
     });
 
     test("runs in the same error zone as the test", () {
@@ -410,8 +410,8 @@ void main() {
               }, max: 1));
         });
 
-        await _runTest((entries[0] as Group).entries.single);
-        await _runTest(entries[1]);
+        await _runTest((entries[0] as Group).entries.single as Test);
+        await _runTest(entries[1] as Test);
       });
 
       test("runs from the outside in", () {
@@ -452,7 +452,7 @@ void main() {
 
         var middleGroup = entries.single as Group;
         var innerGroup = middleGroup.entries.single as Group;
-        return _runTest(innerGroup.entries.single);
+        return _runTest(innerGroup.entries.single as Test);
       });
 
       test("handles Futures when chained", () {
@@ -480,7 +480,7 @@ void main() {
         });
 
         var innerGroup = entries.single as Group;
-        return _runTest(innerGroup.entries.single);
+        return _runTest(innerGroup.entries.single as Test);
       });
 
       test("inherits group's tags", () {
@@ -534,9 +534,9 @@ void main() {
         });
 
         var testGroup = entries[0] as Group;
-        await _runTest(testGroup.entries.single);
+        await _runTest(testGroup.entries.single as Test);
         expect(tearDownRun, isTrue);
-        await _runTest(entries[1]);
+        await _runTest(entries[1] as Test);
         expect(tearDownRun, isFalse);
       });
 
@@ -578,7 +578,7 @@ void main() {
 
         var middleGroup = entries.single as Group;
         var innerGroup = middleGroup.entries.single as Group;
-        await _runTest(innerGroup.entries.single);
+        await _runTest(innerGroup.entries.single as Test);
         expect(innerTearDownRun, isTrue);
         expect(middleTearDownRun, isTrue);
         expect(outerTearDownRun, isTrue);
@@ -609,7 +609,7 @@ void main() {
         });
 
         var innerGroup = entries.single as Group;
-        await _runTest(innerGroup.entries.single);
+        await _runTest(innerGroup.entries.single as Test);
         expect(innerTearDownRun, isTrue);
         expect(outerTearDownRun, isTrue);
       });
@@ -635,7 +635,7 @@ void main() {
         });
 
         var innerGroup = entries.single as Group;
-        await _runTest(innerGroup.entries.single, shouldFail: true);
+        await _runTest(innerGroup.entries.single as Test, shouldFail: true);
         expect(outerTearDownRun, isTrue);
       });
     });
@@ -649,9 +649,10 @@ void main() {
 Future _runTest(Test test, {bool shouldFail = false}) {
   var liveTest = test.load(_suite);
 
-  liveTest.onError.listen(shouldFail
+  Function(AsyncError) errorCallback = shouldFail
       ? expectAsync1((_) {})
-      : (error) => registerException(error.error, error.stackTrace));
+      : (error) => registerException(error.error, error.stackTrace);
+  liveTest.onError.listen(errorCallback);
 
   return liveTest.run();
 }

@@ -18,7 +18,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  var innerSuite;
+  RunnerSuite innerSuite;
   setUp(() {
     innerSuite = runnerSuite(new Group.root([]));
   });
