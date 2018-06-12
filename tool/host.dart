@@ -118,7 +118,8 @@ void main() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
       if (message['command'] == 'loadSuite') {
-        var suiteChannel = serverChannel.virtualChannel(message['channel']);
+        var suiteChannel =
+            serverChannel.virtualChannel(message['channel'] as int);
         var iframeChannel =
             _connectToIframe(message['url'] as String, message['id'] as int);
         suiteChannel.pipe(iframeChannel);
