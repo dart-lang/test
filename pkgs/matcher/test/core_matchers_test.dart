@@ -227,29 +227,4 @@ void main() {
       shouldPass('cow', predicate((x) => x is String, "an instance of String"));
     });
   });
-
-  test("Feature Matcher", () {
-    var w = new Widget();
-    w.price = 10;
-    shouldPass(w, new HasPrice(10));
-    shouldPass(w, new HasPrice(greaterThan(0)));
-    shouldFail(
-        w,
-        new HasPrice(greaterThan(10)),
-        "Expected: Widget with a price that is a value greater than <10> "
-        "Actual: <Instance of 'Widget'> "
-        "Which: has price with value <10> which is not "
-        "a value greater than <10>");
-  });
-
-  test("Custom Matcher Exception", () {
-    shouldFail(
-        "a",
-        new BadCustomMatcher(),
-        allOf([
-          contains("Expected: feature {1: 'a'} "),
-          contains("Actual: 'a' "),
-          contains("Which: threw 'Exception: bang' "),
-        ]));
-  });
 }

@@ -36,11 +36,6 @@ class Widget {
   int price;
 }
 
-class HasPrice extends CustomMatcher {
-  HasPrice(matcher) : super("Widget with a price that is", "price", matcher);
-  featureValueOf(actual) => actual.price;
-}
-
 class SimpleIterable extends Iterable<int> {
   final int count;
 
