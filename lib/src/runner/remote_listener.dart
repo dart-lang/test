@@ -96,7 +96,7 @@ class RemoteListener {
           queue.rest.listen((message) {
             assert(message["type"] == "suiteChannel");
             SuiteChannelManager.current.connectIn(message['name'] as String,
-                channel.virtualChannel(message['id']));
+                channel.virtualChannel(message['id'] as int));
           });
 
           if ((message['asciiGlyphs'] as bool) ?? false) glyph.ascii = true;
@@ -207,7 +207,7 @@ class RemoteListener {
     testChannel.stream.listen((message) {
       assert(message['command'] == 'run');
       _runLiveTest(test.load(_suite, groups: groups),
-          channel.virtualChannel(message['channel']));
+          channel.virtualChannel(message['channel'] as int));
     });
 
     return {
