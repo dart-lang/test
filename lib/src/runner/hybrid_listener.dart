@@ -38,7 +38,7 @@ void listen(Function getMain(), List data) {
 
   Chain.capture(() {
     runZoned(() {
-      var main;
+      dynamic /*Function*/ main;
       try {
         main = getMain();
       } on NoSuchMethodError catch (_) {

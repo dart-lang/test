@@ -89,7 +89,7 @@ class Runner {
 
         var suites = _loadSuites();
 
-        var success;
+        bool success;
         if (_config.pauseAfterLoad) {
           success = await _loadThenPause(suites);
         } else {
@@ -100,7 +100,7 @@ class Runner {
                 .then((_) => _engine.suiteSink.close()),
             _engine.run()
           ], eagerError: true);
-          success = results.last;
+          success = results.last as bool;
         }
 
         if (_closed) return false;
@@ -180,7 +180,7 @@ class Runner {
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
   Future close() => _closeMemo.runOnce(() async {
-        var timer;
+        Timer timer;
         if (!_engine.isIdle) {
           // Wait a bit to print this message, since printing it eagerly looks weird
           // if the tests then finish immediately.

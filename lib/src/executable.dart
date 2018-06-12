@@ -5,6 +5,7 @@
 // TODO(nweiz): This is under lib so that it can be used by the unittest dummy
 // package. Once that package is no longer being updated, move this back into
 // bin.
+import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
@@ -38,7 +39,7 @@ bool get _usesTransformer {
   if (!new File('pubspec.yaml').existsSync()) return false;
   var contents = new File('pubspec.yaml').readAsStringSync();
 
-  var yaml;
+  dynamic yaml;
   try {
     yaml = loadYaml(contents);
   } on FormatException {
@@ -155,7 +156,7 @@ transformers:
   }
 
   Runner runner;
-  var signalSubscription;
+  StreamSubscription signalSubscription;
   close() async {
     if (signalSubscription == null) return;
     signalSubscription.cancel();

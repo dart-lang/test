@@ -26,7 +26,7 @@ import 'runner_suite.dart';
 /// any resources it allocated.
 CancelableOperation debug(
     Engine engine, Reporter reporter, LoadSuite loadSuite) {
-  var debugger;
+  _Debugger debugger;
   var canceled = false;
   return new CancelableOperation.fromFuture(() async {
     // Make the underlying suite null so that the engine doesn't start running

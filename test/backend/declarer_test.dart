@@ -136,7 +136,7 @@ void main() {
 
   group(".tearDown()", () {
     test("is run after all tests", () async {
-      var tearDownRun;
+      bool tearDownRun;
       var tests = declare(() {
         setUp(() => tearDownRun = false);
         tearDown(() => tearDownRun = true);
@@ -161,7 +161,7 @@ void main() {
     });
 
     test("is run after an out-of-band failure", () async {
-      var tearDownRun;
+      bool tearDownRun;
       var tests = declare(() {
         setUp(() => tearDownRun = false);
         tearDown(() => tearDownRun = true);
@@ -512,7 +512,7 @@ void main() {
 
     group(".tearDown()", () {
       test("is scoped to the group", () async {
-        var tearDownRun;
+        bool tearDownRun;
         var entries = declare(() {
           setUp(() => tearDownRun = false);
 

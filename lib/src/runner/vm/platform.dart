@@ -25,7 +25,7 @@ class VMPlatform extends PlatformPlugin {
   StreamChannel loadChannel(String path, SuitePlatform platform) {
     assert(platform.runtime == Runtime.vm);
 
-    var isolate;
+    Isolate isolate;
     var channel = StreamChannelCompleter.fromFuture(() async {
       var receivePort = new ReceivePort();
 
@@ -42,7 +42,7 @@ class VMPlatform extends PlatformPlugin {
     // Once the connection is closed by either end, kill the isolate.
     return channel
         .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
-      if (isolate != null) isolate.kill();
+      isolate?.kill();
       sink.close();
     }));
   }
