@@ -19,6 +19,11 @@ JSON reporter.
 
     pub run test --reporter json <path-to-test-file>
 
+If running tests directly through Dart the `--reporter` flag is not available.
+Instead, you can set the `DART_TEST_REPORTER` environment variable:
+
+    DART_TEST_REPORTER=json dart <path-to-test-file>
+
 The JSON stream will be emitted via standard output. It will be a stream of JSON
 objects, separated by newlines.
 
