@@ -115,8 +115,8 @@ class CompilerPool {
     var map = jsonDecode(new File(mapPath).readAsStringSync());
     var root = map['sourceRoot'] as String;
 
-    map['sources'] = map['sources'].map((String source) {
-      var url = Uri.parse(root + source);
+    map['sources'] = map['sources'].map((source) {
+      var url = Uri.parse(root + '$source');
       if (url.scheme != '' && url.scheme != 'file') return source;
       if (url.path.endsWith("/runInBrowser.dart")) return "";
       return p.toUri(mapPath).resolveUri(url).toString();
