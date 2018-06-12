@@ -572,6 +572,30 @@ void customTest(String name, Function testFn) => test(name, testFn);
         _done(),
         args: ["-p", "chrome", "--js-trace"]);
   }, tags: ["chrome"], skip: "Broken by sdk#29693.");
+
+  test("uses JSON reporter when instructed via environment variable", () {
+    return _expectReport(
+        """
+      test('success 1', () {});
+    """,
+        [
+          [
+            _suite(0),
+            _testStart(1, "loading test.dart", groupIDs: []),
+            _testDone(1, hidden: true),
+          ],
+          [
+            _group(2, testCount: 1),
+            _testStart(3, "success 1", line: 6, column: 7),
+            _testDone(3),
+          ]
+        ],
+        _done(),
+        // Don't pass the normal reporter flag when running, set the env
+        // var instead.
+        suppressReporterFlag: true,
+        environment: {"DART_TEST_REPORTER": "json"});
+  });
 }
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
@@ -581,7 +605,10 @@ void customTest(String name, Function testFn) => test(name, testFn);
 /// paths to contents. All libraries will be added as imports to the test, and
 /// files will be created for them.
 Future _expectReport(String tests, List<List<Map>> expected, Map done,
-    {List<String> args, Map<String, String> externalLibraries}) async {
+    {List<String> args,
+    Map<String, String> externalLibraries,
+    Map<String, String> environment,
+    bool suppressReporterFlag = false}) async {
   args ??= [];
   externalLibraries ??= {};
   var testContent = new StringBuffer("""
@@ -598,7 +625,9 @@ import 'package:test/test.dart';
 
   await d.file("test.dart", testContent.toString()).create();
 
-  var test = await runTest(["test.dart"]..addAll(args), reporter: "json");
+  final reporter = suppressReporterFlag ? null : "json";
+  var test = await runTest(["test.dart"]..addAll(args),
+      reporter: reporter, environment: environment);
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

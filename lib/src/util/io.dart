@@ -69,6 +69,9 @@ final stdinLines = new StreamQueue(lineSplitter.bind(stdin));
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment["_DART_TEST_TESTING"] == "true";
 
+/// The default reporter defined in the DART_TEST_REPORTER environment variable.
+String environmentReporter = Platform.environment["DART_TEST_REPORTER"];
+
 /// The root directory below which to nest temporary directories created by the
 /// test runner.
 ///

@@ -1,3 +1,9 @@
+## 0.12.41
+
+* The default reporter can now be overriden by setting the `DART_TEST_REPORTER`
+  environment variable. This enables using the `json` reporter when running test
+  scripts directly via the Dart VM where the `-reporter` flag is not available.
+
 ## 0.12.40
 
 * Added some new optional fields to the json reporter, `root_line`,
