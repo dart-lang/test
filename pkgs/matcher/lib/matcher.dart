@@ -4,7 +4,9 @@
 
 /// Support for specifying test expectations, such as for unit tests.
 export 'src/core_matchers.dart';
+export 'src/custom_matcher.dart';
 export 'src/description.dart';
+export 'src/equals_matcher.dart';
 export 'src/error_matchers.dart';
 export 'src/interfaces.dart';
 export 'src/iterable_matchers.dart';

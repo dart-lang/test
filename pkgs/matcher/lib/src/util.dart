@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'core_matchers.dart';
+import 'equals_matcher.dart';
 import 'interfaces.dart';
 
 typedef bool _Predicate<T>(T value);
