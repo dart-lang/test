@@ -160,9 +160,10 @@ void main() {
     var loadSuite = suites.first;
 
     var liveTest = (loadSuite.group.entries.single as Test).load(loadSuite);
-    expect(liveTest.onMessage.first.then((message) => message.text),
+    // Skip the "Compiled" message from dart2js.
+    expect(liveTest.onMessage.skip(1).first.then((message) => message.text),
         completion(equals("print within test")));
     await liveTest.run();
     expectTestPassed(liveTest);
-  }, skip: "Broken by sdk#29693.");
+  });
 }

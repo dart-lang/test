@@ -501,6 +501,7 @@ void main() {
             [
               _suite(0, platform: "chrome"),
               _testStart(1, "compiling test.dart", groupIDs: []),
+              _print(1, startsWith("Compiled")),
               _testDone(1, hidden: true),
             ],
             [
@@ -511,7 +512,7 @@ void main() {
           ],
           _done(),
           args: ["-p", "chrome"]);
-    }, tags: ["chrome"], skip: "Broken by sdk#29693.");
+    }, tags: ["chrome"], skip: "https://github.com/dart-lang/test/issues/872");
 
     test("the root suite if applicable", () {
       return _expectReport(
@@ -561,6 +562,7 @@ void customTest(String name, Function testFn) => test(name, testFn);
           [
             _suite(0, platform: "chrome"),
             _testStart(1, "compiling test.dart", groupIDs: []),
+            _print(1, startsWith("Compiled")),
             _testDone(1, hidden: true),
           ],
           [
@@ -571,7 +573,7 @@ void customTest(String name, Function testFn) => test(name, testFn);
         ],
         _done(),
         args: ["-p", "chrome", "--js-trace"]);
-  }, tags: ["chrome"], skip: "Broken by sdk#29693.");
+  }, tags: ["chrome"]);
 }
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
@@ -580,7 +582,8 @@ void customTest(String name, Function testFn) => test(name, testFn);
 /// If [externalLibraries] are provided it should be a map of relative file
 /// paths to contents. All libraries will be added as imports to the test, and
 /// files will be created for them.
-Future _expectReport(String tests, List<List<Map>> expected, Map done,
+Future _expectReport(
+    String tests, List<List<dynamic /*Map|Matcher*/ >> expected, Map done,
     {List<String> args, Map<String, String> externalLibraries}) async {
   args ??= [];
   externalLibraries ??= {};
@@ -605,7 +608,7 @@ import 'package:test/test.dart';
   // Ensure the output is of the same length, including start, done and all
   // suites messages.
   expect(stdoutLines.length, equals(expected.fold(3, (a, m) => a + m.length)),
-      reason: "Expected $stdoutLines to match ${jsonEncode(expected)}.");
+      reason: "Expected $stdoutLines to match $expected.");
 
   // TODO(nweiz): validate each event against the JSON schema when
   // patefacio/json_schema#4 is merged.
@@ -741,13 +744,14 @@ Map _testStart(int id, String name,
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// printed [message].
-Map _print(int id, String message, {String type}) {
-  return {
-    "type": "print",
-    "testID": id,
-    "message": message,
-    "messageType": type ?? "print"
-  };
+Matcher _print(int id, dynamic /*String|Matcher*/ message, {String type}) {
+  return allOf(
+    hasLength(4),
+    containsPair("type", "print"),
+    containsPair("testID", id),
+    containsPair("message", message),
+    containsPair("messageType", type ?? "print"),
+  );
 }
 
 /// Returns the event emitted by the JSON reporter indicating that a test
