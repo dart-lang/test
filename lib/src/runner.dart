@@ -93,6 +93,8 @@ class Runner {
 
         var runTimes = _config.suiteDefaults.runtimes.map(_loader.findRuntime);
 
+        // TODO(grouma) - Remove this check when
+        // https://github.com/dart-lang/sdk/issues/31308 is resolved.
         if (!_silentObservatory &&
             runTimes.contains(Runtime.vm) &&
             _config.pauseAfterLoad) {
