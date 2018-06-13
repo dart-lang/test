@@ -71,6 +71,10 @@ class _Debugger {
   /// overlap with the reporter's reporting.
   final Console _console;
 
+  /// A completer that's used to manually unpause the test if the debugger is
+  /// closed.
+  final _pauseCompleter = new CancelableCompleter();
+
   /// The subscription to [_suite.onDebugging].
   StreamSubscription<bool> _onDebuggingSubscription;
 
@@ -87,14 +91,6 @@ class _Debugger {
     _console.registerCommand("restart",
         "Restart the current test after it finishes running.", _restartTest);
 
-    _onDebuggingSubscription = _suite.onDebugging.listen((debugging) {
-      if (debugging) {
-        _onDebugging();
-      } else {
-        _onNotDebugging();
-      }
-    });
-
     _onRestartSubscription = _suite.environment.onRestart.listen((_) {
       _restartTest();
     });
@@ -108,6 +104,14 @@ class _Debugger {
     try {
       await _pause();
       if (_closed) return;
+
+      _onDebuggingSubscription = _suite.onDebugging.listen((debugging) {
+        if (debugging) {
+          _onDebugging();
+        } else {
+          _onNotDebugging();
+        }
+      });
 
       _engine.resume();
       await _engine.onIdle.first;
@@ -142,7 +146,7 @@ class _Debugger {
           }
         }
 
-        if (runtime.isHeadless) {
+        if (runtime.isHeadless && !runtime.isDartVM) {
           var url = _suite.environment.remoteDebuggerUrl;
           if (url == null) {
             print("${yellow}Remote debugger URL not found.$noColor");
@@ -153,12 +157,15 @@ class _Debugger {
 
         var buffer =
             new StringBuffer("${bold}The test runner is paused.${noColor} ");
-        if (!runtime.isHeadless) {
-          buffer.write("Open the dev console in $runtime ");
+        if (runtime.isDartVM) {
+          buffer.write("Open the Observatory ");
         } else {
-          buffer.write("Open the remote debugger ");
+          if (!runtime.isHeadless) {
+            buffer.write("Open the dev console in $runtime ");
+          } else {
+            buffer.write("Open the remote debugger ");
+          }
         }
-        if (runtime.isDartVM) buffer.write("or the Observatory ");
 
         buffer.write("and set breakpoints. Once you're finished, return to "
             "this terminal and press Enter.");
@@ -168,7 +175,8 @@ class _Debugger {
 
       await inCompletionOrder([
         _suite.environment.displayPause(),
-        stdinLines.cancelable((queue) => queue.next)
+        stdinLines.cancelable((queue) => queue.next),
+        _pauseCompleter.operation
       ]).first;
     } finally {
       if (!_json) _reporter.resume();
@@ -208,8 +216,9 @@ class _Debugger {
 
   /// Closes the debugger and releases its resources.
   void close() {
+    _pauseCompleter.complete();
     _closed = true;
-    _onDebuggingSubscription.cancel();
+    _onDebuggingSubscription?.cancel();
     _onRestartSubscription.cancel();
     _console.stop();
   }
