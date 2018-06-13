@@ -11,12 +11,12 @@ void shouldFail(value, Matcher matcher, expected) {
   } on TestFailure catch (err) {
     failed = true;
 
-    var _errorString = err.message;
+    var errorString = err.message;
 
     if (expected is String) {
-      expect(_errorString, equalsIgnoringWhitespace(expected));
+      expect(errorString, equalsIgnoringWhitespace(expected));
     } else {
-      expect(_errorString.replaceAll('\n', ''), expected);
+      expect(errorString.replaceAll('\n', ''), expected);
     }
   }
 
