@@ -32,27 +32,13 @@ void main() {
   test('isNaN', () {
     shouldPass(double.nan, isNaN);
     shouldFail(3.1, isNaN, "Expected: NaN Actual: <3.1>");
-
-    shouldFail(
-        'not a num',
-        isNaN,
-        anyOf(
-            contains("type 'String' is not a subtype of type 'num'"),
-            // For dart2js - will be fixed in follow-up
-            contains('TypeError')));
+    shouldFail('not a num', isNaN, endsWith('not an <Instance of \'num\'>'));
   });
 
   test('isNotNaN', () {
     shouldPass(3.1, isNotNaN);
     shouldFail(double.nan, isNotNaN, "Expected: not NaN Actual: <NaN>");
-
-    shouldFail(
-        'not a num',
-        isNotNaN,
-        anyOf(
-            contains("type 'String' is not a subtype of type 'num'"),
-            // For dart2js - will be fixed in follow-up
-            contains('TypeError')));
+    shouldFail('not a num', isNotNaN, endsWith('not an <Instance of \'num\'>'));
   });
 
   test('same', () {
@@ -107,9 +93,8 @@ void main() {
         matches(r"Expected: return normally"
             r"  Actual: <Closure.*>"
             r"   Which: threw StateError:<Bad state: X>"));
-
-    shouldFail(
-        'not a function', returnsNormally, contains('NoSuchMethodError'));
+    shouldFail('not a function', returnsNormally,
+        contains('not an <Instance of \'Function\'>'));
   });
 
   test('hasLength', () {
@@ -233,6 +218,14 @@ void main() {
       shouldFail(0, predicate((x) => x is String, "an instance of String"),
           "Expected: an instance of String Actual: <0>");
       shouldPass('cow', predicate((x) => x is String, "an instance of String"));
+
+      if (isDart2) {
+        // With Dart2 semantics, predicate picks up a type argument of `bool`
+        // and we get nice type checking.
+        // Without Dart2 semantics a gnarly type error is thrown.
+        shouldFail(0, predicate((bool x) => x, "bool value is true"),
+            endsWith("not an <Instance of \'bool\'>"));
+      }
     });
   });
 }

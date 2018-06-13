@@ -20,6 +20,8 @@
 
 - Deprecated the `isInstanceOf` class. Use `TypeMatcher` instead.
 
+- Improved the output of `Matcher` instances that fail due to type errors.
+
 ## 0.12.2+1
 
 - Updated SDK version to 2.0.0-dev.17.0

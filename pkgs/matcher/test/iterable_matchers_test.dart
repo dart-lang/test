@@ -26,6 +26,9 @@ void main() {
         contains(0),
         "Expected: contains <0> "
         "Actual: [1, 2]");
+
+    shouldFail(
+        'String', contains(42), "Expected: contains <42> Actual: 'String'");
   });
 
   test('equals with matcher element', () {
@@ -40,9 +43,22 @@ void main() {
   });
 
   test('isIn', () {
-    var d = [1, 2];
-    shouldPass(1, isIn(d));
-    shouldFail(0, isIn(d), "Expected: is in [1, 2] Actual: <0>");
+    // Iterable
+    shouldPass(1, isIn([1, 2]));
+    shouldFail(0, isIn([1, 2]), "Expected: is in [1, 2] Actual: <0>");
+
+    // Map
+    shouldPass(1, isIn({1: null}));
+    shouldFail(0, isIn({1: null}), "Expected: is in {1: null} Actual: <0>");
+
+    // String
+    shouldPass('42', isIn('1421'));
+    shouldFail('42', isIn('41'), "Expected: is in '41' Actual: '42'");
+    shouldFail(
+        0, isIn('a string'), endsWith('not an <Instance of \'Pattern\'>'));
+
+    // Invalid arg
+    expect(() => isIn(42), throwsArgumentError);
   });
 
   test('everyElement', () {
@@ -55,7 +71,8 @@ void main() {
         "Actual: [1, 2] "
         "Which: has value <2> which doesn't match <1> at index 1");
     shouldPass(e, everyElement(1));
-    shouldFail('not iterable', everyElement(1), contains('not an Iterable'));
+    shouldFail('not iterable', everyElement(1),
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('nested everyElement', () {
@@ -110,7 +127,8 @@ void main() {
     shouldPass(d, anyElement(2));
     shouldFail(
         e, anyElement(2), "Expected: some element <2> Actual: [1, 1, 1]");
-    shouldFail('not an iterable', anyElement(2), contains('not an Iterable'));
+    shouldFail('not an iterable', anyElement(2),
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('orderedEquals', () {
@@ -123,8 +141,8 @@ void main() {
         "Expected: equals [2, 1] ordered "
         "Actual: [1, 2] "
         "Which: was <1> instead of <2> at location [0]");
-    shouldFail(
-        'not an iterable', orderedEquals([1]), contains('not an iterable'));
+    shouldFail('not an iterable', orderedEquals([1]),
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('unorderedEquals', () {
@@ -155,8 +173,8 @@ void main() {
         "Actual: [1, 2] "
         "Which: has no match for <3> at index 0"
         " along with 1 other unmatched");
-    shouldFail(
-        'not an iterable', unorderedEquals([1]), contains('not an iterable'));
+    shouldFail('not an iterable', unorderedEquals([1]),
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('unorderedMatches', () {
@@ -204,7 +222,7 @@ void main() {
         "Actual: [1, 2] "
         "Which: has no match for a value greater than <3> at index 0");
     shouldFail('not an iterable', unorderedMatches([greaterThan(1)]),
-        contains('not an iterable'));
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('containsAll', () {
@@ -224,7 +242,7 @@ void main() {
         containsAll([1]),
         "Expected: contains all of [1] "
         "Actual: <1> "
-        "Which: not iterable");
+        "Which: not an <Instance of \'Iterable\'>");
     shouldFail(
         [-1, 2],
         containsAll([greaterThan(0), greaterThan(1)]),
@@ -232,8 +250,8 @@ void main() {
         "<a value greater than <1>>] "
         "Actual: [-1, 2] "
         "Which: has no match for a value greater than <1> at index 1");
-    shouldFail(
-        'not an iterable', containsAll([1, 2, 3]), contains('not an iterable'));
+    shouldFail('not an iterable', containsAll([1, 2, 3]),
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('containsAllInOrder', () {
@@ -267,7 +285,7 @@ void main() {
         containsAllInOrder([1]),
         "Expected: contains in order([1]) "
         "Actual: <1> "
-        "Which: not an iterable");
+        "Which: not an <Instance of \'Iterable\'>");
   });
 
   test('pairwise compare', () {
@@ -279,7 +297,7 @@ void main() {
         pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"),
         "Expected: pairwise less than or equal [1, 4, 9] "
         "Actual: 'x' "
-        "Which: is not an Iterable");
+        "Which: not an <Instance of \'Iterable\'>");
     shouldFail(
         c,
         pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"),
@@ -304,7 +322,7 @@ void main() {
     shouldFail(
         'not an iterable',
         pairwiseCompare(e, (e, a) => a + a == e, "double"),
-        contains('not an Iterable'));
+        endsWith('not an <Instance of \'Iterable\'>'));
   });
 
   test('isEmpty', () {

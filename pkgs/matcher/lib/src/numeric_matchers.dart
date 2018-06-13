@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'feature_matcher.dart';
 import 'interfaces.dart';
 
 /// Returns a matcher which matches if the match argument is within [delta]
@@ -11,19 +12,15 @@ import 'interfaces.dart';
 /// than or equal [value]-[delta] and less than or equal to [value]+[delta].
 Matcher closeTo(num value, num delta) => new _IsCloseTo(value, delta);
 
-class _IsCloseTo extends Matcher {
+class _IsCloseTo extends FeatureMatcher<num> {
   final num _value, _delta;
 
   const _IsCloseTo(this._value, this._delta);
 
-  bool matches(item, Map matchState) {
-    if (item is num) {
-      var diff = item - _value;
-      if (diff < 0) diff = -diff;
-      return (diff <= _delta);
-    } else {
-      return false;
-    }
+  bool typedMatches(item, Map matchState) {
+    var diff = item - _value;
+    if (diff < 0) diff = -diff;
+    return (diff <= _delta);
   }
 
   Description describe(Description description) => description
@@ -32,15 +29,11 @@ class _IsCloseTo extends Matcher {
       .add(' of ')
       .addDescriptionOf(_value);
 
-  Description describeMismatch(
+  Description describeTypedMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
-    if (item is num) {
-      var diff = item - _value;
-      if (diff < 0) diff = -diff;
-      return mismatchDescription.add(' differs by ').addDescriptionOf(diff);
-    } else {
-      return mismatchDescription.add(' not numeric');
-    }
+    var diff = item - _value;
+    if (diff < 0) diff = -diff;
+    return mismatchDescription.add(' differs by ').addDescriptionOf(diff);
   }
 }
 
@@ -64,42 +57,28 @@ Matcher inOpenClosedRange(num low, num high) =>
 Matcher inClosedOpenRange(num low, num high) =>
     new _InRange(low, high, true, false);
 
-class _InRange extends Matcher {
+class _InRange extends FeatureMatcher<num> {
   final num _low, _high;
   final bool _lowMatchValue, _highMatchValue;
 
   const _InRange(
       this._low, this._high, this._lowMatchValue, this._highMatchValue);
 
-  bool matches(value, Map matchState) {
-    if (value is num) {
-      if (value < _low || value > _high) {
-        return false;
-      }
-      if (value == _low) {
-        return _lowMatchValue;
-      }
-      if (value == _high) {
-        return _highMatchValue;
-      }
-      return true;
-    } else {
+  bool typedMatches(value, Map matchState) {
+    if (value < _low || value > _high) {
       return false;
     }
+    if (value == _low) {
+      return _lowMatchValue;
+    }
+    if (value == _high) {
+      return _highMatchValue;
+    }
+    return true;
   }
 
   Description describe(Description description) =>
       description.add("be in range from "
           "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
           "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})");
-
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
-    if (item is! num) {
-      return mismatchDescription.addDescriptionOf(item).add(' not numeric');
-    } else {
-      return super
-          .describeMismatch(item, mismatchDescription, matchState, verbose);
-    }
-  }
 }

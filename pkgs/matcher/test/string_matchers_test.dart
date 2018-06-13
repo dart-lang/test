@@ -55,7 +55,8 @@ void main() {
     shouldPass('hello', equalsIgnoringCase('HELLO'));
     shouldFail('hi', equalsIgnoringCase('HELLO'),
         "Expected: 'HELLO' ignoring case Actual: 'hi'");
-    shouldFail(42, equalsIgnoringCase('HELLO'), contains('not a string'));
+    shouldFail(42, equalsIgnoringCase('HELLO'),
+        endsWith('not an <Instance of \'String\'>'));
   });
 
   test('equalsIgnoringWhitespace', () {
@@ -66,7 +67,8 @@ void main() {
         "Expected: 'hello world' ignoring whitespace "
         "Actual: ' helloworld ' "
         "Which: is 'helloworld' with whitespace compressed");
-    shouldFail(42, equalsIgnoringWhitespace('HELLO'), contains('not a string'));
+    shouldFail(42, equalsIgnoringWhitespace('HELLO'),
+        endsWith('not an <Instance of \'String\'>'));
   });
 
   test('startsWith', () {
@@ -78,7 +80,8 @@ void main() {
         startsWith('hello '),
         "Expected: a string starting with 'hello ' "
         "Actual: 'hello'");
-    shouldFail(42, startsWith('hello '), contains('not a string'));
+    shouldFail(
+        42, startsWith('hello '), endsWith('not an <Instance of \'String\'>'));
   });
 
   test('endsWith', () {
@@ -90,7 +93,8 @@ void main() {
         endsWith(' hello'),
         "Expected: a string ending with ' hello' "
         "Actual: 'hello'");
-    shouldFail(42, startsWith('hello '), contains('not a string'));
+    shouldFail(
+        42, startsWith('hello '), endsWith('not an <Instance of \'String\'>'));
   });
 
   test('contains', () {
@@ -128,6 +132,7 @@ void main() {
     shouldPass('c0d', matches(new RegExp('[a-z][0-9][a-z]')));
     shouldFail('cOd', matches('[a-z][0-9][a-z]'),
         "Expected: match '[a-z][0-9][a-z]' Actual: 'cOd'");
-    shouldFail(42, matches('[a-z][0-9][a-z]'), contains('not a string'));
+    shouldFail(42, matches('[a-z][0-9][a-z]'),
+        endsWith('not an <Instance of \'String\'>'));
   });
 }

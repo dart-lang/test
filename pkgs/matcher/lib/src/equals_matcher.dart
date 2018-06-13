@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'description.dart';
+import 'feature_matcher.dart';
 import 'interfaces.dart';
 import 'util.dart';
 
@@ -16,67 +17,61 @@ import 'util.dart';
 /// handle cyclic structures a recursion depth [limit] can be provided. The
 /// default limit is 100. [Set]s will be compared order-independently.
 Matcher equals(expected, [int limit = 100]) => expected is String
-    ? new _StringEqualsMatcher(expected) as Matcher
+    ? new _StringEqualsMatcher(expected)
     : new _DeepMatcher(expected, limit);
 
 typedef _RecursiveMatcher = List<String> Function(
     dynamic, dynamic, String, int);
 
 /// A special equality matcher for strings.
-class _StringEqualsMatcher extends Matcher {
+class _StringEqualsMatcher extends FeatureMatcher<String> {
   final String _value;
 
   _StringEqualsMatcher(this._value);
 
-  bool get showActualValue => true;
-
-  bool matches(item, Map matchState) => _value == item;
+  bool typedMatches(String item, Map matchState) => _value == item;
 
   Description describe(Description description) =>
       description.addDescriptionOf(_value);
 
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
-    if (item is! String) {
-      return mismatchDescription.addDescriptionOf(item).add('is not a string');
-    } else {
-      var buff = new StringBuffer();
-      buff.write('is different.');
-      var escapedItem = escape(item);
-      var escapedValue = escape(_value);
-      var minLength = escapedItem.length < escapedValue.length
-          ? escapedItem.length
-          : escapedValue.length;
-      var start = 0;
-      for (; start < minLength; start++) {
-        if (escapedValue.codeUnitAt(start) != escapedItem.codeUnitAt(start)) {
-          break;
-        }
+  Description describeTypedMismatch(String item,
+      Description mismatchDescription, Map matchState, bool verbose) {
+    var buff = new StringBuffer();
+    buff.write('is different.');
+    var escapedItem = escape(item);
+    var escapedValue = escape(_value);
+    var minLength = escapedItem.length < escapedValue.length
+        ? escapedItem.length
+        : escapedValue.length;
+    var start = 0;
+    for (; start < minLength; start++) {
+      if (escapedValue.codeUnitAt(start) != escapedItem.codeUnitAt(start)) {
+        break;
       }
-      if (start == minLength) {
-        if (escapedValue.length < escapedItem.length) {
-          buff.write(' Both strings start the same, but the actual value also'
-              ' has the following trailing characters: ');
-          _writeTrailing(buff, escapedItem, escapedValue.length);
-        } else {
-          buff.write(' Both strings start the same, but the actual value is'
-              ' missing the following trailing characters: ');
-          _writeTrailing(buff, escapedValue, escapedItem.length);
-        }
-      } else {
-        buff.write('\nExpected: ');
-        _writeLeading(buff, escapedValue, start);
-        _writeTrailing(buff, escapedValue, start);
-        buff.write('\n  Actual: ');
-        _writeLeading(buff, escapedItem, start);
-        _writeTrailing(buff, escapedItem, start);
-        buff.write('\n          ');
-        for (var i = (start > 10 ? 14 : start); i > 0; i--) buff.write(' ');
-        buff.write('^\n Differ at offset $start');
-      }
-
-      return mismatchDescription.add(buff.toString());
     }
+    if (start == minLength) {
+      if (escapedValue.length < escapedItem.length) {
+        buff.write(' Both strings start the same, but the actual value also'
+            ' has the following trailing characters: ');
+        _writeTrailing(buff, escapedItem, escapedValue.length);
+      } else {
+        buff.write(' Both strings start the same, but the actual value is'
+            ' missing the following trailing characters: ');
+        _writeTrailing(buff, escapedValue, escapedItem.length);
+      }
+    } else {
+      buff.write('\nExpected: ');
+      _writeLeading(buff, escapedValue, start);
+      _writeTrailing(buff, escapedValue, start);
+      buff.write('\n  Actual: ');
+      _writeLeading(buff, escapedItem, start);
+      _writeTrailing(buff, escapedItem, start);
+      buff.write('\n          ');
+      for (var i = (start > 10 ? 14 : start); i > 0; i--) buff.write(' ');
+      buff.write('^\n Differ at offset $start');
+    }
+
+    return mismatchDescription.add(buff.toString());
   }
 
   static void _writeLeading(StringBuffer buff, String s, int start) {

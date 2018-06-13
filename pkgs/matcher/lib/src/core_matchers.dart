@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'feature_matcher.dart';
 import 'interfaces.dart';
 import 'type_matcher.dart';
 import 'util.dart';
@@ -70,15 +71,17 @@ const Matcher isNaN = const _IsNaN();
 /// A matcher that matches any non-NaN value.
 const Matcher isNotNaN = const _IsNotNaN();
 
-class _IsNaN extends Matcher {
+class _IsNaN extends FeatureMatcher<num> {
   const _IsNaN();
-  bool matches(item, Map matchState) => double.nan.compareTo(item) == 0;
+  bool typedMatches(num item, Map matchState) =>
+      double.nan.compareTo(item) == 0;
   Description describe(Description description) => description.add('NaN');
 }
 
-class _IsNotNaN extends Matcher {
+class _IsNotNaN extends FeatureMatcher<num> {
   const _IsNotNaN();
-  bool matches(item, Map matchState) => double.nan.compareTo(item) != 0;
+  bool typedMatches(num item, Map matchState) =>
+      double.nan.compareTo(item) != 0;
   Description describe(Description description) => description.add('not NaN');
 }
 
@@ -122,10 +125,10 @@ class isInstanceOf<T> extends TypeMatcher<T> {
 /// a wrapper will have to be created.
 const Matcher returnsNormally = const _ReturnsNormally();
 
-class _ReturnsNormally extends Matcher {
+class _ReturnsNormally extends FeatureMatcher<Function> {
   const _ReturnsNormally();
 
-  bool matches(f, Map matchState) {
+  bool typedMatches(Function f, Map matchState) {
     try {
       f();
       return true;
@@ -138,8 +141,8 @@ class _ReturnsNormally extends Matcher {
   Description describe(Description description) =>
       description.add("return normally");
 
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(Function item,
+      Description mismatchDescription, Map matchState, bool verbose) {
     mismatchDescription.add('threw ').addDescriptionOf(matchState['exception']);
     if (verbose) {
       mismatchDescription.add(' at ').add(matchState['stack'].toString());
@@ -210,11 +213,12 @@ class _Contains extends Matcher {
   const _Contains(this._expected);
 
   bool matches(item, Map matchState) {
+    var expected = _expected;
     if (item is String) {
-      return item.contains((_expected as Pattern));
+      return expected is Pattern && item.contains(expected);
     } else if (item is Iterable) {
-      if (_expected is Matcher) {
-        return item.any((e) => (_expected as Matcher).matches(e, matchState));
+      if (expected is Matcher) {
+        return item.any((e) => expected.matches(e, matchState));
       } else {
         return item.contains(_expected);
       }
@@ -240,27 +244,29 @@ class _Contains extends Matcher {
 
 /// Returns a matcher that matches if the match argument is in
 /// the expected value. This is the converse of [contains].
-Matcher isIn(expected) => new _In(expected);
-
-class _In extends Matcher {
-  final Object _expected;
-
-  const _In(this._expected);
-
-  bool matches(item, Map matchState) {
-    var expected = _expected;
-    if (expected is String) {
-      return expected.contains(item as Pattern);
-    } else if (expected is Iterable) {
-      return expected.contains(item);
-    } else if (expected is Map) {
-      return expected.containsKey(item);
-    }
-    return false;
+Matcher isIn(expected) {
+  if (expected is Iterable) {
+    return new _In(expected, expected.contains);
+  } else if (expected is String) {
+    return new _In<Pattern>(expected, expected.contains);
+  } else if (expected is Map) {
+    return new _In(expected, expected.containsKey);
   }
 
+  throw new ArgumentError.value(
+      expected, 'expected', 'Only Iterable, Map, and String are supported.');
+}
+
+class _In<T> extends FeatureMatcher<T> {
+  final Object _source;
+  final bool Function(T) _containsFunction;
+
+  const _In(this._source, this._containsFunction);
+
+  bool typedMatches(T item, Map matchState) => _containsFunction(item);
+
   Description describe(Description description) =>
-      description.add('is in ').addDescriptionOf(_expected);
+      description.add('is in ').addDescriptionOf(_source);
 }
 
 /// Returns a matcher that uses an arbitrary function that returns
@@ -275,13 +281,13 @@ Matcher predicate<T>(bool f(T value),
 
 typedef bool _PredicateFunction<T>(T value);
 
-class _Predicate<T> extends Matcher {
+class _Predicate<T> extends FeatureMatcher<T> {
   final _PredicateFunction<T> _matcher;
   final String _description;
 
   _Predicate(this._matcher, this._description);
 
-  bool matches(item, Map matchState) => _matcher(item as T);
+  bool typedMatches(T item, Map matchState) => _matcher(item);
 
   Description describe(Description description) =>
       description.add(_description);
