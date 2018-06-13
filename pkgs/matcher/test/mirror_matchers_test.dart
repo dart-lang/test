@@ -11,9 +11,9 @@ import 'test_utils.dart';
 
 class C {
   var instanceField = 1;
-  get instanceGetter => 2;
+  int get instanceGetter => 2;
   static var staticField = 3;
-  static get staticGetter => 4;
+  static int get staticGetter => 4;
 }
 
 void main() {

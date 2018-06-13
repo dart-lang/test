@@ -45,6 +45,7 @@ Matcher wrapMatcher(x) {
   } else if (x is _Predicate<Null>) {
     // x is a unary predicate, but expects a specific type
     // so wrap it.
+    // ignore: unnecessary_lambdas
     return predicate((a) => (x as dynamic)(a));
   } else {
     return equals(x);
@@ -66,6 +67,6 @@ String escape(String str) {
 
 /// Given single-character string, return the hex-escaped equivalent.
 String _getHexLiteral(String input) {
-  int rune = input.runes.single;
+  var rune = input.runes.single;
   return r'\x' + rune.toRadixString(16).toUpperCase().padLeft(2, '0');
 }

@@ -119,10 +119,10 @@ class _StringContainsInOrder extends _StringMatcher {
 
   bool matches(item, Map matchState) {
     if (item is String) {
-      var from_index = 0;
+      var fromIndex = 0;
       for (var s in _substrings) {
-        from_index = item.indexOf(s, from_index);
-        if (from_index < 0) return false;
+        fromIndex = item.indexOf(s, fromIndex);
+        if (fromIndex < 0) return false;
       }
       return true;
     } else {

@@ -29,8 +29,8 @@ class _HasProperty extends Matcher {
       addStateInfo(matchState, {'reason': 'has no property named "$_name"'});
       return false;
     }
-    bool isInstanceField = candidate is VariableMirror && !candidate.isStatic;
-    bool isInstanceGetter =
+    var isInstanceField = candidate is VariableMirror && !candidate.isStatic;
+    var isInstanceGetter =
         candidate is MethodMirror && candidate.isGetter && !candidate.isStatic;
     if (!(isInstanceField || isInstanceGetter)) {
       addStateInfo(matchState, {
@@ -60,14 +60,14 @@ class _HasProperty extends Matcher {
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var reason = matchState == null ? null : matchState['reason'];
     if (reason != null) {
-      mismatchDescription.add(reason);
+      mismatchDescription.add(reason as String);
     } else {
       mismatchDescription
           .add('has property "$_name" with value ')
           .addDescriptionOf(matchState['value']);
       var innerDescription = new StringDescription();
-      _matcher.describeMismatch(
-          matchState['value'], innerDescription, matchState['state'], verbose);
+      _matcher.describeMismatch(matchState['value'], innerDescription,
+          matchState['state'] as Map, verbose);
       if (innerDescription.length > 0) {
         mismatchDescription.add(' which ').add(innerDescription.toString());
       }

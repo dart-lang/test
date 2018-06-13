@@ -9,12 +9,12 @@ import 'test_utils.dart';
 
 class _BadCustomMatcher extends CustomMatcher {
   _BadCustomMatcher() : super("feature", "description", {1: "a"});
-  featureValueOf(actual) => throw new Exception("bang");
+  Object featureValueOf(actual) => throw new Exception("bang");
 }
 
 class _HasPrice extends CustomMatcher {
   _HasPrice(matcher) : super("Widget with a price that is", "price", matcher);
-  featureValueOf(actual) => actual.price;
+  Object featureValueOf(actual) => actual.price;
 }
 
 void main() {

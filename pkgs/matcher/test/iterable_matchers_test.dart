@@ -266,20 +266,21 @@ void main() {
     var e = [1, 4, 9];
     shouldFail(
         'x',
-        pairwiseCompare(e, (e, a) => a <= e, "less than or equal"),
+        pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"),
         "Expected: pairwise less than or equal [1, 4, 9] "
         "Actual: 'x' "
         "Which: is not an Iterable");
     shouldFail(
         c,
-        pairwiseCompare(e, (e, a) => a <= e, "less than or equal"),
+        pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"),
         "Expected: pairwise less than or equal [1, 4, 9] "
         "Actual: [1, 2] "
         "Which: has length 2 instead of 3");
-    shouldPass(d, pairwiseCompare(e, (e, a) => a <= e, "less than or equal"));
+    shouldPass(
+        d, pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"));
     shouldFail(
         d,
-        pairwiseCompare(e, (e, a) => a < e, "less than"),
+        pairwiseCompare(e, (int e, int a) => a < e, "less than"),
         "Expected: pairwise less than [1, 4, 9] "
         "Actual: [1, 2, 3] "
         "Which: has <1> which is not less than <1> at index 0");

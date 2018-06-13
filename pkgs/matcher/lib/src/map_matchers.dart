@@ -9,7 +9,7 @@ import 'util.dart';
 Matcher containsValue(value) => new _ContainsValue(value);
 
 class _ContainsValue extends Matcher {
-  final _value;
+  final Object _value;
 
   const _ContainsValue(this._value);
 
@@ -24,7 +24,7 @@ Matcher containsPair(key, value) =>
     new _ContainsMapping(key, wrapMatcher(value));
 
 class _ContainsMapping extends Matcher {
-  final _key;
+  final Object _key;
   final Matcher _valueMatcher;
 
   const _ContainsMapping(this._key, this._valueMatcher);

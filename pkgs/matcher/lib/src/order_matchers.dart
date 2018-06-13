@@ -52,7 +52,7 @@ const Matcher isNonNegative =
 // `==` and `<` operators to evaluate the match. Or change the matcher.
 class _OrderingMatcher extends Matcher {
   /// Expected value.
-  final _value;
+  final Object _value;
 
   /// What to return if actual == expected
   final bool _equalValue;

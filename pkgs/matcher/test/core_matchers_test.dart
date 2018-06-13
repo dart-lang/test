@@ -40,15 +40,15 @@ void main() {
   });
 
   test('same', () {
-    var a = new Map();
-    var b = new Map();
+    var a = {};
+    var b = {};
     shouldPass(a, same(a));
     shouldFail(b, same(a), "Expected: same instance as {} Actual: {}");
   });
 
   test('equals', () {
-    var a = new Map();
-    var b = new Map();
+    var a = {};
+    var b = {};
     shouldPass(a, equals(a));
     shouldPass(a, equals(b));
   });
@@ -76,7 +76,7 @@ void main() {
   });
 
   test('anything', () {
-    var a = new Map();
+    var a = {};
     shouldPass(0, anything);
     shouldPass(null, anything);
     shouldPass(a, anything);
@@ -90,12 +90,12 @@ void main() {
         returnsNormally,
         matches(r"Expected: return normally"
             r"  Actual: <Closure.*>"
-            r"   Which: threw 'X'"));
+            r"   Which: threw StateError:<Bad state: X>"));
   });
 
   test('hasLength', () {
-    var a = new Map();
-    var b = new List();
+    var a = {};
+    var b = [];
     shouldPass(a, hasLength(0));
     shouldPass(b, hasLength(0));
     shouldPass('a', hasLength(1));
@@ -210,9 +210,9 @@ void main() {
   });
 
   test('isInstanceOf', () {
-    shouldFail(0, new isInstanceOf<String>(),
+    shouldFail(0, const isInstanceOf<String>(),
         "Expected: an instance of String Actual: <0>");
-    shouldPass('cow', new isInstanceOf<String>());
+    shouldPass('cow', const isInstanceOf<String>());
   });
 
   group('Predicate Matchers', () {

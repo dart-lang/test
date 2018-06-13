@@ -39,7 +39,7 @@ class CustomMatcher extends Matcher {
       : this._matcher = wrapMatcher(matcher);
 
   /// Override this to extract the interesting feature.
-  featureValueOf(actual) => actual;
+  Object featureValueOf(actual) => actual;
 
   bool matches(item, Map matchState) {
     try {
@@ -84,7 +84,7 @@ class CustomMatcher extends Matcher {
     var innerDescription = new StringDescription();
 
     _matcher.describeMismatch(matchState['custom.feature'], innerDescription,
-        matchState['state'], verbose);
+        matchState['state'] as Map, verbose);
 
     if (innerDescription.length > 0) {
       mismatchDescription.add(' which ').add(innerDescription.toString());

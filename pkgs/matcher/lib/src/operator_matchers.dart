@@ -106,5 +106,5 @@ List<Matcher> _wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
     args = [arg0, arg1, arg2, arg3, arg4, arg5, arg6].where((e) => e != null);
   }
 
-  return args.map((e) => wrapMatcher(e)).toList();
+  return args.map(wrapMatcher).toList();
 }

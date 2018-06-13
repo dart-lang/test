@@ -86,7 +86,7 @@ class _IsNotNaN extends Matcher {
 Matcher same(expected) => new _IsSameAs(expected);
 
 class _IsSameAs extends Matcher {
-  final _expected;
+  final Object _expected;
   const _IsSameAs(this._expected);
   bool matches(item, Map matchState) => identical(item, _expected);
   // If all types were hashable we could show a hash here.
@@ -113,10 +113,11 @@ class _IsAnything extends Matcher {
 /// 'Foo', we would write:
 ///
 ///     expect(bar, new isInstanceOf<Foo>());
+// ignore: camel_case_types
 class isInstanceOf<T> extends Matcher {
   const isInstanceOf();
 
-  bool matches(obj, Map matchState) => obj is T;
+  bool matches(item, Map matchState) => item is T;
 
   Description describe(Description description) =>
       description.add('an instance of $T');
@@ -195,7 +196,7 @@ class _IsMap extends TypeMatcher {
 const Matcher isList = const _IsList();
 
 class _IsList extends TypeMatcher {
-  const _IsList() : super("List");
+  const _IsList() : super('List');
   bool matches(item, Map matchState) => item is List;
 }
 
@@ -205,7 +206,7 @@ Matcher hasLength(matcher) => new _HasLength(wrapMatcher(matcher));
 
 class _HasLength extends Matcher {
   final Matcher _matcher;
-  const _HasLength([Matcher matcher = null]) : this._matcher = matcher;
+  const _HasLength([Matcher matcher]) : this._matcher = matcher;
 
   bool matches(item, Map matchState) {
     try {
@@ -214,8 +215,10 @@ class _HasLength extends Matcher {
       if (item.length * item.length >= 0) {
         return _matcher.matches(item.length, matchState);
       }
-    } catch (e) {}
-    return false;
+    } catch (e) {
+      return false;
+    }
+    throw new UnsupportedError('Should never get here');
   }
 
   Description describe(Description description) =>
@@ -231,8 +234,10 @@ class _HasLength extends Matcher {
             .add('has length of ')
             .addDescriptionOf(item.length);
       }
-    } catch (e) {}
-    return mismatchDescription.add('has no length property');
+    } catch (e) {
+      return mismatchDescription.add('has no length property');
+    }
+    throw new UnsupportedError('Should never get here');
   }
 }
 
@@ -246,16 +251,16 @@ class _HasLength extends Matcher {
 Matcher contains(expected) => new _Contains(expected);
 
 class _Contains extends Matcher {
-  final _expected;
+  final Object _expected;
 
   const _Contains(this._expected);
 
   bool matches(item, Map matchState) {
     if (item is String) {
-      return item.indexOf(_expected) >= 0;
+      return item.contains((_expected as Pattern));
     } else if (item is Iterable) {
       if (_expected is Matcher) {
-        return item.any((e) => _expected.matches(e, matchState));
+        return item.any((e) => (_expected as Matcher).matches(e, matchState));
       } else {
         return item.contains(_expected);
       }
@@ -284,17 +289,18 @@ class _Contains extends Matcher {
 Matcher isIn(expected) => new _In(expected);
 
 class _In extends Matcher {
-  final _expected;
+  final Object _expected;
 
   const _In(this._expected);
 
   bool matches(item, Map matchState) {
-    if (_expected is String) {
-      return _expected.indexOf(item) >= 0;
-    } else if (_expected is Iterable) {
-      return _expected.any((e) => e == item);
-    } else if (_expected is Map) {
-      return _expected.containsKey(item);
+    var expected = _expected;
+    if (expected is String) {
+      return expected.contains(item as Pattern);
+    } else if (expected is Iterable) {
+      return expected.contains(item);
+    } else if (expected is Map) {
+      return expected.containsKey(item);
     }
     return false;
   }

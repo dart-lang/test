@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'equals_matcher.dart';
 import 'description.dart';
+import 'equals_matcher.dart';
 import 'interfaces.dart';
 import 'util.dart';
 
@@ -45,7 +45,7 @@ class _EveryElement extends _IterableMatcher {
           .add(' which ');
       var subDescription = new StringDescription();
       _matcher.describeMismatch(
-          element, subDescription, matchState['state'], verbose);
+          element, subDescription, matchState['state'] as Map, verbose);
       if (subDescription.length > 0) {
         mismatchDescription.add(subDescription.toString());
       } else {
@@ -159,10 +159,13 @@ class _UnorderedMatches extends Matcher {
         _allowUnmatchedValues = allowUnmatchedValues ?? false;
 
   String _test(item) {
-    if (item is! Iterable) return 'not iterable';
+    if (item is Iterable) {
+      return _testCore(item.toList());
+    }
+    return 'not iterable';
+  }
 
-    var values = item.toList();
-
+  String _testCore(List values) {
     // Check the lengths are the same.
     if (_expected.length > values.length) {
       return 'has too few elements (${values.length} < ${_expected.length})';
@@ -172,8 +175,8 @@ class _UnorderedMatches extends Matcher {
 
     var edges =
         new List.generate(values.length, (_) => <int>[], growable: false);
-    for (int v = 0; v < values.length; v++) {
-      for (int m = 0; m < _expected.length; m++) {
+    for (var v = 0; v < values.length; v++) {
+      for (var m = 0; m < _expected.length; m++) {
         if (_expected[m].matches(values[v], {})) {
           edges[v].add(m);
         }
@@ -182,10 +185,10 @@ class _UnorderedMatches extends Matcher {
     // The index into `values` matched with each matcher or `null` if no value
     // has been matched yet.
     var matched = new List<int>(_expected.length);
-    for (int valueIndex = 0; valueIndex < values.length; valueIndex++) {
+    for (var valueIndex = 0; valueIndex < values.length; valueIndex++) {
       _findPairing(edges, valueIndex, matched);
     }
-    for (int matcherIndex = 0;
+    for (var matcherIndex = 0;
         matcherIndex < _expected.length;
         matcherIndex++) {
       if (matched[matcherIndex] == null) {
@@ -216,10 +219,10 @@ class _UnorderedMatches extends Matcher {
           Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item));
 
-  /// Returns [true] if the value at [valueIndex] can be paired with some
+  /// Returns `true` if the value at [valueIndex] can be paired with some
   /// unmatched matcher and updates the state of [matched].
   ///
-  /// If there is a conflic where multiple values may match the same matcher
+  /// If there is a conflict where multiple values may match the same matcher
   /// recursively looks for a new place to match the old value. [reserved]
   /// tracks the matchers that have been used _during_ this search.
   bool _findPairing(List<List<int>> edges, int valueIndex, List<int> matched,

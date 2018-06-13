@@ -27,9 +27,9 @@ void shouldPass(value, Matcher matcher) {
   expect(value, matcher);
 }
 
-doesNotThrow() {}
-doesThrow() {
-  throw 'X';
+void doesNotThrow() {}
+void doesThrow() {
+  throw new StateError('X');
 }
 
 class Widget {

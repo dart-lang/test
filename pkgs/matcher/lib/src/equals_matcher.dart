@@ -16,7 +16,7 @@ import 'util.dart';
 /// handle cyclic structures a recursion depth [limit] can be provided. The
 /// default limit is 100. [Set]s will be compared order-independently.
 Matcher equals(expected, [int limit = 100]) => expected is String
-    ? new _StringEqualsMatcher(expected)
+    ? new _StringEqualsMatcher(expected) as Matcher
     : new _DeepMatcher(expected, limit);
 
 typedef _RecursiveMatcher = List<String> Function(
@@ -44,7 +44,7 @@ class _StringEqualsMatcher extends Matcher {
       buff.write('is different.');
       var escapedItem = escape(item);
       var escapedValue = escape(_value);
-      int minLength = escapedItem.length < escapedValue.length
+      var minLength = escapedItem.length < escapedValue.length
           ? escapedItem.length
           : escapedValue.length;
       var start = 0;
@@ -71,7 +71,7 @@ class _StringEqualsMatcher extends Matcher {
         _writeLeading(buff, escapedItem, start);
         _writeTrailing(buff, escapedItem, start);
         buff.write('\n          ');
-        for (int i = (start > 10 ? 14 : start); i > 0; i--) buff.write(' ');
+        for (var i = (start > 10 ? 14 : start); i > 0; i--) buff.write(' ');
         buff.write('^\n Differ at offset $start');
       }
 
@@ -99,7 +99,7 @@ class _StringEqualsMatcher extends Matcher {
 }
 
 class _DeepMatcher extends Matcher {
-  final _expected;
+  final Object _expected;
   final int _limit;
 
   _DeepMatcher(this._expected, [int limit = 1000]) : this._limit = limit;
@@ -136,7 +136,7 @@ class _DeepMatcher extends Matcher {
   List<String> _compareSets(Set expected, Object actual,
       _RecursiveMatcher matcher, int depth, String location) {
     if (actual is Iterable) {
-      Set other = actual.toSet();
+      var other = actual.toSet();
 
       for (var expectedElement in expected) {
         if (other.every((actualElement) =>
@@ -235,8 +235,8 @@ class _DeepMatcher extends Matcher {
     var rp = _recursiveMatch(expected, actual, '', 0);
     if (rp == null) return null;
     String reason;
-    if (rp[0].length > 0) {
-      if (rp[1].length > 0) {
+    if (rp[0].isNotEmpty) {
+      if (rp[1].isNotEmpty) {
         reason = "${rp[0]} at location ${rp[1]}";
       } else {
         reason = rp[0];
@@ -257,12 +257,12 @@ class _DeepMatcher extends Matcher {
 
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
-    var reason = matchState['reason'] ?? '';
+    var reason = matchState['reason'] as String ?? '';
     // If we didn't get a good reason, that would normally be a
     // simple 'is <value>' message. We only add that if the mismatch
     // description is non empty (so we are supplementing the mismatch
     // description).
-    if (reason.length == 0 && mismatchDescription.length > 0) {
+    if (reason.isEmpty && mismatchDescription.length > 0) {
       mismatchDescription.add('is ').addDescriptionOf(item);
     } else {
       mismatchDescription.add(reason);

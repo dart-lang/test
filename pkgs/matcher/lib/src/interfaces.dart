@@ -27,8 +27,6 @@ abstract class Description {
   Description addAll(String start, String separator, String end, Iterable list);
 }
 
-/// [expect] Matchers must implement/extend the Matcher class.
-///
 /// The base Matcher class has a generic implementation of [describeMismatch]
 /// so this does not need to be provided unless a more clear description is
 /// required. The other two methods ([matches] and [describe])
