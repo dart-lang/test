@@ -24,6 +24,7 @@ void main() {
         "Expected: a numeric value within <1> of <0> "
         "Actual: <-1.001> "
         "Which: differs by <1.001>");
+    shouldFail('not a num', closeTo(0, 1), contains('not numeric'));
   });
 
   test('inInclusiveRange', () {
@@ -40,6 +41,7 @@ void main() {
         inInclusiveRange(0, 2),
         "Expected: be in range from 0 (inclusive) to 2 (inclusive) "
         "Actual: <3>");
+    shouldFail('not a num', inInclusiveRange(0, 1), contains('not numeric'));
   });
 
   test('inExclusiveRange', () {
@@ -54,6 +56,7 @@ void main() {
         inExclusiveRange(0, 2),
         "Expected: be in range from 0 (exclusive) to 2 (exclusive) "
         "Actual: <2>");
+    shouldFail('not a num', inExclusiveRange(0, 1), contains('not numeric'));
   });
 
   test('inOpenClosedRange', () {
@@ -64,6 +67,7 @@ void main() {
         "Actual: <0>");
     shouldPass(1, inOpenClosedRange(0, 2));
     shouldPass(2, inOpenClosedRange(0, 2));
+    shouldFail('not a num', inOpenClosedRange(0, 1), contains('not numeric'));
   });
 
   test('inClosedOpenRange', () {
@@ -74,5 +78,6 @@ void main() {
         inClosedOpenRange(0, 2),
         "Expected: be in range from 0 (inclusive) to 2 (exclusive) "
         "Actual: <2>");
+    shouldFail('not a num', inClosedOpenRange(0, 1), contains('not numeric'));
   });
 }

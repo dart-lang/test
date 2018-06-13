@@ -32,11 +32,27 @@ void main() {
   test('isNaN', () {
     shouldPass(double.nan, isNaN);
     shouldFail(3.1, isNaN, "Expected: NaN Actual: <3.1>");
+
+    shouldFail(
+        'not a num',
+        isNaN,
+        anyOf(
+            contains("type 'String' is not a subtype of type 'num'"),
+            // For dart2js - will be fixed in follow-up
+            contains('TypeError')));
   });
 
   test('isNotNaN', () {
     shouldPass(3.1, isNotNaN);
     shouldFail(double.nan, isNotNaN, "Expected: not NaN Actual: <NaN>");
+
+    shouldFail(
+        'not a num',
+        isNotNaN,
+        anyOf(
+            contains("type 'String' is not a subtype of type 'num'"),
+            // For dart2js - will be fixed in follow-up
+            contains('TypeError')));
   });
 
   test('same', () {
@@ -91,6 +107,9 @@ void main() {
         matches(r"Expected: return normally"
             r"  Actual: <Closure.*>"
             r"   Which: threw StateError:<Bad state: X>"));
+
+    shouldFail(
+        'not a function', returnsNormally, contains('NoSuchMethodError'));
   });
 
   test('hasLength', () {

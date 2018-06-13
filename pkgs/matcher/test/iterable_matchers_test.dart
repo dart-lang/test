@@ -55,6 +55,7 @@ void main() {
         "Actual: [1, 2] "
         "Which: has value <2> which doesn't match <1> at index 1");
     shouldPass(e, everyElement(1));
+    shouldFail('not iterable', everyElement(1), contains('not an Iterable'));
   });
 
   test('nested everyElement', () {
@@ -109,6 +110,7 @@ void main() {
     shouldPass(d, anyElement(2));
     shouldFail(
         e, anyElement(2), "Expected: some element <2> Actual: [1, 1, 1]");
+    shouldFail('not an iterable', anyElement(2), contains('not an Iterable'));
   });
 
   test('orderedEquals', () {
@@ -121,6 +123,8 @@ void main() {
         "Expected: equals [2, 1] ordered "
         "Actual: [1, 2] "
         "Which: was <1> instead of <2> at location [0]");
+    shouldFail(
+        'not an iterable', orderedEquals([1]), contains('not an iterable'));
   });
 
   test('unorderedEquals', () {
@@ -151,6 +155,8 @@ void main() {
         "Actual: [1, 2] "
         "Which: has no match for <3> at index 0"
         " along with 1 other unmatched");
+    shouldFail(
+        'not an iterable', unorderedEquals([1]), contains('not an iterable'));
   });
 
   test('unorderedMatches', () {
@@ -197,6 +203,8 @@ void main() {
         "<0>] unordered "
         "Actual: [1, 2] "
         "Which: has no match for a value greater than <3> at index 0");
+    shouldFail('not an iterable', unorderedMatches([greaterThan(1)]),
+        contains('not an iterable'));
   });
 
   test('containsAll', () {
@@ -224,6 +232,8 @@ void main() {
         "<a value greater than <1>>] "
         "Actual: [-1, 2] "
         "Which: has no match for a value greater than <1> at index 1");
+    shouldFail(
+        'not an iterable', containsAll([1, 2, 3]), contains('not an iterable'));
   });
 
   test('containsAllInOrder', () {
@@ -291,6 +301,10 @@ void main() {
         "Expected: pairwise double [1, 4, 9] "
         "Actual: [1, 2, 3] "
         "Which: has <1> which is not double <1> at index 0");
+    shouldFail(
+        'not an iterable',
+        pairwiseCompare(e, (e, a) => a + a == e, "double"),
+        contains('not an Iterable'));
   });
 
   test('isEmpty', () {
