@@ -107,6 +107,8 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
           object == null ||
           defaultToString) {
         return value;
+      } else if (object is Type) {
+        return 'instance of `$object`';
       } else {
         return "${_typeName(object)}:$value";
       }

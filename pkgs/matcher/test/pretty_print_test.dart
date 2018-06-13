@@ -255,6 +255,10 @@ void main() {
       expect(prettyPrint(new _PrivateNameIterable()), equals("?:[1, 2, 3]"));
     });
   });
+
+  test('Type', () {
+    expect(prettyPrint(''.runtimeType), 'instance of `String`');
+  });
 }
 
 final _isDart2 = () {
