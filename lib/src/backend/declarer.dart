@@ -80,11 +80,11 @@ class Declarer {
   /// Whether [build] has been called for this declarer.
   bool _built = false;
 
-  /// Whether any tests and/or groups have been flagged as solo.
-  bool _solo = false;
-
   /// The tests and/or groups that have been flagged as solo.
   final _soloEntries = new Set<GroupEntry>();
+
+  /// Whether any tests and/or groups have been flagged as solo.
+  bool get _solo => _soloEntries.isNotEmpty;
 
   /// The current zone-scoped declarer.
   static Declarer get current => Zone.current[#test.declarer] as Declarer;
@@ -173,7 +173,6 @@ class Declarer {
     }, trace: _collectTraces ? new Trace.current(2) : null, guarded: false));
 
     if (solo) {
-      _solo = true;
       _soloEntries.add(_entries.last);
     }
   }
@@ -212,7 +211,6 @@ class Declarer {
     _entries.add(declarer.build());
 
     if (solo || declarer._solo) {
-      _solo = true;
       _soloEntries.add(_entries.last);
     }
   }
