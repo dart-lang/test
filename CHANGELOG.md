@@ -1,6 +1,8 @@
 ## 0.12.41
 
 * Add support for debugging VM tests.
+* Tweak default reporter and color logic again so that they are always enabled
+  on all non-windows platforms.
 
 ## 0.12.40
 

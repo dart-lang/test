@@ -81,7 +81,8 @@ final _tempDir = Platform.environment.containsKey("_UNITTEST_TEMP_DIR")
 /// Whether or not the current terminal supports ansi escape codes.
 ///
 /// Otherwise only printable ASCII characters should be used.
-bool get canUseSpecialChars => stdout.supportsAnsiEscapes && !inTestTests;
+bool get canUseSpecialChars =>
+    (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() => new Directory(_tempDir)
