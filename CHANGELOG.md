@@ -1,3 +1,29 @@
+## 0.12.42
+
+* Updated exported `package:matcher` to `0.12.3` which includes these updates:
+
+  - Many improvements to `TypeMatcher`
+    - Can now be used directly as `const TypeMatcher<MyType>()`.
+    - Added a type parameter to specify the target `Type`. 
+      - Made the `name` constructor parameter optional and marked it deprecated.
+        It's redundant to the type parameter.
+    - Migrated all `isType` matchers to `TypeMatcher`.
+    - Added a `having` function that allows chained validations of specific
+      features of the target type.
+
+      ```dart
+      /// Validates that the object is a [RangeError] with a message containing
+      /// the string 'details' and `start` and `end` properties that are `null`.
+      final _rangeMatcher = isRangeError
+         .having((e) => e.message, 'message', contains('details'))
+         .having((e) => e.start, 'start', isNull)
+         .having((e) => e.end, 'end', isNull);
+      ```
+
+  - Deprecated the `isInstanceOf` class. Use `TypeMatcher` instead.
+
+  - Improved the output of `Matcher` instances that fail due to type errors.
+
 ## 0.12.41
 
 * Add support for debugging VM tests.
