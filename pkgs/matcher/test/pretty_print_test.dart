@@ -257,7 +257,7 @@ void main() {
   });
 
   test('Type', () {
-    expect(prettyPrint(''.runtimeType), 'instance of `String`');
+    expect(prettyPrint(''.runtimeType), 'Type:<String>');
   });
 }
 
