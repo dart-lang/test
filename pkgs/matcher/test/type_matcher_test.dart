@@ -26,8 +26,10 @@ void main() {
   _test('NullThrownError', isNullThrownError, new NullThrownError());
 
   group('custom `TypeMatcher`', () {
+    // ignore: deprecated_member_use
     _test('String', const isInstanceOf<String>(), 'hello');
     _test('String', const _StringMatcher(), 'hello');
+    _test('String', const TypeMatcher<String>(), 'hello');
   });
 }
 
@@ -41,27 +43,21 @@ void _test(String name, Matcher typeMatcher, Object matchingType) {
     }
 
     test('fails', () {
-      shouldFail(
-          const _TestType(),
-          typeMatcher,
-          anyOf(
-              // Handles the TypeMatcher case
-              equalsIgnoringWhitespace('Expected: $name Actual: ?:<TestType>'),
-              // Handles the `isInstanceOf` case
-              equalsIgnoringWhitespace(
-                  'Expected: an instance of $name Actual: ?:<TestType>')));
+      shouldFail(const TestType(), typeMatcher,
+          "Expected: <Instance of '$name'> Actual: <Instance of 'TestType'>");
     });
   });
 }
 
+// Validate that existing implementations continue to work.
 class _StringMatcher extends TypeMatcher {
-  const _StringMatcher() : super('String');
+  const _StringMatcher() : super(
+            // ignore: deprecated_member_use
+            'String');
 
   bool matches(item, Map matchState) => item is String;
 }
 
-class _TestType {
-  const _TestType();
-
-  String toString() => 'TestType';
+class TestType {
+  const TestType();
 }

@@ -15,4 +15,5 @@ export 'src/numeric_matchers.dart';
 export 'src/operator_matchers.dart';
 export 'src/order_matchers.dart';
 export 'src/string_matchers.dart';
+export 'src/type_matcher.dart';
 export 'src/util.dart';

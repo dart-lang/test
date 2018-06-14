@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'interfaces.dart';
+import 'type_matcher.dart';
 import 'util.dart';
 
 /// Returns a matcher that matches the isEmpty property.
@@ -103,24 +104,14 @@ class _IsAnything extends Matcher {
   Description describe(Description description) => description.add('anything');
 }
 
+/// **DEPRECATED** Use [TypeMatcher] instead.
+///
 /// Returns a matcher that matches if an object is an instance
 /// of [T] (or a subtype).
-///
-/// As types are not first class objects in Dart we can only
-/// approximate this test by using a generic wrapper class.
-///
-/// For example, to test whether 'bar' is an instance of type
-/// 'Foo', we would write:
-///
-///     expect(bar, new isInstanceOf<Foo>());
+@Deprecated('Use `const TypeMatcher<MyType>()` instead.')
 // ignore: camel_case_types
-class isInstanceOf<T> extends Matcher {
+class isInstanceOf<T> extends TypeMatcher<T> {
   const isInstanceOf();
-
-  bool matches(item, Map matchState) => item is T;
-
-  Description describe(Description description) =>
-      description.add('an instance of $T');
 }
 
 /// A matcher that matches a function call against no exception.
@@ -157,48 +148,11 @@ class _ReturnsNormally extends Matcher {
   }
 }
 
-/*
- * Matchers for different exception types. Ideally we should just be able to
- * use something like:
- *
- * final Matcher throwsException =
- *     const _Throws(const isInstanceOf<Exception>());
- *
- * Unfortunately instanceOf is not working with dart2js.
- *
- * Alternatively, if static functions could be used in const expressions,
- * we could use:
- *
- * bool _isException(x) => x is Exception;
- * final Matcher isException = const _Predicate(_isException, "Exception");
- * final Matcher throwsException = const _Throws(isException);
- *
- * But currently using static functions in const expressions is not supported.
- * For now the only solution for all platforms seems to be separate classes
- * for each exception type.
- */
+/// A matcher for [Map].
+const isMap = const TypeMatcher<Map>();
 
-abstract class TypeMatcher extends Matcher {
-  final String _name;
-  const TypeMatcher(this._name);
-  Description describe(Description description) => description.add(_name);
-}
-
-/// A matcher for Map types.
-const Matcher isMap = const _IsMap();
-
-class _IsMap extends TypeMatcher {
-  const _IsMap() : super("Map");
-  bool matches(item, Map matchState) => item is Map;
-}
-
-/// A matcher for List types.
-const Matcher isList = const _IsList();
-
-class _IsList extends TypeMatcher {
-  const _IsList() : super('List');
-  bool matches(item, Map matchState) => item is List;
-}
+/// A matcher for [List].
+const isList = const TypeMatcher<List>();
 
 /// Returns a matcher that matches if an object has a length property
 /// that matches [matcher].

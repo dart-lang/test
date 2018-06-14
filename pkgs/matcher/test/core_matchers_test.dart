@@ -228,12 +228,6 @@ void main() {
     shouldFail(actual3, equals(expected3), reason3);
   });
 
-  test('isInstanceOf', () {
-    shouldFail(0, const isInstanceOf<String>(),
-        "Expected: an instance of String Actual: <0>");
-    shouldPass('cow', const isInstanceOf<String>());
-  });
-
   group('Predicate Matchers', () {
     test('isInstanceOf', () {
       shouldFail(0, predicate((x) => x is String, "an instance of String"),
