@@ -146,7 +146,7 @@ void test(description, body(),
     tags,
     Map<String, dynamic> onPlatform,
     int retry,
-    bool solo = false}) {
+    @deprecated bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
@@ -224,7 +224,7 @@ void group(description, body(),
     tags,
     Map<String, dynamic> onPlatform,
     int retry,
-    bool solo = false}) {
+    @deprecated bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
       timeout: timeout,

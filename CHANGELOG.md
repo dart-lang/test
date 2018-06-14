@@ -1,6 +1,8 @@
 ## 0.12.42
 
-* Add support for `solo` test and group.
+* Add support for `solo` test and group. When the argument is `true` only tests
+  and groups marked as solo will be run. It is still recommended that users
+  instead filter their tests by using the runner argument `-n`.
 
 ## 0.12.41
 
