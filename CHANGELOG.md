@@ -1,3 +1,7 @@
+## 0.12.42
+
+* Add support for `solo` test and group.
+
 ## 0.12.41
 
 * Add support for debugging VM tests.

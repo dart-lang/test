@@ -132,6 +132,12 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
+///
+/// If the [solo] flag is `true`, only tests and groups marked as
+/// "solo" will be be run. This only restricts tests *within this test
+/// suite*—tests in other suites will run as normal. We recommend that users
+/// avoid this flag if possible and instead use the test runner flag `-n` to
+/// filter tests by name.
 @isTest
 void test(description, body(),
     {String testOn,
@@ -139,14 +145,16 @@ void test(description, body(),
     skip,
     tags,
     Map<String, dynamic> onPlatform,
-    int retry}) {
+    int retry,
+    bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
       skip: skip,
       onPlatform: onPlatform,
       tags: tags,
-      retry: retry);
+      retry: retry,
+      solo: solo);
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and
@@ -202,6 +210,12 @@ void test(description, body(),
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
+///
+/// If the [solo] flag is `true`, only tests and groups marked as
+/// "solo" will be be run. This only restricts tests *within this test
+/// suite*—tests in other suites will run as normal. We recommend that users
+/// avoid this flag if possible, and instead use the test runner flag `-n` to
+/// filter tests by name.
 @isTestGroup
 void group(description, body(),
     {String testOn,
@@ -209,14 +223,16 @@ void group(description, body(),
     skip,
     tags,
     Map<String, dynamic> onPlatform,
-    int retry}) {
+    int retry,
+    bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
       skip: skip,
       tags: tags,
       onPlatform: onPlatform,
-      retry: retry);
+      retry: retry,
+      solo: solo);
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and

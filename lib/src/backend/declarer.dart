@@ -80,6 +80,12 @@ class Declarer {
   /// Whether [build] has been called for this declarer.
   bool _built = false;
 
+  /// Whether any tests and/or groups have been flagged as solo.
+  bool _solo = false;
+
+  /// The tests and/or groups that have been flagged as solo.
+  final _soloEntries = new Set<GroupEntry>();
+
   /// The current zone-scoped declarer.
   static Declarer get current => Zone.current[#test.declarer] as Declarer;
 
@@ -127,7 +133,8 @@ class Declarer {
       skip,
       Map<String, dynamic> onPlatform,
       tags,
-      int retry}) {
+      int retry,
+      bool solo = false}) {
     _checkNotBuilt("test");
 
     var newMetadata = new Metadata.parse(
@@ -164,6 +171,11 @@ class Declarer {
           // useful errors when calling `test()` and `group()` within a test.
           zoneValues: {#test.declarer: this});
     }, trace: _collectTraces ? new Trace.current(2) : null, guarded: false));
+
+    if (solo) {
+      _solo = true;
+      _soloEntries.add(_entries.last);
+    }
   }
 
   /// Creates a group of tests.
@@ -173,7 +185,8 @@ class Declarer {
       skip,
       Map<String, dynamic> onPlatform,
       tags,
-      int retry}) {
+      int retry,
+      bool solo = false}) {
     _checkNotBuilt("group");
 
     var newMetadata = new Metadata.parse(
@@ -197,6 +210,11 @@ class Declarer {
       throw new ArgumentError("Groups may not be async.");
     });
     _entries.add(declarer.build());
+
+    if (solo || declarer._solo) {
+      _solo = true;
+      _soloEntries.add(_entries.last);
+    }
   }
 
   /// Returns [name] prefixed with this declarer's group name.
@@ -240,7 +258,10 @@ class Declarer {
     _checkNotBuilt("build");
 
     _built = true;
-    return new Group(_name, _entries.toList(),
+    var entries = _entries.toList();
+    if (_solo) entries.removeWhere((entry) => !_soloEntries.contains(entry));
+
+    return new Group(_name, entries,
         metadata: _metadata,
         trace: _trace,
         setUpAll: _setUpAll,
