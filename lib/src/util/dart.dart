@@ -29,7 +29,6 @@ Future<Isolate> runInIsolate(String code, message,
           mimeType: 'application/dart', encoding: utf8),
       [],
       message,
-      packageRoot: await resolver.packageRoot,
       packageConfig: await resolver.packageConfigUri,
       checked: checked,
       onExit: onExit);
