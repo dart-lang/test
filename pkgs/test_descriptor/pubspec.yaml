@@ -1,5 +1,5 @@
 name: test_descriptor
-version: 1.0.3
+version: 1.0.4
 description: An API for defining and verifying directory structures.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/test_descriptor
@@ -13,5 +13,5 @@ dependencies:
   matcher: '^0.12.0'
   path: '^1.0.0'
   stack_trace: '^1.0.0'
-  test: '^0.12.19'
+  test: '>=0.12.19 <2.0.0'
   term_glyph: '^1.0.0'
