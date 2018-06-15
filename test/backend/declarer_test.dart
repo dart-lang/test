@@ -313,7 +313,7 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.name, equals("group"));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single, new TypeMatcher<Test>());
       expect(testGroup.entries.single.name, "group description");
     });
 
@@ -328,7 +328,7 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.name, equals("Object"));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single, new TypeMatcher<Test>());
       expect(testGroup.entries.single.name, "Object description");
     });
 
@@ -343,7 +343,7 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.metadata.timeout.scaleFactor, equals(2));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single, new TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.scaleFactor, equals(6));
     });
 
@@ -359,7 +359,7 @@ void main() {
       expect(testGroup.metadata.timeout.duration,
           equals(new Duration(seconds: 10)));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single, new TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.duration,
           equals(new Duration(seconds: 20)));
     });
@@ -376,7 +376,7 @@ void main() {
       expect(testGroup.metadata.timeout.duration,
           equals(new Duration(seconds: 10)));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new isInstanceOf<Test>());
+      expect(testGroup.entries.single, new TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.duration,
           equals(new Duration(seconds: 15)));
     });

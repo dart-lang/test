@@ -438,7 +438,7 @@ void main() {
         expectErrors(liveTest, [
           (error) {
             expect(lastState.status, equals(Status.complete));
-            expect(error, new isInstanceOf<TimeoutException>());
+            expect(error, new TypeMatcher<TimeoutException>());
           }
         ]);
 
@@ -464,7 +464,7 @@ void main() {
         expectErrors(liveTest, [
           (error) {
             expect(lastState.status, equals(Status.complete));
-            expect(error, new isInstanceOf<TimeoutException>());
+            expect(error, new TypeMatcher<TimeoutException>());
           }
         ]);
 
@@ -488,7 +488,7 @@ void main() {
         expectErrors(liveTest, [
           (error) {
             expect(lastState.status, equals(Status.complete));
-            expect(error, new isInstanceOf<TimeoutException>());
+            expect(error, new TypeMatcher<TimeoutException>());
           }
         ]);
 

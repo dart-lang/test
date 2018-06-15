@@ -124,8 +124,8 @@ Future _expect(actual, matcher,
         result,
         anyOf([
           equals(null),
-          new isInstanceOf<Future>(),
-          new isInstanceOf<String>()
+          new TypeMatcher<Future>(),
+          new TypeMatcher<String>()
         ]),
         reason: "matchAsync() may only return a String, a Future, or null.");
 
