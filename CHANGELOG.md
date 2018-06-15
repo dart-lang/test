@@ -1,3 +1,8 @@
+## 1.0.0
+
+* No change from `0.12.42`. We are simply signalling to users that this is a
+  well supported package and is the prefered way to write Dart tests.
+
 ## 0.12.42
 
 * Add support for `solo` test and group. When the argument is `true` only tests
