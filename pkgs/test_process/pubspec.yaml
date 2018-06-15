@@ -11,7 +11,7 @@ dependencies:
   async: ">=1.12.0 <3.0.0"
   meta: ">=0.9.0 <2.0.0"
   path: "^1.0.0"
-  test: "^0.12.19"
+  test: ">=0.12.19 <2.0.0"
 
 dev_dependencies:
   test_descriptor: "^1.0.0"
