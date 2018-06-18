@@ -173,10 +173,6 @@ class Loader {
         return new Stream.fromIterable([]);
       }
 
-      if (p.split(entry.path).contains('packages')) {
-        return new Stream.fromIterable([]);
-      }
-
       return loadFile(entry.path, suiteConfig);
     }));
   }
