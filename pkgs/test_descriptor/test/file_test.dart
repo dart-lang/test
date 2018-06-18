@@ -154,4 +154,8 @@ void main() {
           throwsUnsupportedError);
     });
   });
+
+  test("io refers to the file within the sandbox", () {
+    expect(d.file('name.txt').io.path, equals(p.join(d.sandbox, 'name.txt')));
+  });
 }

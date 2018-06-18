@@ -27,6 +27,10 @@ class DirectoryDescriptor extends Descriptor {
   /// This may be modified.
   final List<Descriptor> contents;
 
+  /// Returns a `dart:io` [Directory] object that refers to this file within
+  /// [sandbox].
+  Directory get io => new Directory(p.join(sandbox, name));
+
   DirectoryDescriptor(String name, Iterable<Descriptor> contents)
       : contents = contents.toList(),
         super(name);

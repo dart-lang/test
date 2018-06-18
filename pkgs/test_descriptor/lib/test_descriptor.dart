@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'src/descriptor.dart';
@@ -9,6 +10,7 @@ import 'src/directory_descriptor.dart';
 import 'src/file_descriptor.dart';
 import 'src/nothing_descriptor.dart';
 import 'src/pattern_descriptor.dart';
+import 'src/sandbox.dart';
 
 export 'src/descriptor.dart';
 export 'src/directory_descriptor.dart';
@@ -70,3 +72,6 @@ PatternDescriptor filePattern(Pattern name, [contents]) =>
 /// constructs a [DirectoryDescriptor] descriptor.
 PatternDescriptor dirPattern(Pattern name, [Iterable<Descriptor> contents]) =>
     pattern(name, (realName) => dir(realName, contents));
+
+/// Returns [path] within the [sandbox] directory.
+String path(String path) => p.join(sandbox, path);

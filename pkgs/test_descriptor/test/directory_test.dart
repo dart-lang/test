@@ -300,4 +300,8 @@ void main() {
       ]).validate();
     });
   });
+
+  test("io refers to the directory within the sandbox", () {
+    expect(d.file('dir').io.path, equals(p.join(d.sandbox, 'dir')));
+  });
 }

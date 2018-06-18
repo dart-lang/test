@@ -44,6 +44,10 @@ abstract class FileDescriptor extends Descriptor {
     return new _MatcherFileDescriptor(name, contents);
   }
 
+  /// Returns a `dart:io` [File] object that refers to this file within
+  /// [sandbox].
+  File get io => new File(p.join(sandbox, name));
+
   /// Creates a new binary [FileDescriptor] with [name] that matches its binary
   /// contents against [matcher].
   ///
