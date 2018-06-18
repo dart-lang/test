@@ -1,3 +1,7 @@
+## 1.0.1
+
+* No longer ignore test files found in a `packages` directory.
+
 ## 1.0.0
 
 * No change from `0.12.42`. We are simply signalling to users that this is a
