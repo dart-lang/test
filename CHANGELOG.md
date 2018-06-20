@@ -1,4 +1,4 @@
-## 1.0.1
+## 1.1.0
 
 * Added a new `pid` field to the StartEvent in the json runner containing the
   pid of the VM process running the tests.
