@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show pid;
 
 import 'package:path/path.dart' as p;
 
@@ -72,7 +73,8 @@ class JsonReporter implements Reporter {
       _emit("allSuites", {"count": _engine.addedSuites.length});
     }));
 
-    _emit("start", {"protocolVersion": "0.1.0", "runnerVersion": testVersion});
+    _emit("start",
+        {"protocolVersion": "0.1.1", "runnerVersion": testVersion, "pid": pid});
   }
 
   void pause() {
