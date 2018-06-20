@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Added a new `pid` field to the StartEvent in the json runner containing the
+  pid of the VM process running the tests.
+
 ## 1.0.0
 
 * No change from `0.12.42`. We are simply signalling to users that this is a
