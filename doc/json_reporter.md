@@ -95,6 +95,9 @@ class StartEvent extends Event {
 
   // The version of the test runner being used.
   String runnerVersion;
+
+  // The pid of the VM process running the tests.
+  int pid;
 }
 ```
 

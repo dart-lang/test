@@ -1,5 +1,5 @@
 name: test
-version: 1.0.0 
+version: 1.1.0
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test

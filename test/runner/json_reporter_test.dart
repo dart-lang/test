@@ -16,13 +16,6 @@ import 'package:test/test.dart';
 
 import '../io.dart';
 
-/// The first event emitted by the JSON reporter.
-final _start = {
-  "type": "start",
-  "protocolVersion": "0.1.0",
-  "runnerVersion": testVersion
-};
-
 void main() {
   test("runs several successful tests and reports when each completes", () {
     return _expectReport("""
@@ -619,6 +612,12 @@ import 'package:test/test.dart';
   expect(stdoutLines.map(decodeLine), containsAll([_allSuites()]));
 
   // A single start event is emitted first.
+  final _start = {
+    "type": "start",
+    "protocolVersion": "0.1.1",
+    "runnerVersion": testVersion,
+    "pid": test.pid
+  };
   expect(decodeLine(stdoutLines.first), equals(_start));
 
   // A single done event is emmited last.

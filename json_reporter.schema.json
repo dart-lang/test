@@ -98,6 +98,7 @@
       "required": ["protocolVersion", "runnerVersion"],
       "properties": {
         "type": {"enum": ["start"]},
+        "pid": {"type": "integer", "minimum": 0},
         "protocolVersion": {"type": "string", "pattern": "^0\\.1\\."},
         "runnerVersion": {
           "oneOf": [{"type": "string"}, {"type": "null"}]
