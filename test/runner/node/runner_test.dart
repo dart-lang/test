@@ -68,7 +68,7 @@ void main() {
             'Failed to load "test.dart": No top-level main() function defined.'
           ]));
       await test.shouldExit(1);
-    });
+    }, skip: 'https://github.com/dart-lang/test/issues/894');
 
     test("a test file has a non-function main", () async {
       await d.file("test.dart", "int main;").create();
@@ -81,7 +81,7 @@ void main() {
             'Failed to load "test.dart": Top-level main getter is not a function.'
           ]));
       await test.shouldExit(1);
-    });
+    }, skip: 'https://github.com/dart-lang/test/issues/894');
 
     test("a test file has a main with arguments", () async {
       await d.file("test.dart", "void main(arg) {}").create();
