@@ -130,8 +130,13 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
 
 Future<Isolate> _spawnPrecompiledIsolate(
     String testPath, SendPort message, String precompiledPath) async {
-  testPath = p.join(precompiledPath, testPath) + '.vm_test.dart';
-  return await Isolate.spawnUri(p.toUri(p.absolute(testPath)), [], message,
+  testPath = p.absolute(p.join(precompiledPath, testPath) + '.vm_test.dart');
+  var dillTestpath =
+      testPath.substring(0, testPath.length - '.dart'.length) + '.vm.app.dill';
+  if (await new File(dillTestpath).exists()) {
+    testPath = dillTestpath;
+  }
+  return await Isolate.spawnUri(p.toUri(testPath), [], message,
       packageConfig: p.toUri(p.join(precompiledPath, '.packages')),
       checked: true);
 }
