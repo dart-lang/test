@@ -165,8 +165,8 @@ class Loader {
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
-    return StreamGroup
-        .merge(new Directory(dir).listSync(recursive: true).map((entry) {
+    return StreamGroup.merge(
+        new Directory(dir).listSync(recursive: true).map((entry) {
       if (entry is! File) return new Stream.fromIterable([]);
 
       if (!_config.filename.matches(p.basename(entry.path))) {

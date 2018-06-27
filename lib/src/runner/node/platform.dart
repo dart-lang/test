@@ -197,8 +197,8 @@ class NodePlatform extends PlatformPlugin
     var jsPath = p.join(precompiledPath, '$testPath.node_test.dart.js');
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
-      var resolver = await SyncPackageResolver
-          .loadConfig(p.toUri(p.join(precompiledPath, '.packages')));
+      var resolver = await SyncPackageResolver.loadConfig(
+          p.toUri(p.join(precompiledPath, '.packages')));
       mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           packageResolver: resolver,
