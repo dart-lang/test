@@ -64,7 +64,7 @@ class CompilerPool {
         if (Platform.isWindows) dart2jsPath += '.bat';
 
         var args = [
-          "--checked",
+          "--enable-asserts",
           wrapperPath,
           "--out=$jsPath",
           await PackageResolver.current.processArgument
