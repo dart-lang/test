@@ -115,7 +115,7 @@ void main() {
   }, tags: const ["node"]);
 
   group("vm tests", () {
-    test("run in the precompiled directory", () async {
+    setUp(() async {
       await d.dir('test', [
         d.file("test.dart", """
           import "package:test/test.dart";
@@ -135,12 +135,39 @@ void main() {
         """),
       ]).create();
       await _writePackagesFile();
+    });
 
+    test("run in the precompiled directory", () async {
       var test = await runTest(
           ["-p", "vm", '--precompiled=${d.sandbox}', 'test/test.dart']);
       expect(test.stdout,
           containsInOrder(["+0: true is true", "+1: All tests passed!"]));
       await test.shouldExit(0);
+    });
+
+    test("can load precompiled dill files if available", () async {
+      // Create the snapshot in the sandbox directory.
+      var snapshotProcess = await runDart([
+        '--snapshot_kind=script',
+        '--snapshot=test/test.dart.vm_test.vm.app.dill',
+        'test/test.dart.vm_test.dart'
+      ]);
+      await snapshotProcess.shouldExit(0);
+
+      // Modify the original test so it would fail if it actually got ran, this
+      // makes sure the test fails if the dill file isn't loaded.
+      var testFile = new File(p.join(d.sandbox, 'test', 'test.dart'));
+      expect(await testFile.exists(), isTrue);
+      var originalContent = await testFile.readAsString();
+      await testFile
+          .writeAsString(originalContent.replaceAll('isTrue', 'isFalse'));
+
+      // Actually invoke the test with the dill file.
+      var testProcess = await runTest(
+          ["-p", "vm", '--precompiled=${d.sandbox}', 'test/test.dart']);
+      expect(testProcess.stdout,
+          containsInOrder(["+0: true is true", "+1: All tests passed!"]));
+      await testProcess.shouldExit(0);
     });
   });
 }
