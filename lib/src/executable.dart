@@ -30,8 +30,8 @@ import 'utils.dart';
 /// terminates the program immediately.
 final _signals = Platform.isWindows
     ? ProcessSignal.sigint.watch()
-    : StreamGroup
-        .merge([ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+    : StreamGroup.merge(
+        [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
 /// Returns whether the current package has a pubspec which uses the
 /// `test/pub_serve` transformer.
