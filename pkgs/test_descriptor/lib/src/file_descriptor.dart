@@ -85,7 +85,7 @@ abstract class FileDescriptor extends Descriptor {
   ///
   /// The [prettyPath] is a human-friendly representation of the path to the
   /// descriptor.
-  void _validate(String prettyPath, List<int> binaryContents);
+  Future _validate(String prettyPath, List<int> binaryContents);
 
   /// Reads and decodes the contents of this descriptor as a UTF-8 string.
   ///
@@ -184,7 +184,7 @@ class _MatcherFileDescriptor extends FileDescriptor {
   Stream<List<int>> readAsBytes() =>
       throw new UnsupportedError("Matcher files can't be created or read.");
 
-  void _validate(String prettyPath, List<int> actualContents) {
+  Future _validate(String prettyPath, List<int> actualContents) async {
     try {
       expect(
           _isBinary ? actualContents : utf8.decode(actualContents), _matcher);
