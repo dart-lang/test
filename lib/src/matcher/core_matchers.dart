@@ -74,13 +74,13 @@ const Matcher isNotNaN = const _IsNotNaN();
 
 class _IsNaN extends Matcher {
   const _IsNaN();
-  bool matches(item, Map matchState) => double.NAN.compareTo(item) == 0;
+  bool matches(item, Map matchState) => double.nan.compareTo(item) == 0;
   Description describe(Description description) => description.add('NaN');
 }
 
 class _IsNotNaN extends Matcher {
   const _IsNotNaN();
-  bool matches(item, Map matchState) => double.NAN.compareTo(item) != 0;
+  bool matches(item, Map matchState) => double.nan.compareTo(item) != 0;
   Description describe(Description description) => description.add('not NaN');
 }
 

@@ -1,3 +1,9 @@
+##0.11.8
+
+* Make this branch Dart 2 compatible by using new constant names.
+  The code is no longer Dart 1 compatible, so this version should only be used
+  to run tests that have not yet been converted to using the `test` package.
+
 ##0.11.7
 
 * Add separate methods for `expectAysnc` based on number of callback arguments 
