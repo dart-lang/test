@@ -1,3 +1,9 @@
+## 1.2.1
+
+* When using `--precompiled`, the test runner now allows symlinks to reach
+  outside the precompiled directory. This allows more efficient creation of
+  precompiled directories (using symlinks instead of copies).
+
 ## 1.2.0
 
 * Added support for using precompiled kernel files when running vm tests.
