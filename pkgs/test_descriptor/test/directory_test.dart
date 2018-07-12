@@ -136,7 +136,7 @@ void main() {
     test("loads a file", () {
       var dir = d.dir('dir',
           [d.file('name.txt', 'contents'), d.file('other.txt', 'wrong')]);
-      expect(UTF8.decodeStream(dir.load('name.txt')),
+      expect(utf8.decodeStream(dir.load('name.txt')),
           completion(equals('contents')));
     });
 
@@ -148,7 +148,7 @@ void main() {
         d.file('name.txt', 'contents')
       ]);
 
-      expect(UTF8.decodeStream(dir.load('subdir/name.txt')),
+      expect(utf8.decodeStream(dir.load('subdir/name.txt')),
           completion(equals('subcontents')));
     });
 
@@ -206,7 +206,7 @@ void main() {
       ]);
 
       expect(
-          UTF8.decodeStream(dir.load('name')), completion(equals('contents')));
+          utf8.decodeStream(dir.load('name')), completion(equals('contents')));
     });
   });
 

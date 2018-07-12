@@ -4,16 +4,12 @@
 
 @TestOn('vm')
 
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'utils.dart';
 
 void main() {
   test("accessing the getter creates the directory", () {

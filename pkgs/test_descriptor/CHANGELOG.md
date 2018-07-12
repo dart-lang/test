@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Update to lowercase Dart core library constants.
+
 ## 1.1.0
 
 * Add a `path()` function that returns the a path within the sandbox directory.
