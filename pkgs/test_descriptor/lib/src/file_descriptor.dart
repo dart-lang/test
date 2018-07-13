@@ -38,7 +38,7 @@ abstract class FileDescriptor extends Descriptor {
   factory FileDescriptor(String name, contents) {
     if (contents is String) return new _StringFileDescriptor(name, contents);
     if (contents is List) {
-      return new _BinaryFileDescriptor(name, DelegatingList.typed(contents));
+      return new _BinaryFileDescriptor(name, contents.cast<int>());
     }
     if (contents == null) return new _BinaryFileDescriptor(name, []);
     return new _MatcherFileDescriptor(name, contents);

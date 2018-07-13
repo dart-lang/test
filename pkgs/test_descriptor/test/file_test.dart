@@ -139,7 +139,7 @@ void main() {
 
     test("readAsBytes() returns the contents of a text file as a byte stream",
         () {
-      expect(UTF8.decodeStream(d.file('name.txt', 'contents').readAsBytes()),
+      expect(utf8.decodeStream(d.file('name.txt', 'contents').readAsBytes()),
           completion(equals('contents')));
     });
 
