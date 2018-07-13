@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Update to lowercase Dart core library constants.
+* Fix use of deprecated `isInstanceOf` matcher.
+
 ## 1.0.0
 
 This release contains the `FakeAsync` class that was defined in [`quiver`][].
