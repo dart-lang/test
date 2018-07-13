@@ -186,7 +186,7 @@ main() {
       test('should call microtasks before advancing time', () {
         new FakeAsync().run((async) {
           scheduleMicrotask(expectAsync0(() {
-            expect(async.elapsed, Duration.ZERO);
+            expect(async.elapsed, Duration.zero);
           }));
           async.elapse(new Duration(minutes: 1));
         });
@@ -196,7 +196,7 @@ main() {
         new FakeAsync().run((async) {
           var controller = new StreamController();
           expect(controller.stream.first.then((_) {
-            expect(async.elapsed, Duration.ZERO);
+            expect(async.elapsed, Duration.zero);
           }), completes);
           controller.add(null);
           async.elapse(new Duration(minutes: 1));
@@ -207,7 +207,7 @@ main() {
         new FakeAsync().run((async) {
           var negativeDuration = new Duration(days: -1);
           new Timer(negativeDuration, expectAsync0(() {
-            expect(async.elapsed, Duration.ZERO);
+            expect(async.elapsed, Duration.zero);
           }));
           async.elapse(new Duration(minutes: 1));
         });
@@ -215,7 +215,7 @@ main() {
 
       test('should not be additive with elapseBlocking', () {
         new FakeAsync().run((async) {
-          new Timer(Duration.ZERO, () => async.elapseBlocking(elapseBy * 5));
+          new Timer(Duration.zero, () => async.elapseBlocking(elapseBy * 5));
           async.elapse(elapseBy);
           expect(async.elapsed, elapseBy * 5);
         });
@@ -250,7 +250,7 @@ main() {
       test('should work with new Future()', () {
         new FakeAsync().run((async) {
           new Future(expectAsync0(() {}));
-          async.elapse(Duration.ZERO);
+          async.elapse(Duration.zero);
         });
       });
 
@@ -265,7 +265,7 @@ main() {
         new FakeAsync().run((async) {
           var completer = new Completer();
           expect(completer.future.timeout(elapseBy ~/ 2),
-              throwsA(new isInstanceOf<TimeoutException>()));
+              throwsA(new TypeMatcher<TimeoutException>()));
           async.elapse(elapseBy);
           completer.complete();
         });
@@ -298,7 +298,7 @@ main() {
 
           async.elapse(new Duration(minutes: 1));
           expect(errors, hasLength(1));
-          expect(errors.first, new isInstanceOf<TimeoutException>());
+          expect(errors.first, new TypeMatcher<TimeoutException>());
         });
       });
     });

@@ -55,7 +55,7 @@ class FakeAsync {
   /// The amount of fake time that's elapsed since this [FakeAsync] was
   /// created.
   Duration get elapsed => _elapsed;
-  var _elapsed = Duration.ZERO;
+  var _elapsed = Duration.zero;
 
   /// The fake time at which the current call to [elapse] will finish running.
   ///
@@ -280,7 +280,7 @@ class _FakeTimer implements Timer {
   }
 
   _FakeTimer(Duration duration, this._callback, this._isPeriodic, this._async)
-      : _duration = duration < Duration.ZERO ? Duration.ZERO : duration {
+      : _duration = duration < Duration.zero ? Duration.zero : duration {
     _nextCall = _async._elapsed + _duration;
   }
 
