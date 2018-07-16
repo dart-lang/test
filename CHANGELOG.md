@@ -1,4 +1,4 @@
-## 1.2.1
+## 1.3.0
 
 * When using `--precompiled`, the test runner now allows symlinks to reach
   outside the precompiled directory. This allows more efficient creation of
