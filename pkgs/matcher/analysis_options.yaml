@@ -1,5 +1,4 @@
 analyzer:
-  strong-mode: true
   errors:
     dead_code: error
     override_on_non_overriding_method: error
