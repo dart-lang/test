@@ -30,7 +30,12 @@ class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
 
-  VMPlatform();
+  /// A function that returns a [PackageResovler] that is used in spawning
+  /// isolates based on the current test path.
+  final PackageResolver Function(String path) _packageResolver;
+
+  VMPlatform({PackageResolver Function(String path) packageResolver})
+      : _packageResolver = packageResolver ?? ((_) => PackageResolver.current);
 
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw new UnimplementedError();
@@ -103,14 +108,9 @@ class VMPlatform extends PlatformPlugin {
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeIsolate(path, message, _config.pubServeUrl);
     } else {
-      return _spawnDataIsolate(path, message,
-          resolver: resolverForDataIsolate(path));
+      return _spawnDataIsolate(path, message, _packageResolver(path));
     }
   }
-
-  /// What [PackageResolver] should be used for data isolate by given a [path].
-  PackageResolver resolverForDataIsolate(String path) =>
-      PackageResolver.current;
 }
 
 Future<Isolate> _spawnDataIsolate(String path, SendPort message,
