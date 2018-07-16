@@ -3,6 +3,7 @@
 * When using `--precompiled`, the test runner now allows symlinks to reach
   outside the precompiled directory. This allows more efficient creation of
   precompiled directories (using symlinks instead of copies).
+* Updated max sdk range to `<3.0.0`.
 
 ## 1.2.0
 
