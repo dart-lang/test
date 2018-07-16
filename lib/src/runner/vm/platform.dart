@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
@@ -102,12 +103,18 @@ class VMPlatform extends PlatformPlugin {
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeIsolate(path, message, _config.pubServeUrl);
     } else {
-      return _spawnDataIsolate(path, message);
+      return _spawnDataIsolate(path, message,
+          resolver: resolverForDataIsolate(path));
     }
   }
+
+  /// What [PackageResolver] should be used for data isolate by given a [path].
+  PackageResolver resolverForDataIsolate(String path) =>
+      PackageResolver.current;
 }
 
-Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
+Future<Isolate> _spawnDataIsolate(String path, SendPort message,
+    {PackageResolver resolver}) async {
   return await dart.runInIsolate('''
     import "dart:isolate";
 
@@ -125,7 +132,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
       });
       new IsolateChannel.connectSend(message).pipe(channel);
     }
-  ''', message, checked: true);
+  ''', message, resolver: resolver, checked: true);
 }
 
 Future<Isolate> _spawnPrecompiledIsolate(
