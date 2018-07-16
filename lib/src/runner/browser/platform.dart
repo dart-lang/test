@@ -136,7 +136,10 @@ class BrowserPlatform extends PlatformPlugin
           .add(packagesDirHandler())
           .add(_jsHandler.handler)
           .add(createStaticHandler(
-              config.suiteDefaults.precompiledPath ?? _root))
+              config.suiteDefaults.precompiledPath ?? _root,
+              // Precompiled directories often contain symlinks
+              serveFilesOutsidePath:
+                  config.suiteDefaults.precompiledPath != null))
           .add(_wrapperHandler);
     }
 
