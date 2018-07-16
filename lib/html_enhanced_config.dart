@@ -248,11 +248,11 @@ class HtmlEnhancedConfiguration extends SimpleConfiguration {
     }
 
     addRowElement('${test_.id}', '${test_.result.toUpperCase()}',
-        '${test_.description}. ${HTML_ESCAPE.convert(test_.message)}');
+        '${test_.description}. ${htmlEscape.convert(test_.message)}');
 
     if (test_.stackTrace != null) {
       addRowElement('', '',
-          '<pre>${HTML_ESCAPE.convert(test_.stackTrace.toString())}</pre>');
+          '<pre>${htmlEscape.convert(test_.stackTrace.toString())}</pre>');
     }
   }
 

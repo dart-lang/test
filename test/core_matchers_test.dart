@@ -33,13 +33,13 @@ void main() {
   });
 
   test('isNaN', () {
-    shouldPass(double.NAN, isNaN);
+    shouldPass(double.nan, isNaN);
     shouldFail(3.1, isNaN, "Expected: NaN Actual: <3.1>");
   });
 
   test('isNotNaN', () {
     shouldPass(3.1, isNotNaN);
-    shouldFail(double.NAN, isNotNaN, "Expected: not NaN Actual: <NaN>");
+    shouldFail(double.nan, isNotNaN, "Expected: not NaN Actual: <NaN>");
   });
 
   test('same', () {

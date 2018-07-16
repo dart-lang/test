@@ -84,13 +84,13 @@ String _toHtml(TestCase testCase) {
               ${testCase.description}
             </a>.
           </p>
-          <pre>${HTML_ESCAPE.convert(testCase.message)}</pre>
+          <pre>${htmlEscape.convert(testCase.message)}</pre>
         </td>
       </tr>''';
 
   if (testCase.stackTrace != null) {
     html = '$html<tr><td></td><td colspan="2"><pre>' +
-        HTML_ESCAPE.convert(testCase.stackTrace.toString()) +
+        htmlEscape.convert(testCase.stackTrace.toString()) +
         '</pre></td></tr>';
   }
 
