@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 1.0.3
 
 * Support test `1.x.x`.

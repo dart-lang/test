@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
-final throwsTestFailure = throwsA(new isInstanceOf<TestFailure>());
+final throwsTestFailure = throwsA(new TypeMatcher<TestFailure>());
 
 void main() {
   group("shouldExit()", () {
