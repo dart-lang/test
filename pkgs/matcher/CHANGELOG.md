@@ -1,3 +1,7 @@
+## 0.12.4
+
+- Add isCastError.
+
 ## 0.12.3+1
 
 - Set max SDK version to <3.0.0, and adjusted other dependencies.

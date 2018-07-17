@@ -11,6 +11,7 @@ void main() {
   _test('Map', isMap, {});
   _test('List', isList, []);
   _test('ArgumentError', isArgumentError, new ArgumentError());
+  _test('CastError', isCastError, new CastError());
   _test('Exception', isException, const FormatException());
   _test('FormatException', isFormatException, const FormatException());
   _test('StateError', isStateError, new StateError('oops'));
