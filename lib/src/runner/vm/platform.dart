@@ -30,7 +30,7 @@ class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
 
-  /// A function that returns a [PackageResovler] that is used in spawning
+  /// A function that returns a [PackageResolver] that is used in spawning
   /// isolates based on the current test path.
   final PackageResolver Function(String path) _packageResolver;
 
@@ -114,7 +114,7 @@ class VMPlatform extends PlatformPlugin {
 }
 
 Future<Isolate> _spawnDataIsolate(String path, SendPort message,
-    {PackageResolver resolver}) async {
+    PackageResolver resolver) async {
   return await dart.runInIsolate('''
     import "dart:isolate";
 
