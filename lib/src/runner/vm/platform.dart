@@ -31,7 +31,7 @@ class VMPlatform extends PlatformPlugin {
   final _config = Configuration.current;
 
   /// A function that returns a [PackageResolver] that is used in spawning
-  /// isolates based on the current test path.
+  /// isolates based on the current test suite path.
   final PackageResolver Function(String path) _packageResolver;
 
   VMPlatform({PackageResolver Function(String path) packageResolver})
