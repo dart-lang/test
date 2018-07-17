@@ -113,8 +113,8 @@ class VMPlatform extends PlatformPlugin {
   }
 }
 
-Future<Isolate> _spawnDataIsolate(String path, SendPort message,
-    PackageResolver resolver) async {
+Future<Isolate> _spawnDataIsolate(
+    String path, SendPort message, PackageResolver resolver) async {
   return await dart.runInIsolate('''
     import "dart:isolate";
 
