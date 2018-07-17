@@ -1,3 +1,8 @@
+## 1.3.1
+
+* Updated VM platform to accept custom `PackageResolver Function(path)` 
+  that can be used in spawning isolated.
+
 ## 1.3.0
 
 * When using `--precompiled`, the test runner now allows symlinks to reach

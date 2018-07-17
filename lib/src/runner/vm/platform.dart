@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
@@ -29,7 +30,12 @@ class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
 
-  VMPlatform();
+  /// A function that returns a [PackageResolver] that is used in spawning
+  /// isolates based on the current test suite path.
+  final PackageResolver Function(String path) _packageResolver;
+
+  VMPlatform({PackageResolver Function(String path) packageResolver})
+      : _packageResolver = packageResolver ?? ((_) => PackageResolver.current);
 
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw new UnimplementedError();
@@ -102,12 +108,13 @@ class VMPlatform extends PlatformPlugin {
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeIsolate(path, message, _config.pubServeUrl);
     } else {
-      return _spawnDataIsolate(path, message);
+      return _spawnDataIsolate(path, message, _packageResolver(path));
     }
   }
 }
 
-Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
+Future<Isolate> _spawnDataIsolate(
+    String path, SendPort message, PackageResolver resolver) async {
   return await dart.runInIsolate('''
     import "dart:isolate";
 
@@ -125,7 +132,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
       });
       new IsolateChannel.connectSend(message).pipe(channel);
     }
-  ''', message, checked: true);
+  ''', message, resolver: resolver, checked: true);
 }
 
 Future<Isolate> _spawnPrecompiledIsolate(
