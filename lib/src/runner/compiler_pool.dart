@@ -90,8 +90,8 @@ class CompilerPool {
         var buffer = new StringBuffer();
 
         await Future.wait([
-          process.stdout.map(utf8.decode).listen(buffer.write).asFuture(),
-          process.stderr.map(utf8.decode).listen(buffer.write).asFuture(),
+          process.stdout.transform(utf8.decoder).forEach(buffer.write),
+          process.stderr.transform(utf8.decoder).forEach(buffer.write),
         ]);
 
         var exitCode = await process.exitCode;
