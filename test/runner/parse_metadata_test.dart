@@ -185,8 +185,8 @@ library foo;
 
     group("throws an error for", () {
       test("multiple @Tags", () {
-        new File(_path).writeAsStringSync(
-            "@Tags(['a'])\n@Tags(['b'])\nlibrary foo;");
+        new File(_path)
+            .writeAsStringSync("@Tags(['a'])\n@Tags(['b'])\nlibrary foo;");
         expect(() => parseMetadata(_path, new Set()), throwsFormatException);
       });
     });
