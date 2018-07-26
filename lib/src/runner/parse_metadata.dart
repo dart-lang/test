@@ -51,8 +51,7 @@ class _Parser {
     _prefixes = directives
         .map((directive) {
           if (directive is ImportDirective) {
-            if (directive.prefix == null) return null;
-            return directive.prefix.name;
+            return directive.prefix?.name;
           } else {
             return null;
           }
@@ -184,8 +183,8 @@ class _Parser {
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
       throw new SourceSpanFormatException(
-          "Invalid tag name. Tags must be (optionally hyphenated) Dart "
-          "identifiers.",
+          'Invalid tag name. Tags must be (optionally hyphenated) Dart '
+          'identifiers.',
           _spanFor(tagExpression));
     }).toSet();
   }
@@ -257,14 +256,12 @@ class _Parser {
         .map((key, value) => new MapEntry(key, _parseInt(value)));
 
     return new Duration(
-        days: values["days"] == null ? 0 : values["days"],
-        hours: values["hours"] == null ? 0 : values["hours"],
-        minutes: values["minutes"] == null ? 0 : values["minutes"],
-        seconds: values["seconds"] == null ? 0 : values["seconds"],
-        milliseconds:
-            values["milliseconds"] == null ? 0 : values["milliseconds"],
-        microseconds:
-            values["microseconds"] == null ? 0 : values["microseconds"]);
+        days: values['days'] ?? 0,
+        hours: values['hours'] ?? 0,
+        minutes: values['minutes'] ?? 0,
+        seconds: values['seconds'] ?? 0,
+        milliseconds: values['milliseconds'] ?? 0,
+        microseconds: values['microseconds'] ?? 0);
   }
 
   Map<String, Expression> _parseNamedArguments(ArgumentList arguments) =>
@@ -280,7 +277,7 @@ class _Parser {
   void _assertSingle(Object existing, String name, AstNode node) {
     if (existing == null) return;
     throw new SourceSpanFormatException(
-        "Only a single $name may be used.", _spanFor(node));
+        'Only a single $name may be used.', _spanFor(node));
   }
 
   /// Resolves a constructor name from its type [identifier] and its
@@ -321,7 +318,7 @@ class _Parser {
   String _parseConstructor(Expression expression, String className) {
     if (expression is! InstanceCreationExpression) {
       throw new SourceSpanFormatException(
-          "Expected a $className.", _spanFor(expression));
+          'Expected a $className.', _spanFor(expression));
     }
 
     var constructor = expression as InstanceCreationExpression;
@@ -332,7 +329,7 @@ class _Parser {
 
     if (actualClassName != className) {
       throw new SourceSpanFormatException(
-          "Expected a $className.", _spanFor(constructor));
+          'Expected a $className.', _spanFor(constructor));
     }
 
     return constructorName;
@@ -344,12 +341,12 @@ class _Parser {
   /// with the [key] and [value] parameters.
   Map<K, V> _parseMap<K, V>(Expression expression,
       {K key(Expression expression), V value(Expression expression)}) {
-    if (key == null) key = (expression) => expression as K;
-    if (value == null) value = (expression) => expression as V;
+    key ??= (expression) => expression as K;
+    value ??= (expression) => expression as V;
 
     if (expression is! MapLiteral) {
       throw new SourceSpanFormatException(
-          "Expected a Map.", _spanFor(expression));
+          'Expected a Map.', _spanFor(expression));
     }
 
     var map = expression as MapLiteral;
@@ -362,7 +359,7 @@ class _Parser {
   List<Expression> _parseList(Expression expression) {
     if (expression is! ListLiteral) {
       throw new SourceSpanFormatException(
-          "Expected a List.", _spanFor(expression));
+          'Expected a List.', _spanFor(expression));
     }
 
     var list = expression as ListLiteral;
@@ -375,21 +372,21 @@ class _Parser {
     if (expression is IntegerLiteral) return expression.value;
     if (expression is DoubleLiteral) return expression.value;
     throw new SourceSpanFormatException(
-        "Expected a number.", _spanFor(expression));
+        'Expected a number.', _spanFor(expression));
   }
 
   /// Parses a constant int literal.
   int _parseInt(Expression expression) {
     if (expression is IntegerLiteral) return expression.value;
     throw new SourceSpanFormatException(
-        "Expected an integer.", _spanFor(expression));
+        'Expected an integer.', _spanFor(expression));
   }
 
   /// Parses a constant String literal.
   StringLiteral _parseString(Expression expression) {
     if (expression is StringLiteral) return expression;
     throw new SourceSpanFormatException(
-        "Expected a String.", _spanFor(expression));
+        'Expected a String.', _spanFor(expression));
   }
 
   /// Creates a [SourceSpan] for [node].
