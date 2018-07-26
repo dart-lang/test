@@ -110,11 +110,9 @@ class _Parser {
   ///
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
-  PlatformSelector _parseTestOn(Annotation annotation, String constructorName) {
-    _assertConstructorName(constructorName, 'TestOn', annotation);
-    _assertArguments(annotation.arguments, 'TestOn', annotation, positional: 1);
-    return _parsePlatformSelector(annotation.arguments.arguments.first);
-  }
+  PlatformSelector _parseTestOn(
+          Annotation annotation, String constructorName) =>
+      _parsePlatformSelector(annotation.arguments.arguments.first);
 
   /// Parses an [expression] that should contain a string representing a
   /// [PlatformSelector].
@@ -130,30 +128,17 @@ class _Parser {
   ///
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
-  int _parseRetry(Annotation annotation, String constructorName) {
-    _assertConstructorName(constructorName, 'Retry', annotation);
-    _assertArguments(annotation.arguments, 'Retry', annotation, positional: 1);
-    return _parseInt(annotation.arguments.arguments.first);
-  }
+  int _parseRetry(Annotation annotation, String constructorName) =>
+      _parseInt(annotation.arguments.arguments.first);
 
   /// Parses a `@Timeout` annotation.
   ///
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
   Timeout _parseTimeout(Annotation annotation, String constructorName) {
-    _assertConstructorName(constructorName, 'Timeout', annotation,
-        validNames: [null, 'factor', 'none']);
-
-    var description = 'Timeout';
-    if (constructorName != null) description += '.$constructorName';
-
     if (constructorName == 'none') {
-      _assertNoArguments(annotation, description);
       return Timeout.none;
     }
-
-    _assertArguments(annotation.arguments, description, annotation,
-        positional: 1);
 
     var args = annotation.arguments.arguments;
     if (constructorName == null) return new Timeout(_parseDuration(args.first));
@@ -162,15 +147,7 @@ class _Parser {
 
   /// Parses a `Timeout` constructor.
   Timeout _parseTimeoutConstructor(InstanceCreationExpression constructor) {
-    var name =
-        _parseConstructor(constructor, 'Timeout', validNames: [null, 'factor']);
-
-    var description = 'Timeout';
-    if (name != null) description += '.$name';
-
-    _assertArguments(constructor.argumentList, description, constructor,
-        positional: 1);
-
+    var name = _parseConstructor(constructor, 'Timeout');
     var args = constructor.argumentList.arguments;
     if (name == null) return new Timeout(_parseDuration(args.first));
     return new Timeout.factor(_parseNum(args.first));
@@ -183,9 +160,6 @@ class _Parser {
   ///
   /// Returns either `true` or a reason string.
   _parseSkip(Annotation annotation, String constructorName) {
-    _assertConstructorName(constructorName, 'Skip', annotation);
-    _assertArguments(annotation.arguments, 'Skip', annotation, optional: 1);
-
     var args = annotation.arguments.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
   }
@@ -195,9 +169,6 @@ class _Parser {
   /// Returns either `true` or a reason string.
   _parseSkipConstructor(InstanceCreationExpression constructor) {
     _parseConstructor(constructor, 'Skip');
-    _assertArguments(constructor.argumentList, 'Skip', constructor,
-        optional: 1);
-
     var args = constructor.argumentList.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
   }
@@ -207,9 +178,6 @@ class _Parser {
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
   Set<String> _parseTags(Annotation annotation, String constructorName) {
-    _assertConstructorName(constructorName, 'Tags', annotation);
-    _assertArguments(annotation.arguments, 'Tags', annotation, positional: 1);
-
     return _parseList(annotation.arguments.arguments.first)
         .map((tagExpression) {
       var name = _parseString(tagExpression).stringValue;
@@ -228,10 +196,6 @@ class _Parser {
   /// constructor for the annotation, if any.
   Map<PlatformSelector, Metadata> _parseOnPlatform(
       Annotation annotation, String constructorName) {
-    _assertConstructorName(constructorName, 'OnPlatform', annotation);
-    _assertArguments(annotation.arguments, 'OnPlatform', annotation,
-        positional: 1);
-
     return _parseMap(annotation.arguments.arguments.first, key: (key) {
       return _parsePlatformSelector(key);
     }, value: (value) {
@@ -289,17 +253,7 @@ class _Parser {
     _parseConstructor(expression, 'Duration');
 
     var constructor = expression as InstanceCreationExpression;
-    var valueExpressions = _assertArguments(
-        constructor.argumentList, 'Duration', constructor, named: [
-      'days',
-      'hours',
-      'minutes',
-      'seconds',
-      'milliseconds',
-      'microseconds'
-    ]);
-
-    var values = valueExpressions
+    var values = _parseNamedArguments(constructor.argumentList)
         .map((key, value) => new MapEntry(key, _parseInt(value)));
 
     return new Duration(
@@ -312,6 +266,12 @@ class _Parser {
         microseconds:
             values["microseconds"] == null ? 0 : values["microseconds"]);
   }
+
+  Map<String, Expression> _parseNamedArguments(ArgumentList arguments) =>
+      new Map.fromIterable(
+          arguments.arguments.where((a) => a is NamedExpression),
+          key: (a) => (a as NamedExpression).name.label.name,
+          value: (a) => (a as NamedExpression).expression);
 
   /// Asserts that [existing] is null.
   ///
@@ -351,29 +311,6 @@ class _Parser {
     return new Pair(className, namedConstructor);
   }
 
-  /// Asserts that [constructorName] is a valid constructor name for an AST
-  /// node.
-  ///
-  /// [nodeName] is the name of the class being constructed, and [node] is the
-  /// AST node for that class. [validNames], if passed, is the set of valid
-  /// constructor names; if an unnamed constructor is valid, it should include
-  /// `null`. By default, only an unnamed constructor is allowed.
-  void _assertConstructorName(
-      String constructorName, String nodeName, AstNode node,
-      {Iterable<String> validNames}) {
-    if (validNames == null) validNames = [null];
-    if (validNames.contains(constructorName)) return;
-
-    if (constructorName == null) {
-      throw new SourceSpanFormatException(
-          "$nodeName doesn't have an unnamed constructor.", _spanFor(node));
-    } else {
-      throw new SourceSpanFormatException(
-          '$nodeName doesn\'t have a constructor named "$constructorName".',
-          _spanFor(node));
-    }
-  }
-
   /// Parses a constructor invocation for [className].
   ///
   /// [validNames], if passed, is the set of valid constructor names; if an
@@ -381,10 +318,7 @@ class _Parser {
   /// an unnamed constructor is allowed.
   ///
   /// Returns the name of the named constructor, if any.
-  String _parseConstructor(Expression expression, String className,
-      {Iterable<String> validNames}) {
-    if (validNames == null) validNames = [null];
-
+  String _parseConstructor(Expression expression, String className) {
     if (expression is! InstanceCreationExpression) {
       throw new SourceSpanFormatException(
           "Expected a $className.", _spanFor(expression));
@@ -401,98 +335,7 @@ class _Parser {
           "Expected a $className.", _spanFor(constructor));
     }
 
-    if (constructor.keyword.lexeme != "const") {
-      throw new SourceSpanFormatException(
-          "$className must use a const constructor.", _spanFor(constructor));
-    }
-
-    _assertConstructorName(constructorName, className, expression,
-        validNames: validNames);
     return constructorName;
-  }
-
-  /// Assert that [arguments] is a valid argument list.
-  ///
-  /// [name] describes the function and [node] is its AST node. [positional] is
-  /// the number of required positional arguments, [optional] the number of
-  /// optional positional arguments, and [named] the set of valid argument
-  /// names.
-  ///
-  /// The set of parsed named arguments is returned.
-  Map<String, Expression> _assertArguments(
-      ArgumentList arguments, String name, AstNode node,
-      {int positional, int optional, Iterable<String> named}) {
-    if (positional == null) positional = 0;
-    if (optional == null) optional = 0;
-    if (named == null) named = new Set();
-
-    if (arguments == null) {
-      throw new SourceSpanFormatException(
-          '$name takes arguments.', _spanFor(node));
-    }
-
-    var actualNamed = arguments.arguments
-        .where((arg) => arg is NamedExpression)
-        .map((arg) => arg as NamedExpression)
-        .toList();
-    if (actualNamed.isNotEmpty && named.isEmpty) {
-      throw new SourceSpanFormatException(
-          "$name doesn't take named arguments.", _spanFor(actualNamed.first));
-    }
-
-    var namedValues = <String, Expression>{};
-    for (var argument in actualNamed) {
-      var argumentName = argument.name.label.name;
-      if (!named.contains(argumentName)) {
-        throw new SourceSpanFormatException(
-            '$name doesn\'t take an argument named "$argumentName".',
-            _spanFor(argument));
-      } else if (namedValues.containsKey(argumentName)) {
-        throw new SourceSpanFormatException(
-            'An argument named "$argumentName" was already passed.',
-            _spanFor(argument));
-      } else {
-        namedValues[argumentName] = argument.expression;
-      }
-    }
-
-    var actualPositional = arguments.arguments.length - actualNamed.length;
-    if (actualPositional < positional) {
-      var buffer = new StringBuffer("$name takes ");
-      if (optional != 0) buffer.write("at least ");
-      buffer.write("$positional argument");
-      if (positional > 1) buffer.write("s");
-      buffer.write(".");
-      throw new SourceSpanFormatException(
-          buffer.toString(), _spanFor(arguments));
-    }
-
-    if (actualPositional > positional + optional) {
-      if (optional + positional == 0) {
-        var buffer = new StringBuffer("$name doesn't take ");
-        if (named.isNotEmpty) buffer.write("positional ");
-        buffer.write("arguments.");
-        throw new SourceSpanFormatException(
-            buffer.toString(), _spanFor(arguments));
-      }
-
-      var buffer = new StringBuffer("$name takes ");
-      if (optional != 0) buffer.write("at most ");
-      buffer.write("${positional + optional} argument");
-      if (positional > 1) buffer.write("s");
-      buffer.write(".");
-      throw new SourceSpanFormatException(
-          buffer.toString(), _spanFor(arguments));
-    }
-
-    return namedValues;
-  }
-
-  /// Assert that [annotation] (described by [name]) has no argument list.
-  void _assertNoArguments(Annotation annotation, String name) {
-    if (annotation.arguments == null) return;
-    throw new SourceSpanFormatException(
-        "$name doesn't take arguments.", _spanFor(annotation));
   }
 
   /// Parses a Map literal.
@@ -510,10 +353,6 @@ class _Parser {
     }
 
     var map = expression as MapLiteral;
-    if (map.constKeyword == null) {
-      throw new SourceSpanFormatException(
-          "Map literals must be const.", _spanFor(map));
-    }
 
     return new Map.fromIterables(map.entries.map((e) => key(e.key)),
         map.entries.map((e) => value(e.value)));
@@ -527,10 +366,6 @@ class _Parser {
     }
 
     var list = expression as ListLiteral;
-    if (list.constKeyword == null) {
-      throw new SourceSpanFormatException(
-          "List literals must be const.", _spanFor(list));
-    }
 
     return list.elements;
   }

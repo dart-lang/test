@@ -244,22 +244,6 @@ $_usage""");
       await test.shouldExit(1);
     });
 
-    test("an annotation's structure is invalid", () async {
-      await d.file("test.dart", "@TestOn()\nlibrary foo;").create();
-      var test = await runTest(["test.dart"]);
-
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart":',
-            "Error on line 1, column 8: TestOn takes 1 argument.",
-            "@TestOn()",
-            "       ^^"
-          ]));
-      await test.shouldExit(1);
-    });
-
     test("an annotation's contents are invalid", () async {
       await d.file("test.dart", "@TestOn('zim')\nlibrary foo;").create();
       var test = await runTest(["test.dart"]);
