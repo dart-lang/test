@@ -95,6 +95,28 @@ library foo;
               microseconds: 5)));
     });
 
+    test("parses a valid duration annotation omitting const", () {
+      new File(_path).writeAsStringSync("""
+@Timeout(Duration(
+    hours: 1,
+    minutes: 2,
+    seconds: 3,
+    milliseconds: 4,
+    microseconds: 5))
+
+library foo;
+""");
+      var metadata = parseMetadata(_path, new Set());
+      expect(
+          metadata.timeout.duration,
+          equals(new Duration(
+              hours: 1,
+              minutes: 2,
+              seconds: 3,
+              milliseconds: 4,
+              microseconds: 5)));
+    }, skip: 'https://github.com/dart-lang/test/issues/915');
+
     test("parses a valid int factor annotation", () {
       new File(_path).writeAsStringSync("""
 @Timeout.factor(1)
