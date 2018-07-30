@@ -297,7 +297,7 @@ class JsonReporter implements Reporter {
       String suitePath) {
     var frame = entry.trace?.frames?.first;
     var rootFrame = entry.trace?.frames?.firstWhere(
-        (frame) => frame.uri.path == p.absolute(suitePath),
+        (frame) => frame.uri.toFilePath() == p.absolute(suitePath),
         orElse: () => null);
     if (suiteConfig.jsTrace && runtime.isJS) {
       frame = null;

@@ -1,6 +1,8 @@
 ## 1.3.1
 
 * Handle parsing annotations which omit `const` on collection literals.
+* Fix an issue where `root_line`, `root_column`, and `root_url` in the
+  JSON reported may not be populated correctly on Windows.
 
 ## 1.3.0
 
