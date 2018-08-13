@@ -148,7 +148,7 @@ void main() {
           "name", SuiteConfiguration.empty, suitePlatform, () => null);
       expect(suite.group.entries, hasLength(1));
 
-      var newSuite = suite.changeSuite(expectAsync1((_) {}, count: 0));
+      var newSuite = suite.changeSuite(expectAsync1((_) {return null;}, count: 0));
       expect(newSuite.suite, completion(isNull));
 
       var liveTest = (suite.group.entries.single as Test).load(suite);
