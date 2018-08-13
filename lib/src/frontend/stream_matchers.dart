@@ -184,6 +184,7 @@ StreamMatcher emitsInOrder(Iterable matchers) {
       }
       return newResult;
     }
+    return null;
   }, description);
 }
 
