@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 pub get || exit $
 
 EXIT_CODE=0
