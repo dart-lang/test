@@ -21,7 +21,7 @@ import 'util.dart';
 /// ```dart
 /// class HasPrice extends CustomMatcher {
 ///   HasPrice(matcher) : super("Widget with price that is", "price", matcher);
-///   featureValueOf(actual) => actual.price;
+///   featureValueOf(actual) => (actual as Widget).price;
 /// }
 /// ```
 ///
