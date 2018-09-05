@@ -1,3 +1,4 @@
+include: package:pedantic/analysis_options.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
@@ -16,5 +17,4 @@ linter:
   rules:
     - await_only_futures
     - implementation_imports
-    - prefer_equal_for_default_values
     - prefer_typing_uninitialized_variables
