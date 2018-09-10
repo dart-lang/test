@@ -12,7 +12,6 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
@@ -30,8 +29,6 @@ dependencies:
   test: {path: ${p.current}}
 transformers:
 - myapp:
-    \$include: test/**_test.dart
-- test/pub_serve:
     \$include: test/**_test.dart
 """).create();
 
@@ -165,29 +162,6 @@ void main() {
 
       await pub.kill();
     }, tags: 'node');
-
-    test("gracefully handles unconfigured transformers", () async {
-      await d.file("pubspec.yaml", """
-name: myapp
-dependencies:
-  barback: any
-  test: {path: ${p.current}}
-""").create();
-
-      var pub = await runPubServe();
-      var test = await runTest([_pubServeArg]);
-      expectStderrEquals(test, '''
-When using --pub-serve, you must include the "test/pub_serve" transformer in
-your pubspec:
-
-transformers:
-- test/pub_serve:
-    \$include: test/**_test.dart
-''');
-      await test.shouldExit(exit_codes.data);
-
-      await pub.kill();
-    });
   });
 
   group("uses a custom HTML file", () {

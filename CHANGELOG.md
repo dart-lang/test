@@ -3,6 +3,7 @@
 * Handle parsing annotations which omit `const` on collection literals.
 * Fix an issue where `root_line`, `root_column`, and `root_url` in the
   JSON reported may not be populated correctly on Windows.
+* Removed requirement for the test/pub_serve transformer in --pub-serve mode.
 
 ## 1.3.0
 

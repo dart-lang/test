@@ -12,7 +12,6 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:yaml/yaml.dart';
 
 import 'runner.dart';
 import 'runner/application_exception.dart';
@@ -32,33 +31,6 @@ final _signals = Platform.isWindows
     ? ProcessSignal.sigint.watch()
     : StreamGroup.merge(
         [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
-
-/// Returns whether the current package has a pubspec which uses the
-/// `test/pub_serve` transformer.
-bool get _usesTransformer {
-  if (!new File('pubspec.yaml').existsSync()) return false;
-  var contents = new File('pubspec.yaml').readAsStringSync();
-
-  dynamic yaml;
-  try {
-    yaml = loadYaml(contents);
-  } on FormatException {
-    return false;
-  }
-
-  if (yaml is! Map) return false;
-
-  var transformers = yaml['transformers'];
-  if (transformers == null) return false;
-  if (transformers is! List) return false;
-
-  return (transformers as List).any((transformer) {
-    if (transformer is String) return transformer == 'test/pub_serve';
-    if (transformer is! Map) return false;
-    if (transformer.keys.length != 1) return false;
-    return transformer.keys.single == 'test/pub_serve';
-  });
-}
 
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
@@ -131,19 +103,6 @@ main(List<String> args) async {
     _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
         "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
     exitCode = exit_codes.usage;
-    return;
-  }
-
-  if (configuration.pubServeUrl != null && !_usesTransformer) {
-    stderr.write('''
-When using --pub-serve, you must include the "test/pub_serve" transformer in
-your pubspec:
-
-transformers:
-- test/pub_serve:
-    \$include: test/**_test.dart
-''');
-    exitCode = exit_codes.data;
     return;
   }
 
