@@ -376,8 +376,6 @@ dependencies:
 transformers:
 - myapp:
     \$include: test/**_test.dart
-- test/pub_serve:
-    \$include: test/**_test.dart
 """).create();
 
     await d.dir("lib", [
