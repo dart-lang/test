@@ -1,3 +1,8 @@
+## 1.3.3
+
+* Add conditional imports so that `dart:io` is not imported from the main
+  `test.dart` entrypoint unless it is available.
+
 ## 1.3.2
 
 * Widen the constraints on the analyzer package.
