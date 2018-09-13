@@ -2,6 +2,7 @@
 
 * Add conditional imports so that `dart:io` is not imported from the main
   `test.dart` entrypoint unless it is available.
+* Fix an issue with dartdevc in precompiled mode and the json reporter.
 
 ## 1.3.2
 

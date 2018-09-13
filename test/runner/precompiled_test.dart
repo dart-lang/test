@@ -19,8 +19,7 @@ import '../io.dart';
 
 void main() {
   group("browser tests", () {
-    test("run a precompiled version of a test rather than recompiling",
-        () async {
+    setUp(() async {
       await d.file("to_precompile.dart", """
         import "package:stream_channel/stream_channel.dart";
 
@@ -59,18 +58,38 @@ void main() {
       await dart2js.shouldExit(0);
 
       await d.file("test.dart", "invalid dart}").create();
+    });
 
+    test("run a precompiled version of a test rather than recompiling",
+        () async {
       var test = await runTest(
           ["-p", "chrome", "--precompiled=precompiled/", "test.dart"]);
       expect(test.stdout,
           containsInOrder(["+0: success", "+1: All tests passed!"]));
       await test.shouldExit(0);
     });
+
+    test("can use the json reporter", () async {
+      var test = await runTest([
+        "-p",
+        "chrome",
+        "--precompiled=precompiled/",
+        "test.dart",
+        "-r",
+        "json"
+      ]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '{"testID":3,"result":"success"',
+            '{"success":true,"type":"done"'
+          ]));
+      await test.shouldExit(0);
+    });
   }, tags: const ["chrome"]);
 
   group("node tests", () {
-    test("run a precompiled version of a test rather than recompiling",
-        () async {
+    setUp(() async {
       await d.dir("test", [
         d.file("test.dart", """
           import "package:test/src/bootstrap/node.dart";
@@ -100,7 +119,10 @@ void main() {
           preamble.getPreamble(minified: true) + await jsFile.readAsString());
 
       await d.dir("test", [d.file("test.dart", "invalid dart}")]).create();
+    });
 
+    test("run a precompiled version of a test rather than recompiling",
+        () async {
       var test = await runTest([
         "-p",
         "node",
@@ -110,6 +132,25 @@ void main() {
       ]);
       expect(test.stdout,
           containsInOrder(["+0: success", "+1: All tests passed!"]));
+      await test.shouldExit(0);
+    });
+
+    test("can use the json reporter", () async {
+      var test = await runTest([
+        "-p",
+        "node",
+        "--precompiled",
+        d.sandbox,
+        p.join("test", "test.dart"),
+        '-r',
+        'json'
+      ]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '{"testID":3,"result":"success"',
+            '{"success":true,"type":"done"'
+          ]));
       await test.shouldExit(0);
     });
   }, tags: const ["node"]);
@@ -168,6 +209,24 @@ void main() {
       expect(testProcess.stdout,
           containsInOrder(["+0: true is true", "+1: All tests passed!"]));
       await testProcess.shouldExit(0);
+    });
+
+    test("can use the json reporter", () async {
+      var test = await runTest([
+        "-p",
+        "vm",
+        '--precompiled=${d.sandbox}',
+        'test/test.dart',
+        '-r',
+        'json'
+      ]);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '{"testID":3,"result":"success"',
+            '{"success":true,"type":"done"'
+          ]));
+      await test.shouldExit(0);
     });
   });
 }
