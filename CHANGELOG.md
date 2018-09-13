@@ -1,3 +1,7 @@
+## 1.3.2
+
+* Widen the constraints on the analyzer package.
+
 ## 1.3.1
 
 * Handle parsing annotations which omit `const` on collection literals.
