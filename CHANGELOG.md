@@ -1,3 +1,7 @@
+## 1.3.3-dev
+
+* Fix an issue with dartdevc in precompiled mode and the json reporter.
+
 ## 1.3.2
 
 * Widen the constraints on the analyzer package.
