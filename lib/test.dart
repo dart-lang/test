@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
@@ -37,8 +38,6 @@ export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';
 export 'src/frontend/timeout.dart';
 export 'src/frontend/utils.dart';
-
-import 'package:path/path.dart' as p;
 
 /// The global declarer.
 ///
