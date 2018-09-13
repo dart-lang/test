@@ -75,7 +75,7 @@ Declarer get _declarer {
         color: true, printPath: false, printPlatform: false);
 
     var success = await runZoned(() => Invoker.guard(engine.run),
-        zoneValues: {#test.declarer: declarer});
+        zoneValues: {#test.declarer: _globalDeclarer});
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');
