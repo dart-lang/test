@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as p;
 
 import 'src/backend/declarer.dart';
 import 'src/backend/invoker.dart';
@@ -38,6 +37,8 @@ export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';
 export 'src/frontend/timeout.dart';
 export 'src/frontend/utils.dart';
+
+import 'package:path/path.dart' as p;
 
 /// The global declarer.
 ///
@@ -74,7 +75,7 @@ Declarer get _declarer {
         color: true, printPath: false, printPlatform: false);
 
     var success = await runZoned(() => Invoker.guard(engine.run),
-        zoneValues: {#test.declarer: _globalDeclarer});
+        zoneValues: {#test.declarer: declarer});
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');

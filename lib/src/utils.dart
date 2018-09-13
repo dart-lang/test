@@ -14,7 +14,6 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
-import 'backend/invoker.dart';
 import 'backend/operating_system.dart';
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
@@ -240,24 +239,6 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
 /// containing method to return a future.
 void invoke(fn()) {
   fn();
-}
-
-/// Runs [body] with special error-handling behavior.
-///
-/// Errors emitted [body] will still cause the current test to fail, but they
-/// won't cause it to *stop*. In particular, they won't remove any outstanding
-/// callbacks registered outside of [body].
-///
-/// This may only be called within a test.
-Future errorsDontStopTest(body()) {
-  var completer = new Completer();
-
-  Invoker.current.addOutstandingCallback();
-  Invoker.current.waitForOutstandingCallbacks(() {
-    new Future.sync(body).whenComplete(completer.complete);
-  }).then((_) => Invoker.current.removeOutstandingCallback());
-
-  return completer.future;
 }
 
 /// Returns a random base64 string containing [bytes] bytes of data.
