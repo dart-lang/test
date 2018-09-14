@@ -145,11 +145,13 @@ class _Parser {
   }
 
   /// Parses a `Timeout` constructor.
-  Timeout _parseTimeoutConstructor(InstanceCreationExpression constructor) {
-    var name = _parseConstructor(constructor, 'Timeout');
-    var args = constructor.argumentList.arguments;
-    if (name == null) return new Timeout(_parseDuration(args.first));
-    return new Timeout.factor(_parseNum(args.first));
+  Timeout _parseTimeoutConstructor(Expression constructor) {
+    var name = _findConstructorName(constructor, 'Timeout');
+    var arguments = _parseArguments(constructor);
+    if (name == null) return new Timeout(_parseDuration(arguments.first));
+    if (name == 'factor') return new Timeout.factor(_parseNum(arguments.first));
+    throw new SourceSpanFormatException(
+        'Invalid timeout', _spanFor(constructor));
   }
 
   /// Parses a `@Skip` annotation.
@@ -166,10 +168,10 @@ class _Parser {
   /// Parses a `Skip` constructor.
   ///
   /// Returns either `true` or a reason string.
-  _parseSkipConstructor(InstanceCreationExpression constructor) {
-    _parseConstructor(constructor, 'Skip');
-    var args = constructor.argumentList.arguments;
-    return args.isEmpty ? true : _parseString(args.first).stringValue;
+  _parseSkipConstructor(Expression constructor) {
+    _findConstructorName(constructor, 'Skip');
+    var arguments = _parseArguments(constructor);
+    return arguments.isEmpty ? true : _parseString(arguments.first).stringValue;
   }
 
   /// Parses a `@Tags` annotation.
@@ -202,7 +204,8 @@ class _Parser {
       if (value is ListLiteral) {
         expressions = _parseList(value);
       } else if (value is InstanceCreationExpression ||
-          value is PrefixedIdentifier) {
+          value is PrefixedIdentifier ||
+          value is MethodInvocation) {
         expressions = [value];
       } else {
         throw new SourceSpanFormatException(
@@ -237,6 +240,18 @@ class _Parser {
           _assertSingle(timeout, 'Timeout', expression);
           timeout = Timeout.none;
           continue;
+        } else if (expression is MethodInvocation) {
+          var className =
+              _typeNameFromMethodInvocation(expression, ['Timeout', 'Skip']);
+          if (className == 'Timeout') {
+            _assertSingle(timeout, 'Timeout', expression);
+            timeout = _parseTimeoutConstructor(expression);
+            continue;
+          } else if (className == 'Skip') {
+            _assertSingle(skip, 'Skip', expression);
+            skip = _parseSkipConstructor(expression);
+            continue;
+          }
         }
 
         throw new SourceSpanFormatException(
@@ -249,10 +264,10 @@ class _Parser {
 
   /// Parses a `const Duration` expression.
   Duration _parseDuration(Expression expression) {
-    _parseConstructor(expression, 'Duration');
+    _findConstructorName(expression, 'Duration');
 
-    var constructor = expression as InstanceCreationExpression;
-    var values = _parseNamedArguments(constructor.argumentList)
+    var arguments = _parseArguments(expression);
+    var values = _parseNamedArguments(arguments)
         .map((key, value) => new MapEntry(key, _parseInt(value)));
 
     return new Duration(
@@ -264,9 +279,9 @@ class _Parser {
         microseconds: values['microseconds'] ?? 0);
   }
 
-  Map<String, Expression> _parseNamedArguments(ArgumentList arguments) =>
-      new Map.fromIterable(
-          arguments.arguments.where((a) => a is NamedExpression),
+  Map<String, Expression> _parseNamedArguments(
+          NodeList<Expression> arguments) =>
+      new Map.fromIterable(arguments.where((a) => a is NamedExpression),
           key: (a) => (a as NamedExpression).name.label.name,
           value: (a) => (a as NamedExpression).expression);
 
@@ -278,6 +293,17 @@ class _Parser {
     if (existing == null) return;
     throw new SourceSpanFormatException(
         'Only a single $name may be used.', _spanFor(node));
+  }
+
+  NodeList<Expression> _parseArguments(Expression expression) {
+    if (expression is InstanceCreationExpression) {
+      return expression.argumentList.arguments;
+    }
+    if (expression is MethodInvocation) {
+      return expression.argumentList.arguments;
+    }
+    throw new SourceSpanFormatException(
+        'Expected an instantiation', _spanFor(expression));
   }
 
   /// Resolves a constructor name from its type [identifier] and its
@@ -310,18 +336,22 @@ class _Parser {
 
   /// Parses a constructor invocation for [className].
   ///
-  /// [validNames], if passed, is the set of valid constructor names; if an
-  /// unnamed constructor is valid, it should include `null`. By default, only
-  /// an unnamed constructor is allowed.
-  ///
-  /// Returns the name of the named constructor, if any.
-  String _parseConstructor(Expression expression, String className) {
-    if (expression is! InstanceCreationExpression) {
-      throw new SourceSpanFormatException(
-          'Expected a $className.', _spanFor(expression));
+  /// Returns the name of the named constructor used, or null if the default
+  /// constructor is used.
+  /// If [expression] is not an instantiation of a [className] throws.
+  String _findConstructorName(Expression expression, String className) {
+    if (expression is InstanceCreationExpression) {
+      return _findConstructornameFromInstantiation(expression, className);
     }
+    if (expression is MethodInvocation) {
+      return _findConstructorNameFromMethod(expression, className);
+    }
+    throw new SourceSpanFormatException(
+        'Expected a $className.', _spanFor(expression));
+  }
 
-    var constructor = expression as InstanceCreationExpression;
+  String _findConstructornameFromInstantiation(
+      InstanceCreationExpression constructor, String className) {
     var pair = _resolveConstructor(constructor.constructorName.type.name,
         constructor.constructorName.name);
     var actualClassName = pair.first;
@@ -333,6 +363,69 @@ class _Parser {
     }
 
     return constructorName;
+  }
+
+  String _findConstructorNameFromMethod(
+      MethodInvocation constructor, String className) {
+    var target = constructor.target;
+    if (target != null) {
+      // target could be an import prefix or a different class. Assume that
+      // named constructor on a different class won't match the class name we
+      // are looking for.
+      // Example: `test.Timeout()`
+      if (constructor.methodName.name == className) return null;
+      // target is an optionally prefixed class, method is named constructor
+      // Examples: `Timeout.factor(2)`, `test.Timeout.factor(2)`
+      String parsedName;
+      if (target is SimpleIdentifier) parsedName = target.name;
+      if (target is PrefixedIdentifier) parsedName = target.identifier.name;
+      if (parsedName != className) {
+        throw new SourceSpanFormatException(
+            'Expected a $className.', _spanFor(constructor));
+      }
+      return constructor.methodName.name;
+    }
+    // No target, must be an unnamed constructor
+    // Example `Timeout()`
+    if (constructor.methodName.name != className) {
+      throw new SourceSpanFormatException(
+          'Expected a $className.', _spanFor(constructor));
+    }
+    return null;
+  }
+
+  /// Returns a type from [candidates] that _may_ be a type instantiated by
+  /// [constructor].
+  ///
+  /// This can be fooled - for instance the invocation `foo.Bar()` may look like
+  /// a prefixed instantiation of a `Bar` even though it is a named constructor
+  /// instantiation of a `foo`, or a method infocation on a variable `foo`, or
+  /// ...
+  ///
+  /// Similarly `Baz.another` may look like the named constructor invocation of
+  /// a `Baz`even though it is a prefixed instantiation of an `another`, or a
+  /// method invocation on a variable `Baz`, or ...
+  String _typeNameFromMethodInvocation(
+      MethodInvocation constructor, List<String> candidates) {
+    var methodName = constructor.methodName.name;
+    // Examples: `Timeout()`, `test.Timeout()`
+    if (candidates.contains(methodName)) return methodName;
+    var target = constructor.target;
+    // Example: `SomeOtherClass()`
+    if (target == null) return null;
+    if (target is SimpleIdentifier) {
+      // Example: `Timeout.factor()`
+      if (candidates.contains(target.name)) return target.name;
+    }
+    if (target is PrefixedIdentifier) {
+      // Looks  like `some_prefix.SomeTarget.someMethod` - "SomeTarget" is the
+      // only potential type name.
+      // Example: `test.Timeout.factor()`
+      if (candidates.contains(target.identifier.name)) {
+        return target.identifier.name;
+      }
+    }
+    return null;
   }
 
   /// Parses a Map literal.
