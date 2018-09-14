@@ -95,7 +95,7 @@ library foo;
               microseconds: 5)));
     });
 
-    test('parses a valid duration annotation omitting const', () {
+    test('parses a valid duration omitting const', () {
       new File(_path).writeAsStringSync('''
 @Timeout(Duration(
     hours: 1,
@@ -115,13 +115,43 @@ library foo;
               seconds: 3,
               milliseconds: 4,
               microseconds: 5)));
-    }, skip: 'https://github.com/dart-lang/test/issues/915');
+    });
+
+    test('parses a valid duration with an import prefix', () {
+      new File(_path).writeAsStringSync('''
+@Timeout(core.Duration(
+    hours: 1,
+    minutes: 2,
+    seconds: 3,
+    milliseconds: 4,
+    microseconds: 5))
+import 'dart:core' as core;
+''');
+      var metadata = parseMetadata(_path, new Set());
+      expect(
+          metadata.timeout.duration,
+          equals(new Duration(
+              hours: 1,
+              minutes: 2,
+              seconds: 3,
+              milliseconds: 4,
+              microseconds: 5)));
+    });
 
     test('parses a valid int factor annotation', () {
       new File(_path).writeAsStringSync('''
 @Timeout.factor(1)
 
 library foo;
+''');
+      var metadata = parseMetadata(_path, new Set());
+      expect(metadata.timeout.scaleFactor, equals(1));
+    });
+
+    test('parses a valid int factor annotation with an import prefix', () {
+      new File(_path).writeAsStringSync('''
+@test.Timeout.factor(1)
+import 'package:test/test.dart' as test;
 ''');
       var metadata = parseMetadata(_path, new Set());
       expect(metadata.timeout.scaleFactor, equals(1));
@@ -218,10 +248,34 @@ library foo;
     test('parses a valid annotation', () {
       new File(_path).writeAsStringSync('''
 @OnPlatform({
-  'chrome': const Timeout.factor(2),
-  'vm': [const Skip(), const Timeout.factor(3)]
+  'chrome': Timeout.factor(2),
+  'vm': [Skip(), Timeout.factor(3)]
 })
 library foo;''');
+      var metadata = parseMetadata(_path, new Set());
+
+      var key = metadata.onPlatform.keys.first;
+      expect(key.evaluate(new SuitePlatform(Runtime.chrome)), isTrue);
+      expect(key.evaluate(new SuitePlatform(Runtime.vm)), isFalse);
+      var value = metadata.onPlatform.values.first;
+      expect(value.timeout.scaleFactor, equals(2));
+
+      key = metadata.onPlatform.keys.last;
+      expect(key.evaluate(new SuitePlatform(Runtime.vm)), isTrue);
+      expect(key.evaluate(new SuitePlatform(Runtime.chrome)), isFalse);
+      value = metadata.onPlatform.values.last;
+      expect(value.skip, isTrue);
+      expect(value.timeout.scaleFactor, equals(3));
+    });
+
+    test('parses a valid annotation with an import prefix', () {
+      new File(_path).writeAsStringSync('''
+@test.OnPlatform({
+  'chrome': test.Timeout.factor(2),
+  'vm': [test.Skip(), test.Timeout.factor(3)]
+})
+import 'package:test/test.dart' as test;
+''');
       var metadata = parseMetadata(_path, new Set());
 
       var key = metadata.onPlatform.keys.first;
