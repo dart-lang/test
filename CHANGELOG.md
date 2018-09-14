@@ -1,6 +1,7 @@
 ## 1.3.3-dev
 
 * Fix an issue with dartdevc in precompiled mode and the json reporter.
+* Fix an issue parsing test metadata annotations without explicit `const`.
 
 ## 1.3.2
 
