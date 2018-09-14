@@ -372,8 +372,10 @@ class _Parser {
       // target could be an import prefix or a different class. Assume that
       // named constructor on a different class won't match the class name we
       // are looking for.
+      // Example: `test.Timeout()`
       if (constructor.methodName.name == className) return null;
       // target is an optionally prefixed class, method is named constructor
+      // Examples: `Timeout.factor(2)`, `test.Timeout.factor(2)`
       String parsedName;
       if (target is SimpleIdentifier) parsedName = target.name;
       if (target is PrefixedIdentifier) parsedName = target.identifier.name;
@@ -384,6 +386,7 @@ class _Parser {
       return constructor.methodName.name;
     }
     // No target, must be an unnamed constructor
+    // Example `Timeout()`
     if (constructor.methodName.name != className) {
       throw new SourceSpanFormatException(
           'Expected a $className.', _spanFor(constructor));
@@ -400,20 +403,24 @@ class _Parser {
   /// ...
   ///
   /// Similarly `Baz.another` may look like the named constructor invocation of
-  /// a `Baz`even though it is a prefixeda instantiation of an `another`, or a
+  /// a `Baz`even though it is a prefixed instantiation of an `another`, or a
   /// method invocation on a variable `Baz`, or ...
   String _typeNameFromMethodInvocation(
       MethodInvocation constructor, List<String> candidates) {
     var methodName = constructor.methodName.name;
+    // Examples: `Timeout()`, `test.Timeout()`
     if (candidates.contains(methodName)) return methodName;
     var target = constructor.target;
+    // Example: `SomeOtherClass()`
     if (target == null) return null;
     if (target is SimpleIdentifier) {
+      // Example: `Timeout.factor()`
       if (candidates.contains(target.name)) return target.name;
     }
     if (target is PrefixedIdentifier) {
-      // Looks some_prefix.SomeTarget.someMethod - "SomeTarget" is the only
-      // potential type name
+      // Looks  like `some_prefix.SomeTarget.someMethod` - "SomeTarget" is the
+      // only potential type name.
+      // Example: `test.Timeout.factor()`
       if (candidates.contains(target.identifier.name)) {
         return target.identifier.name;
       }
