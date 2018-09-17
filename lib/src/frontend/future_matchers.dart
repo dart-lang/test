@@ -37,7 +37,7 @@ final Matcher completes = const _Completes(null);
 /// This returns an [AsyncMatcher], so [expect] won't complete until the matched
 /// future does.
 Matcher completion(matcher, [@deprecated String description]) =>
-    new _Completes(wrapMatcher(matcher));
+    _Completes(wrapMatcher(matcher));
 
 class _Completes extends AsyncMatcher {
   final Matcher _matcher;
@@ -59,11 +59,11 @@ class _Completes extends AsyncMatcher {
         var matchState = {};
         if (_matcher.matches(value, matchState)) return null;
         result = _matcher
-            .describeMismatch(value, new StringDescription(), matchState, false)
+            .describeMismatch(value, StringDescription(), matchState, false)
             .toString();
       }
 
-      var buffer = new StringBuffer();
+      var buffer = StringBuffer();
       buffer.writeln(indent(prettyPrint(value), first: 'emitted '));
       if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
       return buffer.toString().trimRight();

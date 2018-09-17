@@ -50,11 +50,10 @@ class Console {
   /// the command, and may return a [Future].
   void registerCommand(String name, String description, body()) {
     if (_commands.containsKey(name)) {
-      throw new ArgumentError(
-          'The console already has a command named "$name".');
+      throw ArgumentError('The console already has a command named "$name".');
     }
 
-    _commands[name] = new _Command(name, description, body);
+    _commands[name] = _Command(name, description, body);
   }
 
   /// Starts running the console.

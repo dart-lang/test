@@ -17,7 +17,7 @@ Suite _suite;
 
 void main() {
   setUp(() {
-    _suite = new Suite(new Group.root([]), suitePlatform);
+    _suite = Suite(Group.root([]), suitePlatform);
   });
 
   group(".test()", () {
@@ -87,7 +87,7 @@ void main() {
       var setUpRun = false;
       var tests = declare(() {
         setUp(() {
-          return new Future(() => setUpRun = true);
+          return Future(() => setUpRun = true);
         });
 
         test(
@@ -170,7 +170,7 @@ void main() {
             "description 1",
             expectAsync0(() {
               Invoker.current.addOutstandingCallback();
-              new Future(() => throw new TestFailure("oh no"));
+              Future(() => throw TestFailure("oh no"));
             }, max: 1));
       });
 
@@ -182,7 +182,7 @@ void main() {
       var tearDownRun = false;
       var tests = declare(() {
         tearDown(() {
-          return new Future(() => tearDownRun = true);
+          return Future(() => tearDownRun = true);
         });
 
         test(
@@ -294,7 +294,7 @@ void main() {
         });
 
         test("test", () {
-          future = new Future.error("oh no");
+          future = Future.error("oh no");
           expect(future, throwsA("oh no"));
         });
       });
@@ -313,7 +313,7 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.name, equals("group"));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new TypeMatcher<Test>());
+      expect(testGroup.entries.single, TypeMatcher<Test>());
       expect(testGroup.entries.single.name, "group description");
     });
 
@@ -328,57 +328,57 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.name, equals("Object"));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new TypeMatcher<Test>());
+      expect(testGroup.entries.single, TypeMatcher<Test>());
       expect(testGroup.entries.single.name, "Object description");
     });
 
     test("a test's timeout factor is applied to the group's", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () {}, timeout: new Timeout.factor(3));
-        }, timeout: new Timeout.factor(2));
+          test("test", () {}, timeout: Timeout.factor(3));
+        }, timeout: Timeout.factor(2));
       });
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
       expect(testGroup.metadata.timeout.scaleFactor, equals(2));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new TypeMatcher<Test>());
+      expect(testGroup.entries.single, TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.scaleFactor, equals(6));
     });
 
     test("a test's timeout factor is applied to the group's duration", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () {}, timeout: new Timeout.factor(2));
-        }, timeout: new Timeout(new Duration(seconds: 10)));
+          test("test", () {}, timeout: Timeout.factor(2));
+        }, timeout: Timeout(Duration(seconds: 10)));
       });
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
-      expect(testGroup.metadata.timeout.duration,
-          equals(new Duration(seconds: 10)));
+      expect(
+          testGroup.metadata.timeout.duration, equals(Duration(seconds: 10)));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new TypeMatcher<Test>());
+      expect(testGroup.entries.single, TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.duration,
-          equals(new Duration(seconds: 20)));
+          equals(Duration(seconds: 20)));
     });
 
     test("a test's timeout duration is applied over the group's", () {
       var entries = declare(() {
         group("group", () {
-          test("test", () {}, timeout: new Timeout(new Duration(seconds: 15)));
-        }, timeout: new Timeout(new Duration(seconds: 10)));
+          test("test", () {}, timeout: Timeout(Duration(seconds: 15)));
+        }, timeout: Timeout(Duration(seconds: 10)));
       });
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
-      expect(testGroup.metadata.timeout.duration,
-          equals(new Duration(seconds: 10)));
+      expect(
+          testGroup.metadata.timeout.duration, equals(Duration(seconds: 10)));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, new TypeMatcher<Test>());
+      expect(testGroup.entries.single, TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.duration,
-          equals(new Duration(seconds: 15)));
+          equals(Duration(seconds: 15)));
     });
 
     test("disallows asynchronous groups", () async {
@@ -461,13 +461,13 @@ void main() {
         var entries = declare(() {
           setUp(expectAsync0(() {
             expect(innerSetUpRun, isFalse);
-            return new Future(() => outerSetUpRun = true);
+            return Future(() => outerSetUpRun = true);
           }, max: 1));
 
           group("inner", () {
             setUp(expectAsync0(() {
               expect(outerSetUpRun, isTrue);
-              return new Future(() => innerSetUpRun = true);
+              return Future(() => innerSetUpRun = true);
             }, max: 1));
 
             test(
@@ -590,13 +590,13 @@ void main() {
         var entries = declare(() {
           tearDown(expectAsync0(() {
             expect(innerTearDownRun, isTrue);
-            return new Future(() => outerTearDownRun = true);
+            return Future(() => outerTearDownRun = true);
           }, max: 1));
 
           group("inner", () {
             tearDown(expectAsync0(() {
               expect(outerTearDownRun, isFalse);
-              return new Future(() => innerTearDownRun = true);
+              return Future(() => innerTearDownRun = true);
             }, max: 1));
 
             test(
@@ -618,7 +618,7 @@ void main() {
         var outerTearDownRun = false;
         var entries = declare(() {
           tearDown(() {
-            return new Future(() => outerTearDownRun = true);
+            return Future(() => outerTearDownRun = true);
           });
 
           group("inner", () {

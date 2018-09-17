@@ -28,8 +28,8 @@ class Chrome extends Browser {
   /// [Uri] or a [String].
   factory Chrome(Uri url, {ExecutableSettings settings, bool debug = false}) {
     settings ??= defaultSettings[Runtime.chrome];
-    var remoteDebuggerCompleter = new Completer<Uri>.sync();
-    return new Chrome._(() async {
+    var remoteDebuggerCompleter = Completer<Uri>.sync();
+    return Chrome._(() async {
       var tryPort = ([int port]) async {
         var dir = createTempDir();
         var args = [
@@ -73,7 +73,7 @@ class Chrome extends Browser {
         }
 
         process.exitCode
-            .then((_) => new Directory(dir).deleteSync(recursive: true));
+            .then((_) => Directory(dir).deleteSync(recursive: true));
 
         return process;
       };

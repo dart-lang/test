@@ -60,7 +60,7 @@ class StringLiteralIterator extends Iterator<int> {
   /// If the input literal is itself a [SimpleStringLiteral], this just contains
   /// that literal; otherwise, the literal is an [AdjacentStrings], and this
   /// contains its component literals.
-  final _strings = new Queue<SimpleStringLiteral>();
+  final _strings = Queue<SimpleStringLiteral>();
 
   /// Whether this is a raw string that begins with `r`.
   ///
@@ -79,7 +79,7 @@ class StringLiteralIterator extends Iterator<int> {
   /// Throws an [ArgumentError] if [literal] contains interpolated strings.
   StringLiteralIterator(StringLiteral literal) {
     if (literal is StringInterpolation) {
-      throw new ArgumentError("Can't iterate over an interpolated string.");
+      throw ArgumentError("Can't iterate over an interpolated string.");
     } else if (literal is SimpleStringLiteral) {
       _strings.add(literal);
     } else {
@@ -87,7 +87,7 @@ class StringLiteralIterator extends Iterator<int> {
 
       for (var string in (literal as AdjacentStrings).strings) {
         if (string is StringInterpolation) {
-          throw new ArgumentError("Can't iterate over an interpolated string.");
+          throw ArgumentError("Can't iterate over an interpolated string.");
         }
         _strings.add(string as SimpleStringLiteral);
       }

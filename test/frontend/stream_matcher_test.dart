@@ -20,12 +20,11 @@ void main() {
   Stream errorStream;
   StreamQueue errorQueue;
   setUp(() {
-    stream = new Stream.fromIterable([1, 2, 3, 4, 5]);
-    queue = new StreamQueue(new Stream.fromIterable([1, 2, 3, 4, 5]));
-    errorStream =
-        new Stream.fromFuture(new Future.error("oh no!", StackTrace.current));
-    errorQueue = new StreamQueue(
-        new Stream.fromFuture(new Future.error("oh no!", StackTrace.current)));
+    stream = Stream.fromIterable([1, 2, 3, 4, 5]);
+    queue = StreamQueue(Stream.fromIterable([1, 2, 3, 4, 5]));
+    errorStream = Stream.fromFuture(Future.error("oh no!", StackTrace.current));
+    errorQueue = StreamQueue(
+        Stream.fromFuture(Future.error("oh no!", StackTrace.current)));
   });
 
   group("emits()", () {
@@ -72,7 +71,7 @@ void main() {
 
     test("rejects an empty stream", () {
       expect(
-          expectLater(new Stream.empty(), emits(1)),
+          expectLater(Stream.empty(), emits(1)),
           throwsTestFailure(allOf([
             startsWith("Expected: should emit an event that <1>\n"),
             endsWith("   Which: emitted x Stream closed.\n")
@@ -97,7 +96,7 @@ void main() {
 
   group("emitsDone", () {
     test("succeeds for an empty stream", () {
-      expect(new Stream.empty(), emitsDone);
+      expect(Stream.empty(), emitsDone);
     });
 
     test("fails for a stream with events", () {

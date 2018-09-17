@@ -31,13 +31,8 @@ abstract class AsyncMatcher extends Matcher {
 
   bool matches(item, Map matchState) {
     var result = matchAsync(item);
-    expect(
-        result,
-        anyOf([
-          equals(null),
-          new TypeMatcher<Future>(),
-          new TypeMatcher<String>()
-        ]),
+    expect(result,
+        anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
         reason: "matchAsync() may only return a String, a Future, or null.");
 
     if (result is Future) {
@@ -59,5 +54,5 @@ abstract class AsyncMatcher extends Matcher {
 
   Description describeMismatch(
           item, Description description, Map matchState, bool verbose) =>
-      new StringDescription(matchState[this] as String);
+      StringDescription(matchState[this] as String);
 }

@@ -9,54 +9,54 @@ import 'throws_matcher.dart';
 /// A matcher for functions that throw ArgumentError.
 const Matcher throwsArgumentError =
     // ignore: deprecated_member_use
-    const Throws(isArgumentError);
+    Throws(isArgumentError);
 
 /// A matcher for functions that throw ConcurrentModificationError.
 const Matcher throwsConcurrentModificationError =
     // ignore: deprecated_member_use
-    const Throws(isConcurrentModificationError);
+    Throws(isConcurrentModificationError);
 
 /// A matcher for functions that throw CyclicInitializationError.
 const Matcher throwsCyclicInitializationError =
     // ignore: deprecated_member_use
-    const Throws(isCyclicInitializationError);
+    Throws(isCyclicInitializationError);
 
 /// A matcher for functions that throw Exception.
 const Matcher throwsException =
     // ignore: deprecated_member_use
-    const Throws(isException);
+    Throws(isException);
 
 /// A matcher for functions that throw FormatException.
 const Matcher throwsFormatException =
     // ignore: deprecated_member_use
-    const Throws(isFormatException);
+    Throws(isFormatException);
 
 /// A matcher for functions that throw NoSuchMethodError.
 const Matcher throwsNoSuchMethodError =
     // ignore: deprecated_member_use
-    const Throws(isNoSuchMethodError);
+    Throws(isNoSuchMethodError);
 
 /// A matcher for functions that throw NullThrownError.
 const Matcher throwsNullThrownError =
     // ignore: deprecated_member_use
-    const Throws(isNullThrownError);
+    Throws(isNullThrownError);
 
 /// A matcher for functions that throw RangeError.
 const Matcher throwsRangeError =
     // ignore: deprecated_member_use
-    const Throws(isRangeError);
+    Throws(isRangeError);
 
 /// A matcher for functions that throw StateError.
 const Matcher throwsStateError =
     // ignore: deprecated_member_use
-    const Throws(isStateError);
+    Throws(isStateError);
 
 /// A matcher for functions that throw Exception.
 const Matcher throwsUnimplementedError =
     // ignore: deprecated_member_use
-    const Throws(isUnimplementedError);
+    Throws(isUnimplementedError);
 
 /// A matcher for functions that throw UnsupportedError.
 const Matcher throwsUnsupportedError =
     // ignore: deprecated_member_use
-    const Throws(isUnsupportedError);
+    Throws(isUnsupportedError);

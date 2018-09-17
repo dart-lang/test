@@ -13,4 +13,4 @@ class _Placeholder {
 
 /// A placeholder to use as a default argument value to detect whether an
 /// argument was passed.
-const placeholder = const _Placeholder();
+const placeholder = _Placeholder();

@@ -21,10 +21,10 @@ class VMEnvironment implements Environment {
 
   Uri get remoteDebuggerUrl => null;
 
-  Stream get onRestart => new StreamController.broadcast().stream;
+  Stream get onRestart => StreamController.broadcast().stream;
 
   CancelableOperation displayPause() {
-    var completer = new CancelableCompleter(onCancel: () => _isolate.resume());
+    var completer = CancelableCompleter(onCancel: () => _isolate.resume());
 
     completer.complete(_isolate.pause().then((_) => _isolate.onPauseOrResume
         .firstWhere((event) => event is VMResumeEvent)));

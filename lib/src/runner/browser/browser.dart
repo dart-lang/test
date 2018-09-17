@@ -39,7 +39,7 @@ abstract class Browser {
   ///
   /// This will fire once the process has started successfully.
   Future<Process> get _process => _processCompleter.future;
-  final _processCompleter = new Completer<Process>();
+  final _processCompleter = Completer<Process>();
 
   /// Whether [close] has been called.
   var _closed = false;
@@ -49,7 +49,7 @@ abstract class Browser {
   /// If there's a problem starting or running the browser, this will complete
   /// with an error.
   Future get onExit => _onExitCompleter.future;
-  final _onExitCompleter = new Completer();
+  final _onExitCompleter = Completer();
 
   /// Standard IO streams for the underlying browser process.
   final _ioSubscriptions = <StreamSubscription>[];
@@ -68,7 +68,7 @@ abstract class Browser {
       var process = await startBrowser();
       _processCompleter.complete(process);
 
-      var output = new Uint8Buffer();
+      var output = Uint8Buffer();
       drainOutput(Stream<List<int>> stream) {
         try {
           _ioSubscriptions
@@ -93,7 +93,7 @@ abstract class Browser {
       // resolve the ambiguity is to wait a brief amount of time and see if this
       // browser is actually closed.
       if (!_closed && exitCode < 0) {
-        await new Future.delayed(new Duration(milliseconds: 200));
+        await Future.delayed(Duration(milliseconds: 200));
       }
 
       if (!_closed && exitCode != 0) {
@@ -103,7 +103,7 @@ abstract class Browser {
           message += "\nStandard output:\n$outputString";
         }
 
-        throw new ApplicationException(message);
+        throw ApplicationException(message);
       }
 
       _onExitCompleter.complete();
@@ -114,10 +114,10 @@ abstract class Browser {
       // Make sure the process dies even if the error wasn't fatal.
       _process.then((process) => process.kill());
 
-      if (stackTrace == null) stackTrace = new Trace.current();
+      if (stackTrace == null) stackTrace = Trace.current();
       if (_onExitCompleter.isCompleted) return;
       _onExitCompleter.completeError(
-          new ApplicationException(
+          ApplicationException(
               "Failed to run $name: ${getErrorMessage(error)}."),
           stackTrace);
     });

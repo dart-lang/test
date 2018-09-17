@@ -168,7 +168,7 @@ void main() {
         }
       """);
 
-      expect(channel.stream.first, throwsA(new TypeMatcher<TestFailure>()));
+      expect(channel.stream.first, throwsA(TypeMatcher<TestFailure>()));
     });
 
     test("gracefully handles an unserializable message in the VM", () {
@@ -582,6 +582,6 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
   test("emits an error from the stream channel if the isolate fails to load",
       () {
     expect(spawnHybridUri("non existent file").stream.first,
-        throwsA(new TypeMatcher<IsolateSpawnException>()));
+        throwsA(TypeMatcher<IsolateSpawnException>()));
   });
 }

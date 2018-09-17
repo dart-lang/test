@@ -83,7 +83,7 @@ Future _expect(actual, matcher,
     // ignore: deprecated_member_use
     ErrorFormatter formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
-    var mismatchDescription = new StringDescription();
+    var mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
 
     // ignore: deprecated_member_use
@@ -92,13 +92,13 @@ Future _expect(actual, matcher,
   };
 
   if (Invoker.current == null) {
-    throw new StateError("expect() may only be called within a test.");
+    throw StateError("expect() may only be called within a test.");
   }
 
-  if (Invoker.current.closed) throw new ClosedException();
+  if (Invoker.current.closed) throw ClosedException();
 
   if (skip != null && skip is! bool && skip is! String) {
-    throw new ArgumentError.value(skip, "skip", "must be a bool or a String");
+    throw ArgumentError.value(skip, "skip", "must be a bool or a String");
   }
 
   matcher = wrapMatcher(matcher);
@@ -109,24 +109,19 @@ Future _expect(actual, matcher,
     } else if (reason != null) {
       message = "Skip expect ($reason).";
     } else {
-      var description = new StringDescription().addDescriptionOf(matcher);
+      var description = StringDescription().addDescriptionOf(matcher);
       message = "Skip expect ($description).";
     }
 
     Invoker.current.skip(message);
-    return new Future.sync(() {});
+    return Future.sync(() {});
   }
 
   if (matcher is AsyncMatcher) {
     // Avoid async/await so that expect() throws synchronously when possible.
     var result = matcher.matchAsync(actual);
-    expect(
-        result,
-        anyOf([
-          equals(null),
-          new TypeMatcher<Future>(),
-          new TypeMatcher<String>()
-        ]),
+    expect(result,
+        anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
         reason: "matchAsync() may only return a String, a Future, or null.");
 
     if (result is String) {
@@ -146,13 +141,13 @@ Future _expect(actual, matcher,
       });
     }
 
-    return new Future.sync(() {});
+    return Future.sync(() {});
   }
 
   var matchState = {};
   try {
     if ((matcher as Matcher).matches(actual, matchState))
-      return new Future.sync(() {});
+      return Future.sync(() {});
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
@@ -162,12 +157,12 @@ Future _expect(actual, matcher,
 /// Convenience method for throwing a new [TestFailure] with the provided
 /// [message].
 @alwaysThrows
-Null fail(String message) => throw new TestFailure(message);
+Null fail(String message) => throw TestFailure(message);
 
 // The default error formatter.
 @Deprecated("Will be removed in 0.13.0.")
 String formatFailure(Matcher expected, actual, String which, {String reason}) {
-  var buffer = new StringBuffer();
+  var buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));
   if (which.isNotEmpty) buffer.writeln(indent(which, first: '   Which: '));

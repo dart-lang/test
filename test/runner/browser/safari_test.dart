@@ -27,7 +27,7 @@ webSocket.addEventListener("open", function() {
 ''');
     var webSocket = server.handleWebSocket();
 
-    var safari = new Safari(server.url);
+    var safari = Safari(server.url);
     addTearDown(() => safari.close());
 
     expect(await (await webSocket).stream.first, equals("loaded!"));
@@ -36,13 +36,13 @@ webSocket.addEventListener("open", function() {
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
 
-    var safari = new Safari(server.url);
+    var safari = Safari(server.url);
     await safari.close();
   });
 
   test("reports an error in onExit", () {
-    var safari = new Safari("http://dart-lang.org",
-        settings: new ExecutableSettings(
+    var safari = Safari("http://dart-lang.org",
+        settings: ExecutableSettings(
             linuxExecutable: "_does_not_exist",
             macOSExecutable: "_does_not_exist",
             windowsExecutable: "_does_not_exist"));

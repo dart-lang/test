@@ -50,13 +50,13 @@ class Declarer {
   final bool _noRetry;
 
   /// The set-up functions to run for each test in this group.
-  final _setUps = new List<Function()>();
+  final _setUps = List<Function()>();
 
   /// The tear-down functions to run for each test in this group.
-  final _tearDowns = new List<Function()>();
+  final _tearDowns = List<Function()>();
 
   /// The set-up functions to run once for this group.
-  final _setUpAlls = new List<Function()>();
+  final _setUpAlls = List<Function()>();
 
   /// The trace for the first call to [setUpAll].
   ///
@@ -66,7 +66,7 @@ class Declarer {
   Trace _setUpAllTrace;
 
   /// The tear-down functions to run once for this group.
-  final _tearDownAlls = new List<Function()>();
+  final _tearDownAlls = List<Function()>();
 
   /// The trace for the first call to [tearDownAll].
   ///
@@ -75,13 +75,13 @@ class Declarer {
   Trace _tearDownAllTrace;
 
   /// The children of this group, either tests or sub-groups.
-  final _entries = new List<GroupEntry>();
+  final _entries = List<GroupEntry>();
 
   /// Whether [build] has been called for this declarer.
   bool _built = false;
 
   /// The tests and/or groups that have been flagged as solo.
-  final _soloEntries = new Set<GroupEntry>();
+  final _soloEntries = Set<GroupEntry>();
 
   /// Whether any tests and/or groups have been flagged as solo.
   bool get _solo => _soloEntries.isNotEmpty;
@@ -112,7 +112,7 @@ class Declarer {
       : this._(
             null,
             null,
-            metadata ?? new Metadata(),
+            metadata ?? Metadata(),
             platformVariables ?? const UnmodifiableSetView.empty(),
             collectTraces,
             null,
@@ -137,7 +137,7 @@ class Declarer {
       bool solo = false}) {
     _checkNotBuilt("test");
 
-    var newMetadata = new Metadata.parse(
+    var newMetadata = Metadata.parse(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -147,7 +147,7 @@ class Declarer {
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
 
-    _entries.add(new LocalTest(_prefix(name), metadata, () async {
+    _entries.add(LocalTest(_prefix(name), metadata, () async {
       var parents = <Declarer>[];
       for (var declarer = this; declarer != null; declarer = declarer._parent) {
         parents.add(declarer);
@@ -170,7 +170,7 @@ class Declarer {
           // Make the declarer visible to running tests so that they'll throw
           // useful errors when calling `test()` and `group()` within a test.
           zoneValues: {#test.declarer: this});
-    }, trace: _collectTraces ? new Trace.current(2) : null, guarded: false));
+    }, trace: _collectTraces ? Trace.current(2) : null, guarded: false));
 
     if (solo) {
       _soloEntries.add(_entries.last);
@@ -188,7 +188,7 @@ class Declarer {
       bool solo = false}) {
     _checkNotBuilt("group");
 
-    var newMetadata = new Metadata.parse(
+    var newMetadata = Metadata.parse(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -197,16 +197,16 @@ class Declarer {
         retry: _noRetry ? 0 : retry);
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
-    var trace = _collectTraces ? new Trace.current(2) : null;
+    var trace = _collectTraces ? Trace.current(2) : null;
 
-    var declarer = new Declarer._(this, _prefix(name), metadata,
-        _platformVariables, _collectTraces, trace, _noRetry);
+    var declarer = Declarer._(this, _prefix(name), metadata, _platformVariables,
+        _collectTraces, trace, _noRetry);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
       var result = (body as dynamic)();
       if (result is! Future) return;
-      throw new ArgumentError("Groups may not be async.");
+      throw ArgumentError("Groups may not be async.");
     });
     _entries.add(declarer.build());
 
@@ -233,14 +233,14 @@ class Declarer {
   /// Registers a function to be run once before all tests.
   void setUpAll(callback()) {
     _checkNotBuilt("setUpAll");
-    if (_collectTraces) _setUpAllTrace ??= new Trace.current(2);
+    if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
     _setUpAlls.add(callback);
   }
 
   /// Registers a function to be run once after all tests.
   void tearDownAll(callback()) {
     _checkNotBuilt("tearDownAll");
-    if (_collectTraces) _tearDownAllTrace ??= new Trace.current(2);
+    if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
     _tearDownAlls.add(callback);
   }
 
@@ -259,7 +259,7 @@ class Declarer {
     var entries = _entries.toList();
     if (_solo) entries.removeWhere((entry) => !_soloEntries.contains(entry));
 
-    return new Group(_name, entries,
+    return Group(_name, entries,
         metadata: _metadata,
         trace: _trace,
         setUpAll: _setUpAll,
@@ -271,7 +271,7 @@ class Declarer {
   /// [name] should be the name of the method being called.
   void _checkNotBuilt(String name) {
     if (!_built) return;
-    throw new StateError("Can't call $name() once tests have begun running.");
+    throw StateError("Can't call $name() once tests have begun running.");
   }
 
   /// Run the set-up functions for this and any parent groups.
@@ -287,7 +287,7 @@ class Declarer {
   Test get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
-    return new LocalTest(_prefix("(setUpAll)"), _metadata, () {
+    return LocalTest(_prefix("(setUpAll)"), _metadata, () {
       return runZoned(() => Future.forEach(_setUpAlls, (setUp) => setUp()),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
@@ -301,7 +301,7 @@ class Declarer {
     // dynamically add tear-down code using [addTearDownAll].
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
-    return new LocalTest(_prefix("(tearDownAll)"), _metadata, () {
+    return LocalTest(_prefix("(tearDownAll)"), _metadata, () {
       return runZoned(() {
         return Invoker.current.unclosable(() async {
           while (_tearDownAlls.isNotEmpty) {

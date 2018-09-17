@@ -46,7 +46,7 @@ final String _globalConfigPath = () {
 main(List<String> args) async {
   Configuration configuration;
   try {
-    configuration = new Configuration.parse(args);
+    configuration = Configuration.parse(args);
   } on FormatException catch (error) {
     _printUsage(error.message);
     exitCode = exit_codes.usage;
@@ -71,14 +71,14 @@ main(List<String> args) async {
 
   try {
     var fileConfiguration = Configuration.empty;
-    if (new File(_globalConfigPath).existsSync()) {
+    if (File(_globalConfigPath).existsSync()) {
       fileConfiguration = fileConfiguration
-          .merge(new Configuration.load(_globalConfigPath, global: true));
+          .merge(Configuration.load(_globalConfigPath, global: true));
     }
 
-    if (new File(configuration.configurationPath).existsSync()) {
+    if (File(configuration.configurationPath).existsSync()) {
       fileConfiguration = fileConfiguration
-          .merge(new Configuration.load(configuration.configurationPath));
+          .merge(Configuration.load(configuration.configurationPath));
     }
 
     configuration = fileConfiguration.merge(configuration);
@@ -107,7 +107,7 @@ main(List<String> args) async {
   }
 
   if (!configuration.explicitPaths &&
-      !new Directory(configuration.paths.single).existsSync()) {
+      !Directory(configuration.paths.single).existsSync()) {
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
@@ -127,7 +127,7 @@ main(List<String> args) async {
   signalSubscription = _signals.listen((_) => close());
 
   try {
-    runner = new Runner(configuration);
+    runner = Runner(configuration);
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
@@ -140,7 +140,7 @@ main(List<String> args) async {
     exitCode = exit_codes.data;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
-    stderr.writeln(new Trace.from(stackTrace).terse);
+    stderr.writeln(Trace.from(stackTrace).terse);
     stderr.writeln("This is an unexpected error. Please file an issue at "
         "http://github.com/dart-lang/test\n"
         "with the stack trace and instructions for reproducing the error.");

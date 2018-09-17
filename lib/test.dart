@@ -58,16 +58,13 @@ Declarer get _declarer {
   // In order to run the tests, we set up our own Declarer via
   // [_globalDeclarer], and schedule a microtask to run the tests once they're
   // finished being defined.
-  _globalDeclarer = new Declarer();
+  _globalDeclarer = Declarer();
   scheduleMicrotask(() async {
-    var suite = new RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.empty,
-        _globalDeclarer.build(),
-        new SuitePlatform(Runtime.vm, os: currentOSGuess),
+    var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
+        _globalDeclarer.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
 
-    var engine = new Engine();
+    var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
     ExpandedReporter.watch(engine,
@@ -78,7 +75,7 @@ Declarer get _declarer {
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');
-    new Future.error("Dummy exception to set exit code.");
+    Future.error("Dummy exception to set exit code.");
   });
   return _globalDeclarer;
 }
@@ -282,7 +279,7 @@ void tearDown(callback()) => _declarer.tearDown(callback);
 /// instead runs the function after *all* tests in the current test suite.
 void addTearDown(callback()) {
   if (Invoker.current == null) {
-    throw new StateError("addTearDown() may only be called within a test.");
+    throw StateError("addTearDown() may only be called within a test.");
   }
 
   Invoker.current.addTearDown(callback);

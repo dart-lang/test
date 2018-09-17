@@ -53,13 +53,13 @@ class LocalTest extends Test {
 
   /// Loads a single runnable instance of this test.
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
-    var invoker = new Invoker._(suite, this, groups: groups, guarded: _guarded);
+    var invoker = Invoker._(suite, this, groups: groups, guarded: _guarded);
     return invoker.liveTest;
   }
 
   Test forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return new LocalTest._(name, metadata.forPlatform(platform), _body, trace,
+    return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
         _guarded, isScaffoldAll);
   }
 }
@@ -87,7 +87,7 @@ class Invoker {
   ///
   /// This is an instance variable to ensure that multiple invokers don't step
   /// on one anothers' toes.
-  final _closableKey = new Object();
+  final _closableKey = Object();
 
   /// Whether the test has been closed.
   ///
@@ -101,8 +101,8 @@ class Invoker {
       ? _onCloseCompleter.future
       // If we're in an unclosable block, return a future that will never
       // complete.
-      : new Completer().future;
-  final _onCloseCompleter = new Completer();
+      : Completer().future;
+  final _onCloseCompleter = Completer();
 
   /// The test being run.
   LocalTest get _test => liveTest.test as LocalTest;
@@ -111,7 +111,7 @@ class Invoker {
   OutstandingCallbackCounter get _outstandingCallbacks {
     var counter = Zone.current[_counterKey] as OutstandingCallbackCounter;
     if (counter != null) return counter;
-    throw new StateError("Can't add or remove outstanding callbacks outside "
+    throw StateError("Can't add or remove outstanding callbacks outside "
         "of a test body.");
   }
 
@@ -126,7 +126,7 @@ class Invoker {
   ///
   /// This is an instance variable to ensure that multiple invokers don't step
   /// on one anothers' toes.
-  final _counterKey = new Object();
+  final _counterKey = Object();
 
   /// The number of times this [liveTest] has been run.
   int _runCount = 0;
@@ -142,7 +142,7 @@ class Invoker {
   /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
   /// caught and dispatched to the appropriate [Invoker].
   static T guard<T>(T callback()) =>
-      runZoned(callback, zoneSpecification: new ZoneSpecification(
+      runZoned(callback, zoneSpecification: ZoneSpecification(
           // Use [handleUncaughtError] rather than [onError] so we can
           // capture [zone] and with it the outstanding callback counter for
           // the zone in which [error] was thrown.
@@ -175,7 +175,7 @@ class Invoker {
   Invoker._(Suite suite, LocalTest test,
       {Iterable<Group> groups, bool guarded = true})
       : _guarded = guarded {
-    _controller = new LiveTestController(
+    _controller = LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete,
         groups: groups);
   }
@@ -185,7 +185,7 @@ class Invoker {
   /// The [callback] may return a [Future]. Like all tear-downs, callbacks are
   /// run in the reverse of the order they're declared.
   void addTearDown(callback()) {
-    if (closed) throw new ClosedException();
+    if (closed) throw ClosedException();
 
     if (_test.isScaffoldAll) {
       Declarer.current.addTearDownAll(callback);
@@ -205,7 +205,7 @@ class Invoker {
   ///
   /// Throws a [ClosedException] if this test has been closed.
   void addOutstandingCallback() {
-    if (closed) throw new ClosedException();
+    if (closed) throw ClosedException();
     _outstandingCallbacks.addOutstandingCallback();
   }
 
@@ -243,7 +243,7 @@ class Invoker {
     heartbeat();
 
     Zone zone;
-    var counter = new OutstandingCallbackCounter();
+    var counter = OutstandingCallbackCounter();
     runZoned(() async {
       zone = Zone.current;
       _outstandingCallbackZones.add(zone);
@@ -275,15 +275,14 @@ class Invoker {
     if (liveTest.isComplete) return;
     if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-    var timeout =
-        liveTest.test.metadata.timeout.apply(new Duration(seconds: 30));
+    var timeout = liveTest.test.metadata.timeout.apply(Duration(seconds: 30));
     if (timeout == null) return;
     _timeoutTimer = _invokerZone.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         if (liveTest.isComplete) return;
         _handleError(
             Zone.current,
-            new TimeoutException(
+            TimeoutException(
                 "Test timed out after ${niceDuration(timeout)}.", timeout));
       });
     });
@@ -305,7 +304,7 @@ class Invoker {
           "[expectAsync] or the [completes] matcher when testing async code.";
     }
 
-    if (message != null) _controller.message(new Message.skip(message));
+    if (message != null) _controller.message(Message.skip(message));
     // TODO: error if the test is already complete.
     _controller.setState(const State(Status.pending, Result.skipped));
   }
@@ -330,9 +329,9 @@ class Invoker {
     // Get the chain information from the zone in which the error was thrown.
     zone.run(() {
       if (stackTrace == null) {
-        stackTrace = new Chain.current();
+        stackTrace = Chain.current();
       } else {
-        stackTrace = new Chain.forTrace(stackTrace);
+        stackTrace = Chain.forTrace(stackTrace);
       }
     });
 
@@ -382,7 +381,7 @@ class Invoker {
   void _onRun() {
     _controller.setState(const State(Status.running, Result.success));
 
-    var outstandingCallbacksForBody = new OutstandingCallbackCounter();
+    var outstandingCallbacksForBody = OutstandingCallbackCounter();
 
     _runCount++;
     Chain.capture(() {
@@ -400,7 +399,7 @@ class Invoker {
           //
           // Using [new Future] also avoids starving the DOM or other
           // microtask-level events.
-          new Future(() async {
+          Future(() async {
             await _test._body();
             await unclosable(_runTearDowns);
             removeOutstandingCallback();
@@ -411,14 +410,12 @@ class Invoker {
 
           if (liveTest.state.result != Result.success &&
               _runCount < liveTest.test.metadata.retry + 1) {
-            _controller
-                .message(new Message.print("Retry: ${liveTest.test.name}"));
+            _controller.message(Message.print("Retry: ${liveTest.test.name}"));
             _onRun();
             return;
           }
 
-          _controller
-              .setState(new State(Status.complete, liveTest.state.result));
+          _controller.setState(State(Status.complete, liveTest.state.result));
 
           _controller.completer.complete();
         },
@@ -430,8 +427,8 @@ class Invoker {
               _closableKey: true,
               #runCount: _runCount,
             },
-            zoneSpecification: new ZoneSpecification(
-                print: (_, __, ___, line) => _print(line)));
+            zoneSpecification:
+                ZoneSpecification(print: (_, __, ___, line) => _print(line)));
       });
     }, when: liveTest.test.metadata.chainStackTraces, errorZone: false);
   }
@@ -446,7 +443,7 @@ class Invoker {
   }
 
   /// Prints [text] as a message to [_controller].
-  void _print(String text) => _controller.message(new Message.print(text));
+  void _print(String text) => _controller.message(Message.print(text));
 
   /// Run [_tearDowns] in reverse order.
   Future _runTearDowns() async {

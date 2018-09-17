@@ -14,11 +14,11 @@ import '../backend/invoker.dart';
 ///
 /// This may only be called within a test.
 Future errorsDontStopTest(body()) {
-  var completer = new Completer();
+  var completer = Completer();
 
   Invoker.current.addOutstandingCallback();
   Invoker.current.waitForOutstandingCallbacks(() {
-    new Future.sync(body).whenComplete(completer.complete);
+    Future.sync(body).whenComplete(completer.complete);
   }).then((_) => Invoker.current.removeOutstandingCallback());
 
   return completer.future;

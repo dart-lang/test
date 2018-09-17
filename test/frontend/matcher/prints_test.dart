@@ -96,13 +96,13 @@ void main() {
 
   group('asynchronous', () {
     test("passes with an expected print", () {
-      expect(() => new Future(() => print("Hello, world!")),
+      expect(() => Future(() => print("Hello, world!")),
           prints("Hello, world!\n"));
     });
 
     test("combines multiple prints", () {
       expect(
-          () => new Future(() {
+          () => Future(() {
                 print("Hello");
                 print("World!");
               }),
@@ -110,12 +110,12 @@ void main() {
     });
 
     test("works with a Matcher", () {
-      expect(() => new Future(() => print("Hello, world!")),
+      expect(() => Future(() => print("Hello, world!")),
           prints(contains("Hello")));
     });
 
     test("describes a failure nicely", () async {
-      var closure = () => new Future(() => print("Hello, world!"));
+      var closure = () => Future(() => print("Hello, world!"));
       var liveTest = await runTestBody(() {
         expect(closure, prints("Goodbye, world!\n"));
       });
@@ -138,7 +138,7 @@ void main() {
     });
 
     test("describes a failure with a non-descriptive Matcher nicely", () async {
-      var closure = () => new Future(() => print("Hello, world!"));
+      var closure = () => Future(() => print("Hello, world!"));
       var liveTest = await runTestBody(() {
         expect(closure, prints(contains("Goodbye")));
       });
@@ -155,7 +155,7 @@ void main() {
     });
 
     test("describes a failure with no text nicely", () async {
-      var closure = () => new Future.value();
+      var closure = () => Future.value();
       var liveTest = await runTestBody(() {
         expect(closure, prints(contains("Goodbye")));
       });
@@ -172,14 +172,14 @@ void main() {
 
     test("won't let the test end until the Future completes", () {
       return expectTestBlocks(() {
-        var completer = new Completer();
+        var completer = Completer();
         expect(() => completer.future, prints(isEmpty));
         return completer;
       }, (completer) => completer.complete());
     });
 
     test("blocks expectLater's Future", () async {
-      var completer = new Completer();
+      var completer = Completer();
       var fired = false;
       expectLater(() {
         scheduleMicrotask(() => print("hello!"));

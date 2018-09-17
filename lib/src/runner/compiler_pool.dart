@@ -17,7 +17,7 @@ import 'configuration/suite.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
 final _dart2jsStatus =
-    new RegExp(r"^Dart file \(.*\) compiled to JavaScript: .*\n?");
+    RegExp(r"^Dart file \(.*\) compiled to JavaScript: .*\n?");
 
 /// A pool of `dart2js` instances.
 ///
@@ -30,20 +30,20 @@ class CompilerPool {
   final Pool _pool;
 
   /// The currently-active dart2js processes.
-  final _processes = new Set<Process>();
+  final _processes = Set<Process>();
 
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
 
   /// The memoizer for running [close] exactly once.
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 
   /// Extra arguments to pass to dart2js.
   final List<String> _extraArgs;
 
   /// Creates a compiler pool that multiple instances of `dart2js` at once.
   CompilerPool([Iterable<String> extraArgs])
-      : _pool = new Pool(Configuration.current.concurrency),
+      : _pool = Pool(Configuration.current.concurrency),
         _extraArgs = extraArgs?.toList() ?? const [];
 
   /// Compiles [code] to [jsPath].
@@ -58,7 +58,7 @@ class CompilerPool {
 
       return withTempDir((dir) async {
         var wrapperPath = p.join(dir, "runInBrowser.dart");
-        new File(wrapperPath).writeAsStringSync(code);
+        File(wrapperPath).writeAsStringSync(code);
 
         var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
@@ -87,7 +87,7 @@ class CompilerPool {
         /// update, but it also avoids some really nasty-looking interleaved
         /// output. Write both stdout and stderr to the same buffer in case
         /// they're intended to be printed in order.
-        var buffer = new StringBuffer();
+        var buffer = StringBuffer();
 
         await Future.wait([
           process.stdout.transform(utf8.decoder).forEach(buffer.write),
@@ -112,7 +112,7 @@ class CompilerPool {
   /// Fix up the source map at [mapPath] so that it points to absolute file:
   /// URIs that are resolvable by the browser.
   void _fixSourceMap(String mapPath) {
-    var map = jsonDecode(new File(mapPath).readAsStringSync());
+    var map = jsonDecode(File(mapPath).readAsStringSync());
     var root = map['sourceRoot'] as String;
 
     map['sources'] = map['sources'].map((source) {
@@ -122,7 +122,7 @@ class CompilerPool {
       return p.toUri(mapPath).resolveUri(url).toString();
     }).toList();
 
-    new File(mapPath).writeAsStringSync(jsonEncode(map));
+    File(mapPath).writeAsStringSync(jsonEncode(map));
   }
 
   /// Closes the compiler pool.

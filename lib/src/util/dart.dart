@@ -25,8 +25,7 @@ Future<Isolate> runInIsolate(String code, message,
     {PackageResolver resolver, bool checked, SendPort onExit}) async {
   resolver ??= PackageResolver.current;
   return await Isolate.spawnUri(
-      new Uri.dataFromString(code,
-          mimeType: 'application/dart', encoding: utf8),
+      Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
       [],
       message,
       packageConfig: await resolver.packageConfigUri,
@@ -63,7 +62,7 @@ Future<Isolate> runInIsolate(String code, message,
 /// contain [span].
 SourceSpan contextualizeSpan(
     SourceSpan span, StringLiteral context, SourceFile file) {
-  var contextRunes = new StringLiteralIterator(context)..moveNext();
+  var contextRunes = StringLiteralIterator(context)..moveNext();
 
   for (var i = 0; i < span.start.offset; i++) {
     if (!contextRunes.moveNext()) return null;

@@ -46,8 +46,8 @@ class BrowserPlatform extends PlatformPlugin
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
   static Future<BrowserPlatform> start({String root}) async {
-    var server = new shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return new BrowserPlatform._(
+    var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
+    return BrowserPlatform._(
         server,
         Configuration.current,
         p.fromUri(await Isolate.resolvePackageUri(
@@ -75,13 +75,13 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// This is one-off because each [BrowserManager] can only connect to a single
   /// WebSocket,
-  final _webSocketHandler = new OneOffHandler();
+  final _webSocketHandler = OneOffHandler();
 
   /// A [PathHandler] used to serve compiled JS.
-  final _jsHandler = new PathHandler();
+  final _jsHandler = PathHandler();
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = new CompilerPool();
+  final _compilers = CompilerPool();
 
   /// The temporary directory in which compiled JS is emitted.
   final String _compiledDir;
@@ -93,7 +93,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// Pub itself ensures that only one compilation runs at a time; we just use
   /// this pool to make sure that the output is nice and linear.
-  final _pubServePool = new Pool(1);
+  final _pubServePool = Pool(1);
 
   /// The HTTP client to use when caching JS files in `pub serve`.
   final HttpClient _http;
@@ -111,25 +111,25 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// This starts out with the default settings, which may be overridden by user settings.
   final _browserSettings =
-      new Map<Runtime, ExecutableSettings>.from(defaultSettings);
+      Map<Runtime, ExecutableSettings>.from(defaultSettings);
 
   /// A map from test suite paths to Futures that will complete once those
   /// suites are finished compiling.
   ///
   /// This is used to make sure that a given test suite is only compiled once
   /// per run, rather than once per browser per run.
-  final _compileFutures = new Map<String, Future>();
+  final _compileFutures = Map<String, Future>();
 
   /// Mappers for Dartifying stack traces, indexed by test path.
-  final _mappers = new Map<String, StackTraceMapper>();
+  final _mappers = Map<String, StackTraceMapper>();
 
   BrowserPlatform._(this._server, Configuration config, String faviconPath,
       {String root})
       : _config = config,
         _root = root == null ? p.current : root,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
-        _http = config.pubServeUrl == null ? null : new HttpClient() {
-    var cascade = new shelf.Cascade().add(_webSocketHandler.handler);
+        _http = config.pubServeUrl == null ? null : HttpClient() {
+    var cascade = shelf.Cascade().add(_webSocketHandler.handler);
 
     if (_config.pubServeUrl == null) {
       cascade = cascade
@@ -143,11 +143,11 @@ class BrowserPlatform extends PlatformPlugin
           .add(_wrapperHandler);
     }
 
-    var pipeline = new shelf.Pipeline()
+    var pipeline = shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
-    _server.mount(new shelf.Cascade()
+    _server.mount(shelf.Cascade()
         .add(createFileHandler(faviconPath))
         .add(pipeline)
         .handler);
@@ -159,7 +159,7 @@ class BrowserPlatform extends PlatformPlugin
 
     if (path.endsWith(".browser_test.dart")) {
       var testPath = p.basename(p.withoutExtension(p.withoutExtension(path)));
-      return new shelf.Response.ok('''
+      return shelf.Response.ok('''
         import "package:stream_channel/stream_channel.dart";
 
         import "package:test/src/runner/plugin/remote_platform_helpers.dart";
@@ -182,7 +182,7 @@ class BrowserPlatform extends PlatformPlugin
       var scriptBase = htmlEscape.convert(p.basename(test));
       var link = '<link rel="x-dart-test" href="$scriptBase">';
 
-      return new shelf.Response.ok('''
+      return shelf.Response.ok('''
         <!DOCTYPE html>
         <html>
         <head>
@@ -194,11 +194,11 @@ class BrowserPlatform extends PlatformPlugin
       ''', headers: {'Content-Type': 'text/html'});
     }
 
-    return new shelf.Response.notFound('Not found.');
+    return shelf.Response.notFound('Not found.');
   }
 
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
-      new ExecutableSettings.parse(settings);
+      ExecutableSettings.parse(settings);
 
   ExecutableSettings mergePlatformSettings(
           ExecutableSettings settings1, ExecutableSettings settings2) =>
@@ -221,15 +221,13 @@ class BrowserPlatform extends PlatformPlugin
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
     if (!browser.isBrowser) {
-      throw new ArgumentError("$browser is not a browser.");
+      throw ArgumentError("$browser is not a browser.");
     }
 
     var htmlPath = p.withoutExtension(path) + '.html';
-    if (new File(htmlPath).existsSync() &&
-        !new File(htmlPath)
-            .readAsStringSync()
-            .contains('packages/test/dart.js')) {
-      throw new LoadException(
+    if (File(htmlPath).existsSync() &&
+        !File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
+      throw LoadException(
           path,
           '"${htmlPath}" must contain <script src="packages/test/dart.js">'
           '</script>.');
@@ -272,7 +270,7 @@ class BrowserPlatform extends PlatformPlugin
   }
 
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
-      throw new UnimplementedError();
+      throw UnimplementedError();
 
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
@@ -281,7 +279,7 @@ class BrowserPlatform extends PlatformPlugin
   Future _pubServeSuite(String path, Uri dartUrl, Runtime browser,
       SuiteConfiguration suiteConfig) {
     return _pubServePool.withResource(() async {
-      var timer = new Timer(new Duration(seconds: 1), () {
+      var timer = Timer(Duration(seconds: 1), () {
         print('"pub serve" is compiling $path...');
       });
 
@@ -305,7 +303,7 @@ class BrowserPlatform extends PlatformPlugin
           // else the process can't exit.
           response.listen((_) {});
 
-          throw new LoadException(
+          throw LoadException(
               path,
               "Error getting $url: ${response.statusCode} "
               "${response.reasonPhrase}\n"
@@ -313,10 +311,9 @@ class BrowserPlatform extends PlatformPlugin
         }
 
         if (getSourceMap && !suiteConfig.jsTrace) {
-          _mappers[path] = new StackTraceMapper(
-              await utf8.decodeStream(response),
+          _mappers[path] = StackTraceMapper(await utf8.decodeStream(response),
               mapUrl: url,
-              packageResolver: new SyncPackageResolver.root('packages'),
+              packageResolver: SyncPackageResolver.root('packages'),
               sdkRoot: p.toUri('packages/\$sdk'));
           return;
         }
@@ -330,7 +327,7 @@ class BrowserPlatform extends PlatformPlugin
               "(errno ${error.osError.errorCode})";
         }
 
-        throw new LoadException(
+        throw LoadException(
             path,
             "Error getting $url: $message\n"
             'Make sure "pub serve" is running.');
@@ -346,7 +343,7 @@ class BrowserPlatform extends PlatformPlugin
   /// served.
   Future _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = new Directory(_compiledDir).createTempSync('test_').path;
+      var dir = Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
 
       await _compilers.compile('''
@@ -363,22 +360,20 @@ class BrowserPlatform extends PlatformPlugin
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
           '.browser_test.dart.js';
       _jsHandler.add(jsUrl, (request) {
-        return new shelf.Response.ok(new File(jsPath).readAsStringSync(),
+        return shelf.Response.ok(File(jsPath).readAsStringSync(),
             headers: {'Content-Type': 'application/javascript'});
       });
 
       var mapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
           '.browser_test.dart.js.map';
       _jsHandler.add(mapUrl, (request) {
-        return new shelf.Response.ok(
-            new File(jsPath + '.map').readAsStringSync(),
+        return shelf.Response.ok(File(jsPath + '.map').readAsStringSync(),
             headers: {'Content-Type': 'application/json'});
       });
 
       if (suiteConfig.jsTrace) return;
       var mapPath = jsPath + '.map';
-      _mappers[dartPath] = new StackTraceMapper(
-          new File(mapPath).readAsStringSync(),
+      _mappers[dartPath] = StackTraceMapper(File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
           packageResolver: await PackageResolver.current.asSync,
           sdkRoot: p.toUri(sdkDir));
@@ -392,7 +387,7 @@ class BrowserPlatform extends PlatformPlugin
     var managerFuture = _browserManagers[browser];
     if (managerFuture != null) return managerFuture;
 
-    var completer = new Completer<WebSocketChannel>.sync();
+    var completer = Completer<WebSocketChannel>.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
     var hostUrl = (_config.pubServeUrl == null ? url : _config.pubServeUrl)
@@ -446,10 +441,10 @@ class BrowserPlatform extends PlatformPlugin
         await Future.wait(futures);
 
         if (_config.pubServeUrl == null) {
-          new Directory(_compiledDir).deleteSync(recursive: true);
+          Directory(_compiledDir).deleteSync(recursive: true);
         } else {
           _http.close();
         }
       });
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 }

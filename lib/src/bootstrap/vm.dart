@@ -15,5 +15,5 @@ void internalBootstrapVmTest(Function getMain(), SendPort sendPort) {
     catchIsolateErrors();
     return getMain();
   });
-  new IsolateChannel.connectSend(sendPort).pipe(channel);
+  IsolateChannel.connectSend(sendPort).pipe(channel);
 }

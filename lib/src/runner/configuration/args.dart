@@ -16,7 +16,7 @@ import 'values.dart';
 
 /// The parser used to parse the command-line arguments.
 final ArgParser _parser = (() {
-  var parser = new ArgParser(allowTrailingOptions: true);
+  var parser = ArgParser(allowTrailingOptions: true);
 
   var allRuntimes = Runtime.builtIn.toList()..remove(Runtime.vm);
   if (!Platform.isMacOS) allRuntimes.remove(Runtime.safari);
@@ -149,7 +149,7 @@ String get usage => _parser.usage;
 /// Parses the configuration from [args].
 ///
 /// Throws a [FormatException] if [args] are invalid.
-Configuration parse(List<String> args) => new _Parser(args).parse();
+Configuration parse(List<String> args) => _Parser(args).parse();
 
 /// A class for parsing an argument list.
 ///
@@ -164,43 +164,43 @@ class _Parser {
   Configuration parse() {
     var patterns = (_options['name'] as List<String>)
         .map<Pattern>(
-            (value) => _wrapFormatException('name', () => new RegExp(value)))
+            (value) => _wrapFormatException('name', () => RegExp(value)))
         .toList()
           ..addAll(_options['plain-name'] as List<String>);
 
-    var includeTagSet = new Set.from(_options['tags'] as Iterable ?? [])
+    var includeTagSet = Set.from(_options['tags'] as Iterable ?? [])
       ..addAll(_options['tag'] as Iterable ?? []);
 
     var includeTags = includeTagSet.fold(BooleanSelector.all,
         (BooleanSelector selector, tag) {
-      var tagSelector = new BooleanSelector.parse(tag as String);
+      var tagSelector = BooleanSelector.parse(tag as String);
       return selector.intersection(tagSelector);
     });
 
-    var excludeTagSet = new Set.from(_options['exclude-tags'] as Iterable ?? [])
+    var excludeTagSet = Set.from(_options['exclude-tags'] as Iterable ?? [])
       ..addAll(_options['exclude-tag'] as Iterable ?? []);
 
     var excludeTags = excludeTagSet.fold(BooleanSelector.none,
         (BooleanSelector selector, tag) {
-      var tagSelector = new BooleanSelector.parse(tag as String);
+      var tagSelector = BooleanSelector.parse(tag as String);
       return selector.union(tagSelector);
     });
 
     var shardIndex = _parseOption('shard-index', int.parse);
     var totalShards = _parseOption('total-shards', int.parse);
     if ((shardIndex == null) != (totalShards == null)) {
-      throw new FormatException(
+      throw FormatException(
           "--shard-index and --total-shards may only be passed together.");
     } else if (shardIndex != null) {
       if (shardIndex < 0) {
-        throw new FormatException("--shard-index may not be negative.");
+        throw FormatException("--shard-index may not be negative.");
       } else if (shardIndex >= totalShards) {
-        throw new FormatException(
+        throw FormatException(
             "--shard-index must be less than --total-shards.");
       }
     }
 
-    return new Configuration(
+    return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
         verboseTrace: _ifParsed('verbose-trace'),
@@ -217,10 +217,10 @@ class _Parser {
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
         totalShards: totalShards,
-        timeout: _parseOption('timeout', (value) => new Timeout.parse(value)),
+        timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
         patterns: patterns,
         runtimes: _ifParsed<List<String>>('platform')
-            ?.map((runtime) => new RuntimeSelection(runtime))
+            ?.map((runtime) => RuntimeSelection(runtime))
             ?.toList(),
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
@@ -255,7 +255,7 @@ class _Parser {
     try {
       return parse();
     } on FormatException catch (error) {
-      throw new FormatException('Couldn\'t parse --$name "${_options[name]}": '
+      throw FormatException('Couldn\'t parse --$name "${_options[name]}": '
           '${error.message}');
     }
   }

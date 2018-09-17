@@ -37,7 +37,7 @@ class Firefox extends Browser {
   static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
     settings ??= defaultSettings[Runtime.firefox];
     var dir = createTempDir();
-    new File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
+    File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
     var process = await Process.start(
         settings.executable,
@@ -45,8 +45,7 @@ class Firefox extends Browser {
           ..addAll(settings.arguments),
         environment: {"MOZ_CRASHREPORTER_DISABLE": "1"});
 
-    process.exitCode
-        .then((_) => new Directory(dir).deleteSync(recursive: true));
+    process.exitCode.then((_) => Directory(dir).deleteSync(recursive: true));
 
     return process;
   }

@@ -56,12 +56,12 @@ Null Function(
         .toList();
 
     zone.handleUncaughtError(
-        new TestFailure(
+        TestFailure(
             "Callback should never have been called, but it was called with" +
                 (arguments.isEmpty
                     ? " no arguments."
                     : ":\n${bullet(arguments.map(prettyPrint))}")),
-        zone.run(() => new Chain.current()));
+        zone.run(() => Chain.current()));
     return null;
   };
 }

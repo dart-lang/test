@@ -20,7 +20,7 @@ void main() {
   Suite suite;
   setUp(() {
     lastState = null;
-    suite = new Suite(new Group.root([]), suitePlatform);
+    suite = Suite(Group.root([]), suitePlatform);
   });
 
   group("Invoker.current", () {
@@ -43,11 +43,11 @@ void main() {
     test("returns the current invoker in a test body after the test completes",
         () async {
       Status status;
-      var completer = new Completer();
+      var completer = Completer();
       var liveTest = _localTest(() {
         // Use [new Future] in particular to wait longer than a microtask for
         // the test to complete.
-        new Future(() {
+        Future(() {
           status = Invoker.current.liveTest.state.status;
           completer.complete(Invoker.current);
         });
@@ -122,7 +122,7 @@ void main() {
   group("in a test with failures,", () {
     test("a synchronous throw is reported and causes the test to fail", () {
       var liveTest = _localTest(() {
-        throw new TestFailure('oh no');
+        throw TestFailure('oh no');
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -131,7 +131,7 @@ void main() {
 
     test("a synchronous reported failure causes the test to fail", () {
       var liveTest = _localTest(() {
-        registerException(new TestFailure("oh no"));
+        registerException(TestFailure("oh no"));
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -142,7 +142,7 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => registerException(new TestFailure("oh no")));
+        Future(() => registerException(TestFailure("oh no")));
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -153,7 +153,7 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => throw new TestFailure("oh no"));
+        Future(() => throw TestFailure("oh no"));
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -163,7 +163,7 @@ void main() {
     test("a failure reported asynchronously after the test causes it to error",
         () {
       var liveTest = _localTest(() {
-        new Future(() => registerException(new TestFailure("oh no")));
+        Future(() => registerException(TestFailure("oh no")));
       }).load(suite);
 
       expectStates(liveTest, [
@@ -196,10 +196,10 @@ void main() {
     test("multiple asynchronous failures are reported", () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => throw new TestFailure("one"));
-        new Future(() => throw new TestFailure("two"));
-        new Future(() => throw new TestFailure("three"));
-        new Future(() => throw new TestFailure("four"));
+        Future(() => throw TestFailure("one"));
+        Future(() => throw TestFailure("two"));
+        Future(() => throw TestFailure("three"));
+        Future(() => throw TestFailure("four"));
       }).load(suite);
 
       expectStates(liveTest, [
@@ -228,7 +228,7 @@ void main() {
 
     test("a failure after an error doesn't change the state of the test", () {
       var liveTest = _localTest(() {
-        new Future(() => throw new TestFailure("fail"));
+        Future(() => throw TestFailure("fail"));
         throw "error";
       }).load(suite);
 
@@ -274,7 +274,7 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => registerException("oh no"));
+        Future(() => registerException("oh no"));
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -285,7 +285,7 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => throw "oh no");
+        Future(() => throw "oh no");
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -295,7 +295,7 @@ void main() {
     test("an error reported asynchronously after the test causes it to error",
         () {
       var liveTest = _localTest(() {
-        new Future(() => registerException("oh no"));
+        Future(() => registerException("oh no"));
       }).load(suite);
 
       expectStates(liveTest, [
@@ -325,10 +325,10 @@ void main() {
     test("multiple asynchronous errors are reported", () {
       var liveTest = _localTest(() {
         Invoker.current.addOutstandingCallback();
-        new Future(() => throw "one");
-        new Future(() => throw "two");
-        new Future(() => throw "three");
-        new Future(() => throw "four");
+        Future(() => throw "one");
+        Future(() => throw "two");
+        Future(() => throw "three");
+        Future(() => throw "four");
       }).load(suite);
 
       expectStates(liveTest, [
@@ -357,8 +357,8 @@ void main() {
 
     test("an error after a failure changes the state of the test", () {
       var liveTest = _localTest(() {
-        new Future(() => throw "error");
-        throw new TestFailure("fail");
+        Future(() => throw "error");
+        throw TestFailure("fail");
       }).load(suite);
 
       expectStates(liveTest, [
@@ -407,7 +407,7 @@ void main() {
     expect(() {
       var liveTest = _localTest(() {
         print("Hello,");
-        return new Future(() => print("world!"));
+        return Future(() => print("world!"));
       }).load(suite);
 
       expect(
@@ -425,7 +425,7 @@ void main() {
 
   group("timeout:", () {
     test("a test times out after 30 seconds by default", () {
-      new FakeAsync().run((async) {
+      FakeAsync().run((async) {
         var liveTest = _localTest(() {
           Invoker.current.addOutstandingCallback();
         }).load(suite);
@@ -438,22 +438,20 @@ void main() {
         expectErrors(liveTest, [
           (error) {
             expect(lastState.status, equals(Status.complete));
-            expect(error, new TypeMatcher<TimeoutException>());
+            expect(error, TypeMatcher<TimeoutException>());
           }
         ]);
 
         liveTest.run();
-        async.elapse(new Duration(seconds: 30));
+        async.elapse(Duration(seconds: 30));
       });
     });
 
     test("a test's custom timeout takes precedence", () {
-      new FakeAsync().run((async) {
+      FakeAsync().run((async) {
         var liveTest = _localTest(() {
           Invoker.current.addOutstandingCallback();
-        },
-                metadata: new Metadata(
-                    timeout: new Timeout(new Duration(seconds: 15))))
+        }, metadata: Metadata(timeout: Timeout(Duration(seconds: 15))))
             .load(suite);
 
         expectStates(liveTest, [
@@ -464,20 +462,20 @@ void main() {
         expectErrors(liveTest, [
           (error) {
             expect(lastState.status, equals(Status.complete));
-            expect(error, new TypeMatcher<TimeoutException>());
+            expect(error, TypeMatcher<TimeoutException>());
           }
         ]);
 
         liveTest.run();
-        async.elapse(new Duration(seconds: 15));
+        async.elapse(Duration(seconds: 15));
       });
     });
 
     test("a timeout factor is applied on top of the 30s default", () {
-      new FakeAsync().run((async) {
+      FakeAsync().run((async) {
         var liveTest = _localTest(() {
           Invoker.current.addOutstandingCallback();
-        }, metadata: new Metadata(timeout: new Timeout.factor(0.5)))
+        }, metadata: Metadata(timeout: Timeout.factor(0.5)))
             .load(suite);
 
         expectStates(liveTest, [
@@ -488,26 +486,26 @@ void main() {
         expectErrors(liveTest, [
           (error) {
             expect(lastState.status, equals(Status.complete));
-            expect(error, new TypeMatcher<TimeoutException>());
+            expect(error, TypeMatcher<TimeoutException>());
           }
         ]);
 
         liveTest.run();
-        async.elapse(new Duration(seconds: 15));
+        async.elapse(Duration(seconds: 15));
       });
     });
 
     test("a test with Timeout.none never times out", () {
-      new FakeAsync().run((async) {
+      FakeAsync().run((async) {
         var liveTest = _localTest(() {
           Invoker.current.addOutstandingCallback();
-        }, metadata: new Metadata(timeout: Timeout.none))
+        }, metadata: Metadata(timeout: Timeout.none))
             .load(suite);
 
         expectStates(liveTest, [const State(Status.running, Result.success)]);
 
         liveTest.run();
-        async.elapse(new Duration(hours: 10));
+        async.elapse(Duration(hours: 10));
         expect(liveTest.state.status, equals(Status.running));
       });
     });
@@ -578,7 +576,7 @@ void main() {
       expect(() async {
         var liveTest = _localTest(() {
           expect(true, isFalse);
-        }, metadata: new Metadata(chainStackTraces: false))
+        }, metadata: Metadata(chainStackTraces: false))
             .load(suite);
         liveTest.onError.listen(expectAsync1((_) {}, count: 1));
 
@@ -617,6 +615,6 @@ void main() {
 }
 
 LocalTest _localTest(body(), {Metadata metadata}) {
-  if (metadata == null) metadata = new Metadata();
-  return new LocalTest("test", metadata, body);
+  if (metadata == null) metadata = Metadata();
+  return LocalTest("test", metadata, body);
 }

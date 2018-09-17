@@ -48,24 +48,24 @@ class RemoteListener {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
-    var controller = new StreamChannelController<Object>(
-        allowForeignErrors: false, sync: true);
-    var channel = new MultiChannel(controller.local);
+    var controller =
+        StreamChannelController<Object>(allowForeignErrors: false, sync: true);
+    var channel = MultiChannel(controller.local);
 
     var verboseChain = true;
 
     var printZone = hidePrints ? null : Zone.current;
-    var spec = new ZoneSpecification(print: (_, __, ___, line) {
+    var spec = ZoneSpecification(print: (_, __, ___, line) {
       if (printZone != null) printZone.print(line);
       channel.sink.add({"type": "print", "line": line});
     });
 
     // Work-around for https://github.com/dart-lang/sdk/issues/32556. Remove
     // once fixed.
-    new Stream.fromIterable([]).listen((_) {}).cancel();
+    Stream.fromIterable([]).listen((_) {}).cancel();
 
-    new SuiteChannelManager().asCurrent(() {
-      new StackTraceFormatter().asCurrent(() {
+    SuiteChannelManager().asCurrent(() {
+      StackTraceFormatter().asCurrent(() {
         runZoned(() async {
           dynamic main;
           try {
@@ -89,7 +89,7 @@ class RemoteListener {
             return;
           }
 
-          var queue = new StreamQueue(channel.stream);
+          var queue = StreamQueue(channel.stream);
           var message = await queue.next;
           assert(message['type'] == 'initial');
 
@@ -100,12 +100,12 @@ class RemoteListener {
           });
 
           if ((message['asciiGlyphs'] as bool) ?? false) glyph.ascii = true;
-          var metadata = new Metadata.deserialize(message['metadata']);
+          var metadata = Metadata.deserialize(message['metadata']);
           verboseChain = metadata.verboseTrace;
-          var declarer = new Declarer(
+          var declarer = Declarer(
               metadata: metadata,
               platformVariables:
-                  new Set.from(message['platformVariables'] as Iterable),
+                  Set.from(message['platformVariables'] as Iterable),
               collectTraces: message['collectTraces'] as bool,
               noRetry: message['noRetry'] as bool);
 
@@ -117,13 +117,13 @@ class RemoteListener {
 
           await declarer.declare(main as Function());
 
-          var suite = new Suite(declarer.build(),
-              new SuitePlatform.deserialize(message['platform']),
+          var suite = Suite(
+              declarer.build(), SuitePlatform.deserialize(message['platform']),
               path: message['path'] as String);
 
           runZoned(() {
             Invoker.guard(
-                () => new RemoteListener._(suite, printZone)._listen(channel));
+                () => RemoteListener._(suite, printZone)._listen(channel));
           },
               // Make the declarer visible to running tests so that they'll throw
               // useful errors when calling `test()` and `group()` within a test,
@@ -142,7 +142,7 @@ class RemoteListener {
   static Set<String> _deserializeSet(List list) {
     if (list == null) return null;
     if (list.isEmpty) return null;
-    return new Set.from(list);
+    return Set.from(list);
   }
 
   /// Sends a message over [channel] indicating that the tests failed to load.

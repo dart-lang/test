@@ -41,7 +41,7 @@ final int lineLength = () {
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
 /// The version of the Dart SDK on which test is running.
-final sdkVersion = new Version.parse(Platform.version.split(' ').first);
+final sdkVersion = Version.parse(Platform.version.split(' ').first);
 
 /// Returns the current operating system.
 final OperatingSystem currentOS = (() {
@@ -49,7 +49,7 @@ final OperatingSystem currentOS = (() {
   var os = OperatingSystem.findByIoName(name);
   if (os != null) return os;
 
-  throw new UnsupportedError('Unsupported operating system "$name".');
+  throw UnsupportedError('Unsupported operating system "$name".');
 })();
 
 // TODO(nweiz): Make this `new SuitePlatform.current()` once we only support
@@ -59,12 +59,12 @@ final OperatingSystem currentOS = (() {
 /// [inGoogle] determined automatically.
 ///
 /// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime) => new SuitePlatform(runtime,
+SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
     os: runtime.isBrowser ? OperatingSystem.none : currentOS,
     inGoogle: inGoogle);
 
 /// A queue of lines of standard input.
-final stdinLines = new StreamQueue(lineSplitter.bind(stdin));
+final stdinLines = StreamQueue(lineSplitter.bind(stdin));
 
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment["_DART_TEST_TESTING"] == "true";
@@ -85,9 +85,8 @@ bool get canUseSpecialChars =>
     (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
 
 /// Creates a temporary directory and returns its path.
-String createTempDir() => new Directory(_tempDir)
-    .createTempSync('dart_test_')
-    .resolveSymbolicLinksSync();
+String createTempDir() =>
+    Directory(_tempDir).createTempSync('dart_test_').resolveSymbolicLinksSync();
 
 /// Creates a temporary directory and passes its path to [fn].
 ///
@@ -98,10 +97,10 @@ String createTempDir() => new Directory(_tempDir)
 /// Returns a future that completes to the value that the future returned from
 /// [fn] completes to.
 Future withTempDir(Future fn(String path)) {
-  return new Future.sync(() {
+  return Future.sync(() {
     var tempDir = createTempDir();
-    return new Future.sync(() => fn(tempDir))
-        .whenComplete(() => new Directory(tempDir).deleteSync(recursive: true));
+    return Future.sync(() => fn(tempDir))
+        .whenComplete(() => Directory(tempDir).deleteSync(recursive: true));
   });
 }
 
@@ -112,7 +111,7 @@ Future withTempDir(Future fn(String path)) {
 /// of whitespace.
 String wordWrap(String text) {
   return text.split("\n").map((originalLine) {
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     var lengthSoFar = 0;
     for (var word in originalLine.split(" ")) {
       var wordLength = withoutColors(word).length;
@@ -202,7 +201,7 @@ Future<int> getUnsafeUnusedPort() async {
 /// page.
 Future<Uri> getRemoteDebuggerUrl(Uri base) async {
   try {
-    var client = new HttpClient();
+    var client = HttpClient();
     var request = await client.getUrl(base.resolve("/json/list"));
     var response = await request.close();
     var jsonObject =

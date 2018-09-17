@@ -324,7 +324,7 @@ void main() {
   }, tags: 'node');
 
   test("gracefully handles a test file not being in test/", () async {
-    new File(p.join(d.sandbox, 'test/my_test.dart'))
+    File(p.join(d.sandbox, 'test/my_test.dart'))
         .copySync(p.join(d.sandbox, 'my_test.dart'));
 
     var test = await runTest(['--pub-serve=54321', 'my_test.dart']);
@@ -348,7 +348,7 @@ final Iterable<String> _compilers = () {
 
 /// Whether or not the dartdevc compiler is supported on the current
 /// [Platform.version].
-final bool _sdkSupportsDartDevc = sdkVersion >= new Version(1, 24, 0);
+final bool _sdkSupportsDartDevc = sdkVersion >= Version(1, 24, 0);
 
 /// Runs the test described by [testFn] once for each supported compiler on the
 /// current [Platform.version], passing the relevant compiler args for pub serve

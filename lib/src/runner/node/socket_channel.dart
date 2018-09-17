@@ -31,8 +31,8 @@ class _Socket {
 /// Returns a [StreamChannel] of JSON-encodable objects that communicates over a
 /// socket whose port is given by `process.argv[2]`.
 StreamChannel<Object> socketChannel() {
-  var controller = new StreamChannelController<String>(
-      allowForeignErrors: false, sync: true);
+  var controller =
+      StreamChannelController<String>(allowForeignErrors: false, sync: true);
   var net = _require("net");
   var socket = net.connect(int.parse(_args[2]));
   socket.setEncoding("utf8");

@@ -580,7 +580,7 @@ Future _expectReport(
     {List<String> args, Map<String, String> externalLibraries}) async {
   args ??= [];
   externalLibraries ??= {};
-  var testContent = new StringBuffer("""
+  var testContent = StringBuffer("""
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -669,7 +669,7 @@ Map _group(int id,
     int line,
     int column}) {
   if ((line == null) != (column == null)) {
-    throw new ArgumentError(
+    throw ArgumentError(
         "line and column must either both be null or both be passed");
   }
 
@@ -709,7 +709,7 @@ Map _testStart(int id, String name,
     int root_column,
     String root_url}) {
   if ((line == null) != (column == null)) {
-    throw new ArgumentError(
+    throw ArgumentError(
         "line and column must either both be null or both be passed");
   }
 

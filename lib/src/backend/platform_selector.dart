@@ -10,10 +10,10 @@ import 'runtime.dart';
 import 'suite_platform.dart';
 
 /// The set of variable names that are valid for all platform selectors.
-final _universalValidVariables = new Set<String>.from(
-    ["posix", "dart-vm", "browser", "js", "blink", "google"])
-  ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
-  ..addAll(OperatingSystem.all.map((os) => os.identifier));
+final _universalValidVariables =
+    Set<String>.from(["posix", "dart-vm", "browser", "js", "blink", "google"])
+      ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
+      ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.
@@ -23,7 +23,7 @@ final _universalValidVariables = new Set<String>.from(
 /// [boolean selector]: https://pub.dartlang.org/packages/boolean_selector
 class PlatformSelector {
   /// A selector that declares that a test can be run on all platforms.
-  static const all = const PlatformSelector._(BooleanSelector.all);
+  static const all = PlatformSelector._(BooleanSelector.all);
 
   /// The boolean selector used to implement this selector.
   final BooleanSelector _inner;
@@ -36,8 +36,8 @@ class PlatformSelector {
   /// If [span] is passed, it indicates the location of the text for [selector]
   /// in a larger document. It's used for error reporting.
   PlatformSelector.parse(String selector, [SourceSpan span])
-      : _inner = _wrapFormatException(
-            () => new BooleanSelector.parse(selector), span),
+      : _inner =
+            _wrapFormatException(() => BooleanSelector.parse(selector), span),
         _span = span;
 
   const PlatformSelector._(this._inner) : _span = null;
@@ -52,7 +52,7 @@ class PlatformSelector {
     try {
       return body();
     } on FormatException catch (error) {
-      throw new SourceSpanFormatException(error.message, span);
+      throw SourceSpanFormatException(error.message, span);
     }
   }
 
@@ -100,7 +100,7 @@ class PlatformSelector {
   /// both [this] and [other].
   PlatformSelector intersection(PlatformSelector other) {
     if (other == PlatformSelector.all) return this;
-    return new PlatformSelector._(_inner.intersection(other._inner));
+    return PlatformSelector._(_inner.intersection(other._inner));
   }
 
   String toString() => _inner.toString();

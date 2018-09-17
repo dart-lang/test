@@ -114,7 +114,7 @@ void main() {
           workingDirectory: d.sandbox);
       await dart2js.shouldExit(0);
 
-      var jsFile = new File(jsPath);
+      var jsFile = File(jsPath);
       await jsFile.writeAsString(
           preamble.getPreamble(minified: true) + await jsFile.readAsString());
 
@@ -197,7 +197,7 @@ void main() {
 
       // Modify the original test so it would fail if it actually got ran, this
       // makes sure the test fails if the dill file isn't loaded.
-      var testFile = new File(p.join(d.sandbox, 'test', 'test.dart'));
+      var testFile = File(p.join(d.sandbox, 'test', 'test.dart'));
       expect(await testFile.exists(), isTrue);
       var originalContent = await testFile.readAsString();
       await testFile
@@ -233,7 +233,7 @@ void main() {
 
 Future<Null> _writePackagesFile() async {
   var currentPackages = await PackageResolver.current.packageConfigMap;
-  var packagesFileContent = new StringBuffer();
+  var packagesFileContent = StringBuffer();
   currentPackages.forEach((package, location) {
     packagesFileContent.writeln('$package:$location');
   });

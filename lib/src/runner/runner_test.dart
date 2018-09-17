@@ -34,7 +34,7 @@ class RunnerTest extends Test {
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     LiveTestController controller;
     VirtualChannel testChannel;
-    controller = new LiveTestController(suite, this, () {
+    controller = LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
       testChannel = _channel.virtualChannel();
@@ -49,14 +49,13 @@ class RunnerTest extends Test {
             break;
 
           case 'state-change':
-            controller.setState(new State(
-                new Status.parse(message['status'] as String),
-                new Result.parse(message['result'] as String)));
+            controller.setState(State(Status.parse(message['status'] as String),
+                Result.parse(message['result'] as String)));
             break;
 
           case 'message':
-            controller.message(new Message(
-                new MessageType.parse(message['message-type'] as String),
+            controller.message(Message(
+                MessageType.parse(message['message-type'] as String),
                 message['text'] as String));
             break;
 
@@ -99,7 +98,6 @@ class RunnerTest extends Test {
 
   Test forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return new RunnerTest._(
-        name, metadata.forPlatform(platform), trace, _channel);
+    return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);
   }
 }

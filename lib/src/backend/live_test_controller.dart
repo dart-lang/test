@@ -29,7 +29,7 @@ class _LiveTest extends LiveTest {
   Stream<State> get onStateChange =>
       _controller._onStateChangeController.stream;
 
-  List<AsyncError> get errors => new UnmodifiableListView(_controller._errors);
+  List<AsyncError> get errors => UnmodifiableListView(_controller._errors);
 
   Stream<AsyncError> get onError => _controller._onErrorController.stream;
 
@@ -76,7 +76,7 @@ class LiveTestController {
   final Function _onClose;
 
   /// The list of errors caught by the test.
-  final _errors = new List<AsyncError>();
+  final _errors = List<AsyncError>();
 
   /// The current state of the test.
   var _state = const State(Status.pending, Result.success);
@@ -86,24 +86,22 @@ class LiveTestController {
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
   final _onStateChangeController =
-      new StreamController<State>.broadcast(sync: true);
+      StreamController<State>.broadcast(sync: true);
 
   /// The controller for [LiveTest.onError].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onErrorController =
-      new StreamController<AsyncError>.broadcast(sync: true);
+  final _onErrorController = StreamController<AsyncError>.broadcast(sync: true);
 
   /// The controller for [LiveTest.onMessage].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onMessageController =
-      new StreamController<Message>.broadcast(sync: true);
+  final _onMessageController = StreamController<Message>.broadcast(sync: true);
 
   /// The completer for [LiveTest.onComplete];
-  final completer = new Completer();
+  final completer = Completer();
 
   /// Whether [run] has been called.
   var _runCalled = false;
@@ -132,9 +130,8 @@ class LiveTestController {
       : _suite = suite,
         _onRun = onRun,
         _onClose = onClose,
-        _groups =
-            groups == null ? [suite.group] : new List.unmodifiable(groups) {
-    _liveTest = new _LiveTest(this);
+        _groups = groups == null ? [suite.group] : List.unmodifiable(groups) {
+    _liveTest = _LiveTest(this);
   }
 
   /// Adds an error to the [LiveTest].
@@ -145,7 +142,7 @@ class LiveTestController {
   void addError(error, StackTrace stackTrace) {
     if (_isClosed) return;
 
-    var asyncError = new AsyncError(error, new Chain.forTrace(stackTrace));
+    var asyncError = AsyncError(error, Chain.forTrace(stackTrace));
     _errors.add(asyncError);
     _onErrorController.add(asyncError);
   }
@@ -178,9 +175,9 @@ class LiveTestController {
   /// [LiveTest.run].
   Future _run() {
     if (_runCalled) {
-      throw new StateError("LiveTest.run() may not be called more than once.");
+      throw StateError("LiveTest.run() may not be called more than once.");
     } else if (_isClosed) {
-      throw new StateError("LiveTest.run() may not be called for a closed "
+      throw StateError("LiveTest.run() may not be called for a closed "
           "test.");
     }
     _runCalled = true;

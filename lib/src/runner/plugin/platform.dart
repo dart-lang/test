@@ -64,7 +64,7 @@ abstract class PlatformPlugin {
     // LoadSuite to emit an error, which will be presented to the user.
     var channel = loadChannel(path, platform);
     var controller = deserializeSuite(
-        path, platform, suiteConfig, new PluginEnvironment(), channel, message);
+        path, platform, suiteConfig, PluginEnvironment(), channel, message);
     return await controller.suite;
   }
 
