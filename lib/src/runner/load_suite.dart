@@ -15,7 +15,10 @@ import '../backend/suite.dart';
 import '../backend/suite_platform.dart';
 import '../backend/test.dart';
 import '../backend/runtime.dart';
-import '../util/io.dart';
+// ignore: uri_does_not_exist
+import '../util/io_stub.dart'
+    // ignore: uri_does_not_exist
+    if (dart.library.io) '../util/io.dart';
 import '../utils.dart';
 import 'configuration/suite.dart';
 import 'load_exception.dart';

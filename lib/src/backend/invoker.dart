@@ -8,6 +8,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/expect.dart';
 import '../runner/load_suite.dart';
+import '../util/test.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
 import 'declarer.dart';

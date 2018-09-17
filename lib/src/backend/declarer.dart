@@ -8,7 +8,7 @@ import 'package:collection/collection.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/timeout.dart';
-import '../utils.dart';
+import '../util/test.dart';
 import 'group.dart';
 import 'group_entry.dart';
 import 'invoker.dart';

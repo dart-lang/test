@@ -1,5 +1,7 @@
-## 1.3.3-dev
+## 1.3.3
 
+* Add conditional imports so that `dart:io` is not imported from the main
+  `test.dart` entrypoint unless it is available.
 * Fix an issue with dartdevc in precompiled mode and the json reporter.
 * Fix an issue parsing test metadata annotations without explicit `const`.
 
