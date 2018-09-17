@@ -82,7 +82,7 @@ class Engine {
   ///
   /// If [this] isn't paused, this completes immediately.
   Future get _onUnpaused =>
-      _pauseCompleter == null ? new Future.value() : _pauseCompleter.future;
+      _pauseCompleter == null ? Future.value() : _pauseCompleter.future;
 
   /// Whether all tests passed or were skipped.
   ///
@@ -97,10 +97,10 @@ class Engine {
   }
 
   /// A group of futures for each test suite.
-  final _group = new FutureGroup();
+  final _group = FutureGroup();
 
   /// All of the engine's stream subscriptions.
-  final _subscriptions = new Set<StreamSubscription>();
+  final _subscriptions = Set<StreamSubscription>();
 
   /// A sink used to pass [RunnerSuite]s in to the engine to run.
   ///
@@ -109,15 +109,15 @@ class Engine {
   ///
   /// Suites added to the sink will be closed by the engine based on its
   /// internal logic.
-  Sink<RunnerSuite> get suiteSink => new DelegatingSink(_suiteController.sink);
-  final _suiteController = new StreamController<RunnerSuite>();
+  Sink<RunnerSuite> get suiteSink => DelegatingSink(_suiteController.sink);
+  final _suiteController = StreamController<RunnerSuite>();
 
   /// All the [RunnerSuite]s added to [suiteSink] so far.
   ///
   /// Note that if a [LoadSuite] is added, this will only contain that suite,
   /// not the suite it loads.
-  Set<RunnerSuite> get addedSuites => new UnmodifiableSetView(_addedSuites);
-  final _addedSuites = new Set<RunnerSuite>();
+  Set<RunnerSuite> get addedSuites => UnmodifiableSetView(_addedSuites);
+  final _addedSuites = Set<RunnerSuite>();
 
   /// A broadcast stream that emits each [RunnerSuite] as it's added to the
   /// engine via [suiteSink].
@@ -127,7 +127,7 @@ class Engine {
   ///
   /// This is guaranteed to fire after the suite is added to [addedSuites].
   Stream<RunnerSuite> get onSuiteAdded => _onSuiteAddedController.stream;
-  final _onSuiteAddedController = new StreamController<RunnerSuite>.broadcast();
+  final _onSuiteAddedController = StreamController<RunnerSuite>.broadcast();
 
   /// All the currently-known suites that have run or are running.
   ///
@@ -137,8 +137,8 @@ class Engine {
   /// Note that unlike [addedSuites], for suites that are loaded using
   /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
   /// be in this set.
-  Set<LiveSuite> get liveSuites => new UnmodifiableSetView(_liveSuites);
-  final _liveSuites = new Set<LiveSuite>();
+  Set<LiveSuite> get liveSuites => UnmodifiableSetView(_liveSuites);
+  final _liveSuites = Set<LiveSuite>();
 
   /// A broadcast stream that emits each [LiveSuite] as it's loaded.
   ///
@@ -146,7 +146,7 @@ class Engine {
   /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
   /// be emitted by this stream.
   Stream<LiveSuite> get onSuiteStarted => _onSuiteStartedController.stream;
-  final _onSuiteStartedController = new StreamController<LiveSuite>.broadcast();
+  final _onSuiteStartedController = StreamController<LiveSuite>.broadcast();
 
   /// All the currently-known tests that have run or are running.
   ///
@@ -159,42 +159,42 @@ class Engine {
   ///
   /// [LiveTest.run] must not be called on these tests.
   Set<LiveTest> get liveTests =>
-      new UnionSet.from([passed, skipped, failed, new IterableSet(active)],
+      UnionSet.from([passed, skipped, failed, IterableSet(active)],
           disjoint: true);
 
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
   /// This is guaranteed to fire before [LiveTest.onStateChange] first fires.
   Stream<LiveTest> get onTestStarted => _onTestStartedGroup.stream;
-  final _onTestStartedGroup = new StreamGroup<LiveTest>.broadcast();
+  final _onTestStartedGroup = StreamGroup<LiveTest>.broadcast();
 
   /// The set of tests that have completed and been marked as passing.
   Set<LiveTest> get passed => _passedGroup.set;
-  final _passedGroup = new UnionSetController<LiveTest>(disjoint: true);
+  final _passedGroup = UnionSetController<LiveTest>(disjoint: true);
 
   /// The set of tests that have completed and been marked as skipped.
   Set<LiveTest> get skipped => _skippedGroup.set;
-  final _skippedGroup = new UnionSetController<LiveTest>(disjoint: true);
+  final _skippedGroup = UnionSetController<LiveTest>(disjoint: true);
 
   /// The set of tests that have completed and been marked as failing or error.
   Set<LiveTest> get failed => _failedGroup.set;
-  final _failedGroup = new UnionSetController<LiveTest>(disjoint: true);
+  final _failedGroup = UnionSetController<LiveTest>(disjoint: true);
 
   /// The tests that are still running, in the order they begain running.
-  List<LiveTest> get active => new UnmodifiableListView(_active);
-  final _active = new QueueList<LiveTest>();
+  List<LiveTest> get active => UnmodifiableListView(_active);
+  final _active = QueueList<LiveTest>();
 
   /// The set of tests that have been marked for restarting.
   ///
   /// This is always a subset of [active]. Once a test in here has finished
   /// running, it's run again.
-  final _restarted = new Set<LiveTest>();
+  final _restarted = Set<LiveTest>();
 
   /// The tests from [LoadSuite]s that are still running, in the order they
   /// began running.
   ///
   /// This is separate from [active] because load tests aren't always surfaced.
-  final _activeLoadTests = new List<LiveTest>();
+  final _activeLoadTests = List<LiveTest>();
 
   /// Whether this engine is idle—that is, not currently executing a test.
   bool get isIdle => _group.isIdle;
@@ -211,8 +211,8 @@ class Engine {
   /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
   /// four times [concurrency].
   Engine({int concurrency, int maxSuites})
-      : _runPool = new Pool(concurrency ?? 1),
-        _loadPool = new Pool(maxSuites ?? (concurrency ?? 1) * 2) {
+      : _runPool = Pool(concurrency ?? 1),
+        _loadPool = Pool(maxSuites ?? (concurrency ?? 1) * 2) {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
@@ -230,7 +230,7 @@ class Engine {
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
   factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency}) {
-    var engine = new Engine(concurrency: concurrency);
+    var engine = Engine(concurrency: concurrency);
     for (var suite in suites) engine.suiteSink.add(suite);
     engine.suiteSink.close();
     return engine;
@@ -243,7 +243,7 @@ class Engine {
   /// closed.
   Future<bool> run() {
     if (_runCalled) {
-      throw new StateError("Engine.run() may not be called more than once.");
+      throw StateError("Engine.run() may not be called more than once.");
     }
     _runCalled = true;
 
@@ -264,7 +264,7 @@ class Engine {
             return;
           }
         } else {
-          controller = new LiveSuiteController(suite);
+          controller = LiveSuiteController(suite);
         }
 
         _addLiveSuite(controller.liveSuite);
@@ -368,11 +368,11 @@ class Engine {
 
     // Schedule a microtask to ensure that [onTestStarted] fires before the
     // first [LiveTest.onStateChange] event.
-    await new Future.microtask(liveTest.run);
+    await Future.microtask(liveTest.run);
 
     // Once the test finishes, use [new Future] to do a coarse-grained event
     // loop pump to avoid starving non-microtask events.
-    await new Future(() {});
+    await Future(() {});
 
     if (!_restarted.contains(liveTest)) return;
     await _runLiveTest(suiteController, liveTest.copy(),
@@ -387,18 +387,17 @@ class Engine {
   Future _runSkippedTest(LiveSuiteController suiteController, Test test,
       List<Group> parents) async {
     await _onUnpaused;
-    var skipped =
-        new LocalTest(test.name, test.metadata, () {}, trace: test.trace);
+    var skipped = LocalTest(test.name, test.metadata, () {}, trace: test.trace);
 
     LiveTestController controller;
     controller =
-        new LiveTestController(suiteController.liveSuite.suite, skipped, () {
+        LiveTestController(suiteController.liveSuite.suite, skipped, () {
       controller.setState(const State(Status.running, Result.success));
       controller.setState(const State(Status.running, Result.skipped));
 
       if (skipped.metadata.skipReason != null) {
         controller
-            .message(new Message.skip("Skip: ${skipped.metadata.skipReason}"));
+            .message(Message.skip("Skip: ${skipped.metadata.skipReason}"));
       }
 
       controller.setState(const State(Status.complete, Result.skipped));
@@ -414,11 +413,11 @@ class Engine {
   /// Returns the same future as [LiveTest.close].
   Future restartTest(LiveTest liveTest) async {
     if (_activeLoadTests.contains(liveTest)) {
-      throw new ArgumentError("Can't restart a load test.");
+      throw ArgumentError("Can't restart a load test.");
     }
 
     if (!_active.contains(liveTest)) {
-      throw new StateError("Can't restart inactive test "
+      throw StateError("Can't restart inactive test "
           "\"${liveTest.test.name}\".");
     }
 
@@ -431,7 +430,7 @@ class Engine {
   ///
   /// Returns `null` if the suite fails to load.
   Future<LiveSuiteController> _addLoadSuite(LoadSuite suite) async {
-    var controller = new LiveSuiteController(suite);
+    var controller = LiveSuiteController(suite);
     _addLiveSuite(controller.liveSuite);
 
     var liveTest = suite.test.load(suite);
@@ -462,12 +461,12 @@ class Engine {
 
     // Schedule a microtask to ensure that [onTestStarted] fires before the
     // first [LiveTest.onStateChange] event.
-    new Future.microtask(liveTest.run);
+    Future.microtask(liveTest.run);
 
     var innerSuite = await suite.suite;
     if (innerSuite == null) return null;
 
-    var innerController = new LiveSuiteController(innerSuite);
+    var innerController = LiveSuiteController(innerSuite);
     innerController.liveSuite.onClose.then((_) {
       // When the main suite is closed, close the load suite and its test as
       // well. This doesn't release any resources, but it does close streams
@@ -501,7 +500,7 @@ class Engine {
   /// cumulative.
   void pause() {
     if (_pauseCompleter != null) return;
-    _pauseCompleter = new Completer();
+    _pauseCompleter = Completer();
     for (var subscription in _subscriptions) {
       subscription.pause();
     }
@@ -528,7 +527,7 @@ class Engine {
   /// the engine indicates that no more output should be emitted.
   Future close() async {
     // TODO(grouma) - Remove this unecessary await.
-    await new Future(() {});
+    await Future(() {});
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
     _onSuiteAddedController.close();

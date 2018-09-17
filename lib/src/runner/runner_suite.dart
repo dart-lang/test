@@ -57,9 +57,9 @@ class RunnerSuite extends Suite {
       Group group, SuitePlatform platform,
       {String path, Function() onClose}) {
     var controller =
-        new RunnerSuiteController._local(environment, config, onClose: onClose);
-    var suite = new RunnerSuite._(controller, group, path, platform);
-    controller._suite = new Future.value(suite);
+        RunnerSuiteController._local(environment, config, onClose: onClose);
+    var suite = RunnerSuite._(controller, group, path, platform);
+    controller._suite = Future.value(suite);
     return suite;
   }
 
@@ -69,8 +69,8 @@ class RunnerSuite extends Suite {
 
   RunnerSuite filter(bool callback(Test test)) {
     var filtered = group.filter(callback);
-    filtered ??= new Group.root([], metadata: metadata);
-    return new RunnerSuite._(_controller, filtered, path, platform);
+    filtered ??= Group.root([], metadata: metadata);
+    return RunnerSuite._(_controller, filtered, path, platform);
   }
 
   /// Closes the suite and releases any resources associated with it.
@@ -99,17 +99,17 @@ class RunnerSuiteController {
   bool _isDebugging = false;
 
   /// The controller for [suite.onDebugging].
-  final _onDebuggingController = new StreamController<bool>.broadcast();
+  final _onDebuggingController = StreamController<bool>.broadcast();
 
   /// The channel names that have already been used.
-  final _channelNames = new Set<String>();
+  final _channelNames = Set<String>();
 
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
       Future<Group> groupFuture, SuitePlatform platform,
       {String path, Function() onClose})
       : _onClose = onClose {
-    _suite = groupFuture
-        .then((group) => new RunnerSuite._(this, group, path, platform));
+    _suite =
+        groupFuture.then((group) => RunnerSuite._(this, group, path, platform));
   }
 
   /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
@@ -140,8 +140,7 @@ class RunnerSuiteController {
   /// fully loaded.
   StreamChannel channel(String name) {
     if (!_channelNames.add(name)) {
-      throw new StateError(
-          'Duplicate RunnerSuite.channel() connection "$name".');
+      throw StateError('Duplicate RunnerSuite.channel() connection "$name".');
     }
 
     var channel = _suiteChannel.virtualChannel();
@@ -155,5 +154,5 @@ class RunnerSuiteController {
         _onDebuggingController.close();
         if (_onClose != null) await _onClose();
       });
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 }

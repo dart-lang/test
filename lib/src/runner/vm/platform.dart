@@ -32,13 +32,13 @@ class VMPlatform extends PlatformPlugin {
   VMPlatform();
 
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
-      throw new UnimplementedError();
+      throw UnimplementedError();
 
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     assert(platform.runtime == Runtime.vm);
 
-    var receivePort = new ReceivePort();
+    var receivePort = ReceivePort();
     Isolate isolate;
     try {
       isolate = await _spawnIsolate(path, receivePort.sendPort);
@@ -48,8 +48,8 @@ class VMPlatform extends PlatformPlugin {
     }
 
     VMServiceClient client;
-    var channel = new IsolateChannel.connectReceive(receivePort)
-        .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
+    var channel = IsolateChannel.connectReceive(receivePort)
+        .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
       isolate.kill();
       client?.close();
       sink.close();
@@ -66,7 +66,7 @@ class VMPlatform extends PlatformPlugin {
       var info = await Service.controlWebServer(enable: true);
       var isolateID = Service.getIsolateID(isolate);
 
-      client = new VMServiceClient.connect(info.serverUri);
+      client = VMServiceClient.connect(info.serverUri);
       var isolateNumber = int.parse(isolateID.split("/").last);
       vmIsolate = (await client.getVM())
           .isolates
@@ -76,11 +76,11 @@ class VMPlatform extends PlatformPlugin {
       var library =
           (await vmIsolate.loadRunnable()).libraries[p.toUri(p.absolute(path))];
       var url = info.serverUri.resolveUri(library.observatoryUrl);
-      environment = new VMEnvironment(url, vmIsolate);
+      environment = VMEnvironment(url, vmIsolate);
     }
 
     var controller = deserializeSuite(path, platform, suiteConfig,
-        environment ?? new PluginEnvironment(), channel, message);
+        environment ?? PluginEnvironment(), channel, message);
 
     if (vmIsolate != null) {
       vmIsolate.onPauseOrResume.listen((event) {
@@ -133,7 +133,7 @@ Future<Isolate> _spawnPrecompiledIsolate(
   testPath = p.absolute(p.join(precompiledPath, testPath) + '.vm_test.dart');
   var dillTestpath =
       testPath.substring(0, testPath.length - '.dart'.length) + '.vm.app.dill';
-  if (await new File(dillTestpath).exists()) {
+  if (await File(dillTestpath).exists()) {
     testPath = dillTestpath;
   }
   return await Isolate.spawnUri(p.toUri(testPath), [], message,
@@ -151,17 +151,17 @@ Future<Isolate> _spawnPubServeIsolate(
   } on IsolateSpawnException catch (error) {
     if (error.message.contains("OS Error: Connection refused") ||
         error.message.contains("The remote computer refused")) {
-      throw new LoadException(
+      throw LoadException(
           testPath,
           "Error getting $url: Connection refused\n"
           'Make sure "pub serve" is running.');
     } else if (error.message.contains("404 Not Found")) {
-      throw new LoadException(
+      throw LoadException(
           testPath,
           "Error getting $url: 404 Not Found\n"
           'Make sure "pub serve" is serving the test/ directory.');
     }
 
-    throw new LoadException(testPath, error);
+    throw LoadException(testPath, error);
   }
 }

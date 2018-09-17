@@ -17,7 +17,7 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'backend/operating_system.dart';
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
-final lineSplitter = new StreamTransformer<List<int>, String>(
+final lineSplitter = StreamTransformer<List<int>, String>(
     (stream, cancelOnError) => stream
         .transform(utf8.decoder)
         .transform(const LineSplitter())
@@ -28,22 +28,22 @@ final lineSplitter = new StreamTransformer<List<int>, String>(
 ///
 /// Note that this is only safe for channels whose messages are guaranteed not
 /// to contain newlines.
-final chunksToLines = new StreamChannelTransformer<String, String>(
+final chunksToLines = StreamChannelTransformer<String, String>(
     const LineSplitter(),
-    new StreamSinkTransformer.fromHandlers(
+    StreamSinkTransformer.fromHandlers(
         handleData: (data, sink) => sink.add("$data\n")));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
-final _exceptionPrefix = new RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
+final _exceptionPrefix = RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
 
 /// A regular expression matching a single vowel.
-final _vowel = new RegExp('[aeiou]');
+final _vowel = RegExp('[aeiou]');
 
 /// Directories that are specific to OS X.
 ///
 /// This is used to try to distinguish OS X and Linux in [currentOSGuess].
-final _macOSDirectories = new Set<String>.from(
+final _macOSDirectories = Set<String>.from(
     ["/Applications", "/Library", "/Network", "/System", "/Users"]);
 
 /// Returns the best guess for the current operating system without using
@@ -63,12 +63,12 @@ final OperatingSystem currentOSGuess = (() {
 ///
 /// This is like a standard Dart identifier, except that it can also contain
 /// hyphens.
-final _hyphenatedIdentifier = new RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
+final _hyphenatedIdentifier = RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
 
 /// Like [_hyphenatedIdentifier], but anchored so that it must match the entire
 /// string.
 final anchoredHyphenatedIdentifier =
-    new RegExp("^${_hyphenatedIdentifier.pattern}\$");
+    RegExp("^${_hyphenatedIdentifier.pattern}\$");
 
 /// A pair of values.
 class Pair<E, F> {
@@ -131,7 +131,7 @@ String pluralize(String name, int number, {String plural}) {
 String a(String noun) => noun.startsWith(_vowel) ? "an $noun" : "a $noun";
 
 /// A regular expression matching terminal color codes.
-final _colorCode = new RegExp('\u001b\\[[0-9;]+m');
+final _colorCode = RegExp('\u001b\\[[0-9;]+m');
 
 /// Returns [str] without any color codes.
 String withoutColors(String str) => str.replaceAll(_colorCode, '');
@@ -167,7 +167,7 @@ String truncate(String text, int maxLength) {
     if (length > maxLength || i == 0) i++;
     if (i < words.length - 4) {
       // Require at least 3 words at the end.
-      var buffer = new StringBuffer();
+      var buffer = StringBuffer();
       buffer.write(words.first);
       buffer.write(' ...');
       for (; i < words.length; i++) {
@@ -194,7 +194,7 @@ String niceDuration(Duration duration) {
   var seconds = duration.inSeconds % 60;
   var decaseconds = (duration.inMilliseconds % 1000) ~/ 100;
 
-  var buffer = new StringBuffer();
+  var buffer = StringBuffer();
   if (minutes != 0) buffer.write("$minutes minutes");
 
   if (minutes == 0 || seconds != 0) {
@@ -214,7 +214,7 @@ String niceDuration(Duration duration) {
 /// well.
 Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
   var operationSet = operations.toSet();
-  var controller = new StreamController<T>(
+  var controller = StreamController<T>(
       sync: true,
       onCancel: () {
         return Future.wait(operationSet.map((operation) => operation.cancel()));
@@ -245,8 +245,8 @@ void invoke(fn()) {
 ///
 /// [seed] is passed to [math.Random].
 String randomBase64(int bytes, {int seed}) {
-  var random = new math.Random(seed);
-  var data = new Uint8List(bytes);
+  var random = math.Random(seed);
+  var data = Uint8List(bytes);
   for (var i = 0; i < bytes; i++) {
     data[i] = random.nextInt(256);
   }
@@ -267,13 +267,13 @@ void ensureJsonEncodable(Object message) {
   } else if (message is Map) {
     message.forEach((key, value) {
       if (key is! String) {
-        throw new ArgumentError("$message can't be JSON-encoded.");
+        throw ArgumentError("$message can't be JSON-encoded.");
       }
 
       ensureJsonEncodable(value);
     });
   } else {
-    throw new ArgumentError.value("$message can't be JSON-encoded.");
+    throw ArgumentError.value("$message can't be JSON-encoded.");
   }
 }
 
@@ -299,7 +299,7 @@ String prefixLines(String text, String prefix,
   var lines = text.split('\n');
   if (lines.length == 1) return "$single$text";
 
-  var buffer = new StringBuffer("$first${lines.first}\n");
+  var buffer = StringBuffer("$first${lines.first}\n");
 
   // Write out all but the first and last lines with [prefix].
   for (var line in lines.skip(1).take(lines.length - 2)) {
@@ -314,4 +314,4 @@ String prefixLines(String text, String prefix,
 /// The matcher package doesn't expose its pretty-print function directly, but
 /// we can use it through StringDescription.
 String prettyPrint(value) =>
-    new StringDescription().addDescriptionOf(value).toString();
+    StringDescription().addDescriptionOf(value).toString();

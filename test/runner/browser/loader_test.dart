@@ -24,12 +24,12 @@ import '../../utils.dart';
 Loader _loader;
 
 /// A configuration that loads suites on Chrome.
-final _chrome = new SuiteConfiguration(
-    runtimes: [new RuntimeSelection(Runtime.chrome.identifier)]);
+final _chrome =
+    SuiteConfiguration(runtimes: [RuntimeSelection(Runtime.chrome.identifier)]);
 
 void main() {
   setUp(() async {
-    _loader = new Loader(root: d.sandbox);
+    _loader = Loader(root: d.sandbox);
 
     await d.file('a_test.dart', """
       import 'dart:async';
@@ -90,7 +90,7 @@ void main() {
   });
 
   test("loads tests that are defined asynchronously", () async {
-    new File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync("""
+    File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync("""
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -128,9 +128,9 @@ Future main() {
     var suites = await _loader
         .loadFile(
             path,
-            new SuiteConfiguration(runtimes: [
-              new RuntimeSelection(Runtime.vm.identifier),
-              new RuntimeSelection(Runtime.chrome.identifier)
+            SuiteConfiguration(runtimes: [
+              RuntimeSelection(Runtime.vm.identifier),
+              RuntimeSelection(Runtime.chrome.identifier)
             ]))
         .asyncMap((loadSuite) => loadSuite.getSuite())
         .toList();
@@ -148,7 +148,7 @@ Future main() {
   });
 
   test("a print in a loaded file is piped through the LoadSuite", () async {
-    new File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync("""
+    File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync("""
 void main() {
   print('print within test');
 }

@@ -14,7 +14,7 @@ import "../utils.dart";
 
 /// A sink transformer that wraps data and error events so that errors can be
 /// decoded after being JSON-serialized.
-final _transformer = new StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
+final _transformer = StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
     handleData: (data, sink) {
   ensureJsonEncodable(data);
   sink.add({"type": "data", "data": data});
@@ -33,7 +33,7 @@ final _transformer = new StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
 /// The [data] argument contains two values: a [SendPort] that communicates with
 /// the main isolate, and a message to pass to `hybridMain()`.
 void listen(Function getMain(), List data) {
-  var channel = new IsolateChannel.connectSend(data.first as SendPort);
+  var channel = IsolateChannel.connectSend(data.first as SendPort);
   var message = data.last;
 
   Chain.capture(() {
@@ -68,7 +68,7 @@ void listen(Function getMain(), List data) {
       } else {
         main(transformedChannel, message);
       }
-    }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, line) {
+    }, zoneSpecification: ZoneSpecification(print: (_, __, ___, line) {
       channel.sink.add({"type": "print", "line": line});
     }));
   }, onError: (error, stackTrace) async {
@@ -82,6 +82,6 @@ void listen(Function getMain(), List data) {
 void _sendError(StreamChannel channel, error, [StackTrace stackTrace]) {
   channel.sink.add({
     "type": "error",
-    "error": RemoteException.serialize(error, stackTrace ?? new Chain.current())
+    "error": RemoteException.serialize(error, stackTrace ?? Chain.current())
   });
 }

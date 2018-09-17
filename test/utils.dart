@@ -30,7 +30,7 @@ import 'package:test/test.dart';
 final String closureString = (() {}).toString();
 
 /// A dummy suite platform to use for testing suites.
-final suitePlatform = new SuitePlatform(Runtime.vm);
+final suitePlatform = SuitePlatform(Runtime.vm);
 
 // The last state change detected via [expectStates].
 State lastState;
@@ -39,7 +39,7 @@ State lastState;
 ///
 /// The most recent emitted state is stored in [_lastState].
 void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
-  var states = new Queue.from(statesIter);
+  var states = Queue.from(statesIter);
   liveTest.onStateChange.listen(expectAsync1((state) {
     lastState = state;
     expect(state, equals(states.removeFirst()));
@@ -49,7 +49,7 @@ void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
 /// Asserts that errors will be emitted via [liveTest.onError] that match
 /// [validators], in order.
 void expectErrors(LiveTest liveTest, Iterable<Function> validatorsIter) {
-  var validators = new Queue.from(validatorsIter);
+  var validators = Queue.from(validatorsIter);
   liveTest.onError.listen(expectAsync1((error) {
     validators.removeFirst()(error.error);
   }, count: validators.length, max: validators.length));
@@ -94,7 +94,7 @@ Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isTestFailure(message) => new _IsTestFailure(wrapMatcher(message));
+Matcher isTestFailure(message) => _IsTestFailure(wrapMatcher(message));
 
 class _IsTestFailure extends Matcher {
   final Matcher _message;
@@ -126,8 +126,7 @@ class _IsTestFailure extends Matcher {
 /// Returns a matcher that matches a [RemoteException] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isRemoteException(message) =>
-    new _IsRemoteException(wrapMatcher(message));
+Matcher isRemoteException(message) => _IsRemoteException(wrapMatcher(message));
 
 class _IsRemoteException extends Matcher {
   final Matcher _message;
@@ -162,7 +161,7 @@ class _IsRemoteException extends Matcher {
 ///
 /// [innerError] can be a string or a [Matcher].
 Matcher isLoadException(innerError) =>
-    new _IsLoadException(wrapMatcher(innerError));
+    _IsLoadException(wrapMatcher(innerError));
 
 class _IsLoadException extends Matcher {
   final Matcher _innerError;
@@ -197,7 +196,7 @@ class _IsLoadException extends Matcher {
 ///
 /// [message] can be a string or a [Matcher].
 Matcher isApplicationException(message) =>
-    new _IsApplicationException(wrapMatcher(message));
+    _IsApplicationException(wrapMatcher(message));
 
 class _IsApplicationException extends Matcher {
   final Matcher _message;
@@ -230,8 +229,8 @@ class _IsApplicationException extends Matcher {
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
-  var test = new LocalTest("test", new Metadata(), body);
-  var suite = new Suite(new Group.root([test]), suitePlatform);
+  var test = LocalTest("test", Metadata(), body);
+  var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }
 
@@ -310,24 +309,24 @@ Future expectTestsPass(void body()) async {
 
 /// Runs [body] with a declarer and returns the declared entries.
 List<GroupEntry> declare(void body()) {
-  var declarer = new Declarer()..declare(body);
+  var declarer = Declarer()..declare(body);
   return declarer.build().entries;
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
 Engine declareEngine(void body(), {bool runSkipped = false}) {
-  var declarer = new Declarer()..declare(body);
-  return new Engine.withSuites([
-    new RunnerSuite(
+  var declarer = Declarer()..declare(body);
+  return Engine.withSuites([
+    RunnerSuite(
         const PluginEnvironment(),
-        new SuiteConfiguration(runSkipped: runSkipped),
+        SuiteConfiguration(runSkipped: runSkipped),
         declarer.build(),
         suitePlatform)
   ]);
 }
 
 /// Returns a [RunnerSuite] with a default environment and configuration.
-RunnerSuite runnerSuite(Group root) => new RunnerSuite(
+RunnerSuite runnerSuite(Group root) => RunnerSuite(
     const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);
 
 /// Whether Pub is running with Dart 2 runtime semantics.

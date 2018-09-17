@@ -9,7 +9,7 @@ import 'package:shelf/shelf.dart' as shelf;
 /// A handler that routes to sub-handlers based on exact path prefixes.
 class PathHandler {
   /// A trie of path components to handlers.
-  final _paths = new _Node();
+  final _paths = _Node();
 
   /// The shelf handler.
   shelf.Handler get handler => _onRequest;
@@ -18,7 +18,7 @@ class PathHandler {
   /// [beneath].
   static shelf.Middleware nestedIn(String beneath) {
     return (handler) {
-      var pathHandler = new PathHandler()..add(beneath, handler);
+      var pathHandler = PathHandler()..add(beneath, handler);
       return pathHandler.handler;
     };
   }
@@ -30,7 +30,7 @@ class PathHandler {
   void add(String path, shelf.Handler handler) {
     var node = _paths;
     for (var component in p.url.split(path)) {
-      node = node.children.putIfAbsent(component, () => new _Node());
+      node = node.children.putIfAbsent(component, () => _Node());
     }
     node.handler = handler;
   }
@@ -48,7 +48,7 @@ class PathHandler {
       handlerIndex = i;
     }
 
-    if (handler == null) return new shelf.Response.notFound("Not found.");
+    if (handler == null) return shelf.Response.notFound("Not found.");
 
     return handler(
         request.change(path: p.url.joinAll(components.take(handlerIndex + 1))));
@@ -58,5 +58,5 @@ class PathHandler {
 /// A trie node.
 class _Node {
   shelf.Handler handler;
-  final children = new Map<String, _Node>();
+  final children = Map<String, _Node>();
 }

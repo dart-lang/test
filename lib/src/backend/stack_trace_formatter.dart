@@ -10,7 +10,7 @@ import '../util/stack_trace_mapper.dart';
 import 'invoker.dart';
 
 /// The key used to look up [StackTraceFormatter.current] in a zone.
-final _currentKey = new Object();
+final _currentKey = Object();
 
 /// A class that tracks how to format a stack trace according to the user's
 /// configuration.
@@ -23,11 +23,11 @@ class StackTraceFormatter {
   StackTraceMapper _mapper;
 
   /// The list of packages to fold when producing terse [Chain]s.
-  var _except = new Set<String>.from(['test', 'stream_channel']);
+  var _except = Set<String>.from(['test', 'stream_channel']);
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// terse [Chain]s.
-  var _only = new Set<String>();
+  var _only = Set<String>();
 
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
@@ -64,7 +64,7 @@ class StackTraceFormatter {
         Invoker.current?.liveTest?.test?.metadata?.verboseTrace ?? false;
 
     var chain =
-        new Chain.forTrace(_mapper?.mapStackTrace(stackTrace) ?? stackTrace);
+        Chain.forTrace(_mapper?.mapStackTrace(stackTrace) ?? stackTrace);
     if (verbose) return chain;
 
     return chain.foldFrames((frame) {

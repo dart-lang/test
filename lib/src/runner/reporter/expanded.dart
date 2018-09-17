@@ -58,7 +58,7 @@ class ExpandedReporter implements Reporter {
   final bool _printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
-  final _stopwatch = new Stopwatch();
+  final _stopwatch = Stopwatch();
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
@@ -82,7 +82,7 @@ class ExpandedReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = new Set<StreamSubscription>();
+  final _subscriptions = Set<StreamSubscription>();
 
   // TODO(nweiz): Get configuration from [Configuration.current] once we have
   // cross-platform imports.
@@ -95,7 +95,7 @@ class ExpandedReporter implements Reporter {
   /// print the platform as part of the test description.
   static ExpandedReporter watch(Engine engine,
       {bool color = true, bool printPath = true, bool printPlatform = true}) {
-    return new ExpandedReporter._(engine,
+    return ExpandedReporter._(engine,
         color: color, printPath: printPath, printPlatform: printPlatform);
   }
 
@@ -257,7 +257,7 @@ class ExpandedReporter implements Reporter {
     if (suffix != null) message += suffix;
     if (color == null) color = '';
     var duration = _stopwatch.elapsed;
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
 
     // \r moves back to the beginning of the current line.
     buffer.write('${_timeString(duration)} ');

@@ -21,7 +21,7 @@ import 'expect.dart';
 ///
 /// This returns an [AsyncMatcher], so [expect] won't complete until the matched
 /// function does.
-Matcher prints(matcher) => new _Prints(wrapMatcher(matcher));
+Matcher prints(matcher) => _Prints(wrapMatcher(matcher));
 
 class _Prints extends AsyncMatcher {
   final Matcher _matcher;
@@ -33,9 +33,9 @@ class _Prints extends AsyncMatcher {
   /*FutureOr<String>*/ matchAsync(item) {
     if (item is! Function()) return "was not a unary Function";
 
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     var result = runZoned(item as Function(),
-        zoneSpecification: new ZoneSpecification(print: (_, __, ____, line) {
+        zoneSpecification: ZoneSpecification(print: (_, __, ____, line) {
       buffer.writeln(line);
     }));
 
@@ -54,10 +54,10 @@ class _Prints extends AsyncMatcher {
     if (_matcher.matches(actual, matchState)) return null;
 
     var result = _matcher
-        .describeMismatch(actual, new StringDescription(), matchState, false)
+        .describeMismatch(actual, StringDescription(), matchState, false)
         .toString();
 
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     if (actual.isEmpty) {
       buffer.writeln('printed nothing');
     } else {

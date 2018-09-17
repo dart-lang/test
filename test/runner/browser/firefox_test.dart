@@ -27,7 +27,7 @@ webSocket.addEventListener("open", function() {
 ''');
     var webSocket = server.handleWebSocket();
 
-    var firefox = new Firefox(server.url);
+    var firefox = Firefox(server.url);
     addTearDown(() => firefox.close());
 
     expect(await (await webSocket).stream.first, equals("loaded!"));
@@ -36,13 +36,13 @@ webSocket.addEventListener("open", function() {
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
 
-    var firefox = new Firefox(server.url);
+    var firefox = Firefox(server.url);
     await firefox.close();
   });
 
   test("reports an error in onExit", () {
-    var firefox = new Firefox("http://dart-lang.org",
-        settings: new ExecutableSettings(
+    var firefox = Firefox("http://dart-lang.org",
+        settings: ExecutableSettings(
             linuxExecutable: "_does_not_exist",
             macOSExecutable: "_does_not_exist",
             windowsExecutable: "_does_not_exist"));

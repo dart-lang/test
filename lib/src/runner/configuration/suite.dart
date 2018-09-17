@@ -21,7 +21,7 @@ class SuiteConfiguration {
   ///
   /// Using this is slightly more efficient than manually constructing a new
   /// configuration with no arguments.
-  static final empty = new SuiteConfiguration._();
+  static final empty = SuiteConfiguration._();
 
   /// Whether JavaScript stack traces should be left as-is or converted to
   /// Dart-like traces.
@@ -55,7 +55,7 @@ class SuiteConfiguration {
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
       ? const ["vm"]
-      : new List.unmodifiable(_runtimes.map((runtime) => runtime.name));
+      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
   final List<RuntimeSelection> _runtimes;
 
   /// Only run tests whose tags match this selector.
@@ -87,9 +87,9 @@ class SuiteConfiguration {
   Metadata get metadata {
     if (tags.isEmpty && onPlatform.isEmpty) return _metadata;
     return _metadata.change(
-        forTag: tags.map((key, config) => new MapEntry(key, config.metadata)),
-        onPlatform: onPlatform
-            .map((key, config) => new MapEntry(key, config.metadata)));
+        forTag: tags.map((key, config) => MapEntry(key, config.metadata)),
+        onPlatform:
+            onPlatform.map((key, config) => MapEntry(key, config.metadata)));
   }
 
   final Metadata _metadata;
@@ -110,7 +110,7 @@ class SuiteConfiguration {
       known.addAll(configuration.knownTags);
     }
 
-    _knownTags = new UnmodifiableSetView(known);
+    _knownTags = UnmodifiableSetView(known);
     return _knownTags;
   }
 
@@ -144,7 +144,7 @@ class SuiteConfiguration {
       String skipReason,
       PlatformSelector testOn,
       Iterable<String> addTags}) {
-    var config = new SuiteConfiguration._(
+    var config = SuiteConfiguration._(
         jsTrace: jsTrace,
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
@@ -155,7 +155,7 @@ class SuiteConfiguration {
         excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
-        metadata: new Metadata(
+        metadata: Metadata(
             timeout: timeout,
             verboseTrace: verboseTrace,
             chainStackTraces: chainStackTraces,
@@ -186,7 +186,7 @@ class SuiteConfiguration {
       : _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
-        patterns = new UnmodifiableSetView(patterns?.toSet() ?? new Set()),
+        patterns = UnmodifiableSetView(patterns?.toSet() ?? Set()),
         _runtimes = _list(runtimes),
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
@@ -197,11 +197,11 @@ class SuiteConfiguration {
   /// Creates a new [SuiteConfiguration] that takes its configuration from
   /// [metadata].
   factory SuiteConfiguration.fromMetadata(Metadata metadata) =>
-      new SuiteConfiguration._(
+      SuiteConfiguration._(
           tags: metadata.forTag.map((key, child) =>
-              new MapEntry(key, new SuiteConfiguration.fromMetadata(child))),
+              MapEntry(key, SuiteConfiguration.fromMetadata(child))),
           onPlatform: metadata.onPlatform.map((key, child) =>
-              new MapEntry(key, new SuiteConfiguration.fromMetadata(child))),
+              MapEntry(key, SuiteConfiguration.fromMetadata(child))),
           metadata: metadata.change(forTag: {}, onPlatform: {}));
 
   /// Returns an unmodifiable copy of [input].
@@ -209,7 +209,7 @@ class SuiteConfiguration {
   /// If [input] is `null` or empty, this returns `null`.
   static List<T> _list<T>(Iterable<T> input) {
     if (input == null) return null;
-    var list = new List<T>.unmodifiable(input);
+    var list = List<T>.unmodifiable(input);
     if (list.isEmpty) return null;
     return list;
   }
@@ -217,7 +217,7 @@ class SuiteConfiguration {
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
   static Map<K, V> _map<K, V>(Map<K, V> input) {
     if (input == null || input.isEmpty) return const {};
-    return new Map.unmodifiable(input);
+    return Map.unmodifiable(input);
   }
 
   /// Merges this with [other].
@@ -229,7 +229,7 @@ class SuiteConfiguration {
     if (this == SuiteConfiguration.empty) return other;
     if (other == SuiteConfiguration.empty) return this;
 
-    var config = new SuiteConfiguration._(
+    var config = SuiteConfiguration._(
         jsTrace: other._jsTrace ?? _jsTrace,
         runSkipped: other._runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
@@ -269,7 +269,7 @@ class SuiteConfiguration {
       String skipReason,
       PlatformSelector testOn,
       Iterable<String> addTags}) {
-    var config = new SuiteConfiguration._(
+    var config = SuiteConfiguration._(
         jsTrace: jsTrace ?? _jsTrace,
         runSkipped: runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
@@ -303,10 +303,10 @@ class SuiteConfiguration {
         if (!allRuntimes
             .any((runtime) => runtime.identifier == selection.name)) {
           if (selection.span != null) {
-            throw new SourceSpanFormatException(
+            throw SourceSpanFormatException(
                 'Unknown platform "${selection.name}".', selection.span);
           } else {
-            throw new FormatException('Unknown platform "${selection.name}".');
+            throw FormatException('Unknown platform "${selection.name}".');
           }
         }
       }
@@ -346,7 +346,7 @@ class SuiteConfiguration {
     if (_metadata.tags.isEmpty || tags.isEmpty) return this;
 
     // Otherwise, resolve the tag-specific components.
-    var newTags = new Map<BooleanSelector, SuiteConfiguration>.from(tags);
+    var newTags = Map<BooleanSelector, SuiteConfiguration>.from(tags);
     var merged = tags.keys.fold(empty, (SuiteConfiguration merged, selector) {
       if (!selector.evaluate(_metadata.tags)) return merged;
       return merged.merge(newTags.remove(selector));

@@ -9,13 +9,13 @@ import 'package:string_scanner/string_scanner.dart';
 /// This is intended to scan through a number without actually encoding the full
 /// Dart number grammar. It doesn't stop on "e" because that can be a component
 /// of numbers.
-final _untilUnit = new RegExp(r"[^a-df-z\s]+", caseSensitive: false);
+final _untilUnit = RegExp(r"[^a-df-z\s]+", caseSensitive: false);
 
 /// A regular expression that matches a time unit.
-final _unit = new RegExp(r"([um]s|[dhms])", caseSensitive: false);
+final _unit = RegExp(r"([um]s|[dhms])", caseSensitive: false);
 
 /// A regular expression that matches a section of whitespace.
-final _whitespace = new RegExp(r"\s+");
+final _whitespace = RegExp(r"\s+");
 
 /// A class representing a modification to the default timeout for a test.
 ///
@@ -24,7 +24,7 @@ final _whitespace = new RegExp(r"\s+");
 /// relative to the default.
 class Timeout {
   /// A constant indicating that a test should never time out.
-  static const none = const Timeout._none();
+  static const none = Timeout._none();
 
   /// The timeout duration.
   ///
@@ -67,7 +67,7 @@ class Timeout {
   ///
   /// Throws a [FormatException] if [timeout] is not in a valid format
   factory Timeout.parse(String timeout) {
-    var scanner = new StringScanner(timeout);
+    var scanner = StringScanner(timeout);
 
     // First check for the string "none".
     if (scanner.scan("none")) {
@@ -82,7 +82,7 @@ class Timeout {
     // A number followed by "x" is a scale factor.
     if (scanner.scan("x") || scanner.scan("X")) {
       scanner.expectDone();
-      return new Timeout.factor(number);
+      return Timeout.factor(number);
     }
 
     // Parse time units until none are left. The condition is in the middle of
@@ -100,7 +100,7 @@ class Timeout {
     }
 
     scanner.expectDone();
-    return new Timeout(new Duration(microseconds: microseconds.round()));
+    return Timeout(Duration(microseconds: microseconds.round()));
   }
 
   /// Returns the number of microseconds in [number] [unit]s.
@@ -119,7 +119,7 @@ class Timeout {
       case "us":
         return number;
       default:
-        throw new ArgumentError("Unknown unit $unit.");
+        throw ArgumentError("Unknown unit $unit.");
     }
   }
 
@@ -131,9 +131,9 @@ class Timeout {
   /// [other]'s [factor].
   Timeout merge(Timeout other) {
     if (this == none || other == none) return none;
-    if (other.duration != null) return new Timeout(other.duration);
-    if (duration != null) return new Timeout(duration * other.scaleFactor);
-    return new Timeout.factor(scaleFactor * other.scaleFactor);
+    if (other.duration != null) return Timeout(other.duration);
+    if (duration != null) return Timeout(duration * other.scaleFactor);
+    return Timeout.factor(scaleFactor * other.scaleFactor);
   }
 
   /// Returns a new [Duration] from applying [this] to [base].

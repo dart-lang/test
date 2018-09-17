@@ -15,12 +15,12 @@ void main() {
     });
 
     test("contains the expect failure", () {
-      expect(expectLater(new Future.value(true), completion(isFalse)),
+      expect(expectLater(Future.value(true), completion(isFalse)),
           throwsA(isTestFailure(anything)));
     });
 
     test("contains an async error", () {
-      expect(expectLater(new Future.error("oh no"), completion(isFalse)),
+      expect(expectLater(Future.error("oh no"), completion(isFalse)),
           throwsA("oh no"));
     });
   });

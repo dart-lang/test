@@ -60,8 +60,8 @@ abstract class LiveSuite {
   /// [skipped], [failed], and [active].
   Set<LiveTest> get liveTests {
     var sets = [passed, skipped, failed];
-    if (active != null) sets.add(new Set.from([active]));
-    return new UnionSet.from(sets);
+    if (active != null) sets.add(Set.from([active]));
+    return UnionSet.from(sets);
   }
 
   /// A stream that emits each [LiveTest] in this suite as it's about to start

@@ -53,8 +53,7 @@ void main() {
       });
 
       test("with a function that throws a matching error", () {
-        expect(
-            () => throw new FormatException("bad"), throwsA(isFormatException));
+        expect(() => throw FormatException("bad"), throwsA(isFormatException));
       });
 
       test("with a function that doesn't throw", () async {
@@ -112,13 +111,13 @@ void main() {
     group("[throws]", () {
       test("with a Future that throws an error", () {
         // ignore: deprecated_member_use
-        expect(new Future.error('oh no'), throws);
+        expect(Future.error('oh no'), throws);
       });
 
       test("with a Future that doesn't throw", () async {
         var liveTest = await runTestBody(() {
           // ignore: deprecated_member_use
-          expect(new Future.value(), throws);
+          expect(Future.value(), throws);
         });
 
         expectTestFailed(
@@ -133,13 +132,13 @@ void main() {
 
       test("with a closure that returns a Future that throws an error", () {
         // ignore: deprecated_member_use
-        expect(() => new Future.error('oh no'), throws);
+        expect(() => Future.error('oh no'), throws);
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
         var liveTest = await runTestBody(() {
           // ignore: deprecated_member_use
-          expect(() => new Future.value(), throws);
+          expect(() => Future.value(), throws);
         });
 
         expectTestFailed(
@@ -154,7 +153,7 @@ void main() {
 
       test("won't let the test end until the Future completes", () {
         return expectTestBlocks(() {
-          var completer = new Completer();
+          var completer = Completer();
           // ignore: deprecated_member_use
           expect(completer.future, throws);
           return completer;
@@ -164,17 +163,17 @@ void main() {
 
     group("[throwsA]", () {
       test("with a Future that throws an identical error", () {
-        expect(new Future.error('oh no'), throwsA('oh no'));
+        expect(Future.error('oh no'), throwsA('oh no'));
       });
 
       test("with a Future that throws a matching error", () {
-        expect(new Future.error(new FormatException("bad")),
-            throwsA(isFormatException));
+        expect(
+            Future.error(FormatException("bad")), throwsA(isFormatException));
       });
 
       test("with a Future that doesn't throw", () async {
         var liveTest = await runTestBody(() {
-          expect(new Future.value(), throwsA('oh no'));
+          expect(Future.value(), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -189,7 +188,7 @@ void main() {
 
       test("with a Future that throws the wrong error", () async {
         var liveTest = await runTestBody(() {
-          expect(new Future.error('aw dang'), throwsA('oh no'));
+          expect(Future.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -204,13 +203,13 @@ void main() {
 
       test("with a closure that returns a Future that throws a matching error",
           () {
-        expect(() => new Future.error(new FormatException("bad")),
+        expect(() => Future.error(FormatException("bad")),
             throwsA(isFormatException));
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
         var liveTest = await runTestBody(() {
-          expect(() => new Future.value(), throwsA('oh no'));
+          expect(() => Future.value(), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -226,7 +225,7 @@ void main() {
       test("with closure that returns a Future that throws the wrong error",
           () async {
         var liveTest = await runTestBody(() {
-          expect(() => new Future.error('aw dang'), throwsA('oh no'));
+          expect(() => Future.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -241,14 +240,14 @@ void main() {
 
       test("won't let the test end until the Future completes", () {
         return expectTestBlocks(() {
-          var completer = new Completer();
+          var completer = Completer();
           expect(completer.future, throwsA('oh no'));
           return completer;
         }, (completer) => completer.completeError('oh no'));
       });
 
       test("blocks expectLater's Future", () async {
-        var completer = new Completer();
+        var completer = Completer();
         var fired = false;
         expectLater(completer.future, throwsArgumentError).then((_) {
           fired = true;
@@ -257,7 +256,7 @@ void main() {
         await pumpEventQueue();
         expect(fired, isFalse);
 
-        completer.completeError(new ArgumentError("oh no"));
+        completer.completeError(ArgumentError("oh no"));
         await pumpEventQueue();
         expect(fired, isTrue);
       });

@@ -34,7 +34,7 @@ import '../runner_suite.dart';
 
 /// The first Dart SDK version where `--categories=Server` disables `dart:html`
 /// rather than disabling all JS-specific libraries.
-final _firstServerSdk = new Version.parse("2.0.0-dev.42.0");
+final _firstServerSdk = Version.parse("2.0.0-dev.42.0");
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
@@ -46,7 +46,7 @@ class NodePlatform extends PlatformPlugin
   final _compilers = () {
     var arguments = ["-Dnode=true"];
     if (sdkVersion >= _firstServerSdk) arguments.add("--categories=Server");
-    return new CompilerPool(arguments);
+    return CompilerPool(arguments);
   }();
 
   /// The temporary directory in which compiled JS is emitted.
@@ -58,7 +58,7 @@ class NodePlatform extends PlatformPlugin
   /// Executable settings for [Runtime.nodeJS] and runtimes that extend
   /// it.
   final _settings = {
-    Runtime.nodeJS: new ExecutableSettings(
+    Runtime.nodeJS: ExecutableSettings(
         linuxExecutable: "node",
         macOSExecutable: "node",
         windowsExecutable: "node.exe")
@@ -66,11 +66,10 @@ class NodePlatform extends PlatformPlugin
 
   NodePlatform()
       : _config = Configuration.current,
-        _http =
-            Configuration.current.pubServeUrl == null ? null : new HttpClient();
+        _http = Configuration.current.pubServeUrl == null ? null : HttpClient();
 
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
-      new ExecutableSettings.parse(settings);
+      ExecutableSettings.parse(settings);
 
   ExecutableSettings mergePlatformSettings(
           ExecutableSettings settings1, ExecutableSettings settings2) =>
@@ -83,13 +82,13 @@ class NodePlatform extends PlatformPlugin
   }
 
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
-      throw new UnimplementedError();
+      throw UnimplementedError();
 
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);
-    var controller = deserializeSuite(path, platform, suiteConfig,
-        new PluginEnvironment(), pair.first, message);
+    var controller = deserializeSuite(
+        path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
 
     controller.channel("test.node.mapper").sink.add(pair.last?.serialize());
 
@@ -118,17 +117,16 @@ class NodePlatform extends PlatformPlugin
       var socket = await server.first;
       // TODO(nweiz): Remove the DelegatingStreamSink wrapper when sdk#31504 is
       // fixed.
-      var channel = new StreamChannel(socket, new DelegatingStreamSink(socket))
-          .transform(new StreamChannelTransformer.fromCodec(utf8))
+      var channel = StreamChannel(socket, DelegatingStreamSink(socket))
+          .transform(StreamChannelTransformer.fromCodec(utf8))
           .transform(chunksToLines)
           .transform(jsonDocument)
-          .transformStream(
-              new StreamTransformer.fromHandlers(handleDone: (sink) {
+          .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
         if (process != null) process.kill();
         sink.close();
       }));
 
-      return new Pair(channel, pair.last);
+      return Pair(channel, pair.last);
     } catch (_) {
       server.close().catchError((_) {});
       rethrow;
@@ -155,7 +153,7 @@ class NodePlatform extends PlatformPlugin
   /// a Node.js process that loads that Dart test suite.
   Future<Pair<Process, StackTraceMapper>> _spawnNormalProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
-    var dir = new Directory(_compiledDir).createTempSync('test_').path;
+    var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(testPath) + ".node_test.dart.js");
     await _compilers.compile('''
         import "package:test/src/bootstrap/node.dart";
@@ -169,20 +167,20 @@ class NodePlatform extends PlatformPlugin
 
     // Add the Node.js preamble to ensure that the dart2js output is
     // compatible. Use the minified version so the source map remains valid.
-    var jsFile = new File(jsPath);
+    var jsFile = File(jsPath);
     await jsFile.writeAsString(
         preamble.getPreamble(minified: true) + await jsFile.readAsString());
 
     StackTraceMapper mapper;
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
-      mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
+      mapper = StackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           packageResolver: await PackageResolver.current.asSync,
           sdkRoot: p.toUri(sdkDir));
     }
 
-    return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
   }
 
   /// Spawns a Node.js process that loads the Dart test suite at [testPath]
@@ -199,13 +197,13 @@ class NodePlatform extends PlatformPlugin
       var mapPath = jsPath + '.map';
       var resolver = await SyncPackageResolver.loadConfig(
           p.toUri(p.join(precompiledPath, '.packages')));
-      mapper = new StackTraceMapper(await new File(mapPath).readAsString(),
+      mapper = StackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           packageResolver: resolver,
           sdkRoot: p.toUri(sdkDir));
     }
 
-    return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
   }
 
   /// Requests the compiled js for [testPath] from the pub serve url, prepends
@@ -213,25 +211,24 @@ class NodePlatform extends PlatformPlugin
   /// test suite.
   Future<Pair<Process, StackTraceMapper>> _spawnPubServeProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
-    var dir = new Directory(_compiledDir).createTempSync('test_').path;
+    var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(testPath) + ".node_test.dart.js");
     var url = _config.pubServeUrl.resolveUri(
         p.toUri(p.relative(testPath, from: 'test') + '.node_test.dart.js'));
 
     var js = await _get(url, testPath);
-    await new File(jsPath)
-        .writeAsString(preamble.getPreamble(minified: true) + js);
+    await File(jsPath).writeAsString(preamble.getPreamble(minified: true) + js);
 
     StackTraceMapper mapper;
     if (!suiteConfig.jsTrace) {
       var mapUrl = url.replace(path: url.path + '.map');
-      mapper = new StackTraceMapper(await _get(mapUrl, testPath),
+      mapper = StackTraceMapper(await _get(mapUrl, testPath),
           mapUrl: mapUrl,
-          packageResolver: new SyncPackageResolver.root('packages'),
+          packageResolver: SyncPackageResolver.root('packages'),
           sdkRoot: p.toUri('packages/\$sdk'));
     }
 
-    return new Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
   }
 
   /// Starts the Node.js process for [runtime] with [jsPath].
@@ -248,8 +245,8 @@ class NodePlatform extends PlatformPlugin
           settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
           environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
-      await new Future.error(
-          new ApplicationException(
+      await Future.error(
+          ApplicationException(
               "Failed to run ${runtime.name}: ${getErrorMessage(error)}"),
           stackTrace);
       return null;
@@ -268,7 +265,7 @@ class NodePlatform extends PlatformPlugin
         // else the process can't exit.
         response.listen(null);
 
-        throw new LoadException(
+        throw LoadException(
             suitePath,
             "Error getting $url: ${response.statusCode} "
             "${response.reasonPhrase}\n"
@@ -283,7 +280,7 @@ class NodePlatform extends PlatformPlugin
             "(errno ${error.osError.errorCode})";
       }
 
-      throw new LoadException(
+      throw LoadException(
           suitePath,
           "Error getting $url: $message\n"
           'Make sure "pub serve" is running.');
@@ -294,10 +291,10 @@ class NodePlatform extends PlatformPlugin
         await _compilers.close();
 
         if (_config.pubServeUrl == null) {
-          new Directory(_compiledDir).deleteSync(recursive: true);
+          Directory(_compiledDir).deleteSync(recursive: true);
         } else {
           _http.close();
         }
       });
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 }

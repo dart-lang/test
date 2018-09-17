@@ -21,7 +21,7 @@ void main() {
     ]).create();
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    var config = new Configuration.load(path);
+    var config = Configuration.load(path);
     expect(config.filename.pattern, equals('test_*.dart'));
     expect(config.concurrency, equals(3));
   });
@@ -42,7 +42,7 @@ void main() {
     ]).create();
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    var config = new Configuration.load(path);
+    var config = Configuration.load(path);
     expect(config.knownTags, unorderedEquals(['hello', 'world']));
   });
 
@@ -65,7 +65,7 @@ void main() {
     ]).create();
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    var config = new Configuration.load(path);
+    var config = Configuration.load(path);
     expect(config.knownTags, ['tag']);
     expect(config.filename.pattern, 'test_*.dart');
     expect(config.concurrency, 3);
@@ -84,7 +84,7 @@ void main() {
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
     expect(
-        () => new Configuration.load(path),
+        () => Configuration.load(path),
         throwsA(allOf(
             isFormatException,
             predicate((error) =>
@@ -105,7 +105,7 @@ void main() {
     ]).create();
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    var config = new Configuration.load(path);
+    var config = Configuration.load(path);
     var presetBar = config.presets['bar'];
     expect(presetBar.pauseAfterLoad, isTrue);
     expect(presetBar.reporter, 'expanded');
@@ -123,7 +123,7 @@ void main() {
     ]).create();
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-    var config = new Configuration.load(path);
+    var config = Configuration.load(path);
     expect(config.concurrency, 5);
   });
 
@@ -136,7 +136,7 @@ void main() {
       ]).create();
 
       var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-      expect(() => new Configuration.load(path), throwsFormatException);
+      expect(() => Configuration.load(path), throwsFormatException);
     });
 
     test('a non-existent included file', () async {
@@ -147,7 +147,7 @@ void main() {
       ]).create();
 
       var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-      expect(() => new Configuration.load(path), throwsFormatException);
+      expect(() => Configuration.load(path), throwsFormatException);
     });
 
     test('an include field in a test config context', () async {
@@ -162,7 +162,7 @@ void main() {
       ]).create();
 
       var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
-      expect(() => new Configuration.load(path), throwsFormatException);
+      expect(() => Configuration.load(path), throwsFormatException);
     });
   });
 }

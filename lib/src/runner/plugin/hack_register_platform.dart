@@ -12,7 +12,7 @@ import 'platform.dart';
 ///
 /// **Do not access this outside the test package**.
 final platformCallbacks =
-    new UnmodifiableMapView<Runtime, FutureOr<PlatformPlugin> Function()>(
+    UnmodifiableMapView<Runtime, FutureOr<PlatformPlugin> Function()>(
         _platformCallbacks);
 final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 

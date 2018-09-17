@@ -14,7 +14,7 @@ class OutstandingCallbackCounter {
 
   /// A future that fires when the oustanding callback count reaches 0.
   Future get noOutstandingCallbacks => _completer.future;
-  final _completer = new Completer();
+  final _completer = Completer();
 
   /// Adds an outstanding callback.
   void addOutstandingCallback() {

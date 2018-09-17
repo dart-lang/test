@@ -12,7 +12,7 @@ import '../utils.dart';
 /// A regular expression for matching filename annotations in
 /// [IsolateSpawnException] messages.
 final _isolateFileRegExp =
-    new RegExp(r"^'(file:/[^']+)': (error|warning): ", multiLine: true);
+    RegExp(r"^'(file:/[^']+)': (error|warning): ", multiLine: true);
 
 class LoadException implements Exception {
   final String path;
@@ -22,7 +22,7 @@ class LoadException implements Exception {
   LoadException(this.path, this.innerError);
 
   String toString({bool color = false}) {
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     if (color) buffer.write('\u001b[31m'); // red
     buffer.write('Failed to load "$path":');
     if (color) buffer.write('\u001b[0m'); // no color

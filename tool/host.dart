@@ -46,10 +46,10 @@ class _JSApi {
 external set _jsApi(_JSApi api);
 
 /// The iframes created for each loaded test suite, indexed by the suite id.
-final _iframes = new Map<int, IFrameElement>();
+final _iframes = Map<int, IFrameElement>();
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = new Map<int, List<StreamSubscription>>();
+final _subscriptions = Map<int, List<StreamSubscription>>();
 
 /// The URL for the current page.
 final _currentUrl = Uri.parse(window.location.href);
@@ -139,7 +139,7 @@ void main() {
 
     // Send periodic pings to the test runner so it can know when the browser is
     // paused for debugging.
-    new Timer.periodic(new Duration(seconds: 1),
+    Timer.periodic(Duration(seconds: 1),
         (_) => serverChannel.sink.add({"command": "ping"}));
 
     var play = document.querySelector("#play");
@@ -148,14 +148,14 @@ void main() {
       serverChannel.sink.add({"command": "resume"});
     });
 
-    _jsApi = new _JSApi(resume: allowInterop(() {
+    _jsApi = _JSApi(resume: allowInterop(() {
       if (!document.body.classes.remove('paused')) return;
       serverChannel.sink.add({"command": "resume"});
     }), restartCurrent: allowInterop(() {
       serverChannel.sink.add({"command": "restart"});
     }));
   }, onError: (error, StackTrace stackTrace) {
-    print("$error\n${new Trace.from(stackTrace).terse}");
+    print("$error\n${Trace.from(stackTrace).terse}");
   });
 }
 
@@ -164,9 +164,9 @@ void main() {
 MultiChannel _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
-  var webSocket = new WebSocket(_currentUrl.queryParameters['managerUrl']);
+  var webSocket = WebSocket(_currentUrl.queryParameters['managerUrl']);
 
-  var controller = new StreamChannelController(sync: true);
+  var controller = StreamChannelController(sync: true);
   webSocket.onMessage.listen((message) {
     controller.local.sink.add(jsonDecode(message.data as String));
   });
@@ -174,7 +174,7 @@ MultiChannel _connectToServer() {
   controller.local.stream
       .listen((message) => webSocket.send(jsonEncode(message)));
 
-  return new MultiChannel(controller.foreign);
+  return MultiChannel(controller.foreign);
 }
 
 /// Creates an iframe with `src` [url] and establishes a connection to it using
@@ -182,16 +182,16 @@ MultiChannel _connectToServer() {
 ///
 /// [id] identifies the suite loaded in this iframe.
 StreamChannel _connectToIframe(String url, int id) {
-  var iframe = new IFrameElement();
+  var iframe = IFrameElement();
   _iframes[id] = iframe;
   iframe.src = url;
   document.body.children.add(iframe);
 
-  var controller = new StreamChannelController(sync: true);
+  var controller = StreamChannelController(sync: true);
 
   // Use this to avoid sending a message to the iframe before it's sent a
   // message to us. This ensures that no messages get dropped on the floor.
-  var readyCompleter = new Completer();
+  var readyCompleter = Completer();
 
   var subscriptions = <StreamSubscription>[];
   _subscriptions[id] = subscriptions;

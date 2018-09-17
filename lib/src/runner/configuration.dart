@@ -25,7 +25,7 @@ import 'configuration/suite.dart';
 import 'configuration/values.dart';
 
 /// The key used to look up [Configuration.current] in a zone.
-final _currentKey = new Object();
+final _currentKey = Object();
 
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
@@ -33,7 +33,7 @@ class Configuration {
   ///
   /// Using this is slightly more efficient than manually constructing a new
   /// configuration with no arguments.
-  static final empty = new Configuration._();
+  static final empty = Configuration._();
 
   /// The usage string for the command-line arguments.
   static String get usage => args.usage;
@@ -103,12 +103,12 @@ class Configuration {
   final int totalShards;
 
   /// The list of packages to fold when producing [StackTrace]s.
-  Set<String> get foldTraceExcept => _foldTraceExcept ?? new Set();
+  Set<String> get foldTraceExcept => _foldTraceExcept ?? Set();
   final Set<String> _foldTraceExcept;
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// [StackTrace]s.
-  Set<String> get foldTraceOnly => _foldTraceOnly ?? new Set();
+  Set<String> get foldTraceOnly => _foldTraceOnly ?? Set();
   final Set<String> _foldTraceOnly;
 
   /// The paths from which to load tests.
@@ -141,7 +141,7 @@ class Configuration {
       known.addAll(configuration.knownTags);
     }
 
-    _knownTags = new UnmodifiableSetView(known);
+    _knownTags = UnmodifiableSetView(known);
     return _knownTags;
   }
 
@@ -168,7 +168,7 @@ class Configuration {
       known.addAll(configuration.knownPresets);
     }
 
-    _knownPresets = new UnmodifiableSetView(known);
+    _knownPresets = UnmodifiableSetView(known);
     return _knownPresets;
   }
 
@@ -188,7 +188,7 @@ class Configuration {
   ///
   /// The current configuration is set using [asCurrent].
   static Configuration get current =>
-      Zone.current[_currentKey] as Configuration ?? new Configuration();
+      Zone.current[_currentKey] as Configuration ?? Configuration();
 
   /// Parses the configuration from [args].
   ///
@@ -249,7 +249,7 @@ class Configuration {
       PlatformSelector testOn,
       Iterable<String> addTags}) {
     var chosenPresetSet = chosenPresets?.toSet();
-    var configuration = new Configuration._(
+    var configuration = Configuration._(
         help: help,
         version: version,
         pauseAfterLoad: pauseAfterLoad,
@@ -270,7 +270,7 @@ class Configuration {
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
-        suiteDefaults: new SuiteConfiguration(
+        suiteDefaults: SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
@@ -297,7 +297,7 @@ class Configuration {
   static Map<String, Configuration> _withChosenPresets(
       Map<String, Configuration> map, Set<String> chosenPresets) {
     if (map == null || chosenPresets == null) return map;
-    return map.map((key, config) => new MapEntry(
+    return map.map((key, config) => MapEntry(
         key,
         config.change(
             chosenPresets: config.chosenPresets.union(chosenPresets))));
@@ -343,24 +343,23 @@ class Configuration {
         _foldTraceExcept = _set(foldTraceExcept),
         _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
-        chosenPresets =
-            new UnmodifiableSetView(chosenPresets?.toSet() ?? new Set()),
+        chosenPresets = UnmodifiableSetView(chosenPresets?.toSet() ?? Set()),
         presets = _map(presets),
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
-                new SuiteConfiguration(timeout: Timeout.none)
+                SuiteConfiguration(timeout: Timeout.none)
             : suiteDefaults ?? SuiteConfiguration.empty {
     if (_filename != null && _filename.context.style != p.style) {
-      throw new ArgumentError(
+      throw ArgumentError(
           "filename's context must match the current operating system, was "
           "${_filename.context.style}.");
     }
 
     if ((shardIndex == null) != (totalShards == null)) {
-      throw new ArgumentError(
+      throw ArgumentError(
           "shardIndex and totalShards may only be passed together.");
     } else if (shardIndex != null) {
       RangeError.checkValueInInterval(
@@ -372,14 +371,14 @@ class Configuration {
   /// [SuiteConfiguration].
   factory Configuration.fromSuiteConfiguration(
           SuiteConfiguration suiteConfig) =>
-      new Configuration._(suiteDefaults: suiteConfig);
+      Configuration._(suiteDefaults: suiteConfig);
 
   /// Returns an unmodifiable copy of [input].
   ///
   /// If [input] is `null` or empty, this returns `null`.
   static List<T> _list<T>(Iterable<T> input) {
     if (input == null) return null;
-    var list = new List<T>.unmodifiable(input);
+    var list = List<T>.unmodifiable(input);
     if (list.isEmpty) return null;
     return list;
   }
@@ -387,7 +386,7 @@ class Configuration {
   /// Returns a set from [input].
   static Set<T> _set<T>(Iterable<T> input) {
     if (input == null) return null;
-    var set = new Set<T>.from(input);
+    var set = Set<T>.from(input);
     if (set.isEmpty) return null;
     return set;
   }
@@ -395,7 +394,7 @@ class Configuration {
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
   static Map<K, V> _map<K, V>(Map<K, V> input) {
     input ??= {};
-    return new Map.unmodifiable(input);
+    return Map.unmodifiable(input);
   }
 
   /// Runs [body] with [this] as [Configuration.current].
@@ -412,7 +411,7 @@ class Configuration {
     for (var settings in overrideRuntimes.values) {
       if (!allRuntimes
           .any((runtime) => runtime.identifier == settings.identifier)) {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             'Unknown platform "${settings.identifier}".',
             settings.identifierSpan);
       }
@@ -449,7 +448,7 @@ class Configuration {
       }
     }
 
-    var result = new Configuration._(
+    var result = Configuration._(
         help: other._help ?? _help,
         version: other._version ?? _version,
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
@@ -469,7 +468,7 @@ class Configuration {
         presets: _mergeConfigMaps(presets, other.presets),
         overrideRuntimes: mergeUnmodifiableMaps(
             overrideRuntimes, other.overrideRuntimes,
-            value: (settings1, settings2) => new RuntimeSettings(
+            value: (settings1, settings2) => RuntimeSettings(
                 settings1.identifier,
                 settings1.identifierSpan,
                 settings1.settings.toList()..addAll(settings2.settings))),
@@ -531,7 +530,7 @@ class Configuration {
       String skipReason,
       PlatformSelector testOn,
       Iterable<String> addTags}) {
-    var config = new Configuration._(
+    var config = Configuration._(
         help: help ?? _help,
         version: version ?? _version,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
@@ -587,7 +586,7 @@ class Configuration {
   Configuration _resolvePresets() {
     if (chosenPresets.isEmpty || presets.isEmpty) return this;
 
-    var newPresets = new Map<String, Configuration>.from(presets);
+    var newPresets = Map<String, Configuration>.from(presets);
     var merged = chosenPresets.fold(
         empty,
         (Configuration merged, preset) =>
@@ -598,7 +597,7 @@ class Configuration {
 
     // Make sure the configuration knows about presets that were selected and
     // thus removed from [newPresets].
-    result._knownPresets = new UnmodifiableSetView(
+    result._knownPresets = UnmodifiableSetView(
         result.knownPresets.toSet()..addAll(this.presets.keys));
 
     return result;

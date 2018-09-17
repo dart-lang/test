@@ -17,7 +17,7 @@ import 'format_stack_trace.dart';
 /// mimic the behavior of this matcher.
 @Deprecated("Will be removed in 0.13.0")
 // ignore: deprecated_member_use
-const Matcher throws = const Throws();
+const Matcher throws = Throws();
 
 /// This can be used to match three kinds of objects:
 ///
@@ -38,7 +38,7 @@ const Matcher throws = const Throws();
 /// [Matcher], it will implicitly be treated as `equals(matcher)`.
 Matcher throwsA(matcher) =>
     // ignore: deprecated_member_use
-    new Throws(wrapMatcher(matcher));
+    Throws(wrapMatcher(matcher));
 
 /// Use the [throwsA] function instead.
 @Deprecated("Will be removed in 0.13.0")
@@ -91,10 +91,10 @@ class Throws extends AsyncMatcher {
     if (_matcher.matches(error, matchState)) return null;
 
     var result = _matcher
-        .describeMismatch(error, new StringDescription(), matchState, false)
+        .describeMismatch(error, StringDescription(), matchState, false)
         .toString();
 
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     buffer.writeln(indent(prettyPrint(error), first: 'threw '));
     if (trace != null) {
       buffer

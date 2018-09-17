@@ -55,12 +55,12 @@ class StackTraceMapper {
   static StackTraceMapper deserialize(Map serialized) {
     if (serialized == null) return null;
     String packageRoot = serialized['packageRoot'] as String ?? '';
-    return new StackTraceMapper(serialized['mapContents'] as String,
+    return StackTraceMapper(serialized['mapContents'] as String,
         sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
         packageResolver: packageRoot.isNotEmpty
-            ? new SyncPackageResolver.root(
+            ? SyncPackageResolver.root(
                 Uri.parse(serialized['packageRoot'] as String))
-            : new SyncPackageResolver.config(_deserializePackageConfigMap(
+            : SyncPackageResolver.config(_deserializePackageConfigMap(
                 (serialized['packageConfigMap'] as Map)
                     .cast<String, String>())),
         mapUrl: Uri.parse(serialized['mapUrl'] as String));
@@ -71,7 +71,7 @@ class StackTraceMapper {
   static Map<String, String> _serializePackageConfigMap(
       Map<String, Uri> packageConfigMap) {
     if (packageConfigMap == null) return null;
-    return packageConfigMap.map((key, value) => new MapEntry(key, '$value'));
+    return packageConfigMap.map((key, value) => MapEntry(key, '$value'));
   }
 
   /// Converts a serialized package config map into a format suitable for
@@ -79,6 +79,6 @@ class StackTraceMapper {
   static Map<String, Uri> _deserializePackageConfigMap(
       Map<String, String> serialized) {
     if (serialized == null) return null;
-    return serialized.map((key, value) => new MapEntry(key, Uri.parse(value)));
+    return serialized.map((key, value) => MapEntry(key, Uri.parse(value)));
   }
 }

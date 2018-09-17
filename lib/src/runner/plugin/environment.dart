@@ -11,7 +11,7 @@ import '../environment.dart';
 /// The default environment for platform plugins.
 class PluginEnvironment implements Environment {
   final supportsDebugging = false;
-  Stream get onRestart => new StreamController.broadcast().stream;
+  Stream get onRestart => StreamController.broadcast().stream;
 
   const PluginEnvironment();
 
@@ -19,6 +19,6 @@ class PluginEnvironment implements Environment {
 
   Uri get remoteDebuggerUrl => null;
 
-  CancelableOperation displayPause() => throw new UnsupportedError(
+  CancelableOperation displayPause() => throw UnsupportedError(
       "PluginEnvironment.displayPause is not supported.");
 }

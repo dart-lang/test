@@ -165,7 +165,7 @@ void main() {
     test("runs in the same error zone as the test", () {
       return expectTestsPass(() {
         test("test", () {
-          var future = new Future.error("oh no");
+          var future = Future.error("oh no");
           expect(future, throwsA("oh no"));
 
           addTearDown(() {
@@ -226,7 +226,7 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 tearDown1Run = true;
               }), completes);
             });
@@ -236,7 +236,7 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 tearDown2Run = true;
               }), completes);
             });
@@ -246,7 +246,7 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 tearDown3Run = true;
               }), completes);
             });
@@ -291,7 +291,7 @@ void main() {
             expect(groupTearDownRun, isFalse);
             expect(testTearDownRun, isFalse);
 
-            expect(new Future(() {
+            expect(Future(() {
               groupTearDownRun = true;
             }), completes);
           });
@@ -301,7 +301,7 @@ void main() {
               expect(groupTearDownRun, isFalse);
               expect(testTearDownRun, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 testTearDownRun = true;
               }), completes);
             });
@@ -354,11 +354,11 @@ void main() {
       test("reports the error", () async {
         var engine = declareEngine(() {
           test("test", () {
-            addTearDown(() => throw new TestFailure("fail"));
+            addTearDown(() => throw TestFailure("fail"));
           });
         });
 
-        var queue = new StreamQueue(engine.onTestStarted);
+        var queue = StreamQueue(engine.onTestStarted);
         var liveTestFuture = queue.next;
 
         expect(await engine.run(), isFalse);
@@ -565,7 +565,7 @@ void main() {
     test("runs in the same error zone as the setUpAll", () async {
       return expectTestsPass(() {
         setUpAll(() {
-          var future = new Future.error("oh no");
+          var future = Future.error("oh no");
           expect(future, throwsA("oh no"));
 
           addTearDown(() {
@@ -635,7 +635,7 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 tearDown1Run = true;
               }), completes);
             });
@@ -645,7 +645,7 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 tearDown2Run = true;
               }), completes);
             });
@@ -655,7 +655,7 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 tearDown3Run = true;
               }), completes);
             });
@@ -712,7 +712,7 @@ void main() {
             expect(groupTearDownRun, isFalse);
             expect(testTearDownRun, isFalse);
 
-            expect(new Future(() {
+            expect(Future(() {
               groupTearDownRun = true;
             }), completes);
           });
@@ -722,7 +722,7 @@ void main() {
               expect(groupTearDownRun, isFalse);
               expect(testTearDownRun, isFalse);
 
-              expect(new Future(() {
+              expect(Future(() {
                 testTearDownRun = true;
               }), completes);
             });
@@ -743,13 +743,13 @@ void main() {
       test("reports the error", () async {
         var engine = declareEngine(() {
           setUpAll(() {
-            addTearDown(() => throw new TestFailure("fail"));
+            addTearDown(() => throw TestFailure("fail"));
           });
 
           test("test", () {});
         });
 
-        var queue = new StreamQueue(engine.onTestStarted);
+        var queue = StreamQueue(engine.onTestStarted);
         queue.skip(2);
         var liveTestFuture = queue.next;
 

@@ -22,8 +22,8 @@ import '../utils.dart';
 /// messages are printed using `print()`.
 // package:test will only send a `Map` across this channel, but users of
 // `hybridMain` can send any json encodeable type.
-final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
-    new StreamTransformer.fromHandlers(handleData: (message, sink) {
+final _transformer = StreamChannelTransformer<dynamic, dynamic>(
+    StreamTransformer.fromHandlers(handleData: (message, sink) {
   switch (message["type"] as String) {
     case "data":
       sink.add(message["data"]);
@@ -38,7 +38,7 @@ final _transformer = new StreamChannelTransformer<dynamic, dynamic>(
       sink.addError(error.error, error.stackTrace);
       break;
   }
-}), new StreamSinkTransformer.fromHandlers(handleData: (message, sink) {
+}), StreamSinkTransformer.fromHandlers(handleData: (message, sink) {
   // This is called synchronously from the user's `Sink.add()` call, so if
   // [ensureJsonEncodable] throws here they'll get a helpful stack trace.
   ensureJsonEncodable(message);
@@ -98,7 +98,7 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive = false}) {
   } else if (uri is String) {
     parsedUrl = Uri.parse(uri);
   } else {
-    throw new ArgumentError.value(uri, "uri", "must be a Uri or a String.");
+    throw ArgumentError.value(uri, "uri", "must be a Uri or a String.");
   }
 
   String absoluteUri;
@@ -182,7 +182,7 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive = false}) {
 /// **`stream_channel` package, since you're using its API as well!
 StreamChannel spawnHybridCode(String dartCode,
     {Object message, bool stayAlive = false}) {
-  var uri = new Uri.dataFromString(dartCode,
+  var uri = Uri.dataFromString(dartCode,
       encoding: utf8, mimeType: 'application/dart');
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
@@ -194,7 +194,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   if (channel == null) {
     // TODO(nweiz): Link to an issue tracking support when running the test file
     // directly.
-    throw new UnsupportedError("Can't connect to the test runner.\n"
+    throw UnsupportedError("Can't connect to the test runner.\n"
         'spawnHybridUri() is currently only supported within "pub run test".');
   }
 
@@ -210,7 +210,7 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   });
 
   if (!stayAlive) {
-    var disconnector = new Disconnector();
+    var disconnector = Disconnector();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }

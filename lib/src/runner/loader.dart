@@ -35,7 +35,7 @@ class Loader {
   final _config = Configuration.current;
 
   /// All suites that have been created by the loader.
-  final _suites = new Set<RunnerSuite>();
+  final _suites = Set<RunnerSuite>();
 
   /// Memoizers for platform plugins, indexed by the runtimes they support.
   final _platformPlugins = <Runtime, AsyncMemoizer<PlatformPlugin>>{};
@@ -57,8 +57,7 @@ class Loader {
   final _parsedRuntimeSettings = <Runtime, Object>{};
 
   /// All plaforms supported by this [Loader].
-  List<Runtime> get allRuntimes =>
-      new List.unmodifiable(_platformCallbacks.keys);
+  List<Runtime> get allRuntimes => List.unmodifiable(_platformCallbacks.keys);
 
   /// The runtime variables supported by this loader, in addition the default
   /// variables that are always supported.
@@ -80,8 +79,8 @@ class Loader {
   Loader(
       {String root,
       Map<Iterable<Runtime>, FutureOr<PlatformPlugin> Function()> plugins}) {
-    _registerPlatformPlugin([Runtime.vm], () => new VMPlatform());
-    _registerPlatformPlugin([Runtime.nodeJS], () => new NodePlatform());
+    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
+    _registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
     _registerPlatformPlugin([
       Runtime.chrome,
       Runtime.phantomJS,
@@ -106,7 +105,7 @@ class Loader {
   /// Registers a [PlatformPlugin] for [runtimes].
   void _registerPlatformPlugin(
       Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> Function() plugin) {
-    var memoizer = new AsyncMemoizer<PlatformPlugin>();
+    var memoizer = AsyncMemoizer<PlatformPlugin>();
     for (var runtime in runtimes) {
       _platformPlugins[runtime] = memoizer;
       _platformCallbacks[runtime] = plugin;
@@ -118,7 +117,7 @@ class Loader {
   void _registerCustomRuntimes() {
     for (var customRuntime in _config.defineRuntimes.values) {
       if (_runtimesByIdentifier.containsKey(customRuntime.identifier)) {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             wordWrap(
                 'The platform "${customRuntime.identifier}" already exists. '
                 'Use override_platforms to override it.'),
@@ -127,7 +126,7 @@ class Loader {
 
       var parent = _runtimesByIdentifier[customRuntime.parent];
       if (parent == null) {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             'Unknown platform.', customRuntime.parentSpan);
       }
 
@@ -166,15 +165,15 @@ class Loader {
   /// [RunnerSuite]s defined in the file.
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
     return StreamGroup.merge(
-        new Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File) return new Stream.fromIterable([]);
+        Directory(dir).listSync(recursive: true).map((entry) {
+      if (entry is! File) return Stream.fromIterable([]);
 
       if (!_config.filename.matches(p.basename(entry.path))) {
-        return new Stream.fromIterable([]);
+        return Stream.fromIterable([]);
       }
 
       if (p.split(entry.path).contains('packages')) {
-        return new Stream.fromIterable([]);
+        return Stream.fromIterable([]);
       }
 
       return loadFile(entry.path, suiteConfig);
@@ -190,14 +189,13 @@ class Loader {
   Stream<LoadSuite> loadFile(
       String path, SuiteConfiguration suiteConfig) async* {
     try {
-      suiteConfig = suiteConfig.merge(new SuiteConfiguration.fromMetadata(
+      suiteConfig = suiteConfig.merge(SuiteConfiguration.fromMetadata(
           parseMetadata(path, _runtimeVariables.toSet())));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
     } on FormatException catch (error, stackTrace) {
-      yield new LoadSuite.forLoadException(
-          new LoadException(path, error), suiteConfig,
+      yield LoadSuite.forLoadException(LoadException(path, error), suiteConfig,
           stackTrace: stackTrace);
       return;
     }
@@ -207,8 +205,8 @@ class Loader {
     }
 
     if (_config.pubServeUrl != null && !p.isWithin('test', path)) {
-      yield new LoadSuite.forLoadException(
-          new LoadException(
+      yield LoadSuite.forLoadException(
+          LoadException(
               path, 'When using "pub serve", all test files must be in test/.'),
           suiteConfig);
       return;
@@ -227,11 +225,10 @@ class Loader {
 
       // Don't load a skipped suite.
       if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
-        yield new LoadSuite.forSuite(new RunnerSuite(
+        yield LoadSuite.forSuite(RunnerSuite(
             const PluginEnvironment(),
             platformConfig,
-            new Group.root(
-                [new LocalTest("(suite)", platformConfig.metadata, () {})],
+            Group.root([LocalTest("(suite)", platformConfig.metadata, () {})],
                 metadata: platformConfig.metadata),
             platform,
             path: path));
@@ -239,7 +236,7 @@ class Loader {
       }
 
       var name = (platform.runtime.isJS ? "compiling " : "loading ") + path;
-      yield new LoadSuite(name, platformConfig, platform, () async {
+      yield LoadSuite(name, platformConfig, platform, () async {
         var memo = _platformPlugins[platform.runtime];
 
         try {
@@ -251,7 +248,7 @@ class Loader {
           return suite;
         } catch (error, stackTrace) {
           if (error is LoadException) rethrow;
-          await new Future.error(new LoadException(path, error), stackTrace);
+          await Future.error(LoadException(path, error), stackTrace);
           return null;
         }
       }, path: path);
@@ -286,7 +283,7 @@ class Loader {
         span = _config.overrideRuntimes[runtime.identifier].identifierSpan;
       }
 
-      throw new SourceSpanFormatException(
+      throw SourceSpanFormatException(
           'The "$identifier" platform can\'t be customized.', span);
     }
   }
@@ -312,5 +309,5 @@ class Loader {
         _platformCallbacks.clear();
         _suites.clear();
       });
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 }

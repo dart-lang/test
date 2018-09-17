@@ -49,13 +49,13 @@ class CompactReporter implements Reporter {
 
   /// Whether the path to each test's suite should be printed.
   final bool _printPath = Configuration.current.paths.length > 1 ||
-      new Directory(Configuration.current.paths.single).existsSync();
+      Directory(Configuration.current.paths.single).existsSync();
 
   /// The engine used to run the tests.
   final Engine _engine;
 
   /// A stopwatch that tracks the duration of the full run.
-  final _stopwatch = new Stopwatch();
+  final _stopwatch = Stopwatch();
 
   /// Whether we've started [_stopwatch].
   ///
@@ -95,11 +95,11 @@ class CompactReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = new Set<StreamSubscription>();
+  final _subscriptions = Set<StreamSubscription>();
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
-  static CompactReporter watch(Engine engine) => new CompactReporter._(engine);
+  static CompactReporter watch(Engine engine) => CompactReporter._(engine);
 
   CompactReporter._(this._engine) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -152,7 +152,7 @@ class CompactReporter implements Reporter {
       _stopwatch.start();
 
       /// Keep updating the time even when nothing else is happening.
-      _subscriptions.add(new Stream.periodic(new Duration(seconds: 1))
+      _subscriptions.add(Stream.periodic(Duration(seconds: 1))
           .listen((_) => _progressLine(_lastProgressMessage)));
     }
 
@@ -300,7 +300,7 @@ class CompactReporter implements Reporter {
     if (suffix != null) message += suffix;
     if (color == null) color = '';
     var duration = _stopwatch.elapsed;
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
 
     // \r moves back to the beginning of the current line.
     buffer.write('\r${_timeString(duration)} ');

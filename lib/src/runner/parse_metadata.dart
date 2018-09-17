@@ -24,7 +24,7 @@ import '../utils.dart';
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
 Metadata parseMetadata(String path, Set<String> platformVariables) =>
-    new _Parser(path, platformVariables).parse();
+    _Parser(path, platformVariables).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
@@ -42,7 +42,7 @@ class _Parser {
   Set<String> _prefixes;
 
   _Parser(String path, this._platformVariables) : _path = path {
-    var contents = new File(path).readAsStringSync();
+    var contents = File(path).readAsStringSync();
     var directives = parseDirectives(contents, name: path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
 
@@ -95,7 +95,7 @@ class _Parser {
       }
     }
 
-    return new Metadata(
+    return Metadata(
         testOn: testOn,
         timeout: timeout,
         skip: skip == null ? null : true,
@@ -119,7 +119,7 @@ class _Parser {
     var literal = _parseString(expression);
     return _contextualize(
         literal,
-        () => new PlatformSelector.parse(literal.stringValue)
+        () => PlatformSelector.parse(literal.stringValue)
           ..validate(_platformVariables));
   }
 
@@ -140,18 +140,17 @@ class _Parser {
     }
 
     var args = annotation.arguments.arguments;
-    if (constructorName == null) return new Timeout(_parseDuration(args.first));
-    return new Timeout.factor(_parseNum(args.first));
+    if (constructorName == null) return Timeout(_parseDuration(args.first));
+    return Timeout.factor(_parseNum(args.first));
   }
 
   /// Parses a `Timeout` constructor.
   Timeout _parseTimeoutConstructor(Expression constructor) {
     var name = _findConstructorName(constructor, 'Timeout');
     var arguments = _parseArguments(constructor);
-    if (name == null) return new Timeout(_parseDuration(arguments.first));
-    if (name == 'factor') return new Timeout.factor(_parseNum(arguments.first));
-    throw new SourceSpanFormatException(
-        'Invalid timeout', _spanFor(constructor));
+    if (name == null) return Timeout(_parseDuration(arguments.first));
+    if (name == 'factor') return Timeout.factor(_parseNum(arguments.first));
+    throw SourceSpanFormatException('Invalid timeout', _spanFor(constructor));
   }
 
   /// Parses a `@Skip` annotation.
@@ -184,7 +183,7 @@ class _Parser {
       var name = _parseString(tagExpression).stringValue;
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
-      throw new SourceSpanFormatException(
+      throw SourceSpanFormatException(
           'Invalid tag name. Tags must be (optionally hyphenated) Dart '
           'identifiers.',
           _spanFor(tagExpression));
@@ -208,7 +207,7 @@ class _Parser {
           value is MethodInvocation) {
         expressions = [value];
       } else {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             'Expected a Timeout, Skip, or List of those.', _spanFor(value));
       }
 
@@ -233,7 +232,7 @@ class _Parser {
         } else if (expression is PrefixedIdentifier &&
             expression.prefix.name == 'Timeout') {
           if (expression.identifier.name != 'none') {
-            throw new SourceSpanFormatException(
+            throw SourceSpanFormatException(
                 'Undefined value.', _spanFor(expression));
           }
 
@@ -254,11 +253,11 @@ class _Parser {
           }
         }
 
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             'Expected a Timeout or Skip.', _spanFor(expression));
       }
 
-      return new Metadata.parse(timeout: timeout, skip: skip);
+      return Metadata.parse(timeout: timeout, skip: skip);
     });
   }
 
@@ -268,9 +267,9 @@ class _Parser {
 
     var arguments = _parseArguments(expression);
     var values = _parseNamedArguments(arguments)
-        .map((key, value) => new MapEntry(key, _parseInt(value)));
+        .map((key, value) => MapEntry(key, _parseInt(value)));
 
-    return new Duration(
+    return Duration(
         days: values['days'] ?? 0,
         hours: values['hours'] ?? 0,
         minutes: values['minutes'] ?? 0,
@@ -281,7 +280,7 @@ class _Parser {
 
   Map<String, Expression> _parseNamedArguments(
           NodeList<Expression> arguments) =>
-      new Map.fromIterable(arguments.where((a) => a is NamedExpression),
+      Map.fromIterable(arguments.where((a) => a is NamedExpression),
           key: (a) => (a as NamedExpression).name.label.name,
           value: (a) => (a as NamedExpression).expression);
 
@@ -291,7 +290,7 @@ class _Parser {
   /// error reporting.
   void _assertSingle(Object existing, String name, AstNode node) {
     if (existing == null) return;
-    throw new SourceSpanFormatException(
+    throw SourceSpanFormatException(
         'Only a single $name may be used.', _spanFor(node));
   }
 
@@ -302,7 +301,7 @@ class _Parser {
     if (expression is MethodInvocation) {
       return expression.argumentList.arguments;
     }
-    throw new SourceSpanFormatException(
+    throw SourceSpanFormatException(
         'Expected an instantiation', _spanFor(expression));
   }
 
@@ -331,7 +330,7 @@ class _Parser {
           : identifier.name;
       if (constructorName != null) namedConstructor = constructorName.name;
     }
-    return new Pair(className, namedConstructor);
+    return Pair(className, namedConstructor);
   }
 
   /// Parses a constructor invocation for [className].
@@ -346,7 +345,7 @@ class _Parser {
     if (expression is MethodInvocation) {
       return _findConstructorNameFromMethod(expression, className);
     }
-    throw new SourceSpanFormatException(
+    throw SourceSpanFormatException(
         'Expected a $className.', _spanFor(expression));
   }
 
@@ -358,7 +357,7 @@ class _Parser {
     var constructorName = pair.last;
 
     if (actualClassName != className) {
-      throw new SourceSpanFormatException(
+      throw SourceSpanFormatException(
           'Expected a $className.', _spanFor(constructor));
     }
 
@@ -380,7 +379,7 @@ class _Parser {
       if (target is SimpleIdentifier) parsedName = target.name;
       if (target is PrefixedIdentifier) parsedName = target.identifier.name;
       if (parsedName != className) {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             'Expected a $className.', _spanFor(constructor));
       }
       return constructor.methodName.name;
@@ -388,7 +387,7 @@ class _Parser {
     // No target, must be an unnamed constructor
     // Example `Timeout()`
     if (constructor.methodName.name != className) {
-      throw new SourceSpanFormatException(
+      throw SourceSpanFormatException(
           'Expected a $className.', _spanFor(constructor));
     }
     return null;
@@ -438,21 +437,19 @@ class _Parser {
     value ??= (expression) => expression as V;
 
     if (expression is! MapLiteral) {
-      throw new SourceSpanFormatException(
-          'Expected a Map.', _spanFor(expression));
+      throw SourceSpanFormatException('Expected a Map.', _spanFor(expression));
     }
 
     var map = expression as MapLiteral;
 
-    return new Map.fromIterables(map.entries.map((e) => key(e.key)),
+    return Map.fromIterables(map.entries.map((e) => key(e.key)),
         map.entries.map((e) => value(e.value)));
   }
 
   /// Parses a List literal.
   List<Expression> _parseList(Expression expression) {
     if (expression is! ListLiteral) {
-      throw new SourceSpanFormatException(
-          'Expected a List.', _spanFor(expression));
+      throw SourceSpanFormatException('Expected a List.', _spanFor(expression));
     }
 
     var list = expression as ListLiteral;
@@ -464,30 +461,28 @@ class _Parser {
   num _parseNum(Expression expression) {
     if (expression is IntegerLiteral) return expression.value;
     if (expression is DoubleLiteral) return expression.value;
-    throw new SourceSpanFormatException(
-        'Expected a number.', _spanFor(expression));
+    throw SourceSpanFormatException('Expected a number.', _spanFor(expression));
   }
 
   /// Parses a constant int literal.
   int _parseInt(Expression expression) {
     if (expression is IntegerLiteral) return expression.value;
-    throw new SourceSpanFormatException(
+    throw SourceSpanFormatException(
         'Expected an integer.', _spanFor(expression));
   }
 
   /// Parses a constant String literal.
   StringLiteral _parseString(Expression expression) {
     if (expression is StringLiteral) return expression;
-    throw new SourceSpanFormatException(
-        'Expected a String.', _spanFor(expression));
+    throw SourceSpanFormatException('Expected a String.', _spanFor(expression));
   }
 
   /// Creates a [SourceSpan] for [node].
   SourceSpan _spanFor(AstNode node) {
     // Load a SourceFile from scratch here since we're only ever going to emit
     // one error per file anyway.
-    var contents = new File(_path).readAsStringSync();
-    return new SourceFile.fromString(contents, url: p.toUri(_path))
+    var contents = File(_path).readAsStringSync();
+    return SourceFile.fromString(contents, url: p.toUri(_path))
         .span(node.offset, node.end);
   }
 
@@ -497,11 +492,11 @@ class _Parser {
     try {
       return fn();
     } on SourceSpanFormatException catch (error) {
-      var file = new SourceFile.fromString(new File(_path).readAsStringSync(),
+      var file = SourceFile.fromString(File(_path).readAsStringSync(),
           url: p.toUri(_path));
       var span = contextualizeSpan(error.span, literal, file);
       if (span == null) rethrow;
-      throw new SourceSpanFormatException(error.message, span);
+      throw SourceSpanFormatException(error.message, span);
     }
   }
 }

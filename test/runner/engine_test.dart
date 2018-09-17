@@ -25,9 +25,9 @@ void main() {
       }
     });
 
-    var engine = new Engine.withSuites([
-      runnerSuite(new Group.root(tests.take(2))),
-      runnerSuite(new Group.root(tests.skip(2)))
+    var engine = Engine.withSuites([
+      runnerSuite(Group.root(tests.take(2))),
+      runnerSuite(Group.root(tests.skip(2)))
     ]);
 
     await engine.run();
@@ -47,14 +47,14 @@ void main() {
       }
     });
 
-    var engine = new Engine();
+    var engine = Engine();
     expect(
         engine.run().then((_) {
           expect(testsRun, equals(4));
         }),
         completes);
 
-    engine.suiteSink.add(runnerSuite(new Group.root(tests)));
+    engine.suiteSink.add(runnerSuite(Group.root(tests)));
     engine.suiteSink.close();
   });
 
@@ -96,7 +96,7 @@ void main() {
       for (var i = 0; i < 2; i++) {
         test("test ${i + 1}", () {});
       }
-      test("failure", () => throw new TestFailure("oh no"));
+      test("failure", () => throw TestFailure("oh no"));
     });
 
     expect(engine.run(), completion(isFalse));
@@ -114,7 +114,7 @@ void main() {
   });
 
   test(".run() may not be called more than once", () {
-    var engine = new Engine.withSuites([]);
+    var engine = Engine.withSuites([]);
     expect(engine.run(), completes);
     expect(engine.run, throwsStateError);
   });
@@ -132,7 +132,7 @@ void main() {
     var engine = declareEngine(() {
       // This ensures that the first test doesn't actually finish until the
       // second test runs.
-      var firstTestCompleter = new Completer();
+      var firstTestCompleter = Completer();
 
       group("group", () {
         tearDown(tearDownBody);
@@ -140,7 +140,7 @@ void main() {
         test("first test", () async {
           await firstTestCompleter.future;
           firstTestFinished = true;
-        }, timeout: new Timeout(Duration.zero));
+        }, timeout: Timeout(Duration.zero));
       });
 
       test("second test", () {
@@ -178,7 +178,7 @@ void main() {
         test("test", () {}, skip: true);
       });
 
-      var engine = new Engine.withSuites([runnerSuite(new Group.root(tests))]);
+      var engine = Engine.withSuites([runnerSuite(Group.root(tests))]);
 
       engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
@@ -235,8 +235,7 @@ void main() {
         }, skip: true);
       });
 
-      var engine =
-          new Engine.withSuites([runnerSuite(new Group.root(entries))]);
+      var engine = Engine.withSuites([runnerSuite(Group.root(entries))]);
 
       engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));

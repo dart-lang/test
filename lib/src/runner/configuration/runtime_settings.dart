@@ -22,5 +22,5 @@ class RuntimeSettings {
   final List<YamlMap> settings;
 
   RuntimeSettings(this.identifier, this.identifierSpan, List<YamlMap> settings)
-      : settings = new List.unmodifiable(settings);
+      : settings = List.unmodifiable(settings);
 }

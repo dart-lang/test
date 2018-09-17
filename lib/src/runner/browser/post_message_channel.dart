@@ -18,7 +18,7 @@ external void _postParentMessage(Object message, String targetOrigin);
 /// Constructs a [StreamChannel] wrapping `postMessage` communication with the
 /// host page.
 StreamChannel postMessageChannel() {
-  var controller = new StreamChannelController(sync: true);
+  var controller = StreamChannelController(sync: true);
 
   window.onMessage.listen((message) {
     // A message on the Window can theoretically come from any website. It's

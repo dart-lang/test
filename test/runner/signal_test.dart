@@ -68,7 +68,7 @@ void main() {
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await new Future.delayed(new Duration(seconds: 1));
+      await Future.delayed(Duration(seconds: 1));
 
       await signalAndQuit(test);
     });
@@ -177,7 +177,7 @@ void main() {
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await new Future.delayed(new Duration(seconds: 1));
+      await Future.delayed(Duration(seconds: 1));
       await signalAndQuit(test);
     });
 
@@ -265,5 +265,5 @@ Future signalAndQuit(TestProcess test) async {
 }
 
 void expectTempDirEmpty({skip}) {
-  expect(new Directory(_tempDir).listSync(), isEmpty, skip: skip);
+  expect(Directory(_tempDir).listSync(), isEmpty, skip: skip);
 }

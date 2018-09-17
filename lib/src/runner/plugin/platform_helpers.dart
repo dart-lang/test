@@ -41,8 +41,8 @@ RunnerSuiteController deserializeSuite(
     Environment environment,
     StreamChannel channel,
     Object message) {
-  var disconnector = new Disconnector();
-  var suiteChannel = new MultiChannel(channel.transform(disconnector));
+  var disconnector = Disconnector();
+  var suiteChannel = MultiChannel(channel.transform(disconnector));
 
   suiteChannel.sink.add({
     'type': 'initial',
@@ -56,7 +56,7 @@ RunnerSuiteController deserializeSuite(
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
   }..addAll(message as Map<String, dynamic>));
 
-  var completer = new Completer<Group>();
+  var completer = Completer<Group>();
 
   var loadSuiteZone = Zone.current;
   handleError(error, StackTrace stackTrace) {
@@ -80,18 +80,18 @@ RunnerSuiteController deserializeSuite(
             break;
 
           case "loadException":
-            handleError(new LoadException(path, response["message"]),
-                new Trace.current());
+            handleError(
+                LoadException(path, response["message"]), Trace.current());
             break;
 
           case "error":
             var asyncError = RemoteException.deserialize(response["error"]);
-            handleError(new LoadException(path, asyncError.error),
-                asyncError.stackTrace);
+            handleError(
+                LoadException(path, asyncError.error), asyncError.stackTrace);
             break;
 
           case "success":
-            var deserializer = new _Deserializer(suiteChannel);
+            var deserializer = _Deserializer(suiteChannel);
             completer.complete(
                 deserializer.deserializeGroup(response["root"] as Map));
             break;
@@ -101,12 +101,11 @@ RunnerSuiteController deserializeSuite(
       onDone: () {
         if (completer.isCompleted) return;
         completer.completeError(
-            new LoadException(
-                path, "Connection closed before test suite loaded."),
-            new Trace.current());
+            LoadException(path, "Connection closed before test suite loaded."),
+            Trace.current());
       });
 
-  return new RunnerSuiteController(
+  return RunnerSuiteController(
       environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
       onClose: () => disconnector.disconnect().catchError(handleError));
@@ -121,8 +120,8 @@ class _Deserializer {
 
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
-    var metadata = new Metadata.deserialize(group['metadata']);
-    return new Group(
+    var metadata = Metadata.deserialize(group['metadata']);
+    return Group(
         group['name'] as String,
         (group['entries'] as List).map((entry) {
           var map = entry as Map;
@@ -132,7 +131,7 @@ class _Deserializer {
         metadata: metadata,
         trace: group['trace'] == null
             ? null
-            : new Trace.parse(group['trace'] as String),
+            : Trace.parse(group['trace'] as String),
         setUpAll: _deserializeTest(group['setUpAll'] as Map),
         tearDownAll: _deserializeTest(group['tearDownAll'] as Map));
   }
@@ -143,10 +142,10 @@ class _Deserializer {
   Test _deserializeTest(Map test) {
     if (test == null) return null;
 
-    var metadata = new Metadata.deserialize(test['metadata']);
+    var metadata = Metadata.deserialize(test['metadata']);
     var trace =
-        test['trace'] == null ? null : new Trace.parse(test['trace'] as String);
+        test['trace'] == null ? null : Trace.parse(test['trace'] as String);
     var testChannel = _channel.virtualChannel(test['channel'] as int);
-    return new RunnerTest(test['name'] as String, metadata, trace, testChannel);
+    return RunnerTest(test['name'] as String, metadata, trace, testChannel);
   }
 }

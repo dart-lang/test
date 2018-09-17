@@ -233,7 +233,7 @@ void main() {
       test("test", () {});
     });
 
-    var queue = new StreamQueue(engine.onTestStarted);
+    var queue = StreamQueue(engine.onTestStarted);
     var setUpAllFuture = queue.next;
     var liveTestFuture = queue.next;
 
@@ -260,12 +260,12 @@ void main() {
   group("with an error", () {
     test("reports the error and remains in Engine.liveTests", () async {
       var engine = declareEngine(() {
-        setUpAll(() => throw new TestFailure("fail"));
+        setUpAll(() => throw TestFailure("fail"));
 
         test("test", () {});
       });
 
-      var queue = new StreamQueue(engine.onTestStarted);
+      var queue = StreamQueue(engine.onTestStarted);
       var setUpAllFuture = queue.next;
 
       expect(await engine.run(), isFalse);

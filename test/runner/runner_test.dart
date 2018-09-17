@@ -389,7 +389,7 @@ $_usage""");
       await d
           .dir(
               "test",
-              new Iterable.generate(3, (i) {
+              Iterable.generate(3, (i) {
                 return d.file("${i}_test.dart", _success);
               }))
           .create();
@@ -463,7 +463,7 @@ $_usage""");
       await d
           .dir(
               "test",
-              new Iterable.generate(3, (i) {
+              Iterable.generate(3, (i) {
                 return d.file("${i}_test.dart", _failure);
               }))
           .create();

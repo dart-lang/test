@@ -27,24 +27,24 @@ webSocket.addEventListener("open", function() {
 ''');
     var webSocket = server.handleWebSocket();
 
-    var chrome = new Chrome(server.url);
+    var chrome = Chrome(server.url);
     addTearDown(() => chrome.close());
 
     expect(await (await webSocket).stream.first, equals("loaded!"));
   },
       // It's not clear why, but this test in particular seems to time out
       // when run in parallel with many other tests.
-      timeout: new Timeout.factor(2));
+      timeout: Timeout.factor(2));
 
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
-    var chrome = new Chrome(server.url);
+    var chrome = Chrome(server.url);
     await chrome.close();
   });
 
   test("reports an error in onExit", () {
-    var chrome = new Chrome(Uri.parse("http://dart-lang.org"),
-        settings: new ExecutableSettings(
+    var chrome = Chrome(Uri.parse("http://dart-lang.org"),
+        settings: ExecutableSettings(
             linuxExecutable: "_does_not_exist",
             macOSExecutable: "_does_not_exist",
             windowsExecutable: "_does_not_exist"));

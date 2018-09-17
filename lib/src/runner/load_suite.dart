@@ -31,7 +31,7 @@ import 'runner_suite.dart';
 /// compiled with dart2js doesn't trigger it, but short enough that it fires
 /// before the host kills it. For example, Google's Forge service has a
 /// 15-minute timeout.
-final _timeout = new Duration(minutes: 12);
+final _timeout = Duration(minutes: 12);
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
@@ -51,7 +51,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   final environment = const PluginEnvironment();
   final SuiteConfiguration config;
   final isDebugging = false;
-  final onDebugging = new StreamController<bool>().stream;
+  final onDebugging = StreamController<bool>().stream;
 
   /// A future that completes to the loaded suite once the suite's test has been
   /// run and completed successfully.
@@ -83,8 +83,8 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite(String name, SuiteConfiguration config,
       SuitePlatform platform, FutureOr<RunnerSuite> body(),
       {String path}) {
-    var completer = new Completer<Pair<RunnerSuite, Zone>>.sync();
-    return new LoadSuite._(name, config, platform, () {
+    var completer = Completer<Pair<RunnerSuite, Zone>>.sync();
+    return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker.addOutstandingCallback();
 
@@ -97,8 +97,7 @@ class LoadSuite extends Suite implements RunnerSuite {
           return;
         }
 
-        completer
-            .complete(suite == null ? null : new Pair(suite, Zone.current));
+        completer.complete(suite == null ? null : Pair(suite, Zone.current));
         invoker.removeOutstandingCallback();
       });
 
@@ -121,19 +120,19 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite.forLoadException(
       LoadException exception, SuiteConfiguration config,
       {SuitePlatform platform, StackTrace stackTrace}) {
-    if (stackTrace == null) stackTrace = new Trace.current();
+    if (stackTrace == null) stackTrace = Trace.current();
 
-    return new LoadSuite(
+    return LoadSuite(
         "loading ${exception.path}",
         config ?? SuiteConfiguration.empty,
         platform ?? currentPlatform(Runtime.vm),
-        () => new Future.error(exception, stackTrace),
+        () => Future.error(exception, stackTrace),
         path: exception.path);
   }
 
   /// A utility constructor for a load suite that just emits [suite].
   factory LoadSuite.forSuite(RunnerSuite suite) {
-    return new LoadSuite(
+    return LoadSuite(
         "loading ${suite.path}", suite.config, suite.platform, () => suite,
         path: suite.path);
   }
@@ -141,10 +140,8 @@ class LoadSuite extends Suite implements RunnerSuite {
   LoadSuite._(String name, this.config, SuitePlatform platform, void body(),
       this._suiteAndZone, {String path})
       : super(
-            new Group.root([
-              new LocalTest(
-                  name, new Metadata(timeout: new Timeout(_timeout)), body)
-            ]),
+            Group.root(
+                [LocalTest(name, Metadata(timeout: Timeout(_timeout)), body)]),
             platform,
             path: path);
 
@@ -166,7 +163,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// within the load test's zone, so any errors or prints it emits will be
   /// associated with that test.
   LoadSuite changeSuite(RunnerSuite change(RunnerSuite suite)) {
-    return new LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
+    return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 
       var zone = pair.last;
@@ -174,7 +171,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       zone.runGuarded(() {
         newSuite = change(pair.first);
       });
-      return newSuite == null ? null : new Pair(newSuite, zone);
+      return newSuite == null ? null : Pair(newSuite, zone);
     }));
   }
 
@@ -190,18 +187,18 @@ class LoadSuite extends Suite implements RunnerSuite {
     if (liveTest.errors.isEmpty) return await suite;
 
     var error = liveTest.errors.first;
-    await new Future.error(error.error, error.stackTrace);
+    await Future.error(error.error, error.stackTrace);
     throw 'unreachable';
   }
 
   LoadSuite filter(bool callback(Test test)) {
     var filtered = this.group.filter(callback);
-    if (filtered == null) filtered = new Group.root([], metadata: metadata);
-    return new LoadSuite._filtered(this, filtered);
+    if (filtered == null) filtered = Group.root([], metadata: metadata);
+    return LoadSuite._filtered(this, filtered);
   }
 
   StreamChannel channel(String name) =>
-      throw new UnsupportedError("LoadSuite.channel() is not supported.");
+      throw UnsupportedError("LoadSuite.channel() is not supported.");
 
   Future close() async {}
 }
