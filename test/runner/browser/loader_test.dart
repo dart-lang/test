@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-@Tags(const ["chrome"])
+@Tags(["chrome"])
 import 'dart:io';
 
 import 'package:path/path.dart' as p;

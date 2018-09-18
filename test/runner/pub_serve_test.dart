@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-@Tags(const ["pub"])
+@Tags(["pub"])
 @Skip('https://github.com/dart-lang/test/issues/821')
 
 import 'dart:io';

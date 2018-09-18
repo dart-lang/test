@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-@Tags(const ["safari"])
+@Tags(["safari"])
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
