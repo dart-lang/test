@@ -36,6 +36,13 @@ StreamChannel postMessageChannel() {
     // fixed.
     _postParentMessage(jsify({"href": window.location.href, "data": data}),
         window.location.origin);
+  }, onDone: () {
+    _postParentMessage(
+        jsify({
+          "href": window.location.href,
+          "event": "done",
+        }),
+        window.location.origin);
   });
 
   // Send a ready message once we're listening so the host knows it's safe to
