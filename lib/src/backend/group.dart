@@ -48,15 +48,15 @@ class Group implements GroupEntry {
 
   Group(this.name, Iterable<GroupEntry> entries,
       {Metadata metadata, this.trace, this.setUpAll, this.tearDownAll})
-      : entries = new List<GroupEntry>.unmodifiable(entries),
-        metadata = metadata == null ? new Metadata() : metadata;
+      : entries = List<GroupEntry>.unmodifiable(entries),
+        metadata = metadata == null ? Metadata() : metadata;
 
   Group forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     var newMetadata = metadata.forPlatform(platform);
     var filtered = _map((entry) => entry.forPlatform(platform));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
-    return new Group(name, filtered,
+    return Group(name, filtered,
         metadata: newMetadata,
         trace: trace,
         setUpAll: setUpAll,
@@ -66,7 +66,7 @@ class Group implements GroupEntry {
   Group filter(bool callback(Test test)) {
     var filtered = _map((entry) => entry.filter(callback));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
-    return new Group(name, filtered,
+    return Group(name, filtered,
         metadata: metadata,
         trace: trace,
         setUpAll: setUpAll,

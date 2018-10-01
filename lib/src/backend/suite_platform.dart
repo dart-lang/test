@@ -27,7 +27,7 @@ class SuitePlatform {
   SuitePlatform(this.runtime, {OperatingSystem os, this.inGoogle = false})
       : os = os ?? OperatingSystem.none {
     if (runtime.isBrowser && this.os != OperatingSystem.none) {
-      throw new ArgumentError('No OS should be passed for runtime "$runtime".');
+      throw ArgumentError('No OS should be passed for runtime "$runtime".');
     }
   }
 
@@ -35,7 +35,7 @@ class SuitePlatform {
   /// [SuitePlatform].
   factory SuitePlatform.deserialize(Object serialized) {
     var map = serialized as Map;
-    return new SuitePlatform(new Runtime.deserialize(map['runtime']),
+    return SuitePlatform(Runtime.deserialize(map['runtime']),
         os: OperatingSystem.find(map['os'] as String),
         inGoogle: map['inGoogle'] as bool);
   }

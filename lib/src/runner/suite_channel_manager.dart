@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:stream_channel/stream_channel.dart';
 
 /// The key used to look up [SuiteChannelManager.current] in a zone.
-final _currentKey = new Object();
+final _currentKey = Object();
 
 /// A class that connects incoming and outgoing channels with the same names.
 class SuiteChannelManager {
@@ -20,7 +20,7 @@ class SuiteChannelManager {
   final _outgoingConnections = <String, StreamChannelCompleter>{};
 
   /// The channel names that have already been used.
-  final _names = new Set<String>();
+  final _names = Set<String>();
 
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
@@ -38,10 +38,10 @@ class SuiteChannelManager {
     if (_incomingConnections.containsKey(name)) {
       return _incomingConnections[name];
     } else if (_names.contains(name)) {
-      throw new StateError('Duplicate suiteChannel() connection "$name".');
+      throw StateError('Duplicate suiteChannel() connection "$name".');
     } else {
       _names.add(name);
-      var completer = new StreamChannelCompleter();
+      var completer = StreamChannelCompleter();
       _outgoingConnections[name] = completer;
       return completer.channel;
     }
@@ -52,8 +52,7 @@ class SuiteChannelManager {
     if (_outgoingConnections.containsKey(name)) {
       _outgoingConnections.remove(name).setChannel(channel);
     } else if (_incomingConnections.containsKey(name)) {
-      throw new StateError(
-          'Duplicate RunnerSuite.channel() connection "$name".');
+      throw StateError('Duplicate RunnerSuite.channel() connection "$name".');
     } else {
       _incomingConnections[name] = channel;
     }

@@ -21,17 +21,16 @@ class CodeServer {
 
   static Future<CodeServer> start() async {
     var server = await HttpMultiServer.loopback(0);
-    var handler = new ShelfTestHandler();
+    var handler = ShelfTestHandler();
     shelf_io.serveRequests(server, (request) {
       if (request.method == "GET" && request.url.path == "favicon.ico") {
-        return new shelf.Response.notFound(null);
+        return shelf.Response.notFound(null);
       } else {
         return handler(request);
       }
     });
 
-    return new CodeServer._(
-        handler, Uri.parse("http://localhost:${server.port}"));
+    return CodeServer._(handler, Uri.parse("http://localhost:${server.port}"));
   }
 
   CodeServer._(this._handler, this.url);
@@ -40,7 +39,7 @@ class CodeServer {
   /// HTML page with a script tag that will run [dart].
   void handleDart(String dart) {
     _handler.expect("GET", "/", (_) {
-      return new shelf.Response.ok("""
+      return shelf.Response.ok("""
 <!doctype html>
 <html>
 <head>
@@ -51,7 +50,7 @@ class CodeServer {
     });
 
     _handler.expect("GET", "/index.dart", (_) {
-      return new shelf.Response.ok('''
+      return shelf.Response.ok('''
 import "dart:html";
 
 main() async {
@@ -65,7 +64,7 @@ main() async {
   /// HTML page with a script tag that will run [javaScript].
   void handleJavaScript(String javaScript) {
     _handler.expect("GET", "/", (_) {
-      return new shelf.Response.ok("""
+      return shelf.Response.ok("""
 <!doctype html>
 <html>
 <head>
@@ -76,7 +75,7 @@ main() async {
     });
 
     _handler.expect("GET", "/index.js", (_) {
-      return new shelf.Response.ok(javaScript,
+      return shelf.Response.ok(javaScript,
           headers: {'content-type': 'application/javascript'});
     });
   }
@@ -84,7 +83,7 @@ main() async {
   /// Handles a WebSocket connection to the root of the server, and returns a
   /// future that will complete to the WebSocket.
   Future<WebSocketChannel> handleWebSocket() {
-    var completer = new Completer<WebSocketChannel>();
+    var completer = Completer<WebSocketChannel>();
     _handler.expect("GET", "/", webSocketHandler(completer.complete));
     return completer.future;
   }

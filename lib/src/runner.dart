@@ -41,7 +41,7 @@ class Runner {
   final _config = Configuration.current;
 
   /// The loader that loads the test suites from the filesystem.
-  final _loader = new Loader();
+  final _loader = Loader();
 
   /// The engine that runs the test suites.
   final Engine _engine;
@@ -57,7 +57,7 @@ class Runner {
   ///
   /// This is used to avoid printing duplicate warnings when a suite is loaded
   /// on multiple platforms.
-  final _tagWarningSuites = new Set<String>();
+  final _tagWarningSuites = Set<String>();
 
   /// The current debug operation, if any.
   ///
@@ -65,15 +65,15 @@ class Runner {
   CancelableOperation _debugOperation;
 
   /// The memoizer for ensuring [close] only runs once.
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
   bool get _closed => _closeMemo.hasRun;
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
-        var engine = new Engine(concurrency: config.concurrency);
+        var engine = Engine(concurrency: config.concurrency);
 
         var reporterDetails = allReporters[config.reporter];
-        return new Runner._(engine, reporterDetails.factory(config, engine));
+        return Runner._(engine, reporterDetails.factory(config, engine));
       });
 
   Runner._(this._engine, this._reporter);
@@ -84,7 +84,7 @@ class Runner {
   /// or not they ran successfully.
   Future<bool> run() => _config.asCurrent(() async {
         if (_closed) {
-          throw new StateError("run() may not be called on a closed Runner.");
+          throw StateError("run() may not be called on a closed Runner.");
         }
 
         _warnForUnsupportedPlatforms();
@@ -130,7 +130,7 @@ class Runner {
                   ? 'regular expression "${pattern.pattern}"'
                   : '"$pattern"'));
 
-          throw new ApplicationException('No tests match $patterns.');
+          throw ApplicationException('No tests match $patterns.');
         }
 
         // Explicitly check "== true" here because [Engine.run] can return `null`
@@ -176,7 +176,7 @@ class Runner {
     // that's because of the current OS or whether the VM is unsupported.
     if (unsupportedRuntimes.contains(Runtime.vm)) {
       var supportsAnyOS = OperatingSystem.all.any((os) => testOn
-          .evaluate(new SuitePlatform(Runtime.vm, os: os, inGoogle: inGoogle)));
+          .evaluate(SuitePlatform(Runtime.vm, os: os, inGoogle: inGoogle)));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);
@@ -200,7 +200,7 @@ class Runner {
         if (!_engine.isIdle) {
           // Wait a bit to print this message, since printing it eagerly looks weird
           // if the tests then finish immediately.
-          timer = new Timer(new Duration(seconds: 1), () {
+          timer = Timer(Duration(seconds: 1), () {
             // Pause the reporter while we print to ensure that we don't interfere
             // with its output.
             _reporter.pause();
@@ -232,14 +232,14 @@ class Runner {
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
     return StreamGroup.merge(_config.paths.map((path) {
-      if (new Directory(path).existsSync()) {
+      if (Directory(path).existsSync()) {
         return _loader.loadDir(path, _config.suiteDefaults);
-      } else if (new File(path).existsSync()) {
+      } else if (File(path).existsSync()) {
         return _loader.loadFile(path, _config.suiteDefaults);
       } else {
-        return new Stream.fromIterable([
-          new LoadSuite.forLoadException(
-              new LoadException(path, 'Does not exist.'), _config.suiteDefaults)
+        return Stream.fromIterable([
+          LoadSuite.forLoadException(
+              LoadException(path, 'Does not exist.'), _config.suiteDefaults)
         ]);
       }
     })).map((loadSuite) {
@@ -282,7 +282,7 @@ class Runner {
     var bold = _config.color ? '\u001b[1m' : '';
     var noColor = _config.color ? '\u001b[0m' : '';
 
-    var buffer = new StringBuffer()
+    var buffer = StringBuffer()
       ..write("${yellow}Warning:$noColor ")
       ..write(unknownTags.length == 1 ? "A tag was " : "Tags were ")
       ..write("used that ")
@@ -313,10 +313,10 @@ class Runner {
   /// This returns a map from tag names to lists of entries that use those tags.
   Map<String, List<GroupEntry>> _collectUnknownTags(Suite suite) {
     var unknownTags = <String, List<GroupEntry>>{};
-    var currentTags = new Set<String>();
+    var currentTags = Set<String>();
 
     collect(GroupEntry entry) {
-      var newTags = new Set<String>();
+      var newTags = Set<String>();
       for (var unknownTag
           in entry.metadata.tags.difference(_config.knownTags)) {
         if (currentTags.contains(unknownTag)) continue;

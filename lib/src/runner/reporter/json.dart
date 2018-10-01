@@ -33,7 +33,7 @@ class JsonReporter implements Reporter {
   final Engine _engine;
 
   /// A stopwatch that tracks the duration of the full run.
-  final _stopwatch = new Stopwatch();
+  final _stopwatch = Stopwatch();
 
   /// Whether we've started [_stopwatch].
   ///
@@ -45,22 +45,22 @@ class JsonReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = new Set<StreamSubscription>();
+  final _subscriptions = Set<StreamSubscription>();
 
   /// An expando that associates unique IDs with [LiveTest]s.
-  final _liveTestIDs = new Map<LiveTest, int>();
+  final _liveTestIDs = Map<LiveTest, int>();
 
   /// An expando that associates unique IDs with [Suite]s.
-  final _suiteIDs = new Map<Suite, int>();
+  final _suiteIDs = Map<Suite, int>();
 
   /// An expando that associates unique IDs with [Group]s.
-  final _groupIDs = new Map<Group, int>();
+  final _groupIDs = Map<Group, int>();
 
   /// The next ID to associate with a [LiveTest].
   var _nextID = 0;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine) => new JsonReporter._(engine);
+  static JsonReporter watch(Engine engine) => JsonReporter._(engine);
 
   JsonReporter._(this._engine) : _config = Configuration.current {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -297,7 +297,9 @@ class JsonReporter implements Reporter {
       String suitePath) {
     var frame = entry.trace?.frames?.first;
     var rootFrame = entry.trace?.frames?.firstWhere(
-        (frame) => frame.uri.path == p.absolute(suitePath),
+        (frame) =>
+            frame.uri.scheme == 'file' &&
+            frame.uri.toFilePath() == p.absolute(suitePath),
         orElse: () => null);
     if (suiteConfig.jsTrace && runtime.isJS) {
       frame = null;

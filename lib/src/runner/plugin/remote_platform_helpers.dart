@@ -46,8 +46,7 @@ StreamChannel serializeSuite(Function getMain(),
 StreamChannel suiteChannel(String name) {
   var manager = SuiteChannelManager.current;
   if (manager == null) {
-    throw new StateError(
-        'suiteChannel() may only be called within a test worker.');
+    throw StateError('suiteChannel() may only be called within a test worker.');
   }
 
   return manager.connectOut(name);
@@ -61,7 +60,7 @@ StreamChannel suiteChannel(String name) {
 void setStackTraceMapper(StackTraceMapper mapper) {
   var formatter = StackTraceFormatter.current;
   if (formatter == null) {
-    throw new StateError(
+    throw StateError(
         'setStackTraceMapper() may only be called within a test worker.');
   }
 

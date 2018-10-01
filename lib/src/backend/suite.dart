@@ -41,7 +41,7 @@ class Suite {
   static Group _filterGroup(Group group, SuitePlatform platform) {
     var filtered = group.forPlatform(platform);
     if (filtered != null) return filtered;
-    return new Group.root([], metadata: group.metadata);
+    return Group.root([], metadata: group.metadata);
   }
 
   /// Returns a new suite with all tests matching [test] removed.
@@ -50,7 +50,7 @@ class Suite {
   /// filtered out, it returns an empty suite.
   Suite filter(bool callback(Test test)) {
     var filtered = group.filter(callback);
-    if (filtered == null) filtered = new Group.root([], metadata: metadata);
-    return new Suite(filtered, platform, path: path);
+    if (filtered == null) filtered = Group.root([], metadata: metadata);
+    return Suite(filtered, platform, path: path);
   }
 }

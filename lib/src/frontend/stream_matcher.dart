@@ -129,7 +129,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
     if (item is StreamQueue) {
       queue = item;
     } else if (item is Stream) {
-      queue = new StreamQueue(item);
+      queue = StreamQueue(item);
     } else {
       return "was not a Stream or a StreamQueue";
     }
@@ -155,7 +155,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
           .listen(events.add, onDone: () => events.add(null));
 
       // Wait on a timer tick so all buffered events are emitted.
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       subscription.cancel();
 
       var eventsString = events.map((event) {
@@ -174,7 +174,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
 
       transaction.reject();
 
-      var buffer = new StringBuffer();
+      var buffer = StringBuffer();
       buffer.writeln(indent(eventsString, first: "emitted "));
       if (result.isNotEmpty) buffer.writeln(indent(result, first: "  which "));
       return buffer.toString().trimRight();

@@ -13,10 +13,10 @@ import 'dart:async';
 /// work that's waiting for external resources) completes.
 Future pumpEventQueue({int times}) {
   times ??= 20;
-  if (times == 0) return new Future.value();
+  if (times == 0) return Future.value();
   // Use [new Future] future to allow microtask events to finish. The [new
   // Future.value] constructor uses scheduleMicrotask itself and would therefore
   // not wait for microtask callbacks that are scheduled after invoking this
   // method.
-  return new Future(() => pumpEventQueue(times: times - 1));
+  return Future(() => pumpEventQueue(times: times - 1));
 }

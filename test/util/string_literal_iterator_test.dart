@@ -231,7 +231,7 @@ void _expectEscape(String escape, String value) {
 /// Returns a matcher that asserts that the given rune is the rune for [char].
 Matcher _isRune(String char) {
   return predicate((rune) {
-    return rune is int && new String.fromCharCode(rune) == char;
+    return rune is int && String.fromCharCode(rune) == char;
   }, 'is the rune "$char"');
 }
 
@@ -242,5 +242,5 @@ StringLiteralIterator _parse(String dart) {
       .declarations
       .single as TopLevelVariableDeclaration;
   var literal = declaration.variables.variables.single.initializer;
-  return new StringLiteralIterator(literal as StringLiteral);
+  return StringLiteralIterator(literal as StringLiteral);
 }

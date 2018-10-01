@@ -43,10 +43,10 @@ class State {
 /// Where the test is in its process of running.
 class Status {
   /// The test has not yet begun running.
-  static const pending = const Status._("pending");
+  static const pending = Status._("pending");
 
   /// The test is currently running.
-  static const running = const Status._("running");
+  static const running = Status._("running");
 
   /// The test has finished running.
   ///
@@ -55,7 +55,7 @@ class Status {
   /// first error or when all [expectAsync] callbacks have been called and any
   /// returned [Future] has completed, but it's possible for further processing
   /// to happen, which may cause further errors.
-  static const complete = const Status._("complete");
+  static const complete = Status._("complete");
 
   /// The name of the status.
   final String name;
@@ -69,7 +69,7 @@ class Status {
       case "complete":
         return Status.complete;
       default:
-        throw new ArgumentError('Invalid status name "$name".');
+        throw ArgumentError('Invalid status name "$name".');
     }
   }
 
@@ -83,24 +83,24 @@ class Result {
   /// The test has not yet failed in any way.
   ///
   /// Note that this doesn't mean that the test won't fail in the future.
-  static const success = const Result._("success");
+  static const success = Result._("success");
 
   /// The test, or some part of it, has been skipped.
   ///
   /// This implies that the test hasn't failed *yet*. However, it this doesn't
   /// mean that the test won't fail in the future.
-  static const skipped = const Result._("skipped");
+  static const skipped = Result._("skipped");
 
   /// The test has failed.
   ///
   /// A failure is specifically caused by a [TestFailure] being thrown; any
   /// other exception causes an error.
-  static const failure = const Result._("failure");
+  static const failure = Result._("failure");
 
   /// The test has crashed.
   ///
   /// Any exception other than a [TestFailure] is considered to be an error.
-  static const error = const Result._("error");
+  static const error = Result._("error");
 
   /// The name of the result.
   final String name;
@@ -128,7 +128,7 @@ class Result {
       case "error":
         return Result.error;
       default:
-        throw new ArgumentError('Invalid result name "$name".');
+        throw ArgumentError('Invalid result name "$name".');
     }
   }
 

@@ -9,12 +9,12 @@ import '../../utils.dart';
 void main() {
   group('[throwsArgumentError]', () {
     test("passes when a ArgumentError is thrown", () {
-      expect(() => throw new ArgumentError(''), throwsArgumentError);
+      expect(() => throw ArgumentError(''), throwsArgumentError);
     });
 
     test("fails when a non-ArgumentError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsArgumentError);
+        expect(() => throw Exception(), throwsArgumentError);
       });
 
       expectTestFailed(liveTest,
@@ -24,13 +24,13 @@ void main() {
 
   group('[throwsConcurrentModificationError]', () {
     test("passes when a ConcurrentModificationError is thrown", () {
-      expect(() => throw new ConcurrentModificationError(''),
+      expect(() => throw ConcurrentModificationError(''),
           throwsConcurrentModificationError);
     });
 
     test("fails when a non-ConcurrentModificationError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsConcurrentModificationError);
+        expect(() => throw Exception(), throwsConcurrentModificationError);
       });
 
       expectTestFailed(
@@ -42,13 +42,13 @@ void main() {
 
   group('[throwsCyclicInitializationError]', () {
     test("passes when a CyclicInitializationError is thrown", () {
-      expect(() => throw new CyclicInitializationError(''),
+      expect(() => throw CyclicInitializationError(''),
           throwsCyclicInitializationError);
     });
 
     test("fails when a non-CyclicInitializationError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsCyclicInitializationError);
+        expect(() => throw Exception(), throwsCyclicInitializationError);
       });
 
       expectTestFailed(
@@ -60,7 +60,7 @@ void main() {
 
   group('[throwsException]', () {
     test("passes when a Exception is thrown", () {
-      expect(() => throw new Exception(''), throwsException);
+      expect(() => throw Exception(''), throwsException);
     });
 
     test("fails when a non-Exception is thrown", () async {
@@ -75,12 +75,12 @@ void main() {
 
   group('[throwsFormatException]', () {
     test("passes when a FormatException is thrown", () {
-      expect(() => throw new FormatException(''), throwsFormatException);
+      expect(() => throw FormatException(''), throwsFormatException);
     });
 
     test("fails when a non-FormatException is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsFormatException);
+        expect(() => throw Exception(), throwsFormatException);
       });
 
       expectTestFailed(liveTest,
@@ -97,7 +97,7 @@ void main() {
 
     test("fails when a non-NoSuchMethodError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsNoSuchMethodError);
+        expect(() => throw Exception(), throwsNoSuchMethodError);
       });
 
       expectTestFailed(liveTest,
@@ -112,7 +112,7 @@ void main() {
 
     test("fails when a non-NullThrownError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsNullThrownError);
+        expect(() => throw Exception(), throwsNullThrownError);
       });
 
       expectTestFailed(liveTest,
@@ -122,12 +122,12 @@ void main() {
 
   group('[throwsRangeError]', () {
     test("passes when a RangeError is thrown", () {
-      expect(() => throw new RangeError(''), throwsRangeError);
+      expect(() => throw RangeError(''), throwsRangeError);
     });
 
     test("fails when a non-RangeError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsRangeError);
+        expect(() => throw Exception(), throwsRangeError);
       });
 
       expectTestFailed(
@@ -137,12 +137,12 @@ void main() {
 
   group('[throwsStateError]', () {
     test("passes when a StateError is thrown", () {
-      expect(() => throw new StateError(''), throwsStateError);
+      expect(() => throw StateError(''), throwsStateError);
     });
 
     test("fails when a non-StateError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsStateError);
+        expect(() => throw Exception(), throwsStateError);
       });
 
       expectTestFailed(
@@ -152,12 +152,12 @@ void main() {
 
   group('[throwsUnimplementedError]', () {
     test("passes when a UnimplementedError is thrown", () {
-      expect(() => throw new UnimplementedError(''), throwsUnimplementedError);
+      expect(() => throw UnimplementedError(''), throwsUnimplementedError);
     });
 
     test("fails when a non-UnimplementedError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsUnimplementedError);
+        expect(() => throw Exception(), throwsUnimplementedError);
       });
 
       expectTestFailed(liveTest,
@@ -167,12 +167,12 @@ void main() {
 
   group('[throwsUnsupportedError]', () {
     test("passes when a UnsupportedError is thrown", () {
-      expect(() => throw new UnsupportedError(''), throwsUnsupportedError);
+      expect(() => throw UnsupportedError(''), throwsUnsupportedError);
     });
 
     test("fails when a non-UnsupportedError is thrown", () async {
       var liveTest = await runTestBody(() {
-        expect(() => throw new Exception(), throwsUnsupportedError);
+        expect(() => throw Exception(), throwsUnsupportedError);
       });
 
       expectTestFailed(liveTest,

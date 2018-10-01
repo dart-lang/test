@@ -30,11 +30,11 @@ class _LiveSuite extends LiveSuite {
   Stream<LiveTest> get onTestStarted =>
       _controller._onTestStartedController.stream;
 
-  Set<LiveTest> get passed => new UnmodifiableSetView(_controller._passed);
+  Set<LiveTest> get passed => UnmodifiableSetView(_controller._passed);
 
-  Set<LiveTest> get skipped => new UnmodifiableSetView(_controller._skipped);
+  Set<LiveTest> get skipped => UnmodifiableSetView(_controller._skipped);
 
-  Set<LiveTest> get failed => new UnmodifiableSetView(_controller._failed);
+  Set<LiveTest> get failed => UnmodifiableSetView(_controller._failed);
 
   LiveTest get active => _controller._active;
 
@@ -60,7 +60,7 @@ class LiveSuiteController {
   /// The future group that backs [LiveSuite.onComplete].
   ///
   /// This contains all the futures from tests that are run in this suite.
-  final _onCompleteGroup = new FutureGroup();
+  final _onCompleteGroup = FutureGroup();
 
   /// Whether [_onCompleteGroup]'s future has fired.
   var _isComplete = false;
@@ -68,20 +68,20 @@ class LiveSuiteController {
   /// The completer that backs [LiveSuite.onClose].
   ///
   /// This is completed when the live suite is closed.
-  final _onCloseCompleter = new Completer();
+  final _onCloseCompleter = Completer();
 
   /// The controller for [LiveSuite.onTestStarted].
   final _onTestStartedController =
-      new StreamController<LiveTest>.broadcast(sync: true);
+      StreamController<LiveTest>.broadcast(sync: true);
 
   /// The set that backs [LiveTest.passed].
-  final _passed = new Set<LiveTest>();
+  final _passed = Set<LiveTest>();
 
   /// The set that backs [LiveTest.skipped].
-  final _skipped = new Set<LiveTest>();
+  final _skipped = Set<LiveTest>();
 
   /// The set that backs [LiveTest.failed].
-  final _failed = new Set<LiveTest>();
+  final _failed = Set<LiveTest>();
 
   /// The test exposed through [LiveTest.active].
   LiveTest _active;
@@ -93,7 +93,7 @@ class LiveSuiteController {
   /// suite. The caller should call [LiveSuiteController.close] rather than
   /// calling [RunnerSuite.close] directly.
   LiveSuiteController(this._suite) {
-    _liveSuite = new _LiveSuite(this);
+    _liveSuite = _LiveSuite(this);
 
     _onCompleteGroup.future.then((_) {
       _isComplete = true;
@@ -109,7 +109,7 @@ class LiveSuiteController {
   /// Throws a [StateError] if called after [noMoreLiveTests].
   void reportLiveTest(LiveTest liveTest, {bool countSuccess = true}) {
     if (_onTestStartedController.isClosed) {
-      throw new StateError("Can't call reportLiveTest() after noMoreTests().");
+      throw StateError("Can't call reportLiveTest() after noMoreTests().");
     }
 
     assert(liveTest.suite == _suite);
@@ -153,5 +153,5 @@ class LiveSuiteController {
           _onCloseCompleter.complete();
         }
       });
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 }

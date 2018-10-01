@@ -303,7 +303,7 @@ void main() {
   group("with errors", () {
     test("reports them to the current test", () async {
       var liveTest = await runTestBody(() {
-        expectAsync0(() => throw new TestFailure('oh no'))();
+        expectAsync0(() => throw TestFailure('oh no'))();
       });
 
       expectTestFailed(liveTest, 'oh no');
@@ -314,7 +314,7 @@ void main() {
       var caughtError = false;
       var liveTest = await runTestBody(() {
         try {
-          returnValue = expectAsync0(() => throw new TestFailure('oh no'))();
+          returnValue = expectAsync0(() => throw TestFailure('oh no'))();
         } on TestFailure catch (_) {
           caughtError = true;
         }

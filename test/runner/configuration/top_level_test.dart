@@ -89,7 +89,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await new Future.delayed(new Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -375,8 +375,6 @@ dependencies:
   test: {path: ${p.current}}
 transformers:
 - myapp:
-    \$include: test/**_test.dart
-- test/pub_serve:
     \$include: test/**_test.dart
 """).create();
 

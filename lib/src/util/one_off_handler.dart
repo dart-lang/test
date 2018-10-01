@@ -12,7 +12,7 @@ import 'package:shelf/shelf.dart' as shelf;
 /// invalid and don't need to have a persistent URL.
 class OneOffHandler {
   /// A map from URL paths to handlers.
-  final _handlers = new Map<String, shelf.Handler>();
+  final _handlers = Map<String, shelf.Handler>();
 
   /// The counter of handlers that have been activated.
   var _counter = 0;
@@ -36,11 +36,11 @@ class OneOffHandler {
   /// Dispatches [request] to the appropriate handler.
   FutureOr<shelf.Response> _onRequest(shelf.Request request) {
     var components = p.url.split(request.url.path);
-    if (components.isEmpty) return new shelf.Response.notFound(null);
+    if (components.isEmpty) return shelf.Response.notFound(null);
 
     var path = components.removeAt(0);
     var handler = _handlers.remove(path);
-    if (handler == null) return new shelf.Response.notFound(null);
+    if (handler == null) return shelf.Response.notFound(null);
     return handler(request.change(path: path));
   }
 }

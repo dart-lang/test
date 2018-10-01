@@ -106,7 +106,7 @@ if a test fails, to ensure that it has a chance to clean up after itself.
 import "package:test/test.dart";
 
 void main() {
-  HttepServer server;
+  HttpServer server;
   Uri url;
   setUp(() async {
     server = await HttpServer.bind('localhost', 0);

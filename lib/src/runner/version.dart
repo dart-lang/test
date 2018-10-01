@@ -13,7 +13,7 @@ import 'package:yaml/yaml.dart';
 final String testVersion = (() {
   dynamic lockfile;
   try {
-    lockfile = loadYaml(new File("pubspec.lock").readAsStringSync());
+    lockfile = loadYaml(File("pubspec.lock").readAsStringSync());
   } on FormatException catch (_) {
     return null;
   } on IOException catch (_) {

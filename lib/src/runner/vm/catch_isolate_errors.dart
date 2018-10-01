@@ -10,17 +10,16 @@ import 'package:stack_trace/stack_trace.dart';
 /// Capture any top-level errors (mostly lazy syntax errors, since other are
 /// caught below) and report them to the parent isolate.
 void catchIsolateErrors() {
-  var errorPort = new ReceivePort();
+  var errorPort = ReceivePort();
   // Treat errors non-fatal because otherwise they'll be double-printed.
   Isolate.current.setErrorsFatal(false);
   Isolate.current.addErrorListener(errorPort.sendPort);
   errorPort.listen((message) {
     // Masquerade as an IsolateSpawnException because that's what this would
     // be if the error had been detected statically.
-    var error = new IsolateSpawnException(message[0] as String);
-    var stackTrace = message[1] == null
-        ? new Trace([])
-        : new Trace.parse(message[1] as String);
+    var error = IsolateSpawnException(message[0] as String);
+    var stackTrace =
+        message[1] == null ? Trace([]) : Trace.parse(message[1] as String);
     Zone.current.handleUncaughtError(error, stackTrace);
   });
 }

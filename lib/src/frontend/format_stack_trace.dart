@@ -10,7 +10,7 @@ import '../backend/stack_trace_formatter.dart';
 ///
 /// This is used in situations where the zone-scoped formatter is unavailable,
 /// such as when running via `dart path/to/test.dart'.
-final _defaultFormatter = new StackTraceFormatter();
+final _defaultFormatter = StackTraceFormatter();
 
 /// Converts [stackTrace] to a [Chain] according to the current test's
 /// configuration.

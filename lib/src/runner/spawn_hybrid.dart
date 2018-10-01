@@ -19,8 +19,8 @@ import "../util/remote_exception.dart";
 /// isolate.
 StreamChannel spawnHybridUri(String url, Object message) {
   return StreamChannelCompleter.fromFuture(() async {
-    var port = new ReceivePort();
-    var onExitPort = new ReceivePort();
+    var port = ReceivePort();
+    var onExitPort = ReceivePort();
     try {
       var code = """
         import "package:test/src/runner/hybrid_listener.dart";
@@ -34,16 +34,15 @@ StreamChannel spawnHybridUri(String url, Object message) {
           onExit: onExitPort.sendPort);
 
       // Ensure that we close [port] and [channel] when the isolate exits.
-      var disconnector = new Disconnector();
+      var disconnector = Disconnector();
       onExitPort.listen((_) {
         disconnector.disconnect();
         onExitPort.close();
       });
 
-      return new IsolateChannel.connectReceive(port)
+      return IsolateChannel.connectReceive(port)
           .transform(disconnector)
-          .transformSink(
-              new StreamSinkTransformer.fromHandlers(handleDone: (sink) {
+          .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
         // If the user closes the stream channel, kill the isolate.
         isolate.kill();
         onExitPort.close();
@@ -54,12 +53,12 @@ StreamChannel spawnHybridUri(String url, Object message) {
       onExitPort.close();
 
       // Make sure any errors in spawning the isolate are forwarded to the test.
-      return new StreamChannel(
-          new Stream.fromFuture(new Future.value({
+      return StreamChannel(
+          Stream.fromFuture(Future.value({
             "type": "error",
             "error": RemoteException.serialize(error, stackTrace)
           })),
-          new NullStreamSink());
+          NullStreamSink());
     }
   }());
 }

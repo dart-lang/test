@@ -22,7 +22,7 @@ class Metadata {
   ///
   /// Using this is slightly more efficient than manually constructing a new
   /// metadata with no arguments.
-  static final empty = new Metadata._();
+  static final empty = Metadata._();
 
   /// The selector indicating which platforms the suite supports.
   final PlatformSelector testOn;
@@ -78,36 +78,36 @@ class Metadata {
       if (metadata is Timeout || metadata is Skip) {
         metadata = [metadata];
       } else if (metadata is! List) {
-        throw new ArgumentError('Metadata for platform "$platform" must be a '
+        throw ArgumentError('Metadata for platform "$platform" must be a '
             'Timeout, Skip, or List of those; was "$metadata".');
       }
 
-      var selector = new PlatformSelector.parse(platform);
+      var selector = PlatformSelector.parse(platform);
 
       Timeout timeout;
       dynamic skip;
       for (var metadatum in metadata) {
         if (metadatum is Timeout) {
           if (timeout != null) {
-            throw new ArgumentError('Only a single Timeout may be declared for '
+            throw ArgumentError('Only a single Timeout may be declared for '
                 '"$platform".');
           }
 
           timeout = metadatum;
         } else if (metadatum is Skip) {
           if (skip != null) {
-            throw new ArgumentError('Only a single Skip may be declared for '
+            throw ArgumentError('Only a single Skip may be declared for '
                 '"$platform".');
           }
 
           skip = metadatum.reason == null ? true : metadatum.reason;
         } else {
-          throw new ArgumentError('Metadata for platform "$platform" must be a '
+          throw ArgumentError('Metadata for platform "$platform" must be a '
               'Timeout, Skip, or List of those; was "$metadata".');
         }
       }
 
-      result[selector] = new Metadata.parse(timeout: timeout, skip: skip);
+      result[selector] = Metadata.parse(timeout: timeout, skip: skip);
     });
     return result;
   }
@@ -116,18 +116,18 @@ class Metadata {
   ///
   /// Throws an [ArgumentError] if [tags] is not a [String] or an [Iterable].
   static Set<String> _parseTags(tags) {
-    if (tags == null) return new Set();
-    if (tags is String) return new Set.from([tags]);
+    if (tags == null) return Set();
+    if (tags is String) return Set.from([tags]);
     if (tags is! Iterable) {
-      throw new ArgumentError.value(
+      throw ArgumentError.value(
           tags, "tags", "must be either a String or an Iterable.");
     }
 
     if ((tags as Iterable).any((tag) => tag is! String)) {
-      throw new ArgumentError.value(tags, "tags", "must contain only Strings.");
+      throw ArgumentError.value(tags, "tags", "must contain only Strings.");
     }
 
-    return new Set.from(tags as Iterable);
+    return Set.from(tags as Iterable);
   }
 
   /// Creates new Metadata.
@@ -149,7 +149,7 @@ class Metadata {
       Map<PlatformSelector, Metadata> onPlatform,
       Map<BooleanSelector, Metadata> forTag}) {
     // Returns metadata without forTag resolved at all.
-    _unresolved() => new Metadata._(
+    _unresolved() => Metadata._(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -164,13 +164,13 @@ class Metadata {
     // If there's no tag-specific metadata, or if none of it applies, just
     // return the metadata as-is.
     if (forTag == null || tags == null) return _unresolved();
-    tags = new Set.from(tags);
-    forTag = new Map.from(forTag);
+    tags = Set.from(tags);
+    forTag = Map.from(forTag);
 
     // Otherwise, resolve the tag-specific components. Doing this eagerly means
     // we only have to resolve suite- or group-level tags once, rather than
     // doing it for every test individually.
-    var empty = new Metadata._();
+    var empty = Metadata._();
     var merged = forTag.keys.toList().fold(empty, (Metadata merged, selector) {
       if (!selector.evaluate(tags)) return merged;
       return merged.merge(forTag.remove(selector));
@@ -200,10 +200,10 @@ class Metadata {
         _verboseTrace = verboseTrace,
         _chainStackTraces = chainStackTraces,
         _retry = retry,
-        tags = new UnmodifiableSetView(tags == null ? new Set() : tags.toSet()),
+        tags = UnmodifiableSetView(tags == null ? Set() : tags.toSet()),
         onPlatform =
-            onPlatform == null ? const {} : new UnmodifiableMapView(onPlatform),
-        forTag = forTag == null ? const {} : new UnmodifiableMapView(forTag) {
+            onPlatform == null ? const {} : UnmodifiableMapView(onPlatform),
+        forTag = forTag == null ? const {} : UnmodifiableMapView(forTag) {
     if (retry != null) RangeError.checkNotNegative(retry, "retry");
     _validateTags();
   }
@@ -223,7 +223,7 @@ class Metadata {
       tags})
       : testOn = testOn == null
             ? PlatformSelector.all
-            : new PlatformSelector.parse(testOn),
+            : PlatformSelector.parse(testOn),
         timeout = timeout == null ? const Timeout.factor(1) : timeout,
         _skip = skip == null ? null : skip != false,
         _verboseTrace = verboseTrace,
@@ -234,8 +234,7 @@ class Metadata {
         tags = _parseTags(tags),
         forTag = const {} {
     if (skip != null && skip is! String && skip is! bool) {
-      throw new ArgumentError(
-          '"skip" must be a String or a bool, was "$skip".');
+      throw ArgumentError('"skip" must be a String or a bool, was "$skip".');
     }
 
     if (retry != null) RangeError.checkNotNegative(retry, "retry");
@@ -247,28 +246,27 @@ class Metadata {
   Metadata.deserialize(serialized)
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
-            : new PlatformSelector.parse(serialized['testOn'] as String),
+            : PlatformSelector.parse(serialized['testOn'] as String),
         timeout = _deserializeTimeout(serialized['timeout']),
         _skip = serialized['skip'] as bool,
         skipReason = serialized['skipReason'] as String,
         _verboseTrace = serialized['verboseTrace'] as bool,
         _chainStackTraces = serialized['chainStackTraces'] as bool,
         _retry = serialized['retry'] as int,
-        tags = new Set.from(serialized['tags'] as Iterable),
-        onPlatform = new Map.fromIterable(serialized['onPlatform'] as Iterable,
-            key: (pair) => new PlatformSelector.parse(pair.first as String),
-            value: (pair) => new Metadata.deserialize(pair.last)),
-        forTag = (serialized['forTag'] as Map).map((key, nested) =>
-            new MapEntry(new BooleanSelector.parse(key as String),
-                new Metadata.deserialize(nested)));
+        tags = Set.from(serialized['tags'] as Iterable),
+        onPlatform = Map.fromIterable(serialized['onPlatform'] as Iterable,
+            key: (pair) => PlatformSelector.parse(pair.first as String),
+            value: (pair) => Metadata.deserialize(pair.last)),
+        forTag = (serialized['forTag'] as Map).map((key, nested) => MapEntry(
+            BooleanSelector.parse(key as String),
+            Metadata.deserialize(nested)));
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
   static Timeout _deserializeTimeout(serialized) {
     if (serialized == 'none') return Timeout.none;
     var scaleFactor = serialized['scaleFactor'];
-    if (scaleFactor != null) return new Timeout.factor(scaleFactor as num);
-    return new Timeout(
-        new Duration(microseconds: serialized['duration'] as int));
+    if (scaleFactor != null) return Timeout.factor(scaleFactor as num);
+    return Timeout(Duration(microseconds: serialized['duration'] as int));
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
@@ -281,7 +279,7 @@ class Metadata {
 
     if (invalidTags.isEmpty) return;
 
-    throw new ArgumentError("Invalid ${pluralize('tag', invalidTags.length)} "
+    throw ArgumentError("Invalid ${pluralize('tag', invalidTags.length)} "
         "${toSentence(invalidTags)}. Tags must be (optionally hyphenated) "
         "Dart identifiers.");
   }
@@ -302,7 +300,7 @@ class Metadata {
   /// If the two [Metadata]s have conflicting properties, [other] wins. If
   /// either has a [forTag] metadata for one of the other's tags, that metadata
   /// is merged as well.
-  Metadata merge(Metadata other) => new Metadata(
+  Metadata merge(Metadata other) => Metadata(
       testOn: testOn.intersection(other.testOn),
       timeout: timeout.merge(other.timeout),
       skip: other._skip ?? _skip,
@@ -338,7 +336,7 @@ class Metadata {
     onPlatform ??= this.onPlatform;
     tags ??= this.tags;
     forTag ??= this.forTag;
-    return new Metadata(
+    return Metadata(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -384,7 +382,7 @@ class Metadata {
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
       'forTag': forTag.map((selector, metadata) =>
-          new MapEntry(selector.toString(), metadata.serialize()))
+          MapEntry(selector.toString(), metadata.serialize()))
     };
   }
 

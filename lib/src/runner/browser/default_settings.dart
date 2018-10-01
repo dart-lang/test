@@ -8,22 +8,22 @@ import '../../backend/runtime.dart';
 import '../executable_settings.dart';
 
 /// Default settings for starting browser executables.
-final defaultSettings = new UnmodifiableMapView({
-  Runtime.chrome: new ExecutableSettings(
+final defaultSettings = UnmodifiableMapView({
+  Runtime.chrome: ExecutableSettings(
       linuxExecutable: 'google-chrome',
       macOSExecutable:
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       windowsExecutable: r'Google\Chrome\Application\chrome.exe'),
-  Runtime.firefox: new ExecutableSettings(
+  Runtime.firefox: ExecutableSettings(
       linuxExecutable: 'firefox',
       macOSExecutable: '/Applications/Firefox.app/Contents/MacOS/firefox-bin',
       windowsExecutable: r'Mozilla Firefox\firefox.exe'),
-  Runtime.internetExplorer: new ExecutableSettings(
-      windowsExecutable: r'Internet Explorer\iexplore.exe'),
-  Runtime.phantomJS: new ExecutableSettings(
+  Runtime.internetExplorer:
+      ExecutableSettings(windowsExecutable: r'Internet Explorer\iexplore.exe'),
+  Runtime.phantomJS: ExecutableSettings(
       linuxExecutable: 'phantomjs',
       macOSExecutable: 'phantomjs',
       windowsExecutable: 'phantomjs.exe'),
-  Runtime.safari: new ExecutableSettings(
+  Runtime.safari: ExecutableSettings(
       macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari')
 });

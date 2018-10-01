@@ -187,7 +187,7 @@ void main() {
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
 
-          expect(new Future(() {
+          expect(Future(() {
             tearDownAll1Run = true;
           }), completes);
         });
@@ -197,7 +197,7 @@ void main() {
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
 
-          expect(new Future(() {
+          expect(Future(() {
             tearDownAll2Run = true;
           }), completes);
         });
@@ -207,7 +207,7 @@ void main() {
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
 
-          expect(new Future(() {
+          expect(Future(() {
             tearDownAll3Run = true;
           }), completes);
         });
@@ -287,7 +287,7 @@ void main() {
       test("test", () {});
     });
 
-    var queue = new StreamQueue(engine.onTestStarted);
+    var queue = StreamQueue(engine.onTestStarted);
     var liveTestFuture = queue.next;
     var tearDownAllFuture = queue.next;
 
@@ -314,12 +314,12 @@ void main() {
   group("with an error", () {
     test("reports the error and remains in Engine.liveTests", () async {
       var engine = declareEngine(() {
-        tearDownAll(() => throw new TestFailure("fail"));
+        tearDownAll(() => throw TestFailure("fail"));
 
         test("test", () {});
       });
 
-      var queue = new StreamQueue(engine.onTestStarted);
+      var queue = StreamQueue(engine.onTestStarted);
       expect(queue.next, completes);
       var tearDownAllFuture = queue.next;
 

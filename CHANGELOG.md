@@ -1,3 +1,21 @@
+## 1.3.3
+
+* Add conditional imports so that `dart:io` is not imported from the main
+  `test.dart` entrypoint unless it is available.
+* Fix an issue with dartdevc in precompiled mode and the json reporter.
+* Fix an issue parsing test metadata annotations without explicit `const`.
+
+## 1.3.2
+
+* Widen the constraints on the analyzer package.
+
+## 1.3.1
+
+* Handle parsing annotations which omit `const` on collection literals.
+* Fix an issue where `root_line`, `root_column`, and `root_url` in the
+  JSON reported may not be populated correctly on Windows.
+* Removed requirement for the test/pub_serve transformer in --pub-serve mode.
+
 ## 1.3.0
 
 * When using `--precompiled`, the test runner now allows symlinks to reach

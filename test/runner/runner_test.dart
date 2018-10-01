@@ -164,8 +164,8 @@ $_usage""");
             test.stdout,
             containsInOrder([
               'Failed to load "test.dart":',
-              "Unable to spawn isolate: test.dart:1:14: Error: "
-                  "Expected ';' before this.",
+              "Unable to spawn isolate: test.dart:1:9: Error: "
+                  "Expected ';' after this.",
               'invalid Dart file'
             ]));
       } else {
@@ -195,8 +195,8 @@ $_usage""");
             containsInOrder([
               '-1: loading test.dart [E]',
               'Failed to load "test.dart":',
-              "Unable to spawn isolate: test.dart:1:17: "
-                  "Error: Expected ';' before this"
+              "Unable to spawn isolate: test.dart:1:14: "
+                  "Error: Expected ';' after this"
             ]));
       } else {
         expect(
@@ -241,22 +241,6 @@ $_usage""");
             ]));
       }
 
-      await test.shouldExit(1);
-    });
-
-    test("an annotation's structure is invalid", () async {
-      await d.file("test.dart", "@TestOn()\nlibrary foo;").create();
-      var test = await runTest(["test.dart"]);
-
-      expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart":',
-            "Error on line 1, column 8: TestOn takes 1 argument.",
-            "@TestOn()",
-            "       ^^"
-          ]));
       await test.shouldExit(1);
     });
 
@@ -405,7 +389,7 @@ $_usage""");
       await d
           .dir(
               "test",
-              new Iterable.generate(3, (i) {
+              Iterable.generate(3, (i) {
                 return d.file("${i}_test.dart", _success);
               }))
           .create();
@@ -479,7 +463,7 @@ $_usage""");
       await d
           .dir(
               "test",
-              new Iterable.generate(3, (i) {
+              Iterable.generate(3, (i) {
                 return d.file("${i}_test.dart", _failure);
               }))
           .create();

@@ -44,11 +44,11 @@ class PhantomJS extends Browser {
 
   factory PhantomJS(url, {ExecutableSettings settings, bool debug = false}) {
     settings ??= defaultSettings[Runtime.phantomJS];
-    var remoteDebuggerCompleter = new Completer<Uri>.sync();
-    return new PhantomJS._(() async {
+    var remoteDebuggerCompleter = Completer<Uri>.sync();
+    return PhantomJS._(() async {
       var dir = createTempDir();
       var script = p.join(dir, "script.js");
-      new File(script).writeAsStringSync(_script);
+      File(script).writeAsStringSync(_script);
 
       var port = debug ? await getUnsafeUnusedPort() : null;
 
@@ -65,10 +65,10 @@ class PhantomJS extends Browser {
       process.stdout.listen((_) {});
 
       process.exitCode.then((exitCode) {
-        new Directory(dir).deleteSync(recursive: true);
+        Directory(dir).deleteSync(recursive: true);
 
         if (exitCode == exit_codes.protocol) {
-          throw new ApplicationException(
+          throw ApplicationException(
               "Only PhantomJS version 2.0.0 or greater is supported");
         }
       });

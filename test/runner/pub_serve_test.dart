@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-@Tags(const ["pub"])
+@Tags(["pub"])
 @Skip('https://github.com/dart-lang/test/issues/821')
 
 import 'dart:io';
@@ -12,7 +12,6 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/src/util/io.dart';
 import 'package:test/test.dart';
 
@@ -30,8 +29,6 @@ dependencies:
   test: {path: ${p.current}}
 transformers:
 - myapp:
-    \$include: test/**_test.dart
-- test/pub_serve:
     \$include: test/**_test.dart
 """).create();
 
@@ -165,29 +162,6 @@ void main() {
 
       await pub.kill();
     }, tags: 'node');
-
-    test("gracefully handles unconfigured transformers", () async {
-      await d.file("pubspec.yaml", """
-name: myapp
-dependencies:
-  barback: any
-  test: {path: ${p.current}}
-""").create();
-
-      var pub = await runPubServe();
-      var test = await runTest([_pubServeArg]);
-      expectStderrEquals(test, '''
-When using --pub-serve, you must include the "test/pub_serve" transformer in
-your pubspec:
-
-transformers:
-- test/pub_serve:
-    \$include: test/**_test.dart
-''');
-      await test.shouldExit(exit_codes.data);
-
-      await pub.kill();
-    });
   });
 
   group("uses a custom HTML file", () {
@@ -350,7 +324,7 @@ void main() {
   }, tags: 'node');
 
   test("gracefully handles a test file not being in test/", () async {
-    new File(p.join(d.sandbox, 'test/my_test.dart'))
+    File(p.join(d.sandbox, 'test/my_test.dart'))
         .copySync(p.join(d.sandbox, 'my_test.dart'));
 
     var test = await runTest(['--pub-serve=54321', 'my_test.dart']);
@@ -374,7 +348,7 @@ final Iterable<String> _compilers = () {
 
 /// Whether or not the dartdevc compiler is supported on the current
 /// [Platform.version].
-final bool _sdkSupportsDartDevc = sdkVersion >= new Version(1, 24, 0);
+final bool _sdkSupportsDartDevc = sdkVersion >= Version(1, 24, 0);
 
 /// Runs the test described by [testFn] once for each supported compiler on the
 /// current [Platform.version], passing the relevant compiler args for pub serve

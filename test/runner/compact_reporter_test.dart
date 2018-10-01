@@ -436,8 +436,7 @@ $tests
   var actual = stdoutLines.skip(1).map((line) {
     if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
 
-    var trimmed =
-        line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
+    var trimmed = line.trim().replaceFirst(RegExp("^[0-9]{2}:[0-9]{2} "), "");
 
     // Trim identical lines so the test isn't dependent on how fast each test
     // runs.
@@ -447,7 +446,7 @@ $tests
   }).where((line) => line != null);
 
   // Un-indent the expected string.
-  var indentation = expected.indexOf(new RegExp("[^ ]"));
+  var indentation = expected.indexOf(RegExp("[^ ]"));
   var expectedLines = expected.split("\n").map((line) {
     if (line.isEmpty) return line;
     return line.substring(indentation);

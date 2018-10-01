@@ -28,7 +28,7 @@ CancelableOperation debug(
     Engine engine, Reporter reporter, LoadSuite loadSuite) {
   _Debugger debugger;
   var canceled = false;
-  return new CancelableOperation.fromFuture(() async {
+  return CancelableOperation.fromFuture(() async {
     // Make the underlying suite null so that the engine doesn't start running
     // it immediately.
     engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
@@ -39,7 +39,7 @@ CancelableOperation debug(
     var suite = await loadSuite.suite;
     if (canceled || suite == null) return;
 
-    debugger = new _Debugger(engine, reporter, suite);
+    debugger = _Debugger(engine, reporter, suite);
     await debugger.run();
   }(), onCancel: () {
     canceled = true;
@@ -73,7 +73,7 @@ class _Debugger {
 
   /// A completer that's used to manually unpause the test if the debugger is
   /// closed.
-  final _pauseCompleter = new CancelableCompleter();
+  final _pauseCompleter = CancelableCompleter();
 
   /// The subscription to [_suite.onDebugging].
   StreamSubscription<bool> _onDebuggingSubscription;
@@ -87,7 +87,7 @@ class _Debugger {
   bool get _json => _config.reporter == 'json';
 
   _Debugger(this._engine, this._reporter, this._suite)
-      : _console = new Console(color: Configuration.current.color) {
+      : _console = Console(color: Configuration.current.color) {
     _console.registerCommand("restart",
         "Restart the current test after it finishes running.", _restartTest);
 
@@ -156,7 +156,7 @@ class _Debugger {
         }
 
         var buffer =
-            new StringBuffer("${bold}The test runner is paused.${noColor} ");
+            StringBuffer("${bold}The test runner is paused.${noColor} ");
         if (runtime.isDartVM) {
           buffer.write("Open the Observatory ");
         } else {

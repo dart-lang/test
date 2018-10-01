@@ -335,11 +335,11 @@ $tests
   // Remove excess trailing whitespace and trim off timestamps.
   var actual = stdoutLines.map((line) {
     if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
-    return line.trim().replaceFirst(new RegExp("^[0-9]{2}:[0-9]{2} "), "");
+    return line.trim().replaceFirst(RegExp("^[0-9]{2}:[0-9]{2} "), "");
   }).join("\n");
 
   // Un-indent the expected string.
-  var indentation = expected.indexOf(new RegExp("[^ ]"));
+  var indentation = expected.indexOf(RegExp("[^ ]"));
   expected = expected.split("\n").map((line) {
     if (line.isEmpty) return line;
     return line.substring(indentation);

@@ -53,7 +53,7 @@ class ExecutableSettings {
       if (prefix == null) continue;
 
       var path = p.join(prefix, _windowsExecutable);
-      if (new File(path).existsSync()) return path;
+      if (File(path).existsSync()) return path;
     }
 
     // If we can't find a path that works, return one that doesn't. This will
@@ -79,11 +79,10 @@ class ExecutableSettings {
         try {
           arguments = shellSplit(value);
         } on FormatException catch (error) {
-          throw new SourceSpanFormatException(
-              error.message, argumentsNode.span);
+          throw SourceSpanFormatException(error.message, argumentsNode.span);
         }
       } else {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             "Must be a string.", argumentsNode.span);
       }
     }
@@ -109,7 +108,7 @@ class ExecutableSettings {
         windowsExecutable = _getExecutable(executableNode.nodes["windows"],
             allowRelative: true);
       } else {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             "Must be a map or a string.", executableNode.span);
       }
     }
@@ -121,12 +120,12 @@ class ExecutableSettings {
       if (value is bool) {
         headless = value;
       } else {
-        throw new SourceSpanFormatException(
+        throw SourceSpanFormatException(
             "Must be a boolean.", headlessNode.span);
       }
     }
 
-    return new ExecutableSettings(
+    return ExecutableSettings(
         arguments: arguments,
         linuxExecutable: linuxExecutable,
         macOSExecutable: macOSExecutable,
@@ -142,8 +141,7 @@ class ExecutableSettings {
       {bool allowRelative = false}) {
     if (executableNode == null || executableNode.value == null) return null;
     if (executableNode.value is! String) {
-      throw new SourceSpanFormatException(
-          "Must be a string.", executableNode.span);
+      throw SourceSpanFormatException("Must be a string.", executableNode.span);
     }
     if (!allowRelative) _assertNotRelative(executableNode as YamlScalar);
     return executableNode.value as String;
@@ -159,7 +157,7 @@ class ExecutableSettings {
     if (!p.posix.isRelative(executable)) return;
     if (p.posix.basename(executable) == executable) return;
 
-    throw new SourceSpanFormatException(
+    throw SourceSpanFormatException(
         "Linux and Mac OS executables may not be relative paths.",
         executableNode.span);
   }
@@ -170,15 +168,14 @@ class ExecutableSettings {
       String macOSExecutable,
       String windowsExecutable,
       bool headless})
-      : arguments =
-            arguments == null ? const [] : new List.unmodifiable(arguments),
+      : arguments = arguments == null ? const [] : List.unmodifiable(arguments),
         _linuxExecutable = linuxExecutable,
         _macOSExecutable = macOSExecutable,
         _windowsExecutable = windowsExecutable,
         _headless = headless;
 
   /// Merges [this] with [other], with [other]'s settings taking priority.
-  ExecutableSettings merge(ExecutableSettings other) => new ExecutableSettings(
+  ExecutableSettings merge(ExecutableSettings other) => ExecutableSettings(
       arguments: arguments.toList()..addAll(other.arguments),
       headless: other._headless ?? _headless,
       linuxExecutable: other._linuxExecutable ?? _linuxExecutable,

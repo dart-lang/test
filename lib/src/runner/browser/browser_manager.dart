@@ -51,7 +51,7 @@ class BrowserManager {
   /// loaded in the same browser. However, the browser can only load so many at
   /// once, and we want a timeout in case they fail so we only wait for so many
   /// at once.
-  final _pool = new Pool(8);
+  final _pool = Pool(8);
 
   /// The ID of the next suite to be loaded.
   ///
@@ -69,7 +69,7 @@ class BrowserManager {
   CancelableCompleter _pauseCompleter;
 
   /// The controller for [_BrowserEnvironment.onRestart].
-  final _onRestartController = new StreamController.broadcast();
+  final _onRestartController = StreamController.broadcast();
 
   /// The environment to attach to each suite.
   Future<_BrowserEnvironment> _environment;
@@ -78,7 +78,7 @@ class BrowserManager {
   ///
   /// These are used to mark suites as debugging or not based on the browser's
   /// pings.
-  final _controllers = new Set<RunnerSuiteController>();
+  final _controllers = Set<RunnerSuiteController>();
 
   // A timer that's reset whenever we receive a message from the browser.
   //
@@ -102,13 +102,12 @@ class BrowserManager {
       {bool debug = false}) {
     var browser = _newBrowser(url, runtime, settings, debug: debug);
 
-    var completer = new Completer<BrowserManager>();
+    var completer = Completer<BrowserManager>();
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
     browser.onExit.then((_) {
-      throw new ApplicationException(
-          "${runtime.name} exited before connecting.");
+      throw ApplicationException("${runtime.name} exited before connecting.");
     }).catchError((error, StackTrace stackTrace) {
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
@@ -116,16 +115,16 @@ class BrowserManager {
 
     future.then((webSocket) {
       if (completer.isCompleted) return;
-      completer.complete(new BrowserManager._(browser, runtime, webSocket));
+      completer.complete(BrowserManager._(browser, runtime, webSocket));
     }).catchError((error, StackTrace stackTrace) {
       browser.close();
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future.timeout(new Duration(seconds: 30), onTimeout: () {
+    return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
       browser.close();
-      throw new ApplicationException(
+      throw ApplicationException(
           "Timed out waiting for ${runtime.name} to connect.");
     });
   }
@@ -138,17 +137,17 @@ class BrowserManager {
       {bool debug = false}) {
     switch (browser.root) {
       case Runtime.chrome:
-        return new Chrome(url, settings: settings, debug: debug);
+        return Chrome(url, settings: settings, debug: debug);
       case Runtime.phantomJS:
-        return new PhantomJS(url, settings: settings, debug: debug);
+        return PhantomJS(url, settings: settings, debug: debug);
       case Runtime.firefox:
-        return new Firefox(url, settings: settings);
+        return Firefox(url, settings: settings);
       case Runtime.safari:
-        return new Safari(url, settings: settings);
+        return Safari(url, settings: settings);
       case Runtime.internetExplorer:
-        return new InternetExplorer(url, settings: settings);
+        return InternetExplorer(url, settings: settings);
       default:
-        throw new ArgumentError("$browser is not a browser.");
+        throw ArgumentError("$browser is not a browser.");
     }
   }
 
@@ -161,7 +160,7 @@ class BrowserManager {
     //
     // Start this canceled because we don't want it to start ticking until we
     // get some response from the iframe.
-    _timer = new RestartableTimer(new Duration(seconds: 3), () {
+    _timer = RestartableTimer(Duration(seconds: 3), () {
       for (var controller in _controllers) {
         controller.setDebugging(true);
       }
@@ -170,7 +169,7 @@ class BrowserManager {
 
     // Whenever we get a message, no matter which child channel it's for, we the
     // know browser is still running code which means the user isn't debugging.
-    _channel = new MultiChannel(
+    _channel = MultiChannel(
         webSocket.cast<String>().transform(jsonDocument).changeStream((stream) {
       return stream.map((message) {
         if (!_closed) _timer.reset();
@@ -189,7 +188,7 @@ class BrowserManager {
 
   /// Loads [_BrowserEnvironment].
   Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
-    return new _BrowserEnvironment(this, await _browser.observatoryUrl,
+    return _BrowserEnvironment(this, await _browser.observatoryUrl,
         await _browser.remoteDebuggerUrl, _onRestartController.stream);
   }
 
@@ -223,7 +222,7 @@ class BrowserManager {
     var virtualChannel = _channel.virtualChannel();
     var suiteChannelID = virtualChannel.id;
     var suiteChannel = virtualChannel
-        .transformStream(new StreamTransformer.fromHandlers(handleDone: (sink) {
+        .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
       closeIframe();
       sink.close();
     }));
@@ -255,7 +254,7 @@ class BrowserManager {
   CancelableOperation _displayPause() {
     if (_pauseCompleter != null) return _pauseCompleter.operation;
 
-    _pauseCompleter = new CancelableCompleter(onCancel: () {
+    _pauseCompleter = CancelableCompleter(onCancel: () {
       _channel.sink.add({"command": "resume"});
       _pauseCompleter = null;
     });
@@ -300,7 +299,7 @@ class BrowserManager {
         _controllers.clear();
         return _browser.close();
       });
-  final _closeMemoizer = new AsyncMemoizer();
+  final _closeMemoizer = AsyncMemoizer();
 }
 
 /// An implementation of [Environment] for the browser.

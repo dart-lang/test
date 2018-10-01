@@ -12,7 +12,6 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:yaml/yaml.dart';
 
 import 'runner.dart';
 import 'runner/application_exception.dart';
@@ -33,33 +32,6 @@ final _signals = Platform.isWindows
     : StreamGroup.merge(
         [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
-/// Returns whether the current package has a pubspec which uses the
-/// `test/pub_serve` transformer.
-bool get _usesTransformer {
-  if (!new File('pubspec.yaml').existsSync()) return false;
-  var contents = new File('pubspec.yaml').readAsStringSync();
-
-  dynamic yaml;
-  try {
-    yaml = loadYaml(contents);
-  } on FormatException {
-    return false;
-  }
-
-  if (yaml is! Map) return false;
-
-  var transformers = yaml['transformers'];
-  if (transformers == null) return false;
-  if (transformers is! List) return false;
-
-  return (transformers as List).any((transformer) {
-    if (transformer is String) return transformer == 'test/pub_serve';
-    if (transformer is! Map) return false;
-    if (transformer.keys.length != 1) return false;
-    return transformer.keys.single == 'test/pub_serve';
-  });
-}
-
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
@@ -74,7 +46,7 @@ final String _globalConfigPath = () {
 main(List<String> args) async {
   Configuration configuration;
   try {
-    configuration = new Configuration.parse(args);
+    configuration = Configuration.parse(args);
   } on FormatException catch (error) {
     _printUsage(error.message);
     exitCode = exit_codes.usage;
@@ -99,14 +71,14 @@ main(List<String> args) async {
 
   try {
     var fileConfiguration = Configuration.empty;
-    if (new File(_globalConfigPath).existsSync()) {
+    if (File(_globalConfigPath).existsSync()) {
       fileConfiguration = fileConfiguration
-          .merge(new Configuration.load(_globalConfigPath, global: true));
+          .merge(Configuration.load(_globalConfigPath, global: true));
     }
 
-    if (new File(configuration.configurationPath).existsSync()) {
+    if (File(configuration.configurationPath).existsSync()) {
       fileConfiguration = fileConfiguration
-          .merge(new Configuration.load(configuration.configurationPath));
+          .merge(Configuration.load(configuration.configurationPath));
     }
 
     configuration = fileConfiguration.merge(configuration);
@@ -134,21 +106,8 @@ main(List<String> args) async {
     return;
   }
 
-  if (configuration.pubServeUrl != null && !_usesTransformer) {
-    stderr.write('''
-When using --pub-serve, you must include the "test/pub_serve" transformer in
-your pubspec:
-
-transformers:
-- test/pub_serve:
-    \$include: test/**_test.dart
-''');
-    exitCode = exit_codes.data;
-    return;
-  }
-
   if (!configuration.explicitPaths &&
-      !new Directory(configuration.paths.single).existsSync()) {
+      !Directory(configuration.paths.single).existsSync()) {
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
@@ -168,7 +127,7 @@ transformers:
   signalSubscription = _signals.listen((_) => close());
 
   try {
-    runner = new Runner(configuration);
+    runner = Runner(configuration);
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
@@ -181,7 +140,7 @@ transformers:
     exitCode = exit_codes.data;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
-    stderr.writeln(new Trace.from(stackTrace).terse);
+    stderr.writeln(Trace.from(stackTrace).terse);
     stderr.writeln("This is an unexpected error. Please file an issue at "
         "http://github.com/dart-lang/test\n"
         "with the stack trace and instructions for reproducing the error.");

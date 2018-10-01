@@ -9,34 +9,34 @@
 /// running the test runner.
 class OperatingSystem {
   /// Microsoft Windows.
-  static const windows = const OperatingSystem._("Windows", "windows");
+  static const windows = OperatingSystem._("Windows", "windows");
 
   /// Mac OS X.
-  static const macOS = const OperatingSystem._("OS X", "mac-os");
+  static const macOS = OperatingSystem._("OS X", "mac-os");
 
   /// GNU/Linux.
-  static const linux = const OperatingSystem._("Linux", "linux");
+  static const linux = OperatingSystem._("Linux", "linux");
 
   /// Android.
   ///
   /// Since this is the operating system the test runner is running on, this
   /// won't be true when testing remotely on an Android browser.
-  static const android = const OperatingSystem._("Android", "android");
+  static const android = OperatingSystem._("Android", "android");
 
   /// iOS.
   ///
   /// Since this is the operating system the test runner is running on, this
   /// won't be true when testing remotely on an iOS browser.
-  static const iOS = const OperatingSystem._("iOS", "ios");
+  static const iOS = OperatingSystem._("iOS", "ios");
 
   /// No operating system.
   ///
   /// This is used when running in the browser, or if an unrecognized operating
   /// system is used. It can't be referenced by name in platform selectors.
-  static const none = const OperatingSystem._("none", "none");
+  static const none = OperatingSystem._("none", "none");
 
   /// A list of all instances of [OperatingSystem] other than [none].
-  static const all = const [windows, macOS, linux, android, iOS];
+  static const all = [windows, macOS, linux, android, iOS];
 
   /// Finds an operating system by its name.
   ///

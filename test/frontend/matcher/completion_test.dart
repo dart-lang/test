@@ -20,13 +20,13 @@ void main() {
     });
 
     test("succeeds when a future does not complete", () {
-      var completer = new Completer();
+      var completer = Completer();
       expect(completer.future, doesNotComplete);
     });
 
     test("fails when a future does complete", () async {
       var liveTest = await runTestBody(() {
-        var completer = new Completer();
+        var completer = Completer();
         completer.complete(null);
         expect(completer.future, doesNotComplete);
       });
@@ -39,7 +39,7 @@ void main() {
 
     test("fails when a future completes after the expect", () async {
       var liveTest = await runTestBody(() {
-        var completer = new Completer();
+        var completer = Completer();
         expect(completer.future, doesNotComplete);
         completer.complete(null);
       });
@@ -52,9 +52,9 @@ void main() {
 
     test("fails when a future eventually completes", () async {
       var liveTest = await runTestBody(() {
-        var completer = new Completer();
+        var completer = Completer();
         expect(completer.future, doesNotComplete);
-        new Future(() async {
+        Future(() async {
           await pumpEventQueue(times: 10);
         }).then(completer.complete);
       });
@@ -68,7 +68,7 @@ void main() {
   group("[completes]", () {
     test("blocks the test until the Future completes", () {
       return expectTestBlocks(() {
-        var completer = new Completer();
+        var completer = Completer();
         expect(completer.future, completes);
         return completer;
       }, (completer) => completer.complete());
@@ -76,7 +76,7 @@ void main() {
 
     test("with an error", () async {
       var liveTest = await runTestBody(() {
-        expect(new Future.error('X'), completes);
+        expect(Future.error('X'), completes);
       });
 
       expect(liveTest.state.status, equals(Status.complete));
@@ -87,7 +87,7 @@ void main() {
 
     test("with a failure", () async {
       var liveTest = await runTestBody(() {
-        expect(new Future.error(new TestFailure('oh no')), completes);
+        expect(Future.error(TestFailure('oh no')), completes);
       });
 
       expectTestFailed(liveTest, "oh no");
@@ -106,14 +106,14 @@ void main() {
     });
 
     test("with a successful future", () {
-      expect(new Future.value('1'), completes);
+      expect(Future.value('1'), completes);
     });
   });
 
   group("[completion]", () {
     test("blocks the test until the Future completes", () {
       return expectTestBlocks(() {
-        var completer = new Completer();
+        var completer = Completer();
         expect(completer.future, completion(isNull));
         return completer;
       }, (completer) => completer.complete());
@@ -121,7 +121,7 @@ void main() {
 
     test("with an error", () async {
       var liveTest = await runTestBody(() {
-        expect(new Future.error('X'), completion(isNull));
+        expect(Future.error('X'), completion(isNull));
       });
 
       expect(liveTest.state.status, equals(Status.complete));
@@ -132,7 +132,7 @@ void main() {
 
     test("with a failure", () async {
       var liveTest = await runTestBody(() {
-        expect(new Future.error(new TestFailure('oh no')), completion(isNull));
+        expect(Future.error(TestFailure('oh no')), completion(isNull));
       });
 
       expectTestFailed(liveTest, "oh no");
@@ -152,7 +152,7 @@ void main() {
 
     test("with an incorrect value", () async {
       var liveTest = await runTestBody(() {
-        expect(new Future.value('a'), completion(equals('b')));
+        expect(Future.value('a'), completion(equals('b')));
       });
 
       expectTestFailed(
@@ -171,7 +171,7 @@ void main() {
     });
 
     test("blocks expectLater's Future", () async {
-      var completer = new Completer();
+      var completer = Completer();
       var fired = false;
       expectLater(completer.future, completion(equals(1))).then((_) {
         fired = true;

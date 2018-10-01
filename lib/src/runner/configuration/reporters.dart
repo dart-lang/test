@@ -26,19 +26,19 @@ class ReporterDetails {
 
 /// All reporters and their corresponding details.
 final UnmodifiableMapView<String, ReporterDetails> allReporters =
-    new UnmodifiableMapView<String, ReporterDetails>(_allReporters);
+    UnmodifiableMapView<String, ReporterDetails>(_allReporters);
 
 final _allReporters = <String, ReporterDetails>{
-  "expanded": new ReporterDetails(
+  "expanded": ReporterDetails(
       "A separate line for each update.",
       (config, engine) => ExpandedReporter.watch(engine,
           color: config.color,
           printPath: config.paths.length > 1 ||
-              new Directory(config.paths.single).existsSync(),
+              Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
-  "compact": new ReporterDetails("A single line, updated continuously.",
+  "compact": ReporterDetails("A single line, updated continuously.",
       (_, engine) => CompactReporter.watch(engine)),
-  "json": new ReporterDetails(
+  "json": ReporterDetails(
       "A machine-readable format (see https://goo.gl/gBsV1a).",
       (_, engine) => JsonReporter.watch(engine)),
 };

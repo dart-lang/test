@@ -33,14 +33,13 @@ class Safari extends Browser {
     // API, so we create a dummy file to redirect it to the page we actually
     // want it to load.
     var redirect = p.join(dir, 'redirect.html');
-    new File(redirect).writeAsStringSync(
+    File(redirect).writeAsStringSync(
         "<script>location = " + jsonEncode(url.toString()) + "</script>");
 
     var process = await Process.start(
         settings.executable, settings.arguments.toList()..add(redirect));
 
-    process.exitCode
-        .then((_) => new Directory(dir).deleteSync(recursive: true));
+    process.exitCode.then((_) => Directory(dir).deleteSync(recursive: true));
 
     return process;
   }

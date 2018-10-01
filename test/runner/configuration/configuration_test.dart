@@ -14,7 +14,7 @@ void main() {
   group("merge", () {
     group("for most fields", () {
       test("if neither is defined, preserves the default", () {
-        var merged = new Configuration().merge(new Configuration());
+        var merged = Configuration().merge(Configuration());
         expect(merged.help, isFalse);
         expect(merged.version, isFalse);
         expect(merged.pauseAfterLoad, isFalse);
@@ -29,7 +29,7 @@ void main() {
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = new Configuration(
+        var merged = Configuration(
             help: true,
             version: true,
             pauseAfterLoad: true,
@@ -40,7 +40,7 @@ void main() {
             pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
-            paths: ["bar"]).merge(new Configuration());
+            paths: ["bar"]).merge(Configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -56,7 +56,7 @@ void main() {
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = new Configuration().merge(new Configuration(
+        var merged = Configuration().merge(Configuration(
             help: true,
             version: true,
             pauseAfterLoad: true,
@@ -85,7 +85,7 @@ void main() {
       test(
           "if the two configurations conflict, uses the new configuration's "
           "values", () {
-        var older = new Configuration(
+        var older = Configuration(
             help: true,
             version: false,
             pauseAfterLoad: true,
@@ -97,7 +97,7 @@ void main() {
             shardIndex: 2,
             totalShards: 4,
             paths: ["bar"]);
-        var newer = new Configuration(
+        var newer = Configuration(
             help: false,
             version: true,
             pauseAfterLoad: false,
@@ -127,37 +127,37 @@ void main() {
 
     group("for chosenPresets", () {
       test("if neither is defined, preserves the default", () {
-        var merged = new Configuration().merge(new Configuration());
+        var merged = Configuration().merge(Configuration());
         expect(merged.chosenPresets, isEmpty);
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = new Configuration(chosenPresets: ["baz", "bang"])
-            .merge(new Configuration());
+        var merged = Configuration(chosenPresets: ["baz", "bang"])
+            .merge(Configuration());
         expect(merged.chosenPresets, equals(["baz", "bang"]));
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = new Configuration()
-            .merge(new Configuration(chosenPresets: ["baz", "bang"]));
+        var merged = Configuration()
+            .merge(Configuration(chosenPresets: ["baz", "bang"]));
         expect(merged.chosenPresets, equals(["baz", "bang"]));
       });
 
       test("if both are defined, unions them", () {
-        var merged = new Configuration(chosenPresets: ["baz", "bang"])
-            .merge(new Configuration(chosenPresets: ["qux"]));
+        var merged = Configuration(chosenPresets: ["baz", "bang"])
+            .merge(Configuration(chosenPresets: ["qux"]));
         expect(merged.chosenPresets, equals(["baz", "bang", "qux"]));
       });
     });
 
     group("for presets", () {
       test("merges each nested configuration", () {
-        var merged = new Configuration(presets: {
-          "bang": new Configuration(pauseAfterLoad: true),
-          "qux": new Configuration(color: true)
-        }).merge(new Configuration(presets: {
-          "qux": new Configuration(color: false),
-          "zap": new Configuration(help: true)
+        var merged = Configuration(presets: {
+          "bang": Configuration(pauseAfterLoad: true),
+          "qux": Configuration(color: true)
+        }).merge(Configuration(presets: {
+          "qux": Configuration(color: false),
+          "zap": Configuration(help: true)
         }));
 
         expect(merged.presets["bang"].pauseAfterLoad, isTrue);
@@ -166,8 +166,8 @@ void main() {
       });
 
       test("automatically resolves a matching chosen preset", () {
-        var configuration = new Configuration(
-            presets: {"foo": new Configuration(color: true)},
+        var configuration = Configuration(
+            presets: {"foo": Configuration(color: true)},
             chosenPresets: ["foo"]);
         expect(configuration.presets, isEmpty);
         expect(configuration.chosenPresets, equals(["foo"]));
@@ -176,9 +176,9 @@ void main() {
       });
 
       test("resolves a chosen presets in order", () {
-        var configuration = new Configuration(presets: {
-          "foo": new Configuration(color: true),
-          "bar": new Configuration(color: false)
+        var configuration = Configuration(presets: {
+          "foo": Configuration(color: true),
+          "bar": Configuration(color: false)
         }, chosenPresets: [
           "foo",
           "bar"
@@ -188,9 +188,9 @@ void main() {
         expect(configuration.knownPresets, unorderedEquals(["foo", "bar"]));
         expect(configuration.color, isFalse);
 
-        configuration = new Configuration(presets: {
-          "foo": new Configuration(color: true),
-          "bar": new Configuration(color: false)
+        configuration = Configuration(presets: {
+          "foo": Configuration(color: true),
+          "bar": Configuration(color: false)
         }, chosenPresets: [
           "bar",
           "foo"
@@ -202,8 +202,7 @@ void main() {
       });
 
       test("ignores inapplicable chosen presets", () {
-        var configuration =
-            new Configuration(presets: {}, chosenPresets: ["baz"]);
+        var configuration = Configuration(presets: {}, chosenPresets: ["baz"]);
         expect(configuration.presets, isEmpty);
         expect(configuration.chosenPresets, equals(["baz"]));
         expect(configuration.knownPresets, equals(isEmpty));
@@ -211,8 +210,8 @@ void main() {
 
       test("resolves presets through merging", () {
         var configuration =
-            new Configuration(presets: {"foo": new Configuration(color: true)})
-                .merge(new Configuration(chosenPresets: ["foo"]));
+            Configuration(presets: {"foo": Configuration(color: true)})
+                .merge(Configuration(chosenPresets: ["foo"]));
 
         expect(configuration.presets, isEmpty);
         expect(configuration.chosenPresets, equals(["foo"]));
@@ -221,9 +220,9 @@ void main() {
       });
 
       test("preserves known presets through merging", () {
-        var configuration = new Configuration(
-            presets: {"foo": new Configuration(color: true)},
-            chosenPresets: ["foo"]).merge(new Configuration());
+        var configuration = Configuration(
+            presets: {"foo": Configuration(color: true)},
+            chosenPresets: ["foo"]).merge(Configuration());
 
         expect(configuration.presets, isEmpty);
         expect(configuration.chosenPresets, equals(["foo"]));

@@ -10,27 +10,26 @@ import 'package:test/test.dart';
 
 void main() {
   PathHandler handler;
-  setUp(() => handler = new PathHandler());
+  setUp(() => handler = PathHandler());
 
-  _handle(shelf.Request request) =>
-      new Future.sync(() => handler.handler(request));
+  _handle(shelf.Request request) => Future.sync(() => handler.handler(request));
 
   test("returns a 404 for a root URL", () async {
-    var request = new shelf.Request("GET", Uri.parse("http://localhost/"));
+    var request = shelf.Request("GET", Uri.parse("http://localhost/"));
     expect((await _handle(request)).statusCode, equals(404));
   });
 
   test("returns a 404 for an unregistered URL", () async {
-    var request = new shelf.Request("GET", Uri.parse("http://localhost/foo"));
+    var request = shelf.Request("GET", Uri.parse("http://localhost/foo"));
     expect((await _handle(request)).statusCode, equals(404));
   });
 
   test("runs a handler for an exact URL", () async {
-    var request = new shelf.Request("GET", Uri.parse("http://localhost/foo"));
+    var request = shelf.Request("GET", Uri.parse("http://localhost/foo"));
     handler.add("foo", expectAsync1((request) {
       expect(request.handlerPath, equals('/foo'));
       expect(request.url.path, isEmpty);
-      return new shelf.Response.ok("good job!");
+      return shelf.Response.ok("good job!");
     }));
 
     var response = await _handle(request);
@@ -39,12 +38,11 @@ void main() {
   });
 
   test("runs a handler for a suffix", () async {
-    var request =
-        new shelf.Request("GET", Uri.parse("http://localhost/foo/bar"));
+    var request = shelf.Request("GET", Uri.parse("http://localhost/foo/bar"));
     handler.add("foo", expectAsync1((request) {
       expect(request.handlerPath, equals('/foo/'));
       expect(request.url.path, 'bar');
-      return new shelf.Response.ok("good job!");
+      return shelf.Response.ok("good job!");
     }));
 
     var response = await _handle(request);
@@ -54,15 +52,23 @@ void main() {
 
   test("runs the longest matching handler", () async {
     var request =
-        new shelf.Request("GET", Uri.parse("http://localhost/foo/bar/baz"));
+        shelf.Request("GET", Uri.parse("http://localhost/foo/bar/baz"));
 
-    handler.add("foo", expectAsync1((_) {}, count: 0));
+    handler.add(
+        "foo",
+        expectAsync1((_) {
+          return null;
+        }, count: 0));
     handler.add("foo/bar", expectAsync1((request) {
       expect(request.handlerPath, equals('/foo/bar/'));
       expect(request.url.path, 'baz');
-      return new shelf.Response.ok("good job!");
+      return shelf.Response.ok("good job!");
     }));
-    handler.add("foo/bar/baz/bang", expectAsync1((_) {}, count: 0));
+    handler.add(
+        "foo/bar/baz/bang",
+        expectAsync1((_) {
+          return null;
+        }, count: 0));
 
     var response = await _handle(request);
     expect(response.statusCode, equals(200));

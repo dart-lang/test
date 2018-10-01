@@ -8,33 +8,33 @@ class Runtime {
   // variable tests in test/backend/platform_selector/evaluate_test.
 
   /// The command-line Dart VM.
-  static const Runtime vm = const Runtime("VM", "vm", isDartVM: true);
+  static const Runtime vm = Runtime("VM", "vm", isDartVM: true);
 
   /// Google Chrome.
-  static const Runtime chrome = const Runtime("Chrome", "chrome",
-      isBrowser: true, isJS: true, isBlink: true);
+  static const Runtime chrome =
+      Runtime("Chrome", "chrome", isBrowser: true, isJS: true, isBlink: true);
 
   /// PhantomJS.
-  static const Runtime phantomJS = const Runtime("PhantomJS", "phantomjs",
+  static const Runtime phantomJS = Runtime("PhantomJS", "phantomjs",
       isBrowser: true, isJS: true, isBlink: true, isHeadless: true);
 
   /// Mozilla Firefox.
   static const Runtime firefox =
-      const Runtime("Firefox", "firefox", isBrowser: true, isJS: true);
+      Runtime("Firefox", "firefox", isBrowser: true, isJS: true);
 
   /// Apple Safari.
   static const Runtime safari =
-      const Runtime("Safari", "safari", isBrowser: true, isJS: true);
+      Runtime("Safari", "safari", isBrowser: true, isJS: true);
 
   /// Microsoft Internet Explorer.
   static const Runtime internetExplorer =
-      const Runtime("Internet Explorer", "ie", isBrowser: true, isJS: true);
+      Runtime("Internet Explorer", "ie", isBrowser: true, isJS: true);
 
   /// The command-line Node.js VM.
-  static const Runtime nodeJS = const Runtime("Node.js", "node", isJS: true);
+  static const Runtime nodeJS = Runtime("Node.js", "node", isJS: true);
 
   /// The platforms that are supported by the test runner by default.
-  static const List<Runtime> builtIn = const [
+  static const List<Runtime> builtIn = [
     Runtime.vm,
     Runtime.chrome,
     Runtime.phantomJS,
@@ -108,11 +108,11 @@ class Runtime {
       // a separately-deserialized parent platform. This should be fine, though,
       // since we only deserialize platforms in the remote execution context
       // where they're only used to evaluate platform selectors.
-      return new Runtime._child(map["name"] as String,
-          map["identifier"] as String, new Runtime.deserialize(parent));
+      return Runtime._child(map["name"] as String, map["identifier"] as String,
+          Runtime.deserialize(parent));
     }
 
-    return new Runtime(map["name"] as String, map["identifier"] as String,
+    return Runtime(map["name"] as String, map["identifier"] as String,
         isDartVM: map["isDartVM"] as bool,
         isBrowser: map["isBrowser"] as bool,
         isJS: map["isJS"] as bool,
@@ -149,8 +149,8 @@ class Runtime {
   ///
   /// This may not be called on a platform that's already a child.
   Runtime extend(String name, String identifier) {
-    if (parent == null) return new Runtime._child(name, identifier, this);
-    throw new StateError("A child platform may not be extended.");
+    if (parent == null) return Runtime._child(name, identifier, this);
+    throw StateError("A child platform may not be extended.");
   }
 
   String toString() => name;

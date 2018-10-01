@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-@Tags(const ["ie"])
+@Tags(["ie"])
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -27,7 +27,7 @@ webSocket.addEventListener("open", function() {
 ''');
     var webSocket = server.handleWebSocket();
 
-    var ie = new InternetExplorer(server.url);
+    var ie = InternetExplorer(server.url);
     addTearDown(() => ie.close());
 
     expect(await (await webSocket).stream.first, equals("loaded!"));
@@ -36,13 +36,13 @@ webSocket.addEventListener("open", function() {
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
 
-    var ie = new InternetExplorer(server.url);
+    var ie = InternetExplorer(server.url);
     await ie.close();
   });
 
   test("reports an error in onExit", () {
-    var ie = new InternetExplorer("http://dart-lang.org",
-        settings: new ExecutableSettings(
+    var ie = InternetExplorer("http://dart-lang.org",
+        settings: ExecutableSettings(
             linuxExecutable: "_does_not_exist",
             macOSExecutable: "_does_not_exist",
             windowsExecutable: "_does_not_exist"));
