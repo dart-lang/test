@@ -1,3 +1,7 @@
+## 1.3.4
+
+* Allow remote_listener to be closed and sent an event on close.
+
 ## 1.3.3
 
 * Add conditional imports so that `dart:io` is not imported from the main
