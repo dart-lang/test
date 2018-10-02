@@ -94,6 +94,11 @@ class RemoteListener {
           assert(message['type'] == 'initial');
 
           queue.rest.listen((message) {
+            if (message["type"] == "close") {
+              controller.local.sink.close();
+              return;
+            }
+
             assert(message["type"] == "suiteChannel");
             SuiteChannelManager.current.connectIn(message['name'] as String,
                 channel.virtualChannel(message['id'] as int));
