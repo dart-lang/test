@@ -13,7 +13,6 @@ import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
 
 import '../io.dart';
-import '../utils.dart';
 
 final _success = """
 import 'dart:async';
