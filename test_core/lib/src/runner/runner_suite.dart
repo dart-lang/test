@@ -11,7 +11,7 @@ import '../backend/group.dart';
 import '../backend/suite.dart';
 import '../backend/suite_platform.dart';
 import '../backend/test.dart';
-import 'configuration/suite.dart';
+import 'suite.dart';
 import 'environment.dart';
 
 /// A suite produced and consumed by the test runner that has runner-specific

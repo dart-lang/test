@@ -5,16 +5,17 @@
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../backend/group.dart';
-import '../backend/live_test.dart';
-import '../backend/live_test_controller.dart';
-import '../backend/message.dart';
-import '../backend/metadata.dart';
-import '../backend/state.dart';
-import '../backend/suite.dart';
-import '../backend/suite_platform.dart';
-import '../backend/test.dart';
-import '../util/remote_exception.dart';
+import 'package:test_core/src/backend/group.dart';
+import 'package:test_core/src/backend/live_test.dart';
+import 'package:test_core/src/backend/live_test_controller.dart';
+import 'package:test_core/src/backend/message.dart';
+import 'package:test_core/src/backend/metadata.dart';
+import 'package:test_core/src/backend/state.dart';
+import 'package:test_core/src/backend/suite.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
+import 'package:test_core/src/backend/test.dart';
+import 'package:test_core/src/util/remote_exception.dart';
+
 import '../utils.dart';
 import 'spawn_hybrid.dart';
 

@@ -7,14 +7,16 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 
-import 'backend/group.dart';
-import 'backend/group_entry.dart';
-import 'backend/operating_system.dart';
-import 'backend/platform_selector.dart';
-import 'backend/runtime.dart';
-import 'backend/suite.dart';
-import 'backend/suite_platform.dart';
-import 'backend/test.dart';
+import 'package:test_core/src/backend/group.dart';
+import 'package:test_core/src/backend/group_entry.dart';
+import 'package:test_core/src/backend/operating_system.dart';
+import 'package:test_core/src/backend/platform_selector.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/backend/suite.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
+import 'package:test_core/src/backend/test.dart';
+
+import 'util/io.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
@@ -26,7 +28,6 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
-import 'util/io.dart';
 import 'utils.dart';
 
 final _silentObservatory = const bool.fromEnvironment('SILENT_OBSERVATORY');

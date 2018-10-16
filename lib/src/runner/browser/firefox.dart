@@ -7,11 +7,11 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../backend/runtime.dart';
-import '../../util/io.dart';
+import 'package:test_core/src/backend/runtime.dart';
 import '../executable_settings.dart';
 import 'browser.dart';
 import 'default_settings.dart';
+import '../../util/io.dart';
 
 final _preferences = '''
 user_pref("browser.shell.checkDefaultBrowser", false);

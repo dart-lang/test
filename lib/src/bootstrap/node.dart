@@ -2,16 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import "../runner/plugin/remote_platform_helpers.dart";
-import "../runner/node/socket_channel.dart";
-import "../util/stack_trace_mapper.dart";
+import '../runner/plugin/remote_platform_helpers.dart';
+import '../runner/node/socket_channel.dart';
+import '../util/stack_trace_mapper.dart';
 
 /// Bootstraps a browser test to communicate with the test runner.
 void internalBootstrapNodeTest(Function getMain()) {
   var channel = serializeSuite(getMain, beforeLoad: () async {
     var serialized = await suiteChannel("test.node.mapper").stream.first;
     if (serialized == null || serialized is! Map) return;
-    setStackTraceMapper(StackTraceMapper.deserialize(serialized as Map));
+    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized as Map));
   });
   socketChannel().pipe(channel);
 }

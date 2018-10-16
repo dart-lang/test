@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import 'package:test/src/backend/group.dart';
-import 'package:test/src/backend/state.dart';
+import 'package:test_core/src/backend/group.dart';
+import 'package:test_core/src/backend/state.dart';
 import 'package:test/src/runner/engine.dart';
 import 'package:test/test.dart';
 

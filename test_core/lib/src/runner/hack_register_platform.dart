@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import '../../backend/runtime.dart';
+import 'package:test_core/src/backend/runtime.dart';
 import 'platform.dart';
 
 /// The functions to use to load [_platformPlugins] in all loaders.

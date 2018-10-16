@@ -53,4 +53,6 @@ class Suite {
     if (filtered == null) filtered = Group.root([], metadata: metadata);
     return Suite(filtered, platform, path: path);
   }
+
+  bool get isLoadSuite => false;
 }

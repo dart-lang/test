@@ -9,7 +9,8 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../util/dart.dart' as dart;
-import "../util/remote_exception.dart";
+
+import 'package:test_core/src/util/remote_exception.dart';
 
 /// Spawns a hybrid isolate from [url] with the given [message], and returns a
 /// [StreamChannel] that communicates with it.

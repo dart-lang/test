@@ -9,7 +9,7 @@ import "package:async/async.dart";
 import "package:stack_trace/stack_trace.dart";
 import "package:stream_channel/stream_channel.dart";
 
-import "../util/remote_exception.dart";
+import "package:test_core/src/util/remote_exception.dart";
 import "../utils.dart";
 
 /// A sink transformer that wraps data and error events so that errors can be

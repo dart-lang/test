@@ -8,16 +8,17 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
-import '../backend/declarer.dart';
-import '../backend/group.dart';
-import '../backend/invoker.dart';
-import '../backend/live_test.dart';
-import '../backend/metadata.dart';
-import '../backend/stack_trace_formatter.dart';
-import '../backend/suite.dart';
-import '../backend/suite_platform.dart';
-import '../backend/test.dart';
-import '../util/remote_exception.dart';
+import 'package:test_core/src/backend/declarer.dart';
+import 'package:test_core/src/backend/group.dart';
+import 'package:test_core/src/backend/invoker.dart';
+import 'package:test_core/src/backend/live_test.dart';
+import 'package:test_core/src/backend/metadata.dart';
+import 'package:test_core/src/backend/stack_trace_formatter.dart';
+import 'package:test_core/src/backend/suite.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
+import 'package:test_core/src/backend/test.dart';
+import 'package:test_core/src/util/remote_exception.dart';
+
 import 'suite_channel_manager.dart';
 
 class RemoteListener {

@@ -7,10 +7,11 @@ import 'dart:async';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 
-import '../backend/live_test.dart';
-import '../backend/state.dart';
+import 'package:test_core/src/backend/live_test.dart';
+import 'package:test_core/src/backend/state.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
+
 import 'live_suite.dart';
-import 'runner_suite.dart';
 
 /// An implementation of [LiveSuite] that's controlled by a
 /// [LiveSuiteController].
