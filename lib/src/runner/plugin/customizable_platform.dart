@@ -4,8 +4,8 @@
 
 import 'package:yaml/yaml.dart';
 
-import '../../backend/runtime.dart';
-import 'platform.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/runner/platform.dart';
 
 /// An interface for [PlatformPlugin]s that support per-platform customization.
 ///

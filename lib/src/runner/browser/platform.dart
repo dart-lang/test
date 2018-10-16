@@ -21,21 +21,23 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../backend/runtime.dart';
-import '../../backend/suite_platform.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
+import 'package:test_core/src/util/stack_trace_mapper.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/platform.dart';
+import 'package:test_core/src/runner/suite.dart';
+
+import '../../util/path_handler.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
-import '../../util/path_handler.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../compiler_pool.dart';
 import '../configuration.dart';
-import '../configuration/suite.dart';
 import '../executable_settings.dart';
 import '../load_exception.dart';
 import '../plugin/customizable_platform.dart';
-import '../plugin/platform.dart';
-import '../runner_suite.dart';
 import 'browser_manager.dart';
 import 'default_settings.dart';
 
@@ -311,7 +313,7 @@ class BrowserPlatform extends PlatformPlugin
         }
 
         if (getSourceMap && !suiteConfig.jsTrace) {
-          _mappers[path] = StackTraceMapper(await utf8.decodeStream(response),
+          _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
               mapUrl: url,
               packageResolver: SyncPackageResolver.root('packages'),
               sdkRoot: p.toUri('packages/\$sdk'));
@@ -373,7 +375,7 @@ class BrowserPlatform extends PlatformPlugin
 
       if (suiteConfig.jsTrace) return;
       var mapPath = jsPath + '.map';
-      _mappers[dartPath] = StackTraceMapper(File(mapPath).readAsStringSync(),
+      _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
           packageResolver: await PackageResolver.current.asSync,
           sdkRoot: p.toUri(sdkDir));

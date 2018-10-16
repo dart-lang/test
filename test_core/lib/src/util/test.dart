@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:test_core/src/backend/invoker.dart';
+import '../backend/invoker.dart';
 
 /// Runs [body] with special error-handling behavior.
 ///

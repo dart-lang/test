@@ -12,9 +12,9 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
-import '../backend/operating_system.dart';
-import '../backend/runtime.dart';
-import '../backend/suite_platform.dart';
+import 'package:test_core/src/backend/operating_system.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
 import '../utils.dart';
 
 /// The default line length for output when there isn't a terminal attached to

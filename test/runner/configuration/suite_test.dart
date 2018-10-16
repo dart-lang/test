@@ -6,10 +6,10 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
 
-import 'package:test/src/backend/platform_selector.dart';
-import 'package:test/src/backend/runtime.dart';
-import 'package:test/src/runner/configuration/runtime_selection.dart';
-import 'package:test/src/runner/configuration/suite.dart';
+import 'package:test_core/src/backend/platform_selector.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/runner/runtime_selection.dart';
+import 'package:test_core/src/runner/suite.dart';
 
 void main() {
   group("merge", () {

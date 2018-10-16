@@ -7,7 +7,7 @@ import 'dart:convert';
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
 
 import '../../io.dart';

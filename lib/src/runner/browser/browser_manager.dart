@@ -10,15 +10,17 @@ import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../backend/runtime.dart';
-import '../../util/io.dart';
-import '../../util/stack_trace_mapper.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/util/stack_trace_mapper.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/environment.dart';
+import 'package:test_core/src/runner/suite.dart';
+
 import '../application_exception.dart';
-import '../configuration/suite.dart';
-import '../environment.dart';
 import '../executable_settings.dart';
 import '../plugin/platform_helpers.dart';
-import '../runner_suite.dart';
+import '../../util/io.dart';
+
 import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';

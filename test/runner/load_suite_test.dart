@@ -5,14 +5,14 @@
 @TestOn("vm")
 import 'dart:async';
 
-import 'package:test/src/backend/group.dart';
-import 'package:test/src/backend/state.dart';
-import 'package:test/src/backend/test.dart';
-import 'package:test/src/backend/runtime.dart';
-import 'package:test/src/runner/configuration/suite.dart';
+import 'package:test_core/src/backend/group.dart';
+import 'package:test_core/src/backend/state.dart';
+import 'package:test_core/src/backend/test.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/runner/suite.dart';
 import 'package:test/src/runner/load_exception.dart';
 import 'package:test/src/runner/load_suite.dart';
-import 'package:test/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

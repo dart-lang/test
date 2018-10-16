@@ -11,22 +11,23 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
-import '../backend/group.dart';
-import '../backend/invoker.dart';
-import '../backend/runtime.dart';
+import 'package:test_core/src/backend/group.dart';
+import 'package:test_core/src/backend/invoker.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/runner/hack_register_platform.dart';
+import 'package:test_core/src/runner/platform.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/suite.dart';
+
 import '../util/io.dart';
 import 'browser/platform.dart';
 import 'configuration.dart';
-import 'configuration/suite.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
 import 'node/platform.dart';
 import 'parse_metadata.dart';
 import 'plugin/customizable_platform.dart';
 import 'plugin/environment.dart';
-import 'plugin/hack_register_platform.dart';
-import 'plugin/platform.dart';
-import 'runner_suite.dart';
 import 'vm/platform.dart';
 
 /// A class for finding test files and loading them into a runnable form.

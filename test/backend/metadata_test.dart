@@ -4,12 +4,12 @@
 
 import 'package:boolean_selector/boolean_selector.dart';
 
-import 'package:test/src/backend/metadata.dart';
-import 'package:test/src/backend/platform_selector.dart';
-import 'package:test/src/backend/runtime.dart';
-import 'package:test/src/backend/suite_platform.dart';
-import 'package:test/src/frontend/skip.dart';
-import 'package:test/src/frontend/timeout.dart';
+import 'package:test_core/src/backend/metadata.dart';
+import 'package:test_core/src/backend/platform_selector.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
+import 'package:test_core/src/frontend/skip.dart';
+import 'package:test_core/src/frontend/timeout.dart';
 import 'package:test/test.dart';
 
 void main() {

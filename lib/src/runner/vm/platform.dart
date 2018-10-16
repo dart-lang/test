@@ -12,16 +12,17 @@ import 'package:stream_channel/stream_channel.dart';
 
 import 'package:vm_service_client/vm_service_client.dart';
 
-import '../../backend/runtime.dart';
-import '../../backend/suite_platform.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
+import 'package:test_core/src/runner/platform.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/suite.dart';
+
 import '../../util/dart.dart' as dart;
-import '../configuration/suite.dart';
 import '../plugin/platform_helpers.dart';
 import '../plugin/environment.dart';
-import '../runner_suite.dart';
 import '../configuration.dart';
 import '../load_exception.dart';
-import '../plugin/platform.dart';
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.

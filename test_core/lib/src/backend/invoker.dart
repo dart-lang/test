@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/expect.dart';
-import '../runner/load_suite.dart';
 import '../util/test.dart';
 import '../utils.dart';
 import 'closed_exception.dart';
@@ -364,10 +363,7 @@ class Invoker {
 
     // However, users don't think of load tests as "tests", so the error isn't
     // helpful for them.
-    //
-    // TODO(nweiz): Find a way of avoiding this error that doesn't require
-    // Invoker to refer to a class from the runner.
-    if (liveTest.suite is LoadSuite) return;
+    if (liveTest.suite.isLoadSuite) return;
 
     _handleError(
         zone,
