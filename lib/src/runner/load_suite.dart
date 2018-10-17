@@ -7,23 +7,25 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+
 import '../../test.dart';
-import '../backend/group.dart';
-import '../backend/invoker.dart';
-import '../backend/metadata.dart';
-import '../backend/suite.dart';
-import '../backend/suite_platform.dart';
-import '../backend/test.dart';
-import '../backend/runtime.dart';
+
 // ignore: uri_does_not_exist
 import '../util/io_stub.dart'
     // ignore: uri_does_not_exist
     if (dart.library.io) '../util/io.dart';
 import '../utils.dart';
-import 'configuration/suite.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
-import 'runner_suite.dart';
 
 /// The timeout for loading a test suite.
 ///
@@ -52,6 +54,9 @@ class LoadSuite extends Suite implements RunnerSuite {
   final SuiteConfiguration config;
   final isDebugging = false;
   final onDebugging = StreamController<bool>().stream;
+
+  @override
+  bool get isLoadSuite => true;
 
   /// A future that completes to the loaded suite once the suite's test has been
   /// run and completed successfully.

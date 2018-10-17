@@ -11,9 +11,9 @@ import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
-import '../util/io.dart';
+import 'package:test/src/util/io.dart';
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'configuration.dart';
-import 'configuration/suite.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
 final _dart2jsStatus =

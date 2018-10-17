@@ -8,16 +8,17 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
-import '../backend/declarer.dart';
-import '../backend/group.dart';
-import '../backend/invoker.dart';
-import '../backend/live_test.dart';
-import '../backend/metadata.dart';
-import '../backend/stack_trace_formatter.dart';
-import '../backend/suite.dart';
-import '../backend/suite_platform.dart';
-import '../backend/test.dart';
-import '../util/remote_exception.dart';
+import 'package:test_core/src/backend/declarer.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/remote_exception.dart'; // ignore: implementation_imports
+
 import 'suite_channel_manager.dart';
 
 class RemoteListener {

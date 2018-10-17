@@ -5,9 +5,10 @@
 import 'package:package_resolver/package_resolver.dart';
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
+import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 
 /// A class for mapping JS stack traces to Dart stack traces using source maps.
-class StackTraceMapper {
+class JSStackTraceMapper extends StackTraceMapper {
   /// The parsed source map.
   ///
   /// This is initialized lazily in `mapStackTrace()`.
@@ -25,7 +26,7 @@ class StackTraceMapper {
   /// The URL of the source map.
   final Uri _mapUrl;
 
-  StackTraceMapper(this._mapContents,
+  JSStackTraceMapper(this._mapContents,
       {Uri mapUrl, SyncPackageResolver packageResolver, Uri sdkRoot})
       : _mapUrl = mapUrl,
         _packageResolver = packageResolver,
@@ -55,7 +56,7 @@ class StackTraceMapper {
   static StackTraceMapper deserialize(Map serialized) {
     if (serialized == null) return null;
     String packageRoot = serialized['packageRoot'] as String ?? '';
-    return StackTraceMapper(serialized['mapContents'] as String,
+    return JSStackTraceMapper(serialized['mapContents'] as String,
         sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
         packageResolver: packageRoot.isNotEmpty
             ? SyncPackageResolver.root(

@@ -8,20 +8,21 @@ import 'dart:io' show pid;
 
 import 'package:path/path.dart' as p;
 
-import '../../backend/group.dart';
-import '../../backend/group_entry.dart';
-import '../../backend/live_test.dart';
-import '../../backend/metadata.dart';
-import '../../backend/state.dart';
-import '../../backend/suite.dart';
-import '../../backend/runtime.dart';
-import '../../frontend/expect.dart';
+import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/group_entry.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/frontend/expect.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+
 import '../configuration.dart';
-import '../configuration/suite.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
-import '../runner_suite.dart';
 import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.

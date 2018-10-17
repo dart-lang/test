@@ -6,11 +6,12 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
 
-import '../../backend/metadata.dart';
-import '../../backend/platform_selector.dart';
-import '../../backend/suite_platform.dart';
-import '../../backend/runtime.dart';
-import '../../frontend/timeout.dart';
+import '../backend/metadata.dart';
+import '../backend/platform_selector.dart';
+import '../backend/suite_platform.dart';
+import '../backend/runtime.dart';
+import '../frontend/timeout.dart';
+
 import 'runtime_selection.dart';
 
 /// Suite-level configuration.

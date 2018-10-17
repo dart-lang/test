@@ -15,22 +15,24 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../backend/runtime.dart';
-import '../../backend/suite_platform.dart';
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+
 import '../../util/io.dart';
 import '../../util/stack_trace_mapper.dart';
 import '../../utils.dart';
 import '../application_exception.dart';
 import '../compiler_pool.dart';
 import '../configuration.dart';
-import '../configuration/suite.dart';
 import '../executable_settings.dart';
 import '../load_exception.dart';
 import '../plugin/customizable_platform.dart';
 import '../plugin/environment.dart';
-import '../plugin/platform.dart';
 import '../plugin/platform_helpers.dart';
-import '../runner_suite.dart';
 
 /// The first Dart SDK version where `--categories=Server` disables `dart:html`
 /// rather than disabling all JS-specific libraries.
@@ -174,7 +176,7 @@ class NodePlatform extends PlatformPlugin
     StackTraceMapper mapper;
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
-      mapper = StackTraceMapper(await File(mapPath).readAsString(),
+      mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           packageResolver: await PackageResolver.current.asSync,
           sdkRoot: p.toUri(sdkDir));
@@ -197,7 +199,7 @@ class NodePlatform extends PlatformPlugin
       var mapPath = jsPath + '.map';
       var resolver = await SyncPackageResolver.loadConfig(
           p.toUri(p.join(precompiledPath, '.packages')));
-      mapper = StackTraceMapper(await File(mapPath).readAsString(),
+      mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           packageResolver: resolver,
           sdkRoot: p.toUri(sdkDir));
@@ -222,7 +224,7 @@ class NodePlatform extends PlatformPlugin
     StackTraceMapper mapper;
     if (!suiteConfig.jsTrace) {
       var mapUrl = url.replace(path: url.path + '.map');
-      mapper = StackTraceMapper(await _get(mapUrl, testPath),
+      mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
           mapUrl: mapUrl,
           packageResolver: SyncPackageResolver.root('packages'),
           sdkRoot: p.toUri('packages/\$sdk'));

@@ -9,9 +9,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 
-import '../backend/metadata.dart';
-import '../backend/platform_selector.dart';
-import '../frontend/timeout.dart';
+import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/platform_selector.dart'; // ignore: implementation_imports
+import 'package:test_core/src/frontend/timeout.dart'; // ignore: implementation_imports
 import '../util/dart.dart';
 import '../utils.dart';
 

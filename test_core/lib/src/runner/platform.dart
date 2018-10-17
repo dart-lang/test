@@ -5,13 +5,11 @@
 import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
 
-import '../../backend/suite_platform.dart';
-import '../configuration/suite.dart';
-import '../environment.dart';
-import '../runner_suite.dart';
+import 'suite.dart';
+import 'runner_suite.dart';
 import 'environment.dart';
-import 'platform_helpers.dart';
 
 /// A class that defines a platform for which test suites can be loaded.
 ///
@@ -59,14 +57,7 @@ abstract class PlatformPlugin {
   /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
   /// pass the opaque [message] parameter to the [deserializeSuite] call.
   Future<RunnerSuite> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
-    // loadChannel may throw an exception. That's fine; it will cause the
-    // LoadSuite to emit an error, which will be presented to the user.
-    var channel = loadChannel(path, platform);
-    var controller = deserializeSuite(
-        path, platform, suiteConfig, PluginEnvironment(), channel, message);
-    return await controller.suite;
-  }
+      SuiteConfiguration suiteConfig, Object message);
 
   Future closeEphemeral() async {}
 

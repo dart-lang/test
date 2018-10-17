@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import '../environment.dart';
+import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
 
 /// The default environment for platform plugins.
 class PluginEnvironment implements Environment {

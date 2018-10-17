@@ -6,14 +6,15 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import '../util/io.dart';
+import 'package:test/src/util/io.dart';
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+
 import '../utils.dart';
 import 'configuration.dart';
 import 'console.dart';
 import 'engine.dart';
 import 'load_suite.dart';
 import 'reporter.dart';
-import 'runner_suite.dart';
 
 /// Runs [loadSuite] in debugging mode.
 ///

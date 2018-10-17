@@ -10,18 +10,19 @@ import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 
-import '../backend/platform_selector.dart';
-import '../backend/runtime.dart';
-import '../frontend/timeout.dart';
+import 'package:test_core/src/backend/platform_selector.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/frontend/timeout.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runtime_selection.dart'; // ignore: implementation_imports
+
 import '../util/io.dart';
 import '../utils.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/custom_runtime.dart';
 import 'configuration/load.dart';
 import 'configuration/reporters.dart';
-import 'configuration/runtime_selection.dart';
 import 'configuration/runtime_settings.dart';
-import 'configuration/suite.dart';
 import 'configuration/values.dart';
 
 /// The key used to look up [Configuration.current] in a zone.

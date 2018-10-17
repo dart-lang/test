@@ -7,11 +7,12 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../backend/runtime.dart';
-import '../../util/exit_codes.dart' as exit_codes;
-import '../../util/io.dart';
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
+
+import 'package:test/src/util/exit_codes.dart' as exit_codes;
 import '../application_exception.dart';
 import '../executable_settings.dart';
+import '../../util/io.dart';
 import 'browser.dart';
 import 'default_settings.dart';
 

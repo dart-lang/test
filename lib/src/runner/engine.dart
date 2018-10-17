@@ -9,18 +9,19 @@ import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
 
-import '../backend/group.dart';
-import '../backend/invoker.dart';
-import '../backend/live_test.dart';
-import '../backend/live_test_controller.dart';
-import '../backend/message.dart';
-import '../backend/state.dart';
-import '../backend/test.dart';
-import '../util/iterable_set.dart';
+import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/live_test_controller.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/message.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/iterable_set.dart'; // ignore: implementation_imports
+
 import 'live_suite.dart';
 import 'live_suite_controller.dart';
 import 'load_suite.dart';
-import 'runner_suite.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///

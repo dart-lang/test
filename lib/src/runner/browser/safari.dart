@@ -8,7 +8,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../backend/runtime.dart';
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
 import '../../util/io.dart';
 import '../executable_settings.dart';
 import 'browser.dart';

@@ -7,10 +7,11 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
-import 'package:test/src/backend/platform_selector.dart';
-import 'package:test/src/backend/runtime.dart';
-import 'package:test/src/backend/suite_platform.dart';
+import 'package:test_core/src/backend/platform_selector.dart';
+import 'package:test_core/src/backend/runtime.dart';
+import 'package:test_core/src/backend/suite_platform.dart';
 import 'package:test/src/runner/parse_metadata.dart';
+
 import 'package:test/src/util/io.dart';
 
 String _sandbox;

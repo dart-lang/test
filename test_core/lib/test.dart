@@ -5,64 +5,34 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:test/src/runner/engine.dart';
-import 'package:test/src/runner/plugin/environment.dart';
-import 'package:test/src/runner/reporter/expanded.dart';
+
+import 'src/backend/declarer.dart';
+import 'src/backend/invoker.dart';
+import 'src/frontend/timeout.dart';
+
 export 'package:matcher/matcher.dart';
-import 'package:path/path.dart' as p;
 
-import 'package:test_core/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/declarer.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/utils.dart'; // ignore: implementation_imports
+export 'src/frontend/expect.dart' hide formatFailure;
+export 'src/frontend/expect_async.dart';
+export 'src/frontend/future_matchers.dart';
+export 'src/frontend/on_platform.dart';
+export 'src/frontend/never_called.dart';
+export 'src/frontend/prints_matcher.dart';
+export 'src/frontend/retry.dart';
+export 'src/frontend/skip.dart';
+export 'src/frontend/spawn_hybrid.dart';
+export 'src/frontend/stream_matcher.dart';
+export 'src/frontend/stream_matchers.dart';
+export 'src/frontend/tags.dart';
+export 'src/frontend/test_on.dart';
+export 'src/frontend/throws_matcher.dart';
+export 'src/frontend/throws_matchers.dart';
+export 'src/frontend/timeout.dart';
+export 'src/frontend/utils.dart';
 
-// Hide implementations which don't support being run directly.
-export 'package:test_core/test.dart' hide test, group, setUp, setUpAll, tearDown, tearDownAll;
-
-/// The global declarer.
-///
-/// This is used if a test file is run directly, rather than through the runner.
-Declarer _globalDeclarer;
-
-/// Gets the declarer for the current scope.
-///
-/// When using the runner, this returns the [Zone]-scoped declarer that's set by
-/// [IsolateListener] or [IframeListener]. If the test file is run directly,
-/// this returns [_globalDeclarer] (and sets it up on the first call).
-Declarer get _declarer {
-  var declarer = Declarer.current;
-  if (declarer != null) return declarer;
-  if (_globalDeclarer != null) return _globalDeclarer;
-
-  // Since there's no Zone-scoped declarer, the test file is being run directly.
-  // In order to run the tests, we set up our own Declarer via
-  // [_globalDeclarer], and schedule a microtask to run the tests once they're
-  // finished being defined.
-  _globalDeclarer = Declarer();
-  scheduleMicrotask(() async {
-    var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-        _globalDeclarer.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
-        path: p.prettyUri(Uri.base));
-
-    var engine = Engine();
-    engine.suiteSink.add(suite);
-    engine.suiteSink.close();
-    ExpandedReporter.watch(engine,
-        color: true, printPath: false, printPlatform: false);
-
-    var success = await runZoned(() => Invoker.guard(engine.run),
-        zoneValues: {#test.declarer: _globalDeclarer});
-    // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
-    if (success) return null;
-    print('');
-    Future.error("Dummy exception to set exit code.");
-  });
-  return _globalDeclarer;
-}
+// test_core does not support running tests directly, so the Declarer should
+// always be on the Zone.
+Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 
 // TODO(nweiz): This and other top-level functions should throw exceptions if
 // they're called after the declarer has finished declaring.
@@ -250,6 +220,25 @@ void setUp(callback()) => _declarer.setUp(callback);
 /// See also [addTearDown], which adds tear-downs to a running test.
 void tearDown(callback()) => _declarer.tearDown(callback);
 
+/// Registers a function to be run after the current test.
+///
+/// This is called within a running test, and adds a tear-down only for the
+/// current test. It allows testing libraries to add cleanup logic as soon as
+/// there's something to clean up.
+///
+/// The [callback] is run before any callbacks registered with [tearDown]. Like
+/// [tearDown], the most recently registered callback is run first.
+///
+/// If this is called from within a [setUpAll] or [tearDownAll] callback, it
+/// instead runs the function after *all* tests in the current test suite.
+void addTearDown(callback()) {
+  if (Invoker.current == null) {
+    throw StateError("addTearDown() may only be called within a test.");
+  }
+
+  Invoker.current.addTearDown(callback);
+}
+
 /// Registers a function to be run once before all tests.
 ///
 /// [callback] may be asynchronous; if so, it must return a [Future].
@@ -277,3 +266,18 @@ void setUpAll(callback()) => _declarer.setUpAll(callback);
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
 void tearDownAll(callback()) => _declarer.tearDownAll(callback);
+
+/// Registers an exception that was caught for the current test.
+void registerException(error, [StackTrace stackTrace]) {
+  // This will usually forward directly to [Invoker.current.handleError], but
+  // going through the zone API allows other zones to consistently see errors.
+  Zone.current.handleUncaughtError(error, stackTrace);
+}
+
+/// Prints [message] if and when the current test fails.
+///
+/// This is intended for test infrastructure to provide debugging information
+/// without cluttering the output for successful tests. Note that unlike
+/// [print], each individual message passed to [printOnFailure] will be
+/// separated by a blank line.
+void printOnFailure(String message) => Invoker.current.printOnFailure(message);

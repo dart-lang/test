@@ -10,17 +10,18 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../backend/operating_system.dart';
-import '../../backend/platform_selector.dart';
-import '../../frontend/timeout.dart';
+import 'package:test_core/src/backend/operating_system.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/platform_selector.dart'; // ignore: implementation_imports
+import 'package:test_core/src/frontend/timeout.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runtime_selection.dart'; // ignore: implementation_imports
+
 import '../../util/io.dart';
 import '../../utils.dart';
 import '../configuration.dart';
-import '../configuration/suite.dart';
 import 'custom_runtime.dart';
 import 'load.dart' as self;
 import 'reporters.dart';
-import 'runtime_selection.dart';
 import 'runtime_settings.dart';
 
 /// A regular expression matching a Dart identifier.

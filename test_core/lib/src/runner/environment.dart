@@ -33,3 +33,18 @@ abstract class Environment {
   /// elsewhere, the operation should be canceled.
   CancelableOperation displayPause();
 }
+
+/// The default environment for platform plugins.
+class PluginEnvironment implements Environment {
+  final supportsDebugging = false;
+  Stream get onRestart => StreamController.broadcast().stream;
+
+  const PluginEnvironment();
+
+  Uri get observatoryUrl => null;
+
+  Uri get remoteDebuggerUrl => null;
+
+  CancelableOperation displayPause() => throw UnsupportedError(
+      "PluginEnvironment.displayPause is not supported.");
+}

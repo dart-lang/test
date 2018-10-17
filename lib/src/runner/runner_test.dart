@@ -5,16 +5,17 @@
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../backend/group.dart';
-import '../backend/live_test.dart';
-import '../backend/live_test_controller.dart';
-import '../backend/message.dart';
-import '../backend/metadata.dart';
-import '../backend/state.dart';
-import '../backend/suite.dart';
-import '../backend/suite_platform.dart';
-import '../backend/test.dart';
-import '../util/remote_exception.dart';
+import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/live_test_controller.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/message.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/remote_exception.dart'; // ignore: implementation_imports
+
 import '../utils.dart';
 import 'spawn_hybrid.dart';
 

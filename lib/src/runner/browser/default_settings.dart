@@ -4,7 +4,7 @@
 
 import 'dart:collection';
 
-import '../../backend/runtime.dart';
+import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
 import '../executable_settings.dart';
 
 /// Default settings for starting browser executables.
