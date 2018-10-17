@@ -8,16 +8,16 @@ import 'dart:io' show pid;
 
 import 'package:path/path.dart' as p;
 
-import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/group_entry.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_core/src/frontend/expect.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/src/frontend/expect.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 
 import '../configuration.dart';
 import '../engine.dart';

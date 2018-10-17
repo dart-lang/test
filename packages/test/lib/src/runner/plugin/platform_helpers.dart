@@ -8,14 +8,14 @@ import 'dart:io';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/remote_exception.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/environment.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 
 import '../configuration.dart';
 import '../load_exception.dart';

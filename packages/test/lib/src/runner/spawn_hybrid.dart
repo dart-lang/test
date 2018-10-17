@@ -10,7 +10,7 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '../util/dart.dart' as dart;
 
-import 'package:test_core/src/util/remote_exception.dart'; // ignore: implementation_imports
+import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 /// Spawns a hybrid isolate from [url] with the given [message], and returns a
 /// [StreamChannel] that communicates with it.

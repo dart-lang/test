@@ -8,16 +8,16 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
-import 'package:test_core/src/backend/declarer.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/remote_exception.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 import 'suite_channel_manager.dart';
 

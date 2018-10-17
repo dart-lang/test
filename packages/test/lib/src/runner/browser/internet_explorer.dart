@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import '../executable_settings.dart';
 import 'browser.dart';
 import 'default_settings.dart';

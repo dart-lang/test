@@ -5,8 +5,8 @@
 import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_core/src/backend/suite_platform.dart';
 
+import '../backend/suite_platform.dart';
 import 'suite.dart';
 import 'runner_suite.dart';
 import 'environment.dart';

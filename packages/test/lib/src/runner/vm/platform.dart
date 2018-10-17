@@ -12,11 +12,11 @@ import 'package:stream_channel/stream_channel.dart';
 
 import 'package:vm_service_client/vm_service_client.dart';
 
-import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/platform.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 
 import '../../util/dart.dart' as dart;
 import '../plugin/platform_helpers.dart';

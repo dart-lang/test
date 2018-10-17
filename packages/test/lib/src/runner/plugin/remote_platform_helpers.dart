@@ -6,8 +6,8 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
-import 'package:test_core/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
+import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 
 import '../remote_listener.dart';
 import '../suite_channel_manager.dart';

@@ -8,7 +8,7 @@ import "dart:isolate";
 import "package:async/async.dart";
 import "package:stack_trace/stack_trace.dart";
 import "package:stream_channel/stream_channel.dart";
-import "package:test_core/src/util/remote_exception.dart"; // ignore: implementation_imports
+import "package:test_api/src/util/remote_exception.dart"; // ignore: implementation_imports
 
 import "../utils.dart";
 

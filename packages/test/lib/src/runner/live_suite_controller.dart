@@ -7,9 +7,9 @@ import 'dart:async';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 
-import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
 
 import 'live_suite.dart';
 

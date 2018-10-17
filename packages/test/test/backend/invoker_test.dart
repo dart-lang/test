@@ -5,13 +5,13 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
-import 'package:test_core/src/backend/group.dart';
-import 'package:test_core/src/backend/invoker.dart';
-import 'package:test_core/src/backend/live_test.dart';
-import 'package:test_core/src/backend/message.dart';
-import 'package:test_core/src/backend/metadata.dart';
-import 'package:test_core/src/backend/state.dart';
-import 'package:test_core/src/backend/suite.dart';
+import 'package:test_api/src/backend/group.dart';
+import 'package:test_api/src/backend/invoker.dart';
+import 'package:test_api/src/backend/live_test.dart';
+import 'package:test_api/src/backend/message.dart';
+import 'package:test_api/src/backend/metadata.dart';
+import 'package:test_api/src/backend/state.dart';
+import 'package:test_api/src/backend/suite.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

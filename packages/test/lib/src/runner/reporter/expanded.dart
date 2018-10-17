@@ -5,9 +5,9 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:test_core/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/message.dart'; // ignore: implementation_imports
-import 'package:test_core/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 
 import '../../utils.dart';
 import '../engine.dart';

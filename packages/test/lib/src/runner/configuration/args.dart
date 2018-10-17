@@ -7,9 +7,9 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 
-import 'package:test_core/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_core/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runtime_selection.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
+import 'package:test_api/src/runner/runtime_selection.dart'; // ignore: implementation_imports
 import '../configuration.dart';
 import 'reporters.dart';
 import 'values.dart';
