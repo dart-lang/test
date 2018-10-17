@@ -21,7 +21,8 @@ import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_impo
 import 'package:test_core/src/utils.dart'; // ignore: implementation_imports
 
 // Hide implementations which don't support being run directly.
-export 'package:test_core/test.dart' hide test, group, setUp, setUpAll, tearDown, tearDownAll;
+export 'package:test_core/test.dart'
+    hide test, group, setUp, setUpAll, tearDown, tearDownAll;
 
 /// The global declarer.
 ///

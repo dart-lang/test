@@ -9,6 +9,7 @@ env: FORCE_TEST_EXIT=true
 addons:
   chrome: stable
 
+before_script: cd packages/test
 
 jobs:
   include:

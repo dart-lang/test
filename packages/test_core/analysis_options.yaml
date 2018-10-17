@@ -1,0 +1,22 @@
+include: package:pedantic/analysis_options.yaml
+analyzer:
+  strong-mode:
+    implicit-casts: false
+  errors:
+    # Remove noise from workspace diagnostics lists
+    todo: ignore
+    # Upgrade lints to errors that will break Google3
+    unused_element: error
+    unused_import: error
+    unused_local_variable: error
+    dead_code: error
+    ### Useful to uncomment during development to remove the noise of the many
+    ### deprecated APIs.
+    # deprecated_member_use: ignore
+linter:
+  rules:
+    - await_only_futures
+    - implementation_imports
+    - prefer_typing_uninitialized_variables
+    - unnecessary_const
+    - unnecessary_new
