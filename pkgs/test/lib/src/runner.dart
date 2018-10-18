@@ -15,6 +15,7 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'util/io.dart';
 import 'runner/application_exception.dart';
@@ -28,7 +29,6 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
-import 'utils.dart';
 
 final _silentObservatory = const bool.fromEnvironment('SILENT_OBSERVATORY');
 

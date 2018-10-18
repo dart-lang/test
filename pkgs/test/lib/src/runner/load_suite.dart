@@ -16,6 +16,7 @@ import 'package:test_api/src/backend/test.dart'; // ignore: implementation_impor
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import '../../test.dart';
 
@@ -23,7 +24,6 @@ import '../../test.dart';
 import '../util/io_stub.dart'
     // ignore: uri_does_not_exist
     if (dart.library.io) '../util/io.dart';
-import '../utils.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 

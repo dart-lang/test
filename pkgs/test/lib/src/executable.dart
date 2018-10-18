@@ -12,6 +12,7 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'runner.dart';
 import 'runner/application_exception.dart';
@@ -20,7 +21,6 @@ import 'runner/version.dart';
 
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
-import 'utils.dart';
 
 /// A merged stream of all signals that tell the test runner to shut down
 /// gracefully.

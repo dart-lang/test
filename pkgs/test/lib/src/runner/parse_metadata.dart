@@ -12,8 +12,8 @@ import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import '../util/dart.dart';
-import '../utils.dart';
 
 /// Parse the test metadata for the test file at [path].
 ///

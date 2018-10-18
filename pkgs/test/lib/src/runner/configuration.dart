@@ -15,9 +15,9 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
 import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/runner/runtime_selection.dart'; // ignore: implementation_imports
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import '../util/io.dart';
-import '../utils.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/custom_runtime.dart';
 import 'configuration/load.dart';

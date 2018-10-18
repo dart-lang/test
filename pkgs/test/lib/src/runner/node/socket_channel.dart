@@ -7,8 +7,7 @@ library _;
 
 import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
-
-import '../../utils.dart';
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 @JS("require")
 external _Net _require(String module);

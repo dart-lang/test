@@ -15,7 +15,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import '../utils.dart';
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// The default line length for output when there isn't a terminal attached to
 /// stdout.

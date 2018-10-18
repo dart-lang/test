@@ -27,12 +27,12 @@ import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implement
 import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import '../../util/path_handler.dart';
 import '../../util/io.dart';
 import '../../util/one_off_handler.dart';
 import '../../util/stack_trace_mapper.dart';
-import '../../utils.dart';
 import '../compiler_pool.dart';
 import '../configuration.dart';
 import '../executable_settings.dart';

@@ -8,8 +8,8 @@ import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:typed_data/typed_data.dart';
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import '../../utils.dart';
 import '../application_exception.dart';
 
 /// An interface for running browser instances.

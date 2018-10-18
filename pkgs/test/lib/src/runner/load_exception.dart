@@ -6,8 +6,7 @@ import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-
-import '../utils.dart';
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// A regular expression for matching filename annotations in
 /// [IsolateSpawnException] messages.

@@ -15,8 +15,8 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import '../utils.dart';
 import 'spawn_hybrid.dart';
 
 /// A test running remotely, controlled by a stream channel.

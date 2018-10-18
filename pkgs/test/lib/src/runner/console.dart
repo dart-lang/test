@@ -8,7 +8,7 @@ import 'dart:math' as math;
 import 'package:async/async.dart';
 
 import 'package:test/src/util/io.dart';
-import '../utils.dart';
+import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// An interactive console for taking user commands.
 class Console {
