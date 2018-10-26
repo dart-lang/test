@@ -9,7 +9,7 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../test.dart';
+import '../../test_api.dart';
 import '../backend/invoker.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
