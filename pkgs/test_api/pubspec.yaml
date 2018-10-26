@@ -1,5 +1,5 @@
 name: test_api
-version: 0.0.1
+version: 0.1.0
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
