@@ -1,0 +1,10 @@
+dart:
+ - dev
+
+stages:
+    - analyze_and_format:
+      - group:
+        - command: tool/dartfmt_and_analyze.sh
+    - unit_test:
+      - group:
+        - command: pub run test --preset travis

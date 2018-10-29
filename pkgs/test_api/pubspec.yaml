@@ -1,5 +1,5 @@
 name: test_api
-version: 0.1.0
+version: 0.1.0-dev
 author: Dart Team <misc@dartlang.org>
 description: A library for writing dart unit tests.
 homepage: https://github.com/dart-lang/test
@@ -20,3 +20,11 @@ dependencies:
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
   matcher: '>=0.12.3 <0.12.4'
+dev_dependencies:
+  fake_async: '>=0.1.2 <2.0.0'
+  test_descriptor: '^1.0.0'
+  test_process: '^1.0.0'
+  test: '>=0.12.0 <2.0.0'
+dependency_overrides:
+  test:
+    path: ./../test

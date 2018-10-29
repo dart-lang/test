@@ -23,7 +23,7 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 // Hide implementations which don't support being run directly.
 // This file is an almost direct copy of import below, but with the global
 // declarer added.
-export 'package:test_api/test.dart'
+export 'package:test_api/test_api.dart'
     hide test, group, setUp, setUpAll, tearDown, tearDownAll;
 
 /// The global declarer.

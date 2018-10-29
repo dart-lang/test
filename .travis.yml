@@ -1,39 +1,64 @@
+# Created with package:mono_repo v1.2.1
 language: dart
+
+# Custom configuration
 sudo: required
-
-dart:
- - dev
-
-env: FORCE_TEST_EXIT=true
-
 addons:
   chrome: stable
-
-before_script: cd pkgs/test
+env: FORCE_TEST_EXITS=true
 
 jobs:
   include:
     - stage: analyze_and_format
-      script: tool/dartfmt_and_analyze.sh
+      name: "SDK: dev - DIR: pkgs/test - TASKS: tool/dartfmt_and_analyze.sh"
+      script: ./tool/travis.sh command_0
+      env: PKG="pkgs/test"
+      dart: dev
     - stage: unit_test
-      script: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 0
+      name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0"
+      script: ./tool/travis.sh command_1
+      env: PKG="pkgs/test"
+      dart: dev
     - stage: unit_test
-      script: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 1
+      name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 1"
+      script: ./tool/travis.sh command_2
+      env: PKG="pkgs/test"
+      dart: dev
     - stage: unit_test
-      script: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 2
+      name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 2"
+      script: ./tool/travis.sh command_3
+      env: PKG="pkgs/test"
+      dart: dev
     - stage: unit_test
-      script: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 3
+      name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3"
+      script: ./tool/travis.sh command_4
+      env: PKG="pkgs/test"
+      dart: dev
     - stage: unit_test
-      script: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 4
-
-# Only building master means that we don't run two builds for each pull request.
-branches:
-  only: [master, /feature\..*/]
+      name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4"
+      script: ./tool/travis.sh command_5
+      env: PKG="pkgs/test"
+      dart: dev
+    - stage: analyze_and_format
+      name: "SDK: dev - DIR: pkgs/test_api - TASKS: tool/dartfmt_and_analyze.sh"
+      script: ./tool/travis.sh command_0
+      env: PKG="pkgs/test_api"
+      dart: dev
+    - stage: unit_test
+      name: "SDK: dev - DIR: pkgs/test_api - TASKS: pub run test --preset travis"
+      script: ./tool/travis.sh command_6
+      env: PKG="pkgs/test_api"
+      dart: dev
 
 stages:
   - analyze_and_format
   - unit_test
 
+# Only building master means that we don't run two builds for each pull request.
+branches:
+  only:
+    - master
+
 cache:
- directories:
-   - $HOME/.pub-cache
+  directories:
+    - "$HOME/.pub-cache"
