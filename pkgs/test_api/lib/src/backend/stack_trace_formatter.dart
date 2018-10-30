@@ -23,7 +23,7 @@ class StackTraceFormatter {
   StackTraceMapper _mapper;
 
   /// The list of packages to fold when producing terse [Chain]s.
-  var _except = Set<String>.from(['test', 'stream_channel']);
+  var _except = Set<String>.from(['test', 'stream_channel', 'test_api']);
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// terse [Chain]s.

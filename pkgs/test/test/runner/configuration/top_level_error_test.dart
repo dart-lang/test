@@ -352,7 +352,7 @@ void main() {
       expect(test.stderr,
           containsInOrder(['Invalid path: Invalid character', "^^^^^^^^^"]));
       await test.shouldExit(exit_codes.data);
-    });
+    }, skip: 'Broken by sdk#34988');
   });
 
   group("filename", () {
