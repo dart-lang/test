@@ -1,8 +1,8 @@
 name: test_api
-version: 0.1.0-dev
+version: 0.1.1
 author: Dart Team <misc@dartlang.org>
-description: A library for writing dart unit tests.
-homepage: https://github.com/dart-lang/test
+description: A library for writing Dart tests with extensions to provide a custom runner.
+homepage: https://github.com/dart-lang/test/pkgs/test_api
 environment:
   sdk: '>=2.0.0 <3.0.0'
 dependencies:
