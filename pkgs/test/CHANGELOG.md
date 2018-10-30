@@ -593,7 +593,7 @@
 * Add a `pause_after_load` field to the package configuration file. This allows
   presets to enable debugging mode.
 
-[global config]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#global-configuration
+[global config]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#global-configuration
 
 ## 0.12.12
 
@@ -612,7 +612,7 @@
   the `test` executable itself is running on iOS, not when it's running browser
   tests on an iOS browser.
 
-[test presets]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuration-presets
+[test presets]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/package_config.md#configuration-presets
 
 ## 0.12.11+2
 
@@ -704,7 +704,7 @@
 
 * Skipped groups now properly print skip messages.
 
-[json-protocol]: https://github.com/dart-lang/test/blob/master/json_reporter.md
+[json-protocol]: https://github.com/dart-lang/test/blob/master/pkgs/test/json_reporter.md
 
 ## 0.12.5+2
 
