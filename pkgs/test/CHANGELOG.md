@@ -1,3 +1,7 @@
+## 1.4.0
+
+* Depend on `package:test_api` for core functionality. 
+
 ## 1.3.4
 
 * Allow remote_listener to be closed and sent an event on close.
