@@ -5,7 +5,7 @@ language: dart
 sudo: required
 addons:
   chrome: stable
-env: FORCE_TEST_EXITS=true
+env: FORCE_TEST_EXIT=true
 
 jobs:
   include:
