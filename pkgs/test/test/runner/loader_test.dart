@@ -34,7 +34,7 @@ void main() {
 
 void main() {
   setUp(() async {
-    _loader = Loader(root: d.sandbox);
+    _loader = Loader();
   });
 
   tearDown(() => _loader.close());

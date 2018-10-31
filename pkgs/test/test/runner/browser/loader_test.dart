@@ -36,7 +36,7 @@ void main() {
       Runtime.chrome,
     ], () => BrowserPlatform.start(root: d.sandbox));
 
-    _loader = Loader(root: d.sandbox);
+    _loader = Loader();
 
     await d.file('a_test.dart', """
       import 'dart:async';

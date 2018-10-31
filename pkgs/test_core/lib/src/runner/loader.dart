@@ -65,26 +65,12 @@ class Loader {
 
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
-  ///
-  /// [root] is the root directory that will be served for browser tests. It
-  /// defaults to the working directory.
-  ///
-  /// The [plugins] register [PlatformPlugin]s that are associated with the
-  /// provided runtimes. When the runner first requests that a suite be loaded
-  /// for one of the given runtimes, the lodaer will call the associated
-  /// callback to load the platform plugin. That plugin is then preserved and
-  /// used to load all suites for all matching runtimes. Platform plugins may
-  /// override built-in runtimes.
-  Loader(
-      {String root,
-      Map<Iterable<Runtime>, FutureOr<PlatformPlugin> Function()> plugins}) {
+  Loader() {
     _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
     });
-
-    plugins?.forEach(_registerPlatformPlugin);
 
     _registerCustomRuntimes();
 
