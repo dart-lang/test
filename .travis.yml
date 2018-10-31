@@ -5,7 +5,6 @@ language: dart
 sudo: required
 addons:
   chrome: stable
-env: FORCE_TEST_EXIT=true
 
 jobs:
   include:
@@ -32,7 +31,7 @@ jobs:
     - stage: unit_test
       name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3"
       script: ./tool/travis.sh command_3
-      env: PKG="pkgs/test"
+      env: PKG="pkgs/test" FORCE_TEST_EXIT=true
       dart: dev
     - stage: unit_test
       name: "SDK: dev - DIR: pkgs/test - TASKS: xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4"
