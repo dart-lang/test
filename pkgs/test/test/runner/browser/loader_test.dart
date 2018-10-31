@@ -12,11 +12,13 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/test.dart';
-import 'package:test_api/src/runner/runner_suite.dart';
-import 'package:test_api/src/runner/runtime_selection.dart';
-import 'package:test_api/src/runner/suite.dart';
-import 'package:test/src/runner/loader.dart';
-import 'package:test/src/runner/runner_test.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/runtime_selection.dart';
+import 'package:test_core/src/runner/suite.dart';
+import 'package:test_core/src/runner/loader.dart';
+import 'package:test_core/src/runner/runner_test.dart';
+import 'package:test_core/src/runner/hack_register_platform.dart';
+import 'package:test/src/runner/browser/platform.dart';
 import 'package:test/test.dart';
 
 import '../../utils.dart';
@@ -29,6 +31,11 @@ final _chrome =
 
 void main() {
   setUp(() async {
+    // The default loader doesn't have the browser extension to register it.
+    registerPlatformPlugin([
+      Runtime.chrome,
+    ], () => BrowserPlatform.start(root: d.sandbox));
+
     _loader = Loader(root: d.sandbox);
 
     await d.file('a_test.dart', """

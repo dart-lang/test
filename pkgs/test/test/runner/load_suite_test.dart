@@ -9,10 +9,10 @@ import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/test.dart';
 import 'package:test_api/src/backend/runtime.dart';
-import 'package:test_api/src/runner/suite.dart';
-import 'package:test/src/runner/load_exception.dart';
-import 'package:test/src/runner/load_suite.dart';
-import 'package:test_api/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/suite.dart';
+import 'package:test_core/src/runner/load_exception.dart';
+import 'package:test_core/src/runner/load_suite.dart';
+import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

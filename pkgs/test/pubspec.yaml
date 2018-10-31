@@ -41,8 +41,9 @@ dependencies:
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
   matcher: '>=0.12.3 <0.12.4'
-  # Use an exact version until the test_api package is stable.
+  # Use an exact version until the test_api and test_core package are stable.
   test_api: '0.1.1'
+  test_core: '0.1.0'
 dev_dependencies:
   fake_async: '>=0.1.2 <2.0.0'
   pedantic: '1.1.0'
@@ -52,3 +53,5 @@ dev_dependencies:
 dependency_overrides:
   test_api:
     path: ./../test_api
+  test_core:
+    path: ./../test_core

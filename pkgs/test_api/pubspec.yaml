@@ -1,7 +1,7 @@
 name: test_api
 version: 0.1.1
 author: Dart Team <misc@dartlang.org>
-description: A library for writing Dart tests with extensions to provide a custom runner.
+description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/pkgs/test_api
 environment:
   sdk: '>=2.0.0 <3.0.0'
@@ -24,7 +24,10 @@ dev_dependencies:
   fake_async: '>=0.1.2 <2.0.0'
   test_descriptor: '^1.0.0'
   test_process: '^1.0.0'
-  test: '>=0.12.0 <2.0.0'
+  test: '>=0.1.0 <2.0.0'
+  test_core: '>=0.1.0 <2.0.0'
 dependency_overrides:
   test:
     path: ./../test
+  test_core:
+    path: ./../test_core

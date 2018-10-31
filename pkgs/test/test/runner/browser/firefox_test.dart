@@ -8,7 +8,7 @@
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/runner/browser/firefox.dart';
-import 'package:test/src/runner/executable_settings.dart';
+import 'package:test_core/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
 
 import '../../io.dart';

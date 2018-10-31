@@ -10,9 +10,9 @@ import 'package:test/test.dart';
 import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
-import 'package:test/src/runner/parse_metadata.dart';
+import 'package:test_core/src/runner/parse_metadata.dart';
 
-import 'package:test/src/util/io.dart';
+import 'package:test_core/src/util/io.dart';
 
 String _sandbox;
 String _path;

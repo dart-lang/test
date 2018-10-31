@@ -9,10 +9,12 @@ import 'package:path/path.dart' as p;
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
-import '../application_exception.dart';
-import '../executable_settings.dart';
-import '../../util/io.dart';
+import 'package:test_core/src/util/exit_codes.dart' // ignore: implementation_imports
+    as exit_codes;
+import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/executable_settings.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+
 import 'browser.dart';
 import 'default_settings.dart';
 

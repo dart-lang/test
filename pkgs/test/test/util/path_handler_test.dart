@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:shelf/shelf.dart' as shelf;
-import 'package:test/src/util/path_handler.dart';
+import 'package:test_core/src/util/path_handler.dart';
 import 'package:test/test.dart';
 
 void main() {

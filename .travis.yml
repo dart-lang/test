@@ -49,6 +49,11 @@ jobs:
       script: ./tool/travis.sh command_5
       env: PKG="pkgs/test_api"
       dart: dev
+    - stage: analyze_and_format
+      name: "SDK: dev - DIR: pkgs/test_core - TASKS: [dartfmt -n --set-exit-if-changed ., dartanalyzer --fatal-infos --fatal-warnings .]"
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="pkgs/test_core"
+      dart: dev
 
 stages:
   - analyze_and_format
