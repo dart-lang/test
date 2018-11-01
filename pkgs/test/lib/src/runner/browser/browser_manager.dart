@@ -17,10 +17,10 @@ import 'package:test_core/src/runner/environment.dart'; // ignore: implementatio
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/executable_settings.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
+import '../executable_settings.dart';
 import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';

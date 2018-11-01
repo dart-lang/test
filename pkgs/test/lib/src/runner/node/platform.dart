@@ -27,11 +27,12 @@ import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implemen
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/executable_settings.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
+
+import '../executable_settings.dart';
 
 /// The first Dart SDK version where `--categories=Server` disables `dart:html`
 /// rather than disabling all JS-specific libraries.

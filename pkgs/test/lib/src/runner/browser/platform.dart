@@ -29,16 +29,16 @@ import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_i
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 
-import 'package:test_core/src/util/path_handler.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/one_off_handler.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/executable_settings.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 
+import '../executable_settings.dart';
+import '../util/path_handler.dart';
+import '../util/one_off_handler.dart';
 import 'browser_manager.dart';
 import 'default_settings.dart';
 
