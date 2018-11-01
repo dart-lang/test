@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:shelf/shelf.dart' as shelf;
-import 'package:test_core/src/util/one_off_handler.dart';
+import 'package:test/src/util/one_off_handler.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -37,8 +37,8 @@ import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementa
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
-import '../util/path_handler.dart';
-import '../util/one_off_handler.dart';
+import '../../util/path_handler.dart';
+import '../../util/one_off_handler.dart';
 import 'browser_manager.dart';
 import 'default_settings.dart';
 
