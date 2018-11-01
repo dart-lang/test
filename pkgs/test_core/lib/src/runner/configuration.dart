@@ -13,11 +13,11 @@ import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runtime_selection.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import '../util/io.dart';
+import 'suite.dart';
+import 'runtime_selection.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/custom_runtime.dart';
 import 'configuration/load.dart';

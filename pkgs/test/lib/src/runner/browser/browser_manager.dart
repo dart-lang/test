@@ -12,15 +12,15 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/environment.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 
-import '../application_exception.dart';
+import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+
 import '../executable_settings.dart';
-import '../plugin/platform_helpers.dart';
-import '../../util/io.dart';
-
 import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';

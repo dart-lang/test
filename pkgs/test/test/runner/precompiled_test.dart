@@ -12,7 +12,7 @@ import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
-import 'package:test/src/util/io.dart';
+import 'package:test_core/src/util/io.dart';
 import 'package:test/test.dart';
 
 import '../io.dart';
@@ -23,7 +23,7 @@ void main() {
       await d.file("to_precompile.dart", """
         import "package:stream_channel/stream_channel.dart";
 
-        import "package:test/src/runner/plugin/remote_platform_helpers.dart";
+        import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
         import "package:test/src/runner/browser/post_message_channel.dart";
         import "package:test/test.dart";
 

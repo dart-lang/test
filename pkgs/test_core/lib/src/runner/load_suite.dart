@@ -14,11 +14,12 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import '../../test.dart';
+import 'runner_suite.dart';
+import 'suite.dart';
+
+import '../../test_core.dart';
 
 // ignore: uri_does_not_exist
 import '../util/io_stub.dart'

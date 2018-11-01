@@ -11,7 +11,7 @@ import 'package:test_process/test_process.dart';
 
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test/src/runner/browser/default_settings.dart';
-import 'package:test/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
 
 import '../../io.dart';

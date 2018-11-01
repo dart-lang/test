@@ -5,7 +5,7 @@
 import 'dart:collection';
 import 'dart:io';
 
-import 'package:test/src/util/io.dart';
+import '../../util/io.dart';
 import '../configuration.dart';
 import '../engine.dart';
 import '../reporter.dart';

@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test/src/runner/engine.dart';
+import 'package:test_core/src/runner/engine.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

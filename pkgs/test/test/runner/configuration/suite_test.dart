@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 
 import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
-import 'package:test_api/src/runner/runtime_selection.dart';
-import 'package:test_api/src/runner/suite.dart';
+import 'package:test_core/src/runner/runtime_selection.dart';
+import 'package:test_core/src/runner/suite.dart';
 
 void main() {
   group("merge", () {

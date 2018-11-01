@@ -9,8 +9,8 @@ import 'package:collection/collection.dart';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
 
+import 'runner_suite.dart';
 import 'live_suite.dart';
 
 /// An implementation of [LiveSuite] that's controlled by a

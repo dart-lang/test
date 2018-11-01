@@ -18,21 +18,21 @@ import 'package:yaml/yaml.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 
-import '../../util/io.dart';
-import '../../util/stack_trace_mapper.dart';
-import '../application_exception.dart';
-import '../compiler_pool.dart';
-import '../configuration.dart';
 import '../executable_settings.dart';
-import '../load_exception.dart';
-import '../plugin/customizable_platform.dart';
-import '../plugin/environment.dart';
-import '../plugin/platform_helpers.dart';
 
 /// The first Dart SDK version where `--categories=Server` disables `dart:html`
 /// rather than disabling all JS-specific libraries.

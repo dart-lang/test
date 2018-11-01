@@ -8,7 +8,7 @@
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/test.dart';
-import 'package:test/src/util/io.dart';
+import 'package:test_core/src/util/io.dart';
 
 import '../../io.dart';
 

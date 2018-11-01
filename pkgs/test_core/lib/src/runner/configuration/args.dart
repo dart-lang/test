@@ -9,7 +9,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runtime_selection.dart'; // ignore: implementation_imports
+import '../runtime_selection.dart';
 import '../configuration.dart';
 import 'reporters.dart';
 import 'values.dart';

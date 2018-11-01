@@ -7,10 +7,11 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../backend/group.dart';
-import '../backend/suite.dart';
-import '../backend/suite_platform.dart';
-import '../backend/test.dart';
+import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
+
 import 'suite.dart';
 import 'environment.dart';
 

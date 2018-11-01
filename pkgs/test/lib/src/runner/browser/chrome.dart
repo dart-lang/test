@@ -6,10 +6,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import '../../util/io.dart';
-import '../executable_settings.dart';
+import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'browser.dart';
 import 'default_settings.dart';
+import '../executable_settings.dart';
 
 // TODO(nweiz): move this into its own package?
 /// A class for running an instance of Chrome.

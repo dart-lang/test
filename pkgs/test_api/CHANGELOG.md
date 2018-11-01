@@ -1,3 +1,8 @@
+## 0.2.0
+
+* Remove "runner" extensions. 
+
+
 ## 0.1.1
 
 * Update `stack_trace_formatter` to fold `test_api` frames by default. 

@@ -7,7 +7,8 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
+
+import 'runner_suite.dart';
 
 /// A view of the execution of a test suite.
 ///

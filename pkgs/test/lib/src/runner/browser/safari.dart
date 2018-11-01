@@ -9,10 +9,11 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import '../../util/io.dart';
-import '../executable_settings.dart';
+import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+
 import 'browser.dart';
 import 'default_settings.dart';
+import '../executable_settings.dart';
 
 /// A class for running an instance of Safari.
 ///

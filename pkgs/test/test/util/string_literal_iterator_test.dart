@@ -5,7 +5,7 @@
 @TestOn("vm")
 import 'package:analyzer/analyzer.dart';
 import 'package:test/test.dart';
-import 'package:test/src/util/string_literal_iterator.dart';
+import 'package:test_core/src/util/string_literal_iterator.dart';
 
 final _offset = "final str = ".length;
 

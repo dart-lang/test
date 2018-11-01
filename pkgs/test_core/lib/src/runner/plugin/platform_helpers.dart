@@ -13,10 +13,10 @@ import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_i
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/environment.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 
+import '../runner_suite.dart';
+import '../environment.dart';
+import '../suite.dart';
 import '../configuration.dart';
 import '../load_exception.dart';
 import '../runner_test.dart';

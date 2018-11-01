@@ -11,7 +11,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-import 'package:test/src/runner/version.dart';
+import 'package:test_core/src/runner/version.dart';
 import 'package:test/test.dart';
 
 import '../io.dart';

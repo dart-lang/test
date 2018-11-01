@@ -24,7 +24,7 @@ StreamChannel spawnHybridUri(String url, Object message) {
     var onExitPort = ReceivePort();
     try {
       var code = """
-        import "package:test/src/runner/hybrid_listener.dart";
+        import "package:test_core/src/runner/hybrid_listener.dart";
 
         import "${url.replaceAll(r'$', '%24')}" as lib;
 

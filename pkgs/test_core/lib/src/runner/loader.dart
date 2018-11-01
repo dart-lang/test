@@ -14,21 +14,18 @@ import 'package:yaml/yaml.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/hack_register_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
 
-import '../util/io.dart';
-import 'browser/platform.dart';
+import 'hack_register_platform.dart';
+import 'platform.dart';
+import 'runner_suite.dart';
+import 'suite.dart';
 import 'configuration.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
-import 'node/platform.dart';
 import 'parse_metadata.dart';
 import 'plugin/customizable_platform.dart';
 import 'plugin/environment.dart';
-import 'vm/platform.dart';
+import '../util/io.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
@@ -67,34 +64,10 @@ class Loader {
 
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
-  ///
-  /// [root] is the root directory that will be served for browser tests. It
-  /// defaults to the working directory.
-  ///
-  /// The [plugins] register [PlatformPlugin]s that are associated with the
-  /// provided runtimes. When the runner first requests that a suite be loaded
-  /// for one of the given runtimes, the lodaer will call the associated
-  /// callback to load the platform plugin. That plugin is then preserved and
-  /// used to load all suites for all matching runtimes. Platform plugins may
-  /// override built-in runtimes.
-  Loader(
-      {String root,
-      Map<Iterable<Runtime>, FutureOr<PlatformPlugin> Function()> plugins}) {
-    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
-    _registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
-    _registerPlatformPlugin([
-      Runtime.chrome,
-      Runtime.phantomJS,
-      Runtime.firefox,
-      Runtime.safari,
-      Runtime.internetExplorer
-    ], () => BrowserPlatform.start(root: root));
-
+  Loader() {
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
     });
-
-    plugins?.forEach(_registerPlatformPlugin);
 
     _registerCustomRuntimes();
 

@@ -13,10 +13,10 @@ import 'package:yaml/yaml.dart';
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/runner/runtime_selection.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
+import '../suite.dart';
+import '../runtime_selection.dart';
 import '../../util/io.dart';
 import '../configuration.dart';
 import 'custom_runtime.dart';
