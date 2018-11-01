@@ -19,14 +19,13 @@ import 'hack_register_platform.dart';
 import 'platform.dart';
 import 'runner_suite.dart';
 import 'suite.dart';
-import '../util/io.dart';
 import 'configuration.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
 import 'parse_metadata.dart';
 import 'plugin/customizable_platform.dart';
 import 'plugin/environment.dart';
-import 'vm/platform.dart';
+import '../util/io.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
@@ -66,8 +65,6 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
-    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
-
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
     });

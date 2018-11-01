@@ -14,15 +14,15 @@ import 'package:vm_service_client/vm_service_client.dart';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-
-import '../platform.dart';
-import '../runner_suite.dart';
-import '../suite.dart';
-import '../../util/dart.dart' as dart;
-import '../plugin/platform_helpers.dart';
-import '../plugin/environment.dart';
-import '../configuration.dart';
-import '../load_exception.dart';
+import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/dart.dart' // ignore: implementation_imports
+    as dart;
+import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -115,7 +115,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
     import "package:stream_channel/stream_channel.dart";
 
     import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
-    import "package:test_core/src/runner/vm/catch_isolate_errors.dart";
+    import "package:test/src/runner/vm/catch_isolate_errors.dart";
 
     import "${p.toUri(p.absolute(path))}" as test;
 

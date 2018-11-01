@@ -8,8 +8,10 @@ import 'package:test_core/src/runner/hack_register_platform.dart'; // ignore: im
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'runner/node/platform.dart';
 import 'runner/browser/platform.dart';
+import 'runner/vm/platform.dart';
 
 main(List<String> args) async {
+  registerPlatformPlugin([Runtime.vm], () => VMPlatform());
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
   registerPlatformPlugin([
     Runtime.chrome,

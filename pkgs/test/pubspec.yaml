@@ -25,6 +25,7 @@ dependencies:
   stack_trace: '^1.9.0'
   stream_channel: '^1.6.0'
   typed_data: '^1.0.0'
+  vm_service_client: '^0.2.3'
   web_socket_channel: '^1.0.0'
   yaml: '^2.0.0'
 

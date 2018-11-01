@@ -19,6 +19,7 @@ import 'package:test_core/src/runner/loader.dart';
 import 'package:test_core/src/runner/runner_test.dart';
 import 'package:test_core/src/runner/hack_register_platform.dart';
 import 'package:test/src/runner/browser/platform.dart';
+import 'package:test/src/runner/vm/platform.dart';
 import 'package:test/test.dart';
 
 import '../../utils.dart';
@@ -31,7 +32,8 @@ final _chrome =
 
 void main() {
   setUp(() async {
-    // The default loader doesn't have the browser extension to register it.
+    // The default loader doesn't have the platforms registered.
+    registerPlatformPlugin([Runtime.vm], () => VMPlatform());
     registerPlatformPlugin([
       Runtime.chrome,
     ], () => BrowserPlatform.start(root: d.sandbox));
