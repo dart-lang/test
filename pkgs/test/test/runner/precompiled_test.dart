@@ -168,7 +168,7 @@ void main() {
         """),
         d.file("test.dart.vm_test.dart", """
           import "dart:isolate";
-          import "package:test/src/bootstrap/vm.dart";
+          import "package:test_core/src/bootstrap/vm.dart";
           import "test.dart" as test;
           void main(_, SendPort message) {
             internalBootstrapVmTest(() => test.main, message);
