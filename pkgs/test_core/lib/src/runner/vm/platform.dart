@@ -115,7 +115,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
     import "package:stream_channel/stream_channel.dart";
 
     import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
-    import "package:test/src/runner/vm/catch_isolate_errors.dart";
+    import "package:test_core/src/runner/vm/catch_isolate_errors.dart";
 
     import "${p.toUri(p.absolute(path))}" as test;
 

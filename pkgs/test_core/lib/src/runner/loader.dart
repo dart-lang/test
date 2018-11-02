@@ -25,6 +25,7 @@ import 'load_suite.dart';
 import 'parse_metadata.dart';
 import 'plugin/customizable_platform.dart';
 import 'plugin/environment.dart';
+import 'vm/platform.dart';
 import '../util/io.dart';
 
 /// A class for finding test files and loading them into a runnable form.
@@ -65,6 +66,8 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
+    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
+
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
     });

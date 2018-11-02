@@ -12,6 +12,7 @@ dependencies:
   boolean_selector: '^1.0.0'
   collection: '^1.8.0'
   glob: '^1.0.0'
+  io: '^0.3.0'
   meta: '^1.1.5'
   package_resolver: '^1.0.0'
   path: '^1.2.0'
@@ -23,6 +24,7 @@ dependencies:
   stack_trace: '^1.9.0'
   stream_channel: '^1.6.0'
   term_glyph: '^1.0.0'
+  vm_service_client: '^0.2.3'
   yaml: '^2.0.0'
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
