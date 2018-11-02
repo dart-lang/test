@@ -12,6 +12,7 @@ dependencies:
   boolean_selector: '^1.0.0'
   collection: '^1.8.0'
   glob: '^1.0.0'
+  io: '^0.3.0'
   meta: '^1.1.5'
   package_resolver: '^1.0.0'
   path: '^1.2.0'

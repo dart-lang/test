@@ -14,8 +14,6 @@ import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/runner/loader.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test_core/src/runner/runner_test.dart';
-import 'package:test_core/src/runner/hack_register_platform.dart';
-import 'package:test/src/runner/vm/platform.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -36,9 +34,6 @@ void main() {
 
 void main() {
   setUp(() async {
-    // The default loader doesn't have the vm extension to register it.
-    registerPlatformPlugin([Runtime.vm], () => VMPlatform());
-
     _loader = Loader();
   });
 
