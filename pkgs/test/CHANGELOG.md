@@ -1,3 +1,7 @@
+## 1.5.1
+
+* Depend on latest `test_core` and `test_api`.
+
 ## 1.5.0
 
 * Depend on `package:test_core` for core functionality. 
