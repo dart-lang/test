@@ -2,7 +2,7 @@ name: test_api
 version: 0.2.1
 author: Dart Team <misc@dartlang.org>
 description: A library for writing Dart tests.
-homepage: https://github.com/dart-lang/test/pkgs/test_api
+homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 environment:
   sdk: '>=2.0.0 <3.0.0'
 dependencies:

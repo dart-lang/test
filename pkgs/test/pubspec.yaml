@@ -2,7 +2,7 @@ name: test
 version: 1.5.1
 author: Dart Team <misc@dartlang.org>
 description: A full featured library for writing and running Dart tests.
-homepage: https://github.com/dart-lang/test/pkgs/test
+homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 environment:
   sdk: '>=2.0.0 <3.0.0'
 dependencies:
