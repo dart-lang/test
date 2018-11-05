@@ -1,5 +1,5 @@
 name: test_core
-version: 0.1.0
+version: 0.2.0
 author: Dart Team <misc@dartlang.org>
 description: A basic library for writing tests and running them on the VM.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_core
@@ -23,7 +23,6 @@ dependencies:
   source_span: '^1.4.0'
   stack_trace: '^1.9.0'
   stream_channel: '^1.6.0'
-  term_glyph: '^1.0.0'
   vm_service_client: '^0.2.3'
   yaml: '^2.0.0'
   # Use a tight version constraint to ensure that a constraint on matcher

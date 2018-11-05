@@ -9,8 +9,8 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 
-import '../remote_listener.dart';
-import '../suite_channel_manager.dart';
+import 'package:test_api/src/remote_listener.dart'; // ignore: implementation_imports
+import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementation_imports
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].
