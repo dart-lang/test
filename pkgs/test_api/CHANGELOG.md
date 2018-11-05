@@ -1,3 +1,8 @@
+## 0.2.1
+
+* Add `remote_listener.dart` and `suite_channel_manager.dart`. 
+
+
 ## 0.2.0
 
 * Remove "runner" extensions. 
