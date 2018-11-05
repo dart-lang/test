@@ -1,6 +1,6 @@
 ## 0.2.0
 
-* Remote `remote_listener.dart` and `suite_channel_manager.dart` from runner
+* Remove `remote_listener.dart` and `suite_channel_manager.dart` from runner
   and depend on them from `test_api`. 
 
 
