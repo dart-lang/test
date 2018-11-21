@@ -557,7 +557,7 @@ cares about the platform the *test* is running on (like the
 [`@OnPlatform` annotation][@OnPlatform]). It sets configuration for particular
 tests that are running on matching platforms.
 
-[@OnPlatform]: https://github.com/dart-lang/test/blob/master/README.md#platform-specific-configuration
+[@OnPlatform]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-specific-configuration
 
 ### `on_os`
 

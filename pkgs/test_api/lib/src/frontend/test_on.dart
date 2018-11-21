@@ -6,7 +6,7 @@
 ///
 /// For the full syntax of [expression], see [the README][].
 ///
-/// [the README]: https://github.com/dart-lang/test/#platform-selector-syntax
+/// [the README]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-selectors
 class TestOn {
   /// The expression specifying the platform.
   final String expression;

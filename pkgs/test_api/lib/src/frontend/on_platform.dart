@@ -6,7 +6,7 @@
 ///
 /// See [the README][onPlatform].
 ///
-/// [onPlatform]: https://github.com/dart-lang/test/blob/master/README.md#platform-specific-configuration
+/// [onPlatform]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-specific-configuration
 class OnPlatform {
   final Map<String, dynamic> annotationsByPlatform;
 
