@@ -78,7 +78,7 @@ Declarer get _declarer {
 /// [group]s. If [testOn] is passed, it's parsed as a [platform selector][]; the
 /// test will only be run on matching platforms.
 ///
-/// [platform selector]: https://github.com/dart-lang/test/#platform-selector-syntax
+/// [platform selector]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-selectors
 ///
 /// If [timeout] is passed, it's used to modify or replace the default timeout
 /// of 30 seconds. Timeout modifications take precedence in suite-group-test
@@ -158,7 +158,7 @@ void test(description, body(),
 /// If [testOn] is passed, it's parsed as a [platform selector][]; the test will
 /// only be run on matching platforms.
 ///
-/// [platform selector]: https://github.com/dart-lang/test/#platform-selector-syntax
+/// [platform selector]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-selectors
 ///
 /// If [timeout] is passed, it's used to modify or replace the default timeout
 /// of 30 seconds. Timeout modifications take precedence in suite-group-test
