@@ -31,7 +31,7 @@ dependencies:
   yaml: '^2.0.0'
   # Use an exact version until the test_api and test_core package are stable.
   test_api: '0.2.1'
-  test_core: '0.2.0'
+  test_core: '0.2.0+1'
 dev_dependencies:
   fake_async: '>=0.1.2 <2.0.0'
   pedantic: '1.1.0'
