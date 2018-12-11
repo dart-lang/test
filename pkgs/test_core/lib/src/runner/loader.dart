@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
+// ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart' hide Configuration;
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;

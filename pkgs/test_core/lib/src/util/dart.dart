@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+// ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart';
 import 'package:package_resolver/package_resolver.dart';
 import 'package:source_span/source_span.dart';

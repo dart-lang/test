@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+// ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:path/path.dart' as p;
