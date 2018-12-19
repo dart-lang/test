@@ -137,7 +137,7 @@ This field controls whether or not tests are skipped. It's usually applied to
 `skip` parameter for [`test()`][test], it can either be a boolean indicating
 whether the tests are skipped or a string indicating the reason they're skipped.
 
-[test]: https://www.dartdocs.org/documentation/test/0.12.10+2/test/test.html
+[test]: https://pub.dartlang.org/documentation/test_api/latest/test_api/test.html
 
 ```yaml
 tags:
