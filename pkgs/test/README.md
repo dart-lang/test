@@ -23,11 +23,11 @@
 
 ## Writing Tests
 
-Tests are specified using the top-level [`test()`][test] function, and test
-assertions are made using [`expect()`][expect]:
+Tests are specified using the top-level [`test()`] function, and test assertions
+are made using [`expect()`]:
 
-[test]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_test
-[expect]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expect
+[`test()`]: https://pub.dartlang.org/documentation/test_core/latest/test_core/test.html
+[`expect()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/expect.html
 
 ```dart
 import "package:test/test.dart";
@@ -45,10 +45,10 @@ void main() {
 }
 ```
 
-Tests can be grouped together using the [`group()`][group] function. Each
-group's description is added to the beginning of its test's descriptions.
+Tests can be grouped together using the [`group()`] function. Each group's
+description is added to the beginning of its test's descriptions.
 
-[group]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_group
+[`group()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/group.html
 
 ```dart
 import "package:test/test.dart";
@@ -78,10 +78,10 @@ void main() {
 }
 ```
 
-Any matchers from the [`matcher`][matcher] package can be used with `expect()`
-to do complex validations:
+Any matchers from the [`matcher`] package can be used with `expect()` to do
+complex validations:
 
-[matcher]: http://www.dartdocs.org/documentation/matcher/latest/index.html#matcher/matcher
+[`matcher`]: https://pub.dartlang.org/documentation/matcher/latest/matcher/matcher-library.html
 
 ```dart
 import "package:test/test.dart";
@@ -97,10 +97,10 @@ void main() {
 }
 ```
 
-You can use the [`setUp()`][setUp] and [`tearDown()`][tearDown] functions to
-share code between tests. The `setUp()` callback will run before every test in a
-group or test suite, and `tearDown()` will run after. `tearDown()` will run even
-if a test fails, to ensure that it has a chance to clean up after itself.
+You can use the [`setUp()`] and [`tearDown()`] functions to share code between
+tests. The `setUp()` callback will run before every test in a group or test
+suite, and `tearDown()` will run after. `tearDown()` will run even if a test
+fails, to ensure that it has a chance to clean up after itself.
 
 ```dart
 import "package:test/test.dart";
@@ -123,8 +123,8 @@ void main() {
 }
 ```
 
-[setUp]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_setUp
-[tearDown]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_tearDown
+[`setUp()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/setUp.html
+[`tearDown()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/tearDown.html
 
 ## Running Tests
 
@@ -162,9 +162,9 @@ path/to/test.dart`.
 Some test files only make sense to run on particular platforms. They may use
 `dart:html` or `dart:io`, they might test Windows' particular filesystem
 behavior, or they might use a feature that's only available in Chrome. The
-[`@TestOn`][TestOn] annotation makes it easy to declare exactly which platforms
-a test file should run on. Just put it at the top of your file, before any
-`library` or `import` declarations:
+[`@TestOn`] annotation makes it easy to declare exactly which platforms a test
+file should run on. Just put it at the top of your file, before any `library` or
+`import` declarations:
 
 ```dart
 @TestOn("vm")
@@ -178,7 +178,7 @@ void main() {
 }
 ```
 
-[TestOn]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test.TestOn
+[`@TestOn`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/TestOn-class.html
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
@@ -186,20 +186,18 @@ name of a platform, or a more complex Dart-like boolean expression involving
 these platform names.
 
 You can also declare that your entire package only works on certain platforms by
-adding a [`test_on` field][test_on] to your package config file.
+adding a [`test_on` field] to your package config file.
 
-[test_on]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#test_on
+[`test_on` field]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#test_on
 
 ### Platform Selectors
 
-Platform selectors use the [boolean selector syntax][] defined in the
-[`boolean_selector` package][boolean_selector], which is a subset of Dart's
-expression syntax that only supports boolean operations. The following
-identifiers are defined:
+Platform selectors use the [boolean selector syntax] defined in the
+[`boolean_selector`] package, which is a subset of Dart's expression syntax that
+only supports boolean operations. The following identifiers are defined:
 
 [boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
-
-[boolean_selector]: https://pub.dartlang.org/packages/boolean_selector
+[`boolean_selector`]: https://pub.dartlang.org/packages/boolean_selector
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
@@ -253,13 +251,13 @@ write `@TestOn("browser && !chrome")`.
 ### Running Tests on Node.js
 
 The test runner also supports compiling tests to JavaScript and running them on
-[Node.js][] by passing `--platform node`. Note that Node has access to *neither*
+[Node.js] by passing `--platform node`. Note that Node has access to *neither*
 `dart:html` nor `dart:io`, so any platform-specific APIs will have to be invoked
-using [the `js` package][js]. However, it may be useful when testing APIs
-that are meant to be used by JavaScript code.
+using the [`js`] package. However, it may be useful when testing APIs that are
+meant to be used by JavaScript code.
 
 [Node.js]: https://nodejs.org/en/
-[js]: https://pub.dartlang.org/packages/js
+[`js`]: https://pub.dartlang.org/packages/js
 
 The test runner looks for an executable named `node` (on Mac OS or Linux) or
 `node.exe` (on Windows) on your system path. When compiling Node.js tests, it
@@ -292,11 +290,11 @@ void main() {
 ```
 
 There are also a number of useful functions and matchers for more advanced
-asynchrony. The [`completion()`][completion] matcher can be used to test
-`Futures`; it ensures that the test doesn't finish until the `Future` completes,
-and runs a matcher against that `Future`'s value.
+asynchrony. The [`completion()`] matcher can be used to test `Futures`; it
+ensures that the test doesn't finish until the `Future` completes, and runs a
+matcher against that `Future`'s value.
 
-[completion]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_completion
+[`completion()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/completion.html
 
 ```dart
 import "dart:async";
@@ -310,11 +308,11 @@ void main() {
 }
 ```
 
-The [`throwsA()`][throwsA] matcher and the various `throwsExceptionType`
-matchers work with both synchronous callbacks and asynchronous `Future`s. They
-ensure that a particular type of exception is thrown:
+The [`throwsA()`] matcher and the various `throwsExceptionType` matchers work
+with both synchronous callbacks and asynchronous `Future`s. They ensure that a
+particular type of exception is thrown:
 
-[throwsA]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_throwsA
+[`throwsA()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/throwsA.html
 
 ```dart
 import "dart:async";
@@ -329,11 +327,10 @@ void main() {
 }
 ```
 
-The [`expectAsync()`][expectAsync] function wraps another function and has two
-jobs. First, it asserts that the wrapped function is called a certain number of
-times, and will cause the test to fail if it's called too often; second, it
-keeps the test from finishing until the function is called the requisite number
-of times.
+The [`expectAsync()`] function wraps another function and has two jobs. First,
+it asserts that the wrapped function is called a certain number of times, and
+will cause the test to fail if it's called too often; second, it keeps the test
+from finishing until the function is called the requisite number of times.
 
 ```dart
 import "dart:async";
@@ -351,7 +348,7 @@ void main() {
 }
 ```
 
-[expectAsync]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_expectAsync
+[`expectAsync()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/expectAsync.html
 
 ### Stream Matchers
 
@@ -396,15 +393,14 @@ void main() {
 }
 ```
 
-A stream matcher can also match the [`async`][async] package's
-[`StreamQueue`][StreamQueue] class, which allows events to be requested from a
-stream rather than pushed to the consumer. The matcher will consume the matched
-events, but leave the rest of the queue alone so that it can still be used by
-the test, unlike a normal `Stream` which can only have one subscriber. For
-example:
+A stream matcher can also match the [`async`] package's [`StreamQueue`] class,
+which allows events to be requested from a stream rather than pushed to the
+consumer. The matcher will consume the matched events, but leave the rest of the
+queue alone so that it can still be used by the test, unlike a normal `Stream`
+which can only have one subscriber. For example:
 
-[async]: https://pub.dartlang.org/packages/async
-[StreamQueue]: https://www.dartdocs.org/documentation/async/latest/async/StreamQueue-class.html
+[`async`]: https://pub.dartlang.org/packages/async
+[`StreamQueue`]: https://pub.dartlang.org/documentation/async/latest/async/StreamQueue-class.html
 
 ```dart
 import "dart:async";
@@ -436,35 +432,34 @@ void main() {
 
 The following built-in stream matchers are available:
 
-* [`emits()`][emits] matches a single data event.
-* [`emitsError()`][emitsError] matches a single error event.
-* [`emitsDone`][emitsDone] matches a single done event.
-* [`mayEmit()`][mayEmit] consumes events if they match an inner matcher, without
+* [`emits()`] matches a single data event.
+* [`emitsError()`] matches a single error event.
+* [`emitsDone`] matches a single done event.
+* [`mayEmit()`] consumes events if they match an inner matcher, without
   requiring them to match.
-* [`mayEmitMultiple()`][mayEmitMultiple] works like `mayEmit()`, but it matches
-  events against the matcher as many times as possible.
-* [`emitsAnyOf()`][emitsAnyOf] consumes events matching one (or more) of several
-  possible matchers.
-* [`emitsInOrder()`][emitsInOrder] consumes events matching multiple matchers in
-  a row.
-* [`emitsInAnyOrder()`][emitsInAnyOrder] works like `emitsInOrder()`, but it
-  allows the matchers to match in any order.
-* [`neverEmits()`][neverEmits] matches a stream that finishes *without* matching
-  an inner matcher.
+* [`mayEmitMultiple()`] works like `mayEmit()`, but it matches events against
+  the matcher as many times as possible.
+* [`emitsAnyOf()`] consumes events matching one (or more) of several possible
+  matchers.
+* [`emitsInOrder()`] consumes events matching multiple matchers in a row.
+* [`emitsInAnyOrder()`] works like `emitsInOrder()`, but it allows the matchers
+  to match in any order.
+* [`neverEmits()`] matches a stream that finishes *without* matching an inner
+  matcher.
 
 You can also define your own custom stream matchers by calling
-[`new StreamMatcher()`][new StreamMatcher].
+[`new StreamMatcher()`].
 
-[emits]: https://www.dartdocs.org/documentation/test/latest/test/emits.html
-[emitsError]: https://www.dartdocs.org/documentation/test/latest/test/emitsError.html
-[emitsDone]: https://www.dartdocs.org/documentation/test/latest/test/emitsDone.html
-[mayEmit]: https://www.dartdocs.org/documentation/test/latest/test/mayEmit.html
-[mayEmitMultiple]: https://www.dartdocs.org/documentation/test/latest/test/mayEmitMultiple.html
-[emitsAnyOf]: https://www.dartdocs.org/documentation/test/latest/test/emitsAnyOf.html
-[emitsInOrder]: https://www.dartdocs.org/documentation/test/latest/test/emitsInOrder.html
-[emitsInAnyOrder]: https://www.dartdocs.org/documentation/test/latest/test/emitsInAnyOrder.html
-[neverEmits]: https://www.dartdocs.org/documentation/test/latest/test/neverEmits.html
-[new StreamMatcher]: https://www.dartdocs.org/documentation/test/latest/test/StreamMatcher/StreamMatcher.html
+[`emits()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emits.html
+[`emitsError()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsError.html
+[`emitsDone`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsDone.html
+[`mayEmit()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/mayEmit.html
+[`mayEmitMultiple()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/mayEmitMultiple.html
+[`emitsAnyOf()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsAnyOf.html
+[`emitsInOrder()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsInOrder.html
+[`emitsInAnyOrder()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsInAnyOrder.html
+[`neverEmits()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/neverEmits.html
+[`new StreamMatcher()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/StreamMatcher-class.html
 
 ## Running Tests With Custom HTML
 
@@ -661,7 +656,7 @@ Tests can be filtered based on their tags by passing command line flags. The
 `--tags` or `-t` flag will cause the test runner to only run tests with the
 given tags, and the `--exclude-tags` or `-x` flag will cause it to only run
 tests *without* the given tags. These flags also support
-[boolean selector syntax][]. For example, you can pass `--tags "(chrome ||
+[boolean selector syntax]. For example, you can pass `--tags "(chrome ||
 firefox) && !slow"` to select quick Chrome or Firefox tests.
 
 Note that tags must be valid Dart identifiers, although they may also contain
@@ -724,19 +719,18 @@ Maybe you're testing the HTML served by your app, or maybe you're writing a
 library that communicates over WebSockets. We call tests that run code on both
 the browser and the VM **hybrid tests**.
 
-Hybrid tests use one of two functions: [`spawnHybridCode()`][spawnHybridCode] and
-[`spawnHybridUri()`][spawnHybridUri]. Both of these spawn Dart VM
+Hybrid tests use one of two functions: [`spawnHybridCode()`] and
+[`spawnHybridUri()`]. Both of these spawn Dart VM
 [isolates][dart:isolate] that can import `dart:io` and other VM-only libraries.
 The only difference is where the code from the isolate comes from:
 `spawnHybridCode()` takes a chunk of actual Dart code, whereas
-`spawnHybridUri()` takes a URL. They both return a
-[`StreamChannel`][StreamChannel] that communicates with the hybrid isolate. For
-example:
+`spawnHybridUri()` takes a URL. They both return a [`StreamChannel`] that
+communicates with the hybrid isolate. For example:
 
-[spawnHybridCode]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridCode
-[spawnHybridUri]: http://www.dartdocs.org/documentation/test/latest/index.html#test/test@id_spawnHybridUri
+[`spawnHybridCode()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/spawnHybridCode.html
+[`spawnHybridUri()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/spawnHybridUri.html
 [dart:isolate]: https://api.dartlang.org/stable/dart-isolate/dart-isolate-library.html
-[StreamChannel]: https://pub.dartlang.org/packages/stream_channel
+[`StreamChannel`]: https://pub.dartlang.org/documentation/stream_channel/latest/stream_channel/StreamChannel-class.html
 
 ```dart
 // ## test/web_socket_server.dart
@@ -805,20 +799,20 @@ would look like this `pub run build_runner test --release -- -p vm`.
 
 ### `term_glyph`
 
-The [`term_glyph`][term_glyph] package provides getters for Unicode glyphs with
+The [`term_glyph`] package provides getters for Unicode glyphs with
 ASCII alternatives. `test` ensures that it's configured to produce ASCII when
 the user is running on Windows, where Unicode isn't supported. This ensures that
 testing libraries can use Unicode on POSIX operating systems without breaking
 Windows users.
 
-[term_glyph]: https://pub.dartlang.org/packages/term_glyph
+[`term_glyph`]: https://pub.dartlang.org/packages/term_glyph
 
 ## Further Reading
 
-Check out the [API docs][api] for detailed information about all the functions
+Check out the [API docs] for detailed information about all the functions
 available to tests.
 
-[api]: http://www.dartdocs.org/documentation/test/latest/index.html
+[API docs]: https://pub.dartlang.org/documentation/test/latest/
 
 The test runner also supports a machine-readable JSON-based reporter. This
 reporter allows the test runner to be wrapped and its progress presented in
