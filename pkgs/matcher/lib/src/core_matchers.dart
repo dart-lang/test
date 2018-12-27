@@ -163,7 +163,7 @@ Matcher hasLength(matcher) => new _HasLength(wrapMatcher(matcher));
 
 class _HasLength extends Matcher {
   final Matcher _matcher;
-  const _HasLength([Matcher matcher]) : this._matcher = matcher;
+  const _HasLength([Matcher matcher]) : _matcher = matcher;
 
   bool matches(item, Map matchState) {
     try {

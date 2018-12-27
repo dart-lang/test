@@ -47,7 +47,7 @@ class TypeMatcher<T> extends Matcher {
       [@Deprecated('Provide a type argument to TypeMatcher and omit the name. '
           'This argument will be removed in the next release.')
           String name])
-      : this._name =
+      : _name =
             // ignore: deprecated_member_use
             name;
 

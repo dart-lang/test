@@ -97,7 +97,7 @@ class _DeepMatcher extends Matcher {
   final Object _expected;
   final int _limit;
 
-  _DeepMatcher(this._expected, [int limit = 1000]) : this._limit = limit;
+  _DeepMatcher(this._expected, [int limit = 1000]) : _limit = limit;
 
   // Returns a pair (reason, location)
   List<String> _compareIterables(Iterable expected, Object actual,

@@ -36,7 +36,7 @@ class CustomMatcher extends Matcher {
   final Matcher _matcher;
 
   CustomMatcher(this._featureDescription, this._featureName, matcher)
-      : this._matcher = wrapMatcher(matcher);
+      : _matcher = wrapMatcher(matcher);
 
   /// Override this to extract the interesting feature.
   Object featureValueOf(actual) => actual;

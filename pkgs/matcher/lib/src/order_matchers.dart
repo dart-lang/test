@@ -72,7 +72,7 @@ class _OrderingMatcher extends Matcher {
   const _OrderingMatcher(this._value, this._equalValue, this._lessThanValue,
       this._greaterThanValue, this._comparisonDescription,
       [bool valueInDescription = true])
-      : this._valueInDescription = valueInDescription;
+      : _valueInDescription = valueInDescription;
 
   bool matches(item, Map matchState) {
     if (item == _value) {

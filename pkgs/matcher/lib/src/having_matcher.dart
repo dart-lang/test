@@ -16,8 +16,8 @@ class HavingMatcher<T> implements TypeMatcher<T> {
   HavingMatcher(TypeMatcher<T> parent, String description,
       Object feature(T source), Object matcher,
       [Iterable<_FunctionMatcher> existing])
-      : this._parent = parent,
-        this._functionMatchers = <_FunctionMatcher>[]
+      : _parent = parent,
+        _functionMatchers = <_FunctionMatcher>[]
           ..addAll(existing ?? [])
           ..add(new _FunctionMatcher<T>(description, feature, matcher));
 

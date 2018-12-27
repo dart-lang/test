@@ -12,6 +12,7 @@ dependencies:
   stack_trace: ^1.2.0
 
 dev_dependencies:
+  pedantic: ^1.4.0
   test: '>=0.12.0 <2.0.0'
 
 dependency_overrides:
