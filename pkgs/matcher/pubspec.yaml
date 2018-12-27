@@ -1,7 +1,9 @@
 name: matcher
 version: 0.12.5-dev
 
-description: Support for specifying test expectations
+description: >-
+  Support for specifying test expectations via an extensible Matcher class.
+  Also includes a number of built-in Matcher implementations for common cases.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/matcher
 
