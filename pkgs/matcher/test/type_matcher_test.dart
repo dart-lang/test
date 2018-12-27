@@ -10,21 +10,20 @@ import 'test_utils.dart';
 void main() {
   _test('Map', isMap, {});
   _test('List', isList, []);
-  _test('ArgumentError', isArgumentError, new ArgumentError());
-  _test('CastError', isCastError, new CastError());
+  _test('ArgumentError', isArgumentError, ArgumentError());
+  _test('CastError', isCastError, CastError());
   _test('Exception', isException, const FormatException());
   _test('FormatException', isFormatException, const FormatException());
-  _test('StateError', isStateError, new StateError('oops'));
-  _test('RangeError', isRangeError, new RangeError('oops'));
-  _test('UnimplementedError', isUnimplementedError,
-      new UnimplementedError('oops'));
-  _test('UnsupportedError', isUnsupportedError, new UnsupportedError('oops'));
+  _test('StateError', isStateError, StateError('oops'));
+  _test('RangeError', isRangeError, RangeError('oops'));
+  _test('UnimplementedError', isUnimplementedError, UnimplementedError('oops'));
+  _test('UnsupportedError', isUnsupportedError, UnsupportedError('oops'));
   _test('ConcurrentModificationError', isConcurrentModificationError,
-      new ConcurrentModificationError());
+      ConcurrentModificationError());
   _test('CyclicInitializationError', isCyclicInitializationError,
-      new CyclicInitializationError());
+      CyclicInitializationError());
   _test('NoSuchMethodError', isNoSuchMethodError, null);
-  _test('NullThrownError', isNullThrownError, new NullThrownError());
+  _test('NullThrownError', isNullThrownError, NullThrownError());
 
   group('custom `TypeMatcher`', () {
     // ignore: deprecated_member_use

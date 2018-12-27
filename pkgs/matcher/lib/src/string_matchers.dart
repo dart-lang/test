@@ -7,7 +7,7 @@ import 'interfaces.dart';
 
 /// Returns a matcher which matches if the match argument is a string and
 /// is equal to [value] when compared case-insensitively.
-Matcher equalsIgnoringCase(String value) => new _IsEqualIgnoringCase(value);
+Matcher equalsIgnoringCase(String value) => _IsEqualIgnoringCase(value);
 
 class _IsEqualIgnoringCase extends FeatureMatcher<String> {
   final String _value;
@@ -42,7 +42,7 @@ class _IsEqualIgnoringCase extends FeatureMatcher<String> {
 ///     expect("helloworld", equalsIgnoringWhitespace("hello world"));
 ///     expect("he llo world", equalsIgnoringWhitespace("hello world"));
 Matcher equalsIgnoringWhitespace(String value) =>
-    new _IsEqualIgnoringWhitespace(value);
+    _IsEqualIgnoringWhitespace(value);
 
 class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
   final String _value;
@@ -69,7 +69,7 @@ class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
 
 /// Returns a matcher that matches if the match argument is a string and
 /// starts with [prefixString].
-Matcher startsWith(String prefixString) => new _StringStartsWith(prefixString);
+Matcher startsWith(String prefixString) => _StringStartsWith(prefixString);
 
 class _StringStartsWith extends FeatureMatcher<String> {
   final String _prefix;
@@ -84,7 +84,7 @@ class _StringStartsWith extends FeatureMatcher<String> {
 
 /// Returns a matcher that matches if the match argument is a string and
 /// ends with [suffixString].
-Matcher endsWith(String suffixString) => new _StringEndsWith(suffixString);
+Matcher endsWith(String suffixString) => _StringEndsWith(suffixString);
 
 class _StringEndsWith extends FeatureMatcher<String> {
   final String _suffix;
@@ -104,7 +104,7 @@ class _StringEndsWith extends FeatureMatcher<String> {
 /// "abcdefghijklmnopqrstuvwxyz".
 
 Matcher stringContainsInOrder(List<String> substrings) =>
-    new _StringContainsInOrder(substrings);
+    _StringContainsInOrder(substrings);
 
 class _StringContainsInOrder extends FeatureMatcher<String> {
   final List<String> _substrings;
@@ -129,18 +129,18 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
 ///
 /// [re] can be a [RegExp] instance or a [String]; in the latter case it will be
 /// used to create a RegExp instance.
-Matcher matches(re) => new _MatchesRegExp(re);
+Matcher matches(re) => _MatchesRegExp(re);
 
 class _MatchesRegExp extends FeatureMatcher<String> {
   RegExp _regexp;
 
   _MatchesRegExp(re) {
     if (re is String) {
-      _regexp = new RegExp(re);
+      _regexp = RegExp(re);
     } else if (re is RegExp) {
       _regexp = re;
     } else {
-      throw new ArgumentError('matches requires a regexp or string');
+      throw ArgumentError('matches requires a regexp or string');
     }
   }
 
@@ -153,7 +153,7 @@ class _MatchesRegExp extends FeatureMatcher<String> {
 /// Utility function to collapse whitespace runs to single spaces
 /// and strip leading/trailing whitespace.
 String collapseWhitespace(String string) {
-  var result = new StringBuffer();
+  var result = StringBuffer();
   var skipSpace = true;
   for (var i = 0; i < string.length; i++) {
     var character = string[i];

@@ -49,7 +49,7 @@ class CustomMatcher extends Matcher {
     } catch (exception, stack) {
       addStateInfo(matchState, {
         'custom.exception': exception.toString(),
-        'custom.stack': new Chain.forTrace(stack)
+        'custom.stack': Chain.forTrace(stack)
             .foldFrames(
                 (frame) =>
                     frame.package == 'test' ||
@@ -81,7 +81,7 @@ class CustomMatcher extends Matcher {
         .add(_featureName)
         .add(' with value ')
         .addDescriptionOf(matchState['custom.feature']);
-    var innerDescription = new StringDescription();
+    var innerDescription = StringDescription();
 
     _matcher.describeMismatch(matchState['custom.feature'], innerDescription,
         matchState['state'] as Map, verbose);

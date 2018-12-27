@@ -1,12 +1,12 @@
 name: matcher
-version: 0.12.4
+version: 0.12.5-dev
 
 description: Support for specifying test expectations
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/matcher
 
 environment:
-  sdk: '>=2.0.0-dev.17.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
   stack_trace: ^1.2.0

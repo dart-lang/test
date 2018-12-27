@@ -19,12 +19,11 @@ class HavingMatcher<T> implements TypeMatcher<T> {
       : _parent = parent,
         _functionMatchers = <_FunctionMatcher>[]
           ..addAll(existing ?? [])
-          ..add(new _FunctionMatcher<T>(description, feature, matcher));
+          ..add(_FunctionMatcher<T>(description, feature, matcher));
 
   TypeMatcher<T> having(
           Object feature(T source), String description, Object matcher) =>
-      new HavingMatcher(
-          _parent, description, feature, matcher, _functionMatchers);
+      HavingMatcher(_parent, description, feature, matcher, _functionMatchers);
 
   bool matches(item, Map matchState) {
     for (var matcher in <Matcher>[_parent].followedBy(_functionMatchers)) {

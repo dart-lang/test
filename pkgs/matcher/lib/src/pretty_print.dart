@@ -19,14 +19,14 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
   String _prettyPrint(object, int indent, Set seen, bool top) {
     // If the object is a matcher, use its description.
     if (object is Matcher) {
-      var description = new StringDescription();
+      var description = StringDescription();
       object.describe(description);
       return "<$description>";
     }
 
     // Avoid looping infinitely on recursively-nested data structures.
     if (seen.contains(object)) return "(recursive)";
-    seen = seen.union(new Set.from([object]));
+    seen = seen.union(Set.from([object]));
     String pp(child) => _prettyPrint(child, indent + 2, seen, false);
 
     if (object is Iterable) {
@@ -113,10 +113,10 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
     }
   }
 
-  return _prettyPrint(object, 0, new Set(), true);
+  return _prettyPrint(object, 0, Set(), true);
 }
 
-String _indent(int length) => new List.filled(length, ' ').join('');
+String _indent(int length) => List.filled(length, ' ').join('');
 
 /// Returns the name of the type of [x], or "Unknown" if the type name can't be
 /// determined.

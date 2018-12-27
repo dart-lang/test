@@ -6,10 +6,10 @@ import 'core_matchers.dart';
 import 'equals_matcher.dart';
 import 'interfaces.dart';
 
-typedef bool _Predicate<T>(T value);
+typedef _Predicate<T> = bool Function(T value);
 
 /// A [Map] between whitespace characters and their escape sequences.
-const _escapeMap = const {
+const _escapeMap = {
   '\n': r'\n',
   '\r': r'\r',
   '\f': r'\f',
@@ -20,12 +20,12 @@ const _escapeMap = const {
 };
 
 /// A [RegExp] that matches whitespace characters that should be escaped.
-final _escapeRegExp = new RegExp(
+final _escapeRegExp = RegExp(
     "[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_getHexLiteral).join()}]");
 
 /// Useful utility for nesting match states.
 void addStateInfo(Map matchState, Map values) {
-  var innerState = new Map.from(matchState);
+  var innerState = Map.from(matchState);
   matchState.clear();
   matchState['state'] = innerState;
   matchState.addAll(values);

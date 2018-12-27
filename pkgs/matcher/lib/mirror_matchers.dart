@@ -12,7 +12,7 @@ import 'matcher.dart';
 /// with name [name], and optionally, if that property in turn satisfies
 /// a [matcher].
 Matcher hasProperty(String name, [matcher]) =>
-    new _HasProperty(name, matcher == null ? null : wrapMatcher(matcher));
+    _HasProperty(name, matcher == null ? null : wrapMatcher(matcher));
 
 class _HasProperty extends Matcher {
   final String _name;
@@ -23,7 +23,7 @@ class _HasProperty extends Matcher {
   bool matches(item, Map matchState) {
     var mirror = reflect(item);
     var classMirror = mirror.type;
-    var symbol = new Symbol(_name);
+    var symbol = Symbol(_name);
     var candidate = classMirror.declarations[symbol];
     if (candidate == null) {
       addStateInfo(matchState, {'reason': 'has no property named "$_name"'});
@@ -65,7 +65,7 @@ class _HasProperty extends Matcher {
       mismatchDescription
           .add('has property "$_name" with value ')
           .addDescriptionOf(matchState['value']);
-      var innerDescription = new StringDescription();
+      var innerDescription = StringDescription();
       _matcher.describeMismatch(matchState['value'], innerDescription,
           matchState['state'] as Map, verbose);
       if (innerDescription.length > 0) {

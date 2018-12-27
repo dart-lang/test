@@ -9,12 +9,12 @@ import 'test_utils.dart';
 
 void main() {
   test('success', () {
-    shouldPass(new RangeError('details'), _rangeMatcher);
+    shouldPass(RangeError('details'), _rangeMatcher);
   });
 
   test('failure', () {
     shouldFail(
-        new RangeError.range(-1, 1, 10),
+        RangeError.range(-1, 1, 10),
         _rangeMatcher,
         "Expected: <Instance of 'RangeError'> with "
         "`message`: contains 'details' and `start`: null and `end`: null "
@@ -26,7 +26,7 @@ void main() {
   // This code is used in the [TypeMatcher] doc comments.
   test('integaration and example', () {
     void shouldThrowRangeError(int value) {
-      throw new RangeError.range(value, 10, 20);
+      throw RangeError.range(value, 10, 20);
     }
 
     expect(
@@ -44,7 +44,7 @@ void main() {
 
   group('CustomMater copy', () {
     test("Feature Matcher", () {
-      var w = new Widget();
+      var w = Widget();
       w.price = 10;
       shouldPass(w, _hasPrice(10));
       shouldPass(w, _hasPrice(greaterThan(0)));
@@ -67,7 +67,7 @@ void main() {
             contains("Actual: 'a'"),
           ]));
       shouldFail(
-          new Widget(),
+          Widget(),
           _badCustomMatcher(),
           allOf([
             contains(
@@ -88,4 +88,4 @@ Matcher _hasPrice(matcher) =>
     const TypeMatcher<Widget>().having((e) => e.price, 'price', matcher);
 
 Matcher _badCustomMatcher() => const TypeMatcher<Widget>()
-    .having((e) => throw new Exception("bang"), 'feature', {1: "a"});
+    .having((e) => throw Exception("bang"), 'feature', {1: "a"});

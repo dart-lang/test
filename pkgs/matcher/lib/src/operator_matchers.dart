@@ -6,7 +6,7 @@ import 'interfaces.dart';
 import 'util.dart';
 
 /// This returns a matcher that inverts [matcher] to its logical negation.
-Matcher isNot(matcher) => new _IsNot(wrapMatcher(matcher));
+Matcher isNot(matcher) => _IsNot(wrapMatcher(matcher));
 
 class _IsNot extends Matcher {
   final Matcher _matcher;
@@ -26,7 +26,7 @@ class _IsNot extends Matcher {
 /// List argument. Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
 Matcher allOf(arg0, [arg1, arg2, arg3, arg4, arg5, arg6]) {
-  return new _AllOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
+  return _AllOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
 class _AllOf extends Matcher {
@@ -67,7 +67,7 @@ class _AllOf extends Matcher {
 /// Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
 Matcher anyOf(arg0, [arg1, arg2, arg3, arg4, arg5, arg6]) {
-  return new _AnyOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
+  return _AnyOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
 class _AnyOf extends Matcher {
@@ -97,7 +97,7 @@ List<Matcher> _wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
         arg4 != null ||
         arg5 != null ||
         arg6 != null) {
-      throw new ArgumentError('If arg0 is a List, all other arguments must be'
+      throw ArgumentError('If arg0 is a List, all other arguments must be'
           ' null.');
     }
 

@@ -8,7 +8,7 @@ import 'type_matcher.dart';
 import 'util.dart';
 
 /// Returns a matcher that matches the isEmpty property.
-const Matcher isEmpty = const _Empty();
+const Matcher isEmpty = _Empty();
 
 class _Empty extends Matcher {
   const _Empty();
@@ -19,7 +19,7 @@ class _Empty extends Matcher {
 }
 
 /// Returns a matcher that matches the isNotEmpty property.
-const Matcher isNotEmpty = const _NotEmpty();
+const Matcher isNotEmpty = _NotEmpty();
 
 class _NotEmpty extends Matcher {
   const _NotEmpty();
@@ -30,10 +30,10 @@ class _NotEmpty extends Matcher {
 }
 
 /// A matcher that matches any null value.
-const Matcher isNull = const _IsNull();
+const Matcher isNull = _IsNull();
 
 /// A matcher that matches any non-null value.
-const Matcher isNotNull = const _IsNotNull();
+const Matcher isNotNull = _IsNotNull();
 
 class _IsNull extends Matcher {
   const _IsNull();
@@ -48,10 +48,10 @@ class _IsNotNull extends Matcher {
 }
 
 /// A matcher that matches the Boolean value true.
-const Matcher isTrue = const _IsTrue();
+const Matcher isTrue = _IsTrue();
 
 /// A matcher that matches anything except the Boolean value true.
-const Matcher isFalse = const _IsFalse();
+const Matcher isFalse = _IsFalse();
 
 class _IsTrue extends Matcher {
   const _IsTrue();
@@ -66,10 +66,10 @@ class _IsFalse extends Matcher {
 }
 
 /// A matcher that matches the numeric value NaN.
-const Matcher isNaN = const _IsNaN();
+const Matcher isNaN = _IsNaN();
 
 /// A matcher that matches any non-NaN value.
-const Matcher isNotNaN = const _IsNotNaN();
+const Matcher isNotNaN = _IsNotNaN();
 
 class _IsNaN extends FeatureMatcher<num> {
   const _IsNaN();
@@ -87,7 +87,7 @@ class _IsNotNaN extends FeatureMatcher<num> {
 
 /// Returns a matches that matches if the value is the same instance
 /// as [expected], using [identical].
-Matcher same(expected) => new _IsSameAs(expected);
+Matcher same(expected) => _IsSameAs(expected);
 
 class _IsSameAs extends Matcher {
   final Object _expected;
@@ -99,7 +99,7 @@ class _IsSameAs extends Matcher {
 }
 
 /// A matcher that matches any value.
-const Matcher anything = const _IsAnything();
+const Matcher anything = _IsAnything();
 
 class _IsAnything extends Matcher {
   const _IsAnything();
@@ -123,7 +123,7 @@ class isInstanceOf<T> extends TypeMatcher<T> {
 /// The value passed to expect() should be a reference to the function.
 /// Note that the function cannot take arguments; to handle this
 /// a wrapper will have to be created.
-const Matcher returnsNormally = const _ReturnsNormally();
+const Matcher returnsNormally = _ReturnsNormally();
 
 class _ReturnsNormally extends FeatureMatcher<Function> {
   const _ReturnsNormally();
@@ -152,14 +152,14 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
 }
 
 /// A matcher for [Map].
-const isMap = const TypeMatcher<Map>();
+const isMap = TypeMatcher<Map>();
 
 /// A matcher for [List].
-const isList = const TypeMatcher<List>();
+const isList = TypeMatcher<List>();
 
 /// Returns a matcher that matches if an object has a length property
 /// that matches [matcher].
-Matcher hasLength(matcher) => new _HasLength(wrapMatcher(matcher));
+Matcher hasLength(matcher) => _HasLength(wrapMatcher(matcher));
 
 class _HasLength extends Matcher {
   final Matcher _matcher;
@@ -175,7 +175,7 @@ class _HasLength extends Matcher {
     } catch (e) {
       return false;
     }
-    throw new UnsupportedError('Should never get here');
+    throw UnsupportedError('Should never get here');
   }
 
   Description describe(Description description) =>
@@ -194,7 +194,7 @@ class _HasLength extends Matcher {
     } catch (e) {
       return mismatchDescription.add('has no length property');
     }
-    throw new UnsupportedError('Should never get here');
+    throw UnsupportedError('Should never get here');
   }
 }
 
@@ -205,7 +205,7 @@ class _HasLength extends Matcher {
 /// for [Map]s it means the map has the key, and for [Iterable]s
 /// it means the iterable has a matching element. In the case of iterables,
 /// [expected] can itself be a matcher.
-Matcher contains(expected) => new _Contains(expected);
+Matcher contains(expected) => _Contains(expected);
 
 class _Contains extends Matcher {
   final Object _expected;
@@ -246,14 +246,14 @@ class _Contains extends Matcher {
 /// the expected value. This is the converse of [contains].
 Matcher isIn(expected) {
   if (expected is Iterable) {
-    return new _In(expected, expected.contains);
+    return _In(expected, expected.contains);
   } else if (expected is String) {
-    return new _In<Pattern>(expected, expected.contains);
+    return _In<Pattern>(expected, expected.contains);
   } else if (expected is Map) {
-    return new _In(expected, expected.containsKey);
+    return _In(expected, expected.containsKey);
   }
 
-  throw new ArgumentError.value(
+  throw ArgumentError.value(
       expected, 'expected', 'Only Iterable, Map, and String are supported.');
 }
 
@@ -277,9 +277,9 @@ class _In<T> extends FeatureMatcher<T> {
 ///     expect(v, predicate((x) => ((x % 2) == 0), "is even"))
 Matcher predicate<T>(bool f(T value),
         [String description = 'satisfies function']) =>
-    new _Predicate(f, description);
+    _Predicate(f, description);
 
-typedef bool _PredicateFunction<T>(T value);
+typedef _PredicateFunction<T> = bool Function(T value);
 
 class _Predicate<T> extends FeatureMatcher<T> {
   final _PredicateFunction<T> _matcher;

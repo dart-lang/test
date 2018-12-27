@@ -67,7 +67,7 @@ class TypeMatcher<T> extends Matcher {
   /// ```
   TypeMatcher<T> having(
           Object feature(T source), String description, Object matcher) =>
-      new HavingMatcher(this, description, feature, matcher);
+      HavingMatcher(this, description, feature, matcher);
 
   Description describe(Description description) {
     var name = _name ?? _stripDynamic(T);
@@ -77,7 +77,7 @@ class TypeMatcher<T> extends Matcher {
   bool matches(Object item, Map matchState) => item is T;
 }
 
-final _dart2DynamicArgs = new RegExp('<dynamic(, dynamic)*>');
+final _dart2DynamicArgs = RegExp('<dynamic(, dynamic)*>');
 
 /// With this expression `{}.runtimeType.toString`,
 /// Dart 1: "<Instance of Map>

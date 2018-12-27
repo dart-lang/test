@@ -326,8 +326,8 @@ void main() {
   });
 
   test('isEmpty', () {
-    var d = new SimpleIterable(0);
-    var e = new SimpleIterable(1);
+    var d = SimpleIterable(0);
+    var e = SimpleIterable(1);
     shouldPass(d, isEmpty);
     shouldFail(
         e,
@@ -337,8 +337,8 @@ void main() {
   });
 
   test('isNotEmpty', () {
-    var d = new SimpleIterable(0);
-    var e = new SimpleIterable(1);
+    var d = SimpleIterable(0);
+    var e = SimpleIterable(1);
     shouldPass(e, isNotEmpty);
     shouldFail(
         d,
@@ -348,7 +348,7 @@ void main() {
   });
 
   test('contains', () {
-    var d = new SimpleIterable(3);
+    var d = SimpleIterable(3);
     shouldPass(d, contains(2));
     shouldFail(
         d,

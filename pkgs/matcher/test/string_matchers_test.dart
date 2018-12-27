@@ -129,7 +129,7 @@ void main() {
 
   test('matches', () {
     shouldPass('c0d', matches('[a-z][0-9][a-z]'));
-    shouldPass('c0d', matches(new RegExp('[a-z][0-9][a-z]')));
+    shouldPass('c0d', matches(RegExp('[a-z][0-9][a-z]')));
     shouldFail('cOd', matches('[a-z][0-9][a-z]'),
         "Expected: match '[a-z][0-9][a-z]' Actual: 'cOd'");
     shouldFail(42, matches('[a-z][0-9][a-z]'),

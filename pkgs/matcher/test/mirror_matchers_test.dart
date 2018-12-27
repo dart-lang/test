@@ -32,7 +32,7 @@ void main() {
         'Expected: has property "length" which matches <2> '
         'Actual: [3] '
         'Which: has property "length" with value <1>');
-    var c = new C();
+    var c = C();
     shouldPass(c, hasProperty('instanceField', 1));
     shouldPass(c, hasProperty('instanceGetter', 2));
     shouldFail(

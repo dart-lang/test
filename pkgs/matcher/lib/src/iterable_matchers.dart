@@ -10,7 +10,7 @@ import 'util.dart';
 
 /// Returns a matcher which matches [Iterable]s in which all elements
 /// match the given [matcher].
-Matcher everyElement(matcher) => new _EveryElement(wrapMatcher(matcher));
+Matcher everyElement(matcher) => _EveryElement(wrapMatcher(matcher));
 
 class _EveryElement extends _IterableMatcher {
   final Matcher _matcher;
@@ -41,7 +41,7 @@ class _EveryElement extends _IterableMatcher {
           .add('has value ')
           .addDescriptionOf(element)
           .add(' which ');
-      var subDescription = new StringDescription();
+      var subDescription = StringDescription();
       _matcher.describeMismatch(
           element, subDescription, matchState['state'] as Map, verbose);
       if (subDescription.length > 0) {
@@ -60,7 +60,7 @@ class _EveryElement extends _IterableMatcher {
 
 /// Returns a matcher which matches [Iterable]s in which at least one
 /// element matches the given [matcher].
-Matcher anyElement(matcher) => new _AnyElement(wrapMatcher(matcher));
+Matcher anyElement(matcher) => _AnyElement(wrapMatcher(matcher));
 
 class _AnyElement extends _IterableMatcher {
   final Matcher _matcher;
@@ -78,7 +78,7 @@ class _AnyElement extends _IterableMatcher {
 /// length and the same elements as [expected], in the same order.
 ///
 /// This is equivalent to [equals] but does not recurse.
-Matcher orderedEquals(Iterable expected) => new _OrderedEquals(expected);
+Matcher orderedEquals(Iterable expected) => _OrderedEquals(expected);
 
 class _OrderedEquals extends _IterableMatcher {
   final Iterable _expected;
@@ -104,7 +104,7 @@ class _OrderedEquals extends _IterableMatcher {
 ///
 /// Note that this is worst case O(n^2) runtime and memory usage so it should
 /// only be used on small iterables.
-Matcher unorderedEquals(Iterable expected) => new _UnorderedEquals(expected);
+Matcher unorderedEquals(Iterable expected) => _UnorderedEquals(expected);
 
 class _UnorderedEquals extends _UnorderedMatches {
   final List _expectedValues;
@@ -130,7 +130,7 @@ abstract class _IterableMatcher extends FeatureMatcher<Iterable> {
 ///
 /// Note that this is worst case O(n^2) runtime and memory usage so it should
 /// only be used on small iterables.
-Matcher unorderedMatches(Iterable expected) => new _UnorderedMatches(expected);
+Matcher unorderedMatches(Iterable expected) => _UnorderedMatches(expected);
 
 class _UnorderedMatches extends _IterableMatcher {
   final List<Matcher> _expected;
@@ -148,8 +148,7 @@ class _UnorderedMatches extends _IterableMatcher {
       return 'has too many elements (${values.length} > ${_expected.length})';
     }
 
-    var edges =
-        new List.generate(values.length, (_) => <int>[], growable: false);
+    var edges = List.generate(values.length, (_) => <int>[], growable: false);
     for (var v = 0; v < values.length; v++) {
       for (var m = 0; m < _expected.length; m++) {
         if (_expected[m].matches(values[v], {})) {
@@ -159,7 +158,7 @@ class _UnorderedMatches extends _IterableMatcher {
     }
     // The index into `values` matched with each matcher or `null` if no value
     // has been matched yet.
-    var matched = new List<int>(_expected.length);
+    var matched = List<int>(_expected.length);
     for (var valueIndex = 0; valueIndex < values.length; valueIndex++) {
       _findPairing(edges, valueIndex, matched);
     }
@@ -167,7 +166,7 @@ class _UnorderedMatches extends _IterableMatcher {
         matcherIndex < _expected.length;
         matcherIndex++) {
       if (matched[matcherIndex] == null) {
-        final description = new StringDescription()
+        final description = StringDescription()
             .add('has no match for ')
             .addDescriptionOf(_expected[matcherIndex])
             .add(' at index $matcherIndex');
@@ -203,7 +202,7 @@ class _UnorderedMatches extends _IterableMatcher {
   /// tracks the matchers that have been used _during_ this search.
   bool _findPairing(List<List<int>> edges, int valueIndex, List<int> matched,
       [Set<int> reserved]) {
-    reserved ??= new Set<int>();
+    reserved ??= Set<int>();
     final possiblePairings =
         edges[valueIndex].where((m) => !reserved.contains(m));
     for (final matcherIndex in possiblePairings) {
@@ -228,9 +227,9 @@ class _UnorderedMatches extends _IterableMatcher {
 /// [description] should be a meaningful name for the comparator.
 Matcher pairwiseCompare<S, T>(
         Iterable<S> expected, bool comparator(S a, T b), String description) =>
-    new _PairwiseCompare(expected, comparator, description);
+    _PairwiseCompare(expected, comparator, description);
 
-typedef bool _Comparator<S, T>(S a, T b);
+typedef _Comparator<S, T> = bool Function(S a, T b);
 
 class _PairwiseCompare<S, T> extends _IterableMatcher {
   final Iterable<S> _expected;
@@ -291,7 +290,7 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
 ///
 /// Note that this is worst case O(n^2) runtime and memory usage so it should
 /// only be used on small iterables.
-Matcher containsAll(Iterable expected) => new _ContainsAll(expected);
+Matcher containsAll(Iterable expected) => _ContainsAll(expected);
 
 class _ContainsAll extends _UnorderedMatches {
   final Iterable _unwrappedExpected;
@@ -312,8 +311,7 @@ class _ContainsAll extends _UnorderedMatches {
 /// `containsAllInOrder([2, 1])` or `containsAllInOrder([1, 2, 3])`.
 ///
 /// Will only match values which implement [Iterable].
-Matcher containsAllInOrder(Iterable expected) =>
-    new _ContainsAllInOrder(expected);
+Matcher containsAllInOrder(Iterable expected) => _ContainsAllInOrder(expected);
 
 class _ContainsAllInOrder extends _IterableMatcher {
   final Iterable _expected;
@@ -327,7 +325,7 @@ class _ContainsAllInOrder extends _IterableMatcher {
       if (matchers[matcherIndex].matches(value, matchState)) matcherIndex++;
       if (matcherIndex == matchers.length) return null;
     }
-    return new StringDescription()
+    return StringDescription()
         .add('did not find a value matching ')
         .addDescriptionOf(matchers[matcherIndex])
         .add(' following expected prior values')

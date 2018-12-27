@@ -34,7 +34,7 @@ void shouldPass(value, Matcher matcher) {
 
 void doesNotThrow() {}
 void doesThrow() {
-  throw new StateError('X');
+  throw StateError('X');
 }
 
 class Widget {
@@ -46,7 +46,7 @@ class SimpleIterable extends Iterable<int> {
 
   SimpleIterable(this.count);
 
-  Iterator<int> get iterator => new _SimpleIterator(count);
+  Iterator<int> get iterator => _SimpleIterator(count);
 }
 
 class _SimpleIterator implements Iterator<int> {

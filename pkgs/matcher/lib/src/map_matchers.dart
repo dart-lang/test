@@ -6,7 +6,7 @@ import 'interfaces.dart';
 import 'util.dart';
 
 /// Returns a matcher which matches maps containing the given [value].
-Matcher containsValue(value) => new _ContainsValue(value);
+Matcher containsValue(value) => _ContainsValue(value);
 
 class _ContainsValue extends Matcher {
   final Object _value;
@@ -20,8 +20,7 @@ class _ContainsValue extends Matcher {
 
 /// Returns a matcher which matches maps containing the key-value pair
 /// with [key] => [value].
-Matcher containsPair(key, value) =>
-    new _ContainsMapping(key, wrapMatcher(value));
+Matcher containsPair(key, value) => _ContainsMapping(key, wrapMatcher(value));
 
 class _ContainsMapping extends Matcher {
   final Object _key;

@@ -5,39 +5,38 @@
 import 'type_matcher.dart';
 
 /// A matcher for [ArgumentError].
-const isArgumentError = const TypeMatcher<ArgumentError>();
+const isArgumentError = TypeMatcher<ArgumentError>();
 
 /// A matcher for [CastError].
-const isCastError = const TypeMatcher<CastError>();
+const isCastError = TypeMatcher<CastError>();
 
 /// A matcher for [ConcurrentModificationError].
 const isConcurrentModificationError =
-    const TypeMatcher<ConcurrentModificationError>();
+    TypeMatcher<ConcurrentModificationError>();
 
 /// A matcher for [CyclicInitializationError].
-const isCyclicInitializationError =
-    const TypeMatcher<CyclicInitializationError>();
+const isCyclicInitializationError = TypeMatcher<CyclicInitializationError>();
 
 /// A matcher for [Exception].
-const isException = const TypeMatcher<Exception>();
+const isException = TypeMatcher<Exception>();
 
 /// A matcher for [FormatException].
-const isFormatException = const TypeMatcher<FormatException>();
+const isFormatException = TypeMatcher<FormatException>();
 
 /// A matcher for [NoSuchMethodError].
-const isNoSuchMethodError = const TypeMatcher<NoSuchMethodError>();
+const isNoSuchMethodError = TypeMatcher<NoSuchMethodError>();
 
 /// A matcher for [NullThrownError].
-const isNullThrownError = const TypeMatcher<NullThrownError>();
+const isNullThrownError = TypeMatcher<NullThrownError>();
 
 /// A matcher for [RangeError].
-const isRangeError = const TypeMatcher<RangeError>();
+const isRangeError = TypeMatcher<RangeError>();
 
 /// A matcher for [StateError].
-const isStateError = const TypeMatcher<StateError>();
+const isStateError = TypeMatcher<StateError>();
 
 /// A matcher for [UnimplementedError].
-const isUnimplementedError = const TypeMatcher<UnimplementedError>();
+const isUnimplementedError = TypeMatcher<UnimplementedError>();
 
 /// A matcher for [UnsupportedError].
-const isUnsupportedError = const TypeMatcher<UnsupportedError>();
+const isUnsupportedError = TypeMatcher<UnsupportedError>();

@@ -9,7 +9,7 @@ import 'pretty_print.dart';
 /// substitution, although conceivably it is a place where other languages
 /// could be supported.
 class StringDescription implements Description {
-  final StringBuffer _out = new StringBuffer();
+  final StringBuffer _out = StringBuffer();
 
   /// Initialize the description with initial contents [init].
   StringDescription([String init = '']) {
