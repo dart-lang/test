@@ -1,8 +1,11 @@
+## 0.2.1
+
+* Require Dart SDK `>=2.1.0`.
+
 ## 0.2.0
 
 * Remove `remote_listener.dart` and `suite_channel_manager.dart` from runner
   and depend on them from `test_api`. 
-
 
 ## 0.1.0
 

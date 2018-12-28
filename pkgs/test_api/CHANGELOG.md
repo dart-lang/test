@@ -1,7 +1,10 @@
+## 0.2.2
+
+* Require Dart SDK `>=2.1.0`.
+
 ## 0.2.1
 
 * Add `remote_listener.dart` and `suite_channel_manager.dart`. 
-
 
 ## 0.2.0
 

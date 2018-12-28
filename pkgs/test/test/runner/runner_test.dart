@@ -258,8 +258,8 @@ $_usage""");
           test.stdout,
           containsInOrder([
             '-1: loading test.dart [E]',
-            "A value of type 'dart.core::int' can't be assigned to a "
-                "variable of type 'dart.core::Function'",
+            "A value of type 'int' can't be assigned to a "
+                "variable of type 'Function'",
           ]));
 
       await test.shouldExit(1);
