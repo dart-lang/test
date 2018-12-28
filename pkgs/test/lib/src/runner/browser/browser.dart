@@ -135,7 +135,7 @@ abstract class Browser {
     // For example this happens with Chrome Headless.
     // See SDK issue: https://github.com/dart-lang/sdk/issues/31264
     for (var stream in _ioSubscriptions) {
-      unawaited( stream.cancel());
+      unawaited(stream.cancel());
     }
 
     (await _process).kill();
