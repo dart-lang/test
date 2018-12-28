@@ -8,10 +8,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:test_core/src/util/io.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
+import 'package:test_core/src/util/io.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
@@ -82,10 +82,11 @@ void main() {
         ]));
 
     var nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+0: success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.

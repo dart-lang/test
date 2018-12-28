@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'browser.dart';
@@ -72,8 +73,8 @@ class Chrome extends Browser {
           remoteDebuggerCompleter.complete(null);
         }
 
-        process.exitCode
-            .then((_) => Directory(dir).deleteSync(recursive: true));
+        unawaited(process.exitCode
+            .then((_) => Directory(dir).deleteSync(recursive: true)));
 
         return process;
       };

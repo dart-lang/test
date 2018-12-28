@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pedantic/pedantic.dart';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -46,7 +47,8 @@ class Firefox extends Browser {
           ..addAll(settings.arguments),
         environment: {"MOZ_CRASHREPORTER_DISABLE": "1"});
 
-    process.exitCode.then((_) => Directory(dir).deleteSync(recursive: true));
+    unawaited(process.exitCode
+        .then((_) => Directory(dir).deleteSync(recursive: true)));
 
     return process;
   }

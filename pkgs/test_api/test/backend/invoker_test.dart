@@ -5,6 +5,8 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
+import 'package:pedantic/pedantic.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/live_test.dart';
@@ -12,7 +14,6 @@ import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
-import 'package:test/test.dart';
 
 import '../utils.dart';
 
@@ -562,7 +563,7 @@ void main() {
       ]);
 
       var isComplete = false;
-      liveTest.run().then((_) => isComplete = true);
+      unawaited(liveTest.run().then((_) => isComplete = true));
       await pumpEventQueue();
       expect(liveTest.state.status, equals(Status.complete));
       expect(isComplete, isFalse);

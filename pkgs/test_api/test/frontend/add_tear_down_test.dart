@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -750,7 +751,7 @@ void main() {
         });
 
         var queue = StreamQueue(engine.onTestStarted);
-        queue.skip(2);
+        unawaited(queue.skip(2));
         var liveTestFuture = queue.next;
 
         expect(await engine.run(), isFalse);

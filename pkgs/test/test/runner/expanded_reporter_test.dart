@@ -317,7 +317,7 @@ void main() {
 }
 
 Future _expectReport(String tests, String expected, {List<String> args}) async {
-  d.file("test.dart", """
+  await d.file("test.dart", """
     import 'dart:async';
 
     import 'package:test/test.dart';

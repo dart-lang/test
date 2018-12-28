@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:typed_data/typed_data.dart';
 
@@ -134,7 +135,7 @@ abstract class Browser {
     // For example this happens with Chrome Headless.
     // See SDK issue: https://github.com/dart-lang/sdk/issues/31264
     for (var stream in _ioSubscriptions) {
-      stream.cancel();
+      unawaited( stream.cancel());
     }
 
     (await _process).kill();

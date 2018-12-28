@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/expect.dart';
@@ -395,11 +396,11 @@ class Invoker {
           //
           // Using [new Future] also avoids starving the DOM or other
           // microtask-level events.
-          Future(() async {
+          unawaited(Future(() async {
             await _test._body();
             await unclosable(_runTearDowns);
             removeOutstandingCallback();
-          });
+          }));
 
           await _outstandingCallbacks.noOutstandingCallbacks;
           if (_timeoutTimer != null) _timeoutTimer.cancel();

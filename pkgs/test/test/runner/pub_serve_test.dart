@@ -223,7 +223,7 @@ void main() {
             containsInOrder(
                 [" main.<fn>", "package:test", "dart:async/zone.dart"]));
         await test.shouldExit(1);
-        pub.kill();
+        await pub.kill();
       }, tags: 'chrome');
 
       test("on Node", () async {
@@ -235,7 +235,7 @@ void main() {
             containsInOrder(
                 [" main.<fn>", "package:test", "dart:async/zone.dart"]));
         await test.shouldExit(1);
-        pub.kill();
+        await pub.kill();
       }, tags: 'node');
     }, skip: 'Broken by sdk#32633');
 
