@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pedantic/pedantic.dart';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
@@ -67,14 +68,14 @@ class PhantomJS extends Browser {
       // don't drain its stdout stream it can deadlock.
       process.stdout.listen((_) {});
 
-      process.exitCode.then((exitCode) {
+      unawaited(process.exitCode.then((exitCode) {
         Directory(dir).deleteSync(recursive: true);
 
         if (exitCode == exit_codes.protocol) {
           throw ApplicationException(
               "Only PhantomJS version 2.0.0 or greater is supported");
         }
-      });
+      }));
 
       if (port != null) {
         remoteDebuggerCompleter.complete(Uri.parse(

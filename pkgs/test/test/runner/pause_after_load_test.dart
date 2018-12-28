@@ -7,9 +7,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -46,10 +46,10 @@ void main() {
     """)));
 
     var nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+0: test1.dart: success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -66,10 +66,10 @@ void main() {
     """)));
 
     nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+1: test2.dart: success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -112,10 +112,10 @@ void main() {
     """)));
 
     var nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+0: [Firefox] success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -134,10 +134,10 @@ void main() {
         ])));
 
     nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+1: [Chrome] success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -155,10 +155,10 @@ void main() {
         ])));
 
     nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+2: [VM] success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -244,10 +244,10 @@ void main() {
     """)));
 
     var nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+0: success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -284,10 +284,10 @@ void main() {
     """)));
 
     var nextLineFired = false;
-    test.stdout.next.then(expectAsync1((line) {
+    unawaited(test.stdout.next.then(expectAsync1((line) {
       expect(line, contains("+0: success"));
       nextLineFired = true;
-    }));
+    })));
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.

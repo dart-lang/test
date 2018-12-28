@@ -57,7 +57,7 @@ void main() {
   });
 
   test("respects top-level @Retry declarations", () async {
-    d.file("test.dart", """
+    await d.file("test.dart", """
           @Retry(3)
 
           import 'dart:async';

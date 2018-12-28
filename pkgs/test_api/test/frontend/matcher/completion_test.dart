@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/state.dart';
 
@@ -173,9 +174,9 @@ void main() {
     test("blocks expectLater's Future", () async {
       var completer = Completer();
       var fired = false;
-      expectLater(completer.future, completion(equals(1))).then((_) {
+      unawaited(expectLater(completer.future, completion(equals(1))).then((_) {
         fired = true;
-      });
+      }));
 
       await pumpEventQueue();
       expect(fired, isFalse);

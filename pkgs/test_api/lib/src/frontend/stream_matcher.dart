@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
+import 'package:pedantic/pedantic.dart';
 
 import '../utils.dart';
 import 'async_matcher.dart';
@@ -156,7 +157,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
 
       // Wait on a timer tick so all buffered events are emitted.
       await Future.delayed(Duration.zero);
-      subscription.cancel();
+      unawaited(subscription.cancel());
 
       var eventsString = events.map((event) {
         if (event == null) {
