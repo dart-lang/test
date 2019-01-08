@@ -28,7 +28,7 @@ import 'util/io.dart';
 /// Signals will only be captured as long as this has an active subscription.
 /// Otherwise, they'll be handled by Dart's default signal handler, which
 /// terminates the program immediately.
-final _signals = Platform.isWindows
+Stream<ProcessSignal> get _signals => Platform.isWindows
     ? ProcessSignal.sigint.watch()
     : StreamGroup.merge(
         [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
