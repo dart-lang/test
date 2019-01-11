@@ -49,7 +49,6 @@ main(List<String> args) async {
   completeShutdown();
 }
 
-
 Future<void> runTests(List<String> args) async {
   await _execute(args);
 }
