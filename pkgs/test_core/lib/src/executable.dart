@@ -44,7 +44,21 @@ final String _globalConfigPath = () {
   }
 }();
 
-main(List<String> args) async {
+void main(List<String> args) async {
+  await _execute(args);
+  completeShutdown();
+}
+
+
+Future<void> runTests(List<String> args) async {
+  await _execute(args);
+}
+
+void completeShutdown() {
+  stdinLines.cancel(immediate: true);
+}
+
+Future<void> _execute(List<String> args) async {
   Configuration configuration;
   try {
     configuration = Configuration.parse(args);
@@ -122,9 +136,6 @@ main(List<String> args) async {
     if (signalSubscription == null) return;
     signalSubscription.cancel();
     signalSubscription = null;
-    if (configuration.shutdownOnCompletion) {
-      stdinLines.cancel(immediate: true);
-    }
     await runner?.close();
   }
 

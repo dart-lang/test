@@ -184,13 +184,6 @@ class Configuration {
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
-  bool get shutdownOnCompletion => _shutdownOnCompletion;
-
-  /// Whether the runner should cancel global streams on test completion.  Used
-  /// to allow a wrapper of the test runner to call it multiple times in a
-  /// single invocation.
-  final bool _shutdownOnCompletion;
-
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
@@ -255,8 +248,7 @@ class Configuration {
       int retry,
       String skipReason,
       PlatformSelector testOn,
-      Iterable<String> addTags,
-      bool shutdownOnCompletion = true}) {
+      Iterable<String> addTags}) {
     var chosenPresetSet = chosenPresets?.toSet();
     var configuration = Configuration._(
         help: help,
@@ -299,8 +291,7 @@ class Configuration {
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
-            addTags: addTags),
-        shutdownOnCompletion: shutdownOnCompletion);
+            addTags: addTags));
     return configuration._resolvePresets();
   }
 
@@ -337,8 +328,7 @@ class Configuration {
       Map<String, RuntimeSettings> overrideRuntimes,
       Map<String, CustomRuntime> defineRuntimes,
       bool noRetry,
-      SuiteConfiguration suiteDefaults,
-      bool shutdownOnCompletion})
+      SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
@@ -362,8 +352,7 @@ class Configuration {
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 SuiteConfiguration(timeout: Timeout.none)
-            : suiteDefaults ?? SuiteConfiguration.empty,
-        _shutdownOnCompletion = shutdownOnCompletion ?? true {
+            : suiteDefaults ?? SuiteConfiguration.empty {
     if (_filename != null && _filename.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
