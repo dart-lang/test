@@ -661,4 +661,36 @@ void main() {
     expect(test.stdout, emitsThrough(contains("\u001b[31m")));
     await test.shouldExit();
   });
+
+  group("runs tests successfully more than once with --no-shutdown-on-completion flag", () {
+    test("defined in a single file", () async {
+      // final executablePath = await absolutePackagePath('test_core',
+      //     'lib/src/executable.dart');
+      await d.file("test.dart", _success).create();
+      await d.file("runner.dart", """
+import 'package:test_core/src/executable.dart' as test;
+
+void main(List<String> args) async {
+  await test.main(args);
+  await test.main(args);
+}
+      """).create();
+      var test = await runDart(
+        ["runner.dart", "--no-color", "--no-shutdown-on-completion", "--", "test.dart"],
+        description: 'dart runner.dart --no-shutdown-on-completion -- test.dart');
+      expect(test.stdout, emitsThrough(containsInOrder([
+        "+0: loading test.dart",
+        "+0: success",
+        "+1: success",
+        "All tests passed!"
+      ])));
+      expect(test.stdout, emitsThrough(containsInOrder([
+        "+0: loading test.dart",
+        "+0: success",
+        "+1: success",
+        "+1: All tests passed!",
+      ])));
+      await test.shouldExit(0);
+    });
+  });
 }

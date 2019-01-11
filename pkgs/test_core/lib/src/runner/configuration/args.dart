@@ -140,6 +140,13 @@ final ArgParser _parser = (() {
           'that points to precompiled JS.',
       hide: true);
 
+  // This option is to enable test runner wrappers to call the runner more than
+  // once during a single invocation.
+  parser.addFlag("shutdown-on-completion",
+      negatable: true,
+      defaultsTo: true,
+      hide: true);
+
   return parser;
 })();
 
@@ -227,7 +234,8 @@ class _Parser {
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,
         excludeTags: excludeTags,
-        noRetry: _ifParsed('no-retry'));
+        noRetry: _ifParsed('no-retry'),
+        shutdownOnCompletion: _ifParsed('shutdown-on-completion'));
   }
 
   /// Returns the parsed option for [name], or `null` if none was parsed.

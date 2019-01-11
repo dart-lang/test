@@ -53,6 +53,7 @@ main(List<String> args) async {
     exitCode = exit_codes.usage;
     return;
   }
+  // print("1@(*&!@(^!&@(*&!@\$*(&@!\$*(&@!(\$&!@\$&@!(*\$&@!(\$&@!(\$*&!@\$&*");
 
   if (configuration.help) {
     _printUsage();
@@ -97,6 +98,9 @@ main(List<String> args) async {
     return;
   }
 
+  // print("2@(*&!@(^!&@(*&!@\$*(&@!\$*(&@!(\$&!@\$&@!(*\$&@!(\$&@!(\$*&!@\$&*");
+
+
   var undefinedPresets = configuration.chosenPresets
       .where((preset) => !configuration.knownPresets.contains(preset))
       .toList();
@@ -106,6 +110,8 @@ main(List<String> args) async {
     exitCode = exit_codes.usage;
     return;
   }
+  // print("3@(*&!@(^!&@(*&!@\$*(&@!\$*(&@!(\$&!@\$&@!(*\$&@!(\$&@!(\$*&!@\$&*");
+
 
   if (!configuration.explicitPaths &&
       !Directory(configuration.paths.single).existsSync()) {
@@ -117,19 +123,24 @@ main(List<String> args) async {
 
   Runner runner;
   StreamSubscription signalSubscription;
+
   close() async {
     if (signalSubscription == null) return;
     signalSubscription.cancel();
     signalSubscription = null;
-    stdinLines.cancel(immediate: true);
+    if (configuration.shutdownOnCompletion) {
+      stdinLines.cancel(immediate: true);
+    }
     await runner?.close();
   }
 
   signalSubscription = _signals.listen((_) => close());
 
   try {
+    // print("4@(*&!@(^!&@(*&!@\$*(&@!\$*(&@!(\$&!@\$&@!(*\$&@!(\$&@!(\$*&!@\$&*");
     runner = Runner(configuration);
     exitCode = (await runner.run()) ? 0 : 1;
+    // print("5@(*&!@(^!&@(*&!@\$*(&@!\$*(&@!(\$&!@\$&@!(*\$&@!(\$&@!(\$*&!@\$&*");
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
@@ -147,6 +158,7 @@ main(List<String> args) async {
         "with the stack trace and instructions for reproducing the error.");
     exitCode = exit_codes.software;
   } finally {
+    // print("6@(*&!@(^!&@(*&!@\$*(&@!\$*(&@!(\$&!@\$&@!(*\$&@!(\$&@!(\$*&!@\$&*");
     await close();
   }
 
