@@ -137,7 +137,10 @@ Future<StreamSubscription> _execute(List<String> args,
 
   Runner runner;
 
-  signalSubscription ??= _signals.listen((_) async => runner?.close());
+  signalSubscription ??= _signals.listen((_) async {
+    completeShutdown(signalSubscription);
+    runner?.close();
+  });
 
   try {
     runner = Runner(configuration);
