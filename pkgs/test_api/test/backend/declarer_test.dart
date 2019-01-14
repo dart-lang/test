@@ -649,10 +649,18 @@ void main() {
 Future _runTest(Test test, {bool shouldFail = false}) {
   var liveTest = test.load(_suite);
 
-  Function(AsyncError) errorCallback = shouldFail
-      ? expectAsync1((_) {})
-      : (error) => registerException(error.error, error.stackTrace);
+  void Function(AsyncError) errorCallback =
+      shouldFail ? shouldFailListener : shouldNotFailListener;
   liveTest.onError.listen(errorCallback);
 
   return liveTest.run();
+}
+
+void shouldNotFailListener(AsyncError error) {
+  registerException(error.error, error.stackTrace);
+}
+
+void shouldFailListener(AsyncError error) {
+  Func1<void, List<AsyncError>> cb = expectAsync1((_) {});
+  cb([error]);
 }
