@@ -28,7 +28,7 @@ import 'util/io.dart';
 /// Signals will only be captured as long as this has an active subscription.
 /// Otherwise, they'll be handled by Dart's default signal handler, which
 /// terminates the program immediately.
-Stream<ProcessSignal> get _signals => Platform.isWindows
+final _signals = Platform.isWindows
     ? ProcessSignal.sigint.watch()
     : StreamGroup.merge(
         [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
@@ -45,31 +45,38 @@ final String _globalConfigPath = () {
 }();
 
 main(List<String> args) async {
-  await _execute(args);
-  completeShutdown();
+  final signalSubscription = await _execute(args);
+  if (signalSubscription != null) {
+    completeShutdown(signalSubscription);
+  }
 }
 
-Future<void> runTests(List<String> args) async {
-  await _execute(args);
+Future<StreamSubscription> runTests(List<String> args,
+    {StreamSubscription signalSubscription}) async {
+  return await _execute(args, signalSubscription: signalSubscription);
 }
 
-void completeShutdown() {
+void completeShutdown(StreamSubscription signalSubscription) {
+  if (signalSubscription == null) return;
+  signalSubscription.cancel();
+  signalSubscription = null;
   stdinLines.cancel(immediate: true);
 }
 
-Future<void> _execute(List<String> args) async {
+Future<StreamSubscription> _execute(List<String> args,
+    {StreamSubscription signalSubscription = null}) async {
   Configuration configuration;
   try {
     configuration = Configuration.parse(args);
   } on FormatException catch (error) {
     _printUsage(error.message);
     exitCode = exit_codes.usage;
-    return;
+    return signalSubscription;
   }
 
   if (configuration.help) {
     _printUsage();
-    return;
+    return signalSubscription;
   }
 
   if (configuration.version) {
@@ -80,7 +87,7 @@ Future<void> _execute(List<String> args) async {
     } else {
       print(version);
     }
-    return;
+    return signalSubscription;
   }
 
   try {
@@ -99,15 +106,15 @@ Future<void> _execute(List<String> args) async {
   } on SourceSpanFormatException catch (error) {
     stderr.writeln(error.toString(color: configuration.color));
     exitCode = exit_codes.data;
-    return;
+    return signalSubscription;
   } on FormatException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
-    return;
+    return signalSubscription;
   } on IOException catch (error) {
     stderr.writeln(error.toString());
     exitCode = exit_codes.noInput;
-    return;
+    return signalSubscription;
   }
 
   var undefinedPresets = configuration.chosenPresets
@@ -117,7 +124,7 @@ Future<void> _execute(List<String> args) async {
     _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
         "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
     exitCode = exit_codes.usage;
-    return;
+    return signalSubscription;
   }
 
   if (!configuration.explicitPaths &&
@@ -125,20 +132,12 @@ Future<void> _execute(List<String> args) async {
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
-    return;
+    return signalSubscription;
   }
 
   Runner runner;
-  StreamSubscription signalSubscription;
 
-  close() async {
-    if (signalSubscription == null) return;
-    signalSubscription.cancel();
-    signalSubscription = null;
-    await runner?.close();
-  }
-
-  signalSubscription = _signals.listen((_) => close());
+  signalSubscription ??= _signals.listen((_) async => runner?.close());
 
   try {
     runner = Runner(configuration);
@@ -160,7 +159,7 @@ Future<void> _execute(List<String> args) async {
         "with the stack trace and instructions for reproducing the error.");
     exitCode = exit_codes.software;
   } finally {
-    await close();
+    await runner?.close();
   }
 
   // TODO(grouma) - figure out why the executable can hang in the travis
@@ -168,6 +167,8 @@ Future<void> _execute(List<String> args) async {
   if (Platform.environment["FORCE_TEST_EXIT"] == "true") {
     exit(exitCode);
   }
+
+  return signalSubscription;
 }
 
 /// Print usage information for this command.

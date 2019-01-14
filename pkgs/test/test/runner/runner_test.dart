@@ -671,11 +671,10 @@ void main() {
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
-  await test.runTests(args);
-  await test.runTests(args);
-  test.completeShutdown();
-}
-      """).create();
+  final sub = await test.runTests(args);
+  await test.runTests(args, signalSubscription: sub);
+  test.completeShutdown(sub);
+}""").create();
       var test = await runDart(["runner.dart", "--no-color", "--", "test.dart"],
           description: 'dart runner.dart -- test.dart');
       expect(
