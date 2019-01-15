@@ -22,18 +22,8 @@ import 'runner/version.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-/// A merged stream of all signals that tell the test runner to shut down
-/// gracefully.
-///
-/// Signals will only be captured as long as this has an active subscription.
-/// Otherwise, they'll be handled by Dart's default signal handler, which
-/// terminates the program immediately.
-final _signals = Platform.isWindows
-    ? ProcessSignal.sigint.watch()
-    : StreamGroup.merge(
-        [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
-
 StreamSubscription signalSubscription;
+bool isShutdown = false;
 
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
@@ -56,13 +46,27 @@ Future<void> runTests(List<String> args) async {
 }
 
 void completeShutdown() {
+  if (isShutdown) return;
+  if (signalSubscription != null) {
+    signalSubscription.cancel();
+    signalSubscription = null;
+  }
+  isShutdown = true;
   stdinLines.cancel(immediate: true);
-  if (signalSubscription == null) return;
-  signalSubscription.cancel();
-  signalSubscription = null;
 }
 
 Future<void> _execute(List<String> args) async {
+  /// A merged stream of all signals that tell the test runner to shut down
+  /// gracefully.
+  ///
+  /// Signals will only be captured as long as this has an active subscription.
+  /// Otherwise, they'll be handled by Dart's default signal handler, which
+  /// terminates the program immediately.
+  final _signals = Platform.isWindows
+      ? ProcessSignal.sigint.watch()
+      : StreamGroup.merge(
+          [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+
   Configuration configuration;
   try {
     configuration = Configuration.parse(args);
@@ -135,7 +139,7 @@ Future<void> _execute(List<String> args) async {
 
   Runner runner;
 
-  signalSubscription ??= _signals.listen((_) async {
+  signalSubscription ??= _signals.listen((signal) async {
     completeShutdown();
     runner?.close();
   });
