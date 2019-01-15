@@ -33,6 +33,8 @@ final _signals = Platform.isWindows
     : StreamGroup.merge(
         [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
+StreamSubscription signalSubscription;
+
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
@@ -45,38 +47,34 @@ final String _globalConfigPath = () {
 }();
 
 main(List<String> args) async {
-  final signalSubscription = await _execute(args);
-  if (signalSubscription != null) {
-    completeShutdown(signalSubscription);
-  }
+  await _execute(args);
+  completeShutdown();
 }
 
-Future<StreamSubscription> runTests(List<String> args,
-    {StreamSubscription signalSubscription}) async {
-  return await _execute(args, signalSubscription: signalSubscription);
+Future<void> runTests(List<String> args) async {
+  await _execute(args);
 }
 
-void completeShutdown(StreamSubscription signalSubscription) {
+void completeShutdown() {
+  stdinLines.cancel(immediate: true);
   if (signalSubscription == null) return;
   signalSubscription.cancel();
   signalSubscription = null;
-  stdinLines.cancel(immediate: true);
 }
 
-Future<StreamSubscription> _execute(List<String> args,
-    {StreamSubscription signalSubscription = null}) async {
+Future<void> _execute(List<String> args) async {
   Configuration configuration;
   try {
     configuration = Configuration.parse(args);
   } on FormatException catch (error) {
     _printUsage(error.message);
     exitCode = exit_codes.usage;
-    return signalSubscription;
+    return;
   }
 
   if (configuration.help) {
     _printUsage();
-    return signalSubscription;
+    return;
   }
 
   if (configuration.version) {
@@ -87,7 +85,7 @@ Future<StreamSubscription> _execute(List<String> args,
     } else {
       print(version);
     }
-    return signalSubscription;
+    return;
   }
 
   try {
@@ -106,15 +104,15 @@ Future<StreamSubscription> _execute(List<String> args,
   } on SourceSpanFormatException catch (error) {
     stderr.writeln(error.toString(color: configuration.color));
     exitCode = exit_codes.data;
-    return signalSubscription;
+    return;
   } on FormatException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
-    return signalSubscription;
+    return;
   } on IOException catch (error) {
     stderr.writeln(error.toString());
     exitCode = exit_codes.noInput;
-    return signalSubscription;
+    return;
   }
 
   var undefinedPresets = configuration.chosenPresets
@@ -124,7 +122,7 @@ Future<StreamSubscription> _execute(List<String> args,
     _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
         "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
     exitCode = exit_codes.usage;
-    return signalSubscription;
+    return;
   }
 
   if (!configuration.explicitPaths &&
@@ -132,13 +130,13 @@ Future<StreamSubscription> _execute(List<String> args,
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
-    return signalSubscription;
+    return;
   }
 
   Runner runner;
 
   signalSubscription ??= _signals.listen((_) async {
-    completeShutdown(signalSubscription);
+    completeShutdown();
     runner?.close();
   });
 
@@ -171,7 +169,7 @@ Future<StreamSubscription> _execute(List<String> args,
     exit(exitCode);
   }
 
-  return signalSubscription;
+  return;
 }
 
 /// Print usage information for this command.
