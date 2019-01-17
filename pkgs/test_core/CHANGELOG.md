@@ -1,6 +1,7 @@
 ## 0.2.1
 
 * Require Dart SDK `>=2.1.0`.
+* Require latest `test_api`.
 
 ## 0.2.0
 
