@@ -557,7 +557,7 @@ void main() {
         expect(
             test.stderr,
             containsInOrder(
-                ['Missing required field "name".', "^^^^^^^^^^^^^^^"]));
+                ['Missing required field "name".', 'extends: chrome']));
         await test.shouldExit(exit_codes.data);
       });
 
@@ -587,7 +587,7 @@ void main() {
         expect(
             test.stderr,
             containsInOrder(
-                ['Missing required field "extends".', "^^^^^^^^^^^^^^"]));
+                ['Missing required field "extends".', 'name: Chromium']));
         await test.shouldExit(exit_codes.data);
       });
 
@@ -638,7 +638,7 @@ void main() {
         expect(
             test.stderr,
             containsInOrder(
-                ['Missing required field "settings".', "^^^^^^^^^^^^^^"]));
+                ['Missing required field "settings".', 'name: Chromium']));
         await test.shouldExit(exit_codes.data);
       });
 
