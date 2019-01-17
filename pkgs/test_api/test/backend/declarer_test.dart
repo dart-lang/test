@@ -649,10 +649,11 @@ void main() {
 Future _runTest(Test test, {bool shouldFail = false}) {
   var liveTest = test.load(_suite);
 
-  Function(AsyncError) errorCallback = shouldFail
-      ? expectAsync1((_) {})
-      : (error) => registerException(error.error, error.stackTrace);
-  liveTest.onError.listen(errorCallback);
+  if (shouldFail) {
+    liveTest.onError.listen(expectAsync1((_) {}));
+  } else {
+    liveTest.onError.listen((e) => registerException(e.error, e.stackTrace));
+  }
 
   return liveTest.run();
 }
