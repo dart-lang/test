@@ -657,12 +657,3 @@ Future _runTest(Test test, {bool shouldFail = false}) {
 
   return liveTest.run();
 }
-
-void shouldNotFailListener(AsyncError error) {
-  registerException(error.error, error.stackTrace);
-}
-
-void shouldFailListener(AsyncError error) {
-  Func1<void, List<AsyncError>> cb = expectAsync1((_) {});
-  cb([error]);
-}
