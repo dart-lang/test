@@ -664,8 +664,6 @@ void main() {
 
   group("runs tests successfully more than once when calling runTests", () {
     test("defined in a single file", () async {
-      // final executablePath = await absolutePackagePath('test_core',
-      //     'lib/src/executable.dart');
       await d.file("test.dart", _success).create();
       await d.file("runner.dart", """
 import 'package:test_core/src/executable.dart' as test;
