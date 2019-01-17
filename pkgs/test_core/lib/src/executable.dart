@@ -22,16 +22,8 @@ import 'runner/version.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-/// A merged stream of all signals that tell the test runner to shut down
-/// gracefully.
-///
-/// Signals will only be captured as long as this has an active subscription.
-/// Otherwise, they'll be handled by Dart's default signal handler, which
-/// terminates the program immediately.
-final _signals = Platform.isWindows
-    ? ProcessSignal.sigint.watch()
-    : StreamGroup.merge(
-        [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+StreamSubscription signalSubscription;
+bool isShutdown = false;
 
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
@@ -45,6 +37,36 @@ final String _globalConfigPath = () {
 }();
 
 main(List<String> args) async {
+  await _execute(args);
+  completeShutdown();
+}
+
+Future<void> runTests(List<String> args) async {
+  await _execute(args);
+}
+
+void completeShutdown() {
+  if (isShutdown) return;
+  if (signalSubscription != null) {
+    signalSubscription.cancel();
+    signalSubscription = null;
+  }
+  isShutdown = true;
+  stdinLines.cancel(immediate: true);
+}
+
+Future<void> _execute(List<String> args) async {
+  /// A merged stream of all signals that tell the test runner to shut down
+  /// gracefully.
+  ///
+  /// Signals will only be captured as long as this has an active subscription.
+  /// Otherwise, they'll be handled by Dart's default signal handler, which
+  /// terminates the program immediately.
+  final _signals = Platform.isWindows
+      ? ProcessSignal.sigint.watch()
+      : StreamGroup.merge(
+          [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+
   Configuration configuration;
   try {
     configuration = Configuration.parse(args);
@@ -116,16 +138,11 @@ main(List<String> args) async {
   }
 
   Runner runner;
-  StreamSubscription signalSubscription;
-  close() async {
-    if (signalSubscription == null) return;
-    signalSubscription.cancel();
-    signalSubscription = null;
-    stdinLines.cancel(immediate: true);
-    await runner?.close();
-  }
 
-  signalSubscription = _signals.listen((_) => close());
+  signalSubscription ??= _signals.listen((signal) async {
+    completeShutdown();
+    runner?.close();
+  });
 
   try {
     runner = Runner(configuration);
@@ -147,7 +164,7 @@ main(List<String> args) async {
         "with the stack trace and instructions for reproducing the error.");
     exitCode = exit_codes.software;
   } finally {
-    await close();
+    await runner?.close();
   }
 
   // TODO(grouma) - figure out why the executable can hang in the travis
@@ -155,6 +172,8 @@ main(List<String> args) async {
   if (Platform.environment["FORCE_TEST_EXIT"] == "true") {
     exit(exitCode);
   }
+
+  return;
 }
 
 /// Print usage information for this command.
