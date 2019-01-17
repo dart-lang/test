@@ -72,9 +72,9 @@ class RemoteException implements Exception {
 
   /// Deserializes the exception portion of [serialized].
   static RemoteException _deserializeException(serialized) {
-    String message = serialized['message'] as String;
-    String type = serialized['type'] as String;
-    String toString = serialized['toString'] as String;
+    final message = serialized['message'] as String;
+    final type = serialized['type'] as String;
+    final toString = serialized['toString'] as String;
 
     switch (serialized['supertype'] as String) {
       case 'TestFailure':
