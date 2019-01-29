@@ -1,3 +1,7 @@
+## 1.5.3
+
+* Allow `analyzer` version `0.35.x`.
+
 ## 1.5.2
 
 * Require Dart SDK `>=2.1.0`.
@@ -9,11 +13,11 @@
 
 ## 1.5.0
 
-* Depend on `package:test_core` for core functionality. 
+* Depend on `package:test_core` for core functionality.
 
 ## 1.4.0
 
-* Depend on `package:test_api` for core functionality. 
+* Depend on `package:test_api` for core functionality.
 
 ## 1.3.4
 
