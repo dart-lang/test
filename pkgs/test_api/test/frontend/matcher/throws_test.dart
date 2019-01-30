@@ -13,14 +13,12 @@ void main() {
   group("synchronous", () {
     group("[throws]", () {
       test("with a function that throws an error", () {
-        // ignore: deprecated_member_use
         expect(() => throw 'oh no', throws);
       });
 
       test("with a function that doesn't throw", () async {
         var closure = () {};
         var liveTest = await runTestBody(() {
-          // ignore: deprecated_member_use
           expect(closure, throws);
         });
 
@@ -36,7 +34,6 @@ void main() {
 
       test("with a non-function", () async {
         var liveTest = await runTestBody(() {
-          // ignore: deprecated_member_use
           expect(10, throws);
         });
 
@@ -111,13 +108,11 @@ void main() {
   group("asynchronous", () {
     group("[throws]", () {
       test("with a Future that throws an error", () {
-        // ignore: deprecated_member_use
         expect(Future.error('oh no'), throws);
       });
 
       test("with a Future that doesn't throw", () async {
         var liveTest = await runTestBody(() {
-          // ignore: deprecated_member_use
           expect(Future.value(), throws);
         });
 
@@ -132,13 +127,11 @@ void main() {
       });
 
       test("with a closure that returns a Future that throws an error", () {
-        // ignore: deprecated_member_use
         expect(() => Future.error('oh no'), throws);
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
         var liveTest = await runTestBody(() {
-          // ignore: deprecated_member_use
           expect(() => Future.value(), throws);
         });
 
@@ -155,7 +148,6 @@ void main() {
       test("won't let the test end until the Future completes", () {
         return expectTestBlocks(() {
           var completer = Completer();
-          // ignore: deprecated_member_use
           expect(completer.future, throws);
           return completer;
         }, (completer) => completer.completeError('oh no'));

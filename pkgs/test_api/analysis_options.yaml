@@ -10,9 +10,8 @@ analyzer:
     unused_import: error
     unused_local_variable: error
     dead_code: error
-    ### Useful to uncomment during development to remove the noise of the many
-    ### deprecated APIs.
-    # deprecated_member_use: ignore
+    # There are a number of deprecated members used through this package
+    deprecated_member_use_from_same_package: ignore
 linter:
   rules:
     - await_only_futures

@@ -7,56 +7,36 @@ import 'package:matcher/matcher.dart';
 import 'throws_matcher.dart';
 
 /// A matcher for functions that throw ArgumentError.
-const Matcher throwsArgumentError =
-    // ignore: deprecated_member_use
-    Throws(isArgumentError);
+const Matcher throwsArgumentError = Throws(isArgumentError);
 
 /// A matcher for functions that throw ConcurrentModificationError.
 const Matcher throwsConcurrentModificationError =
-    // ignore: deprecated_member_use
     Throws(isConcurrentModificationError);
 
 /// A matcher for functions that throw CyclicInitializationError.
 const Matcher throwsCyclicInitializationError =
-    // ignore: deprecated_member_use
     Throws(isCyclicInitializationError);
 
 /// A matcher for functions that throw Exception.
-const Matcher throwsException =
-    // ignore: deprecated_member_use
-    Throws(isException);
+const Matcher throwsException = Throws(isException);
 
 /// A matcher for functions that throw FormatException.
-const Matcher throwsFormatException =
-    // ignore: deprecated_member_use
-    Throws(isFormatException);
+const Matcher throwsFormatException = Throws(isFormatException);
 
 /// A matcher for functions that throw NoSuchMethodError.
-const Matcher throwsNoSuchMethodError =
-    // ignore: deprecated_member_use
-    Throws(isNoSuchMethodError);
+const Matcher throwsNoSuchMethodError = Throws(isNoSuchMethodError);
 
 /// A matcher for functions that throw NullThrownError.
-const Matcher throwsNullThrownError =
-    // ignore: deprecated_member_use
-    Throws(isNullThrownError);
+const Matcher throwsNullThrownError = Throws(isNullThrownError);
 
 /// A matcher for functions that throw RangeError.
-const Matcher throwsRangeError =
-    // ignore: deprecated_member_use
-    Throws(isRangeError);
+const Matcher throwsRangeError = Throws(isRangeError);
 
 /// A matcher for functions that throw StateError.
-const Matcher throwsStateError =
-    // ignore: deprecated_member_use
-    Throws(isStateError);
+const Matcher throwsStateError = Throws(isStateError);
 
 /// A matcher for functions that throw Exception.
-const Matcher throwsUnimplementedError =
-    // ignore: deprecated_member_use
-    Throws(isUnimplementedError);
+const Matcher throwsUnimplementedError = Throws(isUnimplementedError);
 
 /// A matcher for functions that throw UnsupportedError.
-const Matcher throwsUnsupportedError =
-    // ignore: deprecated_member_use
-    Throws(isUnsupportedError);
+const Matcher throwsUnsupportedError = Throws(isUnsupportedError);
