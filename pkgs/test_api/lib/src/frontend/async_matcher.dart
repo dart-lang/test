@@ -39,7 +39,6 @@ abstract class AsyncMatcher extends Matcher {
       Invoker.current.addOutstandingCallback();
       result.then((realResult) {
         if (realResult != null) {
-          // ignore: deprecated_member_use
           fail(formatFailure(this, item, realResult as String));
         }
         Invoker.current.removeOutstandingCallback();

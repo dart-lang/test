@@ -27,12 +27,10 @@ void main() {
 
   group("an async matcher that fails synchronously", () {
     test("throws synchronously", () {
-      // ignore: deprecated_member_use
       expect(() => expect(() {}, throws), throwsA(isTestFailure(anything)));
     });
 
     test("can be used with synchronous operators", () {
-      // ignore: deprecated_member_use
       expect(() {}, isNot(throws));
     });
   });

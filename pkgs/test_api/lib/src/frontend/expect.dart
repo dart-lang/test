@@ -55,7 +55,6 @@ void expect(actual, matcher,
     {String reason,
     skip,
     @Deprecated("Will be removed in 0.13.0.") bool verbose = false,
-    // ignore: deprecated_member_use
     @Deprecated("Will be removed in 0.13.0.") ErrorFormatter formatter}) {
   _expect(actual, matcher,
       reason: reason, skip: skip, verbose: verbose, formatter: formatter);
@@ -77,16 +76,11 @@ Future expectLater(actual, matcher, {String reason, skip}) =>
 
 /// The implementation of [expect] and [expectLater].
 Future _expect(actual, matcher,
-    {String reason,
-    skip,
-    bool verbose = false,
-    // ignore: deprecated_member_use
-    ErrorFormatter formatter}) {
+    {String reason, skip, bool verbose = false, ErrorFormatter formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
 
-    // ignore: deprecated_member_use
     return formatFailure(matcher, actual, mismatchDescription.toString(),
         reason: reason);
   };
@@ -125,13 +119,11 @@ Future _expect(actual, matcher,
         reason: "matchAsync() may only return a String, a Future, or null.");
 
     if (result is String) {
-      // ignore: deprecated_member_use
       fail(formatFailure(matcher as Matcher, actual, result, reason: reason));
     } else if (result is Future) {
       Invoker.current.addOutstandingCallback();
       return result.then((realResult) {
         if (realResult == null) return;
-        // ignore: deprecated_member_use
         fail(formatFailure(matcher as Matcher, actual, realResult as String,
             reason: reason));
       }).whenComplete(() {
