@@ -33,13 +33,6 @@ dependencies:
   # Use an exact version until the test_api package is stable.
   test_api: '0.2.2'
 
-dev_dependencies:
-  fake_async: '>=0.1.2 <2.0.0'
-  pedantic: '^1.4.0'
-  shelf_test_handler: '^1.0.0'
-  test_descriptor: '^1.0.0'
-  test_process: '^1.0.0'
-
 dependency_overrides:
   test_api:
     path: ./../test_api
