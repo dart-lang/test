@@ -219,7 +219,8 @@ class CompactReporter implements Reporter {
     if (liveTest.state.status != Status.complete) return;
 
     if (error is! LoadException) {
-      _errorMessages.add('$_bold$_red[E]$_noColor $_red${_description(liveTest)}');
+      _errorMessages
+          .add('$_bold$_red[E]$_noColor $_red${_description(liveTest)}');
       _errorMessages.add(indent(error.toString()));
       _errorMessages.add(indent('$stackTrace'));
       _errorMessages.add(_noColor);
