@@ -43,24 +43,22 @@ void main() {
         test('failure 3', () => throw new TestFailure('oh no'));""", """
         +0: loading test.dart
         +0: failure 1
-        +0 -1: failure 1 [E]
+        +0 -1: failure 2
+        +0 -2: failure 3
+        +0 -3: Some tests failed.
+        [E] failure 1
           oh no
           test.dart 6:33  main.<fn>
 
 
-        +0 -1: failure 2
-        +0 -2: failure 2 [E]
+        [E] failure 2
           oh no
           test.dart 7:33  main.<fn>
 
 
-        +0 -2: failure 3
-        +0 -3: failure 3 [E]
+        [E] failure 3
           oh no
-          test.dart 8:33  main.<fn>
-
-
-        +0 -3: Some tests failed.""");
+          test.dart 8:33  main.<fn>""");
   });
 
   test("includes the full stack trace with --verbose-trace", () async {
@@ -88,22 +86,18 @@ void main() {
         test('success 2', () {});""", """
         +0: loading test.dart
         +0: failure 1
-        +0 -1: failure 1 [E]
-          oh no
-          test.dart 6:33  main.<fn>
-
-
         +0 -1: success 1
         +1 -1: success 1
         +1 -1: failure 2
-        +1 -2: failure 2 [E]
-          oh no
-          test.dart 8:33  main.<fn>
-
-
         +1 -2: success 2
         +2 -2: success 2
-        +2 -2: Some tests failed.""");
+        +2 -2: Some tests failed.
+        [E] failure 1
+          oh no
+          test.dart 6:33  main.<fn>
+        [E] failure 2
+          oh no
+          test.dart 8:33  main.<fn>""");
   });
 
   test("gracefully handles multiple test failures in a row", () {
@@ -120,29 +114,25 @@ void main() {
         test('wait', () => completer.future);""", """
         +0: loading test.dart
         +0: failures
-        +0 -1: failures [E]
+        +0 -1: wait
+        +1 -1: wait
+        +1 -1: Some tests failed.
+        [E] failures
           first error
           test.dart 10:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
+          dart:async       new Future.microtask
           test.dart 10:15  main.<fn>
-
           second error
           test.dart 11:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
+          dart:async       new Future.microtask
           test.dart 11:15  main.<fn>
-
           third error
           test.dart 12:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
-          test.dart 12:15  main.<fn>
-
-
-        +0 -1: wait
-        +1 -1: wait
-        +1 -1: Some tests failed.""");
+          dart:async       new Future.microtask
+          test.dart 12:15  main.<fn>""");
   });
 
   test("prints the full test name before an error", () {
@@ -153,14 +143,12 @@ void main() {
                'I know that seems like a lot, but I believe in you. A little '
                'more... okay, that should do it.',
            () => throw new TestFailure('oh no'));""", """
-        +0: loading test.dart
-        +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
-        +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it. [E]
-          oh no
-          test.dart 11:18  main.<fn>
-
-
-        +0 -1: Some tests failed.""");
+         +0: loading test.dart
+         +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
+         +0 -1: Some tests failed.
+         [E] really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
+           oh no
+           test.dart 11:18  main.<fn>""");
   });
 
   group("print:", () {
@@ -174,13 +162,12 @@ void main() {
         });""", """
         +0: loading test.dart
         +0: test
+        +1: test
+        +1: All tests passed!
         one
         two
         three
-        four
-
-        +1: test
-        +1: All tests passed!""");
+        four""");
     });
 
     test("handles a print after the test completes", () {
@@ -207,14 +194,12 @@ void main() {
         +0: test
         +1: test
         +1: wait
-        +1: test
+        +2: wait
+        +2: All tests passed!
         one
         two
         three
-        four
-
-        +2: wait
-        +2: All tests passed!""");
+        four""");
     });
 
     test("interleaves prints and errors", () {
@@ -243,27 +228,25 @@ void main() {
         test('wait', () => completer.future);""", """
         +0: loading test.dart
         +0: test
+        +0 -1: wait
+        +1 -1: wait
+        +1 -1: Some tests failed.
         one
         two
-
-        +0 -1: test [E]
+        three
+        four
+        five
+        six
+        [E] test
           first error
           test.dart 24:11  main.<fn>
 
-        three
-        four
+
           second error
           test.dart 13:13  main.<fn>.<fn>
           ===== asynchronous gap ===========================
           dart:async       scheduleMicrotask
-          test.dart 10:11  main.<fn>
-
-        five
-        six
-
-        +0 -1: wait
-        +1 -1: wait
-        +1 -1: Some tests failed.""");
+          test.dart 10:11  main.<fn>""");
     });
 
     test("prints the full test name before a print", () {
@@ -274,13 +257,11 @@ void main() {
                  'characters. I know that seems like a lot, but I believe in '
                  'you. A little more... okay, that should do it.',
              () => print('hello'));""", """
-          +0: loading test.dart
-          +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
-          +0: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
-          hello
-
-          +1: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
-          +1: All tests passed!""");
+         +0: loading test.dart
+         +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
+         +1: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
+         +1: All tests passed!
+         hello""");
     });
 
     test("doesn't print a clock update between two prints", () {
@@ -292,11 +273,10 @@ void main() {
           });""", """
           +0: loading test.dart
           +0: slow
-          hello
-          goodbye
-
           +1: slow
-          +1: All tests passed!""");
+          +1: All tests passed!
+          hello
+          goodbye""");
     });
   });
 
@@ -361,26 +341,24 @@ void main() {
           test('success 2', () {});""", """
           +0: loading test.dart
           +0: failure 1
-          +0 -1: failure 1 [E]
-            oh no
-            test.dart 6:35  main.<fn>
-
-
           +0 -1: skip 1
           +0 ~1 -1: skip 1
           +0 ~1 -1: success 1
           +1 ~1 -1: success 1
           +1 ~1 -1: failure 2
-          +1 ~1 -2: failure 2 [E]
-            oh no
-            test.dart 9:35  main.<fn>
-
-
           +1 ~1 -2: skip 2
           +1 ~2 -2: skip 2
           +1 ~2 -2: success 2
           +2 ~2 -2: success 2
-          +2 ~2 -2: Some tests failed.""");
+          +2 ~2 -2: Some tests failed.
+          [E] failure 1
+            oh no
+            test.dart 6:35  main.<fn>
+
+
+          [E] failure 2
+            oh no
+            test.dart 9:35  main.<fn>""");
     });
 
     test("displays the skip reason if available", () {
@@ -389,14 +367,12 @@ void main() {
           test('skip 2', () {}, skip: 'or another');""", """
           +0: loading test.dart
           +0: skip 1
-            Skip: some reason
-
           +0 ~1: skip 1
           +0 ~1: skip 2
-            Skip: or another
-
           +0 ~2: skip 2
-          +0 ~2: All tests skipped.""");
+          +0 ~2: All tests skipped.
+            Skip: some reason
+            Skip: or another""");
     });
 
     test("runs skipped tests with --run-skipped", () {

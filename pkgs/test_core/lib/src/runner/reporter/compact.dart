@@ -99,6 +99,16 @@ class CompactReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = Set<StreamSubscription>();
 
+  /// A collection of informational messages to print when running is complete.
+  final List<String> _informationalMessages = <String>[];
+
+  /// A collection of error messages to print when running is complete.
+  final List<String> _errorMessages = <String>[];
+
+  /// A collection of messages about skipped tests to print when running is
+  /// complete.
+  final List<String> _skipMessages = <String>[];
+
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   static CompactReporter watch(Engine engine) => CompactReporter._(engine);
@@ -123,6 +133,11 @@ class CompactReporter implements Reporter {
     // previous one. If the reporter was paused, text was probably printed
     // during the pause.
     _lastProgressMessage = null;
+
+    // Dump any deferred messages in case the user decides to bail.
+    _skipMessages.forEach(print);
+    _informationalMessages.forEach(print);
+    _errorMessages.forEach(print);
 
     for (var subscription in _subscriptions) {
       subscription.pause();
@@ -172,13 +187,13 @@ class CompactReporter implements Reporter {
         .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
 
     _subscriptions.add(liveTest.onMessage.listen((message) {
-      _progressLine(_description(liveTest), truncate: false);
-      if (!_printedNewline) print('');
-      _printedNewline = true;
-
       var text = message.text;
-      if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-      print(text);
+      if (message.type == MessageType.skip) {
+        text = '  $_yellow$text$_noColor';
+        _skipMessages.add(text);
+      } else {
+        _informationalMessages.add(text);
+      }
     }));
   }
 
@@ -203,18 +218,16 @@ class CompactReporter implements Reporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest),
-        truncate: false, suffix: " $_bold$_red[E]$_noColor");
-    if (!_printedNewline) print('');
-    _printedNewline = true;
-
     if (error is! LoadException) {
-      print(indent(error.toString()));
-      print(indent('$stackTrace'));
+      _errorMessages.add('$_bold$_red[E]$_noColor $_red${_description(liveTest)}');
+      _errorMessages.add(indent(error.toString()));
+      _errorMessages.add(indent('$stackTrace'));
+      _errorMessages.add(_noColor);
       return;
     }
 
-    // TODO - what type is this?
+    // This can happen if the tester is unable to load the file, e.g. if a user
+    // hit Ctrl+C during testing.
     print(indent(error.toString(color: _config.color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
@@ -262,6 +275,9 @@ class CompactReporter implements Reporter {
       _progressLine("All tests passed!");
       print('');
     }
+    _skipMessages.forEach(print);
+    _informationalMessages.forEach(print);
+    _errorMessages.forEach(print);
   }
 
   /// Prints a line representing the current state of the tests.
@@ -369,7 +385,6 @@ class CompactReporter implements Reporter {
     }
 
     if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";
-
     return name;
   }
 }
