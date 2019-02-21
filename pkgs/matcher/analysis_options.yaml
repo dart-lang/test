@@ -6,6 +6,7 @@ analyzer:
     unused_element: error
     unused_import: error
     unused_local_variable: error
+    todo: ignore
 linter:
   rules:
     - always_declare_return_types

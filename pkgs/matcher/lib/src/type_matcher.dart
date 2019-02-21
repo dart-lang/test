@@ -48,7 +48,7 @@ class TypeMatcher<T> extends Matcher {
           'This argument will be removed in the next release.')
           String name])
       : _name =
-            // ignore: deprecated_member_use
+            // ignore: deprecated_member_use_from_same_package
             name;
 
   /// Returns a new [TypeMatcher] that validates the existing type as well as
