@@ -41,6 +41,7 @@ class CustomMatcher extends Matcher {
   /// Override this to extract the interesting feature.
   Object featureValueOf(actual) => actual;
 
+  @override
   bool matches(item, Map matchState) {
     try {
       var f = featureValueOf(item);
@@ -62,9 +63,11 @@ class CustomMatcher extends Matcher {
     return false;
   }
 
+  @override
   Description describe(Description description) =>
       description.add(_featureDescription).add(' ').addDescriptionOf(_matcher);
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (matchState['custom.exception'] != null) {

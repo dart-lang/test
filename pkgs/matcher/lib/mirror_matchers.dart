@@ -20,6 +20,7 @@ class _HasProperty extends Matcher {
 
   const _HasProperty(this._name, [this._matcher]);
 
+  @override
   bool matches(item, Map matchState) {
     var mirror = reflect(item);
     var classMirror = mirror.type;
@@ -48,6 +49,7 @@ class _HasProperty extends Matcher {
     return resultMatches;
   }
 
+  @override
   Description describe(Description description) {
     description.add('has property "$_name"');
     if (_matcher != null) {
@@ -56,6 +58,7 @@ class _HasProperty extends Matcher {
     return description;
   }
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var reason = matchState == null ? null : matchState['reason'];

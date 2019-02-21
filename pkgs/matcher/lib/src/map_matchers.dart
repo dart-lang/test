@@ -13,7 +13,9 @@ class _ContainsValue extends Matcher {
 
   const _ContainsValue(this._value);
 
+  @override
   bool matches(item, Map matchState) => item.containsValue(_value);
+  @override
   Description describe(Description description) =>
       description.add('contains value ').addDescriptionOf(_value);
 }
@@ -28,9 +30,11 @@ class _ContainsMapping extends Matcher {
 
   const _ContainsMapping(this._key, this._valueMatcher);
 
+  @override
   bool matches(item, Map matchState) =>
       item.containsKey(_key) && _valueMatcher.matches(item[_key], matchState);
 
+  @override
   Description describe(Description description) {
     return description
         .add('contains pair ')
@@ -39,6 +43,7 @@ class _ContainsMapping extends Matcher {
         .addDescriptionOf(_valueMatcher);
   }
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (!item.containsKey(_key)) {

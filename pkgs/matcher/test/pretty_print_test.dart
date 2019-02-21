@@ -13,14 +13,17 @@ import 'test_utils.dart';
 class DefaultToString {}
 
 class CustomToString {
+  @override
   String toString() => "string representation";
 }
 
 class _PrivateName {
+  @override
   String toString() => "string representation";
 }
 
 class _PrivateNameIterable extends IterableMixin {
+  @override
   Iterator get iterator => [1, 2, 3].iterator;
 }
 

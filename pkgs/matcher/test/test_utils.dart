@@ -46,6 +46,7 @@ class SimpleIterable extends Iterable<int> {
 
   SimpleIterable(this.count);
 
+  @override
   Iterator<int> get iterator => _SimpleIterator(count);
 }
 
@@ -55,6 +56,7 @@ class _SimpleIterator implements Iterator<int> {
 
   _SimpleIterator(this._count);
 
+  @override
   bool moveNext() {
     if (_count > 0) {
       _current = _count;
@@ -65,5 +67,6 @@ class _SimpleIterator implements Iterator<int> {
     return false;
   }
 
+  @override
   int get current => _current;
 }

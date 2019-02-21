@@ -17,9 +17,11 @@ class _IsEqualIgnoringCase extends FeatureMatcher<String> {
       : _value = value,
         _matchValue = value.toLowerCase();
 
+  @override
   bool typedMatches(String item, Map matchState) =>
       _matchValue == item.toLowerCase();
 
+  @override
   Description describe(Description description) =>
       description.addDescriptionOf(_value).add(' ignoring case');
 }
@@ -52,12 +54,15 @@ class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
       : _value = value,
         _matchValue = collapseWhitespace(value);
 
+  @override
   bool typedMatches(String item, Map matchState) =>
       _matchValue == collapseWhitespace(item);
 
+  @override
   Description describe(Description description) =>
       description.addDescriptionOf(_matchValue).add(' ignoring whitespace');
 
+  @override
   Description describeTypedMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     return mismatchDescription
@@ -76,8 +81,10 @@ class _StringStartsWith extends FeatureMatcher<String> {
 
   const _StringStartsWith(this._prefix);
 
+  @override
   bool typedMatches(item, Map matchState) => item.startsWith(_prefix);
 
+  @override
   Description describe(Description description) =>
       description.add('a string starting with ').addDescriptionOf(_prefix);
 }
@@ -91,8 +98,10 @@ class _StringEndsWith extends FeatureMatcher<String> {
 
   const _StringEndsWith(this._suffix);
 
+  @override
   bool typedMatches(item, Map matchState) => item.endsWith(_suffix);
 
+  @override
   Description describe(Description description) =>
       description.add('a string ending with ').addDescriptionOf(_suffix);
 }
@@ -111,6 +120,7 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
 
   const _StringContainsInOrder(this._substrings);
 
+  @override
   bool typedMatches(item, Map matchState) {
     var fromIndex = 0;
     for (var s in _substrings) {
@@ -120,6 +130,7 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
     return true;
   }
 
+  @override
   Description describe(Description description) => description.addAll(
       'a string containing ', ', ', ' in order', _substrings);
 }
@@ -144,8 +155,10 @@ class _MatchesRegExp extends FeatureMatcher<String> {
     }
   }
 
+  @override
   bool typedMatches(item, Map matchState) => _regexp.hasMatch(item);
 
+  @override
   Description describe(Description description) =>
       description.add("match '${_regexp.pattern}'");
 }

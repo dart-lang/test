@@ -69,11 +69,13 @@ class TypeMatcher<T> extends Matcher {
           Object feature(T source), String description, Object matcher) =>
       HavingMatcher(this, description, feature, matcher);
 
+  @override
   Description describe(Description description) {
     var name = _name ?? _stripDynamic(T);
     return description.add("<Instance of '$name'>");
   }
 
+  @override
   bool matches(Object item, Map matchState) => item is T;
 }
 

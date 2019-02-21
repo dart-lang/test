@@ -21,10 +21,12 @@ class HavingMatcher<T> implements TypeMatcher<T> {
           ..addAll(existing ?? [])
           ..add(_FunctionMatcher<T>(description, feature, matcher));
 
+  @override
   TypeMatcher<T> having(
           Object feature(T source), String description, Object matcher) =>
       HavingMatcher(_parent, description, feature, matcher, _functionMatchers);
 
+  @override
   bool matches(item, Map matchState) {
     for (var matcher in <Matcher>[_parent].followedBy(_functionMatchers)) {
       if (!matcher.matches(item, matchState)) {
@@ -35,6 +37,7 @@ class HavingMatcher<T> implements TypeMatcher<T> {
     return true;
   }
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var matcher = matchState['matcher'] as Matcher;
@@ -43,6 +46,7 @@ class HavingMatcher<T> implements TypeMatcher<T> {
     return mismatchDescription;
   }
 
+  @override
   Description describe(Description description) => description
       .add('')
       .addDescriptionOf(_parent)

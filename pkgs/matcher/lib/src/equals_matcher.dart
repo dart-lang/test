@@ -29,11 +29,14 @@ class _StringEqualsMatcher extends FeatureMatcher<String> {
 
   _StringEqualsMatcher(this._value);
 
+  @override
   bool typedMatches(String item, Map matchState) => _value == item;
 
+  @override
   Description describe(Description description) =>
       description.addDescriptionOf(_value);
 
+  @override
   Description describeTypedMismatch(String item,
       Description mismatchDescription, Map matchState, bool verbose) {
     var buff = StringBuffer();
@@ -244,12 +247,15 @@ class _DeepMatcher extends Matcher {
     return reason;
   }
 
+  @override
   bool matches(item, Map matchState) =>
       _match(_expected, item, matchState) == null;
 
+  @override
   Description describe(Description description) =>
       description.addDescriptionOf(_expected);
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var reason = matchState['reason'] as String ?? '';

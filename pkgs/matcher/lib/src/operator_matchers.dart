@@ -13,8 +13,10 @@ class _IsNot extends Matcher {
 
   const _IsNot(this._matcher);
 
+  @override
   bool matches(item, Map matchState) => !_matcher.matches(item, matchState);
 
+  @override
   Description describe(Description description) =>
       description.add('not ').addDescriptionOf(_matcher);
 }
@@ -34,6 +36,7 @@ class _AllOf extends Matcher {
 
   const _AllOf(this._matchers);
 
+  @override
   bool matches(item, Map matchState) {
     for (var matcher in _matchers) {
       if (!matcher.matches(item, matchState)) {
@@ -44,6 +47,7 @@ class _AllOf extends Matcher {
     return true;
   }
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var matcher = matchState['matcher'];
@@ -52,6 +56,7 @@ class _AllOf extends Matcher {
     return mismatchDescription;
   }
 
+  @override
   Description describe(Description description) =>
       description.addAll('(', ' and ', ')', _matchers);
 }
@@ -75,6 +80,7 @@ class _AnyOf extends Matcher {
 
   const _AnyOf(this._matchers);
 
+  @override
   bool matches(item, Map matchState) {
     for (var matcher in _matchers) {
       if (matcher.matches(item, matchState)) {
@@ -84,6 +90,7 @@ class _AnyOf extends Matcher {
     return false;
   }
 
+  @override
   Description describe(Description description) =>
       description.addAll('(', ' or ', ')', _matchers);
 }

@@ -17,6 +17,7 @@ class _EveryElement extends _IterableMatcher {
 
   _EveryElement(this._matcher);
 
+  @override
   bool typedMatches(Iterable item, Map matchState) {
     var i = 0;
     for (var element in item) {
@@ -29,9 +30,11 @@ class _EveryElement extends _IterableMatcher {
     return true;
   }
 
+  @override
   Description describe(Description description) =>
       description.add('every element(').addDescriptionOf(_matcher).add(')');
 
+  @override
   Description describeTypedMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (matchState['index'] != null) {
@@ -67,9 +70,11 @@ class _AnyElement extends _IterableMatcher {
 
   _AnyElement(this._matcher);
 
+  @override
   bool typedMatches(Iterable item, Map matchState) =>
       item.any((e) => _matcher.matches(e, matchState));
 
+  @override
   Description describe(Description description) =>
       description.add('some element ').addDescriptionOf(_matcher);
 }
@@ -86,12 +91,15 @@ class _OrderedEquals extends _IterableMatcher {
 
   _OrderedEquals(this._expected) : _matcher = equals(_expected, 1);
 
+  @override
   bool typedMatches(Iterable item, Map matchState) =>
       _matcher.matches(item, matchState);
 
+  @override
   Description describe(Description description) =>
       description.add('equals ').addDescriptionOf(_expected).add(' ordered');
 
+  @override
   Description describeTypedMismatch(Iterable item,
       Description mismatchDescription, Map matchState, bool verbose) {
     return _matcher.describeMismatch(
@@ -113,6 +121,7 @@ class _UnorderedEquals extends _UnorderedMatches {
       : _expectedValues = expected.toList(),
         super(expected.map(equals));
 
+  @override
   Description describe(Description description) => description
       .add('equals ')
       .addDescriptionOf(_expectedValues)
@@ -182,14 +191,17 @@ class _UnorderedMatches extends _IterableMatcher {
     return null;
   }
 
+  @override
   bool typedMatches(Iterable item, Map mismatchState) =>
       _test(item.toList()) == null;
 
+  @override
   Description describe(Description description) => description
       .add('matches ')
       .addAll('[', ', ', ']', _expected)
       .add(' unordered');
 
+  @override
   Description describeTypedMismatch(item, Description mismatchDescription,
           Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item.toList()));
@@ -238,6 +250,7 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
 
   _PairwiseCompare(this._expected, this._comparator, this._description);
 
+  @override
   bool typedMatches(Iterable item, Map matchState) {
     if (item.length != _expected.length) return false;
     var iterator = item.iterator;
@@ -254,9 +267,11 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
     return true;
   }
 
+  @override
   Description describe(Description description) =>
       description.add('pairwise $_description ').addDescriptionOf(_expected);
 
+  @override
   Description describeTypedMismatch(Iterable item,
       Description mismatchDescription, Map matchState, bool verbose) {
     if (item.length != _expected.length) {

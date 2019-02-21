@@ -74,6 +74,7 @@ class _OrderingMatcher extends Matcher {
       [bool valueInDescription = true])
       : _valueInDescription = valueInDescription;
 
+  @override
   bool matches(item, Map matchState) {
     if (item == _value) {
       return _equalValue;
@@ -84,6 +85,7 @@ class _OrderingMatcher extends Matcher {
     }
   }
 
+  @override
   Description describe(Description description) {
     if (_valueInDescription) {
       return description
@@ -95,6 +97,7 @@ class _OrderingMatcher extends Matcher {
     }
   }
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     mismatchDescription.add('is not ');

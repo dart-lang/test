@@ -17,18 +17,21 @@ class _IsCloseTo extends FeatureMatcher<num> {
 
   const _IsCloseTo(this._value, this._delta);
 
+  @override
   bool typedMatches(item, Map matchState) {
     var diff = item - _value;
     if (diff < 0) diff = -diff;
     return diff <= _delta;
   }
 
+  @override
   Description describe(Description description) => description
       .add('a numeric value within ')
       .addDescriptionOf(_delta)
       .add(' of ')
       .addDescriptionOf(_value);
 
+  @override
   Description describeTypedMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var diff = item - _value;
@@ -63,6 +66,7 @@ class _InRange extends FeatureMatcher<num> {
   const _InRange(
       this._low, this._high, this._lowMatchValue, this._highMatchValue);
 
+  @override
   bool typedMatches(value, Map matchState) {
     if (value < _low || value > _high) {
       return false;
@@ -76,6 +80,7 @@ class _InRange extends FeatureMatcher<num> {
     return true;
   }
 
+  @override
   Description describe(Description description) =>
       description.add("be in range from "
           "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "

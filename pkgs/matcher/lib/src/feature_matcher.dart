@@ -11,11 +11,13 @@ import 'type_matcher.dart';
 abstract class FeatureMatcher<T> extends TypeMatcher<T> {
   const FeatureMatcher();
 
+  @override
   bool matches(item, Map matchState) =>
       super.matches(item, matchState) && typedMatches(item, matchState);
 
   bool typedMatches(T item, Map matchState);
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is T) {

@@ -13,8 +13,10 @@ const Matcher isEmpty = _Empty();
 class _Empty extends Matcher {
   const _Empty();
 
+  @override
   bool matches(item, Map matchState) => item.isEmpty;
 
+  @override
   Description describe(Description description) => description.add('empty');
 }
 
@@ -24,8 +26,10 @@ const Matcher isNotEmpty = _NotEmpty();
 class _NotEmpty extends Matcher {
   const _NotEmpty();
 
+  @override
   bool matches(item, Map matchState) => item.isNotEmpty;
 
+  @override
   Description describe(Description description) => description.add('non-empty');
 }
 
@@ -37,13 +41,17 @@ const Matcher isNotNull = _IsNotNull();
 
 class _IsNull extends Matcher {
   const _IsNull();
+  @override
   bool matches(item, Map matchState) => item == null;
+  @override
   Description describe(Description description) => description.add('null');
 }
 
 class _IsNotNull extends Matcher {
   const _IsNotNull();
+  @override
   bool matches(item, Map matchState) => item != null;
+  @override
   Description describe(Description description) => description.add('not null');
 }
 
@@ -55,13 +63,17 @@ const Matcher isFalse = _IsFalse();
 
 class _IsTrue extends Matcher {
   const _IsTrue();
+  @override
   bool matches(item, Map matchState) => item == true;
+  @override
   Description describe(Description description) => description.add('true');
 }
 
 class _IsFalse extends Matcher {
   const _IsFalse();
+  @override
   bool matches(item, Map matchState) => item == false;
+  @override
   Description describe(Description description) => description.add('false');
 }
 
@@ -73,15 +85,19 @@ const Matcher isNotNaN = _IsNotNaN();
 
 class _IsNaN extends FeatureMatcher<num> {
   const _IsNaN();
+  @override
   bool typedMatches(num item, Map matchState) =>
       double.nan.compareTo(item) == 0;
+  @override
   Description describe(Description description) => description.add('NaN');
 }
 
 class _IsNotNaN extends FeatureMatcher<num> {
   const _IsNotNaN();
+  @override
   bool typedMatches(num item, Map matchState) =>
       double.nan.compareTo(item) != 0;
+  @override
   Description describe(Description description) => description.add('not NaN');
 }
 
@@ -92,8 +108,10 @@ Matcher same(expected) => _IsSameAs(expected);
 class _IsSameAs extends Matcher {
   final Object _expected;
   const _IsSameAs(this._expected);
+  @override
   bool matches(item, Map matchState) => identical(item, _expected);
   // If all types were hashable we could show a hash here.
+  @override
   Description describe(Description description) =>
       description.add('same instance as ').addDescriptionOf(_expected);
 }
@@ -103,7 +121,9 @@ const Matcher anything = _IsAnything();
 
 class _IsAnything extends Matcher {
   const _IsAnything();
+  @override
   bool matches(item, Map matchState) => true;
+  @override
   Description describe(Description description) => description.add('anything');
 }
 
@@ -128,6 +148,7 @@ const Matcher returnsNormally = _ReturnsNormally();
 class _ReturnsNormally extends FeatureMatcher<Function> {
   const _ReturnsNormally();
 
+  @override
   bool typedMatches(Function f, Map matchState) {
     try {
       f();
@@ -138,9 +159,11 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
     }
   }
 
+  @override
   Description describe(Description description) =>
       description.add("return normally");
 
+  @override
   Description describeTypedMismatch(Function item,
       Description mismatchDescription, Map matchState, bool verbose) {
     mismatchDescription.add('threw ').addDescriptionOf(matchState['exception']);
@@ -165,6 +188,7 @@ class _HasLength extends Matcher {
   final Matcher _matcher;
   const _HasLength([Matcher matcher]) : _matcher = matcher;
 
+  @override
   bool matches(item, Map matchState) {
     try {
       // This is harmless code that will throw if no length property
@@ -178,9 +202,11 @@ class _HasLength extends Matcher {
     throw UnsupportedError('Should never get here');
   }
 
+  @override
   Description describe(Description description) =>
       description.add('an object with length of ').addDescriptionOf(_matcher);
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     try {
@@ -212,6 +238,7 @@ class _Contains extends Matcher {
 
   const _Contains(this._expected);
 
+  @override
   bool matches(item, Map matchState) {
     var expected = _expected;
     if (item is String) {
@@ -228,9 +255,11 @@ class _Contains extends Matcher {
     return false;
   }
 
+  @override
   Description describe(Description description) =>
       description.add('contains ').addDescriptionOf(_expected);
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is String || item is Iterable || item is Map) {
@@ -263,8 +292,10 @@ class _In<T> extends FeatureMatcher<T> {
 
   const _In(this._source, this._containsFunction);
 
+  @override
   bool typedMatches(T item, Map matchState) => _containsFunction(item);
 
+  @override
   Description describe(Description description) =>
       description.add('is in ').addDescriptionOf(_source);
 }
@@ -287,8 +318,10 @@ class _Predicate<T> extends FeatureMatcher<T> {
 
   _Predicate(this._matcher, this._description);
 
+  @override
   bool typedMatches(T item, Map matchState) => _matcher(item);
 
+  @override
   Description describe(Description description) =>
       description.add(_description);
 }
