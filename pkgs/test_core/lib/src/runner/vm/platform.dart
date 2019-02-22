@@ -119,7 +119,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
     import "${p.toUri(p.absolute(path))}" as test;
 
     void main(_, SendPort message) {
-      var channel = serializeSuite(test.main);
+      var channel = serializeSuite(() => test.main);
       new IsolateChannel.connectSend(message).pipe(channel);
     }
   ''', message, checked: true);
