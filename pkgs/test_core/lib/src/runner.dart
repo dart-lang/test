@@ -122,9 +122,9 @@ class Runner {
 
         if (_closed) return false;
 
-        if (_engine.passed.length == 0 &&
-            _engine.failed.length == 0 &&
-            _engine.skipped.length == 0 &&
+        if (_engine.passed.isEmpty &&
+            _engine.failed.isEmpty &&
+            _engine.skipped.isEmpty &&
             _config.suiteDefaults.patterns.isNotEmpty) {
           var patterns = toSentence(_config.suiteDefaults.patterns.map(
               (pattern) => pattern is RegExp
@@ -213,7 +213,7 @@ class Runner {
 
         if (_debugOperation != null) await _debugOperation.cancel();
 
-        if (_suiteSubscription != null) _suiteSubscription.cancel();
+        if (_suiteSubscription != null) await _suiteSubscription.cancel();
         _suiteSubscription = null;
 
         // Make sure we close the engine *before* the loader. Otherwise,

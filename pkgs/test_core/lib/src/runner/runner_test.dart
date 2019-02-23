@@ -91,7 +91,7 @@ class RunnerTest extends Test {
         // whenever the test touches it.
         testChannel.sink.add({'command': 'close'});
         await controller.completer.future;
-        testChannel.sink.close();
+        await testChannel.sink.close();
       });
     }, groups: groups);
     return controller.liveTest;

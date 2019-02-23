@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 
 export 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
+import 'package:pedantic/pedantic.dart';
 
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
@@ -64,7 +65,7 @@ Declarer get _declarer {
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');
-    Future.error("Dummy exception to set exit code.");
+    unawaited(Future.error("Dummy exception to set exit code."));
   });
   return _globalDeclarer;
 }

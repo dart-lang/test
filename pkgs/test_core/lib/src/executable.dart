@@ -141,7 +141,7 @@ Future<void> _execute(List<String> args) async {
 
   signalSubscription ??= _signals.listen((signal) async {
     completeShutdown();
-    runner?.close();
+    await runner?.close();
   });
 
   try {
