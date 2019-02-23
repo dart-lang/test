@@ -455,6 +455,7 @@ class _Parser {
 
     var list = expression as ListLiteral;
 
+    // ignore: deprecated_member_use
     return list.elements;
   }
 
