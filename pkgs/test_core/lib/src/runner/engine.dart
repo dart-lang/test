@@ -7,6 +7,7 @@ import 'dart:collection';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
@@ -462,20 +463,20 @@ class Engine {
 
     // Schedule a microtask to ensure that [onTestStarted] fires before the
     // first [LiveTest.onStateChange] event.
-    Future.microtask(liveTest.run);
+    await Future.microtask(liveTest.run);
 
     var innerSuite = await suite.suite;
     if (innerSuite == null) return null;
 
     var innerController = LiveSuiteController(innerSuite);
-    innerController.liveSuite.onClose.then((_) {
+    unawaited(innerController.liveSuite.onClose.whenComplete(() {
       // When the main suite is closed, close the load suite and its test as
       // well. This doesn't release any resources, but it does close streams
       // which indicates that the load test won't experience an error in the
       // future.
       liveTest.close();
       controller.close();
-    });
+    }));
 
     return innerController;
   }
@@ -531,8 +532,8 @@ class Engine {
     await Future(() {});
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
-    _onSuiteAddedController.close();
-    _suiteController.close();
+    await _onSuiteAddedController.close();
+    await _suiteController.close();
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
