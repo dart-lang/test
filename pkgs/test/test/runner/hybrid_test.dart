@@ -28,7 +28,7 @@ void main() {
 
     group("in the browser", () {
       _spawnHybridUriTests(["-p", "chrome"]);
-    }, tags: "chrome", skip: "https://github.com/dart-lang/sdk/issues/33388");
+    }, tags: "chrome");
 
     group("in Node.js", () {
       _spawnHybridUriTests(["-p", "node"]);
