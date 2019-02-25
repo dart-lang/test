@@ -582,6 +582,6 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
   test("emits an error from the stream channel if the isolate fails to load",
       () {
     expect(spawnHybridUri("non existent file").stream.first,
-        throwsA(TypeMatcher<IsolateSpawnException>()));
+        throwsA(TypeMatcher<Exception>()));
   });
 }

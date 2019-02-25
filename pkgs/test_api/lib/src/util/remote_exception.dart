@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:stack_trace/stack_trace.dart';
 
@@ -42,15 +41,7 @@ class RemoteException implements Exception {
       }
     }
 
-    // It's possible (although unlikely) for a user-defined class to have
-    // multiple of these supertypes. That's fine, though, since we only care
-    // about core-library-raised IsolateSpawnExceptions anyway.
-    String supertype;
-    if (error is TestFailure) {
-      supertype = 'TestFailure';
-    } else if (error is IsolateSpawnException) {
-      supertype = 'IsolateSpawnException';
-    }
+    final supertype = (error is TestFailure) ? 'TestFailure' : null;
 
     return {
       'message': message,
@@ -79,8 +70,6 @@ class RemoteException implements Exception {
     switch (serialized['supertype'] as String) {
       case 'TestFailure':
         return _RemoteTestFailure(message, type, toString);
-      case 'IsolateSpawnException':
-        return _RemoteIsolateSpawnException(message, type, toString);
       default:
         return RemoteException._(message, type, toString);
     }
@@ -97,12 +86,5 @@ class RemoteException implements Exception {
 /// results depending on whether an exception was a failure or an error.
 class _RemoteTestFailure extends RemoteException implements TestFailure {
   _RemoteTestFailure(String message, String type, String toString)
-      : super._(message, type, toString);
-}
-
-/// A subclass of [RemoteException] that implements [IsolateSpawnException].
-class _RemoteIsolateSpawnException extends RemoteException
-    implements IsolateSpawnException {
-  _RemoteIsolateSpawnException(String message, String type, String toString)
       : super._(message, type, toString);
 }
