@@ -475,8 +475,11 @@ class _Parser {
 
   /// Parses a constant String literal.
   StringLiteral _parseString(Expression expression) {
-    if (expression is StringLiteral) return expression;
-    throw SourceSpanFormatException('Expected a String.', _spanFor(expression));
+    if (expression is StringLiteral && expression.stringValue != null) {
+      return expression;
+    }
+    throw SourceSpanFormatException(
+        'Expected a String literal.', _spanFor(expression));
   }
 
   /// Creates a [SourceSpan] for [node].

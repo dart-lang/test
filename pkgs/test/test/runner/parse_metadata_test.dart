@@ -240,6 +240,12 @@ library foo;
             .writeAsStringSync("@Tags(['a'])\n@Tags(['b'])\nlibrary foo;");
         expect(() => parseMetadata(_path, Set()), throwsFormatException);
       });
+
+      test('String interpolation', () {
+        File(_path)
+            .writeAsStringSync("@Tags(['\$a'])\nlibrary foo;\nconst a = 'a';");
+        expect(() => parseMetadata(_path, Set()), throwsFormatException);
+      });
     });
   });
 
