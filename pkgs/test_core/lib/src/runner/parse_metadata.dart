@@ -437,14 +437,19 @@ class _Parser {
     key ??= (expression) => expression as K;
     value ??= (expression) => expression as V;
 
-    if (expression is! MapLiteral) {
+    if (expression is! SetOrMapLiteral) {
       throw SourceSpanFormatException('Expected a Map.', _spanFor(expression));
     }
 
-    var map = expression as MapLiteral;
-
-    return Map.fromIterables(map.entries.map((e) => key(e.key)),
-        map.entries.map((e) => value(e.value)));
+    var map = <K, V>{};
+    for (var element in (expression as SetOrMapLiteral).elements2) {
+      if (element is MapLiteralEntry) {
+        map[key(element.key)] = value(element.value);
+      } else {
+        throw SourceSpanFormatException('Expected a map entry.', _spanFor(element));
+      }
+    }
+    return map;
   }
 
   /// Parses a List literal.
@@ -455,8 +460,7 @@ class _Parser {
 
     var list = expression as ListLiteral;
 
-    // ignore: deprecated_member_use
-    return list.elements;
+    return list.elements2.cast<Expression>();
   }
 
   /// Parses a constant number literal.
