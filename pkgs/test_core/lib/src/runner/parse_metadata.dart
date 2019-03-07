@@ -446,7 +446,8 @@ class _Parser {
       if (element is MapLiteralEntry) {
         map[key(element.key)] = value(element.value);
       } else {
-        throw SourceSpanFormatException('Expected a map entry.', _spanFor(element));
+        throw SourceSpanFormatException(
+            'Expected a map entry.', _spanFor(element));
       }
     }
     return map;
