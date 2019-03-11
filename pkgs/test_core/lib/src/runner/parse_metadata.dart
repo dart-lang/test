@@ -461,7 +461,13 @@ class _Parser {
 
     var list = expression as ListLiteral;
 
-    return list.elements2.cast<Expression>();
+    return list.elements2.map((e) {
+      if (e is! Expression) {
+        throw SourceSpanFormatException(
+            'Expected only literal elements.', _spanFor(e));
+      }
+      return e as Expression;
+    }).toList();
   }
 
   /// Parses a constant number literal.
