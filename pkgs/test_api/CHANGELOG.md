@@ -1,3 +1,7 @@
+## 0.2.3
+
+* Update to matcher version `0.12.5`.
+
 ## 0.2.2
 
 * Require Dart SDK `>=2.1.0`.
