@@ -1,6 +1,7 @@
 ## 0.2.2
 
 * Allow `analyzer` version `0.36.x`.
+* Update to matcher version `0.12.5`.
 
 ## 0.2.1+1
 
