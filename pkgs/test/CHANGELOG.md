@@ -1,3 +1,7 @@
+## 1.5.4
+
+* Allow `analyzer` version `0.36.x`.
+
 ## 1.5.3
 
 * Allow `analyzer` version `0.35.x`.
