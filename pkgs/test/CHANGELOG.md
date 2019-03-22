@@ -1,5 +1,6 @@
 ## 1.6.0
 
+* Allow `analyzer` version `0.36.x`.
 * Matcher changes:
   * Add `isA()` to create `TypeMatcher` instances in a more fluent way.
   * Add `isCastError`.
@@ -8,10 +9,6 @@
     complete ordering. For instance `greaterThan` now compares with the `>`
     operator rather not `<` and not `=`. This could cause tests which relied on
     this bug to start failing.
-
-## 1.5.4
-
-* Allow `analyzer` version `0.36.x`.
 
 ## 1.5.3
 
