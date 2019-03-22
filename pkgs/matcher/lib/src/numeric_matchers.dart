@@ -77,7 +77,8 @@ class _InRange extends FeatureMatcher<num> {
     if (value == _high) {
       return _highMatchValue;
     }
-    return true;
+    // Value may still be outside if range if it can't be compared.
+    return value > _low && value < _high;
   }
 
   @override

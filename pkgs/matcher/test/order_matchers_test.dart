@@ -115,4 +115,36 @@ void main() {
         "Actual: <-1> "
         "Which: is not a non-negative value");
   });
+
+  group('NaN', () {
+    test('greaterThan', () {
+      shouldFail(
+          double.nan,
+          greaterThan(10),
+          "Expected: a value greater than <10> "
+          "Actual: <NaN> "
+          "Which: is not a value greater than <10>");
+      shouldFail(
+          10,
+          greaterThan(double.nan),
+          "Expected: a value greater than <NaN> "
+          "Actual: <10> "
+          "Which: is not a value greater than <NaN>");
+    });
+
+    test('lessThanOrEqualTo', () {
+      shouldFail(
+          double.nan,
+          lessThanOrEqualTo(10),
+          "Expected: a value less than or equal to <10> "
+          "Actual: <NaN> "
+          "Which: is not a value less than or equal to <10>");
+      shouldFail(
+          10,
+          lessThanOrEqualTo(double.nan),
+          "Expected: a value less than or equal to <NaN> "
+          "Actual: <10> "
+          "Which: is not a value less than or equal to <NaN>");
+    });
+  });
 }

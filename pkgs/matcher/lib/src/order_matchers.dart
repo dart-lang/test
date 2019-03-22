@@ -80,8 +80,10 @@ class _OrderingMatcher extends Matcher {
       return _equalValue;
     } else if (item < _value) {
       return _lessThanValue;
-    } else {
+    } else if (item > _value) {
       return _greaterThanValue;
+    } else {
+      return false;
     }
   }
 

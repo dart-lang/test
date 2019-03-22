@@ -85,4 +85,15 @@ void main() {
     shouldFail('not a num', inClosedOpenRange(0, 1),
         endsWith('not an <Instance of \'num\'>'));
   });
+
+  group('NaN', () {
+    test('inInclusiveRange', () {
+      shouldFail(
+          double.nan,
+          inExclusiveRange(double.negativeInfinity, double.infinity),
+          "Expected: be in range from "
+          "-Infinity (exclusive) to Infinity (exclusive) "
+          "Actual: <NaN>");
+    });
+  });
 }

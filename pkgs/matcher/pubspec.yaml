@@ -1,5 +1,5 @@
 name: matcher
-version: 0.12.5-dev
+version: 0.12.5
 
 description: >-
   Support for specifying test expectations via an extensible Matcher class.
