@@ -30,6 +30,7 @@ void main() {
     _test('String', const isInstanceOf<String>(), 'hello');
     _test('String', const _StringMatcher(), 'hello');
     _test('String', const TypeMatcher<String>(), 'hello');
+    _test('String', isA<String>(), 'hello');
   });
 }
 

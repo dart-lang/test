@@ -131,7 +131,7 @@ class _IsAnything extends Matcher {
 ///
 /// Returns a matcher that matches if an object is an instance
 /// of [T] (or a subtype).
-@Deprecated('Use `const TypeMatcher<MyType>()` instead.')
+@Deprecated('Use `isA<MyType>()` instead.')
 // ignore: camel_case_types
 class isInstanceOf<T> extends TypeMatcher<T> {
   const isInstanceOf();

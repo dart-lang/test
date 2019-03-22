@@ -1,3 +1,7 @@
+## 0.12.5
+
+- Add `isA()` to create `TypeMatcher` instances in a more fluent way.
+
 ## 0.12.4
 
 - Add isCastError.
