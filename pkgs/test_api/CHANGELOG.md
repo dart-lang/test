@@ -1,3 +1,7 @@
+## 0.2.4
+
+* Allow `stream_channel` version `2.0.0`.
+
 ## 0.2.3
 
 * Update to matcher version `0.12.5`.
