@@ -4,7 +4,7 @@
 
 import "dart:isolate";
 
-import "package:stream_channel/stream_channel.dart";
+import "package:stream_channel/isolate_channel.dart";
 
 import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
 

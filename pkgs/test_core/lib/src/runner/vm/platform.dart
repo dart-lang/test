@@ -8,6 +8,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
+import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'package:vm_service_client/vm_service_client.dart';
@@ -112,7 +113,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
   return await dart.runInIsolate('''
     import "dart:isolate";
 
-    import "package:stream_channel/stream_channel.dart";
+    import "package:stream_channel/isolate_channel.dart";
 
     import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
 
@@ -120,7 +121,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
 
     void main(_, SendPort message) {
       var channel = serializeSuite(() => test.main);
-      new IsolateChannel.connectSend(message).pipe(channel);
+      IsolateChannel.connectSend(message).pipe(channel);
     }
   ''', message, checked: true);
 }

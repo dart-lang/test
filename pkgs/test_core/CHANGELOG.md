@@ -1,3 +1,7 @@
+## 0.2.3
+
+* Switch import for `IsolateChannel` for forwards compatibility with `2.0.0`.
+
 ## 0.2.2
 
 * Allow `analyzer` version `0.36.x`.

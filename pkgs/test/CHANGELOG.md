@@ -1,3 +1,7 @@
+## 1.6.1
+
+* Allow `stream_channel` version `2.0.0`.
+
 ## 1.6.0
 
 * Allow `analyzer` version `0.36.x`.

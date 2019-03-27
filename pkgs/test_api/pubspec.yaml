@@ -1,5 +1,5 @@
 name: test_api
-version: 0.2.3
+version: 0.2.4
 author: Dart Team <misc@dartlang.org>
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
@@ -16,7 +16,7 @@ dependencies:
   pedantic: '^1.0.0'
   source_span: '^1.4.0'
   stack_trace: '^1.9.0'
-  stream_channel: '^1.6.0'
+  stream_channel: '>=1.7.0 <3.0.0'
   string_scanner: '>=0.1.1 <2.0.0'
   term_glyph: '^1.0.0'
 
