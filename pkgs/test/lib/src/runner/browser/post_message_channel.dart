@@ -15,11 +15,12 @@ import 'package:stream_channel/stream_channel.dart';
 @JS("window.parent.postMessage")
 external void _postParentMessage(Object message, String targetOrigin);
 
-/// Constructs a [StreamChannel] wrapping `postMessage` communication with the
-/// host page.
+/// Constructs a [StreamChannel] wrapping [MessageChannel] communication with
+/// the host page.
 StreamChannel postMessageChannel() {
   var controller = StreamChannelController(sync: true);
 
+  // Listen for a message from the host that transfers a message port.
   window.onMessage.listen((message) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
@@ -28,21 +29,22 @@ StreamChannel postMessageChannel() {
     if (message.origin != window.location.origin) return;
     message.stopPropagation();
 
-    controller.local.sink.add(message.data);
-  });
+    // This message transfers a message port from the host.
+    if (message.data == "port") {
+      var port = message.ports.first;
 
-  controller.local.stream.listen((data) {
-    // TODO(nweiz): Stop manually adding href here once issue 22554 is
-    // fixed.
-    _postParentMessage(jsify({"href": window.location.href, "data": data}),
-        window.location.origin);
-  }, onDone: () {
-    _postParentMessage(
-        jsify({
-          "href": window.location.href,
-          "event": "done",
-        }),
-        window.location.origin);
+      port.onMessage.listen((message) {
+        controller.local.sink.add(message.data);
+      });
+
+      // TODO(nweiz): Stop manually adding href here once issue 22554 is
+      // fixed.
+      controller.local.stream.listen((data) {
+        port.postMessage({"href": window.location.href, "data": data});
+      }, onDone: () {
+        port.postMessage({"href": window.location.href, "event": "done"});
+      });
+    }
   });
 
   // Send a ready message once we're listening so the host knows it's safe to
