@@ -77,7 +77,7 @@ final _currentUrl = Uri.parse(window.location.href);
 ///                                │      │      │      │
 ///                                │     ...    ...    ...
 ///                                │
-///                          (postMessage)
+///                         (MessageChannel)
 ///                                │
 ///      ┏━ suite.html (in iframe) ┿━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ///      ┃                         │                          ┃
@@ -89,15 +89,15 @@ final _currentUrl = Uri.parse(window.location.href);
 ///
 /// The host (this code) has a [MultiChannel] that splits the WebSocket
 /// connection with the server. One connection is used for the host itself to
-/// receive messages like "load a suite at this URL", and the rest are connected
-/// to each test suite's iframe via `postMessage`.
+/// receive messages like "load a suite at this URL", and the rest are
+/// connected to each test suite's iframe via a [MessageChannel].
 ///
-/// Each iframe then has its own [MultiChannel] which takes its `postMessage`
-/// connection and splits it again. One connection is used for the
-/// [IframeListener], which sends messages like "here are all the tests in this
-/// suite". The rest are used for each test, receiving messages like "start
-/// running". A new connection is also created whenever a test begins running to
-/// send status messages about its progress.
+/// Each iframe then has its own [MultiChannel] which takes its
+/// [MessageChannel] connection and splits it again. One connection is used for
+/// the [IframeListener], which sends messages like "here are all the tests in
+/// this suite". The rest are used for each test, receiving messages like
+/// "start running". A new connection is also created whenever a test begins
+/// running to send status messages about its progress.
 ///
 /// It's of particular note that the suite's [MultiChannel] connection uses the
 /// host's purely as a transport layer; neither is aware that the other is also
@@ -178,7 +178,7 @@ MultiChannel _connectToServer() {
 }
 
 /// Creates an iframe with `src` [url] and establishes a connection to it using
-/// `postMessage`.
+/// a [MessageChannel].
 ///
 /// [id] identifies the suite loaded in this iframe.
 StreamChannel _connectToIframe(String url, int id) {
@@ -187,6 +187,8 @@ StreamChannel _connectToIframe(String url, int id) {
   iframe.src = url;
   document.body.children.add(iframe);
 
+  // Use this to communicate securely with the iframe.
+  var channel = MessageChannel();
   var controller = StreamChannelController(sync: true);
 
   // Use this to avoid sending a message to the iframe before it's sent a
@@ -196,8 +198,6 @@ StreamChannel _connectToIframe(String url, int id) {
   var subscriptions = <StreamSubscription>[];
   _subscriptions[id] = subscriptions;
 
-  // TODO(nweiz): use MessageChannel once Firefox supports it
-  // (http://caniuse.com/#search=MessageChannel).
   subscriptions.add(window.onMessage.listen((message) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
@@ -211,18 +211,27 @@ StreamChannel _connectToIframe(String url, int id) {
 
     message.stopPropagation();
 
-    // This message indicates that the iframe is actively listening for events.
     if (message.data["ready"] == true) {
+      // This message indicates that the iframe is actively listening for
+      // events, so the message channel's second port can now be transferred.
+      iframe.contentWindow
+          .postMessage("port", window.location.origin, [channel.port2]);
       readyCompleter.complete();
-    } else {
+    } else if (message.data["exception"] == true) {
+      // This message from `dart.js` indicates that an exception occurred
+      // loading the test.
       controller.local.sink.add(message.data["data"]);
     }
+  }));
+
+  subscriptions.add(channel.port1.onMessage.listen((message) {
+    controller.local.sink.add(message.data["data"]);
   }));
 
   subscriptions.add(controller.local.stream.listen((message) async {
     await readyCompleter.future;
 
-    iframe.contentWindow.postMessage(message, window.location.origin);
+    channel.port1.postMessage(message);
   }));
 
   return controller.foreign;
