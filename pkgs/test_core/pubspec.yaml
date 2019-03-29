@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   analyzer: ">=0.35.3 <0.37.0"
-  async: ^1.0.0
+  async: ^2.0.0
   args: ^1.4.0
   boolean_selector: ^1.0.0
   collection: ^1.8.0
