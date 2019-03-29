@@ -32,8 +32,7 @@ StreamChannel postMessageChannel() {
     return message.origin == window.location.origin && message.data == "port";
   }).then((message) {
     var port = message.ports.first;
-
-    port.onMessage.listen((message) {
+    var portSubscription = port.onMessage.listen((message) {
       controller.local.sink.add(message.data);
     });
 
@@ -43,6 +42,7 @@ StreamChannel postMessageChannel() {
       port.postMessage({"href": window.location.href, "data": data});
     }, onDone: () {
       port.postMessage({"href": window.location.href, "event": "done"});
+      portSubscription.cancel();
     });
   });
 
