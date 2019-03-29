@@ -20,31 +20,30 @@ external void _postParentMessage(Object message, String targetOrigin);
 StreamChannel postMessageChannel() {
   var controller = StreamChannelController(sync: true);
 
-  // Listen for a message from the host that transfers a message port.
-  window.onMessage.listen((message) {
+  // Listen for a message from the host that transfers a message port. Using
+  // `firstWhere` automatically unsubscribes from further messages. This is
+  // important to prevent multiple subscriptions if the test is ever hot
+  // restarted.
+  window.onMessage.firstWhere((message) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
     // running, but it's good practice to check the origin anyway.
-    if (message.origin != window.location.origin) return;
-    message.stopPropagation();
+    return message.origin == window.location.origin && message.data == "port";
+  }).then((message) {
+    var port = message.ports.first;
 
-    // This message transfers a message port from the host.
-    if (message.data == "port") {
-      var port = message.ports.first;
+    port.onMessage.listen((message) {
+      controller.local.sink.add(message.data);
+    });
 
-      port.onMessage.listen((message) {
-        controller.local.sink.add(message.data);
-      });
-
-      // TODO(nweiz): Stop manually adding href here once issue 22554 is
-      // fixed.
-      controller.local.stream.listen((data) {
-        port.postMessage({"href": window.location.href, "data": data});
-      }, onDone: () {
-        port.postMessage({"href": window.location.href, "event": "done"});
-      });
-    }
+    // TODO(nweiz): Stop manually adding href here once issue 22554 is
+    // fixed.
+    controller.local.stream.listen((data) {
+      port.postMessage({"href": window.location.href, "data": data});
+    }, onDone: () {
+      port.postMessage({"href": window.location.href, "event": "done"});
+    });
   });
 
   // Send a ready message once we're listening so the host knows it's safe to
