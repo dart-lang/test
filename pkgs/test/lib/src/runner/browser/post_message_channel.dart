@@ -36,18 +36,17 @@ StreamChannel postMessageChannel() {
       controller.local.sink.add(message.data);
     });
 
-    // TODO(nweiz): Stop manually adding href here once issue 22554 is
-    // fixed.
     controller.local.stream.listen((data) {
-      port.postMessage({"href": window.location.href, "data": data});
+      port.postMessage({"data": data});
     }, onDone: () {
-      port.postMessage({"href": window.location.href, "event": "done"});
+      port.postMessage({"event": "done"});
       portSubscription.cancel();
     });
   });
 
   // Send a ready message once we're listening so the host knows it's safe to
   // start sending events.
+  // TODO(nweiz): Stop manually adding href here once issue 22554 is fixed.
   _postParentMessage(jsify({"href": window.location.href, "ready": true}),
       window.location.origin);
 
