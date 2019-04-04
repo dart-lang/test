@@ -1,3 +1,7 @@
+## 0.2.4
+
+* Avoid `dart:isolate` imports on code loaded in tests.
+
 ## 0.2.3
 
 * Switch import for `IsolateChannel` for forwards compatibility with `2.0.0`.

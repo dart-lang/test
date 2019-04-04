@@ -1,3 +1,7 @@
+## 1.6.2
+
+* Avoid `dart:isolate` imports on code loaded in tests.
+
 ## 1.6.1
 
 * Allow `stream_channel` version `2.0.0`.
