@@ -129,8 +129,8 @@ void main() {
         test.stdout,
         emitsThrough(emitsInOrder([
           "The test runner is paused. Open the dev console in Chrome and set "
-          "breakpoints. Once you're finished, return to this terminal and "
-          "press Enter."
+              "breakpoints. Once you're finished, return to this terminal and "
+              "press Enter."
         ])));
 
     nextLineFired = false;
@@ -150,8 +150,8 @@ void main() {
         test.stdout,
         emitsThrough(emitsInOrder([
           "The test runner is paused. Open the Observatory and set "
-          "breakpoints. Once you're finished, return to this terminal "
-          "and press Enter."
+              "breakpoints. Once you're finished, return to this terminal "
+              "and press Enter."
         ])));
 
     nextLineFired = false;

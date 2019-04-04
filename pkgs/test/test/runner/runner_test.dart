@@ -163,7 +163,7 @@ $_usage""");
           containsInOrder([
             'Failed to load "test.dart":',
             "Unable to spawn isolate: test.dart:1:9: Error: "
-            "Expected ';' after this.",
+                "Expected ';' after this.",
             'invalid Dart file'
           ]));
 
@@ -182,7 +182,7 @@ $_usage""");
             '-1: loading test.dart [E]',
             'Failed to load "test.dart":',
             "Unable to spawn isolate: test.dart:1:14: "
-            "Error: Expected ';' after this"
+                "Error: Expected ';' after this"
           ]));
 
       await test.shouldExit(1);
@@ -200,7 +200,7 @@ $_usage""");
             '-1: loading test.dart [E]',
             'Failed to load "test.dart":',
             "Unable to spawn isolate: test.dart:1:8: Error: "
-            "Expected a declaration, but got ')'",
+                "Expected a declaration, but got ')'",
             '@TestOn)',
           ]));
 
@@ -259,7 +259,7 @@ $_usage""");
           containsInOrder([
             '-1: loading test.dart [E]',
             "A value of type 'int' can't be assigned to a "
-            "variable of type 'Function'",
+                "variable of type 'Function'",
           ]));
 
       await test.shouldExit(1);

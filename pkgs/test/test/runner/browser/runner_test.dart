@@ -111,7 +111,7 @@ void main() {
           containsInOrder([
             '-1: compiling test.dart [E]',
             'Failed to load "test.dart": "test.html" must contain '
-            '<script src="packages/test/dart.js"></script>.'
+                '<script src="packages/test/dart.js"></script>.'
           ]));
       await test.shouldExit(1);
     }, tags: 'chrome');
@@ -133,7 +133,7 @@ void main() {
           containsInOrder([
             '-1: compiling test.dart [E]',
             'Failed to load "test.dart": Expected exactly 1 '
-            '<link rel="x-dart-test"> in test.html, found 0.'
+                '<link rel="x-dart-test"> in test.html, found 0.'
           ]));
       await test.shouldExit(1);
     }, tags: 'chrome');
@@ -157,7 +157,7 @@ void main() {
           containsInOrder([
             '-1: compiling test.dart [E]',
             'Failed to load "test.dart": Expected exactly 1 '
-            '<link rel="x-dart-test"> in test.html, found 2.'
+                '<link rel="x-dart-test"> in test.html, found 2.'
           ]));
       await test.shouldExit(1);
     }, tags: 'chrome');
@@ -180,7 +180,7 @@ void main() {
           containsInOrder([
             '-1: compiling test.dart [E]',
             'Failed to load "test.dart": Expected <link rel="x-dart-test"> in '
-            'test.html to have an "href" attribute.'
+                'test.html to have an "href" attribute.'
           ]));
       await test.shouldExit(1);
     }, tags: 'chrome');
