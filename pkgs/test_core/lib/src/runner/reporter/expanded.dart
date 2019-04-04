@@ -204,8 +204,7 @@ class ExpandedReporter implements Reporter {
     print(indent((error as dynamic).toString(color: _color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
-    if (error.innerError is! FormatException &&
-        error.innerError is! String) {
+    if (error.innerError is! FormatException && error.innerError is! String) {
       print(indent('$stackTrace'));
     }
   }
