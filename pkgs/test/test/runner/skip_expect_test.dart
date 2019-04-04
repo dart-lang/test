@@ -149,7 +149,7 @@ void main() {
             "+1: wait",
             "+0 -1: skip",
             "This test was marked as skipped after it had already completed. "
-                "Make sure to use",
+            "Make sure to use",
             "[expectAsync] or the [completes] matcher when testing async code.",
             "+1 -1: Some tests failed."
           ]));

@@ -281,7 +281,7 @@ void main() {
           '-1: loading ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           'Error getting http://localhost:54321/my_test.dart.vm_test.dart: '
-              'Connection refused',
+          'Connection refused',
           'Make sure "pub serve" is running.'
         ]));
     await test.shouldExit(1);
@@ -299,7 +299,7 @@ void main() {
           '-1: compiling ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           'Error getting http://localhost:54321/my_test.dart.browser_test.dart.js'
-              '.map: $message',
+          '.map: $message',
           'Make sure "pub serve" is running.'
         ]));
     await test.shouldExit(1);
@@ -317,7 +317,7 @@ void main() {
           '-1: compiling ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           'Error getting http://localhost:54321/my_test.dart.node_test.dart.js:'
-              ' $message',
+          ' $message',
           'Make sure "pub serve" is running.'
         ]));
     await test.shouldExit(1);
@@ -333,7 +333,7 @@ void main() {
         containsInOrder([
           '-1: loading my_test.dart [E]',
           'Failed to load "my_test.dart": When using "pub serve", all test files '
-              'must be in test/.'
+          'must be in test/.'
         ]));
     await test.shouldExit(1);
   });

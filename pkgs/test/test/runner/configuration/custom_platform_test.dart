@@ -167,7 +167,7 @@ void main() {
             test.stderr,
             containsInOrder([
               "Platform identifier must be an (optionally hyphenated) Dart "
-                  "identifier.",
+              "identifier.",
               "^^^^^^^"
             ]));
         await test.shouldExit(exit_codes.data);
@@ -527,7 +527,7 @@ void main() {
             test.stderr,
             containsInOrder([
               "Platform identifier must be an (optionally hyphenated) Dart "
-                  "identifier.",
+              "identifier.",
               "^^^^^^^"
             ]));
         await test.shouldExit(exit_codes.data);
@@ -620,7 +620,7 @@ void main() {
             test.stderr,
             containsInOrder([
               "Platform parent must be an (optionally hyphenated) Dart "
-                  "identifier.",
+              "identifier.",
               "^^^^^^^"
             ]));
         await test.shouldExit(exit_codes.data);
@@ -672,7 +672,7 @@ void main() {
             test.stderr,
             containsInOrder([
               'The platform "chrome" already exists. Use override_platforms to '
-                  'override it.',
+              'override it.',
               "^^^^^^"
             ]));
         await test.shouldExit(exit_codes.data);
