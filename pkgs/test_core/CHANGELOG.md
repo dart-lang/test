@@ -1,3 +1,7 @@
+## 0.2.4
+
+* Expose the `parseMetadata` function publicly.
+
 ## 0.2.3
 
 * Switch import for `IsolateChannel` for forwards compatibility with `2.0.0`.

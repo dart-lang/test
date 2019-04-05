@@ -29,6 +29,8 @@ import 'src/runner/suite.dart';
 export 'package:test_api/test_api.dart'
     hide test, group, setUp, setUpAll, tearDown, tearDownAll;
 
+export 'src/runner/parse_metadata.dart' show parseMetadata;
+
 /// The global declarer.
 ///
 /// This is used if a test file is run directly, rather than through the runner.
