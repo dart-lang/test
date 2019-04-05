@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
@@ -204,9 +205,9 @@ class ExpandedReporter implements Reporter {
     print(indent((error as dynamic).toString(color: _color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
-    if (error.innerError is! FormatException &&
-        error.innerError is! String &&
-        '${error.innerError}'.contains('IsolateSpawnException')) {
+    if (error.innerError is! IsolateSpawnException &&
+        error.innerError is! FormatException &&
+        error.innerError is! String) {
       print(indent('$stackTrace'));
     }
   }
