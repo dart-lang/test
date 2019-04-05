@@ -206,7 +206,7 @@ class ExpandedReporter implements Reporter {
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! FormatException &&
         error.innerError is! String &&
-        '$error.innerError'.contains('IsolateSpawnException')) {
+        '${error.innerError}'.contains('IsolateSpawnException')) {
       print(indent('$stackTrace'));
     }
   }
