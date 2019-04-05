@@ -10,10 +10,10 @@ env: FORCE_TEST_EXIT=true
 jobs:
   include:
     - stage: analyze_and_format
-      name: "SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: [`dartfmt -n --set-exit-if-changed .`, `dartanalyzer --fatal-infos --fatal-warnings .`]"
+      name: "SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: `dartanalyzer --fatal-infos --fatal-warnings .`"
       dart: dev
       env: PKGS="pkgs/test pkgs/test_api pkgs/test_core"
-      script: ./tool/travis.sh dartfmt dartanalyzer
+      script: ./tool/travis.sh dartanalyzer
     - stage: unit_test
       name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0`"
       dart: dev
