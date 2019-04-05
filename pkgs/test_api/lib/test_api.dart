@@ -12,11 +12,6 @@ import 'src/frontend/timeout.dart';
 
 export 'package:matcher/matcher.dart';
 
-export 'src/backend/metadata.dart' show Metadata;
-export 'src/backend/platform_selector.dart' show PlatformSelector;
-export 'src/backend/runtime.dart' show Runtime;
-export 'src/backend/suite_platform.dart' show SuitePlatform;
-
 export 'src/frontend/expect.dart' hide formatFailure;
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';

@@ -1,6 +1,7 @@
 ## 0.2.4
 
-* Expose the `parseMetadata` function publicly.
+* Expose the `parseMetadata` function publicly through a new `backend.dart`
+  import, as well as re-exporting `package:test_api/backend.dart`.
 
 ## 0.2.3
 

@@ -1,7 +1,7 @@
 ## 0.2.5
 
 * Expose the  `Metadata`, `PlatformSelector`, `Runtime`, and `SuitePlatform`
-  classes publicly.
+  classes publicly through a new `backend.dart` import.
 
 ## 0.2.4
 
