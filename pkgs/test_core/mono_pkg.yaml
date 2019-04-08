@@ -1,8 +1,9 @@
-dart:
- - dev
-
 stages:
-    - analyze_and_format:
-      - group:
-        #- dartfmt: sdk
-        - dartanalyzer: --fatal-infos --fatal-warnings .
+  - analyze_and_format:
+    - group:
+      - dartfmt: sdk
+      - dartanalyzer: --fatal-infos --fatal-warnings .
+      dart: dev
+    - group:
+      - dartanalyzer: --fatal-infos .
+      dart: 2.1.0
