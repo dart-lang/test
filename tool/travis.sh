@@ -55,11 +55,6 @@ for PKG in ${PKGS}; do
       echo -e 'dartanalyzer --fatal-warnings .'
       dartanalyzer --fatal-warnings . || EXIT_CODE=$?
       ;;
-    dartanalyzer_2) echo
-      echo -e '\033[1mTASK: dartanalyzer_2\033[22m'
-      echo -e 'dartanalyzer --fatal-infos .'
-      dartanalyzer --fatal-infos . || EXIT_CODE=$?
-      ;;
     dartfmt) echo
       echo -e '\033[1mTASK: dartfmt\033[22m'
       echo -e 'dartfmt -n --set-exit-if-changed .'
