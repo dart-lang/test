@@ -24,8 +24,11 @@ import '../util/dart.dart';
 ///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
-Metadata parseMetadata(String path, Set<String> platformVariables) =>
-    _Parser(path, platformVariables).parse();
+///
+/// If [contents] is `null` then it will be read as a [File] using [path].
+Metadata parseMetadata(String path, Set<String> platformVariables,
+        {String contents}) =>
+    _Parser(path, platformVariables, contents: contents).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
@@ -42,9 +45,13 @@ class _Parser {
   /// All prefixes defined by imports in this file.
   Set<String> _prefixes;
 
-  _Parser(String path, this._platformVariables) : _path = path {
-    var contents = File(path).readAsStringSync();
-    var directives = parseDirectives(contents, name: path).directives;
+  /// The actual contents of the file.
+  String _contents;
+
+  _Parser(String path, this._platformVariables, {String contents})
+      : _path = path,
+        _contents = contents ?? File(path).readAsStringSync() {
+    var directives = parseDirectives(_contents, name: path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
 
     // We explicitly *don't* just look for "package:test" imports here,
@@ -499,8 +506,7 @@ class _Parser {
   SourceSpan _spanFor(AstNode node) {
     // Load a SourceFile from scratch here since we're only ever going to emit
     // one error per file anyway.
-    var contents = File(_path).readAsStringSync();
-    return SourceFile.fromString(contents, url: p.toUri(_path))
+    return SourceFile.fromString(_contents, url: p.toUri(_path))
         .span(node.offset, node.end);
   }
 
@@ -510,8 +516,7 @@ class _Parser {
     try {
       return fn();
     } on SourceSpanFormatException catch (error) {
-      var file = SourceFile.fromString(File(_path).readAsStringSync(),
-          url: p.toUri(_path));
+      var file = SourceFile.fromString(_contents, url: p.toUri(_path));
       var span = contextualizeSpan(error.span, literal, file);
       if (span == null) rethrow;
       throw SourceSpanFormatException(error.message, span);
