@@ -32,7 +32,9 @@ jobs:
     - stage: unit_test
       name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3`"
       dart: dev
-      env: PKGS="pkgs/test"
+      env:
+        - PKGS="pkgs/test"
+        - FORCE_TEST_EXIT=true
       script: ./tool/travis.sh command_3
     - stage: unit_test
       name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4`"
