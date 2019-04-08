@@ -11,10 +11,15 @@ env:
 jobs:
   include:
     - stage: analyze_and_format
-      name: "SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: `dartanalyzer --fatal-infos --fatal-warnings .`"
+      name: "SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: [`dartfmt -n --set-exit-if-changed .`, `dartanalyzer --fatal-infos --fatal-warnings .`]"
       dart: dev
       env: PKGS="pkgs/test pkgs/test_api pkgs/test_core"
-      script: ./tool/travis.sh dartanalyzer
+      script: ./tool/travis.sh dartfmt dartanalyzer_0
+    - stage: analyze_and_format
+      name: "SDK: 2.2.0; PKG: pkgs/test; TASKS: `dartanalyzer --fatal-warnings .`"
+      dart: "2.2.0"
+      env: PKGS="pkgs/test"
+      script: ./tool/travis.sh dartanalyzer_1
     - stage: unit_test
       name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0`"
       dart: dev
@@ -40,11 +45,16 @@ jobs:
       dart: dev
       env: PKGS="pkgs/test"
       script: ./tool/travis.sh command_4
+    - stage: analyze_and_format
+      name: "SDK: 2.1.0; PKGS: pkgs/test_api, pkgs/test_core; TASKS: `dartanalyzer --fatal-warnings .`"
+      dart: "2.1.0"
+      env: PKGS="pkgs/test_api pkgs/test_core"
+      script: ./tool/travis.sh dartanalyzer_1
     - stage: unit_test
       name: "SDK: dev; PKG: pkgs/test_api; TASKS: `pub run test --preset travis`"
       dart: dev
       env: PKGS="pkgs/test_api"
-      script: ./tool/travis.sh command_5
+      script: ./tool/travis.sh test
 
 stages:
   - analyze_and_format
