@@ -3,7 +3,8 @@ travis:
   sudo: required
   addons:
     chrome: stable
-  env: FORCE_TEST_EXIT=true
+  env:
+    global: FORCE_TEST_EXIT=true
 
 merge_stages:
 - analyze_and_format
