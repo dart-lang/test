@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
-final throwsTestFailure = throwsA(new TypeMatcher<TestFailure>());
+final throwsTestFailure = throwsA(TypeMatcher<TestFailure>());
 
 void main() {
   group("shouldExit()", () {
@@ -106,14 +106,14 @@ void main() {
     await expectLater(process.stdout, emits('ready'));
     process.signal(ProcessSignal.sighup);
     await expectLater(process.stdout, emits('HUP'));
-    process.kill();
+    await process.kill();
   }, testOn: "!windows");
 }
 
 /// Starts a Dart process running [script] in a main method.
 Future<TestProcess> startDartProcess(String script) {
   var dartPath = p.join(d.sandbox, 'test.dart');
-  new File(dartPath).writeAsStringSync('''
+  File(dartPath).writeAsStringSync('''
     import 'dart:async';
     import 'dart:convert';
     import 'dart:io';
@@ -127,5 +127,5 @@ Future<TestProcess> startDartProcess(String script) {
     }
   ''');
 
-  return TestProcess.start(Platform.executable, ['--checked', dartPath]);
+  return TestProcess.start(Platform.executable, ['--enable-asserts', dartPath]);
 }

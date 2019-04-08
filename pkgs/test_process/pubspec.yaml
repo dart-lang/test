@@ -1,12 +1,12 @@
 name: test_process
-version: 1.0.4
+version: 1.0.5-dev
 
 description: A package for testing subprocesses.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/test_process
 
 environment:
-  sdk: '>=2.0.0-dev.55.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
   async: '>=1.12.0 <3.0.0'
@@ -15,4 +15,5 @@ dependencies:
   test: '>=0.12.42 <2.0.0'
 
 dev_dependencies:
+  pedantic: ^1.0.0
   test_descriptor: ^1.0.0

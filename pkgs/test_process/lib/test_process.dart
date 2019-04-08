@@ -82,11 +82,11 @@ class TestProcess {
       String executable, Iterable<String> arguments,
       {String workingDirectory,
       Map<String, String> environment,
-      bool includeParentEnvironment: true,
-      bool runInShell: false,
+      bool includeParentEnvironment = true,
+      bool runInShell = false,
       String description,
       Encoding encoding,
-      bool forwardStdio: false}) async {
+      bool forwardStdio = false}) async {
     var process = await Process.start(executable, arguments.toList(),
         workingDirectory: workingDirectory,
         environment: environment,
@@ -101,7 +101,7 @@ class TestProcess {
     }
 
     encoding ??= utf8;
-    return new TestProcess(process, description,
+    return TestProcess(process, description,
         encoding: encoding, forwardStdio: forwardStdio);
   }
 
@@ -113,20 +113,20 @@ class TestProcess {
   /// This is protected, which means it should only be called by subclasses.
   @protected
   TestProcess(Process process, this.description,
-      {Encoding encoding, bool forwardStdio: false})
+      {Encoding encoding, bool forwardStdio = false})
       : _process = process,
-        _stdoutSplitter = new StreamSplitter(process.stdout
+        _stdoutSplitter = StreamSplitter(process.stdout
             .transform(encoding.decoder)
             .transform(const LineSplitter())),
-        _stderrSplitter = new StreamSplitter(process.stderr
+        _stderrSplitter = StreamSplitter(process.stderr
             .transform(encoding.decoder)
             .transform(const LineSplitter())) {
     addTearDown(_tearDown);
     expect(_process.exitCode.then((_) => _logOutput()), completes,
         reason: "Process `$description` never exited.");
 
-    _stdout = new StreamQueue(stdoutStream());
-    _stderr = new StreamQueue(stderrStream());
+    _stdout = StreamQueue(stdoutStream());
+    _stderr = StreamQueue(stderrStream());
 
     // Listen eagerly so that the lines are interleaved properly between the two
     // streams.
@@ -165,9 +165,9 @@ class TestProcess {
 
     // Wait a timer tick to ensure that all available lines have been flushed to
     // [_log].
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
 
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     buffer.write("Process `$description` ");
     if (exitCodeOrNull == null) {
       buffer.writeln("was killed with SIGKILL in a tear-down. Output:");
@@ -205,7 +205,7 @@ class TestProcess {
   /// Throws an [UnsupportedError] on Windows.
   void signal(ProcessSignal signal) {
     if (Platform.isWindows) {
-      throw new UnsupportedError(
+      throw UnsupportedError(
           "TestProcess.signal() isn't supported on Windows.");
     }
 
