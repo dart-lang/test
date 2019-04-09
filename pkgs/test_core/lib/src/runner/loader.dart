@@ -168,7 +168,8 @@ class Loader {
       String path, SuiteConfiguration suiteConfig) async* {
     try {
       suiteConfig = suiteConfig.merge(SuiteConfiguration.fromMetadata(
-          parseMetadata(path, _runtimeVariables.toSet())));
+          parseMetadata(
+              path, File(path).readAsStringSync(), _runtimeVariables.toSet())));
     } on AnalyzerErrorGroup catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.

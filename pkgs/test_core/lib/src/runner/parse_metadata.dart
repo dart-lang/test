@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-
 // ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -16,7 +14,7 @@ import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_i
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import '../util/dart.dart';
 
-/// Parse the test metadata for the test file at [path].
+/// Parse the test metadata for the test file at [path] with [contents].
 ///
 /// The [platformVariables] are the set of variables that are valid for platform
 /// selectors in suite metadata, in addition to the built-in variables that are
@@ -24,11 +22,9 @@ import '../util/dart.dart';
 ///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
-///
-/// If [contents] is `null` then it will be read as a [File] using [path].
-Metadata parseMetadata(String path, Set<String> platformVariables,
-        {String contents}) =>
-    _Parser(path, platformVariables, contents: contents).parse();
+Metadata parseMetadata(
+        String path, String contents, Set<String> platformVariables) =>
+    _Parser(path, contents, platformVariables).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
@@ -48,10 +44,8 @@ class _Parser {
   /// The actual contents of the file.
   String _contents;
 
-  _Parser(String path, this._platformVariables, {String contents})
-      : _path = path,
-        _contents = contents ?? File(path).readAsStringSync() {
-    var directives = parseDirectives(_contents, name: path).directives;
+  _Parser(this._path, this._contents, this._platformVariables) {
+    var directives = parseDirectives(_contents, name: _path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
 
     // We explicitly *don't* just look for "package:test" imports here,
