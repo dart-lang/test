@@ -3,30 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/parse_metadata.dart';
 
-import 'package:test_core/src/util/io.dart';
-
-String _sandbox;
-String _path;
+final _path = 'test.dart';
 
 void main() {
-  setUp(() {
-    _sandbox = createTempDir();
-    _path = p.join(_sandbox, 'test.dart');
-  });
-
-  tearDown(() {
-    Directory(_sandbox).deleteSync(recursive: true);
-  });
-
   test('returns empty metadata for an empty file', () {
     var metadata = parseMetadata(_path, '', Set());
     expect(metadata.testOn, equals(PlatformSelector.all));
