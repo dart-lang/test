@@ -65,8 +65,8 @@ void main() {
         ' helloworld  ',
         equalsIgnoringWhitespace('hello world'),
         "Expected: 'hello world' ignoring whitespace "
-        "Actual: ' helloworld ' "
-        "Which: is 'helloworld' with whitespace compressed");
+            "Actual: ' helloworld ' "
+            "Which: is 'helloworld' with whitespace compressed");
     shouldFail(42, equalsIgnoringWhitespace('HELLO'),
         endsWith('not an <Instance of \'String\'>'));
   });
@@ -79,7 +79,7 @@ void main() {
         'hello',
         startsWith('hello '),
         "Expected: a string starting with 'hello ' "
-        "Actual: 'hello'");
+            "Actual: 'hello'");
     shouldFail(
         42, startsWith('hello '), endsWith('not an <Instance of \'String\'>'));
   });
@@ -92,7 +92,7 @@ void main() {
         'hello',
         endsWith(' hello'),
         "Expected: a string ending with ' hello' "
-        "Actual: 'hello'");
+            "Actual: 'hello'");
     shouldFail(
         42, startsWith('hello '), endsWith('not an <Instance of \'String\'>'));
   });
@@ -124,7 +124,7 @@ void main() {
         'goodbye cruel world',
         stringContainsInOrder(['goo', 'cruel', 'bye']),
         "Expected: a string containing 'goo', 'cruel', 'bye' in order "
-        "Actual: 'goodbye cruel world'");
+            "Actual: 'goodbye cruel world'");
   });
 
   test('matches', () {

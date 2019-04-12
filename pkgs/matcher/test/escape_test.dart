@@ -21,11 +21,11 @@ void main() {
     _testEscaping(
         'All characters',
         'A new line\nA charriage return\rA form feed\fA backspace\b'
-        'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
-        'A delete\x7F',
+            'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
+            'A delete\x7F',
         r'A new line\nA charriage return\rA form feed\fA backspace\b'
-        r'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
-        r'A delete\x7F');
+            r'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
+            r'A delete\x7F');
   });
 
   group('unequal strings remain unequal when escaped', () {

@@ -134,7 +134,7 @@ void main() {
         'error',
         equals(5.1),
         "Expected: <5.1> "
-        "Actual: 'error'");
+            "Actual: 'error'");
   });
 
   test('nested type mismatch', () {

@@ -296,8 +296,8 @@ void main() {
         'x',
         pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"),
         "Expected: pairwise less than or equal [1, 4, 9] "
-        "Actual: 'x' "
-        "Which: not an <Instance of \'Iterable\'>");
+            "Actual: 'x' "
+            "Which: not an <Instance of \'Iterable\'>");
     shouldFail(
         c,
         pairwiseCompare(e, (int e, int a) => a <= e, "less than or equal"),
