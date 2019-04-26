@@ -15,6 +15,7 @@ presets:
       except: [test]
 
 tags:
+  vm:
   browser:
     timeout: 2x
 
