@@ -13,7 +13,7 @@ import 'async_matcher.dart';
 import 'format_stack_trace.dart';
 
 /// The type for [_StreamMatcher._matchQueue].
-typedef Future<String> _MatchQueue(StreamQueue queue);
+typedef _MatchQueue = Future<String> Function(StreamQueue queue);
 
 /// A matcher that matches events from [Stream]s or [StreamQueue]s.
 ///
