@@ -6,5 +6,8 @@ travis:
   env:
     global: FORCE_TEST_EXIT=true
 
+  after_failure:
+  - tool/report_failure.sh
+
 merge_stages:
 - analyze_and_format
