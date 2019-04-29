@@ -95,7 +95,9 @@ class Engine {
     await Future.wait(<Future>[_group.future, _loadPool.done],
         eagerError: true);
     if (_closedBeforeDone) return null;
-    return liveTests.every((liveTest) => liveTest.state.result.isPassing);
+    return liveTests.every((liveTest) =>
+        liveTest.state.result.isPassing &&
+        liveTest.state.status == Status.complete);
   }
 
   /// A group of futures for each test suite.

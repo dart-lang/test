@@ -222,6 +222,10 @@ class ExpandedReporter implements Reporter {
     if (_engine.liveTests.isEmpty) {
       print("No tests ran.");
     } else if (!success) {
+      for (var liveTest in _engine.active) {
+        _progressLine(_description(liveTest),
+            suffix: " - did not complete $_bold$_red[E]$_noColor");
+      }
       _progressLine('Some tests failed.', color: _red);
     } else if (_engine.passed.isEmpty) {
       _progressLine("All tests skipped.");

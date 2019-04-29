@@ -1,3 +1,8 @@
+## 1.6.3
+
+* Depend on latests `package:test_core`.
+  * This fixes an issue where non-completed tests were considered passing.
+
 ## 1.6.2
 
 * Avoid `dart:isolate` imports on code loaded in tests.

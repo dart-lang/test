@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_core/src/runner/engine.dart';
@@ -56,6 +57,19 @@ void main() {
 
     engine.suiteSink.add(runnerSuite(Group.root(tests)));
     engine.suiteSink.close();
+  });
+
+  test("returns failure all tests do not complete", () async {
+    var engine = declareEngine(() {
+      for (var i = 0; i < 3; i++) {
+        test("test ${i + 1}", () async {
+          await Future.delayed(Duration(seconds: 5));
+        });
+      }
+    });
+
+    unawaited(expectLater(engine.run(), completion(isFalse)));
+    await engine.close();
   });
 
   test(
