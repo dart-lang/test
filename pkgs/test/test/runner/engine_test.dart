@@ -59,7 +59,7 @@ void main() {
     engine.suiteSink.close();
   });
 
-  test("returns failure all tests do not complete", () async {
+  test("returns failure if all tests do not complete", () async {
     var engine = declareEngine(() {
       for (var i = 0; i < 3; i++) {
         test("test ${i + 1}", () async {
