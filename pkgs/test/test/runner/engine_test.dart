@@ -5,10 +5,10 @@
 import 'dart:async';
 
 import 'package:pedantic/pedantic.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_core/src/runner/engine.dart';
-import 'package:test/test.dart';
 
 import '../utils.dart';
 
@@ -59,17 +59,19 @@ void main() {
     engine.suiteSink.close();
   });
 
-  test("returns failure if all tests do not complete", () async {
+  test("returns fail if any test does not complete", () async {
+    var completer = Completer();
     var engine = declareEngine(() {
-      for (var i = 0; i < 3; i++) {
-        test("test ${i + 1}", () async {
-          await Future.delayed(Duration(seconds: 5));
-        });
-      }
+      test("completes", () {});
+      test("does not complete", () async {
+        await completer.future;
+      });
     });
-
-    unawaited(expectLater(engine.run(), completion(isFalse)));
-    await engine.close();
+    expect(engine.run(), completion(isFalse));
+    unawaited(engine.close());
+    await pumpEventQueue();
+    // We need to complete this so the outer test finishes.
+    completer.complete();
   });
 
   test(
