@@ -2,23 +2,25 @@ language: dart
 
 dart:
   - dev
+  - 2.0.0
 
 dart_task:
   - test
 
-# Only run one instance of the formatter and the analyzer, rather than running
-# them against each Dart version.
 matrix:
   include:
   - dart: dev
     dart_task: dartfmt
   - dart: dev
-    dart_task: dartanalyzer
+    dart_task:
+      dartanalyzer: --fatal-infos --fatal-warnings .
+  - dart: 2.0.0
+    dart_task:
+      dartanalyzer: --fatal-warnings .
 
-# Only building master means that we don't run two builds for each pull request.
 branches:
   only: [master]
 
 cache:
- directories:
-   - $HOME/.pub-cache
+  directories:
+    - $HOME/.pub-cache

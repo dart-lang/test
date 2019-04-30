@@ -29,7 +29,7 @@ class DirectoryDescriptor extends Descriptor {
 
   /// Returns a `dart:io` [Directory] object that refers to this file within
   /// [sandbox].
-  Directory get io => new Directory(p.join(sandbox, name));
+  Directory get io => Directory(p.join(sandbox, name));
 
   DirectoryDescriptor(String name, Iterable<Descriptor> contents)
       : contents = contents.toList(),
@@ -38,17 +38,17 @@ class DirectoryDescriptor extends Descriptor {
   /// Creates a directory descriptor named [name] that describes the physical
   /// directory at [path].
   factory DirectoryDescriptor.fromFilesystem(String name, String path) {
-    return new DirectoryDescriptor(
+    return DirectoryDescriptor(
         name,
-        new Directory(path).listSync().map((entity) {
+        Directory(path).listSync().map((entity) {
           // Ignore hidden files.
           if (p.basename(entity.path).startsWith(".")) return null;
 
           if (entity is Directory) {
-            return new DirectoryDescriptor.fromFilesystem(
+            return DirectoryDescriptor.fromFilesystem(
                 p.basename(entity.path), entity.path);
           } else if (entity is File) {
-            return new FileDescriptor(
+            return FileDescriptor(
                 p.basename(entity.path), entity.readAsBytesSync());
           }
           // Ignore broken symlinks.
@@ -57,13 +57,13 @@ class DirectoryDescriptor extends Descriptor {
 
   Future create([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
-    await new Directory(fullPath).create(recursive: true);
+    await Directory(fullPath).create(recursive: true);
     await Future.wait(contents.map((entry) => entry.create(fullPath)));
   }
 
   Future validate([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
-    if (!(await new Directory(fullPath).exists())) {
+    if (!(await Directory(fullPath).exists())) {
       fail('Directory not found: "${prettyPath(fullPath)}".');
     }
 
@@ -75,7 +75,7 @@ class DirectoryDescriptor extends Descriptor {
   /// contents of the [FileDescriptor] at the given relative [url], which may be
   /// a [Uri] or a [String].
   ///
-  /// The [parent] parameter should only be passed by subclasses of
+  /// The [parents] parameter should only be passed by subclasses of
   /// [DirectoryDescriptor] that are recursively calling [load]. It's the
   /// URL-format path of the directories that have been loaded so far.
   Stream<List<int>> load(url, [String parents]) {
@@ -85,15 +85,15 @@ class DirectoryDescriptor extends Descriptor {
     } else if (url is Uri) {
       path = url.toString();
     } else {
-      throw new ArgumentError.value(url, "url", "must be a Uri or a String.");
+      throw ArgumentError.value(url, "url", "must be a Uri or a String.");
     }
 
     if (!p.url.isWithin('.', path)) {
-      throw new ArgumentError.value(
+      throw ArgumentError.value(
           url, "url", "must be relative and beneath the base URL.");
     }
 
-    return StreamCompleter.fromFuture(new Future.sync(() {
+    return StreamCompleter.fromFuture(Future.sync(() {
       var split = p.url.split(p.url.normalize(path));
       var file = split.length == 1;
       var matchingEntries = contents.where((entry) {
@@ -124,7 +124,7 @@ class DirectoryDescriptor extends Descriptor {
   String describe() {
     if (contents.isEmpty) return name;
 
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     buffer.writeln(name);
     for (var entry in contents.take(contents.length - 1)) {
       var entryString =

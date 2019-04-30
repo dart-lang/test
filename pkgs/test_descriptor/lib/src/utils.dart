@@ -40,7 +40,7 @@ String prefixLines(String text, String prefix,
   var lines = text.split('\n');
   if (lines.length == 1) return "$single$text";
 
-  var buffer = new StringBuffer("$first${lines.first}\n");
+  var buffer = StringBuffer("$first${lines.first}\n");
   for (var line in lines.skip(1).take(lines.length - 2)) {
     buffer.writeln("$prefix$line");
   }
@@ -72,7 +72,7 @@ Future waitAndReportErrors(Iterable<Future> futures) {
   return Future.wait(futures.map((future) {
     // Avoid async/await so that we synchronously add error handlers for the
     // futures to keep them from top-leveling.
-    return future.catchError((error, stackTrace) {
+    return future.catchError((error, StackTrace stackTrace) {
       if (!errored) {
         errored = true;
         throw error;

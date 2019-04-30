@@ -23,11 +23,11 @@ class NothingDescriptor extends Descriptor {
   Future validate([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     var pretty = prettyPath(fullPath);
-    if (new File(fullPath).existsSync()) {
+    if (File(fullPath).existsSync()) {
       fail('Expected nothing to exist at "$pretty", but found a file.');
-    } else if (new Directory(fullPath).existsSync()) {
+    } else if (Directory(fullPath).existsSync()) {
       fail('Expected nothing to exist at "$pretty", but found a directory.');
-    } else if (new Link(fullPath).existsSync()) {
+    } else if (Link(fullPath).existsSync()) {
       fail('Expected nothing to exist at "$pretty", but found a link.');
     }
   }

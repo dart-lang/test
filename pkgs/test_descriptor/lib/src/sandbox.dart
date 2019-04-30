@@ -23,7 +23,7 @@ String get sandbox {
   addTearDown(() async {
     var sandbox = _sandbox;
     _sandbox = null;
-    await new Directory(sandbox).delete(recursive: true);
+    await Directory(sandbox).delete(recursive: true);
   });
 
   return _sandbox;

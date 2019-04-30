@@ -28,16 +28,16 @@ void main() {
         d.file('file2.txt', 'contents2')
       ]).create();
 
-      expect(new File(p.join(d.sandbox, 'dir', 'file1.txt')).readAsString(),
+      expect(File(p.join(d.sandbox, 'dir', 'file1.txt')).readAsString(),
           completion(equals('contents1')));
-      expect(new File(p.join(d.sandbox, 'dir', 'file2.txt')).readAsString(),
+      expect(File(p.join(d.sandbox, 'dir', 'file2.txt')).readAsString(),
           completion(equals('contents2')));
       expect(
-          new File(p.join(d.sandbox, 'dir', 'subdir', 'subfile1.txt'))
+          File(p.join(d.sandbox, 'dir', 'subdir', 'subfile1.txt'))
               .readAsString(),
           completion(equals('subcontents1')));
       expect(
-          new File(p.join(d.sandbox, 'dir', 'subdir', 'subfile2.txt'))
+          File(p.join(d.sandbox, 'dir', 'subdir', 'subfile2.txt'))
               .readAsString(),
           completion(equals('subcontents2')));
     });
@@ -46,7 +46,7 @@ void main() {
       await d.dir('dir').create();
       await d.dir('dir', [d.file('name.txt', 'contents')]).create();
 
-      expect(new File(p.join(d.sandbox, 'dir', 'name.txt')).readAsString(),
+      expect(File(p.join(d.sandbox, 'dir', 'name.txt')).readAsString(),
           completion(equals('contents')));
     });
   });
@@ -56,12 +56,12 @@ void main() {
         () async {
       var dirPath = p.join(d.sandbox, 'dir');
       var subdirPath = p.join(dirPath, 'subdir');
-      await new Directory(subdirPath).create(recursive: true);
-      await new File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
-      await new File(p.join(dirPath, 'file2.txt')).writeAsString('contents2');
-      await new File(p.join(subdirPath, 'subfile1.txt'))
+      await Directory(subdirPath).create(recursive: true);
+      await File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
+      await File(p.join(dirPath, 'file2.txt')).writeAsString('contents2');
+      await File(p.join(subdirPath, 'subfile1.txt'))
           .writeAsString('subcontents1');
-      await new File(p.join(subdirPath, 'subfile2.txt'))
+      await File(p.join(subdirPath, 'subfile2.txt'))
           .writeAsString('subcontents2');
 
       await d.dir('dir', [
@@ -76,9 +76,9 @@ void main() {
 
     test("fails if the directory doesn't exist", () async {
       var dirPath = p.join(d.sandbox, 'dir');
-      await new Directory(dirPath).create();
-      await new File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
-      await new File(p.join(dirPath, 'file2.txt')).writeAsString('contents2');
+      await Directory(dirPath).create();
+      await File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
+      await File(p.join(dirPath, 'file2.txt')).writeAsString('contents2');
 
       expect(
           d.dir('dir', [
@@ -96,13 +96,13 @@ void main() {
     test("emits an error for each child that fails to validate", () async {
       var dirPath = p.join(d.sandbox, 'dir');
       var subdirPath = p.join(dirPath, 'subdir');
-      await new Directory(subdirPath).create(recursive: true);
-      await new File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
-      await new File(p.join(subdirPath, 'subfile2.txt'))
+      await Directory(subdirPath).create(recursive: true);
+      await File(p.join(dirPath, 'file1.txt')).writeAsString('contents1');
+      await File(p.join(subdirPath, 'subfile2.txt'))
           .writeAsString('subwrongtents2');
 
       var errors = 0;
-      var controller = new StreamController<String>();
+      var controller = StreamController<String>();
       runZoned(() {
         d.dir('dir', [
           d.dir('subdir', [
@@ -272,8 +272,8 @@ void main() {
       ]);
 
       await dir.create();
-      var descriptor = new d.DirectoryDescriptor.fromFilesystem(
-          "dir", p.join(d.sandbox, 'dir'));
+      var descriptor =
+          d.DirectoryDescriptor.fromFilesystem("dir", p.join(d.sandbox, 'dir'));
       await descriptor.create(p.join(d.sandbox, 'dir2'));
       await dir.validate(p.join(d.sandbox, 'dir2'));
     });
@@ -288,7 +288,7 @@ void main() {
         d.file('.DS_Store', 'contents2')
       ]).create();
 
-      var descriptor = new d.DirectoryDescriptor.fromFilesystem(
+      var descriptor = d.DirectoryDescriptor.fromFilesystem(
           "dir2", p.join(d.sandbox, 'dir'));
       await descriptor.create();
 

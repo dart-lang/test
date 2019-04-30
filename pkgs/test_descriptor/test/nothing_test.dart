@@ -16,9 +16,8 @@ import 'utils.dart';
 void main() {
   test("create() does nothing", () async {
     await d.nothing('foo').create();
-    expect(new File(p.join(d.sandbox, 'foo')).exists(), completion(isFalse));
-    expect(
-        new Directory(p.join(d.sandbox, 'foo')).exists(), completion(isFalse));
+    expect(File(p.join(d.sandbox, 'foo')).exists(), completion(isFalse));
+    expect(Directory(p.join(d.sandbox, 'foo')).exists(), completion(isFalse));
   });
 
   group("validate()", () {
@@ -43,7 +42,7 @@ void main() {
     });
 
     test("fails if there's a broken link", () async {
-      await new Link(p.join(d.sandbox, 'link')).create('nonexistent');
+      await Link(p.join(d.sandbox, 'link')).create('nonexistent');
       expect(
           d.nothing('link').validate(),
           throwsA(toString(equals(

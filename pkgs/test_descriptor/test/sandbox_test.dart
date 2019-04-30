@@ -13,13 +13,13 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 void main() {
   test("accessing the getter creates the directory", () {
-    expect(new Directory(d.sandbox).existsSync(), isTrue);
+    expect(Directory(d.sandbox).existsSync(), isTrue);
   });
 
   test("the directory is deleted after the test", () {
     String sandbox;
     addTearDown(() {
-      expect(new Directory(sandbox).existsSync(), isFalse);
+      expect(Directory(sandbox).existsSync(), isFalse);
     });
 
     sandbox = d.sandbox;

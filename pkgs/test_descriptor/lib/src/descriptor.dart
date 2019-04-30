@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'sandbox.dart';
+
 /// A declarative description of a filesystem entry.
 ///
 /// This may be extended outside this package.

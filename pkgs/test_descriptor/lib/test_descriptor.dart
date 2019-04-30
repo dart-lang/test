@@ -32,8 +32,7 @@ export 'src/sandbox.dart' show sandbox;
 ///
 /// To match a [Matcher] against a file's binary contents, use [new
 /// FileDescriptor.binaryMatcher] instead.
-FileDescriptor file(String name, [contents]) =>
-    new FileDescriptor(name, contents);
+FileDescriptor file(String name, [contents]) => FileDescriptor(name, contents);
 
 /// Creates a new [DirectoryDescriptor] descriptor with [name] and [contents].
 ///
@@ -42,13 +41,13 @@ FileDescriptor file(String name, [contents]) =>
 /// children exist. To ensure that a particular child doesn't exist, use
 /// [nothing].
 DirectoryDescriptor dir(String name, [Iterable<Descriptor> contents]) =>
-    new DirectoryDescriptor(name, contents == null ? <Descriptor>[] : contents);
+    DirectoryDescriptor(name, contents == null ? <Descriptor>[] : contents);
 
 /// Creates a new [NothingDescriptor] descriptor that asserts that no entry
 /// named [name] exists.
 ///
 /// [Descriptor.create] does nothing for this descriptor.
-NothingDescriptor nothing(String name) => new NothingDescriptor(name);
+NothingDescriptor nothing(String name) => NothingDescriptor(name);
 
 /// Creates a new [PatternDescriptor] descriptor that asserts than an entry with
 /// a name matching [pattern] exists, and matches the [Descriptor] returned
@@ -61,7 +60,7 @@ NothingDescriptor nothing(String name) => new NothingDescriptor(name);
 ///
 /// [Descriptor.create] is not supported for this descriptor.
 PatternDescriptor pattern(Pattern name, Descriptor child(String basename)) =>
-    new PatternDescriptor(name, child);
+    PatternDescriptor(name, child);
 
 /// A convenience method for creating a [PatternDescriptor] descriptor that
 /// constructs a [FileDescriptor] descriptor.

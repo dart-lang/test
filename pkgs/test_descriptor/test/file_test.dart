@@ -2,14 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn('vm')
-
-import 'dart:io';
 import 'dart:convert';
+@TestOn('vm')
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
-
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'utils.dart';
@@ -19,14 +17,14 @@ void main() {
     test('creates a text file', () async {
       await d.file('name.txt', 'contents').create();
 
-      expect(new File(p.join(d.sandbox, 'name.txt')).readAsString(),
+      expect(File(p.join(d.sandbox, 'name.txt')).readAsString(),
           completion(equals('contents')));
     });
 
     test('creates a binary file', () async {
       await d.file('name.txt', [0, 1, 2, 3]).create();
 
-      expect(new File(p.join(d.sandbox, 'name.txt')).readAsBytes(),
+      expect(File(p.join(d.sandbox, 'name.txt')).readAsBytes(),
           completion(equals([0, 1, 2, 3])));
     });
 
@@ -39,47 +37,46 @@ void main() {
       await d.file('name.txt', 'contents1').create();
       await d.file('name.txt', 'contents2').create();
 
-      expect(new File(p.join(d.sandbox, 'name.txt')).readAsString(),
+      expect(File(p.join(d.sandbox, 'name.txt')).readAsString(),
           completion(equals('contents2')));
     });
   });
 
   group("validate()", () {
     test('succeeds if the filesystem matches a text descriptor', () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsString('contents');
+      await File(p.join(d.sandbox, 'name.txt')).writeAsString('contents');
       await d.file('name.txt', 'contents').validate();
     });
 
     test('succeeds if the filesystem matches a binary descriptor', () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0, 1, 2, 3]);
+      await File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0, 1, 2, 3]);
       await d.file('name.txt', [0, 1, 2, 3]).validate();
     });
 
     test('succeeds if the filesystem matches a text matcher', () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsString('contents');
+      await File(p.join(d.sandbox, 'name.txt')).writeAsString('contents');
       await d.file('name.txt', contains('ent')).validate();
     });
 
     test('succeeds if the filesystem matches a binary matcher', () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0, 1, 2, 3]);
-      await new d.FileDescriptor.binaryMatcher('name.txt', contains(2))
-          .validate();
+      await File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0, 1, 2, 3]);
+      await d.FileDescriptor.binaryMatcher('name.txt', contains(2)).validate();
     });
 
     test('succeeds if invalid UTF-8 matches a text matcher', () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
+      await File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
       await d.file('name.txt', isNot(isEmpty)).validate();
     });
 
     test("fails if the text contents don't match", () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsString('wrong');
+      await File(p.join(d.sandbox, 'name.txt')).writeAsString('wrong');
 
       expect(d.file('name.txt', 'contents').validate(),
           throwsA(toString(startsWith('File "name.txt" should contain:'))));
     });
 
     test("fails if the binary contents don't match", () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([5, 4, 3, 2]);
+      await File(p.join(d.sandbox, 'name.txt')).writeAsBytes([5, 4, 3, 2]);
 
       expect(
           d.file('name.txt', [0, 1, 2, 3]).validate(),
@@ -88,7 +85,7 @@ void main() {
     });
 
     test("fails if the text contents don't match the matcher", () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsString('wrong');
+      await File(p.join(d.sandbox, 'name.txt')).writeAsString('wrong');
 
       expect(
           d.file('name.txt', contains('ent')).validate(),
@@ -97,17 +94,16 @@ void main() {
     });
 
     test("fails if the binary contents don't match the matcher", () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([5, 4, 3, 2]);
+      await File(p.join(d.sandbox, 'name.txt')).writeAsBytes([5, 4, 3, 2]);
 
       expect(
-          new d.FileDescriptor.binaryMatcher('name.txt', contains(1))
-              .validate(),
+          d.FileDescriptor.binaryMatcher('name.txt', contains(1)).validate(),
           throwsA(
               toString(startsWith('Invalid contents for file "name.txt":'))));
     });
 
     test("fails if invalid UTF-8 doesn't match a text matcher", () async {
-      await new File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
+      await File(p.join(d.sandbox, 'name.txt')).writeAsBytes([0xC3, 0x28]);
       expect(
           d.file('name.txt', isEmpty).validate(),
           throwsA(toString(allOf([

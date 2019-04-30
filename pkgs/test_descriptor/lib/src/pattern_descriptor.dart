@@ -16,7 +16,7 @@ import 'utils.dart';
 /// A function that takes a name for a [Descriptor] and returns a [Descriptor].
 /// This is used for [PatternDescriptor]s, where the name isn't known
 /// ahead-of-time.
-typedef Descriptor _EntryCreator(String name);
+typedef _EntryCreator = Descriptor Function(String name);
 
 /// A descriptor that matches filesystem entity names by [Pattern] rather than
 /// by exact [String].
@@ -31,20 +31,19 @@ class PatternDescriptor extends Descriptor {
   /// matching [pattern].
   final _EntryCreator _fn;
 
-  PatternDescriptor(Pattern pattern, Descriptor child(String basename))
-      : pattern = pattern,
-        _fn = child,
+  PatternDescriptor(this.pattern, Descriptor child(String basename))
+      : _fn = child,
         super('$pattern');
 
   /// Validates that there is some filesystem entity in [parent] that matches
   /// [pattern] and the child entry. This finds all entities in [parent]
-  /// matching [pattern], then passes each of their names to the [EntityCreator]
-  /// and validates the result. If exactly one succeeds, [this] is considered
-  /// valid.
+  /// matching [pattern], then passes each of their names to `child` provided
+  /// in the constructor and validates the result. If exactly one succeeds,
+  /// `this` is considered valid.
   Future validate([String parent]) async {
     var inSandbox = parent == null;
     parent ??= sandbox;
-    var matchingEntries = await new Directory(parent)
+    var matchingEntries = await Directory(parent)
         .list()
         .map((entry) =>
             entry is File ? entry.resolveSymbolicLinksSync() : entry.path)
@@ -54,13 +53,13 @@ class PatternDescriptor extends Descriptor {
 
     var location = inSandbox ? "sandbox" : '"${prettyPath(parent)}"';
     if (matchingEntries.isEmpty) {
-      fail('No entries found in $location matching ${_patternDescription}.');
+      fail('No entries found in $location matching $_patternDescription.');
     }
 
     var results = await Future.wait(matchingEntries.map((entry) {
       var basename = p.basename(entry);
       return runZoned(() {
-        return Result.capture(new Future.sync(() async {
+        return Result.capture(Future.sync(() async {
           await _fn(basename).validate(parent);
           return basename;
         }));
@@ -72,7 +71,7 @@ class PatternDescriptor extends Descriptor {
     }).toList());
 
     var successes = results.where((result) => result.isValue).toList();
-    if (successes.length == 0) {
+    if (successes.isEmpty) {
       await waitAndReportErrors(results.map((result) => result.asFuture));
     } else if (successes.length > 1) {
       fail('Multiple valid entries found in $location matching '
@@ -88,13 +87,13 @@ class PatternDescriptor extends Descriptor {
     if (pattern is! RegExp) return '$pattern';
 
     var regExp = pattern as RegExp;
-    var flags = new StringBuffer();
+    var flags = StringBuffer();
     if (!regExp.isCaseSensitive) flags.write('i');
     if (regExp.isMultiLine) flags.write('m');
     return '/${regExp.pattern}/$flags';
   }
 
   Future create([String parent]) {
-    throw new UnsupportedError("Pattern descriptors don't support create().");
+    throw UnsupportedError("Pattern descriptors don't support create().");
   }
 }

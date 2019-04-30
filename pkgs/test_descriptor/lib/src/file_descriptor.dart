@@ -36,17 +36,17 @@ abstract class FileDescriptor extends Descriptor {
   /// To match a [Matcher] against a file's binary contents, use [new
   /// FileDescriptor.binaryMatcher] instead.
   factory FileDescriptor(String name, contents) {
-    if (contents is String) return new _StringFileDescriptor(name, contents);
+    if (contents is String) return _StringFileDescriptor(name, contents);
     if (contents is List) {
-      return new _BinaryFileDescriptor(name, contents.cast<int>());
+      return _BinaryFileDescriptor(name, contents.cast<int>());
     }
-    if (contents == null) return new _BinaryFileDescriptor(name, []);
-    return new _MatcherFileDescriptor(name, contents);
+    if (contents == null) return _BinaryFileDescriptor(name, []);
+    return _MatcherFileDescriptor(name, contents as Matcher);
   }
 
   /// Returns a `dart:io` [File] object that refers to this file within
   /// [sandbox].
-  File get io => new File(p.join(sandbox, name));
+  File get io => File(p.join(sandbox, name));
 
   /// Creates a new binary [FileDescriptor] with [name] that matches its binary
   /// contents against [matcher].
@@ -54,7 +54,7 @@ abstract class FileDescriptor extends Descriptor {
   /// The [create], [read], and [readAsBytes] methods are unsupported for this
   /// descriptor.
   factory FileDescriptor.binaryMatcher(String name, Matcher matcher) =>
-      new _MatcherFileDescriptor(name, matcher, isBinary: true);
+      _MatcherFileDescriptor(name, matcher, isBinary: true);
 
   /// A protected constructor that's only intended for subclasses.
   FileDescriptor.protected(String name) : super(name);
@@ -62,7 +62,7 @@ abstract class FileDescriptor extends Descriptor {
   Future create([String parent]) async {
     // Create the stream before we call [File.openWrite] because it may fail
     // fast (e.g. if this is a matcher file).
-    var file = new File(p.join(parent ?? sandbox, name)).openWrite();
+    var file = File(p.join(parent ?? sandbox, name)).openWrite();
     try {
       await readAsBytes().listen(file.add).asFuture();
     } finally {
@@ -73,11 +73,11 @@ abstract class FileDescriptor extends Descriptor {
   Future validate([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     var pretty = prettyPath(fullPath);
-    if (!(await new File(fullPath).exists())) {
+    if (!(await File(fullPath).exists())) {
       fail('File not found: "$pretty".');
     }
 
-    await _validate(pretty, await new File(fullPath).readAsBytes());
+    await _validate(pretty, await File(fullPath).readAsBytes());
   }
 
   /// Validates that [binaryContents] matches the expected contents of
@@ -106,7 +106,7 @@ class _BinaryFileDescriptor extends FileDescriptor {
 
   _BinaryFileDescriptor(String name, this._contents) : super.protected(name);
 
-  Stream<List<int>> readAsBytes() => new Stream.fromIterable([_contents]);
+  Stream<List<int>> readAsBytes() => Stream.fromIterable([_contents]);
 
   Future _validate(String prettPath, List<int> actualContents) async {
     if (const IterableEquality().equals(_contents, actualContents)) return null;
@@ -124,12 +124,12 @@ class _StringFileDescriptor extends FileDescriptor {
   Future<String> read() async => _contents;
 
   Stream<List<int>> readAsBytes() =>
-      new Stream.fromIterable([utf8.encode(_contents)]);
+      Stream.fromIterable([utf8.encode(_contents)]);
 
   Future _validate(String prettyPath, List<int> actualContents) {
     var actualContentsText = utf8.decode(actualContents);
     if (_contents == actualContentsText) return null;
-    throw fail(_textMismatchMessage(prettyPath, _contents, actualContentsText));
+    fail(_textMismatchMessage(prettyPath, _contents, actualContentsText));
   }
 
   String _textMismatchMessage(
@@ -177,20 +177,19 @@ class _MatcherFileDescriptor extends FileDescriptor {
   /// contents.
   final bool _isBinary;
 
-  _MatcherFileDescriptor(String name, this._matcher, {bool isBinary: false})
+  _MatcherFileDescriptor(String name, this._matcher, {bool isBinary = false})
       : _isBinary = isBinary,
         super.protected(name);
 
   Stream<List<int>> readAsBytes() =>
-      throw new UnsupportedError("Matcher files can't be created or read.");
+      throw UnsupportedError("Matcher files can't be created or read.");
 
   Future _validate(String prettyPath, List<int> actualContents) async {
     try {
       expect(
           _isBinary ? actualContents : utf8.decode(actualContents), _matcher);
     } on TestFailure catch (error) {
-      throw new TestFailure(
-          'Invalid contents for file "$prettyPath":\n' + error.message);
+      fail('Invalid contents for file "$prettyPath":\n${error.message}');
     }
   }
 }
