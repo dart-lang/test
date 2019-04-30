@@ -253,6 +253,12 @@ class CompactReporter implements Reporter {
       if (!_printedNewline) stdout.write(" " * (lineLength - message.length));
       stdout.writeln();
     } else if (!success) {
+      for (var liveTest in _engine.active) {
+        _progressLine(_description(liveTest),
+            truncate: false,
+            suffix: " - did not complete $_bold$_red[E]$_noColor");
+        print('');
+      }
       _progressLine('Some tests failed.', color: _red);
       print('');
     } else if (_engine.passed.isEmpty) {

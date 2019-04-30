@@ -1,3 +1,8 @@
+## 0.2.5
+
+* Fix an issue where non-completed tests were considered passing.
+* Updated `compact` and `expanded` reporters to display non-completed tests.
+
 ## 0.2.4
 
 * Avoid `dart:isolate` imports on code loaded in tests.
