@@ -170,11 +170,7 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+3: All tests passed!")));
     await test.shouldExit(0);
-  }, tags: [
-    'firefox',
-    'chrome',
-    "vm"
-  ], skip: 'waiting on https://github.com/dart-lang/vm_service_client/pull/46');
+  }, tags: ['firefox', 'chrome', "vm"]);
 
   test("warns if SILENT_OBSERVATORY isn't set when trying to debug the vm",
       () async {
@@ -196,7 +192,7 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains("+1: All tests passed!")));
     await test.shouldExit(0);
-  }, skip: 'waiting on https://github.com/dart-lang/vm_service_client/pull/46');
+  });
 
   test("stops immediately if killed while paused", () async {
     await d.file("test.dart", """
