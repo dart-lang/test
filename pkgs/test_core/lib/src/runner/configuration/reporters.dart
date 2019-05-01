@@ -15,7 +15,8 @@ import '../reporter/json.dart';
 
 /// Constructs a reporter for the provided engine with the provided
 /// configuration.
-typedef Reporter ReporterFactory(Configuration configuration, Engine engine);
+typedef ReporterFactory = Reporter Function(
+    Configuration configuration, Engine engine);
 
 /// Container for a reporter description and corresponding factory.
 class ReporterDetails {
