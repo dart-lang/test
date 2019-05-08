@@ -1,3 +1,7 @@
+## 0.2.6
+
+* Internal cleanup - fix lints.
+
 ## 0.2.5
 
 * Expose the  `Metadata`, `PlatformSelector`, `Runtime`, and `SuitePlatform`

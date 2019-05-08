@@ -323,8 +323,9 @@ StreamMatcher emitsInAnyOrder(Iterable matchers) {
 /// Returns whether [queue] matches [matchers] in any order.
 Future<bool> _tryInAnyOrder(
     StreamQueue queue, Set<StreamMatcher> matchers) async {
-  if (matchers.length == 1)
+  if (matchers.length == 1) {
     return await matchers.first.matchQueue(queue) == null;
+  }
 
   var transaction = queue.startTransaction();
   StreamQueue consumedMost;
