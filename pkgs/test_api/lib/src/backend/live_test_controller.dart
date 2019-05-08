@@ -35,11 +35,11 @@ class _LiveTest extends LiveTest {
 
   Stream<Message> get onMessage => _controller._onMessageController.stream;
 
-  Future<void> get onComplete => _controller.onComplete;
+  Future get onComplete => _controller.completer.future;
 
-  Future<void> run() => _controller._run();
+  Future run() => _controller._run();
 
-  Future<void> close() => _controller._close();
+  Future close() => _controller._close();
 
   _LiveTest(this._controller);
 }
@@ -101,15 +101,13 @@ class LiveTestController {
   final _onMessageController = StreamController<Message>.broadcast(sync: true);
 
   /// The completer for [LiveTest.onComplete];
-  final completer = Completer<void>();
+  final completer = Completer();
 
   /// Whether [run] has been called.
   var _runCalled = false;
 
   /// Whether [close] has been called.
   bool get _isClosed => _onErrorController.isClosed;
-
-  final _stateChangedToComplete = Completer<void>();
 
   /// Creates a new controller for a [LiveTest].
   ///
@@ -160,11 +158,6 @@ class LiveTestController {
 
     _state = newState;
     _onStateChangeController.add(newState);
-
-    if (newState.status == Status.complete &&
-        !_stateChangedToComplete.isCompleted) {
-      _stateChangedToComplete.complete();
-    }
   }
 
   /// Emits message over [LiveTest.onMessage].
@@ -180,7 +173,7 @@ class LiveTestController {
 
   /// A wrapper for [_onRun] that ensures that it follows the guarantees for
   /// [LiveTest.run].
-  Future<void> _run() {
+  Future _run() {
     if (_runCalled) {
       throw StateError("LiveTest.run() may not be called more than once.");
     } else if (_isClosed) {
@@ -193,15 +186,9 @@ class LiveTestController {
     return liveTest.onComplete;
   }
 
-  /// Returns a future that completes when the test is complete.
-  ///
-  /// We also wait for the state to transition to Status.complete.
-  Future<void> get onComplete =>
-      Future.wait([completer.future, _stateChangedToComplete.future]);
-
   /// A wrapper for [_onClose] that ensures that all controllers are closed.
-  Future<void> _close() {
-    if (_isClosed) return onComplete;
+  Future _close() {
+    if (_isClosed) return completer.future;
 
     _onStateChangeController.close();
     _onErrorController.close();
@@ -212,6 +199,6 @@ class LiveTestController {
       completer.complete();
     }
 
-    return onComplete;
+    return completer.future;
   }
 }
