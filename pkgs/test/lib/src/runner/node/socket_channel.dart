@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @JS()
-library _;
+library node;
 
 import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
