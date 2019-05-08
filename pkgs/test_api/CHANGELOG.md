@@ -2,6 +2,8 @@
 
 * Don't swallow exceptions from callbacks in `expectAsync*`.
 * Internal cleanup - fix lints.
+* Fixed a race condition that caused tests to occasionally fail during
+  `tearDownAll` with the message `(tearDownAll) - did not complete [E]`.
 
 ## 0.2.5
 
