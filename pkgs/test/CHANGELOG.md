@@ -1,5 +1,6 @@
 ## 1.6.4
 
+* Don't swallow exceptions from callbacks in `expectAsync*`.
 * Internal cleanup - fix lints.
 
 ## 1.6.3
