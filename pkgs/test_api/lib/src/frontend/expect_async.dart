@@ -10,27 +10,27 @@ import 'expect.dart';
 
 // Function types returned by expectAsync# methods.
 
-typedef T Func0<T>();
-typedef T Func1<T, A>([A a]);
-typedef T Func2<T, A, B>([A a, B b]);
-typedef T Func3<T, A, B, C>([A a, B b, C c]);
-typedef T Func4<T, A, B, C, D>([A a, B b, C c, D d]);
-typedef T Func5<T, A, B, C, D, E>([A a, B b, C c, D d, E e]);
-typedef T Func6<T, A, B, C, D, E, F>([A a, B b, C c, D d, E e, F f]);
+typedef Func0<T> = T Function();
+typedef Func1<T, A> = T Function([A a]);
+typedef Func2<T, A, B> = T Function([A a, B b]);
+typedef Func3<T, A, B, C> = T Function([A a, B b, C c]);
+typedef Func4<T, A, B, C, D> = T Function([A a, B b, C c, D d]);
+typedef Func5<T, A, B, C, D, E> = T Function([A a, B b, C c, D d, E e]);
+typedef Func6<T, A, B, C, D, E, F> = T Function([A a, B b, C c, D d, E e, F f]);
 
 // Functions used to check how many arguments a callback takes. We can't use the
 // previous functions for this, because (a) {} is not a subtype of
 // ([dynamic]) -> dynamic.
 
-typedef _Func0();
-typedef _Func1(Null a);
-typedef _Func2(Null a, Null b);
-typedef _Func3(Null a, Null b, Null c);
-typedef _Func4(Null a, Null b, Null c, Null d);
-typedef _Func5(Null a, Null b, Null c, Null d, Null e);
-typedef _Func6(Null a, Null b, Null c, Null d, Null e, Null f);
+typedef _Func0 = Function();
+typedef _Func1 = Function(Null a);
+typedef _Func2 = Function(Null a, Null b);
+typedef _Func3 = Function(Null a, Null b, Null c);
+typedef _Func4 = Function(Null a, Null b, Null c, Null d);
+typedef _Func5 = Function(Null a, Null b, Null c, Null d, Null e);
+typedef _Func6 = Function(Null a, Null b, Null c, Null d, Null e, Null f);
 
-typedef bool _IsDoneCallback();
+typedef _IsDoneCallback = bool Function();
 
 /// A wrapper for a function that ensures that it's called the appropriate
 /// number of times.
