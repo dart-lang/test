@@ -1,3 +1,7 @@
+## 0.2.6
+
+* Internal cleanup - fix lints.
+
 ## 0.2.5
 
 * Fix an issue where non-completed tests were considered passing.

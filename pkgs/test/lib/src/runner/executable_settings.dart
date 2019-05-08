@@ -96,8 +96,9 @@ class ExecutableSettings {
       if (value is String) {
         // Don't check this on Windows because people may want to set relative
         // paths in their global config.
-        if (!Platform.isWindows)
+        if (!Platform.isWindows) {
           _assertNotRelative(executableNode as YamlScalar);
+        }
 
         linuxExecutable = value;
         macOSExecutable = value;
