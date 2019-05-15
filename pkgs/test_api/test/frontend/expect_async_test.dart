@@ -223,6 +223,16 @@ void main() {
             liveTest, "Callback called more times than expected (0).");
       });
     });
+
+    group("1,", (){
+      test("handles being in a callback", () {
+        var callbackFn = (){
+          expectAsync0(() {}, count: 1);
+        };
+
+        callbackFn();
+      });
+    });
   });
 
   group("with max", () {
