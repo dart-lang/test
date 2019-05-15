@@ -222,6 +222,14 @@ void main() {
         expectTestFailed(
             liveTest, "Callback called more times than expected (0).");
       });
+
+      test("handles being in a callback", () {
+        var callbackFn = (){
+          expectAsync0(() {}, count: 0);
+        };
+
+        callbackFn();
+      }, timeout: new Timeout(new Duration(seconds: 1)));
     });
 
     group("1,", (){
@@ -231,7 +239,7 @@ void main() {
         };
 
         callbackFn();
-      });
+      }, timeout: new Timeout(new Duration(seconds: 1)));
     });
   });
 
