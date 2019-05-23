@@ -52,6 +52,7 @@ class DirectoryDescriptor extends Descriptor {
                 p.basename(entity.path), entity.readAsBytesSync());
           }
           // Ignore broken symlinks.
+          return null;
         }).where((path) => path != null));
   }
 
