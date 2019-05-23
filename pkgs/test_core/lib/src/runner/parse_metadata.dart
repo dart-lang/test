@@ -443,8 +443,7 @@ class _Parser {
     }
 
     var map = <K, V>{};
-    // ignore: deprecated_member_use
-    for (var element in (expression as SetOrMapLiteral).elements2) {
+    for (var element in (expression as SetOrMapLiteral).elements) {
       if (element is MapLiteralEntry) {
         map[key(element.key)] = value(element.value);
       } else {
@@ -463,8 +462,7 @@ class _Parser {
 
     var list = expression as ListLiteral;
 
-    // ignore: deprecated_member_use
-    return list.elements2.map((e) {
+    return list.elements.map((e) {
       if (e is! Expression) {
         throw SourceSpanFormatException(
             'Expected only literal elements.', _spanFor(e));
