@@ -1,6 +1,7 @@
 ## 0.2.6
 
 * Internal cleanup - fix lints.
+* Use the latest `test_api`.
 
 ## 0.2.5
 
