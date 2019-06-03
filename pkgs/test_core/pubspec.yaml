@@ -1,5 +1,5 @@
 name: test_core
-version: 0.2.6-dev
+version: 0.2.6
 author: Dart Team <misc@dartlang.org>
 description: A basic library for writing tests and running them on the VM.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_core
@@ -32,8 +32,4 @@ dependencies:
   # properly constrains all features it provides.
   matcher: ">=0.12.5 <0.12.6"
   # Use an exact version until the test_api package is stable.
-  test_api: 0.2.5
-
-dependency_overrides:
-  test_api:
-    path: ./../test_api
+  test_api: 0.2.6
