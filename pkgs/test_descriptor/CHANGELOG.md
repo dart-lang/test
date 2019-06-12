@@ -1,3 +1,8 @@
+## 1.2.0
+
+* Add an `ArchiveDescriptor` class and a corresponding `archive()` function that
+  can create and validate Zip and TAR archives.
+
 ## 1.1.1
 
 * Update to lowercase Dart core library constants.

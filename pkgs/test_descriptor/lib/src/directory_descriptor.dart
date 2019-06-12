@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
 import 'descriptor.dart';
@@ -122,23 +121,5 @@ class DirectoryDescriptor extends Descriptor {
     }));
   }
 
-  String describe() {
-    if (contents.isEmpty) return name;
-
-    var buffer = StringBuffer();
-    buffer.writeln(name);
-    for (var entry in contents.take(contents.length - 1)) {
-      var entryString =
-          prefixLines(entry.describe(), '${glyph.verticalLine}   ',
-              first: '${glyph.teeRight}${glyph.horizontalLine}'
-                  '${glyph.horizontalLine} ');
-      buffer.writeln(entryString);
-    }
-
-    var lastEntryString = prefixLines(contents.last.describe(), '    ',
-        first: '${glyph.bottomLeftCorner}${glyph.horizontalLine}'
-            '${glyph.horizontalLine} ');
-    buffer.write(lastEntryString);
-    return buffer.toString();
-  }
+  String describe() => describeDirectory(name, contents);
 }
