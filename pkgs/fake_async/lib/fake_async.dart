@@ -19,7 +19,7 @@ import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
 
 /// The type of a microtask callback.
-typedef void _Microtask();
+typedef _Microtask = void Function();
 
 /// Runs [callback] in a [Zone] where all asynchrony is controlled by an
 /// instance of [FakeAsync].
@@ -37,8 +37,8 @@ typedef void _Microtask();
 /// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
 ///
 /// Returns the result of [callback].
-T fakeAsync<T>(T callback(FakeAsync async), {DateTime initialTime}) =>
-    new FakeAsync(initialTime: initialTime).run(callback);
+T fakeAsync<T>(T Function(FakeAsync async) callback, {DateTime initialTime}) =>
+    FakeAsync(initialTime: initialTime).run(callback);
 
 /// A class that mocks out the passage of time within a [Zone].
 ///
@@ -63,10 +63,10 @@ class FakeAsync {
   Duration _elapsingTo;
 
   /// Tasks that are scheduled to run when fake time progresses.
-  final _microtasks = new Queue<_Microtask>();
+  final _microtasks = Queue<_Microtask>();
 
   /// All timers created within [run].
-  final _timers = new Set<_FakeTimer>();
+  final _timers = Set<_FakeTimer>();
 
   /// The number of active periodic timers created within a call to [run] or
   /// [fakeAsync].
@@ -93,7 +93,7 @@ class FakeAsync {
   /// a [FakeAsync] object and calling [run] manually.
   FakeAsync({DateTime initialTime}) {
     initialTime ??= clock.now();
-    _clock = new Clock(() => initialTime.add(elapsed));
+    _clock = Clock(() => initialTime.add(elapsed));
   }
 
   /// Returns a fake [Clock] whose time can is elapsed by calls to [elapse] and
@@ -109,7 +109,7 @@ class FakeAsync {
   ///
   /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
   Clock getClock(DateTime initialTime) =>
-      new Clock(() => initialTime.add(_elapsed));
+      Clock(() => initialTime.add(_elapsed));
 
   /// Simulates the asynchronous passage of time.
   ///
@@ -121,10 +121,9 @@ class FakeAsync {
   /// timer fires.
   void elapse(Duration duration) {
     if (duration.inMicroseconds < 0) {
-      throw new ArgumentError.value(
-          duration, 'duration', 'may not be negative');
+      throw ArgumentError.value(duration, 'duration', 'may not be negative');
     } else if (_elapsingTo != null) {
-      throw new StateError('Cannot elapse until previous elapse is complete.');
+      throw StateError('Cannot elapse until previous elapse is complete.');
     }
 
     _elapsingTo = _elapsed + duration;
@@ -142,14 +141,14 @@ class FakeAsync {
   /// Throws an [ArgumentError] if [duration] is negative.
   void elapseBlocking(Duration duration) {
     if (duration.inMicroseconds < 0) {
-      throw new ArgumentError('Cannot call elapse with negative duration');
+      throw ArgumentError('Cannot call elapse with negative duration');
     }
 
     _elapsed += duration;
     if (_elapsingTo != null && _elapsed > _elapsingTo) _elapsingTo = _elapsed;
   }
 
-  /// Runs [callback] in a [Zone] where all asynchrony is controlled by [this].
+  /// Runs [callback] in a [Zone] where all asynchrony is controlled by `this`.
   ///
   /// All [Future]s, [Stream]s, [Timer]s, microtasks, and other time-based
   /// asynchronous features used within [callback] are controlled by calls to
@@ -167,9 +166,9 @@ class FakeAsync {
   ///
   /// Note: it's usually more convenient to use [fakeAsync] rather than creating
   /// a [FakeAsync] object and calling [run] manually.
-  T run<T>(T callback(FakeAsync self)) =>
+  T run<T>(T Function(FakeAsync self) callback) =>
       runZoned(() => withClock(_clock, () => callback(this)),
-          zoneSpecification: new ZoneSpecification(
+          zoneSpecification: ZoneSpecification(
               createTimer: (_, __, ___, duration, callback) =>
                   _createTimer(duration, callback, false),
               createPeriodicTimer: (_, __, ___, duration, callback) =>
@@ -196,15 +195,14 @@ class FakeAsync {
   /// The [timeout] controls how much fake time may elapse before a [StateError]
   /// is thrown. This ensures that a periodic timer doesn't cause this method to
   /// deadlock. It defaults to one hour.
-  void flushTimers({Duration timeout, bool flushPeriodicTimers: true}) {
+  void flushTimers({Duration timeout, bool flushPeriodicTimers = true}) {
     timeout ??= const Duration(hours: 1);
 
     var absoluteTimeout = _elapsed + timeout;
     _fireTimersWhile((timer) {
       if (timer._nextCall > absoluteTimeout) {
         // TODO(nweiz): Make this a [TimeoutException].
-        throw new StateError(
-            'Exceeded timeout ${timeout} while flushing timers');
+        throw StateError('Exceeded timeout $timeout while flushing timers');
       }
 
       if (flushPeriodicTimers) return _timers.isNotEmpty;
@@ -222,9 +220,9 @@ class FakeAsync {
   ///
   /// Microtasks are flushed before and after each timer is fired. Before each
   /// timer fires, [_elapsed] is updated to the appropriate duration.
-  void _fireTimersWhile(bool predicate(_FakeTimer timer)) {
+  void _fireTimersWhile(bool Function(_FakeTimer timer) predicate) {
     flushMicrotasks();
-    while (true) {
+    for (;;) {
       if (_timers.isEmpty) break;
 
       var timer = minBy(_timers, (timer) => timer._nextCall);
@@ -236,10 +234,10 @@ class FakeAsync {
     }
   }
 
-  /// Creates a new timer controlled by [this] that fires [callback] after
+  /// Creates a new timer controlled by `this` that fires [callback] after
   /// [duration] (or every [duration] if [periodic] is `true`).
   Timer _createTimer(Duration duration, Function callback, bool periodic) {
-    var timer = new _FakeTimer(duration, callback, periodic, this);
+    var timer = _FakeTimer(duration, callback, periodic, this);
     _timers.add(timer);
     return timer;
   }
@@ -274,9 +272,9 @@ class _FakeTimer implements Timer {
   /// fired.
   Duration _nextCall;
 
-  // TODO: Dart 2.0 requires this method to be implemented.
+  @override
   int get tick {
-    throw new UnimplementedError("tick");
+    throw UnimplementedError('tick');
   }
 
   _FakeTimer(Duration duration, this._callback, this._isPeriodic, this._async)
@@ -284,8 +282,10 @@ class _FakeTimer implements Timer {
     _nextCall = _async._elapsed + _duration;
   }
 
+  @override
   bool get isActive => _async._timers.contains(this);
 
+  @override
   void cancel() => _async._timers.remove(this);
 
   /// Fires this timer's callback and updates its state as necessary.
