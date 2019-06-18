@@ -214,7 +214,7 @@ class _UnorderedMatches extends _IterableMatcher {
   /// tracks the matchers that have been used _during_ this search.
   bool _findPairing(List<List<int>> edges, int valueIndex, List<int> matched,
       [Set<int> reserved]) {
-    reserved ??= Set<int>();
+    reserved ??= <int>{};
     final possiblePairings =
         edges[valueIndex].where((m) => !reserved.contains(m));
     for (final matcherIndex in possiblePairings) {

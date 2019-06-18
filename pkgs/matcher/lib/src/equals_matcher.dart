@@ -70,7 +70,9 @@ class _StringEqualsMatcher extends FeatureMatcher<String> {
       _writeLeading(buff, escapedItem, start);
       _writeTrailing(buff, escapedItem, start);
       buff.write('\n          ');
-      for (var i = start > 10 ? 14 : start; i > 0; i--) buff.write(' ');
+      for (var i = start > 10 ? 14 : start; i > 0; i--) {
+        buff.write(' ');
+      }
       buff.write('^\n Differ at offset $start');
     }
 

@@ -26,7 +26,7 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
 
     // Avoid looping infinitely on recursively-nested data structures.
     if (seen.contains(object)) return "(recursive)";
-    seen = seen.union(Set.from([object]));
+    seen = seen.union({object});
     String pp(child) => _prettyPrint(child, indent + 2, seen, false);
 
     if (object is Iterable) {
@@ -113,7 +113,7 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
     }
   }
 
-  return _prettyPrint(object, 0, Set(), true);
+  return _prettyPrint(object, 0, <Object>{}, true);
 }
 
 String _indent(int length) => List.filled(length, ' ').join('');
