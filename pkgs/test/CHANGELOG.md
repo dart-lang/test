@@ -1,3 +1,7 @@
+## 1.6.5
+
+* Depend on the latest `test_core`.
+
 ## 1.6.4
 
 * Don't swallow exceptions from callbacks in `expectAsync*`.

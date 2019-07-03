@@ -1,3 +1,7 @@
+## 0.2.7
+
+* Depend on `vm_service_lib` instead of `vm_service_client`.
+
 ## 0.2.6
 
 * Internal cleanup - fix lints.

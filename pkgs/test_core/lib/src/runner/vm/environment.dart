@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:vm_service_client/vm_service_client.dart';
+import 'package:vm_service_lib/vm_service_lib.dart';
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
 
 /// The environment in which VM tests are loaded.
@@ -14,19 +14,22 @@ class VMEnvironment implements Environment {
   final Uri observatoryUrl;
 
   /// The VM service isolate object used to control this isolate.
-  final VMIsolateRef _isolate;
+  final IsolateRef _isolate;
+  final VmService _client;
 
-  VMEnvironment(this.observatoryUrl, this._isolate);
+  VMEnvironment(this.observatoryUrl, this._isolate, this._client);
 
   Uri get remoteDebuggerUrl => null;
 
   Stream get onRestart => StreamController.broadcast().stream;
 
   CancelableOperation displayPause() {
-    var completer = CancelableCompleter(onCancel: () => _isolate.resume());
+    var completer =
+        CancelableCompleter(onCancel: () => _client.resume(_isolate.id));
 
-    completer.complete(_isolate.pause().then((_) => _isolate.onPauseOrResume
-        .firstWhere((event) => event is VMResumeEvent)));
+    completer.complete(_client.pause(_isolate.id).then((_) => _client
+        .onDebugEvent
+        .firstWhere((event) => event.kind == EventKind.kResume)));
 
     return completer.operation;
   }
