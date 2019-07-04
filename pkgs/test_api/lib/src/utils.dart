@@ -18,8 +18,8 @@ import 'backend/operating_system.dart';
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = StreamTransformer<List<int>, String>(
-    (stream, cancelOnError) => stream
-        .transform(utf8.decoder)
+    (stream, cancelOnError) => utf8.decoder
+        .bind(stream)
         .transform(const LineSplitter())
         .listen(null, cancelOnError: cancelOnError));
 
