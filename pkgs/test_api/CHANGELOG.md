@@ -1,3 +1,7 @@
+## 0.2.7
+
+* Prepare for upcoming `Stream<List<int>>` changes in the Dart SDK.
+
 ## 0.2.6
 
 * Don't swallow exceptions from callbacks in `expectAsync*`.

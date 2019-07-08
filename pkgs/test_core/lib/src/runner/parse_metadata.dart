@@ -45,6 +45,7 @@ class _Parser {
   String _contents;
 
   _Parser(this._path, this._contents, this._platformVariables) {
+    // ignore: deprecated_member_use
     var directives = parseDirectives(_contents, name: _path).directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
 
@@ -282,7 +283,7 @@ class _Parser {
 
   Map<String, Expression> _parseNamedArguments(
           NodeList<Expression> arguments) =>
-      Map.fromIterable(arguments.where((a) => a is NamedExpression),
+      Map.fromIterable(arguments.whereType<NamedExpression>(),
           key: (a) => (a as NamedExpression).name.label.name,
           value: (a) => (a as NamedExpression).expression);
 
