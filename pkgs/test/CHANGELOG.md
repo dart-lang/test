@@ -1,6 +1,7 @@
 ## 1.6.5
 
 * Depend on the latest `test_core`.
+* Depend on the latest `package:analyzer`.
 
 ## 1.6.4
 

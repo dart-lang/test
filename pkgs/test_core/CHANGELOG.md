@@ -1,6 +1,7 @@
 ## 0.2.7
 
 * Depend on `vm_service_lib` instead of `vm_service_client`.
+* Depend on latest `package:analyzer`.
 
 ## 0.2.6
 
