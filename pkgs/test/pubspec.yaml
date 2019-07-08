@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  analyzer: ^0.37.0
+  analyzer: ">=0.36.0 <0.38.0"
   async: ^2.0.0
   boolean_selector: ^1.0.0
   http_multi_server: ^2.0.0
