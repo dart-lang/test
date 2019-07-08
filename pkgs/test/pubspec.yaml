@@ -40,7 +40,3 @@ dev_dependencies:
   shelf_test_handler: ^1.0.0
   test_descriptor: ^1.0.0
   test_process: ^1.0.0
-
-dependency_overrides:
-  test_core:
-    path: ../test_core
