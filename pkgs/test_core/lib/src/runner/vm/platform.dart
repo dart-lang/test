@@ -10,20 +10,20 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-
-import 'package:vm_service_client/vm_service_client.dart';
-
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/dart.dart' // ignore: implementation_imports
     as dart;
-import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
+import 'package:vm_service_lib/vm_service_lib.dart' hide Isolate;
+import 'package:vm_service_lib/vm_service_lib_io.dart';
+
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -49,16 +49,18 @@ class VMPlatform extends PlatformPlugin {
       rethrow;
     }
 
-    VMServiceClient client;
+    VmService client;
+    StreamSubscription<Event> eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
       isolate.kill();
-      client?.close();
+      eventSub?.cancel();
+      client?.dispose();
       sink.close();
     }));
 
     VMEnvironment environment;
-    VMIsolateRef vmIsolate;
+    IsolateRef isolateRef;
     if (_config.pauseAfterLoad) {
       // Print an empty line because the VM prints an "Observatory listening on"
       // line and we don't want that to end up on the same line as the reporter
@@ -68,25 +70,34 @@ class VMPlatform extends PlatformPlugin {
       var info = await Service.controlWebServer(enable: true);
       var isolateID = Service.getIsolateID(isolate);
 
-      client = VMServiceClient.connect(info.serverUri);
+      var libraryPath = p.toUri(p.absolute(path)).toString();
+      client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
       var isolateNumber = int.parse(isolateID.split("/").last);
-      vmIsolate = (await client.getVM())
+      isolateRef = (await client.getVM())
           .isolates
-          .firstWhere((isolate) => isolate.number == isolateNumber);
-      await vmIsolate.setName(path);
-
-      var library =
-          (await vmIsolate.loadRunnable()).libraries[p.toUri(p.absolute(path))];
-      var url = info.serverUri.resolveUri(library.observatoryUrl);
-      environment = VMEnvironment(url, vmIsolate);
+          .firstWhere((isolate) => isolate.number == isolateNumber.toString());
+      await client.setName(isolateRef.id, path);
+      var libraryRef = (await client.getIsolate(isolateRef.id))
+          .libraries
+          .firstWhere((library) => library.uri == libraryPath) as LibraryRef;
+      var url = _observatoryUrlFor(
+          info.serverUri.toString(), isolateRef.id, libraryRef.id);
+      environment = VMEnvironment(url, isolateRef, client);
     }
 
     var controller = deserializeSuite(path, platform, suiteConfig,
         environment ?? PluginEnvironment(), channel, message);
 
-    if (vmIsolate != null) {
-      vmIsolate.onPauseOrResume.listen((event) {
-        controller.setDebugging(event is! VMResumeEvent);
+    if (isolateRef != null) {
+      await client.streamListen('Debug');
+      eventSub = client.onDebugEvent.listen((event) {
+        if (event.kind == EventKind.kResume) {
+          controller.setDebugging(false);
+        } else if (event.kind == EventKind.kPauseInterrupted ||
+            event.kind == EventKind.kPauseBreakpoint ||
+            event.kind == EventKind.kPauseException) {
+          controller.setDebugging(true);
+        }
       });
     }
 
@@ -163,3 +174,10 @@ Future<Isolate> _spawnPubServeIsolate(
     throw LoadException(testPath, error);
   }
 }
+
+String _wsUriFor(String observatoryUrl) =>
+    "ws:${observatoryUrl.split(':').sublist(1).join(':')}ws";
+
+Uri _observatoryUrlFor(String base, String isolateId, String id) =>
+    Uri.parse("$base#/inspect?isolateId=${Uri.encodeQueryComponent(isolateId)}&"
+        "objectId=${Uri.encodeQueryComponent(id)}");
