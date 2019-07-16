@@ -17,7 +17,6 @@ import 'live_test.dart';
 import 'live_test_controller.dart';
 import 'message.dart';
 import 'metadata.dart';
-import 'outstanding_callback_counter.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'suite_platform.dart';
@@ -97,19 +96,19 @@ class Invoker {
   bool get closed => _closable && _onCloseCompleter.isCompleted;
 
   /// A future that completes once the test has been closed.
-  Future get onClose => _closable
+  Future<void> get onClose => _closable
       ? _onCloseCompleter.future
       // If we're in an unclosable block, return a future that will never
       // complete.
-      : Completer().future;
-  final _onCloseCompleter = Completer();
+      : Completer<void>().future;
+  final _onCloseCompleter = Completer<void>();
 
   /// The test being run.
   LocalTest get _test => liveTest.test as LocalTest;
 
   /// The outstanding callback counter for the current zone.
-  OutstandingCallbackCounter get _outstandingCallbacks {
-    var counter = Zone.current[_counterKey] as OutstandingCallbackCounter;
+  _AsyncCounter get _outstandingCallbacks {
+    var counter = Zone.current[_counterKey] as _AsyncCounter;
     if (counter != null) return counter;
     throw StateError("Can't add or remove outstanding callbacks outside "
         "of a test body.");
@@ -206,22 +205,15 @@ class Invoker {
   /// Throws a [ClosedException] if this test has been closed.
   void addOutstandingCallback() {
     if (closed) throw ClosedException();
-    _outstandingCallbacks.addOutstandingCallback();
+    _outstandingCallbacks.increment();
   }
 
   /// Tells the invoker that a callback declared with [addOutstandingCallback]
   /// is no longer running.
   void removeOutstandingCallback() {
     heartbeat();
-    _outstandingCallbacks.removeOutstandingCallback();
+    _outstandingCallbacks.decrement();
   }
-
-  /// Removes all outstanding callbacks, for example when an error occurs.
-  ///
-  /// Future calls to [addOutstandingCallback] and [removeOutstandingCallback]
-  /// will be ignored.
-  void removeAllOutstandingCallbacks() =>
-      _outstandingCallbacks.removeAllOutstandingCallbacks();
 
   /// Runs [fn] and returns once all (registered) outstanding callbacks it
   /// transitively invokes have completed.
@@ -239,19 +231,19 @@ class Invoker {
   /// If the test times out, the *most recent* call to
   /// [waitForOutstandingCallbacks] will treat that error as occurring within
   /// [fn]—that is, it will complete immediately.
-  Future waitForOutstandingCallbacks(fn()) {
+  Future<void> waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
     Zone zone;
-    var counter = OutstandingCallbackCounter();
+    var counter = _AsyncCounter();
     runZoned(() async {
       zone = Zone.current;
       _outstandingCallbackZones.add(zone);
       await fn();
-      counter.removeOutstandingCallback();
+      counter.decrement();
     }, zoneValues: {_counterKey: counter});
 
-    return counter.noOutstandingCallbacks.whenComplete(() {
+    return counter.onZero.whenComplete(() {
       _outstandingCallbackZones.remove(zone);
     });
   }
@@ -261,7 +253,7 @@ class Invoker {
   /// This is useful for running code that should be able to register callbacks
   /// and interact with the test framework normally even when the invoker is
   /// closed, for example cleanup code.
-  unclosable(fn()) {
+  T unclosable<T>(T Function() fn) {
     heartbeat();
 
     return runZoned(fn, zoneValues: {_closableKey: false});
@@ -345,7 +337,7 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace);
-    zone.run(removeAllOutstandingCallbacks);
+    zone.run(() => _outstandingCallbacks.complete());
 
     if (!liveTest.test.metadata.chainStackTraces) {
       _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
@@ -378,7 +370,7 @@ class Invoker {
   void _onRun() {
     _controller.setState(const State(Status.running, Result.success));
 
-    var outstandingCallbacksForBody = OutstandingCallbackCounter();
+    var outstandingCallbacksForBody = _AsyncCounter();
 
     _runCount++;
     Chain.capture(() {
@@ -402,7 +394,7 @@ class Invoker {
             removeOutstandingCallback();
           }));
 
-          await _outstandingCallbacks.noOutstandingCallbacks;
+          await _outstandingCallbacks.onZero;
           if (_timeoutTimer != null) _timeoutTimer.cancel();
 
           if (liveTest.state.result != Result.success &&
@@ -431,7 +423,7 @@ class Invoker {
   }
 
   /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.
-  void _guardIfGuarded(void callback()) {
+  void _guardIfGuarded(void Function() callback) {
     if (_guarded) {
       Invoker.guard(callback);
     } else {
@@ -443,9 +435,37 @@ class Invoker {
   void _print(String text) => _controller.message(Message.print(text));
 
   /// Run [_tearDowns] in reverse order.
-  Future _runTearDowns() async {
+  Future<void> _runTearDowns() async {
     while (_tearDowns.isNotEmpty) {
       await errorsDontStopTest(_tearDowns.removeLast());
     }
+  }
+}
+
+/// A manually incremented/decremented counter that completes a [Future] the
+/// first time it reaches zero or is forcefully completed.
+class _AsyncCounter {
+  var _count = 1;
+
+  /// A Future that completes the first time the counter reaches 0.
+  Future<void> get onZero => _completer.future;
+  final _completer = Completer<void>();
+
+  void increment() {
+    _count++;
+  }
+
+  void decrement() {
+    _count--;
+    if (_count != 0) return;
+    if (_completer.isCompleted) return;
+    _completer.complete();
+  }
+
+  /// Force [onZero] to complete.
+  ///
+  /// No effect if [onZero] has already completed.
+  void complete() {
+    if (!_completer.isCompleted) _completer.complete();
   }
 }
