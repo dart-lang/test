@@ -337,7 +337,7 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace);
-    zone.run(_outstandingCallbacks.complete);
+    zone.run(() => _outstandingCallbacks.complete());
 
     if (!liveTest.test.metadata.chainStackTraces) {
       _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
