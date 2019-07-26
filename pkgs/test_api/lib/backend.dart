@@ -4,7 +4,7 @@
 
 @Deprecated('package:test_api is not intended for general use. '
     'Please use package:test.')
-library test_api;
+library test_api.backend;
 
 export 'src/backend/metadata.dart' show Metadata;
 export 'src/backend/platform_selector.dart' show PlatformSelector;

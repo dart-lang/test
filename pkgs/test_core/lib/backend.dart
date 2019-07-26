@@ -4,7 +4,7 @@
 
 @Deprecated('package:test_core is not intended for general use. '
     'Please use package:test.')
-library test_core;
+library test_core.backend;
 
 //ignore: deprecated_member_use
 export 'package:test_api/backend.dart'
