@@ -1,3 +1,7 @@
+## 1.6.6
+
+* Depend on the latest `test_core` and `test_api`.
+
 ## 1.6.5
 
 * Depend on the latest `test_core`.

@@ -1,3 +1,8 @@
+## 0.2.8
+
+* Mark `package:test_core` as deprecated to prevent accidental use.
+* Depend on the latest `test_api`.
+
 ## 0.2.7
 
 * Depend on `vm_service_lib` instead of `vm_service_client`.
