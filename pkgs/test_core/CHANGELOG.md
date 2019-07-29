@@ -1,3 +1,7 @@
+## 0.2.8
+
+* Depend on `vm_service` instead of `vm_service_lib`.
+
 ## 0.2.7
 
 * Depend on `vm_service_lib` instead of `vm_service_client`.

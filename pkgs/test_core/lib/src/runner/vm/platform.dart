@@ -21,8 +21,8 @@ import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementati
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/dart.dart' // ignore: implementation_imports
     as dart;
-import 'package:vm_service_lib/vm_service_lib.dart' hide Isolate;
-import 'package:vm_service_lib/vm_service_lib_io.dart';
+import 'package:vm_service/vm_service.dart' hide Isolate;
+import 'package:vm_service/vm_service_io.dart';
 
 import 'environment.dart';
 
