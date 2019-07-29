@@ -1,6 +1,7 @@
 ## 0.2.8
 
 * Depend on `vm_service` instead of `vm_service_lib`.
+* Drop dependency on `pub_semver`.
 
 ## 0.2.7
 

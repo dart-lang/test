@@ -2,6 +2,7 @@
 
 * Pass `--server-mode` to dart2js instead of `--categories=Server` to fix a
   warning about the flag deprecation.
+* Drop dependency on `pub_semver`.
 
 ## 1.6.5
 
