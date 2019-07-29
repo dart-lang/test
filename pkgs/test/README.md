@@ -263,8 +263,7 @@ The test runner looks for an executable named `node` (on Mac OS or Linux) or
 `node.exe` (on Windows) on your system path. When compiling Node.js tests, it
 passes `-Dnode=true`, so tests can determine whether they're running on Node
 using [`const bool.fromEnvironment("node")`][bool.fromEnvironment]. It also sets
-`--categories=Server`, which will tell the compiler that `dart:html` is not
-available.
+`--server-mode`, which will tell the compiler that `dart:html` is not available.
 
 [bool.fromEnvironment]: https://api.dartlang.org/stable/1.24.2/dart-core/bool/bool.fromEnvironment.html
 

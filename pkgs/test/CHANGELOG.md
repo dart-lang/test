@@ -1,3 +1,8 @@
+## 1.6.6
+
+* Pass `--server-mode` to dart2js instead of `--categories=Server` to fix a
+  warning about the flag deprecation.
+
 ## 1.6.5
 
 * Depend on the latest `test_core`.
