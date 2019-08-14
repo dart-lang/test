@@ -2,6 +2,8 @@
 
 * Mark `package:test_core` as deprecated to prevent accidental use.
 * Depend on the latest `test_api`.
+* Depend on `vm_service` instead of `vm_service_lib`.
+* Drop dependency on `pub_semver`.
 
 ## 0.2.7
 
