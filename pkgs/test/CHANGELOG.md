@@ -4,6 +4,7 @@
 * Pass `--server-mode` to dart2js instead of `--categories=Server` to fix a
   warning about the flag deprecation.
 * Drop dependency on `pub_semver`.
+* Fix issue with the latest `Utf8Decoder` and the `node` platform.
 
 ## 1.6.5
 
