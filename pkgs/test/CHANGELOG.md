@@ -1,3 +1,6 @@
+## 1.6.7
+* Allow `analyzer` version `0.38.x`.
+
 ## 1.6.6
 
 * Pass `--server-mode` to dart2js instead of `--categories=Server` to fix a
