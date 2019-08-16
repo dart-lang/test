@@ -109,10 +109,7 @@ class NodePlatform extends PlatformPlugin
       process.stderr.transform(lineSplitter).listen(print);
 
       var socket = await server.first;
-      // TODO(nweiz): Remove the DelegatingStreamSink wrapper when sdk#31504 is
-      // fixed.
-      var channel = StreamChannel(
-              socket.cast<List<int>>(), DelegatingStreamSink(socket))
+      var channel = StreamChannel(socket.cast<List<int>>(), socket)
           .transform(StreamChannelTransformer.fromCodec(utf8))
           .transform(chunksToLines)
           .transform(jsonDocument)
