@@ -1,5 +1,5 @@
 name: test
-version: 1.6.7
+version: 1.6.7-dev
 author: Dart Team <misc@dartlang.org>
 description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
@@ -40,6 +40,3 @@ dev_dependencies:
   test_descriptor: ^1.0.0
   test_process: ^1.0.0
 
-dependency_overrides:
-  test_core:
-    path: ../test_core
