@@ -8,7 +8,6 @@
 
 ## 1.6.6
 
-* Depend on the latest `test_core` and `test_api`.
 * Pass `--server-mode` to dart2js instead of `--categories=Server` to fix a
   warning about the flag deprecation.
 * Drop dependency on `pub_semver`.
