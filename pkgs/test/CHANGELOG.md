@@ -1,3 +1,11 @@
+## 1.6.8
+
+* Depend on the latest `test_core` and `test_api`.
+
+## 1.6.7
+
+* Allow `analyzer` version `0.38.x`.
+
 ## 1.6.6
 
 * Depend on the latest `test_core` and `test_api`.
