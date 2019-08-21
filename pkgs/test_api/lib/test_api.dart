@@ -2,6 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@Deprecated('package:test_api is not intended for general use. '
+    'Please use package:test.')
+library test_api;
+
 import 'dart:async';
 
 import 'package:meta/meta.dart';
@@ -15,8 +19,8 @@ export 'package:matcher/matcher.dart';
 export 'src/frontend/expect.dart' hide formatFailure;
 export 'src/frontend/expect_async.dart';
 export 'src/frontend/future_matchers.dart';
-export 'src/frontend/on_platform.dart';
 export 'src/frontend/never_called.dart';
+export 'src/frontend/on_platform.dart';
 export 'src/frontend/prints_matcher.dart';
 export 'src/frontend/retry.dart';
 export 'src/frontend/skip.dart';

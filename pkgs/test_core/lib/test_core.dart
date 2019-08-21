@@ -2,29 +2,32 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@Deprecated('package:test_core is not intended for general use. '
+    'Please use package:test.')
+library test_core;
+
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-
-export 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
-
-import 'package:test_api/backend.dart';
+import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
+import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'src/runner/engine.dart';
-import 'src/runner/reporter/expanded.dart';
 import 'src/runner/plugin/environment.dart';
+import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/runner/suite.dart';
 
+export 'package:matcher/matcher.dart';
 // Hide implementations which don't support being run directly.
 // This file is an almost direct copy of import below, but with the global
 // declarer added.
+//ignore: deprecated_member_use
 export 'package:test_api/test_api.dart'
     hide test, group, setUp, setUpAll, tearDown, tearDownAll;
 

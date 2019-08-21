@@ -1,6 +1,7 @@
 ## 0.2.7
 
 * Prepare for upcoming `Stream<List<int>>` changes in the Dart SDK.
+* Mark `package:test_api` as deprecated to prevent accidental use.
 
 ## 0.2.6
 
