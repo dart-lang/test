@@ -1,5 +1,9 @@
 ## 1.6.8
 
+* Add `--disable-dev-shm-usage` to the default Chrome flags.
+
+## 1.6.8
+
 * Depend on the latest `test_core` and `test_api`.
 
 ## 1.6.7
