@@ -1,3 +1,7 @@
+## 1.2.1
+
+* Fix outdated URLs in `README.md`.
+
 ## 1.2.0
 
 * Add an `ArchiveDescriptor` class and a corresponding `archive()` function that

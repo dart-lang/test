@@ -7,10 +7,10 @@ define a filesystem structure that can be created using
 [`Descriptor.create()`][create] and verified using
 [`Descriptor.validate()`][validate]. For example:
 
-[dir]: https://www.dartdocs.org/documentation/test_descriptor/latest/test_descriptor/dir.html
-[file]: https://www.dartdocs.org/documentation/test_descriptor/latest/test_descriptor/file.html
-[create]: https://www.dartdocs.org/documentation/test_descriptor/latest/test_descriptor/Descriptor/create.html
-[validate]: https://www.dartdocs.org/documentation/test_descriptor/latest/test_descriptor/Descriptor/validate.html
+[dir]: https://pub.dev/documentation/test_descriptor/latest/test_descriptor/dir.html
+[file]: https://pub.dev/documentation/test_descriptor/latest/test_descriptor/file.html
+[create]: https://pub.dev/documentation/test_descriptor/latest/test_descriptor/Descriptor/create.html
+[validate]: https://pub.dev/documentation/test_descriptor/latest/test_descriptor/Descriptor/validate.html
 
 ```dart
 import 'dart:io';
@@ -44,10 +44,10 @@ By default, descriptors create entries in a temporary sandbox directory,
 you create a descriptor in a given test, and automatically deleted once the test
 finishes running.
 
-[sandbox]: https://www.dartdocs.org/documentation/test_descriptor/latest/test_descriptor/sandbox.html
+[sandbox]: https://pub.dev/documentation/test_descriptor/latest/test_descriptor/sandbox.html
 
 This package is [`term_glyph`][term_glyph] aware. It will decide whether to use
 ASCII or Unicode glyphs based on the [`glyph.ascii`][ascii] attribute.
 
-[term_glyph]: https://pub.dartlang.org/packages/term_glyph
-[ascii]: https://www.dartdocs.org/documentation/term_glyph/latest/term_glyph/ascii.html
+[term_glyph]: https://pub.dev/packages/term_glyph
+[ascii]: https://pub.dev/documentation/term_glyph/latest/term_glyph/ascii.html
