@@ -40,10 +40,9 @@ import 'package:test/test.dart';
 
 void main() {
   test("failure", () async {
-    var future = Future(() {}).then((_) {
+    await Future(() {}).then((_) {
       throw 'oh no';
     });
-    await future;
   });
 }
 """;
