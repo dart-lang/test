@@ -7,10 +7,9 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -40,10 +39,11 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("failure", () async{
-    await new Future((){});
-    await new Future((){});
-    throw "oh no";
+  test("failure", () async {
+    var future = Future(() {}).then((_) {
+      throw 'oh no';
+    });
+    await future;
   });
 }
 """;
@@ -367,7 +367,7 @@ $_usage""");
             "00:00 +0: failure",
             "00:00 +0 -1: failure [E]",
             "oh no",
-            "test.dart 9:5  main.<fn>",
+            "test.dart 8:7  main.<fn>",
           ]));
       await test.shouldExit(1);
     });
