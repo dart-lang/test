@@ -159,7 +159,7 @@ context of the [`serializeSuite()`][remote platform helpers] helper, and the
 [`deserializeSuite()`][platform helpers].
 
 [StreamChannel]: https://pub.dev/packages/stream_channel
-[Isolate]: https://api.dartlang.org/stable/latest/dart-isolate/Isolate-class.html
+[Isolate]: https://api.dart.dev/stable/dart-isolate/Isolate-class.html
 [IsolateChannel]: https://pub.dev/documentation/stream_channel/latest/stream_channel/IsolateChannel-class.html
 [remote platform helpers]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/remote_platform_helpers.dart
 [platform helpers]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/platform_helpers.dart
@@ -226,7 +226,7 @@ through the `WebSocket` connection, again using [`MultiChannel`][MultiChannel],
 so that the `BrowserManager` has a direct line to the iframe where the tests are
 defined.
 
-[Window.postMessage]: https://api.dartlang.org/stable/latest/dart-html/Window/postMessage.html
+[Window.postMessage]: https://api.dart.dev/stable/dart-html/Window/postMessage.html
 
 From this point forward the process is similar to `VMPlatform`. The iframe
 serializes its test suite using [`serializeSuite()`][remote platform helpers],

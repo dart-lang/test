@@ -31,7 +31,7 @@ The protocol emitted by the JSON reporter is considered part of the public API
 of the `test` package, and is subject to its [semantic versioning][semver]
 restrictions. In particular:
 
-[semver]: https://www.dartlang.org/tools/pub/versioning.html#semantic-versions
+[semver]: https://dart.dev/tools/pub/versioning#semantic-versions
 
 * No new feature will be added to the protocol without increasing the test
   package's minor version number.
