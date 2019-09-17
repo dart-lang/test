@@ -7,7 +7,7 @@ import 'dart:async';
 /// Returns a [Future] that completes after the [event loop][] has run the given
 /// number of [times] (20 by default).
 ///
-/// [event loop]: https://webdev.dartlang.org/articles/performance/event-loop#darts-event-loop-and-queues
+/// [event loop]: https://medium.com/dartlang/dart-asynchronous-programming-isolates-and-event-loops-bffc3e296a6a
 ///
 /// Awaiting this approximates waiting until all asynchronous work (other than
 /// work that's waiting for external resources) completes.
