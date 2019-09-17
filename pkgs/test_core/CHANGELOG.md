@@ -1,3 +1,7 @@
+## 0.2.9+1
+
+* Allow the latest `package:vm_service`.
+
 ## 0.2.9
 
 * Mark `package:test_core` as deprecated to prevent accidental use.
