@@ -36,7 +36,7 @@ charge of setting up these variables, but the frontend never communicates with
 the runner directly.
 
 [Invoker]: https://github.com/dart-lang/test/blob/master/lib/src/backend/invoker.dart
-[completion]: https://pub.dartlang.org/documentation/test_api/latest/test_api/completion.html
+[completion]: https://pub.dev/documentation/test_api/latest/test_api/completion.html
 [Declarer]: https://github.com/dart-lang/test/blob/master/lib/src/backend/declarer.dart
 
 ### Backend
@@ -158,9 +158,9 @@ context of the [`serializeSuite()`][remote platform helpers] helper, and the
 `PlatformPlugin` superclass deserializes it on the other side using
 [`deserializeSuite()`][platform helpers].
 
-[StreamChannel]: https://pub.dartlang.org/packages/stream_channel
+[StreamChannel]: https://pub.dev/packages/stream_channel
 [Isolate]: https://api.dartlang.org/stable/latest/dart-isolate/Isolate-class.html
-[IsolateChannel]: https://pub.dartlang.org/documentation/stream_channel/latest/stream_channel/IsolateChannel-class.html
+[IsolateChannel]: https://pub.dev/documentation/stream_channel/latest/stream_channel/IsolateChannel-class.html
 [remote platform helpers]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/remote_platform_helpers.dart
 [platform helpers]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/platform_helpers.dart
 
@@ -180,7 +180,7 @@ deserialized. The deserialization process then converts them into
 [`RunnerTest`][RunnerTest]s within a [`RunnerSuite`][RunnerSuite], which the
 `Engine` can then run just like normal `Test`s in a normal [`Suite`][Suite].
 
-[MultiChannel]: https://pub.dartlang.org/documentation/stream_channel/latest/stream_channel/MultiChannel-class.html
+[MultiChannel]: https://pub.dev/documentation/stream_channel/latest/stream_channel/MultiChannel-class.html
 [RunnerTest]: https://github.com/dart-lang/test/tree/master/lib/src/runner/runner_test.dart
 [RunnerSuite]: https://github.com/dart-lang/test/tree/master/lib/src/runner/runner_suite.dart
 

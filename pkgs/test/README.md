@@ -26,8 +26,8 @@
 Tests are specified using the top-level [`test()`] function, and test assertions
 are made using [`expect()`]:
 
-[`test()`]: https://pub.dartlang.org/documentation/test_core/latest/test_core/test.html
-[`expect()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/expect.html
+[`test()`]: https://pub.dev/documentation/test_core/latest/test_core/test.html
+[`expect()`]: https://pub.dev/documentation/test_api/latest/test_api/expect.html
 
 ```dart
 import "package:test/test.dart";
@@ -48,7 +48,7 @@ void main() {
 Tests can be grouped together using the [`group()`] function. Each group's
 description is added to the beginning of its test's descriptions.
 
-[`group()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/group.html
+[`group()`]: https://pub.dev/documentation/test_api/latest/test_api/group.html
 
 ```dart
 import "package:test/test.dart";
@@ -81,7 +81,7 @@ void main() {
 Any matchers from the [`matcher`] package can be used with `expect()` to do
 complex validations:
 
-[`matcher`]: https://pub.dartlang.org/documentation/matcher/latest/matcher/matcher-library.html
+[`matcher`]: https://pub.dev/documentation/matcher/latest/matcher/matcher-library.html
 
 ```dart
 import "package:test/test.dart";
@@ -123,8 +123,8 @@ void main() {
 }
 ```
 
-[`setUp()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/setUp.html
-[`tearDown()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/tearDown.html
+[`setUp()`]: https://pub.dev/documentation/test_api/latest/test_api/setUp.html
+[`tearDown()`]: https://pub.dev/documentation/test_api/latest/test_api/tearDown.html
 
 ## Running Tests
 
@@ -178,7 +178,7 @@ void main() {
 }
 ```
 
-[`@TestOn`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/TestOn-class.html
+[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api/TestOn-class.html
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
@@ -197,7 +197,7 @@ Platform selectors use the [boolean selector syntax] defined in the
 only supports boolean operations. The following identifiers are defined:
 
 [boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
-[`boolean_selector`]: https://pub.dartlang.org/packages/boolean_selector
+[`boolean_selector`]: https://pub.dev/packages/boolean_selector
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
@@ -257,7 +257,7 @@ using the [`js`] package. However, it may be useful when testing APIs that are
 meant to be used by JavaScript code.
 
 [Node.js]: https://nodejs.org/en/
-[`js`]: https://pub.dartlang.org/packages/js
+[`js`]: https://pub.dev/packages/js
 
 The test runner looks for an executable named `node` (on Mac OS or Linux) or
 `node.exe` (on Windows) on your system path. When compiling Node.js tests, it
@@ -265,7 +265,7 @@ passes `-Dnode=true`, so tests can determine whether they're running on Node
 using [`const bool.fromEnvironment("node")`][bool.fromEnvironment]. It also sets
 `--server-mode`, which will tell the compiler that `dart:html` is not available.
 
-[bool.fromEnvironment]: https://api.dartlang.org/stable/1.24.2/dart-core/bool/bool.fromEnvironment.html
+[bool.fromEnvironment]: https://api.dart.dev/stable/dart-core/bool/bool.fromEnvironment.html
 
 If a top-level `node_modules` directory exists, tests running on Node.js can
 import modules from it.
@@ -293,7 +293,7 @@ asynchrony. The [`completion()`] matcher can be used to test `Futures`; it
 ensures that the test doesn't finish until the `Future` completes, and runs a
 matcher against that `Future`'s value.
 
-[`completion()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/completion.html
+[`completion()`]: https://pub.dev/documentation/test_api/latest/test_api/completion.html
 
 ```dart
 import "dart:async";
@@ -311,7 +311,7 @@ The [`throwsA()`] matcher and the various `throwsExceptionType` matchers work
 with both synchronous callbacks and asynchronous `Future`s. They ensure that a
 particular type of exception is thrown:
 
-[`throwsA()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/throwsA.html
+[`throwsA()`]: https://pub.dev/documentation/test_api/latest/test_api/throwsA.html
 
 ```dart
 import "dart:async";
@@ -347,7 +347,7 @@ void main() {
 }
 ```
 
-[`expectAsync()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/expectAsync.html
+[`expectAsync()`]: https://pub.dev/documentation/test_api/latest/test_api/expectAsync.html
 
 ### Stream Matchers
 
@@ -356,7 +356,7 @@ The `test` package provides a suite of powerful matchers for dealing with
 easy to write complex expectations about the values emitted by a stream. For
 example:
 
-[Stream]: https://api.dartlang.org/stable/dart-async/Stream-class.html
+[Stream]: https://api.dart.dev/stable/dart-async/Stream-class.html
 
 ```dart
 import "dart:async";
@@ -398,8 +398,8 @@ consumer. The matcher will consume the matched events, but leave the rest of the
 queue alone so that it can still be used by the test, unlike a normal `Stream`
 which can only have one subscriber. For example:
 
-[`async`]: https://pub.dartlang.org/packages/async
-[`StreamQueue`]: https://pub.dartlang.org/documentation/async/latest/async/StreamQueue-class.html
+[`async`]: https://pub.dev/packages/async
+[`StreamQueue`]: https://pub.dev/documentation/async/latest/async/StreamQueue-class.html
 
 ```dart
 import "dart:async";
@@ -449,16 +449,16 @@ The following built-in stream matchers are available:
 You can also define your own custom stream matchers by calling
 [`new StreamMatcher()`].
 
-[`emits()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emits.html
-[`emitsError()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsError.html
-[`emitsDone`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsDone.html
-[`mayEmit()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/mayEmit.html
-[`mayEmitMultiple()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/mayEmitMultiple.html
-[`emitsAnyOf()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsAnyOf.html
-[`emitsInOrder()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsInOrder.html
-[`emitsInAnyOrder()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/emitsInAnyOrder.html
-[`neverEmits()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/neverEmits.html
-[`new StreamMatcher()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/StreamMatcher-class.html
+[`emits()`]: https://pub.dev/documentation/test_api/latest/test_api/emits.html
+[`emitsError()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsError.html
+[`emitsDone`]: https://pub.dev/documentation/test_api/latest/test_api/emitsDone.html
+[`mayEmit()`]: https://pub.dev/documentation/test_api/latest/test_api/mayEmit.html
+[`mayEmitMultiple()`]: https://pub.dev/documentation/test_api/latest/test_api/mayEmitMultiple.html
+[`emitsAnyOf()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsAnyOf.html
+[`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInOrder.html
+[`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInAnyOrder.html
+[`neverEmits()`]: https://pub.dev/documentation/test_api/latest/test_api/neverEmits.html
+[`new StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/test_api/StreamMatcher-class.html
 
 ## Running Tests With Custom HTML
 
@@ -726,10 +726,10 @@ The only difference is where the code from the isolate comes from:
 `spawnHybridUri()` takes a URL. They both return a [`StreamChannel`] that
 communicates with the hybrid isolate. For example:
 
-[`spawnHybridCode()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/spawnHybridCode.html
-[`spawnHybridUri()`]: https://pub.dartlang.org/documentation/test_api/latest/test_api/spawnHybridUri.html
-[dart:isolate]: https://api.dartlang.org/stable/dart-isolate/dart-isolate-library.html
-[`StreamChannel`]: https://pub.dartlang.org/documentation/stream_channel/latest/stream_channel/StreamChannel-class.html
+[`spawnHybridCode()`]: https://pub.dev/documentation/test_api/latest/test_api/spawnHybridCode.html
+[`spawnHybridUri()`]: https://pub.dev/documentation/test_api/latest/test_api/spawnHybridUri.html
+[dart:isolate]: https://api.dart.dev/stable/dart-isolate/dart-isolate-library.html
+[`StreamChannel`]: https://pub.dev/documentation/stream_channel/latest/stream_channel/StreamChannel-class.html
 
 ```dart
 // ## test/web_socket_server.dart
@@ -804,14 +804,14 @@ the user is running on Windows, where Unicode isn't supported. This ensures that
 testing libraries can use Unicode on POSIX operating systems without breaking
 Windows users.
 
-[`term_glyph`]: https://pub.dartlang.org/packages/term_glyph
+[`term_glyph`]: https://pub.dev/packages/term_glyph
 
 ## Further Reading
 
 Check out the [API docs] for detailed information about all the functions
 available to tests.
 
-[API docs]: https://pub.dartlang.org/documentation/test/latest/
+[API docs]: https://pub.dev/documentation/test/latest/
 
 The test runner also supports a machine-readable JSON-based reporter. This
 reporter allows the test runner to be wrapped and its progress presented in

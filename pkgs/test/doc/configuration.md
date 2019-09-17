@@ -100,7 +100,7 @@ trimmed to remove internal stack frames. This includes frames from the Dart core
 libraries, the [`stack_trace`][stack_trace] package, and the `test` package
 itself. It defaults to `false`.
 
-[stack_trace]: https://pub.dartlang.org/packages/stack_trace
+[stack_trace]: https://pub.dev/packages/stack_trace
 
 ```yaml
 verbose_trace: true
@@ -137,7 +137,7 @@ This field controls whether or not tests are skipped. It's usually applied to
 `skip` parameter for [`test()`][test], it can either be a boolean indicating
 whether the tests are skipped or a string indicating the reason they're skipped.
 
-[test]: https://pub.dartlang.org/documentation/test_api/latest/test_api/test.html
+[test]: https://pub.dev/documentation/test_api/latest/test_api/test.html
 
 ```yaml
 tags:

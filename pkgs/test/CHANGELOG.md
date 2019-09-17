@@ -507,7 +507,7 @@
 * Automatically configure the [`term_glyph`][term_glyph] package to use ASCII
   glyphs when the test runner is running on Windows.
 
-[term_glyph]: https://pub.dartlang.org/packages/term_glyph
+[term_glyph]: https://pub.dev/packages/term_glyph
 
 * Deprecate the `throws` matcher in favor of `throwsA()`.
 
