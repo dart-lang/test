@@ -98,7 +98,7 @@ class Runner {
         // https://github.com/dart-lang/sdk/issues/31308 is resolved.
         if (!_silentObservatory &&
             runTimes.contains(Runtime.vm) &&
-            _config.pauseAfterLoad) {
+            (_config.pauseAfterLoad || _config.coverage)) {
           warn('You should set `SILENT_OBSERVATORY` to true when debugging the '
               'VM as it will output the observatory URL by '
               'default.\nThis breaks the various reporter contracts.'
@@ -109,6 +109,8 @@ class Runner {
         bool success;
         if (_config.pauseAfterLoad) {
           success = await _loadThenPause(suites);
+        } else if (_config.coverage) {
+          success = await _loadWithCoverageReport(suites);
         } else {
           _suiteSubscription = suites.listen(_engine.suiteSink.add);
           var results = await Future.wait(<Future>[
@@ -371,9 +373,9 @@ class Runner {
 
   /// Loads each suite in [suites] in order, pausing after load for runtimes
   /// that support debugging.
-  Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
+  Future<bool> _debugTests(Stream<LoadSuite> suites, bool coverage) async {
     _suiteSubscription = suites.asyncMap((loadSuite) async {
-      _debugOperation = debug(_engine, _reporter, loadSuite);
+      _debugOperation = debug(_engine, _reporter, loadSuite, coverage: coverage);
       await _debugOperation.valueOrCancellation();
     }).listen(null);
 
@@ -382,5 +384,13 @@ class Runner {
       _engine.run()
     ], eagerError: true);
     return results.last as bool;
+  }
+
+  Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
+    return _debugTests(suites, false);
+  }
+
+  Future<bool> _loadWithCoverageReport(Stream<LoadSuite> suites) async {
+    return _debugTests(suites, true);
   }
 }

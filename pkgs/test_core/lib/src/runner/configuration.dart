@@ -69,6 +69,10 @@ class Configuration {
   bool get noRetry => _noRetry ?? false;
   final bool _noRetry;
 
+  /// Whether enable coverage gathering for tests
+  bool get coverage => _coverage ?? false;
+  final bool _coverage;
+
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
   final Uri pubServeUrl;
@@ -227,6 +231,7 @@ class Configuration {
       Map<String, RuntimeSettings> overrideRuntimes,
       Map<String, CustomRuntime> defineRuntimes,
       bool noRetry,
+      bool coverage,
 
       // Suite-level configuration
       bool jsTrace,
@@ -271,6 +276,7 @@ class Configuration {
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
+        coverage: coverage,
         suiteDefaults: SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -328,6 +334,7 @@ class Configuration {
       Map<String, RuntimeSettings> overrideRuntimes,
       Map<String, CustomRuntime> defineRuntimes,
       bool noRetry,
+      bool coverage,
       SuiteConfiguration suiteDefaults})
       : _help = help,
         _version = version,
@@ -349,6 +356,7 @@ class Configuration {
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
+        _coverage = coverage,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 SuiteConfiguration(timeout: Timeout.none)
@@ -476,6 +484,7 @@ class Configuration {
         defineRuntimes:
             mergeUnmodifiableMaps(defineRuntimes, other.defineRuntimes),
         noRetry: other._noRetry ?? _noRetry,
+        coverage:  coverage ?? _coverage,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -552,6 +561,7 @@ class Configuration {
         overrideRuntimes: overrideRuntimes ?? this.overrideRuntimes,
         defineRuntimes: defineRuntimes ?? this.defineRuntimes,
         noRetry: noRetry ?? _noRetry,
+        coverage:  coverage ?? _coverage,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,

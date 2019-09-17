@@ -3,8 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import "dart:convert";
+import "dart:io";
 
 import 'package:async/async.dart';
+import 'package:coverage/coverage.dart';
 
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
@@ -26,7 +29,7 @@ import 'reporter.dart';
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
 CancelableOperation debug(
-    Engine engine, Reporter reporter, LoadSuite loadSuite) {
+    Engine engine, Reporter reporter, LoadSuite loadSuite, {bool coverage: false}) {
   _Debugger debugger;
   var canceled = false;
   return CancelableOperation.fromFuture(() async {
@@ -40,7 +43,7 @@ CancelableOperation debug(
     var suite = await loadSuite.suite;
     if (canceled || suite == null) return;
 
-    debugger = _Debugger(engine, reporter, suite);
+    debugger = _Debugger(engine, reporter, suite, coverage);
     await debugger.run();
   }(), onCancel: () {
     canceled = true;
@@ -66,6 +69,9 @@ class _Debugger {
   /// The suite to run.
   final RunnerSuite _suite;
 
+  /// Whether to gather coverage
+  final bool _coverage;
+
   /// The console through which the user can control the debugger.
   ///
   /// This is only visible when the test environment is paused, so as not to
@@ -87,7 +93,7 @@ class _Debugger {
 
   bool get _json => _config.reporter == 'json';
 
-  _Debugger(this._engine, this._reporter, this._suite)
+  _Debugger(this._engine, this._reporter, this._suite, this._coverage)
       : _console = Console(color: Configuration.current.color) {
     _console.registerCommand("restart",
         "Restart the current test after it finishes running.", _restartTest);
@@ -103,7 +109,9 @@ class _Debugger {
   /// had a chance to set breakpoints, runs the suite's tests.
   Future run() async {
     try {
-      await _pause();
+      if (!_coverage) {
+        await _pause();
+      }
       if (_closed) return;
 
       _onDebuggingSubscription = _suite.onDebugging.listen((debugging) {
@@ -116,6 +124,9 @@ class _Debugger {
 
       _engine.resume();
       await _engine.onIdle.first;
+      if (_coverage) {
+        await _gatherCoverage();
+      }
     } finally {
       close();
     }
@@ -179,6 +190,33 @@ class _Debugger {
         stdinLines.cancelable((queue) => queue.next),
         _pauseCompleter.operation
       ]).first;
+    } finally {
+      if (!_json) _reporter.resume();
+    }
+  }
+
+  Future _gatherCoverage() async {
+    if (_suite.platform == null) return;
+    if (!_suite.environment.supportsDebugging) return;
+
+    try {
+      if (!_json) {
+        _reporter.pause();
+
+        var runtime = _suite.platform.runtime;
+        if (runtime.isDartVM) {
+          var url = _suite.environment.observatoryUrl;
+          final cov = await collect(url, true, false, true, null);
+          print('got cov!');
+          final outfile = File('coverage/coverage.json')..createSync(recursive: true);
+          IOSink out = outfile.openWrite();
+          out.write(json.encode(cov));
+          await out.close();
+        } else if (runtime.isHeadless) {
+          var url = _suite.environment.remoteDebuggerUrl;
+          // TODO: gather chrome coverage here
+        }
+      }
     } finally {
       if (!_json) _reporter.resume();
     }
