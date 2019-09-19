@@ -109,8 +109,6 @@ class LiveTestController {
   /// Whether [close] has been called.
   bool get _isClosed => _onErrorController.isClosed;
 
-  final _stateChangedToComplete = Completer<void>();
-
   /// Creates a new controller for a [LiveTest].
   ///
   /// [test] is the test being run; [suite] is the suite that contains it.
@@ -160,11 +158,6 @@ class LiveTestController {
 
     _state = newState;
     _onStateChangeController.add(newState);
-
-    if (newState.status == Status.complete &&
-        !_stateChangedToComplete.isCompleted) {
-      _stateChangedToComplete.complete();
-    }
   }
 
   /// Emits message over [LiveTest.onMessage].
@@ -196,8 +189,7 @@ class LiveTestController {
   /// Returns a future that completes when the test is complete.
   ///
   /// We also wait for the state to transition to Status.complete.
-  Future<void> get onComplete =>
-      Future.wait([completer.future, _stateChangedToComplete.future]);
+  Future<void> get onComplete => completer.future;
 
   /// A wrapper for [_onClose] that ensures that all controllers are closed.
   Future<void> _close() {
@@ -210,10 +202,6 @@ class LiveTestController {
       _onClose();
     } else {
       completer.complete();
-    }
-
-    if (!_stateChangedToComplete.isCompleted) {
-      _stateChangedToComplete.complete();
     }
 
     return onComplete;
