@@ -156,8 +156,9 @@ Future<void> _execute(List<String> args) async {
   } on FormatException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
-  } on FileSystemException {
-    stderr.writeln("Illegal filename");
+  } on FileSystemException catch (error) {
+    var loadException = LoadException(error.path, error.osError);
+    stderr.writeln(loadException.toString(color: configuration.color));
     exitCode = exit_codes.data;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
