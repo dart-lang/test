@@ -157,8 +157,7 @@ Future<void> _execute(List<String> args) async {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
   } on FileSystemException catch (error) {
-    var loadException = LoadException(error.path, error.osError);
-    stderr.writeln(loadException.toString(color: configuration.color));
+    stderr.writeln(error.message);
     exitCode = exit_codes.data;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
