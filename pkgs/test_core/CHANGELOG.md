@@ -1,3 +1,7 @@
+## 0.2.9+2
+
+* Depend on the latest `test_api`.
+
 ## 0.2.9+1
 
 * Allow the latest `package:vm_service`.
