@@ -98,7 +98,7 @@ class Runner {
         // https://github.com/dart-lang/sdk/issues/31308 is resolved.
         if (!_silentObservatory &&
             runTimes.contains(Runtime.vm) &&
-            _config.pauseAfterLoad) {
+            _config.debug) {
           warn('You should set `SILENT_OBSERVATORY` to true when debugging the '
               'VM as it will output the observatory URL by '
               'default.\nThis breaks the various reporter contracts.'

@@ -82,8 +82,11 @@ final ArgParser _parser = (() {
       defaultsTo: '30s');
   parser.addFlag("pause-after-load",
       help: 'Pauses for debugging before any tests execute.\n'
-          'Implies --concurrency=1 and --timeout=none.\n'
+          'Implies --concurrency=1, --debug, and --timeout=none.\n'
           'Currently only supported for browser tests.',
+      negatable: false);
+  parser.addFlag("debug",
+      help: 'Runs the VM and Chrome tests in debug mode.',
       negatable: false);
   parser.addFlag("chain-stack-traces",
       help: 'Chained stack traces to provide greater exception details\n'
@@ -207,6 +210,7 @@ class _Parser {
         chainStackTraces: _ifParsed('chain-stack-traces'),
         jsTrace: _ifParsed('js-trace'),
         pauseAfterLoad: _ifParsed('pause-after-load'),
+        debug: _ifParsed('debug'),
         color: _ifParsed('color'),
         configurationPath: _ifParsed('configuration'),
         dart2jsPath: _ifParsed('dart2js-path'),
