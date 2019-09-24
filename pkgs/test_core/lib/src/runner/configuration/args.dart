@@ -86,8 +86,7 @@ final ArgParser _parser = (() {
           'Currently only supported for browser tests.',
       negatable: false);
   parser.addFlag("debug",
-      help: 'Runs the VM and Chrome tests in debug mode.',
-      negatable: false);
+      help: 'Runs the VM and Chrome tests in debug mode.', negatable: false);
   parser.addFlag("chain-stack-traces",
       help: 'Chained stack traces to provide greater exception details\n'
           'especially for asynchronous code. It may be useful to disable\n'
