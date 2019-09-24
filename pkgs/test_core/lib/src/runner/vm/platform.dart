@@ -61,7 +61,7 @@ class VMPlatform extends PlatformPlugin {
 
     VMEnvironment environment;
     IsolateRef isolateRef;
-    if (_config.pauseAfterLoad) {
+    if (_config.debug) {
       // Print an empty line because the VM prints an "Observatory listening on"
       // line and we don't want that to end up on the same line as the reporter
       // info.

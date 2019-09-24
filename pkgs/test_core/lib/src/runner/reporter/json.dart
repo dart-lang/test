@@ -172,7 +172,7 @@ class JsonReporter implements Reporter {
     if (suite is LoadSuite) {
       suite.suite.then((runnerSuite) {
         _suiteIDs[runnerSuite] = id;
-        if (!_config.pauseAfterLoad) return;
+        if (!_config.debug) return;
 
         // TODO(nweiz): test this when we have a library for communicating with
         // the Chrome remote debugger, or when we have VM debug support.

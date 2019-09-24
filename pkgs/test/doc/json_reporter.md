@@ -156,7 +156,7 @@ class DebugEvent extends Event {
 
 A debug event is emitted after (although not necessarily directly after) a
 `SuiteEvent`, and includes information about how to debug that suite. It's only
-emitted if the `--pause-after-load` flag is passed to the test runner.
+emitted if the `--debug` flag is passed to the test runner.
 
 Note that the `remoteDebugger` URL refers to a remote debugger whose protocol
 may differ based on the browser the suite is running on. You can tell which
