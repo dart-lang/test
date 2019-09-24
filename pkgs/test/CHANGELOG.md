@@ -1,4 +1,4 @@
-## 1.6.12
+## 1.7.0
 
 * Add a `--debug` flag for running the VM/Chrome in debug mode.
 
