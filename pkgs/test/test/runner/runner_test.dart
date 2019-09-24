@@ -91,9 +91,10 @@ Usage: pub run test [files or directories...]
                                   (defaults to "30s")
 
     --pause-after-load            Pauses for debugging before any tests execute.
-                                  Implies --concurrency=1 and --timeout=none.
+                                  Implies --concurrency=1, --debug, and --timeout=none.
                                   Currently only supported for browser tests.
 
+    --debug                       Runs the VM and Chrome tests in debug mode.
     --[no-]chain-stack-traces     Chained stack traces to provide greater exception details
                                   especially for asynchronous code. It may be useful to disable
                                   to provide improved test performance but at the cost of

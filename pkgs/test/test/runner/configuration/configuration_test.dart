@@ -18,6 +18,7 @@ void main() {
         expect(merged.help, isFalse);
         expect(merged.version, isFalse);
         expect(merged.pauseAfterLoad, isFalse);
+        expect(merged.debug, isFalse);
         expect(merged.color, equals(canUseSpecialChars));
         expect(merged.configurationPath, equals('dart_test.yaml'));
         expect(merged.dart2jsPath, equals(p.join(sdkDir, 'bin', 'dart2js')));
@@ -33,6 +34,7 @@ void main() {
             help: true,
             version: true,
             pauseAfterLoad: true,
+            debug: true,
             color: true,
             configurationPath: "special_test.yaml",
             dart2jsPath: "/tmp/dart2js",
@@ -45,6 +47,7 @@ void main() {
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
         expect(merged.pauseAfterLoad, isTrue);
+        expect(merged.debug, isTrue);
         expect(merged.color, isTrue);
         expect(merged.configurationPath, equals("special_test.yaml"));
         expect(merged.dart2jsPath, equals("/tmp/dart2js"));
@@ -60,6 +63,7 @@ void main() {
             help: true,
             version: true,
             pauseAfterLoad: true,
+            debug: true,
             color: true,
             configurationPath: "special_test.yaml",
             dart2jsPath: "/tmp/dart2js",
@@ -72,6 +76,7 @@ void main() {
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
         expect(merged.pauseAfterLoad, isTrue);
+        expect(merged.debug, isTrue);
         expect(merged.color, isTrue);
         expect(merged.configurationPath, equals("special_test.yaml"));
         expect(merged.dart2jsPath, equals("/tmp/dart2js"));
@@ -89,6 +94,7 @@ void main() {
             help: true,
             version: false,
             pauseAfterLoad: true,
+            debug: true,
             color: false,
             configurationPath: "special_test.yaml",
             dart2jsPath: "/tmp/dart2js",
@@ -101,6 +107,7 @@ void main() {
             help: false,
             version: true,
             pauseAfterLoad: false,
+            debug: false,
             color: true,
             configurationPath: "test_special.yaml",
             dart2jsPath: "../dart2js",
@@ -114,6 +121,7 @@ void main() {
         expect(merged.help, isFalse);
         expect(merged.version, isTrue);
         expect(merged.pauseAfterLoad, isFalse);
+        expect(merged.debug, isFalse);
         expect(merged.color, isTrue);
         expect(merged.configurationPath, equals("test_special.yaml"));
         expect(merged.dart2jsPath, equals("../dart2js"));

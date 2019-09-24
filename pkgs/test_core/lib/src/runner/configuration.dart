@@ -51,6 +51,10 @@ class Configuration {
   bool get pauseAfterLoad => _pauseAfterLoad ?? false;
   final bool _pauseAfterLoad;
 
+  /// Whether to run browsers in their respective debug modes
+  bool get debug => pauseAfterLoad || (_debug ?? false);
+  final bool _debug;
+
   /// The path to the file from which to load more configuration information.
   ///
   /// This is *not* resolved automatically.
@@ -210,6 +214,7 @@ class Configuration {
       {bool help,
       bool version,
       bool pauseAfterLoad,
+      bool debug,
       bool color,
       String configurationPath,
       String dart2jsPath,
@@ -254,6 +259,7 @@ class Configuration {
         help: help,
         version: version,
         pauseAfterLoad: pauseAfterLoad,
+        debug: debug,
         color: color,
         configurationPath: configurationPath,
         dart2jsPath: dart2jsPath,
@@ -311,6 +317,7 @@ class Configuration {
       {bool help,
       bool version,
       bool pauseAfterLoad,
+      bool debug,
       bool color,
       String configurationPath,
       String dart2jsPath,
@@ -332,6 +339,7 @@ class Configuration {
       : _help = help,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
+        _debug = debug,
         _color = color,
         _configurationPath = configurationPath,
         _dart2jsPath = dart2jsPath,

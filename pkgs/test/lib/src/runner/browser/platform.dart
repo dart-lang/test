@@ -397,12 +397,12 @@ class BrowserPlatform extends PlatformPlugin
         .resolve('packages/test/src/runner/browser/static/index.html')
         .replace(queryParameters: {
       'managerUrl': webSocketUrl.toString(),
-      'debug': _config.pauseAfterLoad.toString()
+      'debug': _config.debug.toString()
     });
 
     var future = BrowserManager.start(
         browser, hostUrl, completer.future, _browserSettings[browser],
-        debug: _config.pauseAfterLoad);
+        debug: _config.debug);
 
     // Store null values for browsers that error out so we know not to load them
     // again.
