@@ -157,6 +157,16 @@ reported on the command line just like for VM tests. In fact, you can even run
 tests on both platforms with a single command: `pub run test -p "chrome,vm"
 path/to/test.dart`.
 
+Tests can also be sharded with the `--total-shards` and `--shard-index` arguments,
+allowing you to split up your test suites and run them separately. For example,
+if you wanted to run 3 shards of your test suite, you could run them as follows:
+
+```bash
+pub run test --total-shards 3 --shard-index 0 path/to/test.dart
+pub run test --total-shards 3 --shard-index 1 path/to/test.dart
+pub run test --total-shards 3 --shard-index 2 path/to/test.dart
+```
+
 ### Restricting Tests to Certain Platforms
 
 Some test files only make sense to run on particular platforms. They may use
