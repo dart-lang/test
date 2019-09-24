@@ -1,3 +1,9 @@
+## 0.2.8
+
+* Remove logic which accounted for a race condition in state change. The logic
+  was required because `package:sse` used to not guarantee order. This is no
+  longer the case.
+
 ## 0.2.7
 
 * Prepare for upcoming `Stream<List<int>>` changes in the Dart SDK.
