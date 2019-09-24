@@ -1,3 +1,6 @@
+## 0.2.10
+Add a `--debug` argument for running the VM/Chrome in debug mode.
+
 ## 0.2.9+1
 
 * Allow the latest `package:vm_service`.

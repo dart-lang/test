@@ -1,3 +1,6 @@
+## 1.6.11
+* Add a `--debug` flag for running the VM/Chrome in debug mode.
+
 ## 1.6.10
 
 * Depend on the latest `test_core`.
