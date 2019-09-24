@@ -25,8 +25,7 @@ frustration later on.
 All submissions, including submissions by project members, require review. We
 recommend [forking the repository][fork], making changes in your fork, and
 [sending us a pull request][pr] so we can review the changes and merge them into
-this repository. Note that this package doesn't use the Dart formatter. The
-reviewer will reformat your code themselves if necessary.
+this repository.
 
 [fork]: https://help.github.com/articles/about-forks/
 [pr]: https://help.github.com/articles/creating-a-pull-request/
