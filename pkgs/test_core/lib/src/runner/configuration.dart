@@ -52,8 +52,12 @@ class Configuration {
   final bool _pauseAfterLoad;
 
   /// Whether to run browsers in their respective debug modes
-  bool get debug => pauseAfterLoad || (_debug ?? false);
+  bool get debug => pauseAfterLoad || (_debug ?? false) || _coverage != null;
   final bool _debug;
+
+  /// The output folder for coverage gathering
+  String get coverage => _coverage;
+  final String _coverage;
 
   /// The path to the file from which to load more configuration information.
   ///
@@ -219,6 +223,7 @@ class Configuration {
       String configurationPath,
       String dart2jsPath,
       String reporter,
+      String coverage,
       int pubServePort,
       int concurrency,
       int shardIndex,
@@ -264,6 +269,7 @@ class Configuration {
         configurationPath: configurationPath,
         dart2jsPath: dart2jsPath,
         reporter: reporter,
+        coverage: coverage,
         pubServePort: pubServePort,
         concurrency: concurrency,
         shardIndex: shardIndex,
@@ -322,6 +328,7 @@ class Configuration {
       String configurationPath,
       String dart2jsPath,
       String reporter,
+      String coverage,
       int pubServePort,
       int concurrency,
       this.shardIndex,
@@ -344,6 +351,7 @@ class Configuration {
         _configurationPath = configurationPath,
         _dart2jsPath = dart2jsPath,
         _reporter = reporter,
+        _coverage = coverage,
         pubServeUrl = pubServePort == null
             ? null
             : Uri.parse("http://localhost:$pubServePort"),

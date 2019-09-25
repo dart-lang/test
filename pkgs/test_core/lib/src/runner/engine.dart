@@ -4,9 +4,12 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
+import 'package:coverage/coverage.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 
@@ -65,6 +68,9 @@ class Engine {
   /// running, `true` if close was called before the tests finished running, and
   /// `false` if the tests finished running before close was called.
   bool _closedBeforeDone;
+
+  /// The coverage output directory
+  String _coverage;
 
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
@@ -214,9 +220,10 @@ class Engine {
   /// [concurrency] controls how many suites are run at once, and defaults to 1.
   /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
   /// four times [concurrency].
-  Engine({int concurrency, int maxSuites})
+  Engine({int concurrency, int maxSuites, String coverage})
       : _runPool = Pool(concurrency ?? 1),
-        _loadPool = Pool(maxSuites ?? (concurrency ?? 1) * 2) {
+        _loadPool = Pool(maxSuites ?? (concurrency ?? 1) * 2),
+        _coverage = coverage {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
@@ -233,8 +240,8 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
-  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency}) {
-    var engine = Engine(concurrency: concurrency);
+  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency, String coverage}) {
+    var engine = Engine(concurrency: concurrency, coverage: coverage);
     for (var suite in suites) {
       engine.suiteSink.add(suite);
     }
@@ -278,6 +285,7 @@ class Engine {
         await _runPool.withResource(() async {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
+          await _gatherCoverage(controller);
           controller.noMoreLiveTests();
           loadResource.allowRelease(() => controller.close());
         });
@@ -291,6 +299,24 @@ class Engine {
     _subscriptions.add(subscription);
 
     return success;
+  }
+
+  Future<Null> _gatherCoverage(LiveSuiteController controller) async {
+    if (_coverage != null) {
+      RunnerSuite suite = controller.liveSuite.suite;
+      String observatoryUrl = suite.environment.observatoryUrl.toString();
+      String shortUrl = observatoryUrl.substring(0, observatoryUrl.lastIndexOf('#'));
+      var observatoryUri = Uri.parse(shortUrl);
+      Map<String, dynamic> cov = await collect(observatoryUri, false, false, false, Set());
+      Map<String, Map<int, int>> hitmap = createHitmap(cov['coverage'] as List);
+      var resolver = BazelResolver();
+      String lcov = await LcovFormatter(resolver).format(hitmap);
+      final outfile = File('$_coverage/lcov.info')..createSync(recursive: true);
+      final IOSink out = outfile.openWrite();
+      out.write(json.encode(lcov));
+      await out.flush();
+      await out.close();
+    }
   }
 
   /// Runs all the entries in [group] in sequence.

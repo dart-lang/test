@@ -91,6 +91,11 @@ final ArgParser _parser = (() {
       negatable: false);
   parser.addFlag("debug",
       help: 'Runs the VM and Chrome tests in debug mode.', negatable: false);
+  parser.addOption("coverage",
+      help: 'Enables coverage gathering for the Dart VM and outputs an\n'
+          'lcov formatted file to the specified directory.\n'
+          'Implies --debug.',
+      valueHelp: 'directory');
   parser.addFlag("chain-stack-traces",
       help: 'Chained stack traces to provide greater exception details\n'
           'especially for asynchronous code. It may be useful to disable\n'
@@ -214,6 +219,7 @@ class _Parser {
         dart2jsArgs: _ifParsed('dart2js-args'),
         precompiledPath: _ifParsed('precompiled'),
         reporter: _ifParsed('reporter'),
+        coverage: _ifParsed('coverage'),
         pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
