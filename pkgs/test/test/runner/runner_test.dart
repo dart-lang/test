@@ -84,6 +84,8 @@ Usage: pub run test [files or directories...]
 -j, --concurrency=<threads>       The number of concurrent test suites run.
                                   (defaults to "$_defaultConcurrency")
 
+    --total-shards                The total number of invocations of the test runner being run.
+    --shard-index                 The index of this test runner invocation (of --total-shards).
     --pub-serve=<port>            The port of a pub serve instance serving "test/".
     --timeout                     The default test timeout. For example: 15s, 2x, none
                                   (defaults to "30s")

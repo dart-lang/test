@@ -1,3 +1,10 @@
+## 1.8.0
+
+* Expose the previously hidden sharding arguments
+  * `--total-shards` specifies how many shards the suite should
+    be split into
+  * `--shard-index` specifies which shard should be run
+
 ## 1.7.0
 
 * Add a `--debug` flag for running the VM/Chrome in debug mode.

@@ -74,6 +74,10 @@ final ArgParser _parser = (() {
       help: 'The number of concurrent test suites run.',
       defaultsTo: defaultConcurrency.toString(),
       valueHelp: 'threads');
+  parser.addOption("total-shards",
+      help: 'The total number of invocations of the test runner being run.');
+  parser.addOption("shard-index",
+      help: 'The index of this test runner invocation (of --total-shards).');
   parser.addOption("pub-serve",
       help: 'The port of a pub serve instance serving "test/".',
       valueHelp: 'port');
@@ -128,12 +132,6 @@ final ArgParser _parser = (() {
       help: 'The path to the dart2js executable.', hide: true);
   parser.addMultiOption("dart2js-args",
       help: 'Extra arguments to pass to dart2js.', hide: true);
-  parser.addOption("total-shards",
-      help: 'The total number of invocations of the test runner being run.',
-      hide: true);
-  parser.addOption("shard-index",
-      help: 'The index of this test runner invocation (of --total-shards).',
-      hide: true);
 
   // If we're running test/dir/my_test.dart, we'll look for
   // test/dir/my_test.dart.html in the precompiled directory.
