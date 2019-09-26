@@ -21,6 +21,7 @@ import 'package:test_api/src/backend/message.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/environment.dart';
 
 import 'runner_suite.dart';
 import 'live_suite.dart';
@@ -285,9 +286,9 @@ class Engine {
         await _runPool.withResource(() async {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
-          await _gatherCoverage(controller);
           controller.noMoreLiveTests();
           loadResource.allowRelease(() => controller.close());
+          await _gatherCoverage(controller);
         });
       }());
     }, onDone: () {
@@ -302,21 +303,21 @@ class Engine {
   }
 
   Future<Null> _gatherCoverage(LiveSuiteController controller) async {
-    if (_coverage != null) {
-      RunnerSuite suite = controller.liveSuite.suite;
-      String observatoryUrl = suite.environment.observatoryUrl.toString();
-      String shortUrl = observatoryUrl.substring(0, observatoryUrl.lastIndexOf('#'));
-      var observatoryUri = Uri.parse(shortUrl);
-      Map<String, dynamic> cov = await collect(observatoryUri, false, false, false, Set());
-      Map<String, Map<int, int>> hitmap = createHitmap(cov['coverage'] as List);
-      var resolver = BazelResolver();
-      String lcov = await LcovFormatter(resolver).format(hitmap);
-      final outfile = File('$_coverage/lcov.info')..createSync(recursive: true);
-      final IOSink out = outfile.openWrite();
-      out.write(json.encode(lcov));
-      await out.flush();
-      await out.close();
-    }
+    if (_coverage == null) return;
+
+    final RunnerSuite suite = controller.liveSuite.suite;
+
+    if (!suite.platform.runtime.isDartVM) return;
+
+    final Map<String, dynamic> cov = await collect(suite.environment.observatoryUrl, false, false, false, Set());
+    final Map<String, Map<int, int>> hitmap = createHitmap(cov['coverage'] as List);
+    final String lcov = await LcovFormatter(BazelResolver()).format(hitmap);
+
+    final outfile = File('$_coverage/${suite.path}.lcov.info')..createSync(recursive: true);
+    final IOSink out = outfile.openWrite();
+    out.write(json.encode(lcov));
+    await out.flush();
+    await out.close();
   }
 
   /// Runs all the entries in [group] in sequence.
