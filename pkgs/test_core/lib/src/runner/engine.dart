@@ -287,8 +287,8 @@ class Engine {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
           controller.noMoreLiveTests();
-          loadResource.allowRelease(() => controller.close());
           await _gatherCoverage(controller);
+          loadResource.allowRelease(() => controller.close());
         });
       }());
     }, onDone: () {
@@ -308,7 +308,6 @@ class Engine {
     final RunnerSuite suite = controller.liveSuite.suite;
 
     if (!suite.platform.runtime.isDartVM) return;
-
     final Map<String, dynamic> cov = await collect(suite.environment.observatoryUrl, false, false, false, Set());
 
     final outfile = File('$_coverage/${suite.path}.json')..createSync(recursive: true);
