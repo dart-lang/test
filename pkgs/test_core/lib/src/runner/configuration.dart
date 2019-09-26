@@ -473,6 +473,7 @@ class Configuration {
         configurationPath: other._configurationPath ?? _configurationPath,
         dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         reporter: other._reporter ?? _reporter,
+        coverage: other._coverage ?? _coverage,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
