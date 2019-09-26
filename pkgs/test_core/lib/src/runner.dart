@@ -71,7 +71,8 @@ class Runner {
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
-        var engine = Engine(concurrency: config.concurrency, coverage: config.coverage);
+        var engine =
+            Engine(concurrency: config.concurrency, coverage: config.coverage);
 
         var reporterDetails = allReporters[config.reporter];
         return Runner._(engine, reporterDetails.factory(config, engine));
@@ -107,7 +108,8 @@ class Runner {
         }
 
         if (_config.coverage != null) {
-          var directory = await Directory(_config.coverage).create(recursive: true);
+          var directory =
+              await Directory(_config.coverage).create(recursive: true);
           print('Gathering coverage and outputting to: ${directory.path}');
         }
 

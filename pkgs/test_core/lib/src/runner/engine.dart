@@ -241,7 +241,8 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
-  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency, String coverage}) {
+  factory Engine.withSuites(List<RunnerSuite> suites,
+      {int concurrency, String coverage}) {
     var engine = Engine(concurrency: concurrency, coverage: coverage);
     for (var suite in suites) {
       engine.suiteSink.add(suite);
@@ -308,9 +309,17 @@ class Engine {
     final RunnerSuite suite = controller.liveSuite.suite;
 
     if (!suite.platform.runtime.isDartVM) return;
-    final Map<String, dynamic> cov = await collect(suite.environment.observatoryUrl, false, false, false, Set());
 
-    final outfile = File('$_coverage/${suite.path}.json')..createSync(recursive: true);
+    // for some reason the observatoryUrl URI doesn't have the query parameters populated
+    final String isolateId = Uri.splitQueryString(
+        suite.environment.observatoryUrl.toString().split('?')[1])['isolateId'];
+
+    final Map<String, dynamic> cov = await collect(
+        suite.environment.observatoryUrl, false, false, false, Set(),
+        isolateIds: Set.from([isolateId]));
+
+    final outfile = File('$_coverage/${suite.path}.json')
+      ..createSync(recursive: true);
     final IOSink out = outfile.openWrite();
     out.write(json.encode(cov));
     await out.flush();
