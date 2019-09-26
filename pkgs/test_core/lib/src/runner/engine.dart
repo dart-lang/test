@@ -310,12 +310,10 @@ class Engine {
     if (!suite.platform.runtime.isDartVM) return;
 
     final Map<String, dynamic> cov = await collect(suite.environment.observatoryUrl, false, false, false, Set());
-    final Map<String, Map<int, int>> hitmap = createHitmap(cov['coverage'] as List);
-    final String lcov = await LcovFormatter(BazelResolver()).format(hitmap);
 
-    final outfile = File('$_coverage/${suite.path}.lcov.info')..createSync(recursive: true);
+    final outfile = File('$_coverage/${suite.path}.json')..createSync(recursive: true);
     final IOSink out = outfile.openWrite();
-    out.write(json.encode(lcov));
+    out.write(json.encode(cov));
     await out.flush();
     await out.close();
   }
