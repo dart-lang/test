@@ -21,7 +21,6 @@ import 'package:test_api/src/backend/message.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/environment.dart';
 
 import 'runner_suite.dart';
 import 'live_suite.dart';
