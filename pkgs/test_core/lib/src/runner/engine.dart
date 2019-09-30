@@ -318,7 +318,7 @@ class Engine {
         suite.environment.observatoryUrl, false, false, false, Set(),
         isolateIds: Set.from([isolateId]));
 
-    final outfile = File('$_coverage/${suite.path}.json')
+    final outfile = File('$_coverage/${suite.path}.vm.json')
       ..createSync(recursive: true);
     final IOSink out = outfile.openWrite();
     out.write(json.encode(cov));
