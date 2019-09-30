@@ -13,7 +13,7 @@ dependencies:
   args: ^1.4.0
   boolean_selector: ^1.0.0
   collection: ^1.8.0
-  coverage: ^0.13.2
+  coverage: ^0.13.3
   glob: ^1.0.0
   io: ^0.3.0
   meta: ^1.1.5
