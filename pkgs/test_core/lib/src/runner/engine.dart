@@ -69,7 +69,7 @@ class Engine {
   /// `false` if the tests finished running before close was called.
   bool _closedBeforeDone;
 
-  /// The coverage output directory
+  /// The coverage output directory.
   String _coverage;
 
   /// A pool that limits the number of test suites running concurrently.
@@ -314,8 +314,8 @@ class Engine {
         suite.environment.observatoryUrl.toString().split('?')[1])['isolateId'];
 
     final Map<String, dynamic> cov = await collect(
-        suite.environment.observatoryUrl, false, false, false, Set(),
-        isolateIds: Set.from([isolateId]));
+        suite.environment.observatoryUrl, false, false, false, {},
+        isolateIds: {isolateId});
 
     final outfile = File('$_coverage/${suite.path}.vm.json')
       ..createSync(recursive: true);
