@@ -314,7 +314,7 @@ class Engine {
         suite.environment.observatoryUrl.toString().split('?')[1])['isolateId'];
 
     final Map<String, dynamic> cov = await collect(
-        suite.environment.observatoryUrl, false, false, false, {},
+        suite.environment.observatoryUrl, false, false, false, Set(),
         isolateIds: {isolateId});
 
     final outfile = File('$_coverage/${suite.path}.vm.json')
