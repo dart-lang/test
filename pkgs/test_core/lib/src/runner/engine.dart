@@ -310,8 +310,9 @@ class Engine {
     if (!suite.platform.runtime.isDartVM) return;
 
     // for some reason the observatoryUrl URI doesn't have the query parameters populated
-    final String isolateId = Uri.splitQueryString(
-        suite.environment.observatoryUrl.toString().split('?')[1])['isolateId'];
+    final String isolateId =
+        Uri.parse(suite.environment.observatoryUrl.fragment)
+            .queryParameters['isolateId'];
 
     final Map<String, dynamic> cov = await collect(
         suite.environment.observatoryUrl, false, false, false, Set(),
