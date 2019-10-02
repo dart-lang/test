@@ -127,10 +127,9 @@ class _IsAnything extends Matcher {
   Description describe(Description description) => description.add('anything');
 }
 
-/// **DEPRECATED** Use [TypeMatcher] instead.
+/// **DEPRECATED** Use [isA] instead.
 ///
-/// Returns a matcher that matches if an object is an instance
-/// of [T] (or a subtype).
+/// A matcher that matches if an object is an instance of [T] (or a subtype).
 @Deprecated('Use `isA<MyType>()` instead.')
 // ignore: camel_case_types
 class isInstanceOf<T> extends TypeMatcher<T> {
