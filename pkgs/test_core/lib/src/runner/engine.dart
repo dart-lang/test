@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
+import 'package:path/path.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 
@@ -309,16 +310,15 @@ class Engine {
 
     if (!suite.platform.runtime.isDartVM) return;
 
-    // for some reason the observatoryUrl URI doesn't have the query parameters populated
     final String isolateId =
         Uri.parse(suite.environment.observatoryUrl.fragment)
             .queryParameters['isolateId'];
 
-    final Map<String, dynamic> cov = await collect(
+    final cov = await collect(
         suite.environment.observatoryUrl, false, false, false, Set(),
         isolateIds: {isolateId});
 
-    final outfile = File('$_coverage/${suite.path}.vm.json')
+    final outfile = File(join('$_coverage', '${suite.path}.vm.json'))
       ..createSync(recursive: true);
     final IOSink out = outfile.openWrite();
     out.write(json.encode(cov));

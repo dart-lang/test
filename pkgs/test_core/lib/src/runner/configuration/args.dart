@@ -92,8 +92,7 @@ final ArgParser _parser = (() {
   parser.addFlag("debug",
       help: 'Runs the VM and Chrome tests in debug mode.', negatable: false);
   parser.addOption("coverage",
-      help: 'Enables coverage gathering for the Dart VM and outputs an\n'
-          'lcov formatted file to the specified directory.\n'
+      help: 'Gathers coverage and outputs it to the specified directory.\n'
           'Implies --debug.',
       valueHelp: 'directory');
   parser.addFlag("chain-stack-traces",

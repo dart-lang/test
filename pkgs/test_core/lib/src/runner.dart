@@ -108,9 +108,7 @@ class Runner {
         }
 
         if (_config.coverage != null) {
-          var directory =
-              await Directory(_config.coverage).create(recursive: true);
-          print('Gathering coverage and outputting to: ${directory.path}');
+          await Directory(_config.coverage).create(recursive: true);
         }
 
         bool success;

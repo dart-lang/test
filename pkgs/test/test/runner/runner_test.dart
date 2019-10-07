@@ -95,8 +95,7 @@ Usage: pub run test [files or directories...]
                                   Currently only supported for browser tests.
 
     --debug                       Runs the VM and Chrome tests in debug mode.
-    --coverage=<directory>        Enables coverage gathering for the Dart VM and outputs an
-                                  lcov formatted file to the specified directory.
+    --coverage=<directory>        Gathers coverage and outputs it to the specified directory.
                                   Implies --debug.
 
     --[no-]chain-stack-traces     Chained stack traces to provide greater exception details
