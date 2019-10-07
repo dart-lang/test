@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 
@@ -318,7 +318,7 @@ class Engine {
         suite.environment.observatoryUrl, false, false, false, Set(),
         isolateIds: {isolateId});
 
-    final outfile = File(join('$_coverage', '${suite.path}.vm.json'))
+    final outfile = File(p.join('$_coverage', '${suite.path}.vm.json'))
       ..createSync(recursive: true);
     final IOSink out = outfile.openWrite();
     out.write(json.encode(cov));
