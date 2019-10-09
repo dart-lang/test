@@ -1,3 +1,7 @@
+## 1.9.1
+
+* Depend on latest `test_core`.
+
 ## 1.9.0
 
 * Implement code coverage collection for VM based tests

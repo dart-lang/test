@@ -4,16 +4,11 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
-import 'package:coverage/coverage.dart';
-import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
@@ -23,10 +18,11 @@ import 'package:test_api/src/backend/state.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
 
-import 'runner_suite.dart';
+import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
 import 'live_suite_controller.dart';
 import 'load_suite.dart';
+import 'runner_suite.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///
@@ -288,7 +284,7 @@ class Engine {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
           controller.noMoreLiveTests();
-          await _gatherCoverage(controller);
+          if (_coverage != null) await gatherCoverage(_coverage, controller);
           loadResource.allowRelease(() => controller.close());
         });
       }());
@@ -301,29 +297,6 @@ class Engine {
     _subscriptions.add(subscription);
 
     return success;
-  }
-
-  Future<Null> _gatherCoverage(LiveSuiteController controller) async {
-    if (_coverage == null) return;
-
-    final RunnerSuite suite = controller.liveSuite.suite;
-
-    if (!suite.platform.runtime.isDartVM) return;
-
-    final String isolateId =
-        Uri.parse(suite.environment.observatoryUrl.fragment)
-            .queryParameters['isolateId'];
-
-    final cov = await collect(
-        suite.environment.observatoryUrl, false, false, false, Set(),
-        isolateIds: {isolateId});
-
-    final outfile = File(p.join('$_coverage', '${suite.path}.vm.json'))
-      ..createSync(recursive: true);
-    final IOSink out = outfile.openWrite();
-    out.write(json.encode(cov));
-    await out.flush();
-    await out.close();
   }
 
   /// Runs all the entries in [group] in sequence.
