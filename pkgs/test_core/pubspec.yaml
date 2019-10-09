@@ -1,11 +1,11 @@
 name: test_core
-version: 0.2.10
+version: 0.2.11
 author: Dart Team <misc@dartlang.org>
 description: A basic library for writing tests and running them on the VM.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_core
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
   analyzer: ">=0.36.0 <0.39.0"
@@ -13,6 +13,7 @@ dependencies:
   args: ^1.4.0
   boolean_selector: ^1.0.0
   collection: ^1.8.0
+  coverage: ^0.13.3
   glob: ^1.0.0
   io: ^0.3.0
   meta: ^1.1.5

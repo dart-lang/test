@@ -2,6 +2,8 @@
 
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
+  * [Sharding Tests](#sharding-tests)
+  * [Collecting Code Coverage](#collecting-code-coverage)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
   * [Running Tests on Node.js](#running-tests-on-nodejs)
@@ -157,6 +159,7 @@ reported on the command line just like for VM tests. In fact, you can even run
 tests on both platforms with a single command: `pub run test -p "chrome,vm"
 path/to/test.dart`.
 
+### Sharding Tests
 Tests can also be sharded with the `--total-shards` and `--shard-index` arguments,
 allowing you to split up your test suites and run them separately. For example,
 if you wanted to run 3 shards of your test suite, you could run them as follows:
@@ -166,6 +169,20 @@ pub run test --total-shards 3 --shard-index 0 path/to/test.dart
 pub run test --total-shards 3 --shard-index 1 path/to/test.dart
 pub run test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
+
+### Collecting Code Coverage
+To collect code coverage, you can run tests with the `--coverage <directory>`
+argument. The directory specified can be an absolute or relative path. 
+If a directory does not exist at the path specified, a directory will be
+created. If a directory does exist, files may be overwritten with the latest
+coverage data, if they conflict.
+
+This option will enable code coverage collection on a suite-by-suite basis,
+and the resulting coverage files will be outputted in the directory specified.
+The files can then be formatted using the `package:coverage`
+`format_coverage` executable.
+
+Coverage gathering is currently only implemented for tests run in the Dart VM.
 
 ### Restricting Tests to Certain Platforms
 

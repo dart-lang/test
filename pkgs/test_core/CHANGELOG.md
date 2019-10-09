@@ -1,6 +1,10 @@
+## 0.2.11
+
+* Implement code coverage gathering for VM tests.
+
 ## 0.2.10
 
-Add a `--debug` argument for running the VM/Chrome in debug mode.
+* Add a `--debug` argument for running the VM/Chrome in debug mode.
 
 ## 0.2.9+2
 

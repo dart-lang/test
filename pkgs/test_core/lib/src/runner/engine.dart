@@ -4,9 +4,13 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
+import 'package:coverage/coverage.dart';
+import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 
@@ -65,6 +69,9 @@ class Engine {
   /// running, `true` if close was called before the tests finished running, and
   /// `false` if the tests finished running before close was called.
   bool _closedBeforeDone;
+
+  /// The coverage output directory.
+  String _coverage;
 
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
@@ -214,9 +221,10 @@ class Engine {
   /// [concurrency] controls how many suites are run at once, and defaults to 1.
   /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
   /// four times [concurrency].
-  Engine({int concurrency, int maxSuites})
+  Engine({int concurrency, int maxSuites, String coverage})
       : _runPool = Pool(concurrency ?? 1),
-        _loadPool = Pool(maxSuites ?? (concurrency ?? 1) * 2) {
+        _loadPool = Pool(maxSuites ?? (concurrency ?? 1) * 2),
+        _coverage = coverage {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
@@ -233,8 +241,9 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
-  factory Engine.withSuites(List<RunnerSuite> suites, {int concurrency}) {
-    var engine = Engine(concurrency: concurrency);
+  factory Engine.withSuites(List<RunnerSuite> suites,
+      {int concurrency, String coverage}) {
+    var engine = Engine(concurrency: concurrency, coverage: coverage);
     for (var suite in suites) {
       engine.suiteSink.add(suite);
     }
@@ -279,6 +288,7 @@ class Engine {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
           controller.noMoreLiveTests();
+          await _gatherCoverage(controller);
           loadResource.allowRelease(() => controller.close());
         });
       }());
@@ -291,6 +301,29 @@ class Engine {
     _subscriptions.add(subscription);
 
     return success;
+  }
+
+  Future<Null> _gatherCoverage(LiveSuiteController controller) async {
+    if (_coverage == null) return;
+
+    final RunnerSuite suite = controller.liveSuite.suite;
+
+    if (!suite.platform.runtime.isDartVM) return;
+
+    final String isolateId =
+        Uri.parse(suite.environment.observatoryUrl.fragment)
+            .queryParameters['isolateId'];
+
+    final cov = await collect(
+        suite.environment.observatoryUrl, false, false, false, Set(),
+        isolateIds: {isolateId});
+
+    final outfile = File(p.join('$_coverage', '${suite.path}.vm.json'))
+      ..createSync(recursive: true);
+    final IOSink out = outfile.openWrite();
+    out.write(json.encode(cov));
+    await out.flush();
+    await out.close();
   }
 
   /// Runs all the entries in [group] in sequence.

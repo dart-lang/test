@@ -1,3 +1,7 @@
+## 1.9.0
+
+* Implement code coverage collection for VM based tests
+
 ## 1.8.0
 
 * Expose the previously hidden sharding arguments

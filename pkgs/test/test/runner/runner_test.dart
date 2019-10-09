@@ -95,6 +95,9 @@ Usage: pub run test [files or directories...]
                                   Currently only supported for browser tests.
 
     --debug                       Runs the VM and Chrome tests in debug mode.
+    --coverage=<directory>        Gathers coverage and outputs it to the specified directory.
+                                  Implies --debug.
+
     --[no-]chain-stack-traces     Chained stack traces to provide greater exception details
                                   especially for asynchronous code. It may be useful to disable
                                   to provide improved test performance but at the cost of

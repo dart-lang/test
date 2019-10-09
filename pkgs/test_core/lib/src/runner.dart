@@ -71,7 +71,8 @@ class Runner {
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
-        var engine = Engine(concurrency: config.concurrency);
+        var engine =
+            Engine(concurrency: config.concurrency, coverage: config.coverage);
 
         var reporterDetails = allReporters[config.reporter];
         return Runner._(engine, reporterDetails.factory(config, engine));
@@ -104,6 +105,10 @@ class Runner {
               'default.\nThis breaks the various reporter contracts.'
               '\nTo set the value define '
               '`DART_VM_OPTIONS=-DSILENT_OBSERVATORY=true`.');
+        }
+
+        if (_config.coverage != null) {
+          await Directory(_config.coverage).create(recursive: true);
         }
 
         bool success;

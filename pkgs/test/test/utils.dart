@@ -185,7 +185,7 @@ List<GroupEntry> declare(void body()) {
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
-Engine declareEngine(void body(), {bool runSkipped = false}) {
+Engine declareEngine(void body(), {bool runSkipped = false, String coverage}) {
   var declarer = Declarer()..declare(body);
   return Engine.withSuites([
     RunnerSuite(
@@ -193,7 +193,7 @@ Engine declareEngine(void body(), {bool runSkipped = false}) {
         SuiteConfiguration(runSkipped: runSkipped),
         declarer.build(),
         suitePlatform)
-  ]);
+  ], coverage: coverage);
 }
 
 /// Returns a [RunnerSuite] with a default environment and configuration.
