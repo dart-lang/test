@@ -1,3 +1,8 @@
+## 0.2.12
+
+* Conditionally import coverage logic in `engine.dart`. This ensures the engine
+  is platform agnostic.
+
 ## 0.2.11
 
 * Implement code coverage gathering for VM tests.
