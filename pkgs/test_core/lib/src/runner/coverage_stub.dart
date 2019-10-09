@@ -4,6 +4,6 @@
 
 import 'live_suite_controller.dart';
 
-Future<Null> gatherCoverage(String coverage, LiveSuiteController controller) =>
+Future<void> gatherCoverage(String coverage, LiveSuiteController controller) =>
     throw UnsupportedError(
         'Coverage is only supported through the test runner.');

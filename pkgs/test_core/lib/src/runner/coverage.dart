@@ -12,7 +12,7 @@ import 'live_suite_controller.dart';
 import 'runner_suite.dart';
 
 /// Collects coverage and outputs to the [coverage] path.
-Future<Null> gatherCoverage(
+Future<void> gatherCoverage(
     String coverage, LiveSuiteController controller) async {
   final RunnerSuite suite = controller.liveSuite.suite;
 
