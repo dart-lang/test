@@ -2,6 +2,7 @@
 
 - Update minimum Dart SDK to `2.2.0`.
 - Consistently point to `isA` as a replacement for `instanceOf`.
+- Pretty print with private type names.
 
 ## 0.12.5
 

@@ -104,6 +104,9 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
       if (object is num ||
           object is bool ||
           object is Function ||
+          object is RegExp ||
+          object is MapEntry ||
+          object is Expando ||
           object == null ||
           defaultToString) {
         return value;
@@ -118,21 +121,14 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
 
 String _indent(int length) => List.filled(length, ' ').join('');
 
-/// Returns the name of the type of [x], or "Unknown" if the type name can't be
-/// determined.
+/// Returns the name of the type of [x] with fallbacks for core types with
+/// private implementations.
 String _typeName(x) {
-  // dart2js blows up on some objects (e.g. window.navigator).
-  // So we play safe here.
-  try {
-    if (x == null) return "null";
-    if (x is Type) return "Type";
-    var type = x.runtimeType.toString();
-    // TODO(nweiz): if the object's type is private, find a public superclass to
-    // display once there's a portable API to do that.
-    return type.startsWith("_") ? "?" : type;
-  } catch (e) {
-    return "?";
-  }
+  if (x is Type) return "Type";
+  if (x is Uri) return "Uri";
+  if (x is Set) return "Set";
+  if (x is BigInt) return "BigInt";
+  return '${x.runtimeType}';
 }
 
 /// Returns [source] with any control characters replaced by their escape
