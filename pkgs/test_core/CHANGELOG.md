@@ -1,3 +1,7 @@
+## 0.2.13
+
+* Depend on the latest `package:test_api`.
+
 ## 0.2.12
 
 * Conditionally import coverage logic in `engine.dart`. This ensures the engine

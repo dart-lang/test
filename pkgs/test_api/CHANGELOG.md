@@ -1,3 +1,7 @@
+## 0.2.9
+
+* Treat non-solo tests as skipped so they are properly reported.
+
 ## 0.2.8
 
 * Remove logic which accounted for a race condition in state change. The logic
