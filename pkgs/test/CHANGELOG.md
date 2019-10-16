@@ -1,3 +1,8 @@
+## 1.9.2
+
+* Depend on the latest `package:test_api` and `package:test_core`.
+* While using `solo` tests that are not run will now be reported as skipped.
+
 ## 1.9.1
 
 * Depend on latest `test_core`.

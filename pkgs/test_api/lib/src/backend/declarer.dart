@@ -256,8 +256,16 @@ class Declarer {
     _checkNotBuilt("build");
 
     _built = true;
-    var entries = _entries.toList();
-    if (_solo) entries.removeWhere((entry) => !_soloEntries.contains(entry));
+    var entries = _entries.map((entry) {
+      if (_solo && !_soloEntries.contains(entry)) {
+        entry = LocalTest(
+            entry.name,
+            entry.metadata
+                .change(skip: true, skipReason: 'does not have "solo"'),
+            null);
+      }
+      return entry;
+    }).toList();
 
     return Group(_name, entries,
         metadata: _metadata,

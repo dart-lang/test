@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn("vm")
-import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -27,7 +27,7 @@ void main() {
           """).create();
 
     var test = await runTest(["test.dart"]);
-    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    expect(test.stdout, emitsThrough(contains("+1 ~1: All tests passed!")));
     await test.shouldExit(0);
   });
 
@@ -58,7 +58,7 @@ void main() {
           """).create();
 
     var test = await runTest(["test.dart"]);
-    expect(test.stdout, emitsThrough(contains("+2: All tests passed!")));
+    expect(test.stdout, emitsThrough(contains("+2 ~1: All tests passed!")));
     await test.shouldExit(0);
   });
 }
