@@ -1,3 +1,8 @@
+## 0.2.14
+
+* Update to latest `package:matcher`. Improves output for instances of private
+  classes.
+
 ## 0.2.13
 
 * Depend on the latest `package:test_api`.
