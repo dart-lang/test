@@ -33,6 +33,8 @@ class JsonReporter implements Reporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
+  final Sink<List<int>> _sink;
+
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
 
@@ -61,9 +63,10 @@ class JsonReporter implements Reporter {
   var _nextID = 0;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine) => JsonReporter._(engine);
+  static JsonReporter watch(Engine engine, Sink<List<int>> sink) =>
+      JsonReporter._(engine, sink);
 
-  JsonReporter._(this._engine) : _config = Configuration.current {
+  JsonReporter._(this._engine, this._sink) : _config = Configuration.current {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -283,7 +286,7 @@ class JsonReporter implements Reporter {
   void _emit(String type, Map attributes) {
     attributes["type"] = type;
     attributes["time"] = _stopwatch.elapsed.inMilliseconds;
-    print(jsonEncode(attributes));
+    _sink.add(utf8.encode(jsonEncode(attributes) + '\n'));
   }
 
   /// Modifies [map] to include line, column, and URL information from the first
