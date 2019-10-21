@@ -14,6 +14,7 @@ dependencies:
   boolean_selector: ^1.0.0
   collection: ^1.8.0
   coverage: ^0.13.3
+  dwds: ^0.7.4
   glob: ^1.0.0
   io: ^0.3.0
   meta: ^1.1.5
@@ -27,6 +28,7 @@ dependencies:
   stack_trace: ^1.9.0
   stream_channel: ">=1.7.0 <3.0.0"
   vm_service: '>=1.0.0 <3.0.0'
+  webkit_inspection_protocol: ^0.5.0
   yaml: ^2.0.0
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
@@ -35,5 +37,7 @@ dependencies:
   test_api: 0.2.8
 
 dependency_overrides:
+  dwds:
+    path: ../../../webdev/dwds
   test_api:
     path: ../test_api

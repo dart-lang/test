@@ -40,6 +40,9 @@ class SuiteConfiguration {
   /// can more effectively make use of Google's build tools.
   final String precompiledPath;
 
+  /// The base URI under which this suite is run, if it's being run in browser
+  final Uri baseUrl;
+
   /// Additional arguments to pass to dart2js.
   ///
   /// Note that this if multiple suites run the same JavaScript on different
@@ -129,6 +132,7 @@ class SuiteConfiguration {
       bool runSkipped,
       Iterable<String> dart2jsArgs,
       String precompiledPath,
+      Uri baseUrl,
       Iterable<Pattern> patterns,
       Iterable<RuntimeSelection> runtimes,
       BooleanSelector includeTags,
@@ -150,6 +154,7 @@ class SuiteConfiguration {
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
+        baseUrl: baseUrl,
         patterns: patterns,
         runtimes: runtimes,
         includeTags: includeTags,
@@ -177,6 +182,7 @@ class SuiteConfiguration {
       bool runSkipped,
       Iterable<String> dart2jsArgs,
       this.precompiledPath,
+      Uri baseUrl,
       Iterable<Pattern> patterns,
       Iterable<RuntimeSelection> runtimes,
       BooleanSelector includeTags,
@@ -187,6 +193,7 @@ class SuiteConfiguration {
       : _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
+        baseUrl = baseUrl,
         patterns = UnmodifiableSetView(patterns?.toSet() ?? Set()),
         _runtimes = _list(runtimes),
         includeTags = includeTags ?? BooleanSelector.all,
@@ -235,6 +242,7 @@ class SuiteConfiguration {
         runSkipped: other._runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
         precompiledPath: other.precompiledPath ?? precompiledPath,
+        baseUrl: other.baseUrl ?? baseUrl,
         patterns: patterns.union(other.patterns),
         runtimes: other._runtimes ?? _runtimes,
         includeTags: includeTags.intersection(other.includeTags),
@@ -254,6 +262,7 @@ class SuiteConfiguration {
       bool runSkipped,
       Iterable<String> dart2jsArgs,
       String precompiledPath,
+      Uri baseUrl,
       Iterable<Pattern> patterns,
       Iterable<RuntimeSelection> runtimes,
       BooleanSelector includeTags,
@@ -275,6 +284,7 @@ class SuiteConfiguration {
         runSkipped: runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         precompiledPath: precompiledPath ?? this.precompiledPath,
+        baseUrl: baseUrl ?? this.baseUrl,
         patterns: patterns ?? this.patterns,
         runtimes: runtimes ?? _runtimes,
         includeTags: includeTags ?? this.includeTags,
