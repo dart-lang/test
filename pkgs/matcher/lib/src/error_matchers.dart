@@ -40,3 +40,6 @@ const isUnimplementedError = TypeMatcher<UnimplementedError>();
 
 /// A matcher for [UnsupportedError].
 const isUnsupportedError = TypeMatcher<UnsupportedError>();
+
+/// A matcher for [AssertionError].
+const isAssertionError = TypeMatcher<AssertionError>();
