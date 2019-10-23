@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
@@ -85,7 +85,7 @@ class ExpandedReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = Set<StreamSubscription>();
 
-  final Sink<List<int>> _sink;
+  final IOSink _sink;
 
   // TODO(nweiz): Get configuration from [Configuration.current] once we have
   // cross-platform imports.
@@ -100,7 +100,7 @@ class ExpandedReporter implements Reporter {
       {bool color = true,
       bool printPath = true,
       bool printPlatform = true,
-      Sink<List<int>> sink}) {
+      IOSink sink}) {
     return ExpandedReporter._(engine,
         color: color,
         printPath: printPath,
@@ -112,7 +112,7 @@ class ExpandedReporter implements Reporter {
       {bool color = true,
       bool printPath = true,
       bool printPlatform = true,
-      Sink<List<int>> sink})
+      IOSink sink})
       : _printPath = printPath,
         _printPlatform = printPlatform,
         _sink = sink,
@@ -186,12 +186,8 @@ class ExpandedReporter implements Reporter {
       _progressLine(_description(liveTest));
       var text = message.text;
       if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-      _print(text);
+      _sink.writeln(text);
     }));
-  }
-
-  void _print(String text) {
-    _sink.add(utf8.encode(text + '\n'));
   }
 
   /// A callback called when [liveTest]'s state becomes [state].
@@ -212,17 +208,16 @@ class ExpandedReporter implements Reporter {
     _progressLine(_description(liveTest), suffix: " $_bold$_red[E]$_noColor");
 
     if (error is! LoadException) {
-      _print(indent(error.toString()));
-      _print(indent('$stackTrace'));
+      _sink..writeln(indent('$error'))..writeln(indent('$stackTrace'));
       return;
     }
 
     // TODO - what type is this?
-    _print(indent((error as dynamic).toString(color: _color) as String));
+    _sink.writeln(indent((error as dynamic).toString(color: _color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! FormatException && error.innerError is! String) {
-      _print(indent('$stackTrace'));
+      _sink.writeln(indent('$stackTrace'));
     }
   }
 
@@ -237,7 +232,7 @@ class ExpandedReporter implements Reporter {
     if (success == null) return;
 
     if (_engine.liveTests.isEmpty) {
-      _print("No tests ran.");
+      _sink.writeln("No tests ran.");
     } else if (!success) {
       for (var liveTest in _engine.active) {
         _progressLine(_description(liveTest),
@@ -304,7 +299,7 @@ class ExpandedReporter implements Reporter {
     buffer.write(message);
     buffer.write(_noColor);
 
-    _print(buffer.toString());
+    _sink.writeln(buffer.toString());
   }
 
   /// Returns a representation of [duration] as `MM:SS`.

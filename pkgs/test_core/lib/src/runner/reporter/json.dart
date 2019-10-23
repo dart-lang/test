@@ -4,7 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show pid;
+import 'dart:io' show IOSink, pid;
 
 import 'package:path/path.dart' as p;
 
@@ -33,7 +33,7 @@ class JsonReporter implements Reporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  final Sink<List<int>> _sink;
+  final IOSink _sink;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -63,7 +63,7 @@ class JsonReporter implements Reporter {
   var _nextID = 0;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine, Sink<List<int>> sink) =>
+  static JsonReporter watch(Engine engine, IOSink sink) =>
       JsonReporter._(engine, sink);
 
   JsonReporter._(this._engine, this._sink) : _config = Configuration.current {
@@ -286,7 +286,7 @@ class JsonReporter implements Reporter {
   void _emit(String type, Map attributes) {
     attributes["type"] = type;
     attributes["time"] = _stopwatch.elapsed.inMilliseconds;
-    _sink.add(utf8.encode(jsonEncode(attributes) + '\n'));
+    _sink.writeln(jsonEncode(attributes));
   }
 
   /// Modifies [map] to include line, column, and URL information from the first

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -57,7 +56,7 @@ class CompactReporter implements Reporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  final Sink<List<int>> _sink;
+  final IOSink _sink;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -104,7 +103,7 @@ class CompactReporter implements Reporter {
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
-  static CompactReporter watch(Engine engine, Sink<List<int>> sink) =>
+  static CompactReporter watch(Engine engine, IOSink sink) =>
       CompactReporter._(engine, sink);
 
   CompactReporter._(this._engine, this._sink) {
@@ -119,7 +118,7 @@ class CompactReporter implements Reporter {
     if (_paused) return;
     _paused = true;
 
-    if (!_printedNewline) _print('');
+    if (!_printedNewline) _sink.writeln('');
     _printedNewline = true;
     _stopwatch.stop();
 
@@ -142,14 +141,6 @@ class CompactReporter implements Reporter {
     for (var subscription in _subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _print(String text) {
-    _write(text + '\n');
-  }
-
-  void _write(String text) {
-    _sink.add(utf8.encode(text));
   }
 
   void cancel() {
@@ -185,12 +176,12 @@ class CompactReporter implements Reporter {
 
     _subscriptions.add(liveTest.onMessage.listen((message) {
       _progressLine(_description(liveTest), truncate: false);
-      if (!_printedNewline) _print('');
+      if (!_printedNewline) _sink.writeln('');
       _printedNewline = true;
 
       var text = message.text;
       if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-      _print(text);
+      _sink.writeln(text);
     }));
   }
 
@@ -217,24 +208,24 @@ class CompactReporter implements Reporter {
 
     _progressLine(_description(liveTest),
         truncate: false, suffix: " $_bold$_red[E]$_noColor");
-    if (!_printedNewline) _print('');
+    if (!_printedNewline) _sink.writeln('');
     _printedNewline = true;
 
     if (error is! LoadException) {
-      _print(indent(error.toString()));
-      _print(indent('$stackTrace'));
+      _sink.writeln(indent(error.toString()));
+      _sink.writeln(indent('$stackTrace'));
       return;
     }
 
     // TODO - what type is this?
-    _print(indent(error.toString(color: _config.color) as String));
+    _sink.writeln(indent(error.toString(color: _config.color) as String));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IOException &&
         error.innerError is! IsolateSpawnException &&
         error.innerError is! FormatException &&
         error.innerError is! String) {
-      _print(indent('$stackTrace'));
+      _sink.writeln(indent('$stackTrace'));
     }
   }
 
@@ -251,34 +242,34 @@ class CompactReporter implements Reporter {
     // shouldn't print summary information, we should just make sure the
     // terminal cursor is on its own line.
     if (success == null) {
-      if (!_printedNewline) _print("");
+      if (!_printedNewline) _sink.writeln("");
       _printedNewline = true;
       return;
     }
 
     if (_engine.liveTests.isEmpty) {
-      if (!_printedNewline) _write("\r");
+      if (!_printedNewline) _sink.write("\r");
       var message = "No tests ran.";
-      _write(message);
+      _sink.write(message);
 
       // Add extra padding to overwrite any load messages.
-      if (!_printedNewline) _write(" " * (lineLength - message.length));
-      _print('');
+      if (!_printedNewline) _sink.write(" " * (lineLength - message.length));
+      _sink.writeln('');
     } else if (!success) {
       for (var liveTest in _engine.active) {
         _progressLine(_description(liveTest),
             truncate: false,
             suffix: " - did not complete $_bold$_red[E]$_noColor");
-        _print('');
+        _sink.writeln('');
       }
       _progressLine('Some tests failed.', color: _red);
-      _print('');
+      _sink.writeln('');
     } else if (_engine.passed.isEmpty) {
       _progressLine("All tests skipped.");
-      _print('');
+      _sink.writeln('');
     } else {
       _progressLine("All tests passed!");
-      _print('');
+      _sink.writeln('');
     }
   }
 
@@ -356,7 +347,7 @@ class CompactReporter implements Reporter {
 
     // Pad the rest of the line so that it looks erased.
     buffer.write(' ' * (lineLength - withoutColors(buffer.toString()).length));
-    _write(buffer.toString());
+    _sink.write(buffer.toString());
 
     _printedNewline = false;
     return true;

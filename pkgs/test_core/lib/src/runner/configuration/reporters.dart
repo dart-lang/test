@@ -12,12 +12,10 @@ import '../reporter.dart';
 import '../reporter/compact.dart';
 import '../reporter/expanded.dart';
 import '../reporter/json.dart';
-import '../reporter/multiplex.dart';
 
 /// Constructs a reporter for the provided engine with the provided
 /// configuration.
-typedef ReporterFactory = Reporter Function(
-    Configuration, Engine, Sink<List<int>>);
+typedef ReporterFactory = Reporter Function(Configuration, Engine, IOSink);
 
 /// Container for a reporter description and corresponding factory.
 class ReporterDetails {
@@ -33,15 +31,12 @@ final UnmodifiableMapView<String, ReporterDetails> allReporters =
 final _allReporters = <String, ReporterDetails>{
   "expanded": ReporterDetails(
       "A separate line for each update.",
-      (config, engine, sink) => MultiplexReporter([
-            JsonReporter.watch(engine, File('/tmp/some_file.json').openWrite()),
-            ExpandedReporter.watch(engine,
-                color: config.color,
-                printPath: config.paths.length > 1 ||
-                    Directory(config.paths.single).existsSync(),
-                printPlatform: config.suiteDefaults.runtimes.length > 1,
-                sink: sink)
-          ])),
+      (config, engine, sink) => ExpandedReporter.watch(engine,
+          color: config.color,
+          printPath: config.paths.length > 1 ||
+              Directory(config.paths.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1,
+          sink: sink)),
   "compact": ReporterDetails("A single line, updated continuously.",
       (_, engine, sink) => CompactReporter.watch(engine, sink)),
   "json": ReporterDetails(
