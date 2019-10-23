@@ -1,5 +1,7 @@
 ## 1.9.3
 
+* Depend on the latest `package:test_core`.
+* Support the latest `package:analyzer`.
 * Update to latest `package:matcher`. Improves output for instances of private
   classes.
 

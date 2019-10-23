@@ -1,5 +1,6 @@
 ## 0.2.14
 
+* Support the latest `package:analyzer`.
 * Update to latest `package:matcher`. Improves output for instances of private
   classes.
 
