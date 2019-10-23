@@ -1,3 +1,8 @@
+## 1.9.3
+
+* Depend on the latest `package:test_core`.
+* Support the latest `package:analyzer`.
+
 ## 1.9.2
 
 * Depend on the latest `package:test_api` and `package:test_core`.

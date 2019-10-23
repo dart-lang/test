@@ -1,3 +1,7 @@
+## 0.2.14
+
+* Support the latest `package:analyzer`.
+
 ## 0.2.13
 
 * Depend on the latest `package:test_api`.
