@@ -1,3 +1,8 @@
+## 0.2.10
+
+* Update to latest `package:matcher`. Improves output for instances of private
+  classes.
+
 ## 0.2.9
 
 * Treat non-solo tests as skipped so they are properly reported.
