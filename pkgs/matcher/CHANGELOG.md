@@ -1,7 +1,3 @@
-## 0.12.7
-
-- Add `isAssertionError` matcher.
-
 ## 0.12.6
 
 - Update minimum Dart SDK to `2.2.0`.
