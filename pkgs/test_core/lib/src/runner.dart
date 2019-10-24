@@ -75,7 +75,8 @@ class Runner {
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
         var reporterDetails = allReporters[config.reporter];
-        return Runner._(engine, reporterDetails.factory(config, engine));
+        return Runner._(
+            engine, reporterDetails.factory(config, engine, stdout));
       });
 
   Runner._(this._engine, this._reporter);

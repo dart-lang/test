@@ -1,3 +1,7 @@
+## 0.2.15-dev
+
+* Add an `IOSink` argument to reporters to prepare for reporting to a file.
+
 ## 0.2.14
 
 * Support the latest `package:analyzer`.
