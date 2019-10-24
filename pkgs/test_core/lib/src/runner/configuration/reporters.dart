@@ -15,7 +15,7 @@ import '../reporter/json.dart';
 
 /// Constructs a reporter for the provided engine with the provided
 /// configuration.
-typedef ReporterFactory = Reporter Function(Configuration, Engine, IOSink);
+typedef ReporterFactory = Reporter Function(Configuration, Engine, StringSink);
 
 /// Container for a reporter description and corresponding factory.
 class ReporterDetails {
@@ -31,12 +31,11 @@ final UnmodifiableMapView<String, ReporterDetails> allReporters =
 final _allReporters = <String, ReporterDetails>{
   "expanded": ReporterDetails(
       "A separate line for each update.",
-      (config, engine, sink) => ExpandedReporter.watch(engine,
+      (config, engine, sink) => ExpandedReporter.watch(engine, sink,
           color: config.color,
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1,
-          sink: sink)),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
   "compact": ReporterDetails("A single line, updated continuously.",
       (_, engine, sink) => CompactReporter.watch(engine, sink)),
   "json": ReporterDetails(
