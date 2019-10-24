@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:io';
+
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
@@ -104,7 +105,7 @@ class ExpandedReporter implements Reporter {
         color: color,
         printPath: printPath,
         printPlatform: printPlatform,
-        sink: sink);
+        sink: sink ?? stdout);
   }
 
   ExpandedReporter._(this._engine,
