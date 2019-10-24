@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
@@ -85,7 +84,7 @@ class ExpandedReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = Set<StreamSubscription>();
 
-  final IOSink _sink;
+  final StringSink _sink;
 
   // TODO(nweiz): Get configuration from [Configuration.current] once we have
   // cross-platform imports.
@@ -96,26 +95,16 @@ class ExpandedReporter implements Reporter {
   /// won't. If [printPath] is `true`, this will print the path name as part of
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
-  static ExpandedReporter watch(Engine engine,
-      {bool color = true,
-      bool printPath = true,
-      bool printPlatform = true,
-      IOSink sink}) {
-    return ExpandedReporter._(engine,
-        color: color,
-        printPath: printPath,
-        printPlatform: printPlatform,
-        sink: sink ?? stdout);
+  static ExpandedReporter watch(Engine engine, StringSink sink,
+      {bool color = true, bool printPath = true, bool printPlatform = true}) {
+    return ExpandedReporter._(engine, sink,
+        color: color, printPath: printPath, printPlatform: printPlatform);
   }
 
-  ExpandedReporter._(this._engine,
-      {bool color = true,
-      bool printPath = true,
-      bool printPlatform = true,
-      IOSink sink})
+  ExpandedReporter._(this._engine, this._sink,
+      {bool color = true, bool printPath = true, bool printPlatform = true})
       : _printPath = printPath,
         _printPlatform = printPlatform,
-        _sink = sink,
         _color = color,
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',

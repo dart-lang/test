@@ -56,7 +56,7 @@ class CompactReporter implements Reporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  final IOSink _sink;
+  final StringSink _sink;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -103,7 +103,7 @@ class CompactReporter implements Reporter {
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
-  static CompactReporter watch(Engine engine, IOSink sink) =>
+  static CompactReporter watch(Engine engine, StringSink sink) =>
       CompactReporter._(engine, sink);
 
   CompactReporter._(this._engine, this._sink) {
