@@ -22,6 +22,7 @@ import 'src/runner/plugin/environment.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/runner/suite.dart';
+import 'src/util/print_sink.dart';
 
 export 'package:matcher/matcher.dart';
 // Hide implementations which don't support being run directly.
@@ -59,7 +60,7 @@ Declarer get _declarer {
     var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(engine,
+    ExpandedReporter.watch(engine, PrintSink(),
         color: true, printPath: false, printPlatform: false);
 
     var success = await runZoned(() => Invoker.guard(engine.run),
