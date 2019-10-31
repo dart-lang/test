@@ -209,7 +209,8 @@ class _Parser {
       }
     }
 
-    var testRandomizeOrderingSeed =_parseOption('test-randomize-ordering-seed', (value) {
+    var testRandomizeOrderingSeed =
+        _parseOption('test-randomize-ordering-seed', (value) {
       var seed = value == 'random'
           ? Random().nextInt(4294967295)
           : int.parse(value).toUnsigned(32);
