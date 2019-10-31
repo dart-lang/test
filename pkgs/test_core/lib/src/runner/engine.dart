@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
@@ -320,7 +321,13 @@ class Engine {
       }
 
       if (!_closed && setUpAllSucceeded) {
-        for (var entry in group.entries) {
+        // shuffle the group entries
+        var entries = group.entries.toList();
+        if (suiteConfig.testRandomizeOrderingSeed > 0) {
+          entries.shuffle(Random(suiteConfig.testRandomizeOrderingSeed));
+        }
+
+        for (var entry in entries) {
           if (_closed) return;
 
           if (entry is Group) {

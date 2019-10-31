@@ -20,6 +20,7 @@ void main() {
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, isNull);
         expect(merged.runtimes, equals([Runtime.vm.identifier]));
+        expect(merged.testRandomizeOrderingSeed, 0);
       });
 
       test("if only the old configuration's is defined, uses it", () {
@@ -41,11 +42,13 @@ void main() {
             jsTrace: true,
             runSkipped: true,
             precompiledPath: "/tmp/js",
+            testRandomizeOrderingSeed: 1234,
             runtimes: [RuntimeSelection(Runtime.chrome.identifier)]));
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals("/tmp/js"));
+        expect(merged.testRandomizeOrderingSeed, 1234);
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
       });
 

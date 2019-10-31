@@ -49,75 +49,79 @@ void main() {
 
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
+final _usage = """
+Usage: pub run test [files or directories...]
+
+-h, --help                            Shows this usage information.
+    --version                         Shows the package's version.
+
+======== Selecting Tests
+-n, --name                            A substring of the name of the test to run.
+                                      Regular expression syntax is supported.
+                                      If passed multiple times, tests must match all substrings.
+
+-N, --plain-name                      A plain-text substring of the name of the test to run.
+                                      If passed multiple times, tests must match all substrings.
+
+-t, --tags                            Run only tests with all of the specified tags.
+                                      Supports boolean selector syntax.
+
+-x, --exclude-tags                    Don't run tests with any of the specified tags.
+                                      Supports boolean selector syntax.
+
+    --[no-]run-skipped                Run skipped tests instead of skipping them.
+
+======== Running Tests
+-p, --platform                        The platform(s) on which to run the tests.
+                                      $_browsers
+
+-P, --preset                          The configuration preset(s) to use.
+-j, --concurrency=<threads>           The number of concurrent test suites run.
+                                      (defaults to "$_defaultConcurrency")
+
+    --total-shards                    The total number of invocations of the test runner being run.
+    --shard-index                     The index of this test runner invocation (of --total-shards).
+    --pub-serve=<port>                The port of a pub serve instance serving "test/".
+    --timeout                         The default test timeout. For example: 15s, 2x, none
+                                      (defaults to "30s")
+
+    --pause-after-load                Pauses for debugging before any tests execute.
+                                      Implies --concurrency=1, --debug, and --timeout=none.
+                                      Currently only supported for browser tests.
+
+    --debug                           Runs the VM and Chrome tests in debug mode.
+    --coverage=<directory>            Gathers coverage and outputs it to the specified directory.
+                                      Implies --debug.
+
+    --[no-]chain-stack-traces         Chained stack traces to provide greater exception details
+                                      especially for asynchronous code. It may be useful to disable
+                                      to provide improved test performance but at the cost of
+                                      debuggability.
+                                      (defaults to on)
+
+    --no-retry                        Don't re-run tests that have retry set.
+    --test-randomize-ordering-seed    If positive, use this as a seed to randomize the execution
+                                      of test cases (must be a 32bit unsigned integer).
+                                      If "random", pick a random seed to use.
+                                      If 0 or not set, do not randomize test case execution order.
+
+======== Output
+-r, --reporter                        The runner used to print test results.
+
+          [compact]                   A single line, updated continuously.
+          [expanded] (default)        A separate line for each update.
+          [json]                      A machine-readable format (see https://goo.gl/gBsV1a).
+
+    --verbose-trace                   Whether to emit stack traces with core library frames.
+    --js-trace                        Whether to emit raw JavaScript stack traces for browser tests.
+    --[no-]color                      Whether to use terminal colors.
+                                      (auto-detected by default)
+""";
+
 final _browsers = "[vm (default), chrome, phantomjs, firefox" +
     (Platform.isMacOS ? ", safari" : "") +
     (Platform.isWindows ? ", ie" : "") +
     ", node]";
-
-final _usage = """
-Usage: pub run test [files or directories...]
-
--h, --help                        Shows this usage information.
-    --version                     Shows the package's version.
-
-======== Selecting Tests
--n, --name                        A substring of the name of the test to run.
-                                  Regular expression syntax is supported.
-                                  If passed multiple times, tests must match all substrings.
-
--N, --plain-name                  A plain-text substring of the name of the test to run.
-                                  If passed multiple times, tests must match all substrings.
-
--t, --tags                        Run only tests with all of the specified tags.
-                                  Supports boolean selector syntax.
-
--x, --exclude-tags                Don't run tests with any of the specified tags.
-                                  Supports boolean selector syntax.
-
-    --[no-]run-skipped            Run skipped tests instead of skipping them.
-
-======== Running Tests
--p, --platform                    The platform(s) on which to run the tests.
-                                  $_browsers
-
--P, --preset                      The configuration preset(s) to use.
--j, --concurrency=<threads>       The number of concurrent test suites run.
-                                  (defaults to "$_defaultConcurrency")
-
-    --total-shards                The total number of invocations of the test runner being run.
-    --shard-index                 The index of this test runner invocation (of --total-shards).
-    --pub-serve=<port>            The port of a pub serve instance serving "test/".
-    --timeout                     The default test timeout. For example: 15s, 2x, none
-                                  (defaults to "30s")
-
-    --pause-after-load            Pauses for debugging before any tests execute.
-                                  Implies --concurrency=1, --debug, and --timeout=none.
-                                  Currently only supported for browser tests.
-
-    --debug                       Runs the VM and Chrome tests in debug mode.
-    --coverage=<directory>        Gathers coverage and outputs it to the specified directory.
-                                  Implies --debug.
-
-    --[no-]chain-stack-traces     Chained stack traces to provide greater exception details
-                                  especially for asynchronous code. It may be useful to disable
-                                  to provide improved test performance but at the cost of
-                                  debuggability.
-                                  (defaults to on)
-
-    --no-retry                    Don't re-run tests that have retry set.
-
-======== Output
--r, --reporter                    The runner used to print test results.
-
-          [compact]               A single line, updated continuously.
-          [expanded] (default)    A separate line for each update.
-          [json]                  A machine-readable format (see https://goo.gl/gBsV1a).
-
-    --verbose-trace               Whether to emit stack traces with core library frames.
-    --js-trace                    Whether to emit raw JavaScript stack traces for browser tests.
-    --[no-]color                  Whether to use terminal colors.
-                                  (auto-detected by default)
-""";
 
 void main() {
   test("prints help information", () async {

@@ -1,6 +1,8 @@
 ## 0.2.15-dev
 
 * Add a `StringSink` argument to reporters to prepare for reporting to a file.
+* Add --test-randomize-ordering-seed` argument to randomize test
+execution order based on a provided seed
 
 ## 0.2.14
 
