@@ -249,6 +249,7 @@ class Configuration {
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
       Map<PlatformSelector, SuiteConfiguration> onPlatform,
+      int testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout timeout,
@@ -294,6 +295,7 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
+            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
 
             // Test-level configuration
             timeout: timeout,
@@ -539,6 +541,7 @@ class Configuration {
       BooleanSelector excludeTags,
       Map<BooleanSelector, SuiteConfiguration> tags,
       Map<PlatformSelector, SuiteConfiguration> onPlatform,
+      int testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout timeout,
@@ -580,6 +583,7 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
+            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
             timeout: timeout,
             verboseTrace: verboseTrace,
             chainStackTraces: chainStackTraces,

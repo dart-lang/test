@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
@@ -17,6 +18,7 @@ import 'package:test_api/src/backend/message.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
@@ -320,7 +322,13 @@ class Engine {
       }
 
       if (!_closed && setUpAllSucceeded) {
-        for (var entry in group.entries) {
+        // shuffle the group entries
+        var entries = List<GroupEntry>.from(group.entries);
+        if (suiteConfig.testRandomizeOrderingSeed > 0) {
+          entries.shuffle(Random(suiteConfig.testRandomizeOrderingSeed));
+        }
+
+        for (var entry in entries) {
           if (_closed) return;
 
           if (entry is Group) {

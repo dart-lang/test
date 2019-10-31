@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
@@ -105,6 +106,10 @@ final ArgParser _parser = (() {
       help: "Don't re-run tests that have retry set.",
       defaultsTo: false,
       negatable: false);
+  parser.addOption("test-randomize-ordering-seed",
+      help: 'If positive, use this as a seed to randomize the execution\n'
+          'for test cases. If "random", pick a random seed to use.\n'
+          'If 0 or not set, do not randomize test case execution order.');
 
   var reporterDescriptions = <String, String>{};
   for (var reporter in allReporters.keys) {
@@ -204,6 +209,16 @@ class _Parser {
       }
     }
 
+    var testRandomizeOrderingSeed =_parseOption('test-randomize-ordering-seed', (value) {
+      var seed = value == 'random'
+          ? Random().nextInt(4294967295)
+          : int.parse(value).toUnsigned(32);
+      if (seed != null && seed > 0) {
+        print("Shuffling test order with --test-randomize-ordering-seed=$seed");
+      }
+      return seed;
+    });
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -233,7 +248,8 @@ class _Parser {
         paths: _options.rest.isEmpty ? null : _options.rest,
         includeTags: includeTags,
         excludeTags: excludeTags,
-        noRetry: _ifParsed('no-retry'));
+        noRetry: _ifParsed('no-retry'),
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed);
   }
 
   /// Returns the parsed option for [name], or `null` if none was parsed.
