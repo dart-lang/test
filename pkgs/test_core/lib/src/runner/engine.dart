@@ -18,7 +18,6 @@ import 'package:test_api/src/backend/message.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
@@ -323,7 +322,7 @@ class Engine {
 
       if (!_closed && setUpAllSucceeded) {
         // shuffle the group entries
-        var entries = List<GroupEntry>.from(group.entries);
+        var entries = group.entries.toList();
         if (suiteConfig.testRandomizeOrderingSeed > 0) {
           entries.shuffle(Random(suiteConfig.testRandomizeOrderingSeed));
         }
