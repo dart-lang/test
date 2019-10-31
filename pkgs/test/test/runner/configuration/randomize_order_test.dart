@@ -64,7 +64,16 @@ void main() {
     await test.shouldExit(0);
 
     // Shuffle when passed random
-    // TODO(kathrins): How can to mock the behaviour of random?
+    test =
+        await runTest(["test.dart", "--test-randomize-ordering-seed=random"]);
+    expect(
+        test.stdout,
+        emitsInAnyOrder([
+          contains("Shuffling test order with --test-randomize-ordering-seed"),
+          isNot(contains(
+              "Shuffling test order with --test-randomize-ordering-seed=0"))
+        ]));
+    await test.shouldExit(0);
   });
 
   test("shuffles each suite with the same seed", () async {
@@ -142,6 +151,36 @@ void main() {
           "+6: Group 1 test 1.1",
           "+7: Group 1 test 1.3",
           "+8: All tests passed!"
+        ]));
+    await test.shouldExit(0);
+  });
+
+  test("shuffles nested groups", () async {
+    await d.file("test.dart", """
+      import 'package:test/test.dart';
+
+      void main() {
+      group("Group 1", () {
+        test("test 1.1", () {});
+        test("test 1.2", () {});
+        group("Group 2", () {
+          test("test 2.3", () {});
+          test("test 2.4", () {});
+        });
+       });
+      }
+    """).create();
+
+    var test =
+        await runTest(["test.dart", "--test-randomize-ordering-seed=123"]);
+    expect(
+        test.stdout,
+        containsInOrder([
+          "+0: Group 1 test 1.1",
+          "+1: Group 1 Group 2 test 2.4",
+          "+2: Group 1 Group 2 test 2.3",
+          "+3: Group 1 test 1.2",
+          "+4: All tests passed!"
         ]));
     await test.shouldExit(0);
   });

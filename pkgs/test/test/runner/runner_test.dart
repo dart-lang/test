@@ -101,7 +101,8 @@ Usage: pub run test [files or directories...]
 
     --no-retry                        Don't re-run tests that have retry set.
     --test-randomize-ordering-seed    If positive, use this as a seed to randomize the execution
-                                      for test cases. If "random", pick a random seed to use.
+                                      of test cases (must be a 32bit unsigned integer).
+                                      If "random", pick a random seed to use.
                                       If 0 or not set, do not randomize test case execution order.
 
 ======== Output
