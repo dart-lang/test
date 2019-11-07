@@ -1,5 +1,6 @@
 ## 1.9.4
 
+* Extend the timeout for synthetic tests, e.g. `tearDownAll`.
 * Depend on the latest `package:test_core`.
 * Depend on the latest `package:test_api`.
 
