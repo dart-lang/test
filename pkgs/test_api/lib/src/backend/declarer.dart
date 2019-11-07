@@ -58,6 +58,9 @@ class Declarer {
   /// The set-up functions to run once for this group.
   final _setUpAlls = List<Function()>();
 
+  /// The default timeout for synthetic tests.
+  final _timeout = Timeout(Duration(minutes: 12));
+
   /// The trace for the first call to [setUpAll].
   ///
   /// All [setUpAll]s are run in a single logical test, so they can only have
@@ -295,7 +298,8 @@ class Declarer {
   Test get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
-    return LocalTest(_prefix("(setUpAll)"), _metadata, () {
+    return LocalTest(_prefix("(setUpAll)"), _metadata.change(timeout: _timeout),
+        () {
       return runZoned(() => Future.forEach(_setUpAlls, (setUp) => setUp()),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
@@ -309,7 +313,8 @@ class Declarer {
     // dynamically add tear-down code using [addTearDownAll].
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
-    return LocalTest(_prefix("(tearDownAll)"), _metadata, () {
+    return LocalTest(
+        _prefix("(tearDownAll)"), _metadata.change(timeout: _timeout), () {
       return runZoned(() {
         return Invoker.current.unclosable(() async {
           while (_tearDownAlls.isNotEmpty) {
