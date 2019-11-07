@@ -1,3 +1,7 @@
+## 0.2.11
+
+* Extend the timeout for synthetic tests, e.g. `tearDownAll`.
+
 ## 0.2.10
 
 * Update to latest `package:matcher`. Improves output for instances of private

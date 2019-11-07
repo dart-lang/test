@@ -1,3 +1,8 @@
+## 1.9.4
+
+* Depend on the latest `package:test_core`.
+* Depend on the latest `package:test_api`.
+
 ## 1.9.3
 
 * Depend on the latest `package:test_core`.
