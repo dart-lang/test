@@ -1,3 +1,8 @@
+## 0.2.12-dev
+
+* Link to docs on setting timeout when a test times out with the default
+  duration.
+
 ## 0.2.11
 
 * Extend the timeout for synthetic tests, e.g. `tearDownAll`.
