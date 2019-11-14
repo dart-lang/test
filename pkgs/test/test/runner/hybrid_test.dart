@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 
 import 'dart:io';
 import 'dart:isolate';
@@ -18,43 +18,43 @@ void main() {
   String packageRoot;
   setUpAll(() async {
     packageRoot = p.absolute(p.dirname(p
-        .fromUri(await Isolate.resolvePackageUri(Uri.parse("package:test/")))));
+        .fromUri(await Isolate.resolvePackageUri(Uri.parse('package:test/')))));
   });
 
-  group("spawnHybridUri():", () {
-    group("in the VM", () {
+  group('spawnHybridUri():', () {
+    group('in the VM', () {
       _spawnHybridUriTests();
     });
 
-    group("in the browser", () {
-      _spawnHybridUriTests(["-p", "chrome"]);
-    }, tags: "chrome");
+    group('in the browser', () {
+      _spawnHybridUriTests(['-p', 'chrome']);
+    }, tags: 'chrome');
 
-    group("in Node.js", () {
-      _spawnHybridUriTests(["-p", "node"]);
-    }, tags: "node");
+    group('in Node.js', () {
+      _spawnHybridUriTests(['-p', 'node']);
+    }, tags: 'node');
   });
 
-  group("spawnHybridCode()", () {
-    test("loads the code in a separate isolate connected via StreamChannel",
+  group('spawnHybridCode()', () {
+    test('loads the code in a separate isolate connected via StreamChannel',
         () {
-      expect(spawnHybridCode("""
+      expect(spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).stream.toList(), completion(equals([1, 2, 3])));
+      ''').stream.toList(), completion(equals([1, 2, 3])));
     });
 
-    test("can use dart:io even when run from a browser", () async {
-      var path = p.join(d.sandbox, "test.dart");
-      await d.file("test.dart", """
+    test('can use dart:io even when run from a browser', () async {
+      var path = p.join(d.sandbox, 'test.dart');
+      await d.file('test.dart', '''
         import "package:test/test.dart";
 
         void main() {
           test("hybrid loads dart:io", () {
-            expect(spawnHybridCode('''
+            expect(spawnHybridCode("""
               import 'dart:io';
 
               import 'package:stream_channel/stream_channel.dart';
@@ -64,21 +64,21 @@ void main() {
                   ..add(new File("$path").readAsStringSync())
                   ..close();
               }
-            ''').stream.first, completion(contains("hybrid emits numbers")));
+            """).stream.first, completion(contains("hybrid emits numbers")));
           });
         }
-      """).create();
+      ''').create();
 
-      var test = await runTest(["-p", "chrome", "test.dart"]);
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
           test.stdout,
           containsInOrder(
-              ["+0: hybrid loads dart:io", "+1: All tests passed!"]));
+              ['+0: hybrid loads dart:io', '+1: All tests passed!']));
       await test.shouldExit(0);
-    }, tags: ["chrome"]);
+    }, tags: ['chrome']);
 
-    test("forwards data from the test to the hybrid isolate", () async {
-      var channel = spawnHybridCode("""
+    test('forwards data from the test to the hybrid isolate', () async {
+      var channel = spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
@@ -86,60 +86,60 @@ void main() {
             channel.sink.add(num + 1);
           });
         }
-      """);
+      ''');
       channel.sink..add(1)..add(2)..add(3);
       expect(channel.stream.take(3).toList(), completion(equals([2, 3, 4])));
     });
 
-    test("passes an initial message to the hybrid isolate", () {
-      var code = """
+    test('passes an initial message to the hybrid isolate', () {
+      var code = '''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel, Object message) {
           channel.sink..add(message)..close();
         }
-      """;
+      ''';
 
       expect(spawnHybridCode(code, message: [1, 2, 3]).stream.first,
           completion(equals([1, 2, 3])));
-      expect(spawnHybridCode(code, message: {"a": "b"}).stream.first,
-          completion(equals({"a": "b"})));
+      expect(spawnHybridCode(code, message: {'a': 'b'}).stream.first,
+          completion(equals({'a': 'b'})));
     });
 
-    test("allows the hybrid isolate to send errors across the stream channel",
+    test('allows the hybrid isolate to send errors across the stream channel',
         () {
-      var channel = spawnHybridCode("""
+      var channel = spawnHybridCode('''
         import "package:stack_trace/stack_trace.dart";
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink.addError("oh no!", new Trace.current());
         }
-      """);
+      ''');
 
       channel.stream.listen(null, onError: expectAsync2((error, stackTrace) {
-        expect(error.toString(), equals("oh no!"));
-        expect(stackTrace.toString(), contains("hybridMain"));
+        expect(error.toString(), equals('oh no!'));
+        expect(stackTrace.toString(), contains('hybridMain'));
       }));
     });
 
-    test("sends an unhandled synchronous error across the stream channel", () {
-      var channel = spawnHybridCode("""
+    test('sends an unhandled synchronous error across the stream channel', () {
+      var channel = spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           throw "oh no!";
         }
-      """);
+      ''');
 
       channel.stream.listen(null, onError: expectAsync2((error, stackTrace) {
-        expect(error.toString(), equals("oh no!"));
-        expect(stackTrace.toString(), contains("hybridMain"));
+        expect(error.toString(), equals('oh no!'));
+        expect(stackTrace.toString(), contains('hybridMain'));
       }));
     });
 
-    test("sends an unhandled asynchronous error across the stream channel", () {
-      var channel = spawnHybridCode("""
+    test('sends an unhandled asynchronous error across the stream channel', () {
+      var channel = spawnHybridCode('''
         import 'dart:async';
 
         import "package:stream_channel/stream_channel.dart";
@@ -149,16 +149,16 @@ void main() {
             throw "oh no!";
           });
         }
-      """);
+      ''');
 
       channel.stream.listen(null, onError: expectAsync2((error, stackTrace) {
-        expect(error.toString(), equals("oh no!"));
-        expect(stackTrace.toString(), contains("hybridMain"));
+        expect(error.toString(), equals('oh no!'));
+        expect(stackTrace.toString(), contains('hybridMain'));
       }));
     });
 
-    test("deserializes TestFailures as TestFailures", () {
-      var channel = spawnHybridCode("""
+    test('deserializes TestFailures as TestFailures', () {
+      var channel = spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
 
         import "package:test/test.dart";
@@ -166,92 +166,92 @@ void main() {
         void hybridMain(StreamChannel channel) {
           throw new TestFailure("oh no!");
         }
-      """);
+      ''');
 
       expect(channel.stream.first, throwsA(TypeMatcher<TestFailure>()));
     });
 
-    test("gracefully handles an unserializable message in the VM", () {
-      var channel = spawnHybridCode("""
+    test('gracefully handles an unserializable message in the VM', () {
+      var channel = spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {}
-      """);
+      ''');
 
       expect(() => channel.sink.add([].iterator), throwsArgumentError);
     });
 
-    test("gracefully handles an unserializable message in the browser",
+    test('gracefully handles an unserializable message in the browser',
         () async {
-      await d.file("test.dart", """
+      await d.file('test.dart', '''
         import "package:test/test.dart";
 
         void main() {
           test("invalid message to hybrid", () {
-            var channel = spawnHybridCode('''
+            var channel = spawnHybridCode("""
               import "package:stream_channel/stream_channel.dart";
 
               void hybridMain(StreamChannel channel) {}
-            ''');
+            """);
 
             expect(() => channel.sink.add([].iterator), throwsArgumentError);
           });
         }
-      """).create();
+      ''').create();
 
-      var test = await runTest(["-p", "chrome", "test.dart"]);
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
           test.stdout,
           containsInOrder(
-              ["+0: invalid message to hybrid", "+1: All tests passed!"]));
+              ['+0: invalid message to hybrid', '+1: All tests passed!']));
       await test.shouldExit(0);
     }, tags: ['chrome']);
 
-    test("gracefully handles an unserializable message in the hybrid isolate",
+    test('gracefully handles an unserializable message in the hybrid isolate',
         () {
-      var channel = spawnHybridCode("""
+      var channel = spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink.add([].iterator);
         }
-      """);
+      ''');
 
       channel.stream.listen(null, onError: expectAsync1((error) {
         expect(error.toString(), contains("can't be JSON-encoded."));
       }));
     });
 
-    test("forwards prints from the hybrid isolate", () {
+    test('forwards prints from the hybrid isolate', () {
       expect(() async {
-        var channel = spawnHybridCode("""
+        var channel = spawnHybridCode('''
           import "package:stream_channel/stream_channel.dart";
 
           void hybridMain(StreamChannel channel) {
             print("hi!");
             channel.sink.add(null);
           }
-        """);
+        ''');
         await channel.stream.first;
-      }, prints("hi!\n"));
+      }, prints('hi!\n'));
     });
 
     // This takes special handling, since the code is packed into a data: URI
     // that's imported, URIs don't escape $ by default, and $ isn't allowed in
     // imports.
-    test("supports a dollar character in the hybrid code", () {
-      expect(spawnHybridCode(r"""
+    test('supports a dollar character in the hybrid code', () {
+      expect(spawnHybridCode(r'''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           var value = "bar";
           channel.sink.add("foo${value}baz");
         }
-      """).stream.first, completion("foobarbaz"));
+      ''').stream.first, completion('foobarbaz'));
     });
 
-    test("kills the isolate when the test closes the channel", () async {
-      var channel = spawnHybridCode("""
+    test('kills the isolate when the test closes the channel', () async {
+      var channel = spawnHybridCode('''
         import "dart:async";
         import "dart:io";
 
@@ -264,20 +264,20 @@ void main() {
           server.listen(null);
           channel.sink.add(server.port);
         }
-      """);
+      ''');
 
       // Expect that the socket disconnects at some point (presumably when the
       // isolate closes).
       var port = await channel.stream.first as int;
-      var socket = await Socket.connect("localhost", port);
+      var socket = await Socket.connect('localhost', port);
       expect(socket.listen(null).asFuture(), completes);
 
       await channel.sink.close();
-    }, skip: "Enable when sdk#28081 is fixed.");
+    }, skip: 'Enable when sdk#28081 is fixed.');
 
-    test("kills the isolate when the hybrid isolate closes the channel",
+    test('kills the isolate when the hybrid isolate closes the channel',
         () async {
-      var channel = spawnHybridCode("""
+      var channel = spawnHybridCode('''
         import "dart:async";
         import "dart:io";
 
@@ -290,30 +290,30 @@ void main() {
           await channel.stream.first;
           channel.sink.close();
         }
-      """);
+      ''');
 
       // Expect that the socket disconnects at some point (presumably when the
       // isolate closes).
       var port = await channel.stream.first as int;
-      var socket = await Socket.connect("localhost", port);
+      var socket = await Socket.connect('localhost', port);
       expect(socket.listen(null).asFuture(), completes);
       channel.sink.add(null);
-    }, skip: "Enable when sdk#28081 is fixed.");
+    }, skip: 'Enable when sdk#28081 is fixed.');
 
-    test("closes the channel when the hybrid isolate exits", () {
-      var channel = spawnHybridCode("""
+    test('closes the channel when the hybrid isolate exits', () {
+      var channel = spawnHybridCode('''
         import "dart:isolate";
 
         hybridMain(_) {
           Isolate.current.kill();
         }
-      """);
+      ''');
 
       expect(channel.stream.toList(), completion(isEmpty));
     });
 
-    test("closes the channel when the test finishes by default", () async {
-      await d.file("test.dart", """
+    test('closes the channel when the test finishes by default', () async {
+      await d.file('test.dart', '''
         import "package:stream_channel/stream_channel.dart";
         import "package:test/test.dart";
 
@@ -322,11 +322,11 @@ void main() {
         void main() {
           StreamChannel channel;
           test("test 1", () {
-            channel = spawnHybridCode('''
+            channel = spawnHybridCode("""
               import "package:stream_channel/stream_channel.dart";
 
               void hybridMain(StreamChannel channel) {}
-            ''');
+            """);
           });
 
           test("test 2", () async {
@@ -336,18 +336,18 @@ void main() {
             expect(isDone, isTrue);
           });
         }
-      """).create();
+      ''').create();
 
-      var test = await runTest(["test.dart"]);
+      var test = await runTest(['test.dart']);
       expect(
           test.stdout,
           containsInOrder(
-              ["+0: test 1", "+1: test 2", "+2: All tests passed!"]));
+              ['+0: test 1', '+1: test 2', '+2: All tests passed!']));
       await test.shouldExit(0);
     });
 
-    test("persists across multiple tests with stayAlive: true", () async {
-      await d.file("test.dart", """
+    test('persists across multiple tests with stayAlive: true', () async {
+      await d.file('test.dart', '''
         import "dart:async";
 
         import "package:async/async.dart";
@@ -359,7 +359,7 @@ void main() {
           StreamQueue queue;
           StreamSink sink;
           setUpAll(() {
-            var channel = spawnHybridCode('''
+            var channel = spawnHybridCode("""
               import "package:stream_channel/stream_channel.dart";
 
               void hybridMain(StreamChannel channel) {
@@ -367,7 +367,7 @@ void main() {
                   channel.sink.add(message);
                 });
               }
-            ''', stayAlive: true);
+            """, stayAlive: true);
             queue = new StreamQueue(channel.stream);
             sink = channel.sink;
           });
@@ -382,15 +382,15 @@ void main() {
             sink.add("wow");
           });
         }
-      """).create();
+      ''').create();
 
-      var test = await runTest(["test.dart"]);
+      var test = await runTest(['test.dart']);
       expect(
           test.stdout,
           containsInOrder([
-            "+0: echoes a number",
-            "+1: echoes a string",
-            "+2: All tests passed!"
+            '+0: echoes a number',
+            '+1: echoes a string',
+            '+2: All tests passed!'
           ]));
       await test.shouldExit(0);
     });
@@ -404,9 +404,9 @@ void main() {
 void _spawnHybridUriTests([Iterable<String> arguments]) {
   arguments ??= [];
 
-  test("loads a file in a separate isolate connected via StreamChannel",
+  test('loads a file in a separate isolate connected via StreamChannel',
       () async {
-    await d.file("test.dart", """
+    await d.file('test.dart', '''
         import "package:test/test.dart";
 
         void main() {
@@ -415,25 +415,25 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
                 completion(equals([1, 2, 3])));
           });
         }
-      """).create();
+      ''').create();
 
-    await d.file("hybrid.dart", """
+    await d.file('hybrid.dart', '''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).create();
+      ''').create();
 
-    var test = await runTest(["test.dart"]..addAll(arguments));
+    var test = await runTest(['test.dart']..addAll(arguments));
     expect(test.stdout,
-        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
   });
 
-  test("resolves URIs relative to the test file", () async {
-    await d.dir("test/dir/subdir", [
-      d.file("test.dart", """
+  test('resolves URIs relative to the test file', () async {
+    await d.dir('test/dir/subdir', [
+      d.file('test.dart', '''
           import "package:test/test.dart";
 
           void main() {
@@ -442,25 +442,25 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
                   completion(equals([1, 2, 3])));
             });
           }
-        """),
-      d.file("hybrid.dart", """
+        '''),
+      d.file('hybrid.dart', '''
           import "package:stream_channel/stream_channel.dart";
 
           void hybridMain(StreamChannel channel) {
             channel.sink..add(1)..add(2)..add(3)..close();
           }
-        """),
+        '''),
     ]).create();
 
-    var test = await runTest(["test/dir/subdir/test.dart"]..addAll(arguments));
+    var test = await runTest(['test/dir/subdir/test.dart']..addAll(arguments));
     expect(test.stdout,
-        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
   });
 
-  test("resolves root-relative URIs relative to the package root", () async {
-    await d.dir("test/dir/subdir", [
-      d.file("test.dart", """
+  test('resolves root-relative URIs relative to the package root', () async {
+    await d.dir('test/dir/subdir', [
+      d.file('test.dart', '''
           import "package:test/test.dart";
 
           void main() {
@@ -471,25 +471,25 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
                   completion(equals([1, 2, 3])));
             });
           }
-        """),
-      d.file("hybrid.dart", """
+        '''),
+      d.file('hybrid.dart', '''
           import "package:stream_channel/stream_channel.dart";
 
           void hybridMain(StreamChannel channel) {
             channel.sink..add(1)..add(2)..add(3)..close();
           }
-        """),
+        '''),
     ]).create();
 
-    var test = await runTest(["test/dir/subdir/test.dart"]..addAll(arguments));
+    var test = await runTest(['test/dir/subdir/test.dart']..addAll(arguments));
     expect(test.stdout,
-        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
   });
 
-  test("supports absolute file: URIs", () async {
+  test('supports absolute file: URIs', () async {
     var url = p.toUri(p.absolute(p.join(d.sandbox, 'hybrid.dart')));
-    await d.file("test.dart", """
+    await d.file('test.dart', '''
         import "package:test/test.dart";
 
         void main() {
@@ -498,24 +498,24 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
                 completion(equals([1, 2, 3])));
           });
         }
-      """).create();
+      ''').create();
 
-    await d.file("hybrid.dart", """
+    await d.file('hybrid.dart', '''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).create();
+      ''').create();
 
-    var test = await runTest(["test.dart"]..addAll(arguments));
+    var test = await runTest(['test.dart']..addAll(arguments));
     expect(test.stdout,
-        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
   });
 
-  test("supports Uri objects", () async {
-    await d.file("test.dart", """
+  test('supports Uri objects', () async {
+    await d.file('test.dart', '''
         import "package:test/test.dart";
 
         void main() {
@@ -524,28 +524,28 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
                 completion(equals([1, 2, 3])));
           });
         }
-      """).create();
+      ''').create();
 
-    await d.file("hybrid.dart", """
+    await d.file('hybrid.dart', '''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
-      """).create();
+      ''').create();
 
-    var test = await runTest(["test.dart"]..addAll(arguments));
+    var test = await runTest(['test.dart']..addAll(arguments));
     expect(test.stdout,
-        containsInOrder(["+0: hybrid emits numbers", "+1: All tests passed!"]));
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
   });
 
-  test("rejects non-String, non-Uri objects", () {
+  test('rejects non-String, non-Uri objects', () {
     expect(() => spawnHybridUri(123), throwsArgumentError);
   });
 
-  test("passes a message to the hybrid isolate", () async {
-    await d.file("test.dart", """
+  test('passes a message to the hybrid isolate', () async {
+    await d.file('test.dart', '''
         import "package:test/test.dart";
 
         void main() {
@@ -561,27 +561,27 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
                 completion(equals("wow")));
           });
         }
-      """).create();
+      ''').create();
 
-    await d.file("hybrid.dart", """
+    await d.file('hybrid.dart', '''
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel, Object message) {
           channel.sink..add(message)..close();
         }
-      """).create();
+      ''').create();
 
-    var test = await runTest(["test.dart"]..addAll(arguments));
+    var test = await runTest(['test.dart']..addAll(arguments));
     expect(
         test.stdout,
         containsInOrder(
-            ["+0: hybrid echoes message", "+1: All tests passed!"]));
+            ['+0: hybrid echoes message', '+1: All tests passed!']));
     await test.shouldExit(0);
   });
 
-  test("emits an error from the stream channel if the isolate fails to load",
+  test('emits an error from the stream channel if the isolate fails to load',
       () {
-    expect(spawnHybridUri("non existent file").stream.first,
+    expect(spawnHybridUri('non existent file').stream.first,
         throwsA(TypeMatcher<Exception>()));
   });
 }

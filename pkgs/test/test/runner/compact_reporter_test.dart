@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 
 import 'dart:async';
 
@@ -13,19 +13,19 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
-  test("reports when no tests are run", () async {
-    await d.file("test.dart", "void main() {}").create();
+  test('reports when no tests are run', () async {
+    await d.file('test.dart', 'void main() {}').create();
 
-    var test = await runTest(["test.dart"], reporter: "compact");
-    expect(test.stdout, emitsThrough(contains("No tests ran.")));
+    var test = await runTest(['test.dart'], reporter: 'compact');
+    expect(test.stdout, emitsThrough(contains('No tests ran.')));
     await test.shouldExit(0);
   });
 
-  test("runs several successful tests and reports when each completes", () {
-    return _expectReport("""
+  test('runs several successful tests and reports when each completes', () {
+    return _expectReport('''
         test('success 1', () {});
         test('success 2', () {});
-        test('success 3', () {});""", """
+        test('success 3', () {});''', '''
         +0: loading test.dart
         +0: success 1
         +1: success 1
@@ -33,14 +33,14 @@ void main() {
         +2: success 2
         +2: success 3
         +3: success 3
-        +3: All tests passed!""");
+        +3: All tests passed!''');
   });
 
-  test("runs several failing tests and reports when each fails", () {
-    return _expectReport("""
+  test('runs several failing tests and reports when each fails', () {
+    return _expectReport('''
         test('failure 1', () => throw new TestFailure('oh no'));
         test('failure 2', () => throw new TestFailure('oh no'));
-        test('failure 3', () => throw new TestFailure('oh no'));""", """
+        test('failure 3', () => throw new TestFailure('oh no'));''', '''
         +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
@@ -60,11 +60,11 @@ void main() {
           test.dart 8:33  main.<fn>
 
 
-        +0 -3: Some tests failed.""");
+        +0 -3: Some tests failed.''');
   });
 
-  test("includes the full stack trace with --verbose-trace", () async {
-    await d.file("test.dart", """
+  test('includes the full stack trace with --verbose-trace', () async {
+    await d.file('test.dart', '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -72,20 +72,20 @@ import 'package:test/test.dart';
 void main() {
   test("failure", () => throw "oh no");
 }
-""").create();
+''').create();
 
     var test =
-        await runTest(["--verbose-trace", "test.dart"], reporter: "compact");
-    expect(test.stdout, emitsThrough(contains("dart:async")));
+        await runTest(['--verbose-trace', 'test.dart'], reporter: 'compact');
+    expect(test.stdout, emitsThrough(contains('dart:async')));
     await test.shouldExit(1);
   });
 
-  test("runs failing tests along with successful tests", () {
-    return _expectReport("""
+  test('runs failing tests along with successful tests', () {
+    return _expectReport('''
         test('failure 1', () => throw new TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw new TestFailure('oh no'));
-        test('success 2', () {});""", """
+        test('success 2', () {});''', '''
         +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
@@ -103,11 +103,11 @@ void main() {
 
         +1 -2: success 2
         +2 -2: success 2
-        +2 -2: Some tests failed.""");
+        +2 -2: Some tests failed.''');
   });
 
-  test("gracefully handles multiple test failures in a row", () {
-    return _expectReport("""
+  test('gracefully handles multiple test failures in a row', () {
+    return _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = new Completer();
@@ -117,7 +117,7 @@ void main() {
           new Future.microtask(() => throw 'third error');
           new Future.microtask(completer.complete);
         });
-        test('wait', () => completer.future);""", """
+        test('wait', () => completer.future);''', '''
         +0: loading test.dart
         +0: failures
         +0 -1: failures [E]
@@ -142,17 +142,17 @@ void main() {
 
         +0 -1: wait
         +1 -1: wait
-        +1 -1: Some tests failed.""");
+        +1 -1: Some tests failed.''');
   });
 
-  test("prints the full test name before an error", () {
-    return _expectReport("""
+  test('prints the full test name before an error', () {
+    return _expectReport('''
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. Even more. We have to get to at least 200 characters. '
                'I know that seems like a lot, but I believe in you. A little '
                'more... okay, that should do it.',
-           () => throw new TestFailure('oh no'));""", """
+           () => throw new TestFailure('oh no'));''', '''
         +0: loading test.dart
         +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
         +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it. [E]
@@ -160,18 +160,18 @@ void main() {
           test.dart 11:18  main.<fn>
 
 
-        +0 -1: Some tests failed.""");
+        +0 -1: Some tests failed.''');
   });
 
-  group("print:", () {
-    test("handles multiple prints", () {
-      return _expectReport("""
+  group('print:', () {
+    test('handles multiple prints', () {
+      return _expectReport('''
         test('test', () {
           print("one");
           print("two");
           print("three");
           print("four");
-        });""", """
+        });''', '''
         +0: loading test.dart
         +0: test
         one
@@ -180,11 +180,11 @@ void main() {
         four
 
         +1: test
-        +1: All tests passed!""");
+        +1: All tests passed!''');
     });
 
-    test("handles a print after the test completes", () {
-      return _expectReport("""
+    test('handles a print after the test completes', () {
+      return _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = new Completer();
@@ -202,7 +202,7 @@ void main() {
         test('wait', () {
           waitStarted.complete();
           return testDone.future;
-        });""", """
+        });''', '''
         +0: loading test.dart
         +0: test
         +1: test
@@ -214,11 +214,11 @@ void main() {
         four
 
         +2: wait
-        +2: All tests passed!""");
+        +2: All tests passed!''');
     });
 
-    test("interleaves prints and errors", () {
-      return _expectReport("""
+    test('interleaves prints and errors', () {
+      return _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var completer = new Completer();
@@ -240,7 +240,7 @@ void main() {
           throw "first error";
         });
 
-        test('wait', () => completer.future);""", """
+        test('wait', () => completer.future);''', '''
         +0: loading test.dart
         +0: test
         one
@@ -263,49 +263,49 @@ void main() {
 
         +0 -1: wait
         +1 -1: wait
-        +1 -1: Some tests failed.""");
+        +1 -1: Some tests failed.''');
     });
 
-    test("prints the full test name before a print", () {
-      return _expectReport("""
+    test('prints the full test name before a print', () {
+      return _expectReport('''
           test(
              'really gosh dang long test name. Even longer than that. No, yet '
                  'longer. Even more. We have to get to at least 200 '
                  'characters. I know that seems like a lot, but I believe in '
                  'you. A little more... okay, that should do it.',
-             () => print('hello'));""", """
+             () => print('hello'));''', '''
           +0: loading test.dart
           +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
           +0: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
           hello
 
           +1: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
-          +1: All tests passed!""");
+          +1: All tests passed!''');
     });
 
     test("doesn't print a clock update between two prints", () {
-      return _expectReport("""
+      return _expectReport('''
           test('slow', () async {
             print('hello');
             await new Future.delayed(new Duration(seconds: 3));
             print('goodbye');
-          });""", """
+          });''', '''
           +0: loading test.dart
           +0: slow
           hello
           goodbye
 
           +1: slow
-          +1: All tests passed!""");
+          +1: All tests passed!''');
     });
   });
 
-  group("skip:", () {
-    test("displays skipped tests separately", () {
-      return _expectReport("""
+  group('skip:', () {
+    test('displays skipped tests separately', () {
+      return _expectReport('''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
-          test('skip 3', () {}, skip: true);""", """
+          test('skip 3', () {}, skip: true);''', '''
           +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 1
@@ -313,16 +313,16 @@ void main() {
           +0 ~2: skip 2
           +0 ~2: skip 3
           +0 ~3: skip 3
-          +0 ~3: All tests skipped.""");
+          +0 ~3: All tests skipped.''');
     });
 
-    test("displays a skipped group", () {
-      return _expectReport("""
+    test('displays a skipped group', () {
+      return _expectReport('''
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
             test('test 3', () {});
-          }, skip: true);""", """
+          }, skip: true);''', '''
           +0: loading test.dart
           +0: skip test 1
           +0 ~1: skip test 1
@@ -330,15 +330,15 @@ void main() {
           +0 ~2: skip test 2
           +0 ~2: skip test 3
           +0 ~3: skip test 3
-          +0 ~3: All tests skipped.""");
+          +0 ~3: All tests skipped.''');
     });
 
-    test("runs skipped tests along with successful tests", () {
-      return _expectReport("""
+    test('runs skipped tests along with successful tests', () {
+      return _expectReport('''
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});""", """
+          test('success 2', () {});''', '''
           +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 1
@@ -348,17 +348,17 @@ void main() {
           +1 ~2: skip 2
           +1 ~2: success 2
           +2 ~2: success 2
-          +2 ~2: All tests passed!""");
+          +2 ~2: All tests passed!''');
     });
 
-    test("runs skipped tests along with successful and failing tests", () {
-      return _expectReport("""
+    test('runs skipped tests along with successful and failing tests', () {
+      return _expectReport('''
           test('failure 1', () => throw new TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('failure 2', () => throw new TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});""", """
+          test('success 2', () {});''', '''
           +0: loading test.dart
           +0: failure 1
           +0 -1: failure 1 [E]
@@ -380,13 +380,13 @@ void main() {
           +1 ~2 -2: skip 2
           +1 ~2 -2: success 2
           +2 ~2 -2: success 2
-          +2 ~2 -2: Some tests failed.""");
+          +2 ~2 -2: Some tests failed.''');
     });
 
-    test("displays the skip reason if available", () {
-      return _expectReport("""
+    test('displays the skip reason if available', () {
+      return _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
-          test('skip 2', () {}, skip: 'or another');""", """
+          test('skip 2', () {}, skip: 'or another');''', '''
           +0: loading test.dart
           +0: skip 1
             Skip: some reason
@@ -396,25 +396,25 @@ void main() {
             Skip: or another
 
           +0 ~2: skip 2
-          +0 ~2: All tests skipped.""");
+          +0 ~2: All tests skipped.''');
     });
 
-    test("runs skipped tests with --run-skipped", () {
-      return _expectReport("""
+    test('runs skipped tests with --run-skipped', () {
+      return _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
-          test('skip 2', () {}, skip: 'or another');""", """
+          test('skip 2', () {}, skip: 'or another');''', '''
           +0: loading test.dart
           +0: skip 1
           +1: skip 1
           +1: skip 2
           +2: skip 2
-          +2: All tests passed!""", args: ["--run-skipped"]);
+          +2: All tests passed!''', args: ['--run-skipped']);
     });
   });
 }
 
 Future _expectReport(String tests, String expected, {List<String> args}) async {
-  await d.file("test.dart", """
+  await d.file('test.dart', '''
     import 'dart:async';
 
     import 'package:test/test.dart';
@@ -422,10 +422,10 @@ Future _expectReport(String tests, String expected, {List<String> args}) async {
     void main() {
 $tests
     }
-  """).create();
+  ''').create();
 
   var test =
-      await runTest(["test.dart"]..addAll(args ?? []), reporter: "compact");
+      await runTest(['test.dart']..addAll(args ?? []), reporter: 'compact');
   await test.shouldExit();
 
   var stdoutLines = await test.stdout.rest.toList();
@@ -434,9 +434,9 @@ $tests
   // timestamps.
   String lastLine;
   var actual = stdoutLines.skip(1).map((line) {
-    if (line.startsWith("  ") || line.isEmpty) return line.trimRight();
+    if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
 
-    var trimmed = line.trim().replaceFirst(RegExp("^[0-9]{2}:[0-9]{2} "), "");
+    var trimmed = line.trim().replaceFirst(RegExp('^[0-9]{2}:[0-9]{2} '), '');
 
     // Trim identical lines so the test isn't dependent on how fast each test
     // runs.
@@ -446,8 +446,8 @@ $tests
   }).where((line) => line != null);
 
   // Un-indent the expected string.
-  var indentation = expected.indexOf(RegExp("[^ ]"));
-  var expectedLines = expected.split("\n").map((line) {
+  var indentation = expected.indexOf(RegExp('[^ ]'));
+  var expectedLines = expected.split('\n').map((line) {
     if (line.isEmpty) return line;
     return line.substring(indentation);
   });

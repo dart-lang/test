@@ -207,14 +207,14 @@ class Loader {
         yield LoadSuite.forSuite(RunnerSuite(
             const PluginEnvironment(),
             platformConfig,
-            Group.root([LocalTest("(suite)", platformConfig.metadata, () {})],
+            Group.root([LocalTest('(suite)', platformConfig.metadata, () {})],
                 metadata: platformConfig.metadata),
             platform,
             path: path));
         continue;
       }
 
-      var name = (platform.runtime.isJS ? "compiling " : "loading ") + path;
+      var name = (platform.runtime.isJS ? 'compiling ' : 'loading ') + path;
       yield LoadSuite(name, platformConfig, platform, () async {
         var memo = _platformPlugins[platform.runtime];
 
@@ -222,7 +222,7 @@ class Loader {
           var plugin = await memo.runOnce(_platformCallbacks[platform.runtime]);
           _customizePlatform(plugin, platform.runtime);
           var suite = await plugin.load(path, platform, platformConfig,
-              {"platformVariables": _runtimeVariables.toList()});
+              {'platformVariables': _runtimeVariables.toList()});
           if (suite != null) _suites.add(suite);
           return suite;
         } catch (error, stackTrace) {

@@ -138,7 +138,7 @@ class Declarer {
       tags,
       int retry,
       bool solo = false}) {
-    _checkNotBuilt("test");
+    _checkNotBuilt('test');
 
     var newMetadata = Metadata.parse(
         testOn: testOn,
@@ -189,7 +189,7 @@ class Declarer {
       tags,
       int retry,
       bool solo = false}) {
-    _checkNotBuilt("group");
+    _checkNotBuilt('group');
 
     var newMetadata = Metadata.parse(
         testOn: testOn,
@@ -209,7 +209,7 @@ class Declarer {
       // result of a void method.
       var result = (body as dynamic)();
       if (result is! Future) return;
-      throw ArgumentError("Groups may not be async.");
+      throw ArgumentError('Groups may not be async.');
     });
     _entries.add(declarer.build());
 
@@ -219,30 +219,30 @@ class Declarer {
   }
 
   /// Returns [name] prefixed with this declarer's group name.
-  String _prefix(String name) => _name == null ? name : "$_name $name";
+  String _prefix(String name) => _name == null ? name : '$_name $name';
 
   /// Registers a function to be run before each test in this group.
   void setUp(callback()) {
-    _checkNotBuilt("setUp");
+    _checkNotBuilt('setUp');
     _setUps.add(callback);
   }
 
   /// Registers a function to be run after each test in this group.
   void tearDown(callback()) {
-    _checkNotBuilt("tearDown");
+    _checkNotBuilt('tearDown');
     _tearDowns.add(callback);
   }
 
   /// Registers a function to be run once before all tests.
   void setUpAll(callback()) {
-    _checkNotBuilt("setUpAll");
+    _checkNotBuilt('setUpAll');
     if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
     _setUpAlls.add(callback);
   }
 
   /// Registers a function to be run once after all tests.
   void tearDownAll(callback()) {
-    _checkNotBuilt("tearDownAll");
+    _checkNotBuilt('tearDownAll');
     if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
     _tearDownAlls.add(callback);
   }
@@ -256,7 +256,7 @@ class Declarer {
   /// **Note**: The tests in this group must be run in a [Invoker.guard]
   /// context; otherwise, test errors won't be captured.
   Group build() {
-    _checkNotBuilt("build");
+    _checkNotBuilt('build');
 
     _built = true;
     var entries = _entries.map((entry) {
@@ -298,7 +298,7 @@ class Declarer {
   Test get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
-    return LocalTest(_prefix("(setUpAll)"), _metadata.change(timeout: _timeout),
+    return LocalTest(_prefix('(setUpAll)'), _metadata.change(timeout: _timeout),
         () {
       return runZoned(() => Future.forEach(_setUpAlls, (setUp) => setUp()),
           // Make the declarer visible to running scaffolds so they can add to
@@ -314,7 +314,7 @@ class Declarer {
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
     return LocalTest(
-        _prefix("(tearDownAll)"), _metadata.change(timeout: _timeout), () {
+        _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
       return runZoned(() {
         return Invoker.current.unclosable(() async {
           while (_tearDownAlls.isNotEmpty) {

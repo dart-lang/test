@@ -41,7 +41,7 @@ class Console {
       : _red = color ? '\u001b[31m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
-    registerCommand("help", "Displays this help information.", _displayHelp);
+    registerCommand('help', 'Displays this help information.', _displayHelp);
   }
 
   /// Registers a command to be run whenever the user types [name].
@@ -64,7 +64,7 @@ class Console {
     _running = true;
     invoke(() async {
       while (_running) {
-        stdout.write("> ");
+        stdout.write('> ');
         _nextLine = stdinLines.cancelable((queue) => queue.next);
         var commandName = await _nextLine.value;
         _nextLine = null;
@@ -72,8 +72,8 @@ class Console {
         var command = _commands[commandName];
         if (command == null) {
           stderr.writeln(
-              "${_red}Unknown command $_bold$commandName$_noColor$_red."
-              "$_noColor");
+              '${_red}Unknown command $_bold$commandName$_noColor$_red.'
+              '$_noColor');
         } else {
           await command.body();
         }
@@ -97,7 +97,7 @@ class Console {
 
     for (var command in _commands.values) {
       var name = command.name.padRight(maxCommandLength + 4);
-      print("$_bold$name$_noColor${command.description}");
+      print('$_bold$name$_noColor${command.description}');
     }
   }
 }

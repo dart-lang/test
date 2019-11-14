@@ -9,13 +9,13 @@ import 'package:string_scanner/string_scanner.dart';
 /// This is intended to scan through a number without actually encoding the full
 /// Dart number grammar. It doesn't stop on "e" because that can be a component
 /// of numbers.
-final _untilUnit = RegExp(r"[^a-df-z\s]+", caseSensitive: false);
+final _untilUnit = RegExp(r'[^a-df-z\s]+', caseSensitive: false);
 
 /// A regular expression that matches a time unit.
-final _unit = RegExp(r"([um]s|[dhms])", caseSensitive: false);
+final _unit = RegExp(r'([um]s|[dhms])', caseSensitive: false);
 
 /// A regular expression that matches a section of whitespace.
-final _whitespace = RegExp(r"\s+");
+final _whitespace = RegExp(r'\s+');
 
 /// A class representing a modification to the default timeout for a test.
 ///
@@ -70,17 +70,17 @@ class Timeout {
     var scanner = StringScanner(timeout);
 
     // First check for the string "none".
-    if (scanner.scan("none")) {
+    if (scanner.scan('none')) {
       scanner.expectDone();
       return Timeout.none;
     }
 
     // Scan a number. This will be either a time unit or a scale factor.
-    scanner.expect(_untilUnit, name: "number");
+    scanner.expect(_untilUnit, name: 'number');
     var number = double.parse(scanner.lastMatch[0]);
 
     // A number followed by "x" is a scale factor.
-    if (scanner.scan("x") || scanner.scan("X")) {
+    if (scanner.scan('x') || scanner.scan('X')) {
       scanner.expectDone();
       return Timeout.factor(number);
     }
@@ -89,7 +89,7 @@ class Timeout {
     // the loop because we've already parsed the first number.
     var microseconds = 0.0;
     while (true) {
-      scanner.expect(_unit, name: "unit");
+      scanner.expect(_unit, name: 'unit');
       microseconds += _microsecondsFor(number, scanner.lastMatch[0]);
 
       scanner.scan(_whitespace);
@@ -106,20 +106,20 @@ class Timeout {
   /// Returns the number of microseconds in [number] [unit]s.
   static double _microsecondsFor(double number, String unit) {
     switch (unit) {
-      case "d":
+      case 'd':
         return number * 24 * 60 * 60 * 1000000;
-      case "h":
+      case 'h':
         return number * 60 * 60 * 1000000;
-      case "m":
+      case 'm':
         return number * 60 * 1000000;
-      case "s":
+      case 's':
         return number * 1000000;
-      case "ms":
+      case 'ms':
         return number * 1000;
-      case "us":
+      case 'us':
         return number;
       default:
-        throw ArgumentError("Unknown unit $unit.");
+        throw ArgumentError('Unknown unit $unit.');
     }
   }
 
@@ -153,7 +153,7 @@ class Timeout {
 
   String toString() {
     if (duration != null) return duration.toString();
-    if (scaleFactor != null) return "${scaleFactor}x";
-    return "none";
+    if (scaleFactor != null) return '${scaleFactor}x';
+    return 'none';
   }
 }

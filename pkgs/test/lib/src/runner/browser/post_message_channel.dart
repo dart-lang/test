@@ -12,7 +12,7 @@ import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 // Avoid using this from dart:html to work around dart-lang/sdk#32113.
-@JS("window.parent.postMessage")
+@JS('window.parent.postMessage')
 external void _postParentMessage(Object message, String targetOrigin);
 
 /// Constructs a [StreamChannel] wrapping [MessageChannel] communication with
@@ -29,7 +29,7 @@ StreamChannel postMessageChannel() {
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
     // running, but it's good practice to check the origin anyway.
-    return message.origin == window.location.origin && message.data == "port";
+    return message.origin == window.location.origin && message.data == 'port';
   }).then((message) {
     var port = message.ports.first;
     var portSubscription = port.onMessage.listen((message) {
@@ -37,9 +37,9 @@ StreamChannel postMessageChannel() {
     });
 
     controller.local.stream.listen((data) {
-      port.postMessage({"data": data});
+      port.postMessage({'data': data});
     }, onDone: () {
-      port.postMessage({"event": "done"});
+      port.postMessage({'event': 'done'});
       portSubscription.cancel();
     });
   });
@@ -47,7 +47,7 @@ StreamChannel postMessageChannel() {
   // Send a ready message once we're listening so the host knows it's safe to
   // start sending events.
   // TODO(nweiz): Stop manually adding href here once issue 22554 is fixed.
-  _postParentMessage(jsify({"href": window.location.href, "ready": true}),
+  _postParentMessage(jsify({'href': window.location.href, 'ready': true}),
       window.location.origin);
 
   return controller.foreign;

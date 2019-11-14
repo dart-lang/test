@@ -17,7 +17,7 @@ import 'configuration.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
 final _dart2jsStatus =
-    RegExp(r"^Dart file \(.*\) compiled to JavaScript: .*\n?");
+    RegExp(r'^Dart file \(.*\) compiled to JavaScript: .*\n?');
 
 /// A pool of `dart2js` instances.
 ///
@@ -57,22 +57,22 @@ class CompilerPool {
       if (_closed) return null;
 
       return withTempDir((dir) async {
-        var wrapperPath = p.join(dir, "runInBrowser.dart");
+        var wrapperPath = p.join(dir, 'runInBrowser.dart');
         File(wrapperPath).writeAsStringSync(code);
 
         var dart2jsPath = _config.dart2jsPath;
         if (Platform.isWindows) dart2jsPath += '.bat';
 
         var args = [
-          "--enable-asserts",
+          '--enable-asserts',
           wrapperPath,
-          "--out=$jsPath",
+          '--out=$jsPath',
           await PackageResolver.current.processArgument
         ]
           ..addAll(_extraArgs)
           ..addAll(suiteConfig.dart2jsArgs);
 
-        if (_config.color) args.add("--enable-diagnostic-colors");
+        if (_config.color) args.add('--enable-diagnostic-colors');
 
         var process = await Process.start(dart2jsPath, args);
         if (_closed) {
@@ -101,7 +101,7 @@ class CompilerPool {
         var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
         if (output.isNotEmpty) print(output);
 
-        if (exitCode != 0) throw "dart2js failed.";
+        if (exitCode != 0) throw 'dart2js failed.';
 
         _fixSourceMap(jsPath + '.map');
       });
@@ -118,7 +118,7 @@ class CompilerPool {
     map['sources'] = map['sources'].map((source) {
       var url = Uri.parse(root + '$source');
       if (url.scheme != '' && url.scheme != 'file') return source;
-      if (url.path.endsWith("/runInBrowser.dart")) return "";
+      if (url.path.endsWith('/runInBrowser.dart')) return '';
       return p.toUri(mapPath).resolveUri(url).toString();
     }).toList();
 

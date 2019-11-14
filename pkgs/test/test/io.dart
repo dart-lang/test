@@ -21,15 +21,15 @@ final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
 final String noSuchFileMessage = Platform.isWindows
-    ? "The system cannot find the file specified."
-    : "No such file or directory";
+    ? 'The system cannot find the file specified.'
+    : 'No such file or directory';
 
 /// A regular expression that matches the output of "pub serve".
 final _servingRegExp =
     RegExp(r'^Serving myapp [a-z]+ on http://localhost:(\d+)$');
 
 /// An operating system name that's different than the current operating system.
-final otherOS = Platform.isWindows ? "mac-os" : "windows";
+final otherOS = Platform.isWindows ? 'mac-os' : 'windows';
 
 /// The port of a pub serve instance run via [runPubServe].
 ///
@@ -49,7 +49,7 @@ void expectStderrEquals(TestProcess test, String expected) =>
 void _expectStreamEquals(Stream<String> stream, String expected) {
   expect((() async {
     var lines = await stream.toList();
-    expect(lines.join("\n").trim(), equals(expected.trim()));
+    expect(lines.join('\n').trim(), equals(expected.trim()));
   })(), completes);
 }
 
@@ -71,17 +71,17 @@ Future<TestProcess> runTest(Iterable<String> args,
 
   var allArgs = [
     p.absolute(p.join(await packageDir, 'bin/test.dart')),
-    "--concurrency=$concurrency"
+    '--concurrency=$concurrency'
   ];
-  if (reporter != null) allArgs.add("--reporter=$reporter");
+  if (reporter != null) allArgs.add('--reporter=$reporter');
   allArgs.addAll(args);
 
   if (environment == null) environment = {};
-  environment.putIfAbsent("_DART_TEST_TESTING", () => "true");
+  environment.putIfAbsent('_DART_TEST_TESTING', () => 'true');
 
   return await runDart(allArgs,
       environment: environment,
-      description: "dart bin/test.dart",
+      description: 'dart bin/test.dart',
       forwardStdio: forwardStdio);
 }
 
@@ -92,7 +92,7 @@ Future<TestProcess> runDart(Iterable<String> args,
     bool forwardStdio = false}) async {
   var allArgs = <String>[]
     ..addAll(Platform.executableArguments.where((arg) =>
-        !arg.startsWith("--package-root=") && !arg.startsWith("--packages=")))
+        !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')))
     ..add(await PackageResolver.current.processArgument)
     ..addAll(args);
 
@@ -110,7 +110,7 @@ Future<TestProcess> runPub(Iterable<String> args,
   return TestProcess.start(_pubPath, args,
       workingDirectory: d.sandbox,
       environment: environment,
-      description: "pub ${args.first}");
+      description: 'pub ${args.first}');
 }
 
 /// Runs "pub serve".

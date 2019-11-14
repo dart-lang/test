@@ -22,7 +22,7 @@ import 'default_settings.dart';
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class Chrome extends Browser {
-  final name = "Chrome";
+  final name = 'Chrome';
 
   final Future<Uri> remoteDebuggerUrl;
 
@@ -35,25 +35,25 @@ class Chrome extends Browser {
       var tryPort = ([int port]) async {
         var dir = createTempDir();
         var args = [
-          "--user-data-dir=$dir",
+          '--user-data-dir=$dir',
           url.toString(),
-          "--disable-extensions",
-          "--disable-popup-blocking",
-          "--bwsi",
-          "--no-first-run",
-          "--no-default-browser-check",
-          "--disable-default-apps",
-          "--disable-translate",
-          "--disable-dev-shm-usage",
+          '--disable-extensions',
+          '--disable-popup-blocking',
+          '--bwsi',
+          '--no-first-run',
+          '--no-default-browser-check',
+          '--disable-default-apps',
+          '--disable-translate',
+          '--disable-dev-shm-usage',
         ];
 
         if (!debug && settings.headless) {
           args.addAll([
-            "--headless",
-            "--disable-gpu",
+            '--headless',
+            '--disable-gpu',
             // We don't actually connect to the remote debugger, but Chrome will
             // close as soon as the page is loaded if we don't turn it on.
-            "--remote-debugging-port=0"
+            '--remote-debugging-port=0'
           ]);
         }
 
@@ -64,13 +64,13 @@ class Chrome extends Browser {
         // but without a reliable and fast way to tell if it succeeded that
         // doesn't provide us much. It's very unlikely that this port will fail,
         // though.
-        if (port != null) args.add("--remote-debugging-port=$port");
+        if (port != null) args.add('--remote-debugging-port=$port');
 
         var process = await Process.start(settings.executable, args);
 
         if (port != null) {
           remoteDebuggerCompleter.complete(
-              getRemoteDebuggerUrl(Uri.parse("http://localhost:$port")));
+              getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')));
         } else {
           remoteDebuggerCompleter.complete(null);
         }

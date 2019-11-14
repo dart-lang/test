@@ -13,12 +13,12 @@ import 'package:test_core/src/runner/engine.dart';
 import '../utils.dart';
 
 void main() {
-  test("runs each test in each suite in order", () async {
+  test('runs each test in each suite in order', () async {
     var testsRun = 0;
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
         test(
-            "test ${i + 1}",
+            'test ${i + 1}',
             expectAsync0(() {
               expect(testsRun, equals(i));
               testsRun++;
@@ -35,12 +35,12 @@ void main() {
     expect(testsRun, equals(4));
   });
 
-  test("runs tests in a suite added after run() was called", () {
+  test('runs tests in a suite added after run() was called', () {
     var testsRun = 0;
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
         test(
-            "test ${i + 1}",
+            'test ${i + 1}',
             expectAsync0(() {
               expect(testsRun, equals(i));
               testsRun++;
@@ -59,11 +59,11 @@ void main() {
     engine.suiteSink.close();
   });
 
-  test("returns fail if any test does not complete", () async {
+  test('returns fail if any test does not complete', () async {
     var completer = Completer();
     var engine = declareEngine(() {
-      test("completes", () {});
-      test("does not complete", () async {
+      test('completes', () {});
+      test('does not complete', () async {
         await completer.future;
       });
     });
@@ -75,18 +75,18 @@ void main() {
   });
 
   test(
-      "emits each test before it starts running and after the previous test "
-      "finished", () {
+      'emits each test before it starts running and after the previous test '
+      'finished', () {
     var testsRun = 0;
     var engine = declareEngine(() {
       for (var i = 0; i < 3; i++) {
-        test("test ${i + 1}", expectAsync0(() => testsRun++, max: 1));
+        test('test ${i + 1}', expectAsync0(() => testsRun++, max: 1));
       }
     });
 
     engine.onTestStarted.listen(expectAsync1((liveTest) {
       // [testsRun] should be one less than the test currently running.
-      expect(liveTest.test.name, equals("test ${testsRun + 1}"));
+      expect(liveTest.test.name, equals('test ${testsRun + 1}'));
 
       // [Engine.onTestStarted] is guaranteed to fire before the first
       // [LiveTest.onStateChange].
@@ -97,45 +97,45 @@ void main() {
     return engine.run();
   });
 
-  test(".run() returns true if every test passes", () {
+  test('.run() returns true if every test passes', () {
     var engine = declareEngine(() {
       for (var i = 0; i < 2; i++) {
-        test("test ${i + 1}", () {});
+        test('test ${i + 1}', () {});
       }
     });
 
     expect(engine.run(), completion(isTrue));
   });
 
-  test(".run() returns false if any test fails", () {
+  test('.run() returns false if any test fails', () {
     var engine = declareEngine(() {
       for (var i = 0; i < 2; i++) {
-        test("test ${i + 1}", () {});
+        test('test ${i + 1}', () {});
       }
-      test("failure", () => throw TestFailure("oh no"));
+      test('failure', () => throw TestFailure('oh no'));
     });
 
     expect(engine.run(), completion(isFalse));
   });
 
-  test(".run() returns false if any test errors", () {
+  test('.run() returns false if any test errors', () {
     var engine = declareEngine(() {
       for (var i = 0; i < 2; i++) {
-        test("test ${i + 1}", () {});
+        test('test ${i + 1}', () {});
       }
-      test("failure", () => throw "oh no");
+      test('failure', () => throw 'oh no');
     });
 
     expect(engine.run(), completion(isFalse));
   });
 
-  test(".run() may not be called more than once", () {
+  test('.run() may not be called more than once', () {
     var engine = Engine.withSuites([]);
     expect(engine.run(), completes);
     expect(engine.run, throwsStateError);
   });
 
-  test("runs tearDown after a test times out", () {
+  test('runs tearDown after a test times out', () {
     // Declare this here so the expect is in the context of this test, rather
     // than the inner test.
     var secondTestStarted = false;
@@ -150,16 +150,16 @@ void main() {
       // second test runs.
       var firstTestCompleter = Completer();
 
-      group("group", () {
+      group('group', () {
         tearDown(tearDownBody);
 
-        test("first test", () async {
+        test('first test', () async {
           await firstTestCompleter.future;
           firstTestFinished = true;
         }, timeout: Timeout(Duration.zero));
       });
 
-      test("second test", () {
+      test('second test', () {
         secondTestStarted = true;
         firstTestCompleter.complete();
       });
@@ -168,11 +168,11 @@ void main() {
     expect(engine.run(), completes);
   });
 
-  group("for a skipped test", () {
+  group('for a skipped test', () {
     test("doesn't run the test's body", () async {
       var bodyRun = false;
       var engine = declareEngine(() {
-        test("test", () => bodyRun = true, skip: true);
+        test('test', () => bodyRun = true, skip: true);
       });
 
       await engine.run();
@@ -182,16 +182,16 @@ void main() {
     test("runs the test's body with --run-skipped", () async {
       var bodyRun = false;
       var engine = declareEngine(() {
-        test("test", () => bodyRun = true, skip: true);
+        test('test', () => bodyRun = true, skip: true);
       }, runSkipped: true);
 
       await engine.run();
       expect(bodyRun, isTrue);
     });
 
-    test("exposes a LiveTest that emits the correct states", () {
+    test('exposes a LiveTest that emits the correct states', () {
       var tests = declare(() {
-        test("test", () {}, skip: true);
+        test('test', () {}, skip: true);
       });
 
       var engine = Engine.withSuites([runnerSuite(Group.root(tests))]);
@@ -219,12 +219,12 @@ void main() {
     });
   });
 
-  group("for a skipped group", () {
+  group('for a skipped group', () {
     test("doesn't run a test in the group", () async {
       var bodyRun = false;
       var engine = declareEngine(() {
-        group("group", () {
-          test("test", () => bodyRun = true);
+        group('group', () {
+          test('test', () => bodyRun = true);
         }, skip: true);
       });
 
@@ -232,11 +232,11 @@ void main() {
       expect(bodyRun, isFalse);
     });
 
-    test("runs tests in the group with --run-skipped", () async {
+    test('runs tests in the group with --run-skipped', () async {
       var bodyRun = false;
       var engine = declareEngine(() {
-        group("group", () {
-          test("test", () => bodyRun = true);
+        group('group', () {
+          test('test', () => bodyRun = true);
         }, skip: true);
       }, runSkipped: true);
 
@@ -244,10 +244,10 @@ void main() {
       expect(bodyRun, isTrue);
     });
 
-    test("exposes a LiveTest that emits the correct states", () {
+    test('exposes a LiveTest that emits the correct states', () {
       var entries = declare(() {
-        group("group", () {
-          test("test", () {});
+        group('group', () {
+          test('test', () {});
         }, skip: true);
       });
 
@@ -255,7 +255,7 @@ void main() {
 
       engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
-        expect(liveTest.test.name, equals("group test"));
+        expect(liveTest.test.name, equals('group test'));
 
         var i = 0;
         liveTest.onStateChange.listen(expectAsync1((state) {

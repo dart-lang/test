@@ -29,17 +29,17 @@ final UnmodifiableMapView<String, ReporterDetails> allReporters =
     UnmodifiableMapView<String, ReporterDetails>(_allReporters);
 
 final _allReporters = <String, ReporterDetails>{
-  "expanded": ReporterDetails(
-      "A separate line for each update.",
+  'expanded': ReporterDetails(
+      'A separate line for each update.',
       (config, engine, sink) => ExpandedReporter.watch(engine, sink,
           color: config.color,
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
-  "compact": ReporterDetails("A single line, updated continuously.",
+  'compact': ReporterDetails('A single line, updated continuously.',
       (_, engine, sink) => CompactReporter.watch(engine, sink)),
-  "json": ReporterDetails(
-      "A machine-readable format (see https://goo.gl/gBsV1a).",
+  'json': ReporterDetails(
+      'A machine-readable format (see https://goo.gl/gBsV1a).',
       (_, engine, sink) => JsonReporter.watch(engine, sink)),
 };
 

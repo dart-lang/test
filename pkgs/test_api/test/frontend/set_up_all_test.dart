@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  test("runs once before all tests", () {
+  test('runs once before all tests', () {
     return expectTestsPass(() {
       var setUpAllRun = false;
       setUpAll(() {
@@ -16,17 +16,17 @@ void main() {
         setUpAllRun = true;
       });
 
-      test("test 1", () {
+      test('test 1', () {
         expect(setUpAllRun, isTrue);
       });
 
-      test("test 2", () {
+      test('test 2', () {
         expect(setUpAllRun, isTrue);
       });
     });
   });
 
-  test("runs once per group, outside-in", () {
+  test('runs once per group, outside-in', () {
     return expectTestsPass(() {
       var setUpAll1Run = false;
       var setUpAll2Run = false;
@@ -38,7 +38,7 @@ void main() {
         setUpAll1Run = true;
       });
 
-      group("mid", () {
+      group('mid', () {
         setUpAll(() {
           expect(setUpAll1Run, isTrue);
           expect(setUpAll2Run, isFalse);
@@ -46,7 +46,7 @@ void main() {
           setUpAll2Run = true;
         });
 
-        group("inner", () {
+        group('inner', () {
           setUpAll(() {
             expect(setUpAll1Run, isTrue);
             expect(setUpAll2Run, isTrue);
@@ -54,7 +54,7 @@ void main() {
             setUpAll3Run = true;
           });
 
-          test("test", () {
+          test('test', () {
             expect(setUpAll1Run, isTrue);
             expect(setUpAll2Run, isTrue);
             expect(setUpAll3Run, isTrue);
@@ -64,7 +64,7 @@ void main() {
     });
   });
 
-  test("runs before setUps", () {
+  test('runs before setUps', () {
     return expectTestsPass(() {
       var setUpAllRun = false;
       setUp(() {
@@ -80,13 +80,13 @@ void main() {
         expect(setUpAllRun, isTrue);
       });
 
-      test("test", () {
+      test('test', () {
         expect(setUpAllRun, isTrue);
       });
     });
   });
 
-  test("multiples run in order", () {
+  test('multiples run in order', () {
     return expectTestsPass(() {
       var setUpAll1Run = false;
       var setUpAll2Run = false;
@@ -112,7 +112,7 @@ void main() {
         setUpAll3Run = true;
       });
 
-      test("test", () {
+      test('test', () {
         expect(setUpAll1Run, isTrue);
         expect(setUpAll2Run, isTrue);
         expect(setUpAll3Run, isTrue);
@@ -120,8 +120,8 @@ void main() {
     });
   });
 
-  group("asynchronously", () {
-    test("blocks additional setUpAlls on in-band async", () {
+  group('asynchronously', () {
+    test('blocks additional setUpAlls on in-band async', () {
       return expectTestsPass(() {
         var setUpAll1Run = false;
         var setUpAll2Run = false;
@@ -150,7 +150,7 @@ void main() {
           setUpAll3Run = true;
         });
 
-        test("test", () {
+        test('test', () {
           expect(setUpAll1Run, isTrue);
           expect(setUpAll2Run, isTrue);
           expect(setUpAll3Run, isTrue);
@@ -199,7 +199,7 @@ void main() {
               completes);
         });
 
-        test("test", () {
+        test('test', () {
           expect(setUpAll1Run, isTrue);
           expect(setUpAll2Run, isTrue);
           expect(setUpAll3Run, isTrue);
@@ -213,10 +213,10 @@ void main() {
     var shouldNotRun = expectAsync0(() {}, count: 0);
 
     var engine = declareEngine(() {
-      group("skipped", () {
+      group('skipped', () {
         setUpAll(shouldNotRun);
 
-        test("test", () {});
+        test('test', () {});
       }, skip: true);
     });
 
@@ -226,11 +226,11 @@ void main() {
     expect(engine.liveTests, equals(engine.skipped));
   });
 
-  test("is emitted through Engine.onTestStarted", () async {
+  test('is emitted through Engine.onTestStarted', () async {
     var engine = declareEngine(() {
       setUpAll(() {});
 
-      test("test", () {});
+      test('test', () {});
     });
 
     var queue = StreamQueue(engine.onTestStarted);
@@ -240,7 +240,7 @@ void main() {
     await engine.run();
 
     var setUpAllLiveTest = await setUpAllFuture;
-    expect(setUpAllLiveTest.test.name, equals("(setUpAll)"));
+    expect(setUpAllLiveTest.test.name, equals('(setUpAll)'));
     expectTestPassed(setUpAllLiveTest);
 
     // The fake test for setUpAll should be removed from the engine's live
@@ -257,12 +257,12 @@ void main() {
     expect(engine.passed, contains(liveTest));
   });
 
-  group("with an error", () {
-    test("reports the error and remains in Engine.liveTests", () async {
+  group('with an error', () {
+    test('reports the error and remains in Engine.liveTests', () async {
       var engine = declareEngine(() {
-        setUpAll(() => throw TestFailure("fail"));
+        setUpAll(() => throw TestFailure('fail'));
 
-        test("test", () {});
+        test('test', () {});
       });
 
       var queue = StreamQueue(engine.onTestStarted);
@@ -271,8 +271,8 @@ void main() {
       expect(await engine.run(), isFalse);
 
       var setUpAllLiveTest = await setUpAllFuture;
-      expect(setUpAllLiveTest.test.name, equals("(setUpAll)"));
-      expectTestFailed(setUpAllLiveTest, "fail");
+      expect(setUpAllLiveTest.test.name, equals('(setUpAll)'));
+      expectTestFailed(setUpAllLiveTest, 'fail');
 
       // The fake test for setUpAll should be removed from the engine's live
       // test list so that reporters don't display it as a passed test.
@@ -288,9 +288,9 @@ void main() {
       var shouldNotRun = expectAsync0(() {}, count: 0);
 
       var engine = declareEngine(() {
-        setUpAll(() => throw "error");
+        setUpAll(() => throw 'error');
 
-        test("test", shouldNotRun);
+        test('test', shouldNotRun);
       });
 
       expect(await engine.run(), isFalse);
@@ -301,10 +301,10 @@ void main() {
       var shouldNotRun = expectAsync0(() {}, count: 0);
 
       var engine = declareEngine(() {
-        setUpAll(() => throw "error");
+        setUpAll(() => throw 'error');
 
-        group("group", () {
-          test("test", shouldNotRun);
+        group('group', () {
+          test('test', shouldNotRun);
         });
       });
 
@@ -316,10 +316,10 @@ void main() {
       var shouldNotRun = expectAsync0(() {}, count: 0);
 
       var engine = declareEngine(() {
-        setUpAll(() => throw "error");
+        setUpAll(() => throw 'error');
         setUpAll(shouldNotRun);
 
-        test("test", shouldNotRun);
+        test('test', shouldNotRun);
       });
 
       expect(await engine.run(), isFalse);

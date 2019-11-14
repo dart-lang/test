@@ -23,7 +23,7 @@ class TestFailure {
 
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
-@Deprecated("Will be removed in 0.13.0.")
+@Deprecated('Will be removed in 0.13.0.')
 typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
     String reason, Map matchState, bool verbose);
 
@@ -54,8 +54,8 @@ typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
 void expect(actual, matcher,
     {String reason,
     skip,
-    @Deprecated("Will be removed in 0.13.0.") bool verbose = false,
-    @Deprecated("Will be removed in 0.13.0.") ErrorFormatter formatter}) {
+    @Deprecated('Will be removed in 0.13.0.') bool verbose = false,
+    @Deprecated('Will be removed in 0.13.0.') ErrorFormatter formatter}) {
   _expect(actual, matcher,
       reason: reason, skip: skip, verbose: verbose, formatter: formatter);
 }
@@ -86,25 +86,25 @@ Future _expect(actual, matcher,
   };
 
   if (Invoker.current == null) {
-    throw StateError("expect() may only be called within a test.");
+    throw StateError('expect() may only be called within a test.');
   }
 
   if (Invoker.current.closed) throw ClosedException();
 
   if (skip != null && skip is! bool && skip is! String) {
-    throw ArgumentError.value(skip, "skip", "must be a bool or a String");
+    throw ArgumentError.value(skip, 'skip', 'must be a bool or a String');
   }
 
   matcher = wrapMatcher(matcher);
   if (skip != null && skip != false) {
     String message;
     if (skip is String) {
-      message = "Skip expect: $skip";
+      message = 'Skip expect: $skip';
     } else if (reason != null) {
-      message = "Skip expect ($reason).";
+      message = 'Skip expect ($reason).';
     } else {
       var description = StringDescription().addDescriptionOf(matcher);
-      message = "Skip expect ($description).";
+      message = 'Skip expect ($description).';
     }
 
     Invoker.current.skip(message);
@@ -116,7 +116,7 @@ Future _expect(actual, matcher,
     var result = matcher.matchAsync(actual);
     expect(result,
         anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
-        reason: "matchAsync() may only return a String, a Future, or null.");
+        reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is String) {
       fail(formatFailure(matcher as Matcher, actual, result, reason: reason));
@@ -153,7 +153,7 @@ Future _expect(actual, matcher,
 Null fail(String message) => throw TestFailure(message);
 
 // The default error formatter.
-@Deprecated("Will be removed in 0.13.0.")
+@Deprecated('Will be removed in 0.13.0.')
 String formatFailure(Matcher expected, actual, String which, {String reason}) {
   var buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));

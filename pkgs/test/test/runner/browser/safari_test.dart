@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
-@Tags(["safari"])
+@TestOn('vm')
+@Tags(['safari'])
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -16,7 +16,7 @@ import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
-  test("starts Safari with the given URL", () async {
+  test('starts Safari with the given URL', () async {
     var server = await CodeServer.start();
 
     server.handleJavaScript('''
@@ -30,7 +30,7 @@ webSocket.addEventListener("open", function() {
     var safari = Safari(server.url);
     addTearDown(() => safari.close());
 
-    expect(await (await webSocket).stream.first, equals("loaded!"));
+    expect(await (await webSocket).stream.first, equals('loaded!'));
   });
 
   test("a process can be killed synchronously after it's started", () async {
@@ -40,43 +40,43 @@ webSocket.addEventListener("open", function() {
     await safari.close();
   });
 
-  test("reports an error in onExit", () {
-    var safari = Safari("http://dart-lang.org",
+  test('reports an error in onExit', () {
+    var safari = Safari('http://dart-lang.org',
         settings: ExecutableSettings(
-            linuxExecutable: "_does_not_exist",
-            macOSExecutable: "_does_not_exist",
-            windowsExecutable: "_does_not_exist"));
+            linuxExecutable: '_does_not_exist',
+            macOSExecutable: '_does_not_exist',
+            windowsExecutable: '_does_not_exist'));
     expect(
         safari.onExit,
         throwsA(isApplicationException(
-            startsWith("Failed to run Safari: $noSuchFileMessage"))));
+            startsWith('Failed to run Safari: $noSuchFileMessage'))));
   });
 
-  test("can run successful tests", () async {
-    await d.file("test.dart", """
+  test('can run successful tests', () async {
+    await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+''').create();
 
-    var test = await runTest(["-p", "safari", "test.dart"]);
-    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    var test = await runTest(['-p', 'safari', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
 
-  test("can run failing tests", () async {
-    await d.file("test.dart", """
+  test('can run failing tests', () async {
+    await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""").create();
+''').create();
 
-    var test = await runTest(["-p", "safari", "test.dart"]);
-    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    var test = await runTest(['-p', 'safari', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
 }

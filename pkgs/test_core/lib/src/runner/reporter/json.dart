@@ -74,11 +74,11 @@ class JsonReporter implements Reporter {
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
     _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
-      _emit("allSuites", {"count": _engine.addedSuites.length});
+      _emit('allSuites', {'count': _engine.addedSuites.length});
     }));
 
-    _emit("start",
-        {"protocolVersion": "0.1.1", "runnerVersion": testVersion, "pid": pid});
+    _emit('start',
+        {'protocolVersion': '0.1.1', 'runnerVersion': testVersion, 'pid': pid});
   }
 
   void pause() {
@@ -128,15 +128,15 @@ class JsonReporter implements Reporter {
     var suiteConfig = _configFor(liveTest.suite);
     var id = _nextID++;
     _liveTestIDs[liveTest] = id;
-    _emit("testStart", {
-      "test": _addFrameInfo(
+    _emit('testStart', {
+      'test': _addFrameInfo(
           suiteConfig,
           {
-            "id": id,
-            "name": liveTest.test.name,
-            "suiteID": suiteID,
-            "groupIDs": groupIDs,
-            "metadata": _serializeMetadata(suiteConfig, liveTest.test.metadata)
+            'id': id,
+            'name': liveTest.test.name,
+            'suiteID': suiteID,
+            'groupIDs': groupIDs,
+            'metadata': _serializeMetadata(suiteConfig, liveTest.test.metadata)
           },
           liveTest.test,
           liveTest.suite.platform.runtime,
@@ -152,10 +152,10 @@ class JsonReporter implements Reporter {
         .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
 
     _subscriptions.add(liveTest.onMessage.listen((message) {
-      _emit("print", {
-        "testID": id,
-        "messageType": message.type.name,
-        "message": message.text
+      _emit('print', {
+        'testID': id,
+        'messageType': message.type.name,
+        'message': message.text
       });
     }));
   }
@@ -179,20 +179,20 @@ class JsonReporter implements Reporter {
 
         // TODO(nweiz): test this when we have a library for communicating with
         // the Chrome remote debugger, or when we have VM debug support.
-        _emit("debug", {
-          "suiteID": id,
-          "observatory": runnerSuite.environment.observatoryUrl?.toString(),
-          "remoteDebugger":
+        _emit('debug', {
+          'suiteID': id,
+          'observatory': runnerSuite.environment.observatoryUrl?.toString(),
+          'remoteDebugger':
               runnerSuite.environment.remoteDebuggerUrl?.toString(),
         });
       });
     }
 
-    _emit("suite", {
-      "suite": {
-        "id": id,
-        "platform": suite.platform.runtime.identifier,
-        "path": suite.path
+    _emit('suite', {
+      'suite': {
+        'id': id,
+        'platform': suite.platform.runtime.identifier,
+        'path': suite.path
       }
     });
     return id;
@@ -215,16 +215,16 @@ class JsonReporter implements Reporter {
       _groupIDs[group] = id;
 
       var suiteConfig = _configFor(suite);
-      _emit("group", {
-        "group": _addFrameInfo(
+      _emit('group', {
+        'group': _addFrameInfo(
             suiteConfig,
             {
-              "id": id,
-              "suiteID": _idForSuite(suite),
-              "parentID": parentID,
-              "name": group.name,
-              "metadata": _serializeMetadata(suiteConfig, group.metadata),
-              "testCount": group.testCount
+              'id': id,
+              'suiteID': _idForSuite(suite),
+              'parentID': parentID,
+              'name': group.name,
+              'metadata': _serializeMetadata(suiteConfig, group.metadata),
+              'testCount': group.testCount
             },
             group,
             suite.platform.runtime,
@@ -238,29 +238,29 @@ class JsonReporter implements Reporter {
   /// Serializes [metadata] into a JSON-protocol-compatible map.
   Map _serializeMetadata(SuiteConfiguration suiteConfig, Metadata metadata) =>
       suiteConfig.runSkipped
-          ? {"skip": false, "skipReason": null}
-          : {"skip": metadata.skip, "skipReason": metadata.skipReason};
+          ? {'skip': false, 'skipReason': null}
+          : {'skip': metadata.skip, 'skipReason': metadata.skipReason};
 
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest liveTest) {
-    _emit("testDone", {
-      "testID": _liveTestIDs[liveTest],
+    _emit('testDone', {
+      'testID': _liveTestIDs[liveTest],
       // For backwards-compatibility, report skipped tests as successes.
-      "result": liveTest.state.result == Result.skipped
-          ? "success"
+      'result': liveTest.state.result == Result.skipped
+          ? 'success'
           : liveTest.state.result.toString(),
-      "skipped": liveTest.state.result == Result.skipped,
-      "hidden": !_engine.liveTests.contains(liveTest)
+      'skipped': liveTest.state.result == Result.skipped,
+      'hidden': !_engine.liveTests.contains(liveTest)
     });
   }
 
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
-    _emit("error", {
-      "testID": _liveTestIDs[liveTest],
-      "error": error.toString(),
-      "stackTrace": '$stackTrace',
-      "isFailure": error is TestFailure
+    _emit('error', {
+      'testID': _liveTestIDs[liveTest],
+      'error': error.toString(),
+      'stackTrace': '$stackTrace',
+      'isFailure': error is TestFailure
     });
   }
 
@@ -272,7 +272,7 @@ class JsonReporter implements Reporter {
     cancel();
     _stopwatch.stop();
 
-    _emit("done", {"success": success});
+    _emit('done', {'success': success});
   }
 
   /// Returns the configuration for [suite].
@@ -284,8 +284,8 @@ class JsonReporter implements Reporter {
 
   /// Emits an event with the given type and attributes.
   void _emit(String type, Map attributes) {
-    attributes["type"] = type;
-    attributes["time"] = _stopwatch.elapsed.inMilliseconds;
+    attributes['type'] = type;
+    attributes['time'] = _stopwatch.elapsed.inMilliseconds;
     _sink.writeln(jsonEncode(attributes));
   }
 
@@ -310,13 +310,13 @@ class JsonReporter implements Reporter {
       rootFrame = null;
     }
 
-    map["line"] = frame?.line;
-    map["column"] = frame?.column;
-    map["url"] = frame?.uri?.toString();
+    map['line'] = frame?.line;
+    map['column'] = frame?.column;
+    map['url'] = frame?.uri?.toString();
     if (rootFrame != null && rootFrame != frame) {
-      map["root_line"] = rootFrame.line;
-      map["root_column"] = rootFrame.column;
-      map["root_url"] = rootFrame.uri.toString();
+      map['root_line'] = rootFrame.line;
+      map['root_column'] = rootFrame.column;
+      map['root_url'] = rootFrame.uri.toString();
     }
     return map;
   }

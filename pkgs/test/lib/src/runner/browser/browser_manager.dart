@@ -109,7 +109,7 @@ class BrowserManager {
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
     browser.onExit.then((_) {
-      throw ApplicationException("${runtime.name} exited before connecting.");
+      throw ApplicationException('${runtime.name} exited before connecting.');
     }).catchError((error, StackTrace stackTrace) {
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
@@ -127,7 +127,7 @@ class BrowserManager {
     return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
       browser.close();
       throw ApplicationException(
-          "Timed out waiting for ${runtime.name} to connect.");
+          'Timed out waiting for ${runtime.name} to connect.');
     });
   }
 
@@ -149,7 +149,7 @@ class BrowserManager {
       case Runtime.internetExplorer:
         return InternetExplorer(url, settings: settings);
       default:
-        throw ArgumentError("$browser is not a browser.");
+        throw ArgumentError('$browser is not a browser.');
     }
   }
 
@@ -207,8 +207,8 @@ class BrowserManager {
       {StackTraceMapper mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
-      "metadata": suiteConfig.metadata.serialize(),
-      "browser": _runtime.identifier
+      'metadata': suiteConfig.metadata.serialize(),
+      'browser': _runtime.identifier
     })));
 
     var suiteID = _suiteID++;
@@ -216,7 +216,7 @@ class BrowserManager {
     closeIframe() {
       if (_closed) return;
       _controllers.remove(controller);
-      _channel.sink.add({"command": "closeSuite", "id": suiteID});
+      _channel.sink.add({'command': 'closeSuite', 'id': suiteID});
     }
 
     // The virtual channel will be closed when the suite is closed, in which
@@ -231,17 +231,17 @@ class BrowserManager {
 
     return await _pool.withResource<RunnerSuite>(() async {
       _channel.sink.add({
-        "command": "loadSuite",
-        "url": url.toString(),
-        "id": suiteID,
-        "channel": suiteChannelID
+        'command': 'loadSuite',
+        'url': url.toString(),
+        'id': suiteID,
+        'channel': suiteChannelID
       });
 
       try {
         controller = deserializeSuite(path, currentPlatform(_runtime),
             suiteConfig, await _environment, suiteChannel, message);
 
-        controller.channel("test.browser.mapper").sink.add(mapper?.serialize());
+        controller.channel('test.browser.mapper').sink.add(mapper?.serialize());
 
         _controllers.add(controller);
         return await controller.suite;
@@ -257,7 +257,7 @@ class BrowserManager {
     if (_pauseCompleter != null) return _pauseCompleter.operation;
 
     _pauseCompleter = CancelableCompleter(onCancel: () {
-      _channel.sink.add({"command": "resume"});
+      _channel.sink.add({'command': 'resume'});
       _pauseCompleter = null;
     });
 
@@ -265,22 +265,22 @@ class BrowserManager {
       _pauseCompleter = null;
     });
 
-    _channel.sink.add({"command": "displayPause"});
+    _channel.sink.add({'command': 'displayPause'});
 
     return _pauseCompleter.operation;
   }
 
   /// The callback for handling messages received from the host page.
   void _onMessage(Map message) {
-    switch (message["command"] as String) {
-      case "ping":
+    switch (message['command'] as String) {
+      case 'ping':
         break;
 
-      case "restart":
+      case 'restart':
         _onRestartController.add(null);
         break;
 
-      case "resume":
+      case 'resume':
         if (_pauseCompleter != null) _pauseCompleter.complete();
         break;
 

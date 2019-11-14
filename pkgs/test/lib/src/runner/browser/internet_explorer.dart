@@ -14,7 +14,7 @@ import '../executable_settings.dart';
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class InternetExplorer extends Browser {
-  final name = "Internet Explorer";
+  final name = 'Internet Explorer';
 
   InternetExplorer(url, {ExecutableSettings settings})
       : super(() => _startBrowser(url, settings));

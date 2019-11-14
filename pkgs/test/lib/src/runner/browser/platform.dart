@@ -71,7 +71,7 @@ class BrowserPlatform extends PlatformPlugin
   final _secret = Uri.encodeComponent(randomBase64(24));
 
   /// The URL for this server.
-  Uri get url => _server.url.resolve(_secret + "/");
+  Uri get url => _server.url.resolve(_secret + '/');
 
   /// A [OneOffHandler] for servicing WebSocket connections for
   /// [BrowserManager]s.
@@ -160,7 +160,7 @@ class BrowserPlatform extends PlatformPlugin
   shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(request.url);
 
-    if (path.endsWith(".browser_test.dart")) {
+    if (path.endsWith('.browser_test.dart')) {
       var testPath = p.basename(p.withoutExtension(p.withoutExtension(path)));
       return shelf.Response.ok('''
         import "package:stream_channel/stream_channel.dart";
@@ -177,8 +177,8 @@ class BrowserPlatform extends PlatformPlugin
       ''', headers: {'Content-Type': 'application/dart'});
     }
 
-    if (path.endsWith(".html")) {
-      var test = p.withoutExtension(path) + ".dart";
+    if (path.endsWith('.html')) {
+      var test = p.withoutExtension(path) + '.dart';
 
       // Link to the Dart wrapper on Dartium and the compiled JS version
       // elsewhere.
@@ -224,7 +224,7 @@ class BrowserPlatform extends PlatformPlugin
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
     if (!browser.isBrowser) {
-      throw ArgumentError("$browser is not a browser.");
+      throw ArgumentError('$browser is not a browser.');
     }
 
     var htmlPath = p.withoutExtension(path) + '.html';
@@ -257,7 +257,7 @@ class BrowserPlatform extends PlatformPlugin
 
       if (_closed) return null;
       suiteUrl = url.resolveUri(
-          p.toUri(p.withoutExtension(p.relative(path, from: _root)) + ".html"));
+          p.toUri(p.withoutExtension(p.relative(path, from: _root)) + '.html'));
     }
 
     if (_closed) return null;
@@ -308,8 +308,8 @@ class BrowserPlatform extends PlatformPlugin
 
           throw LoadException(
               path,
-              "Error getting $url: ${response.statusCode} "
-              "${response.reasonPhrase}\n"
+              'Error getting $url: ${response.statusCode} '
+              '${response.reasonPhrase}\n'
               'Make sure "pub serve" is serving the test/ directory.');
         }
 
@@ -326,13 +326,13 @@ class BrowserPlatform extends PlatformPlugin
       } on IOException catch (error) {
         var message = getErrorMessage(error);
         if (error is SocketException) {
-          message = "${error.osError.message} "
-              "(errno ${error.osError.errorCode})";
+          message = '${error.osError.message} '
+              '(errno ${error.osError.errorCode})';
         }
 
         throw LoadException(
             path,
-            "Error getting $url: $message\n"
+            'Error getting $url: $message\n'
             'Make sure "pub serve" is running.');
       } finally {
         timer.cancel();
@@ -347,7 +347,7 @@ class BrowserPlatform extends PlatformPlugin
   Future _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
-      var jsPath = p.join(dir, p.basename(dartPath) + ".browser_test.dart.js");
+      var jsPath = p.join(dir, p.basename(dartPath) + '.browser_test.dart.js');
 
       await _compilers.compile('''
         import "package:test/src/bootstrap/browser.dart";

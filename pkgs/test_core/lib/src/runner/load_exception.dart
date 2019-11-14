@@ -22,10 +22,10 @@ class LoadException implements Exception {
     if (innerError is SourceSpanException) {
       innerString = (innerError as SourceSpanException)
           .toString(color: color)
-          .replaceFirst(" of $path", "");
+          .replaceFirst(' of $path', '');
     }
 
-    buffer.write(innerString.contains("\n") ? "\n" : " ");
+    buffer.write(innerString.contains('\n') ? '\n' : ' ');
     buffer.write(innerString);
     return buffer.toString();
   }

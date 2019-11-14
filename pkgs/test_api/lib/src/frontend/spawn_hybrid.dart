@@ -24,17 +24,17 @@ import '../utils.dart';
 // `hybridMain` can send any json encodeable type.
 final _transformer = StreamChannelTransformer<dynamic, dynamic>(
     StreamTransformer.fromHandlers(handleData: (message, sink) {
-  switch (message["type"] as String) {
-    case "data":
-      sink.add(message["data"]);
+  switch (message['type'] as String) {
+    case 'data':
+      sink.add(message['data']);
       break;
 
-    case "print":
-      print(message["line"]);
+    case 'print':
+      print(message['line']);
       break;
 
-    case "error":
-      var error = RemoteException.deserialize(message["error"]);
+    case 'error':
+      var error = RemoteException.deserialize(message['error']);
       sink.addError(error.error, error.stackTrace);
       break;
   }
@@ -98,12 +98,12 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive = false}) {
   } else if (uri is String) {
     parsedUrl = Uri.parse(uri);
   } else {
-    throw ArgumentError.value(uri, "uri", "must be a Uri or a String.");
+    throw ArgumentError.value(uri, 'uri', 'must be a Uri or a String.');
   }
 
   String absoluteUri;
   if (parsedUrl.scheme.isEmpty) {
-    var isRootRelative = parsedUrl.path.startsWith("/");
+    var isRootRelative = parsedUrl.path.startsWith('/');
 
     // If we're running in a browser context, the working directory is already
     // relative to the test file, whereas on the VM the working directory is the
@@ -113,9 +113,9 @@ StreamChannel spawnHybridUri(uri, {Object message, bool stayAlive = false}) {
         // A root-relative URL is interpreted as relative to the package root,
         // which means placing it beneath the URL secret.
         var secret = Uri.encodeComponent(Uri.base.pathSegments[0]);
-        absoluteUri = p.absolute("/$secret$parsedUrl");
-        print("Uri.base: ${Uri.base}");
-        print("absoluteUri: ${absoluteUri}");
+        absoluteUri = p.absolute('/$secret$parsedUrl');
+        print('Uri.base: ${Uri.base}');
+        print('absoluteUri: ${absoluteUri}');
       } else {
         absoluteUri = p.absolute(parsedUrl.toString());
       }
@@ -203,10 +203,10 @@ StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   var virtualChannel = channel.virtualChannel();
   StreamChannel isolateChannel = virtualChannel;
   channel.sink.add({
-    "type": "spawn-hybrid-uri",
-    "url": uri,
-    "message": message,
-    "channel": virtualChannel.id
+    'type': 'spawn-hybrid-uri',
+    'url': uri,
+    'message': message,
+    'channel': virtualChannel.id
   });
 
   if (!stayAlive) {

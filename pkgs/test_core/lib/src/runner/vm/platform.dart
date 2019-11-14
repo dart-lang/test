@@ -72,7 +72,7 @@ class VMPlatform extends PlatformPlugin {
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
       client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
-      var isolateNumber = int.parse(isolateID.split("/").last);
+      var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
           .isolates
           .firstWhere((isolate) => isolate.number == isolateNumber.toString());
@@ -158,16 +158,16 @@ Future<Isolate> _spawnPubServeIsolate(
   try {
     return await Isolate.spawnUri(url, [], message, checked: true);
   } on IsolateSpawnException catch (error) {
-    if (error.message.contains("OS Error: Connection refused") ||
-        error.message.contains("The remote computer refused")) {
+    if (error.message.contains('OS Error: Connection refused') ||
+        error.message.contains('The remote computer refused')) {
       throw LoadException(
           testPath,
-          "Error getting $url: Connection refused\n"
+          'Error getting $url: Connection refused\n'
           'Make sure "pub serve" is running.');
-    } else if (error.message.contains("404 Not Found")) {
+    } else if (error.message.contains('404 Not Found')) {
       throw LoadException(
           testPath,
-          "Error getting $url: 404 Not Found\n"
+          'Error getting $url: 404 Not Found\n'
           'Make sure "pub serve" is serving the test/ directory.');
     }
 
@@ -179,5 +179,5 @@ String _wsUriFor(String observatoryUrl) =>
     "ws:${observatoryUrl.split(':').sublist(1).join(':')}ws";
 
 Uri _observatoryUrlFor(String base, String isolateId, String id) =>
-    Uri.parse("$base#/inspect?isolateId=${Uri.encodeQueryComponent(isolateId)}&"
-        "objectId=${Uri.encodeQueryComponent(id)}");
+    Uri.parse('$base#/inspect?isolateId=${Uri.encodeQueryComponent(isolateId)}&'
+        'objectId=${Uri.encodeQueryComponent(id)}');

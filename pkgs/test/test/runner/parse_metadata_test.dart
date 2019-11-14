@@ -317,7 +317,7 @@ import 'package:test/test.dart' as test;
             throwsFormatException);
       });
 
-      test("a map with an invalid value", () {
+      test('a map with an invalid value', () {
         expect(
             () => parseMetadata(_path,
                 "@OnPlatform({'vm': const TestOn('vm')})\nlibrary foo;", Set()),

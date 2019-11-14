@@ -89,8 +89,8 @@ class _Debugger {
 
   _Debugger(this._engine, this._reporter, this._suite)
       : _console = Console(color: Configuration.current.color) {
-    _console.registerCommand("restart",
-        "Restart the current test after it finishes running.", _restartTest);
+    _console.registerCommand('restart',
+        'Restart the current test after it finishes running.', _restartTest);
 
     _onRestartSubscription = _suite.environment.onRestart.listen((_) {
       _restartTest();
@@ -141,35 +141,35 @@ class _Debugger {
           var url = _suite.environment.observatoryUrl;
           if (url == null) {
             print("${yellow}Observatory URL not found. Make sure you're using "
-                "${runtime.name} 1.11 or later.$noColor");
+                '${runtime.name} 1.11 or later.$noColor');
           } else {
-            print("Observatory URL: $bold$url$noColor");
+            print('Observatory URL: $bold$url$noColor');
           }
         }
 
         if (runtime.isHeadless && !runtime.isDartVM) {
           var url = _suite.environment.remoteDebuggerUrl;
           if (url == null) {
-            print("${yellow}Remote debugger URL not found.$noColor");
+            print('${yellow}Remote debugger URL not found.$noColor');
           } else {
-            print("Remote debugger URL: $bold$url$noColor");
+            print('Remote debugger URL: $bold$url$noColor');
           }
         }
 
         var buffer =
-            StringBuffer("${bold}The test runner is paused.${noColor} ");
+            StringBuffer('${bold}The test runner is paused.${noColor} ');
         if (runtime.isDartVM) {
-          buffer.write("Open the Observatory ");
+          buffer.write('Open the Observatory ');
         } else {
           if (!runtime.isHeadless) {
-            buffer.write("Open the dev console in $runtime ");
+            buffer.write('Open the dev console in $runtime ');
           } else {
-            buffer.write("Open the remote debugger ");
+            buffer.write('Open the remote debugger ');
           }
         }
 
         buffer.write("and set breakpoints. Once you're finished, return to "
-            "this terminal and press Enter.");
+            'this terminal and press Enter.');
 
         print(wordWrap(buffer.toString()));
       }

@@ -207,7 +207,7 @@ class CompactReporter implements Reporter {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest),
-        truncate: false, suffix: " $_bold$_red[E]$_noColor");
+        truncate: false, suffix: ' $_bold$_red[E]$_noColor');
     if (!_printedNewline) _sink.writeln('');
     _printedNewline = true;
 
@@ -242,33 +242,33 @@ class CompactReporter implements Reporter {
     // shouldn't print summary information, we should just make sure the
     // terminal cursor is on its own line.
     if (success == null) {
-      if (!_printedNewline) _sink.writeln("");
+      if (!_printedNewline) _sink.writeln('');
       _printedNewline = true;
       return;
     }
 
     if (_engine.liveTests.isEmpty) {
-      if (!_printedNewline) _sink.write("\r");
-      var message = "No tests ran.";
+      if (!_printedNewline) _sink.write('\r');
+      var message = 'No tests ran.';
       _sink.write(message);
 
       // Add extra padding to overwrite any load messages.
-      if (!_printedNewline) _sink.write(" " * (lineLength - message.length));
+      if (!_printedNewline) _sink.write(' ' * (lineLength - message.length));
       _sink.writeln('');
     } else if (!success) {
       for (var liveTest in _engine.active) {
         _progressLine(_description(liveTest),
             truncate: false,
-            suffix: " - did not complete $_bold$_red[E]$_noColor");
+            suffix: ' - did not complete $_bold$_red[E]$_noColor');
         _sink.writeln('');
       }
       _progressLine('Some tests failed.', color: _red);
       _sink.writeln('');
     } else if (_engine.passed.isEmpty) {
-      _progressLine("All tests skipped.");
+      _progressLine('All tests skipped.');
       _sink.writeln('');
     } else {
-      _progressLine("All tests passed!");
+      _progressLine('All tests passed!');
       _sink.writeln('');
     }
   }
@@ -369,15 +369,15 @@ class CompactReporter implements Reporter {
     if (_printPath &&
         liveTest.suite is! LoadSuite &&
         liveTest.suite.path != null) {
-      name = "${liveTest.suite.path}: $name";
+      name = '${liveTest.suite.path}: $name';
     }
 
     if (_config.suiteDefaults.runtimes.length > 1 &&
         liveTest.suite.platform != null) {
-      name = "[${liveTest.suite.platform.runtime.name}] $name";
+      name = '[${liveTest.suite.platform.runtime.name}] $name';
     }
 
-    if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";
+    if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';
 
     return name;
   }

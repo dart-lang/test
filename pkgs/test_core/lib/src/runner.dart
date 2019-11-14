@@ -87,7 +87,7 @@ class Runner {
   /// or not they ran successfully.
   Future<bool> run() => _config.asCurrent(() async {
         if (_closed) {
-          throw StateError("run() may not be called on a closed Runner.");
+          throw StateError('run() may not be called on a closed Runner.');
         }
 
         _warnForUnsupportedPlatforms();
@@ -175,7 +175,7 @@ class Runner {
         unsupportedNames
             .addAll(unsupportedBrowsers.map((runtime) => runtime.name));
       } else {
-        unsupportedNames.add("browsers");
+        unsupportedNames.add('browsers');
       }
     }
 
@@ -188,13 +188,13 @@ class Runner {
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);
       } else {
-        unsupportedNames.add("the Dart VM");
+        unsupportedNames.add('the Dart VM');
       }
     }
 
     warn("this package doesn't support running tests on " +
-        toSentence(unsupportedNames, conjunction: "or") +
-        ".");
+        toSentence(unsupportedNames, conjunction: 'or') +
+        '.');
   }
 
   /// Closes the runner.
@@ -211,8 +211,8 @@ class Runner {
             // Pause the reporter while we print to ensure that we don't interfere
             // with its output.
             _reporter.pause();
-            print("Waiting for current test(s) to finish.");
-            print("Press Control-C again to terminate immediately.");
+            print('Waiting for current test(s) to finish.');
+            print('Press Control-C again to terminate immediately.');
             _reporter.resume();
           });
         }
@@ -290,23 +290,23 @@ class Runner {
     var noColor = _config.color ? '\u001b[0m' : '';
 
     var buffer = StringBuffer()
-      ..write("${yellow}Warning:$noColor ")
-      ..write(unknownTags.length == 1 ? "A tag was " : "Tags were ")
-      ..write("used that ")
+      ..write('${yellow}Warning:$noColor ')
+      ..write(unknownTags.length == 1 ? 'A tag was ' : 'Tags were ')
+      ..write('used that ')
       ..write(unknownTags.length == 1 ? "wasn't " : "weren't ")
-      ..writeln("specified in dart_test.yaml.");
+      ..writeln('specified in dart_test.yaml.');
 
     unknownTags.forEach((tag, entries) {
-      buffer.write("  $bold$tag$noColor was used in");
+      buffer.write('  $bold$tag$noColor was used in');
 
       if (entries.length == 1) {
-        buffer.writeln(" ${_entryDescription(entries.single)}");
+        buffer.writeln(' ${_entryDescription(entries.single)}');
         return;
       }
 
-      buffer.write(":");
+      buffer.write(':');
       for (var entry in entries) {
-        buffer.write("\n    ${_entryDescription(entry)}");
+        buffer.write('\n    ${_entryDescription(entry)}');
       }
       buffer.writeln();
     });

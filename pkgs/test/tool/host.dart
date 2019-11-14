@@ -42,7 +42,7 @@ class _JSApi {
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
-@JS("dartTest")
+@JS('dartTest')
 external set _jsApi(_JSApi api);
 
 /// The iframes created for each loaded test suite, indexed by the suite id.
@@ -140,22 +140,22 @@ void main() {
     // Send periodic pings to the test runner so it can know when the browser is
     // paused for debugging.
     Timer.periodic(Duration(seconds: 1),
-        (_) => serverChannel.sink.add({"command": "ping"}));
+        (_) => serverChannel.sink.add({'command': 'ping'}));
 
-    var play = document.querySelector("#play");
+    var play = document.querySelector('#play');
     play.onClick.listen((_) {
       if (!document.body.classes.remove('paused')) return;
-      serverChannel.sink.add({"command": "resume"});
+      serverChannel.sink.add({'command': 'resume'});
     });
 
     _jsApi = _JSApi(resume: allowInterop(() {
       if (!document.body.classes.remove('paused')) return;
-      serverChannel.sink.add({"command": "resume"});
+      serverChannel.sink.add({'command': 'resume'});
     }), restartCurrent: allowInterop(() {
-      serverChannel.sink.add({"command": "restart"});
+      serverChannel.sink.add({'command': 'restart'});
     }));
   }, onError: (error, StackTrace stackTrace) {
-    print("$error\n${Trace.from(stackTrace).terse}");
+    print('$error\n${Trace.from(stackTrace).terse}');
   });
 }
 
@@ -207,25 +207,25 @@ StreamChannel _connectToIframe(String url, int id) {
 
     // TODO(nweiz): Stop manually checking href here once issue 22554 is
     // fixed.
-    if (message.data["href"] != iframe.src) return;
+    if (message.data['href'] != iframe.src) return;
 
     message.stopPropagation();
 
-    if (message.data["ready"] == true) {
+    if (message.data['ready'] == true) {
       // This message indicates that the iframe is actively listening for
       // events, so the message channel's second port can now be transferred.
       iframe.contentWindow
-          .postMessage("port", window.location.origin, [channel.port2]);
+          .postMessage('port', window.location.origin, [channel.port2]);
       readyCompleter.complete();
-    } else if (message.data["exception"] == true) {
+    } else if (message.data['exception'] == true) {
       // This message from `dart.js` indicates that an exception occurred
       // loading the test.
-      controller.local.sink.add(message.data["data"]);
+      controller.local.sink.add(message.data['data']);
     }
   }));
 
   subscriptions.add(channel.port1.onMessage.listen((message) {
-    controller.local.sink.add(message.data["data"]);
+    controller.local.sink.add(message.data['data']);
   }));
 
   subscriptions.add(controller.local.stream.listen((message) async {

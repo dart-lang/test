@@ -159,9 +159,9 @@ Future<void> _execute(List<String> args) async {
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(Trace.from(stackTrace).terse);
-    stderr.writeln("This is an unexpected error. Please file an issue at "
-        "http://github.com/dart-lang/test\n"
-        "with the stack trace and instructions for reproducing the error.");
+    stderr.writeln('This is an unexpected error. Please file an issue at '
+        'http://github.com/dart-lang/test\n'
+        'with the stack trace and instructions for reproducing the error.');
     exitCode = exit_codes.software;
   } finally {
     await runner?.close();
@@ -169,7 +169,7 @@ Future<void> _execute(List<String> args) async {
 
   // TODO(grouma) - figure out why the executable can hang in the travis
   // environment. https://github.com/dart-lang/test/issues/599
-  if (Platform.environment["FORCE_TEST_EXIT"] == "true") {
+  if (Platform.environment['FORCE_TEST_EXIT'] == 'true') {
     exit(exitCode);
   }
 
@@ -183,16 +183,16 @@ Future<void> _execute(List<String> args) async {
 void _printUsage([String error]) {
   var output = stdout;
 
-  var message = "Runs tests in this package.";
+  var message = 'Runs tests in this package.';
   if (error != null) {
     message = error;
     output = stderr;
   }
 
-  output.write("""${wordWrap(message)}
+  output.write('''${wordWrap(message)}
 
 Usage: pub run test [files or directories...]
 
 ${Configuration.usage}
-""");
+''');
 }

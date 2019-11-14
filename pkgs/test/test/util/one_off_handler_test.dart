@@ -14,60 +14,60 @@ void main() {
 
   _handle(shelf.Request request) => Future.sync(() => handler.handler(request));
 
-  test("returns a 404 for a root URL", () async {
-    var request = shelf.Request("GET", Uri.parse("http://localhost/"));
+  test('returns a 404 for a root URL', () async {
+    var request = shelf.Request('GET', Uri.parse('http://localhost/'));
     expect((await _handle(request)).statusCode, equals(404));
   });
 
-  test("returns a 404 for an unhandled URL", () async {
-    var request = shelf.Request("GET", Uri.parse("http://localhost/1"));
+  test('returns a 404 for an unhandled URL', () async {
+    var request = shelf.Request('GET', Uri.parse('http://localhost/1'));
     expect((await _handle(request)).statusCode, equals(404));
   });
 
-  test("passes a request to a handler only once", () async {
+  test('passes a request to a handler only once', () async {
     var path = handler.create(expectAsync1((request) {
-      expect(request.method, equals("GET"));
-      return shelf.Response.ok("good job!");
+      expect(request.method, equals('GET'));
+      return shelf.Response.ok('good job!');
     }));
 
-    var request = shelf.Request("GET", Uri.parse("http://localhost/$path"));
+    var request = shelf.Request('GET', Uri.parse('http://localhost/$path'));
     var response = await _handle(request);
     expect(response.statusCode, equals(200));
-    expect(response.readAsString(), completion(equals("good job!")));
+    expect(response.readAsString(), completion(equals('good job!')));
 
-    request = shelf.Request("GET", Uri.parse("http://localhost/$path"));
+    request = shelf.Request('GET', Uri.parse('http://localhost/$path'));
     expect((await _handle(request)).statusCode, equals(404));
   });
 
-  test("passes requests to the correct handlers", () async {
+  test('passes requests to the correct handlers', () async {
     var path1 = handler.create(expectAsync1((request) {
-      expect(request.method, equals("GET"));
-      return shelf.Response.ok("one");
+      expect(request.method, equals('GET'));
+      return shelf.Response.ok('one');
     }));
 
     var path2 = handler.create(expectAsync1((request) {
-      expect(request.method, equals("GET"));
-      return shelf.Response.ok("two");
+      expect(request.method, equals('GET'));
+      return shelf.Response.ok('two');
     }));
 
     var path3 = handler.create(expectAsync1((request) {
-      expect(request.method, equals("GET"));
-      return shelf.Response.ok("three");
+      expect(request.method, equals('GET'));
+      return shelf.Response.ok('three');
     }));
 
-    var request = shelf.Request("GET", Uri.parse("http://localhost/$path2"));
+    var request = shelf.Request('GET', Uri.parse('http://localhost/$path2'));
     var response = await _handle(request);
     expect(response.statusCode, equals(200));
-    expect(response.readAsString(), completion(equals("two")));
+    expect(response.readAsString(), completion(equals('two')));
 
-    request = shelf.Request("GET", Uri.parse("http://localhost/$path1"));
+    request = shelf.Request('GET', Uri.parse('http://localhost/$path1'));
     response = await _handle(request);
     expect(response.statusCode, equals(200));
-    expect(response.readAsString(), completion(equals("one")));
+    expect(response.readAsString(), completion(equals('one')));
 
-    request = shelf.Request("GET", Uri.parse("http://localhost/$path3"));
+    request = shelf.Request('GET', Uri.parse('http://localhost/$path3'));
     response = await _handle(request);
     expect(response.statusCode, equals(200));
-    expect(response.readAsString(), completion(equals("three")));
+    expect(response.readAsString(), completion(equals('three')));
   });
 }

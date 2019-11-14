@@ -111,7 +111,7 @@ class Invoker {
     var counter = Zone.current[_counterKey] as _AsyncCounter;
     if (counter != null) return counter;
     throw StateError("Can't add or remove outstanding callbacks outside "
-        "of a test body.");
+        'of a test body.');
   }
 
   /// All the zones created by [waitForOutstandingCallbacks], in the order they
@@ -271,9 +271,9 @@ class Invoker {
     var timeout = liveTest.test.metadata.timeout.apply(defaultTimeout);
     if (timeout == null) return;
     String message() {
-      var message = "Test timed out after ${niceDuration(timeout)}.";
+      var message = 'Test timed out after ${niceDuration(timeout)}.';
       if (timeout == defaultTimeout) {
-        message += " See https://pub.dev/packages/test#timeouts";
+        message += ' See https://pub.dev/packages/test#timeouts';
       }
       return message;
     }
@@ -297,9 +297,9 @@ class Invoker {
       // Set the state explicitly so we don't get an extra error about the test
       // failing after being complete.
       _controller.setState(const State(Status.complete, Result.error));
-      throw "This test was marked as skipped after it had already completed. "
-          "Make sure to use\n"
-          "[expectAsync] or the [completes] matcher when testing async code.";
+      throw 'This test was marked as skipped after it had already completed. '
+          'Make sure to use\n'
+          '[expectAsync] or the [completes] matcher when testing async code.';
     }
 
     if (message != null) _controller.message(Message.skip(message));
@@ -311,7 +311,7 @@ class Invoker {
   void printOnFailure(String message) {
     message = message.trim();
     if (liveTest.state.result.isFailing) {
-      print("\n$message");
+      print('\n$message');
     } else {
       _printsOnFailure.add(message);
     }
@@ -346,13 +346,13 @@ class Invoker {
     zone.run(() => _outstandingCallbacks.complete());
 
     if (!liveTest.test.metadata.chainStackTraces) {
-      _printsOnFailure.add("Consider enabling the flag chain-stack-traces to "
-          "receive more detailed exceptions.\n"
+      _printsOnFailure.add('Consider enabling the flag chain-stack-traces to '
+          'receive more detailed exceptions.\n'
           "For example, 'pub run test --chain-stack-traces'.");
     }
 
     if (_printsOnFailure.isNotEmpty) {
-      print(_printsOnFailure.join("\n\n"));
+      print(_printsOnFailure.join('\n\n'));
       _printsOnFailure.clear();
     }
 
@@ -366,9 +366,9 @@ class Invoker {
 
     _handleError(
         zone,
-        "This test failed after it had already completed. Make sure to use "
-        "[expectAsync]\n"
-        "or the [completes] matcher when testing async code.",
+        'This test failed after it had already completed. Make sure to use '
+        '[expectAsync]\n'
+        'or the [completes] matcher when testing async code.',
         stackTrace);
   }
 
@@ -405,7 +405,7 @@ class Invoker {
 
           if (liveTest.state.result != Result.success &&
               _runCount < liveTest.test.metadata.retry + 1) {
-            _controller.message(Message.print("Retry: ${liveTest.test.name}"));
+            _controller.message(Message.print('Retry: ${liveTest.test.name}'));
             _onRun();
             return;
           }

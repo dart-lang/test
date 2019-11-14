@@ -146,7 +146,7 @@ class RunnerSuiteController {
 
     var channel = _suiteChannel.virtualChannel();
     _suiteChannel.sink
-        .add({"type": "suiteChannel", "name": name, "id": channel.id});
+        .add({'type': 'suiteChannel', 'name': name, 'id': channel.id});
     return channel;
   }
 

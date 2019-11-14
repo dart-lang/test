@@ -7,5 +7,5 @@
 class ClosedException implements Exception {
   ClosedException();
 
-  String toString() => "This test has been closed.";
+  String toString() => 'This test has been closed.';
 }

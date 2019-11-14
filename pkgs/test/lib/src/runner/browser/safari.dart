@@ -20,7 +20,7 @@ import '../executable_settings.dart';
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class Safari extends Browser {
-  final name = "Safari";
+  final name = 'Safari';
 
   Safari(url, {ExecutableSettings settings})
       : super(() => _startBrowser(url, settings));
@@ -36,7 +36,7 @@ class Safari extends Browser {
     // want it to load.
     var redirect = p.join(dir, 'redirect.html');
     File(redirect).writeAsStringSync(
-        "<script>location = " + jsonEncode(url.toString()) + "</script>");
+        '<script>location = ' + jsonEncode(url.toString()) + '</script>');
 
     var process = await Process.start(
         settings.executable, settings.arguments.toList()..add(redirect));

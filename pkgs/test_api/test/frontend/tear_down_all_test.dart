@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  test("runs once after all tests", () {
+  test('runs once after all tests', () {
     return expectTestsPass(() {
       var test1Run = false;
       var test2Run = false;
@@ -22,19 +22,19 @@ void main() {
         tearDownAllRun = true;
       });
 
-      test("test 1", () {
+      test('test 1', () {
         expect(tearDownAllRun, isFalse);
         test1Run = true;
       });
 
-      test("test 2", () {
+      test('test 2', () {
         expect(tearDownAllRun, isFalse);
         test2Run = true;
       });
     });
   });
 
-  test("runs once per group, inside-out", () {
+  test('runs once per group, inside-out', () {
     return expectTestsPass(() {
       var tearDownAll1Run = false;
       var tearDownAll2Run = false;
@@ -48,7 +48,7 @@ void main() {
         tearDownAll1Run = true;
       });
 
-      group("mid", () {
+      group('mid', () {
         tearDownAll(() {
           expect(tearDownAll1Run, isFalse);
           expect(tearDownAll2Run, isFalse);
@@ -57,7 +57,7 @@ void main() {
           tearDownAll2Run = true;
         });
 
-        group("inner", () {
+        group('inner', () {
           tearDownAll(() {
             expect(tearDownAll1Run, isFalse);
             expect(tearDownAll2Run, isFalse);
@@ -66,7 +66,7 @@ void main() {
             tearDownAll3Run = true;
           });
 
-          test("test", () {
+          test('test', () {
             expect(tearDownAll1Run, isFalse);
             expect(tearDownAll2Run, isFalse);
             expect(tearDownAll3Run, isFalse);
@@ -77,7 +77,7 @@ void main() {
     });
   });
 
-  test("runs after tearDowns", () {
+  test('runs after tearDowns', () {
     return expectTestsPass(() {
       var tearDown1Run = false;
       var tearDown2Run = false;
@@ -99,13 +99,13 @@ void main() {
         tearDown2Run = true;
       });
 
-      test("test", () {
+      test('test', () {
         expect(tearDownAllRun, isFalse);
       });
     });
   });
 
-  test("multiples run in reverse order", () {
+  test('multiples run in reverse order', () {
     return expectTestsPass(() {
       var tearDownAll1Run = false;
       var tearDownAll2Run = false;
@@ -131,7 +131,7 @@ void main() {
         tearDownAll3Run = true;
       });
 
-      test("test", () {
+      test('test', () {
         expect(tearDownAll1Run, isFalse);
         expect(tearDownAll2Run, isFalse);
         expect(tearDownAll3Run, isFalse);
@@ -139,8 +139,8 @@ void main() {
     });
   });
 
-  group("asynchronously", () {
-    test("blocks additional tearDownAlls on in-band async", () {
+  group('asynchronously', () {
+    test('blocks additional tearDownAlls on in-band async', () {
       return expectTestsPass(() {
         var tearDownAll1Run = false;
         var tearDownAll2Run = false;
@@ -169,7 +169,7 @@ void main() {
           tearDownAll3Run = true;
         });
 
-        test("test", () {
+        test('test', () {
           expect(tearDownAll1Run, isFalse);
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
@@ -212,7 +212,7 @@ void main() {
           }), completes);
         });
 
-        test("test", () {
+        test('test', () {
           expect(tearDownAll1Run, isFalse);
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
@@ -220,29 +220,29 @@ void main() {
       });
     });
 
-    test("blocks further tests on in-band async", () {
+    test('blocks further tests on in-band async', () {
       return expectTestsPass(() {
         var tearDownAllRun = false;
-        group("group", () {
+        group('group', () {
           tearDownAll(() async {
             expect(tearDownAllRun, isFalse);
             await pumpEventQueue();
             tearDownAllRun = true;
           });
 
-          test("test", () {});
+          test('test', () {});
         });
 
-        test("after", () {
+        test('after', () {
           expect(tearDownAllRun, isTrue);
         });
       });
     });
 
-    test("blocks further tests on out-of-band async", () {
+    test('blocks further tests on out-of-band async', () {
       return expectTestsPass(() {
         var tearDownAllRun = false;
-        group("group", () {
+        group('group', () {
           tearDownAll(() async {
             expect(tearDownAllRun, isFalse);
             expect(
@@ -252,10 +252,10 @@ void main() {
                 completes);
           });
 
-          test("test", () {});
+          test('test', () {});
         });
 
-        test("after", () {
+        test('after', () {
           expect(tearDownAllRun, isTrue);
         });
       });
@@ -267,10 +267,10 @@ void main() {
     var shouldNotRun = expectAsync0(() {}, count: 0);
 
     var engine = declareEngine(() {
-      group("skipped", () {
+      group('skipped', () {
         tearDownAll(shouldNotRun);
 
-        test("test", () {});
+        test('test', () {});
       }, skip: true);
     });
 
@@ -280,11 +280,11 @@ void main() {
     expect(engine.liveTests, equals(engine.skipped));
   });
 
-  test("is emitted through Engine.onTestStarted", () async {
+  test('is emitted through Engine.onTestStarted', () async {
     var engine = declareEngine(() {
       tearDownAll(() {});
 
-      test("test", () {});
+      test('test', () {});
     });
 
     var queue = StreamQueue(engine.onTestStarted);
@@ -294,7 +294,7 @@ void main() {
     await engine.run();
 
     var tearDownAllLiveTest = await tearDownAllFuture;
-    expect(tearDownAllLiveTest.test.name, equals("(tearDownAll)"));
+    expect(tearDownAllLiveTest.test.name, equals('(tearDownAll)'));
     expectTestPassed(tearDownAllLiveTest);
 
     // The fake test for tearDownAll should be removed from the engine's live
@@ -311,12 +311,12 @@ void main() {
     expect(engine.passed, contains(liveTest));
   });
 
-  group("with an error", () {
-    test("reports the error and remains in Engine.liveTests", () async {
+  group('with an error', () {
+    test('reports the error and remains in Engine.liveTests', () async {
       var engine = declareEngine(() {
-        tearDownAll(() => throw TestFailure("fail"));
+        tearDownAll(() => throw TestFailure('fail'));
 
-        test("test", () {});
+        test('test', () {});
       });
 
       var queue = StreamQueue(engine.onTestStarted);
@@ -326,8 +326,8 @@ void main() {
       expect(await engine.run(), isFalse);
 
       var tearDownAllLiveTest = await tearDownAllFuture;
-      expect(tearDownAllLiveTest.test.name, equals("(tearDownAll)"));
-      expectTestFailed(tearDownAllLiveTest, "fail");
+      expect(tearDownAllLiveTest.test.name, equals('(tearDownAll)'));
+      expectTestFailed(tearDownAllLiveTest, 'fail');
 
       // The fake test for tearDownAll should be removed from the engine's live
       // test list so that reporters don't display it as a passed test.
@@ -338,22 +338,22 @@ void main() {
       expect(engine.active, isNot(contains(tearDownAllLiveTest)));
     });
 
-    test("runs further tearDownAlls", () async {
+    test('runs further tearDownAlls', () async {
       // Declare this in the outer test so if it doesn't runs, the outer test
       // will fail.
       var shouldRun = expectAsync0(() {});
 
       var engine = declareEngine(() {
-        tearDownAll(() => throw "error");
+        tearDownAll(() => throw 'error');
         tearDownAll(shouldRun);
 
-        test("test", () {});
+        test('test', () {});
       });
 
       expect(await engine.run(), isFalse);
     });
 
-    test("runs outer tearDownAlls", () async {
+    test('runs outer tearDownAlls', () async {
       // Declare this in the outer test so if it doesn't runs, the outer test
       // will fail.
       var shouldRun = expectAsync0(() {});
@@ -361,10 +361,10 @@ void main() {
       var engine = declareEngine(() {
         tearDownAll(shouldRun);
 
-        group("group", () {
-          tearDownAll(() => throw "error");
+        group('group', () {
+          tearDownAll(() => throw 'error');
 
-          test("test", () {});
+          test('test', () {});
         });
       });
 

@@ -101,10 +101,10 @@ class _ExpectedFunction<T> {
         this._zone = Zone.current,
         this._id = _makeCallbackId(id, callback) {
     if (_invoker == null) {
-      throw StateError("[expectAsync] was called outside of a test.");
+      throw StateError('[expectAsync] was called outside of a test.');
     } else if (maxExpected > 0 && minExpected > maxExpected) {
-      throw ArgumentError("max ($maxExpected) may not be less than count "
-          "($minExpected).");
+      throw ArgumentError('max ($maxExpected) may not be less than count '
+          '($minExpected).');
     }
 
     if (isDone != null || minExpected > 0) {
@@ -120,7 +120,7 @@ class _ExpectedFunction<T> {
   /// If [id] is passed, uses that. Otherwise, tries to determine a name from
   /// calling `toString`. If no name can be found, returns the empty string.
   static String _makeCallbackId(String id, Function callback) {
-    if (id != null) return "$id ";
+    if (id != null) return '$id ';
 
     // If the callback is not an anonymous closure, try to get the
     // name.
@@ -132,7 +132,7 @@ class _ExpectedFunction<T> {
     start += prefix.length;
     var end = toString.indexOf("'", start);
     if (end == -1) return '';
-    return "${toString.substring(start, end)} ";
+    return '${toString.substring(start, end)} ';
   }
 
   /// Returns a function that has the same number of positional arguments as the
@@ -227,11 +227,11 @@ class _ExpectedFunction<T> {
 /// Use [expectAsync0], [expectAsync1],
 /// [expectAsync2], [expectAsync3], [expectAsync4], [expectAsync5], or
 /// [expectAsync6] instead.
-@Deprecated("Will be removed in 0.13.0")
+@Deprecated('Will be removed in 0.13.0')
 Function expectAsync(Function callback,
     {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync() may only be called within a test.");
+    throw StateError('expectAsync() may only be called within a test.');
   }
 
   return _ExpectedFunction(callback, count, max, id: id, reason: reason).func;
@@ -261,7 +261,7 @@ Function expectAsync(Function callback,
 Func0<T> expectAsync0<T>(T callback(),
     {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync0() may only be called within a test.");
+    throw StateError('expectAsync0() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -292,7 +292,7 @@ Func0<T> expectAsync0<T>(T callback(),
 Func1<T, A> expectAsync1<T, A>(T callback(A a),
     {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync1() may only be called within a test.");
+    throw StateError('expectAsync1() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -323,7 +323,7 @@ Func1<T, A> expectAsync1<T, A>(T callback(A a),
 Func2<T, A, B> expectAsync2<T, A, B>(T callback(A a, B b),
     {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync2() may only be called within a test.");
+    throw StateError('expectAsync2() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -354,7 +354,7 @@ Func2<T, A, B> expectAsync2<T, A, B>(T callback(A a, B b),
 Func3<T, A, B, C> expectAsync3<T, A, B, C>(T callback(A a, B b, C c),
     {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync3() may only be called within a test.");
+    throw StateError('expectAsync3() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -385,7 +385,7 @@ Func3<T, A, B, C> expectAsync3<T, A, B, C>(T callback(A a, B b, C c),
 Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(T callback(A a, B b, C c, D d),
     {int count = 1, int max = 0, String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync4() may only be called within a test.");
+    throw StateError('expectAsync4() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -420,7 +420,7 @@ Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
     String id,
     String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync5() may only be called within a test.");
+    throw StateError('expectAsync5() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -455,7 +455,7 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
     String id,
     String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsync6() may only be called within a test.");
+    throw StateError('expectAsync6() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
@@ -466,11 +466,11 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
 /// Use [expectAsyncUntil0], [expectAsyncUntil1],
 /// [expectAsyncUntil2], [expectAsyncUntil3], [expectAsyncUntil4],
 /// [expectAsyncUntil5], or [expectAsyncUntil6] instead.
-@Deprecated("Will be removed in 0.13.0")
+@Deprecated('Will be removed in 0.13.0')
 Function expectAsyncUntil(Function callback, bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil() may only be called within a test.");
+    throw StateError('expectAsyncUntil() may only be called within a test.');
   }
 
   return _ExpectedFunction(callback, 0, -1,
@@ -498,7 +498,7 @@ Function expectAsyncUntil(Function callback, bool isDone(),
 Func0<T> expectAsyncUntil0<T>(T callback(), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil0() may only be called within a test.");
+    throw StateError('expectAsyncUntil0() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,
@@ -526,7 +526,7 @@ Func0<T> expectAsyncUntil0<T>(T callback(), bool isDone(),
 Func1<T, A> expectAsyncUntil1<T, A>(T callback(A a), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil1() may only be called within a test.");
+    throw StateError('expectAsyncUntil1() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,
@@ -554,7 +554,7 @@ Func1<T, A> expectAsyncUntil1<T, A>(T callback(A a), bool isDone(),
 Func2<T, A, B> expectAsyncUntil2<T, A, B>(T callback(A a, B b), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil2() may only be called within a test.");
+    throw StateError('expectAsyncUntil2() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,
@@ -583,7 +583,7 @@ Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
     T callback(A a, B b, C c), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil3() may only be called within a test.");
+    throw StateError('expectAsyncUntil3() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,
@@ -612,7 +612,7 @@ Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
     T callback(A a, B b, C c, D d), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil4() may only be called within a test.");
+    throw StateError('expectAsyncUntil4() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,
@@ -641,7 +641,7 @@ Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
     T callback(A a, B b, C c, D d, E e), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil5() may only be called within a test.");
+    throw StateError('expectAsyncUntil5() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,
@@ -670,7 +670,7 @@ Func6<T, A, B, C, D, E, F> expectAsyncUntil6<T, A, B, C, D, E, F>(
     T callback(A a, B b, C c, D d, E e, F f), bool isDone(),
     {String id, String reason}) {
   if (Invoker.current == null) {
-    throw StateError("expectAsyncUntil() may only be called within a test.");
+    throw StateError('expectAsyncUntil() may only be called within a test.');
   }
 
   return _ExpectedFunction<T>(callback, 0, -1,

@@ -11,8 +11,8 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  group("supports a function with this many arguments:", () {
-    test("0", () async {
+  group('supports a function with this many arguments:', () {
+    test('0', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync0(() {
@@ -24,7 +24,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("1", () async {
+    test('1', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync1((arg) {
@@ -37,7 +37,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("2", () async {
+    test('2', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync2((arg1, arg2) {
@@ -51,7 +51,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("3", () async {
+    test('3', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync3((arg1, arg2, arg3) {
@@ -66,7 +66,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("4", () async {
+    test('4', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync4((arg1, arg2, arg3, arg4) {
@@ -82,7 +82,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("5", () async {
+    test('5', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync5((arg1, arg2, arg3, arg4, arg5) {
@@ -99,7 +99,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("6", () async {
+    test('6', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync6((arg1, arg2, arg3, arg4, arg5, arg6) {
@@ -118,8 +118,8 @@ void main() {
     });
   });
 
-  group("with optional arguments", () {
-    test("allows them to be passed", () async {
+  group('with optional arguments', () {
+    test('allows them to be passed', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync1(([arg = 1]) {
@@ -132,7 +132,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("allows them not to be passed", () async {
+    test('allows them not to be passed', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync1(([arg = 1]) {
@@ -146,13 +146,13 @@ void main() {
     });
   });
 
-  group("by default", () {
+  group('by default', () {
     test("won't allow the test to complete until it's called", () {
       return expectTestBlocks(
           () => expectAsync0(() {}), (callback) => callback());
     });
 
-    test("may only be called once", () async {
+    test('may only be called once', () async {
       var liveTest = await runTestBody(() {
         var callback = expectAsync0(() {});
         callback();
@@ -160,14 +160,14 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, "Callback called more times than expected (1).");
+          liveTest, 'Callback called more times than expected (1).');
     });
   });
 
-  group("with count", () {
+  group('with count', () {
     test(
         "won't allow the test to complete until it's called at least that "
-        "many times", () async {
+        'many times', () async {
       LiveTest liveTest;
       Future future;
       liveTest = createTest(() {
@@ -206,10 +206,10 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, "Callback called more times than expected (3).");
+          liveTest, 'Callback called more times than expected (3).');
     });
 
-    group("0,", () {
+    group('0,', () {
       test("won't block the test's completion", () {
         expectAsync0(() {}, count: 0);
       });
@@ -220,20 +220,20 @@ void main() {
         });
 
         expectTestFailed(
-            liveTest, "Callback called more times than expected (0).");
+            liveTest, 'Callback called more times than expected (0).');
       });
     });
   });
 
-  group("with max", () {
-    test("will allow the callback to be called that many times", () {
+  group('with max', () {
+    test('will allow the callback to be called that many times', () {
       var callback = expectAsync0(() {}, max: 3);
       callback();
       callback();
       callback();
     });
 
-    test("will allow the callback to be called fewer than that many times", () {
+    test('will allow the callback to be called fewer than that many times', () {
       var callback = expectAsync0(() {}, max: 3);
       callback();
     });
@@ -249,10 +249,10 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, "Callback called more times than expected (3).");
+          liveTest, 'Callback called more times than expected (3).');
     });
 
-    test("-1, will allow the callback to be called any number of times", () {
+    test('-1, will allow the callback to be called any number of times', () {
       var callback = expectAsync0(() {}, max: -1);
       for (var i = 0; i < 20; i++) {
         callback();
@@ -260,11 +260,11 @@ void main() {
     });
   });
 
-  test("will throw an error if max is less than count", () {
+  test('will throw an error if max is less than count', () {
     expect(() => expectAsync0(() {}, max: 1, count: 2), throwsArgumentError);
   });
 
-  group("expectAsyncUntil()", () {
+  group('expectAsyncUntil()', () {
     test("won't allow the test to complete until isDone returns true",
         () async {
       LiveTest liveTest;
@@ -300,7 +300,7 @@ void main() {
     });
   });
 
-  test("allows errors", () async {
+  test('allows errors', () async {
     var liveTest = await runTestBody(() {
       expect(expectAsync0(() => throw 'oh no'), throwsA('oh no'));
     });
@@ -308,8 +308,8 @@ void main() {
     expectTestPassed(liveTest);
   });
 
-  group("old-style expectAsync()", () {
-    test("works with no arguments", () async {
+  group('old-style expectAsync()', () {
+    test('works with no arguments', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync(() {
@@ -321,7 +321,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test("works with arguments", () async {
+    test('works with arguments', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2) {

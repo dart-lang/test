@@ -20,7 +20,7 @@ import 'browser.dart';
 import 'default_settings.dart';
 
 /// The PhantomJS script that opens the host page.
-final _script = """
+final _script = '''
 var system = require('system');
 var page = require('webpage').create();
 
@@ -36,13 +36,13 @@ page.onConsoleMessage = function(message) {
 page.open(system.args[1], function(status) {
   if (status !== "success") phantom.exit(1);
 });
-""";
+''';
 
 /// A class for running an instance of PhantomJS.
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class PhantomJS extends Browser {
-  final name = "PhantomJS";
+  final name = 'PhantomJS';
 
   final Future<Uri> remoteDebuggerUrl;
 
@@ -51,7 +51,7 @@ class PhantomJS extends Browser {
     var remoteDebuggerCompleter = Completer<Uri>.sync();
     return PhantomJS._(() async {
       var dir = createTempDir();
-      var script = p.join(dir, "script.js");
+      var script = p.join(dir, 'script.js');
       File(script).writeAsStringSync(_script);
 
       var port = debug ? await getUnsafeUnusedPort() : null;
@@ -59,7 +59,7 @@ class PhantomJS extends Browser {
       var args = settings.arguments.toList();
       if (debug) {
         args.addAll(
-            ["--remote-debugger-port=$port", "--remote-debugger-autorun=yes"]);
+            ['--remote-debugger-port=$port', '--remote-debugger-autorun=yes']);
       }
       args.addAll([script, url.toString()]);
       var process = await Process.start(settings.executable, args);
@@ -73,13 +73,13 @@ class PhantomJS extends Browser {
 
         if (exitCode == exit_codes.protocol) {
           throw ApplicationException(
-              "Only PhantomJS version 2.0.0 or greater is supported");
+              'Only PhantomJS version 2.0.0 or greater is supported');
         }
       }));
 
       if (port != null) {
         remoteDebuggerCompleter.complete(Uri.parse(
-            "http://localhost:$port/webkit/inspector/inspector.html?page=2"));
+            'http://localhost:$port/webkit/inspector/inspector.html?page=2'));
       } else {
         remoteDebuggerCompleter.complete(null);
       }

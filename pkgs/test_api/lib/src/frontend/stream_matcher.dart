@@ -132,7 +132,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
     } else if (item is Stream) {
       queue = StreamQueue(item);
     } else {
-      return "was not a Stream or a StreamQueue";
+      return 'was not a Stream or a StreamQueue';
     }
 
     // Avoid async/await in the outer method so that we synchronously error out
@@ -161,23 +161,23 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
 
       var eventsString = events.map((event) {
         if (event == null) {
-          return "x Stream closed.";
+          return 'x Stream closed.';
         } else if (event.isValue) {
           return addBullet(event.asValue.value.toString());
         } else {
           var error = event.asError;
           var chain = formatStackTrace(error.stackTrace);
-          var text = "${error.error}\n$chain";
-          return prefixLines(text, "  ", first: "! ");
+          var text = '${error.error}\n$chain';
+          return prefixLines(text, '  ', first: '! ');
         }
-      }).join("\n");
-      if (eventsString.isEmpty) eventsString = "no events";
+      }).join('\n');
+      if (eventsString.isEmpty) eventsString = 'no events';
 
       transaction.reject();
 
       var buffer = StringBuffer();
-      buffer.writeln(indent(eventsString, first: "emitted "));
-      if (result.isNotEmpty) buffer.writeln(indent(result, first: "  which "));
+      buffer.writeln(indent(eventsString, first: 'emitted '));
+      if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
       return buffer.toString().trimRight();
     }, onError: (error) {
       transaction.reject();
@@ -186,5 +186,5 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   }
 
   Description describe(Description description) =>
-      description.add("should ").add(this.description);
+      description.add('should ').add(this.description);
 }

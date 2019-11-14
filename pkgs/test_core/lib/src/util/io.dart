@@ -21,7 +21,7 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 const _defaultLineLength = 200;
 
 /// Whether the test runner is running on Google-internal infrastructure.
-final bool inGoogle = Platform.version.contains("(google3)");
+final bool inGoogle = Platform.version.contains('(google3)');
 
 /// The maximum line length for output.
 final int lineLength = () {
@@ -63,15 +63,15 @@ SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
 final stdinLines = StreamQueue(lineSplitter.bind(stdin));
 
 /// Whether this is being run as a subprocess in the test package's own tests.
-bool inTestTests = Platform.environment["_DART_TEST_TESTING"] == "true";
+bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
 
 /// The root directory below which to nest temporary directories created by the
 /// test runner.
 ///
 /// This is configurable so that the test code can validate that the runner
 /// cleans up after itself fully.
-final _tempDir = Platform.environment.containsKey("_UNITTEST_TEMP_DIR")
-    ? Platform.environment["_UNITTEST_TEMP_DIR"]
+final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
+    ? Platform.environment['_UNITTEST_TEMP_DIR']
     : Directory.systemTemp.path;
 
 /// Whether or not the current terminal supports ansi escape codes.
@@ -106,10 +106,10 @@ Future withTempDir(Future fn(String path)) {
 /// part of a word's length. It only splits words on spaces, not on other sorts
 /// of whitespace.
 String wordWrap(String text) {
-  return text.split("\n").map((originalLine) {
+  return text.split('\n').map((originalLine) {
     var buffer = StringBuffer();
     var lengthSoFar = 0;
-    for (var word in originalLine.split(" ")) {
+    for (var word in originalLine.split(' ')) {
       var wordLength = withoutColors(word).length;
       if (wordLength > lineLength) {
         if (lengthSoFar != 0) buffer.writeln();
@@ -122,12 +122,12 @@ String wordWrap(String text) {
         buffer.write(word);
         lengthSoFar = wordLength;
       } else {
-        buffer.write(" $word");
+        buffer.write(' $word');
         lengthSoFar += 1 + wordLength;
       }
     }
     return buffer.toString();
-  }).join("\n");
+  }).join('\n');
 }
 
 /// Print a warning containing [message].
@@ -140,8 +140,8 @@ String wordWrap(String text) {
 /// with the current test. Otherwise, it prints it using [stderr].
 void warn(String message, {bool color, bool print = false}) {
   if (color == null) color = canUseSpecialChars;
-  var header = color ? "\u001b[33mWarning:\u001b[0m" : "Warning:";
-  (print ? core.print : stderr.writeln)(wordWrap("$header $message\n"));
+  var header = color ? '\u001b[33mWarning:\u001b[0m' : 'Warning:';
+  (print ? core.print : stderr.writeln)(wordWrap('$header $message\n'));
 }
 
 /// Repeatedly finds a probably-unused port on localhost and passes it to
@@ -198,11 +198,11 @@ Future<int> getUnsafeUnusedPort() async {
 Future<Uri> getRemoteDebuggerUrl(Uri base) async {
   try {
     var client = HttpClient();
-    var request = await client.getUrl(base.resolve("/json/list"));
+    var request = await client.getUrl(base.resolve('/json/list'));
     var response = await request.close();
     var jsonObject =
         await json.fuse(utf8).decoder.bind(response).single as List;
-    return base.resolve(jsonObject.first["devtoolsFrontendUrl"] as String);
+    return base.resolve(jsonObject.first['devtoolsFrontendUrl'] as String);
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
