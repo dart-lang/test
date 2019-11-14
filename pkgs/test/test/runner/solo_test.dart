@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -10,8 +10,8 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../io.dart';
 
 void main() {
-  test("only runs the tests marked as solo", () async {
-    await d.file("test.dart", """
+  test('only runs the tests marked as solo', () async {
+    await d.file('test.dart', '''
           import 'dart:async';
 
           import 'package:test/test.dart';
@@ -24,15 +24,15 @@ void main() {
               throw 'some error';
             });
           }
-          """).create();
+          ''').create();
 
-    var test = await runTest(["test.dart"]);
-    expect(test.stdout, emitsThrough(contains("+1 ~1: All tests passed!")));
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1 ~1: All tests passed!')));
     await test.shouldExit(0);
   });
 
-  test("only runs groups marked as solo", () async {
-    await d.file("test.dart", """
+  test('only runs groups marked as solo', () async {
+    await d.file('test.dart', '''
           import 'dart:async';
 
           import 'package:test/test.dart';
@@ -55,10 +55,10 @@ void main() {
               });
             });
           }
-          """).create();
+          ''').create();
 
-    var test = await runTest(["test.dart"]);
-    expect(test.stdout, emitsThrough(contains("+2 ~1: All tests passed!")));
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('+2 ~1: All tests passed!')));
     await test.shouldExit(0);
   });
 }

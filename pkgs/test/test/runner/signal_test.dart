@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 // Windows doesn't support sending signals.
-@TestOn("vm && !windows")
+@TestOn('vm && !windows')
 
 import 'dart:async';
 import 'dart:io';
@@ -16,53 +16,53 @@ import 'package:test/test.dart';
 
 import '../io.dart';
 
-String get _tempDir => p.join(d.sandbox, "tmp");
+String get _tempDir => p.join(d.sandbox, 'tmp');
 
 // This test is inherently prone to race conditions. If it fails, it will likely
 // do so flakily, but if it succeeds, it will succeed consistently. The tests
 // represent a best effort to kill the test runner at certain times during its
 // execution.
 void main() {
-  setUp(() => d.dir("tmp").create());
+  setUp(() => d.dir('tmp').create());
 
-  group("during loading,", () {
-    test("cleans up if killed while loading a VM test", () async {
-      await d.file("test.dart", """
+  group('during loading,', () {
+    test('cleans up if killed while loading a VM test', () async {
+      await d.file('test.dart', '''
 void main() {
   print("in test.dart");
   // Spin for a long time so the test is probably killed while still loading.
   for (var i = 0; i < 100000000; i++) {}
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("in test.dart"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('in test.dart'));
       await signalAndQuit(test);
 
       expectTempDirEmpty();
     });
 
-    test("cleans up if killed while loading a browser test", () async {
-      await d.file("test.dart", "void main() {}").create();
+    test('cleans up if killed while loading a browser test', () async {
+      await d.file('test.dart', 'void main() {}').create();
 
-      var test = await _runTest(["-p", "chrome", "test.dart"]);
+      var test = await _runTest(['-p', 'chrome', 'test.dart']);
       await expectLater(
-          test.stdout, emitsThrough(endsWith("compiling test.dart")));
+          test.stdout, emitsThrough(endsWith('compiling test.dart')));
       await signalAndQuit(test);
 
-      expectTempDirEmpty(skip: "Failing on Travis.");
-    }, tags: "chrome");
+      expectTempDirEmpty(skip: 'Failing on Travis.');
+    }, tags: 'chrome');
 
-    test("exits immediately if ^C is sent twice", () async {
-      await d.file("test.dart", """
+    test('exits immediately if ^C is sent twice', () async {
+      await d.file('test.dart', '''
 void main() {
   print("in test.dart");
   while (true) {}
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("in test.dart"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('in test.dart'));
       test.signal(ProcessSignal.sigterm);
 
       // TODO(nweiz): Sending two signals in close succession can cause the
@@ -74,9 +74,9 @@ void main() {
     });
   });
 
-  group("during test running", () {
-    test("waits for a VM test to finish running", () async {
-      await d.file("test.dart", """
+  group('during test running', () {
+    test('waits for a VM test to finish running', () async {
+      await d.file('test.dart', '''
 import 'dart:async';
 import 'dart:io';
 
@@ -94,19 +94,19 @@ void main() {
     return new Future.delayed(new Duration(seconds: 1));
   });
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("running test"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('running test'));
       await signalAndQuit(test);
 
-      await d.file("output", "ran tearDown").validate();
-      await d.file("output_all", "ran tearDownAll").validate();
+      await d.file('output', 'ran tearDown').validate();
+      await d.file('output_all', 'ran tearDownAll').validate();
       expectTempDirEmpty();
     });
 
-    test("waits for an active tearDownAll to finish running", () async {
-      await d.file("test.dart", """
+    test('waits for an active tearDownAll to finish running', () async {
+      await d.file('test.dart', '''
 import 'dart:async';
 import 'dart:io';
 
@@ -121,18 +121,18 @@ void main() {
 
   test("test", () {});
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("running tearDownAll"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('running tearDownAll'));
       await signalAndQuit(test);
 
-      await d.file("output", "ran tearDownAll").validate();
+      await d.file('output', 'ran tearDownAll').validate();
       expectTempDirEmpty();
     });
 
-    test("kills a browser test immediately", () async {
-      await d.file("test.dart", """
+    test('kills a browser test immediately', () async {
+      await d.file('test.dart', '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -149,17 +149,17 @@ void main() {
     });
   });
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["-p", "chrome", "test.dart"]);
-      await expectLater(test.stdout, emitsThrough("running test"));
+      var test = await _runTest(['-p', 'chrome', 'test.dart']);
+      await expectLater(test.stdout, emitsThrough('running test'));
       await signalAndQuit(test);
 
-      expectTempDirEmpty(skip: "Failing on Travis.");
-    }, tags: "chrome");
+      expectTempDirEmpty(skip: 'Failing on Travis.');
+    }, tags: 'chrome');
 
-    test("kills a VM test immediately if ^C is sent twice", () async {
-      await d.file("test.dart", """
+    test('kills a VM test immediately if ^C is sent twice', () async {
+      await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -168,10 +168,10 @@ void main() {
     while (true) {}
   });
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("running test"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('running test'));
       test.signal(ProcessSignal.sigterm);
 
       // TODO(nweiz): Sending two signals in close succession can cause the
@@ -181,8 +181,8 @@ void main() {
       await signalAndQuit(test);
     });
 
-    test("causes expect() to always throw an error immediately", () async {
-      await d.file("test.dart", """
+    test('causes expect() to always throw an error immediately', () async {
+      await d.file('test.dart', '''
 import 'dart:async';
 import 'dart:io';
 
@@ -206,18 +206,18 @@ void main() {
     }
   });
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("running test"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('running test'));
       await signalAndQuit(test);
 
-      await d.file("output", "true").validate();
+      await d.file('output', 'true').validate();
       expectTempDirEmpty();
     });
 
-    test("causes expectAsync() to always throw an error immediately", () async {
-      await d.file("test.dart", """
+    test('causes expectAsync() to always throw an error immediately', () async {
+      await d.file('test.dart', '''
 import 'dart:async';
 import 'dart:io';
 
@@ -241,13 +241,13 @@ void main() {
     }
   });
 }
-""").create();
+''').create();
 
-      var test = await _runTest(["test.dart"]);
-      await expectLater(test.stdout, emitsThrough("running test"));
+      var test = await _runTest(['test.dart']);
+      await expectLater(test.stdout, emitsThrough('running test'));
       await signalAndQuit(test);
 
-      await d.file("output", "true").validate();
+      await d.file('output', 'true').validate();
       expectTempDirEmpty();
     });
   });
@@ -255,7 +255,7 @@ void main() {
 
 Future<TestProcess> _runTest(List<String> args, {bool forwardStdio = false}) =>
     runTest(args,
-        environment: {"_UNITTEST_TEMP_DIR": _tempDir},
+        environment: {'_UNITTEST_TEMP_DIR': _tempDir},
         forwardStdio: forwardStdio);
 
 Future signalAndQuit(TestProcess test) async {

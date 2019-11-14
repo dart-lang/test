@@ -57,10 +57,10 @@ Null Function(
 
     zone.handleUncaughtError(
         TestFailure(
-            "Callback should never have been called, but it was called with" +
+            'Callback should never have been called, but it was called with' +
                 (arguments.isEmpty
-                    ? " no arguments."
-                    : ":\n${bullet(arguments.map(prettyPrint))}")),
+                    ? ' no arguments.'
+                    : ':\n${bullet(arguments.map(prettyPrint))}')),
         zone.run(() => Chain.current()));
     return null;
   };

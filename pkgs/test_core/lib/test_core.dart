@@ -68,7 +68,7 @@ Declarer get _declarer {
     // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');
-    unawaited(Future.error("Dummy exception to set exit code."));
+    unawaited(Future.error('Dummy exception to set exit code.'));
   });
   return _globalDeclarer;
 }

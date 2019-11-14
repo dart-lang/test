@@ -72,7 +72,7 @@ class ExecutableSettings {
   /// Parses settings from a user-provided YAML mapping.
   factory ExecutableSettings.parse(YamlMap settings) {
     List<String> arguments;
-    var argumentsNode = settings.nodes["arguments"];
+    var argumentsNode = settings.nodes['arguments'];
     if (argumentsNode != null) {
       var value = argumentsNode.value;
       if (value is String) {
@@ -83,14 +83,14 @@ class ExecutableSettings {
         }
       } else {
         throw SourceSpanFormatException(
-            "Must be a string.", argumentsNode.span);
+            'Must be a string.', argumentsNode.span);
       }
     }
 
     String linuxExecutable;
     String macOSExecutable;
     String windowsExecutable;
-    var executableNode = settings.nodes["executable"];
+    var executableNode = settings.nodes['executable'];
     if (executableNode != null) {
       var value = executableNode.value;
       if (value is String) {
@@ -104,25 +104,25 @@ class ExecutableSettings {
         macOSExecutable = value;
         windowsExecutable = value;
       } else if (executableNode is YamlMap) {
-        linuxExecutable = _getExecutable(executableNode.nodes["linux"]);
-        macOSExecutable = _getExecutable(executableNode.nodes["mac_os"]);
-        windowsExecutable = _getExecutable(executableNode.nodes["windows"],
+        linuxExecutable = _getExecutable(executableNode.nodes['linux']);
+        macOSExecutable = _getExecutable(executableNode.nodes['mac_os']);
+        windowsExecutable = _getExecutable(executableNode.nodes['windows'],
             allowRelative: true);
       } else {
         throw SourceSpanFormatException(
-            "Must be a map or a string.", executableNode.span);
+            'Must be a map or a string.', executableNode.span);
       }
     }
 
     var headless = true;
-    var headlessNode = settings.nodes["headless"];
+    var headlessNode = settings.nodes['headless'];
     if (headlessNode != null) {
       var value = headlessNode.value;
       if (value is bool) {
         headless = value;
       } else {
         throw SourceSpanFormatException(
-            "Must be a boolean.", headlessNode.span);
+            'Must be a boolean.', headlessNode.span);
       }
     }
 
@@ -142,7 +142,7 @@ class ExecutableSettings {
       {bool allowRelative = false}) {
     if (executableNode == null || executableNode.value == null) return null;
     if (executableNode.value is! String) {
-      throw SourceSpanFormatException("Must be a string.", executableNode.span);
+      throw SourceSpanFormatException('Must be a string.', executableNode.span);
     }
     if (!allowRelative) _assertNotRelative(executableNode as YamlScalar);
     return executableNode.value as String;
@@ -159,7 +159,7 @@ class ExecutableSettings {
     if (p.posix.basename(executable) == executable) return;
 
     throw SourceSpanFormatException(
-        "Linux and Mac OS executables may not be relative paths.",
+        'Linux and Mac OS executables may not be relative paths.',
         executableNode.span);
   }
 

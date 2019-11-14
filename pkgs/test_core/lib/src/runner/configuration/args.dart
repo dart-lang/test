@@ -23,90 +23,90 @@ final ArgParser _parser = (() {
   if (!Platform.isMacOS) allRuntimes.remove(Runtime.safari);
   if (!Platform.isWindows) allRuntimes.remove(Runtime.internetExplorer);
 
-  parser.addFlag("help",
-      abbr: "h", negatable: false, help: "Shows this usage information.");
-  parser.addFlag("version",
+  parser.addFlag('help',
+      abbr: 'h', negatable: false, help: 'Shows this usage information.');
+  parser.addFlag('version',
       negatable: false, help: "Shows the package's version.");
 
   // Note that defaultsTo declarations here are only for documentation purposes.
   // We pass null values rather than defaults to [new Configuration] so that it
   // merges properly with the config file.
 
-  parser.addSeparator("======== Selecting Tests");
-  parser.addMultiOption("name",
+  parser.addSeparator('======== Selecting Tests');
+  parser.addMultiOption('name',
       abbr: 'n',
       help: 'A substring of the name of the test to run.\n'
           'Regular expression syntax is supported.\n'
           'If passed multiple times, tests must match all substrings.',
       splitCommas: false);
-  parser.addMultiOption("plain-name",
+  parser.addMultiOption('plain-name',
       abbr: 'N',
       help: 'A plain-text substring of the name of the test to run.\n'
           'If passed multiple times, tests must match all substrings.',
       splitCommas: false);
-  parser.addMultiOption("tags",
+  parser.addMultiOption('tags',
       abbr: 't',
       help: 'Run only tests with all of the specified tags.\n'
           'Supports boolean selector syntax.');
-  parser.addMultiOption("tag", hide: true);
-  parser.addMultiOption("exclude-tags",
+  parser.addMultiOption('tag', hide: true);
+  parser.addMultiOption('exclude-tags',
       abbr: 'x',
       help: "Don't run tests with any of the specified tags.\n"
-          "Supports boolean selector syntax.");
-  parser.addMultiOption("exclude-tag", hide: true);
-  parser.addFlag("run-skipped",
+          'Supports boolean selector syntax.');
+  parser.addMultiOption('exclude-tag', hide: true);
+  parser.addFlag('run-skipped',
       help: 'Run skipped tests instead of skipping them.');
 
-  parser.addSeparator("======== Running Tests");
+  parser.addSeparator('======== Running Tests');
 
   // The UI term "platform" corresponds with the implementation term "runtime".
   // The [Runtime] class used to be called [TestPlatform], but it was changed to
   // avoid conflicting with [SuitePlatform]. We decided not to also change the
   // UI to avoid a painful migration.
-  parser.addMultiOption("platform",
+  parser.addMultiOption('platform',
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.\n'
           '[vm (default), '
           '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]');
-  parser.addMultiOption("preset",
+  parser.addMultiOption('preset',
       abbr: 'P', help: 'The configuration preset(s) to use.');
-  parser.addOption("concurrency",
+  parser.addOption('concurrency',
       abbr: 'j',
       help: 'The number of concurrent test suites run.',
       defaultsTo: defaultConcurrency.toString(),
       valueHelp: 'threads');
-  parser.addOption("total-shards",
+  parser.addOption('total-shards',
       help: 'The total number of invocations of the test runner being run.');
-  parser.addOption("shard-index",
+  parser.addOption('shard-index',
       help: 'The index of this test runner invocation (of --total-shards).');
-  parser.addOption("pub-serve",
+  parser.addOption('pub-serve',
       help: 'The port of a pub serve instance serving "test/".',
       valueHelp: 'port');
-  parser.addOption("timeout",
+  parser.addOption('timeout',
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
-  parser.addFlag("pause-after-load",
+  parser.addFlag('pause-after-load',
       help: 'Pauses for debugging before any tests execute.\n'
           'Implies --concurrency=1, --debug, and --timeout=none.\n'
           'Currently only supported for browser tests.',
       negatable: false);
-  parser.addFlag("debug",
+  parser.addFlag('debug',
       help: 'Runs the VM and Chrome tests in debug mode.', negatable: false);
-  parser.addOption("coverage",
+  parser.addOption('coverage',
       help: 'Gathers coverage and outputs it to the specified directory.\n'
           'Implies --debug.',
       valueHelp: 'directory');
-  parser.addFlag("chain-stack-traces",
+  parser.addFlag('chain-stack-traces',
       help: 'Chained stack traces to provide greater exception details\n'
           'especially for asynchronous code. It may be useful to disable\n'
           'to provide improved test performance but at the cost of\n'
           'debuggability.',
       defaultsTo: true);
-  parser.addFlag("no-retry",
+  parser.addFlag('no-retry',
       help: "Don't re-run tests that have retry set.",
       defaultsTo: false,
       negatable: false);
-  parser.addOption("test-randomize-ordering-seed",
+  parser.addOption('test-randomize-ordering-seed',
       help: 'If positive, use this as a seed to randomize the execution\n'
           'of test cases (must be a 32bit unsigned integer).\n'
           'If "random", pick a random seed to use.\n'
@@ -117,35 +117,35 @@ final ArgParser _parser = (() {
     reporterDescriptions[reporter] = allReporters[reporter].description;
   }
 
-  parser.addSeparator("======== Output");
-  parser.addOption("reporter",
+  parser.addSeparator('======== Output');
+  parser.addOption('reporter',
       abbr: 'r',
       help: 'The runner used to print test results.',
       defaultsTo: defaultReporter,
       allowed: reporterDescriptions.keys.toList(),
       allowedHelp: reporterDescriptions);
-  parser.addFlag("verbose-trace",
+  parser.addFlag('verbose-trace',
       negatable: false,
       help: 'Whether to emit stack traces with core library frames.');
-  parser.addFlag("js-trace",
+  parser.addFlag('js-trace',
       negatable: false,
       help: 'Whether to emit raw JavaScript stack traces for browser tests.');
-  parser.addFlag("color",
+  parser.addFlag('color',
       help: 'Whether to use terminal colors.\n(auto-detected by default)');
 
   /// The following options are used only by the internal Google test runner.
   /// They're hidden and not supported as stable API surface outside Google.
 
-  parser.addOption("configuration",
+  parser.addOption('configuration',
       help: 'The path to the configuration file.', hide: true);
-  parser.addOption("dart2js-path",
+  parser.addOption('dart2js-path',
       help: 'The path to the dart2js executable.', hide: true);
-  parser.addMultiOption("dart2js-args",
+  parser.addMultiOption('dart2js-args',
       help: 'Extra arguments to pass to dart2js.', hide: true);
 
   // If we're running test/dir/my_test.dart, we'll look for
   // test/dir/my_test.dart.html in the precompiled directory.
-  parser.addOption("precompiled",
+  parser.addOption('precompiled',
       help: 'The path to a mirror of the package directory containing HTML '
           'that points to precompiled JS.',
       hide: true);
@@ -200,13 +200,13 @@ class _Parser {
     var totalShards = _parseOption('total-shards', int.parse);
     if ((shardIndex == null) != (totalShards == null)) {
       throw FormatException(
-          "--shard-index and --total-shards may only be passed together.");
+          '--shard-index and --total-shards may only be passed together.');
     } else if (shardIndex != null) {
       if (shardIndex < 0) {
-        throw FormatException("--shard-index may not be negative.");
+        throw FormatException('--shard-index may not be negative.');
       } else if (shardIndex >= totalShards) {
         throw FormatException(
-            "--shard-index must be less than --total-shards.");
+            '--shard-index must be less than --total-shards.');
       }
     }
 

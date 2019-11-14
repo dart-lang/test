@@ -162,7 +162,7 @@ class ExpandedReporter implements Reporter {
           .listen((state) => _onStateChange(liveTest, state)));
     } else if (_engine.active.length == 1 &&
         _engine.active.first == liveTest &&
-        liveTest.test.name.startsWith("compiling ")) {
+        liveTest.test.name.startsWith('compiling ')) {
       // Print a progress line for load tests that come from compiling JS, since
       // that takes a long time.
       _progressLine(_description(liveTest));
@@ -194,7 +194,7 @@ class ExpandedReporter implements Reporter {
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest), suffix: " $_bold$_red[E]$_noColor");
+    _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
 
     if (error is! LoadException) {
       _sink..writeln(indent('$error'))..writeln(indent('$stackTrace'));
@@ -221,17 +221,17 @@ class ExpandedReporter implements Reporter {
     if (success == null) return;
 
     if (_engine.liveTests.isEmpty) {
-      _sink.writeln("No tests ran.");
+      _sink.writeln('No tests ran.');
     } else if (!success) {
       for (var liveTest in _engine.active) {
         _progressLine(_description(liveTest),
-            suffix: " - did not complete $_bold$_red[E]$_noColor");
+            suffix: ' - did not complete $_bold$_red[E]$_noColor');
       }
       _progressLine('Some tests failed.', color: _red);
     } else if (_engine.passed.isEmpty) {
-      _progressLine("All tests skipped.");
+      _progressLine('All tests skipped.');
     } else {
-      _progressLine("All tests passed!");
+      _progressLine('All tests passed!');
     }
   }
 
@@ -307,14 +307,14 @@ class ExpandedReporter implements Reporter {
     if (_printPath &&
         liveTest.suite is! LoadSuite &&
         liveTest.suite.path != null) {
-      name = "${liveTest.suite.path}: $name";
+      name = '${liveTest.suite.path}: $name';
     }
 
     if (_printPlatform) {
-      name = "[${liveTest.suite.platform.runtime.name}] $name";
+      name = '[${liveTest.suite.platform.runtime.name}] $name';
     }
 
-    if (liveTest.suite is LoadSuite) name = "$_bold$_gray$name$_noColor";
+    if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';
 
     return name;
   }

@@ -31,7 +31,7 @@ final lineSplitter = StreamTransformer<List<int>, String>(
 final chunksToLines = StreamChannelTransformer<String, String>(
     const LineSplitter(),
     StreamSinkTransformer.fromHandlers(
-        handleData: (data, sink) => sink.add("$data\n")));
+        handleData: (data, sink) => sink.add('$data\n')));
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
@@ -44,7 +44,7 @@ final _vowel = RegExp('[aeiou]');
 ///
 /// This is used to try to distinguish OS X and Linux in [currentOSGuess].
 final _macOSDirectories = Set<String>.from(
-    ["/Applications", "/Library", "/Network", "/System", "/Users"]);
+    ['/Applications', '/Library', '/Network', '/System', '/Users']);
 
 /// Returns the best guess for the current operating system without using
 /// `dart:io`.
@@ -63,12 +63,12 @@ final OperatingSystem currentOSGuess = (() {
 ///
 /// This is like a standard Dart identifier, except that it can also contain
 /// hyphens.
-final _hyphenatedIdentifier = RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
+final _hyphenatedIdentifier = RegExp(r'[a-zA-Z_-][a-zA-Z0-9_-]*');
 
 /// Like [_hyphenatedIdentifier], but anchored so that it must match the entire
 /// string.
 final anchoredHyphenatedIdentifier =
-    RegExp("^${_hyphenatedIdentifier.pattern}\$");
+    RegExp('^${_hyphenatedIdentifier.pattern}\$');
 
 /// A pair of values.
 class Pair<E, F> {
@@ -100,7 +100,7 @@ String getErrorMessage(error) =>
 /// [size] defaults to `first.length`. Otherwise, [size] defaults to 2.
 String indent(String string, {int size, String first}) {
   size ??= first == null ? 2 : first.length;
-  return prefixLines(string, " " * size, first: first);
+  return prefixLines(string, ' ' * size, first: first);
 }
 
 /// Returns a sentence fragment listing the elements of [iter].
@@ -111,8 +111,8 @@ String indent(String string, {int size, String first}) {
 String toSentence(Iterable iter, {String conjunction}) {
   if (iter.length == 1) return iter.first.toString();
 
-  var result = iter.take(iter.length - 1).join(", ");
-  if (iter.length > 2) result += ",";
+  var result = iter.take(iter.length - 1).join(', ');
+  if (iter.length > 2) result += ',';
   return "$result ${conjunction ?? 'and'} ${iter.last}";
 }
 
@@ -128,7 +128,7 @@ String pluralize(String name, int number, {String plural}) {
 
 /// Returns [noun] with an indefinite article ("a" or "an") added, based on
 /// whether its first letter is a vowel.
-String a(String noun) => noun.startsWith(_vowel) ? "an $noun" : "a $noun";
+String a(String noun) => noun.startsWith(_vowel) ? 'an $noun' : 'a $noun';
 
 /// A regular expression matching terminal color codes.
 final _colorCode = RegExp('\u001b\\[[0-9;]+m');
@@ -195,13 +195,13 @@ String niceDuration(Duration duration) {
   var decaseconds = (duration.inMilliseconds % 1000) ~/ 100;
 
   var buffer = StringBuffer();
-  if (minutes != 0) buffer.write("$minutes minutes");
+  if (minutes != 0) buffer.write('$minutes minutes');
 
   if (minutes == 0 || seconds != 0) {
-    if (minutes != 0) buffer.write(", ");
+    if (minutes != 0) buffer.write(', ');
     buffer.write(seconds);
-    if (decaseconds != 0) buffer.write(".$decaseconds");
-    buffer.write(" seconds");
+    if (decaseconds != 0) buffer.write('.$decaseconds');
+    buffer.write(' seconds');
   }
 
   return buffer.toString();
@@ -279,10 +279,10 @@ void ensureJsonEncodable(Object message) {
 
 /// Indents [text], and adds a bullet at the beginning.
 String addBullet(String text) =>
-    prefixLines(text, "  ", first: "${glyph.bullet} ");
+    prefixLines(text, '  ', first: '${glyph.bullet} ');
 
 /// Converts [strings] to a bulleted list.
-String bullet(Iterable<String> strings) => strings.map(addBullet).join("\n");
+String bullet(Iterable<String> strings) => strings.map(addBullet).join('\n');
 
 /// Prepends each line in [text] with [prefix].
 ///
@@ -297,15 +297,15 @@ String prefixLines(String text, String prefix,
   single ??= first ?? last ?? prefix;
 
   var lines = text.split('\n');
-  if (lines.length == 1) return "$single$text";
+  if (lines.length == 1) return '$single$text';
 
-  var buffer = StringBuffer("$first${lines.first}\n");
+  var buffer = StringBuffer('$first${lines.first}\n');
 
   // Write out all but the first and last lines with [prefix].
   for (var line in lines.skip(1).take(lines.length - 2)) {
-    buffer.writeln("$prefix$line");
+    buffer.writeln('$prefix$line');
   }
-  buffer.write("$last${lines.last}");
+  buffer.write('$last${lines.last}');
   return buffer.toString();
 }
 

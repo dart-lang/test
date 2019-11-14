@@ -24,13 +24,13 @@ StreamChannel spawnHybridUri(String url, Object message) {
     var port = ReceivePort();
     var onExitPort = ReceivePort();
     try {
-      var code = """
+      var code = '''
         import "package:test_core/src/runner/hybrid_listener.dart";
 
         import "${url.replaceAll(r'$', '%24')}" as lib;
 
         void main(_, List data) => listen(() => lib.hybridMain, data);
-      """;
+      ''';
 
       var isolate = await dart.runInIsolate(code, [port.sendPort, message],
           onExit: onExitPort.sendPort);
@@ -57,8 +57,8 @@ StreamChannel spawnHybridUri(String url, Object message) {
       // Make sure any errors in spawning the isolate are forwarded to the test.
       return StreamChannel(
           Stream.fromFuture(Future.value({
-            "type": "error",
-            "error": RemoteException.serialize(error, stackTrace)
+            'type': 'error',
+            'error': RemoteException.serialize(error, stackTrace)
           })),
           NullStreamSink());
     }

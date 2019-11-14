@@ -129,7 +129,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     if (stackTrace == null) stackTrace = Trace.current();
 
     return LoadSuite(
-        "loading ${exception.path}",
+        'loading ${exception.path}',
         config ?? SuiteConfiguration.empty,
         platform ?? currentPlatform(Runtime.vm),
         () => Future.error(exception, stackTrace),
@@ -139,7 +139,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// A utility constructor for a load suite that just emits [suite].
   factory LoadSuite.forSuite(RunnerSuite suite) {
     return LoadSuite(
-        "loading ${suite.path}", suite.config, suite.platform, () => suite,
+        'loading ${suite.path}', suite.config, suite.platform, () => suite,
         path: suite.path);
   }
 
@@ -204,7 +204,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   StreamChannel channel(String name) =>
-      throw UnsupportedError("LoadSuite.channel() is not supported.");
+      throw UnsupportedError('LoadSuite.channel() is not supported.');
 
   Future close() async {}
 }

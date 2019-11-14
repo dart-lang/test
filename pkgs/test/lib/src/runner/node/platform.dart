@@ -41,7 +41,7 @@ class NodePlatform extends PlatformPlugin
   final Configuration _config;
 
   /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = CompilerPool(["-Dnode=true", "--server-mode"]);
+  final _compilers = CompilerPool(['-Dnode=true', '--server-mode']);
 
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();
@@ -53,9 +53,9 @@ class NodePlatform extends PlatformPlugin
   /// it.
   final _settings = {
     Runtime.nodeJS: ExecutableSettings(
-        linuxExecutable: "node",
-        macOSExecutable: "node",
-        windowsExecutable: "node.exe")
+        linuxExecutable: 'node',
+        macOSExecutable: 'node',
+        windowsExecutable: 'node.exe')
   };
 
   NodePlatform()
@@ -84,7 +84,7 @@ class NodePlatform extends PlatformPlugin
     var controller = deserializeSuite(
         path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
 
-    controller.channel("test.node.mapper").sink.add(pair.last?.serialize());
+    controller.channel('test.node.mapper').sink.add(pair.last?.serialize());
 
     return await controller.suite;
   }
@@ -146,7 +146,7 @@ class NodePlatform extends PlatformPlugin
   Future<Pair<Process, StackTraceMapper>> _spawnNormalProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(testPath) + ".node_test.dart.js");
+    var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
     await _compilers.compile('''
         import "package:test/src/bootstrap/node.dart";
 
@@ -204,7 +204,7 @@ class NodePlatform extends PlatformPlugin
   Future<Pair<Process, StackTraceMapper>> _spawnPubServeProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(testPath) + ".node_test.dart.js");
+    var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
     var url = _config.pubServeUrl.resolveUri(
         p.toUri(p.relative(testPath, from: 'test') + '.node_test.dart.js'));
 
@@ -229,8 +229,8 @@ class NodePlatform extends PlatformPlugin
     var settings = _settings[runtime];
 
     var nodeModules = p.absolute('node_modules');
-    var nodePath = Platform.environment["NODE_PATH"];
-    nodePath = nodePath == null ? nodeModules : "$nodePath:$nodeModules";
+    var nodePath = Platform.environment['NODE_PATH'];
+    nodePath = nodePath == null ? nodeModules : '$nodePath:$nodeModules';
 
     try {
       return await Process.start(settings.executable,
@@ -239,7 +239,7 @@ class NodePlatform extends PlatformPlugin
     } catch (error, stackTrace) {
       await Future.error(
           ApplicationException(
-              "Failed to run ${runtime.name}: ${getErrorMessage(error)}"),
+              'Failed to run ${runtime.name}: ${getErrorMessage(error)}'),
           stackTrace);
       return null;
     }
@@ -259,8 +259,8 @@ class NodePlatform extends PlatformPlugin
 
         throw LoadException(
             suitePath,
-            "Error getting $url: ${response.statusCode} "
-            "${response.reasonPhrase}\n"
+            'Error getting $url: ${response.statusCode} '
+            '${response.reasonPhrase}\n'
             'Make sure "pub serve" is serving the test/ directory.');
       }
 
@@ -268,13 +268,13 @@ class NodePlatform extends PlatformPlugin
     } on IOException catch (error) {
       var message = getErrorMessage(error);
       if (error is SocketException) {
-        message = "${error.osError.message} "
-            "(errno ${error.osError.errorCode})";
+        message = '${error.osError.message} '
+            '(errno ${error.osError.errorCode})';
       }
 
       throw LoadException(
           suitePath,
-          "Error getting $url: $message\n"
+          'Error getting $url: $message\n'
           'Make sure "pub serve" is running.');
     }
   }

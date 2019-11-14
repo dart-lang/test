@@ -120,11 +120,11 @@ class Metadata {
     if (tags is String) return Set.from([tags]);
     if (tags is! Iterable) {
       throw ArgumentError.value(
-          tags, "tags", "must be either a String or an Iterable.");
+          tags, 'tags', 'must be either a String or an Iterable.');
     }
 
     if ((tags as Iterable).any((tag) => tag is! String)) {
-      throw ArgumentError.value(tags, "tags", "must contain only Strings.");
+      throw ArgumentError.value(tags, 'tags', 'must contain only Strings.');
     }
 
     return Set.from(tags as Iterable);
@@ -204,7 +204,7 @@ class Metadata {
         onPlatform =
             onPlatform == null ? const {} : UnmodifiableMapView(onPlatform),
         forTag = forTag == null ? const {} : UnmodifiableMapView(forTag) {
-    if (retry != null) RangeError.checkNotNegative(retry, "retry");
+    if (retry != null) RangeError.checkNotNegative(retry, 'retry');
     _validateTags();
   }
 
@@ -237,7 +237,7 @@ class Metadata {
       throw ArgumentError('"skip" must be a String or a bool, was "$skip".');
     }
 
-    if (retry != null) RangeError.checkNotNegative(retry, "retry");
+    if (retry != null) RangeError.checkNotNegative(retry, 'retry');
 
     _validateTags();
   }
@@ -280,8 +280,8 @@ class Metadata {
     if (invalidTags.isEmpty) return;
 
     throw ArgumentError("Invalid ${pluralize('tag', invalidTags.length)} "
-        "${toSentence(invalidTags)}. Tags must be (optionally hyphenated) "
-        "Dart identifiers.");
+        '${toSentence(invalidTags)}. Tags must be (optionally hyphenated) '
+        'Dart identifiers.');
   }
 
   /// Throws a [FormatException] if any [PlatformSelector]s use any variables

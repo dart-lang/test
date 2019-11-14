@@ -62,7 +62,7 @@ class Configuration {
   /// The path to the file from which to load more configuration information.
   ///
   /// This is *not* resolved automatically.
-  String get configurationPath => _configurationPath ?? "dart_test.yaml";
+  String get configurationPath => _configurationPath ?? 'dart_test.yaml';
   final String _configurationPath;
 
   /// The path to dart2js.
@@ -121,7 +121,7 @@ class Configuration {
   final Set<String> _foldTraceOnly;
 
   /// The paths from which to load tests.
-  List<String> get paths => _paths ?? ["test"];
+  List<String> get paths => _paths ?? ['test'];
   final List<String> _paths;
 
   /// Whether the load paths were passed explicitly or the default was used.
@@ -356,7 +356,7 @@ class Configuration {
         _coverage = coverage,
         pubServeUrl = pubServePort == null
             ? null
-            : Uri.parse("http://localhost:$pubServePort"),
+            : Uri.parse('http://localhost:$pubServePort'),
         _concurrency = concurrency,
         _paths = _list(paths),
         _foldTraceExcept = _set(foldTraceExcept),
@@ -374,15 +374,15 @@ class Configuration {
     if (_filename != null && _filename.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
-          "${_filename.context.style}.");
+          '${_filename.context.style}.');
     }
 
     if ((shardIndex == null) != (totalShards == null)) {
       throw ArgumentError(
-          "shardIndex and totalShards may only be passed together.");
+          'shardIndex and totalShards may only be passed together.');
     } else if (shardIndex != null) {
       RangeError.checkValueInInterval(
-          shardIndex, 0, totalShards - 1, "shardIndex");
+          shardIndex, 0, totalShards - 1, 'shardIndex');
     }
   }
 

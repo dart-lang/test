@@ -10,9 +10,9 @@ import 'package:test/test.dart';
 import '../../utils.dart';
 
 void main() {
-  group("synchronous", () {
-    group("[throws]", () {
-      test("with a function that throws an error", () {
+  group('synchronous', () {
+    group('[throws]', () {
+      test('with a function that throws an error', () {
         expect(() => throw 'oh no', throws);
       });
 
@@ -25,33 +25,33 @@ void main() {
         expectTestFailed(
             liveTest,
             allOf([
-              startsWith("Expected: throws\n"
-                  "  Actual: <"),
-              endsWith(">\n"
-                  "   Which: returned <null>\n")
+              startsWith('Expected: throws\n'
+                  '  Actual: <'),
+              endsWith('>\n'
+                  '   Which: returned <null>\n')
             ]));
       });
 
-      test("with a non-function", () async {
+      test('with a non-function', () async {
         var liveTest = await runTestBody(() {
           expect(10, throws);
         });
 
         expectTestFailed(
             liveTest,
-            "Expected: throws\n"
-            "  Actual: <10>\n"
-            "   Which: was not a Function or Future\n");
+            'Expected: throws\n'
+            '  Actual: <10>\n'
+            '   Which: was not a Function or Future\n');
       });
     });
 
-    group("[throwsA]", () {
-      test("with a function that throws an identical error", () {
+    group('[throwsA]', () {
+      test('with a function that throws an identical error', () {
         expect(() => throw 'oh no', throwsA('oh no'));
       });
 
-      test("with a function that throws a matching error", () {
-        expect(() => throw FormatException("bad"), throwsA(isFormatException));
+      test('with a function that throws a matching error', () {
+        expect(() => throw FormatException('bad'), throwsA(isFormatException));
       });
 
       test("with a function that doesn't throw", () async {
@@ -64,13 +64,13 @@ void main() {
             liveTest,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
-                  "  Actual: <"),
-              endsWith(">\n"
-                  "   Which: returned <null>\n")
+                  '  Actual: <'),
+              endsWith('>\n'
+                  '   Which: returned <null>\n')
             ]));
       });
 
-      test("with a non-function", () async {
+      test('with a non-function', () async {
         var liveTest = await runTestBody(() {
           expect(10, throwsA('oh no'));
         });
@@ -78,11 +78,11 @@ void main() {
         expectTestFailed(
             liveTest,
             "Expected: throws 'oh no'\n"
-            "  Actual: <10>\n"
-            "   Which: was not a Function or Future\n");
+            '  Actual: <10>\n'
+            '   Which: was not a Function or Future\n');
       });
 
-      test("with a function that throws the wrong error", () async {
+      test('with a function that throws the wrong error', () async {
         var liveTest = await runTestBody(() {
           expect(() => throw 'aw dang', throwsA('oh no'));
         });
@@ -91,23 +91,23 @@ void main() {
             liveTest,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
-                  "  Actual: <"),
-              contains(">\n"
+                  '  Actual: <'),
+              contains('>\n'
                   "   Which: threw 'aw dang'\n"
-                  "          stack"),
-              endsWith("          which is different.\n"
-                  "                Expected: oh no\n"
-                  "                  Actual: aw dang\n"
-                  "                          ^\n"
-                  "                 Differ at offset 0\n")
+                  '          stack'),
+              endsWith('          which is different.\n'
+                  '                Expected: oh no\n'
+                  '                  Actual: aw dang\n'
+                  '                          ^\n'
+                  '                 Differ at offset 0\n')
             ]));
       });
     });
   });
 
-  group("asynchronous", () {
-    group("[throws]", () {
-      test("with a Future that throws an error", () {
+  group('asynchronous', () {
+    group('[throws]', () {
+      test('with a Future that throws an error', () {
         expect(Future.error('oh no'), throws);
       });
 
@@ -119,14 +119,14 @@ void main() {
         expectTestFailed(
             liveTest,
             allOf([
-              startsWith("Expected: throws\n"
-                  "  Actual: <"),
-              endsWith(">\n"
-                  "   Which: emitted <null>\n")
+              startsWith('Expected: throws\n'
+                  '  Actual: <'),
+              endsWith('>\n'
+                  '   Which: emitted <null>\n')
             ]));
       });
 
-      test("with a closure that returns a Future that throws an error", () {
+      test('with a closure that returns a Future that throws an error', () {
         expect(() => Future.error('oh no'), throws);
       });
 
@@ -138,10 +138,10 @@ void main() {
         expectTestFailed(
             liveTest,
             allOf([
-              startsWith("Expected: throws\n"
-                  "  Actual: <"),
-              endsWith(">\n"
-                  "   Which: returned a Future that emitted <null>\n")
+              startsWith('Expected: throws\n'
+                  '  Actual: <'),
+              endsWith('>\n'
+                  '   Which: returned a Future that emitted <null>\n')
             ]));
       });
 
@@ -154,14 +154,14 @@ void main() {
       });
     });
 
-    group("[throwsA]", () {
-      test("with a Future that throws an identical error", () {
+    group('[throwsA]', () {
+      test('with a Future that throws an identical error', () {
         expect(Future.error('oh no'), throwsA('oh no'));
       });
 
-      test("with a Future that throws a matching error", () {
+      test('with a Future that throws a matching error', () {
         expect(
-            Future.error(FormatException("bad")), throwsA(isFormatException));
+            Future.error(FormatException('bad')), throwsA(isFormatException));
       });
 
       test("with a Future that doesn't throw", () async {
@@ -173,13 +173,13 @@ void main() {
             liveTest,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
-                  "  Actual: <"),
-              endsWith(">\n"
-                  "   Which: emitted <null>\n")
+                  '  Actual: <'),
+              endsWith('>\n'
+                  '   Which: emitted <null>\n')
             ]));
       });
 
-      test("with a Future that throws the wrong error", () async {
+      test('with a Future that throws the wrong error', () async {
         var liveTest = await runTestBody(() {
           expect(Future.error('aw dang'), throwsA('oh no'));
         });
@@ -188,15 +188,15 @@ void main() {
             liveTest,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
-                  "  Actual: <"),
-              contains(">\n"
+                  '  Actual: <'),
+              contains('>\n'
                   "   Which: threw 'aw dang'\n")
             ]));
       });
 
-      test("with a closure that returns a Future that throws a matching error",
+      test('with a closure that returns a Future that throws a matching error',
           () {
-        expect(() => Future.error(FormatException("bad")),
+        expect(() => Future.error(FormatException('bad')),
             throwsA(isFormatException));
       });
 
@@ -209,13 +209,13 @@ void main() {
             liveTest,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
-                  "  Actual: <"),
-              endsWith(">\n"
-                  "   Which: returned a Future that emitted <null>\n")
+                  '  Actual: <'),
+              endsWith('>\n'
+                  '   Which: returned a Future that emitted <null>\n')
             ]));
       });
 
-      test("with closure that returns a Future that throws the wrong error",
+      test('with closure that returns a Future that throws the wrong error',
           () async {
         var liveTest = await runTestBody(() {
           expect(() => Future.error('aw dang'), throwsA('oh no'));
@@ -225,8 +225,8 @@ void main() {
             liveTest,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
-                  "  Actual: <"),
-              contains(">\n"
+                  '  Actual: <'),
+              contains('>\n'
                   "   Which: threw 'aw dang'\n")
             ]));
       });
@@ -249,7 +249,7 @@ void main() {
         await pumpEventQueue();
         expect(fired, isFalse);
 
-        completer.completeError(ArgumentError("oh no"));
+        completer.completeError(ArgumentError('oh no'));
         await pumpEventQueue();
         expect(fired, isTrue);
       });

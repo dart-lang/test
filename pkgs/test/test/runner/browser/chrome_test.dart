@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
-@Tags(["chrome"])
+@TestOn('vm')
+@Tags(['chrome'])
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -16,7 +16,7 @@ import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
-  test("starts Chrome with the given URL", () async {
+  test('starts Chrome with the given URL', () async {
     var server = await CodeServer.start();
 
     server.handleJavaScript('''
@@ -30,7 +30,7 @@ webSocket.addEventListener("open", function() {
     var chrome = Chrome(server.url);
     addTearDown(() => chrome.close());
 
-    expect(await (await webSocket).stream.first, equals("loaded!"));
+    expect(await (await webSocket).stream.first, equals('loaded!'));
   },
       // It's not clear why, but this test in particular seems to time out
       // when run in parallel with many other tests.
@@ -42,43 +42,43 @@ webSocket.addEventListener("open", function() {
     await chrome.close();
   });
 
-  test("reports an error in onExit", () {
-    var chrome = Chrome(Uri.parse("http://dart-lang.org"),
+  test('reports an error in onExit', () {
+    var chrome = Chrome(Uri.parse('http://dart-lang.org'),
         settings: ExecutableSettings(
-            linuxExecutable: "_does_not_exist",
-            macOSExecutable: "_does_not_exist",
-            windowsExecutable: "_does_not_exist"));
+            linuxExecutable: '_does_not_exist',
+            macOSExecutable: '_does_not_exist',
+            windowsExecutable: '_does_not_exist'));
     expect(
         chrome.onExit,
         throwsA(isApplicationException(
-            startsWith("Failed to run Chrome: $noSuchFileMessage"))));
+            startsWith('Failed to run Chrome: $noSuchFileMessage'))));
   });
 
-  test("can run successful tests", () async {
-    await d.file("test.dart", """
+  test('can run successful tests', () async {
+    await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
 }
-""").create();
+''').create();
 
-    var test = await runTest(["-p", "chrome", "test.dart"]);
-    expect(test.stdout, emitsThrough(contains("+1: All tests passed!")));
+    var test = await runTest(['-p', 'chrome', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
 
-  test("can run failing tests", () async {
-    await d.file("test.dart", """
+  test('can run failing tests', () async {
+    await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () => throw new TestFailure("oh no"));
 }
-""").create();
+''').create();
 
-    var test = await runTest(["-p", "chrome", "test.dart"]);
-    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    var test = await runTest(['-p', 'chrome', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
 }

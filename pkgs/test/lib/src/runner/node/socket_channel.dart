@@ -9,10 +9,10 @@ import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-@JS("require")
+@JS('require')
 external _Net _require(String module);
 
-@JS("process.argv")
+@JS('process.argv')
 external List<String> get _args;
 
 @JS()
@@ -32,12 +32,12 @@ class _Socket {
 StreamChannel<Object> socketChannel() {
   var controller =
       StreamChannelController<String>(allowForeignErrors: false, sync: true);
-  var net = _require("net");
+  var net = _require('net');
   var socket = net.connect(int.parse(_args[2]));
-  socket.setEncoding("utf8");
+  socket.setEncoding('utf8');
 
   controller.local.stream.listen((chunk) => socket.write(chunk));
-  socket.on("data", allowInterop(controller.local.sink.add));
+  socket.on('data', allowInterop(controller.local.sink.add));
 
   return controller.foreign.transform(chunksToLines).transform(jsonDocument);
 }

@@ -23,31 +23,31 @@ void main() {
   });
 
   group("if it's called", () {
-    test("throws", () async {
+    test('throws', () async {
       var liveTest = await runTestBody(() {
         neverCalled();
       });
 
       expectTestFailed(
           liveTest,
-          "Callback should never have been called, but it was called with no "
-          "arguments.");
+          'Callback should never have been called, but it was called with no '
+          'arguments.');
     });
 
-    test("pretty-prints arguments", () async {
+    test('pretty-prints arguments', () async {
       var liveTest = await runTestBody(() {
-        neverCalled(1, "foo\nbar");
+        neverCalled(1, 'foo\nbar');
       });
 
       expectTestFailed(
           liveTest,
-          "Callback should never have been called, but it was called with:\n"
-          "* <1>\n"
+          'Callback should never have been called, but it was called with:\n'
+          '* <1>\n'
           "* 'foo\\n'\n"
           "    'bar'");
     });
 
-    test("keeps the test alive", () async {
+    test('keeps the test alive', () async {
       var liveTest = await runTestBody(() {
         pumpEventQueue(times: 10).then(neverCalled);
       });

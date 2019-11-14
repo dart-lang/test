@@ -14,7 +14,7 @@ import 'throws_matcher.dart';
 
 /// Returns a [StreamMatcher] that asserts that the stream emits a "done" event.
 final emitsDone = StreamMatcher(
-    (queue) async => (await queue.hasNext) ? "" : null, "be done");
+    (queue) async => (await queue.hasNext) ? '' : null, 'be done');
 
 /// Returns a [StreamMatcher] for [matcher].
 ///
@@ -32,7 +32,7 @@ StreamMatcher emits(matcher) {
   var matcherDescription = wrapped.describe(StringDescription());
 
   return StreamMatcher((queue) async {
-    if (!await queue.hasNext) return "";
+    if (!await queue.hasNext) return '';
 
     var matchState = {};
     var actual = await queue.next;
@@ -41,11 +41,11 @@ StreamMatcher emits(matcher) {
     var mismatchDescription = StringDescription();
     wrapped.describeMismatch(actual, mismatchDescription, matchState, false);
 
-    if (mismatchDescription.length == 0) return "";
-    return "emitted an event that $mismatchDescription";
+    if (mismatchDescription.length == 0) return '';
+    return 'emitted an event that $mismatchDescription';
   },
       // TODO(nweiz): add "should" once matcher#42 is fixed.
-      "emit an event that $matcherDescription");
+      'emit an event that $matcherDescription');
 }
 
 /// Returns a [StreamMatcher] that matches a single error event that matches
@@ -58,7 +58,7 @@ StreamMatcher emitsError(matcher) {
   return StreamMatcher(
       (queue) => throwsMatcher.matchAsync(queue.next) as Future<String>,
       // TODO(nweiz): add "should" once matcher#42 is fixed.
-      "emit an error that $matcherDescription");
+      'emit an error that $matcherDescription');
 }
 
 /// Returns a [StreamMatcher] that allows (but doesn't require) [matcher] to
@@ -72,7 +72,7 @@ StreamMatcher mayEmit(matcher) {
     await queue.withTransaction(
         (copy) async => (await streamMatcher.matchQueue(copy)) == null);
     return null;
-  }, "maybe ${streamMatcher.description}");
+  }, 'maybe ${streamMatcher.description}');
 }
 
 /// Returns a [StreamMatcher] that matches the stream if at least one of
@@ -87,11 +87,11 @@ StreamMatcher mayEmit(matcher) {
 StreamMatcher emitsAnyOf(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.isEmpty) {
-    throw ArgumentError("matcher may not be empty");
+    throw ArgumentError('matcher may not be empty');
   }
 
   if (streamMatchers.length == 1) return streamMatchers.first;
-  var description = "do one of the following:\n" +
+  var description = 'do one of the following:\n' +
       bullet(streamMatchers.map((matcher) => matcher.description));
 
   return StreamMatcher((queue) async {
@@ -143,16 +143,16 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
 
       var failureMessages = <String>[];
       for (var i = 0; i < matchers.length; i++) {
-        var message = "failed to ${streamMatchers[i].description}";
+        var message = 'failed to ${streamMatchers[i].description}';
         if (failures[i].isNotEmpty) {
-          message += message.contains("\n") ? "\n" : " ";
-          message += "because it ${failures[i]}";
+          message += message.contains('\n') ? '\n' : ' ';
+          message += 'because it ${failures[i]}';
         }
 
         failureMessages.add(message);
       }
 
-      return "failed all options:\n${bullet(failureMessages)}";
+      return 'failed all options:\n${bullet(failureMessages)}';
     } else {
       transaction.commit(consumedMost);
       return null;
@@ -168,7 +168,7 @@ StreamMatcher emitsInOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.length == 1) return streamMatchers.first;
 
-  var description = "do the following in order:\n" +
+  var description = 'do the following in order:\n' +
       bullet(streamMatchers.map((matcher) => matcher.description));
 
   return StreamMatcher((queue) async {
@@ -179,8 +179,8 @@ StreamMatcher emitsInOrder(Iterable matchers) {
 
       var newResult = "didn't ${matcher.description}";
       if (result.isNotEmpty) {
-        newResult += newResult.contains("\n") ? "\n" : " ";
-        newResult += "because it $result";
+        newResult += newResult.contains('\n') ? '\n' : ' ';
+        newResult += 'because it $result';
       }
       return newResult;
     }
@@ -215,17 +215,17 @@ StreamMatcher emitsThrough(matcher) {
     // stream.
     if (await tryHere()) return null;
 
-    var result = "never did ${streamMatcher.description}";
+    var result = 'never did ${streamMatcher.description}';
 
     var failureMessages =
         bullet(failures.where((failure) => failure.isNotEmpty));
     if (failureMessages.isNotEmpty) {
-      result += result.contains("\n") ? "\n" : " ";
-      result += "because it:\n$failureMessages";
+      result += result.contains('\n') ? '\n' : ' ';
+      result += 'because it:\n$failureMessages';
     }
 
     return result;
-  }, "eventually ${streamMatcher.description}");
+  }, 'eventually ${streamMatcher.description}');
 }
 
 /// Returns a [StreamMatcher] that matches any number of events that match
@@ -238,8 +238,8 @@ StreamMatcher mayEmitMultiple(matcher) {
   var streamMatcher = emits(matcher);
 
   var description = streamMatcher.description;
-  description += description.contains("\n") ? "\n" : " ";
-  description += "zero or more times";
+  description += description.contains('\n') ? '\n' : ' ';
+  description += 'zero or more times';
 
   return StreamMatcher((queue) async {
     while (await _tryMatch(queue, streamMatcher)) {
@@ -279,8 +279,8 @@ StreamMatcher neverEmits(matcher) {
 
     if (!matched) return null;
     return "after $events ${pluralize('event', events)} did "
-        "${streamMatcher.description}";
-  }, "never ${streamMatcher.description}");
+        '${streamMatcher.description}';
+  }, 'never ${streamMatcher.description}');
 }
 
 /// Returns whether [matcher] matches [queue] at its current position.
@@ -312,11 +312,11 @@ Future<bool> _tryMatch(StreamQueue queue, StreamMatcher matcher) {
 StreamMatcher emitsInAnyOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toSet();
   if (streamMatchers.length == 1) return streamMatchers.first;
-  var description = "do the following in any order:\n" +
+  var description = 'do the following in any order:\n' +
       bullet(streamMatchers.map((matcher) => matcher.description));
 
   return StreamMatcher(
-      (queue) async => await _tryInAnyOrder(queue, streamMatchers) ? null : "",
+      (queue) async => await _tryInAnyOrder(queue, streamMatchers) ? null : '',
       description);
 }
 

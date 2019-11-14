@@ -33,7 +33,7 @@ abstract class AsyncMatcher extends Matcher {
     var result = matchAsync(item);
     expect(result,
         anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
-        reason: "matchAsync() may only return a String, a Future, or null.");
+        reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is Future) {
       Invoker.current.addOutstandingCallback();

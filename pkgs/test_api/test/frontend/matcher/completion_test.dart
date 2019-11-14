@@ -11,21 +11,21 @@ import 'package:test_api/src/backend/state.dart';
 import '../../utils.dart';
 
 void main() {
-  group("[doesNotComplete]", () {
-    test("fails when provided a non future", () async {
+  group('[doesNotComplete]', () {
+    test('fails when provided a non future', () async {
       var liveTest = await runTestBody(() {
         expect(10, doesNotComplete);
       });
 
-      expectTestFailed(liveTest, contains("10 is not a Future"));
+      expectTestFailed(liveTest, contains('10 is not a Future'));
     });
 
-    test("succeeds when a future does not complete", () {
+    test('succeeds when a future does not complete', () {
       var completer = Completer();
       expect(completer.future, doesNotComplete);
     });
 
-    test("fails when a future does complete", () async {
+    test('fails when a future does complete', () async {
       var liveTest = await runTestBody(() {
         var completer = Completer();
         completer.complete(null);
@@ -34,11 +34,11 @@ void main() {
 
       expectTestFailed(
           liveTest,
-          "Future was not expected to complete but completed with a value of"
-          " null");
+          'Future was not expected to complete but completed with a value of'
+          ' null');
     });
 
-    test("fails when a future completes after the expect", () async {
+    test('fails when a future completes after the expect', () async {
       var liveTest = await runTestBody(() {
         var completer = Completer();
         expect(completer.future, doesNotComplete);
@@ -47,11 +47,11 @@ void main() {
 
       expectTestFailed(
           liveTest,
-          "Future was not expected to complete but completed with a value of"
-          " null");
+          'Future was not expected to complete but completed with a value of'
+          ' null');
     });
 
-    test("fails when a future eventually completes", () async {
+    test('fails when a future eventually completes', () async {
       var liveTest = await runTestBody(() {
         var completer = Completer();
         expect(completer.future, doesNotComplete);
@@ -62,12 +62,12 @@ void main() {
 
       expectTestFailed(
           liveTest,
-          "Future was not expected to complete but completed with a value of"
-          " null");
+          'Future was not expected to complete but completed with a value of'
+          ' null');
     });
   });
-  group("[completes]", () {
-    test("blocks the test until the Future completes", () {
+  group('[completes]', () {
+    test('blocks the test until the Future completes', () {
       return expectTestBlocks(() {
         var completer = Completer();
         expect(completer.future, completes);
@@ -75,7 +75,7 @@ void main() {
       }, (completer) => completer.complete());
     });
 
-    test("with an error", () async {
+    test('with an error', () async {
       var liveTest = await runTestBody(() {
         expect(Future.error('X'), completes);
       });
@@ -86,33 +86,33 @@ void main() {
       expect(liveTest.errors.first.error, equals('X'));
     });
 
-    test("with a failure", () async {
+    test('with a failure', () async {
       var liveTest = await runTestBody(() {
         expect(Future.error(TestFailure('oh no')), completes);
       });
 
-      expectTestFailed(liveTest, "oh no");
+      expectTestFailed(liveTest, 'oh no');
     });
 
-    test("with a non-future", () async {
+    test('with a non-future', () async {
       var liveTest = await runTestBody(() {
         expect(10, completes);
       });
 
       expectTestFailed(
           liveTest,
-          "Expected: completes successfully\n"
-          "  Actual: <10>\n"
-          "   Which: was not a Future\n");
+          'Expected: completes successfully\n'
+          '  Actual: <10>\n'
+          '   Which: was not a Future\n');
     });
 
-    test("with a successful future", () {
+    test('with a successful future', () {
       expect(Future.value('1'), completes);
     });
   });
 
-  group("[completion]", () {
-    test("blocks the test until the Future completes", () {
+  group('[completion]', () {
+    test('blocks the test until the Future completes', () {
       return expectTestBlocks(() {
         var completer = Completer();
         expect(completer.future, completion(isNull));
@@ -120,7 +120,7 @@ void main() {
       }, (completer) => completer.complete());
     });
 
-    test("with an error", () async {
+    test('with an error', () async {
       var liveTest = await runTestBody(() {
         expect(Future.error('X'), completion(isNull));
       });
@@ -131,27 +131,27 @@ void main() {
       expect(liveTest.errors.first.error, equals('X'));
     });
 
-    test("with a failure", () async {
+    test('with a failure', () async {
       var liveTest = await runTestBody(() {
         expect(Future.error(TestFailure('oh no')), completion(isNull));
       });
 
-      expectTestFailed(liveTest, "oh no");
+      expectTestFailed(liveTest, 'oh no');
     });
 
-    test("with a non-future", () async {
+    test('with a non-future', () async {
       var liveTest = await runTestBody(() {
         expect(10, completion(equals(10)));
       });
 
       expectTestFailed(
           liveTest,
-          "Expected: completes to a value that <10>\n"
-          "  Actual: <10>\n"
-          "   Which: was not a Future\n");
+          'Expected: completes to a value that <10>\n'
+          '  Actual: <10>\n'
+          '   Which: was not a Future\n');
     });
 
-    test("with an incorrect value", () async {
+    test('with an incorrect value', () async {
       var liveTest = await runTestBody(() {
         expect(Future.value('a'), completion(equals('b')));
       });
@@ -160,14 +160,14 @@ void main() {
           liveTest,
           allOf([
             startsWith("Expected: completes to a value that 'b'\n"
-                "  Actual: <"),
-            endsWith(">\n"
+                '  Actual: <'),
+            endsWith('>\n'
                 "   Which: emitted 'a'\n"
-                "            which is different.\n"
-                "                  Expected: b\n"
-                "                    Actual: a\n"
-                "                            ^\n"
-                "                   Differ at offset 0\n")
+                '            which is different.\n'
+                '                  Expected: b\n'
+                '                    Actual: a\n'
+                '                            ^\n'
+                '                   Differ at offset 0\n')
           ]));
     });
 

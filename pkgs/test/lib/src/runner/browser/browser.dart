@@ -99,9 +99,9 @@ abstract class Browser {
 
       if (!_closed && exitCode != 0) {
         var outputString = utf8.decode(output);
-        var message = "$name failed with exit code $exitCode.";
+        var message = '$name failed with exit code $exitCode.';
         if (outputString.isNotEmpty) {
-          message += "\nStandard output:\n$outputString";
+          message += '\nStandard output:\n$outputString';
         }
 
         throw ApplicationException(message);
@@ -119,7 +119,7 @@ abstract class Browser {
       if (_onExitCompleter.isCompleted) return;
       _onExitCompleter.completeError(
           ApplicationException(
-              "Failed to run $name: ${getErrorMessage(error)}."),
+              'Failed to run $name: ${getErrorMessage(error)}.'),
           stackTrace);
     });
   }

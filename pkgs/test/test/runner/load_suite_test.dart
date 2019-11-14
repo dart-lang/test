@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 import 'dart:async';
 
 import 'package:test_api/src/backend/group.dart';
@@ -23,8 +23,8 @@ void main() {
     innerSuite = runnerSuite(Group.root([]));
   });
 
-  test("running a load test causes LoadSuite.suite to emit a suite", () async {
-    var suite = LoadSuite("name", SuiteConfiguration.empty, suitePlatform,
+  test('running a load test causes LoadSuite.suite to emit a suite', () async {
+    var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform,
         () => Future.value(innerSuite));
     expect(suite.group.entries, hasLength(1));
 
@@ -36,7 +36,7 @@ void main() {
 
   test("running a load suite's body may be synchronous", () async {
     var suite = LoadSuite(
-        "name", SuiteConfiguration.empty, suitePlatform, () => innerSuite);
+        'name', SuiteConfiguration.empty, suitePlatform, () => innerSuite);
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(equals(innerSuite)));
@@ -47,7 +47,7 @@ void main() {
 
   test("a load test doesn't complete until the body returns", () async {
     var completer = Completer<RunnerSuite>();
-    var suite = LoadSuite("name", SuiteConfiguration.empty, suitePlatform,
+    var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform,
         () => completer.future);
     expect(suite.group.entries, hasLength(1));
 
@@ -61,10 +61,10 @@ void main() {
     expectTestPassed(liveTest);
   });
 
-  test("a load test forwards errors and completes LoadSuite.suite to null",
+  test('a load test forwards errors and completes LoadSuite.suite to null',
       () async {
-    var suite = LoadSuite("name", SuiteConfiguration.empty, suitePlatform, () {
-      fail("error");
+    var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform, () {
+      fail('error');
     });
     expect(suite.group.entries, hasLength(1));
 
@@ -72,11 +72,11 @@ void main() {
 
     var liveTest = (suite.group.entries.single as Test).load(suite);
     await liveTest.run();
-    expectTestFailed(liveTest, "error");
+    expectTestFailed(liveTest, 'error');
   });
 
   test("a load test completes early if it's closed", () async {
-    var suite = LoadSuite("name", SuiteConfiguration.empty, suitePlatform,
+    var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform,
         () => Completer<RunnerSuite>().future);
     expect(suite.group.entries, hasLength(1));
 
@@ -88,9 +88,9 @@ void main() {
     expect(liveTest.close(), completes);
   });
 
-  test("forLoadException() creates a suite that completes to a LoadException",
+  test('forLoadException() creates a suite that completes to a LoadException',
       () async {
-    var exception = LoadException("path", "error");
+    var exception = LoadException('path', 'error');
     var suite = LoadSuite.forLoadException(exception, SuiteConfiguration.empty);
     expect(suite.group.entries, hasLength(1));
 
@@ -104,7 +104,7 @@ void main() {
     expect(liveTest.errors.first.error, equals(exception));
   });
 
-  test("forSuite() creates a load suite that completes to a test suite",
+  test('forSuite() creates a load suite that completes to a test suite',
       () async {
     var suite = LoadSuite.forSuite(innerSuite);
     expect(suite.group.entries, hasLength(1));
@@ -115,10 +115,10 @@ void main() {
     expectTestPassed(liveTest);
   });
 
-  group("changeSuite()", () {
-    test("returns a new load suite with the same properties", () {
+  group('changeSuite()', () {
+    test('returns a new load suite with the same properties', () {
       var suite = LoadSuite(
-          "name", SuiteConfiguration.empty, suitePlatform, () => innerSuite);
+          'name', SuiteConfiguration.empty, suitePlatform, () => innerSuite);
       expect(suite.group.entries, hasLength(1));
 
       var newSuite = suite.changeSuite((suite) => suite);
@@ -127,9 +127,9 @@ void main() {
           equals(suite.group.entries.single.name));
     });
 
-    test("changes the inner suite", () async {
+    test('changes the inner suite', () async {
       var suite = LoadSuite(
-          "name", SuiteConfiguration.empty, suitePlatform, () => innerSuite);
+          'name', SuiteConfiguration.empty, suitePlatform, () => innerSuite);
       expect(suite.group.entries, hasLength(1));
 
       var newInnerSuite = runnerSuite(Group.root([]));
@@ -143,7 +143,7 @@ void main() {
 
     test("doesn't run change() if the suite is null", () async {
       var suite = LoadSuite(
-          "name", SuiteConfiguration.empty, suitePlatform, () => null);
+          'name', SuiteConfiguration.empty, suitePlatform, () => null);
       expect(suite.group.entries, hasLength(1));
 
       var newSuite = suite.changeSuite(expectAsync1((_) {
@@ -157,20 +157,20 @@ void main() {
     });
   });
 
-  group("getSuite()", () {
-    test("runs the test and returns the suite", () {
+  group('getSuite()', () {
+    test('runs the test and returns the suite', () {
       var suite = LoadSuite.forSuite(innerSuite);
       expect(suite.group.entries, hasLength(1));
 
       expect(suite.getSuite(), completion(equals(innerSuite)));
     });
 
-    test("forwards errors to the future", () {
+    test('forwards errors to the future', () {
       var suite = LoadSuite(
-          "name", SuiteConfiguration.empty, suitePlatform, () => throw "error");
+          'name', SuiteConfiguration.empty, suitePlatform, () => throw 'error');
       expect(suite.group.entries, hasLength(1));
 
-      expect(suite.getSuite(), throwsA("error"));
+      expect(suite.getSuite(), throwsA('error'));
     });
   });
 }

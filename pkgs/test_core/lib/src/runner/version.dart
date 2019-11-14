@@ -13,7 +13,7 @@ import 'package:yaml/yaml.dart';
 final String testVersion = (() {
   dynamic lockfile;
   try {
-    lockfile = loadYaml(File("pubspec.lock").readAsStringSync());
+    lockfile = loadYaml(File('pubspec.lock').readAsStringSync());
   } on FormatException catch (_) {
     return null;
   } on IOException catch (_) {
@@ -21,38 +21,38 @@ final String testVersion = (() {
   }
 
   if (lockfile is! Map) return null;
-  var packages = lockfile["packages"];
+  var packages = lockfile['packages'];
   if (packages is! Map) return null;
-  var package = packages["test"];
+  var package = packages['test'];
   if (package is! Map) return null;
 
-  var source = package["source"];
+  var source = package['source'];
   if (source is! String) return null;
 
   switch (source as String) {
-    case "hosted":
-      var version = package["version"];
+    case 'hosted':
+      var version = package['version'];
       return (version is String) ? version : null;
 
-    case "git":
-      var version = package["version"];
+    case 'git':
+      var version = package['version'];
       if (version is! String) return null;
-      var description = package["description"];
+      var description = package['description'];
       if (description is! Map) return null;
-      var ref = description["resolved-ref"];
+      var ref = description['resolved-ref'];
       if (ref is! String) return null;
 
-      return "$version (${ref.substring(0, 7)})";
+      return '$version (${ref.substring(0, 7)})';
 
-    case "path":
-      var version = package["version"];
+    case 'path':
+      var version = package['version'];
       if (version is! String) return null;
-      var description = package["description"];
+      var description = package['description'];
       if (description is! Map) return null;
-      var path = description["path"];
+      var path = description['path'];
       if (path is! String) return null;
 
-      return "$version (from $path)";
+      return '$version (from $path)';
 
     default:
       return null;

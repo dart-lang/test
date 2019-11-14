@@ -8,30 +8,30 @@ class Runtime {
   // variable tests in test/backend/platform_selector/evaluate_test.
 
   /// The command-line Dart VM.
-  static const Runtime vm = Runtime("VM", "vm", isDartVM: true);
+  static const Runtime vm = Runtime('VM', 'vm', isDartVM: true);
 
   /// Google Chrome.
   static const Runtime chrome =
-      Runtime("Chrome", "chrome", isBrowser: true, isJS: true, isBlink: true);
+      Runtime('Chrome', 'chrome', isBrowser: true, isJS: true, isBlink: true);
 
   /// PhantomJS.
-  static const Runtime phantomJS = Runtime("PhantomJS", "phantomjs",
+  static const Runtime phantomJS = Runtime('PhantomJS', 'phantomjs',
       isBrowser: true, isJS: true, isBlink: true, isHeadless: true);
 
   /// Mozilla Firefox.
   static const Runtime firefox =
-      Runtime("Firefox", "firefox", isBrowser: true, isJS: true);
+      Runtime('Firefox', 'firefox', isBrowser: true, isJS: true);
 
   /// Apple Safari.
   static const Runtime safari =
-      Runtime("Safari", "safari", isBrowser: true, isJS: true);
+      Runtime('Safari', 'safari', isBrowser: true, isJS: true);
 
   /// Microsoft Internet Explorer.
   static const Runtime internetExplorer =
-      Runtime("Internet Explorer", "ie", isBrowser: true, isJS: true);
+      Runtime('Internet Explorer', 'ie', isBrowser: true, isJS: true);
 
   /// The command-line Node.js VM.
-  static const Runtime nodeJS = Runtime("Node.js", "node", isJS: true);
+  static const Runtime nodeJS = Runtime('Node.js', 'node', isJS: true);
 
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [
@@ -102,22 +102,22 @@ class Runtime {
     }
 
     var map = serialized as Map;
-    var parent = map["parent"];
+    var parent = map['parent'];
     if (parent != null) {
       // Note that the returned platform's [parent] won't necessarily be `==` to
       // a separately-deserialized parent platform. This should be fine, though,
       // since we only deserialize platforms in the remote execution context
       // where they're only used to evaluate platform selectors.
-      return Runtime._child(map["name"] as String, map["identifier"] as String,
+      return Runtime._child(map['name'] as String, map['identifier'] as String,
           Runtime.deserialize(parent));
     }
 
-    return Runtime(map["name"] as String, map["identifier"] as String,
-        isDartVM: map["isDartVM"] as bool,
-        isBrowser: map["isBrowser"] as bool,
-        isJS: map["isJS"] as bool,
-        isBlink: map["isBlink"] as bool,
-        isHeadless: map["isHeadless"] as bool);
+    return Runtime(map['name'] as String, map['identifier'] as String,
+        isDartVM: map['isDartVM'] as bool,
+        isBrowser: map['isBrowser'] as bool,
+        isJS: map['isJS'] as bool,
+        isBlink: map['isBlink'] as bool,
+        isHeadless: map['isHeadless'] as bool);
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
@@ -127,20 +127,20 @@ class Runtime {
 
     if (parent != null) {
       return {
-        "name": name,
-        "identifier": identifier,
-        "parent": parent.serialize()
+        'name': name,
+        'identifier': identifier,
+        'parent': parent.serialize()
       };
     }
 
     return {
-      "name": name,
-      "identifier": identifier,
-      "isDartVM": isDartVM,
-      "isBrowser": isBrowser,
-      "isJS": isJS,
-      "isBlink": isBlink,
-      "isHeadless": isHeadless
+      'name': name,
+      'identifier': identifier,
+      'isDartVM': isDartVM,
+      'isBrowser': isBrowser,
+      'isJS': isJS,
+      'isBlink': isBlink,
+      'isHeadless': isHeadless
     };
   }
 
@@ -150,7 +150,7 @@ class Runtime {
   /// This may not be called on a platform that's already a child.
   Runtime extend(String name, String identifier) {
     if (parent == null) return Runtime._child(name, identifier, this);
-    throw StateError("A child platform may not be extended.");
+    throw StateError('A child platform may not be extended.');
   }
 
   String toString() => name;

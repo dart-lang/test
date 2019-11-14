@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
-@Tags(["chrome"])
+@TestOn('vm')
+@Tags(['chrome'])
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -38,7 +38,7 @@ void main() {
 
     _loader = Loader();
 
-    await d.file('a_test.dart', """
+    await d.file('a_test.dart', '''
       import 'dart:async';
 
       import 'package:test/test.dart';
@@ -48,12 +48,12 @@ void main() {
         test("failure", () => throw new TestFailure('oh no'));
         test("error", () => throw 'oh no');
       }
-    """).create();
+    ''').create();
   });
 
   tearDown(() => _loader.close());
 
-  group(".loadFile()", () {
+  group('.loadFile()', () {
     RunnerSuite suite;
     setUp(() async {
       var suites = await _loader
@@ -65,19 +65,19 @@ void main() {
       suite = await loadSuite.getSuite();
     });
 
-    test("returns a suite with the file path and platform", () {
+    test('returns a suite with the file path and platform', () {
       expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
       expect(suite.platform.runtime, equals(Runtime.chrome));
     });
 
-    test("returns tests with the correct names", () {
+    test('returns tests with the correct names', () {
       expect(suite.group.entries, hasLength(3));
-      expect(suite.group.entries[0].name, equals("success"));
-      expect(suite.group.entries[1].name, equals("failure"));
-      expect(suite.group.entries[2].name, equals("error"));
+      expect(suite.group.entries[0].name, equals('success'));
+      expect(suite.group.entries[1].name, equals('failure'));
+      expect(suite.group.entries[2].name, equals('error'));
     });
 
-    test("can load and run a successful test", () {
+    test('can load and run a successful test', () {
       var liveTest = (suite.group.entries[0] as RunnerTest).load(suite);
 
       expectStates(liveTest, [
@@ -89,15 +89,15 @@ void main() {
       return liveTest.run().whenComplete(() => liveTest.close());
     });
 
-    test("can load and run a failing test", () {
+    test('can load and run a failing test', () {
       var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
       expectSingleFailure(liveTest);
       return liveTest.run().whenComplete(() => liveTest.close());
     });
   });
 
-  test("loads tests that are defined asynchronously", () async {
-    File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync("""
+  test('loads tests that are defined asynchronously', () async {
+    File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync('''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -115,7 +115,7 @@ Future main() {
     });
   });
 }
-""");
+''');
 
     var suites = await _loader
         .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
@@ -124,12 +124,12 @@ Future main() {
     var loadSuite = suites.first;
     var suite = await loadSuite.getSuite();
     expect(suite.group.entries, hasLength(3));
-    expect(suite.group.entries[0].name, equals("success"));
-    expect(suite.group.entries[1].name, equals("failure"));
-    expect(suite.group.entries[2].name, equals("error"));
+    expect(suite.group.entries[0].name, equals('success'));
+    expect(suite.group.entries[1].name, equals('failure'));
+    expect(suite.group.entries[2].name, equals('error'));
   });
 
-  test("loads a suite both in the browser and the VM", () async {
+  test('loads a suite both in the browser and the VM', () async {
     var path = p.join(d.sandbox, 'a_test.dart');
 
     var suites = await _loader
@@ -148,18 +148,18 @@ Future main() {
 
     for (var suite in suites) {
       expect(suite.group.entries, hasLength(3));
-      expect(suite.group.entries[0].name, equals("success"));
-      expect(suite.group.entries[1].name, equals("failure"));
-      expect(suite.group.entries[2].name, equals("error"));
+      expect(suite.group.entries[0].name, equals('success'));
+      expect(suite.group.entries[1].name, equals('failure'));
+      expect(suite.group.entries[2].name, equals('error'));
     }
   });
 
-  test("a print in a loaded file is piped through the LoadSuite", () async {
-    File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync("""
+  test('a print in a loaded file is piped through the LoadSuite', () async {
+    File(p.join(d.sandbox, 'a_test.dart')).writeAsStringSync('''
 void main() {
   print('print within test');
 }
-""");
+''');
     var suites = await _loader
         .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
         .toList();
@@ -169,7 +169,7 @@ void main() {
     var liveTest = (loadSuite.group.entries.single as Test).load(loadSuite);
     // Skip the "Compiled" message from dart2js.
     expect(liveTest.onMessage.skip(1).first.then((message) => message.text),
-        completion(equals("print within test")));
+        completion(equals('print within test')));
     await liveTest.run();
     expectTestPassed(liveTest);
   });

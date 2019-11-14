@@ -109,7 +109,7 @@ abstract class LiveTest {
 
     // The test will have the same name as the group for virtual tests created
     // to represent skipping the entire group.
-    if (test.name.length == group.name.length) return "";
+    if (test.name.length == group.name.length) return '';
 
     return test.name.substring(group.name.length + 1);
   }

@@ -16,4 +16,4 @@ final defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 /// The default filename pattern.
 ///
 /// This is stored here so that we don't have to recompile it multiple times.
-final defaultFilename = Glob("*_test.dart");
+final defaultFilename = Glob('*_test.dart');

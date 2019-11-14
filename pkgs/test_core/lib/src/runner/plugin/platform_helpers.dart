@@ -75,26 +75,26 @@ RunnerSuiteController deserializeSuite(
 
   suiteChannel.stream.listen(
       (response) {
-        switch (response["type"] as String) {
-          case "print":
-            print(response["line"]);
+        switch (response['type'] as String) {
+          case 'print':
+            print(response['line']);
             break;
 
-          case "loadException":
+          case 'loadException':
             handleError(
-                LoadException(path, response["message"]), Trace.current());
+                LoadException(path, response['message']), Trace.current());
             break;
 
-          case "error":
-            var asyncError = RemoteException.deserialize(response["error"]);
+          case 'error':
+            var asyncError = RemoteException.deserialize(response['error']);
             handleError(
                 LoadException(path, asyncError.error), asyncError.stackTrace);
             break;
 
-          case "success":
+          case 'success':
             var deserializer = _Deserializer(suiteChannel);
             completer.complete(
-                deserializer.deserializeGroup(response["root"] as Map));
+                deserializer.deserializeGroup(response['root'] as Map));
             break;
         }
       },
@@ -102,7 +102,7 @@ RunnerSuiteController deserializeSuite(
       onDone: () {
         if (completer.isCompleted) return;
         completer.completeError(
-            LoadException(path, "Connection closed before test suite loaded."),
+            LoadException(path, 'Connection closed before test suite loaded.'),
             Trace.current());
       });
 

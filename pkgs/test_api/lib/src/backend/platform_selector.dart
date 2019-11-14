@@ -11,7 +11,7 @@ import 'suite_platform.dart';
 
 /// The set of variable names that are valid for all platform selectors.
 final _universalValidVariables =
-    Set<String>.from(["posix", "dart-vm", "browser", "js", "blink", "google"])
+    Set<String>.from(['posix', 'dart-vm', 'browser', 'js', 'blink', 'google'])
       ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
       ..addAll(OperatingSystem.all.map((os) => os.identifier));
 
@@ -78,17 +78,17 @@ class PlatformSelector {
       if (variable == platform.runtime.parent?.identifier) return true;
       if (variable == platform.os.identifier) return true;
       switch (variable) {
-        case "dart-vm":
+        case 'dart-vm':
           return platform.runtime.isDartVM;
-        case "browser":
+        case 'browser':
           return platform.runtime.isBrowser;
-        case "js":
+        case 'js':
           return platform.runtime.isJS;
-        case "blink":
+        case 'blink':
           return platform.runtime.isBlink;
-        case "posix":
+        case 'posix':
           return platform.os.isPosix;
-        case "google":
+        case 'google':
           return platform.inGoogle;
         default:
           return false;

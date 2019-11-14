@@ -23,14 +23,14 @@ class CodeServer {
     var server = await HttpMultiServer.loopback(0);
     var handler = ShelfTestHandler();
     shelf_io.serveRequests(server, (request) {
-      if (request.method == "GET" && request.url.path == "favicon.ico") {
+      if (request.method == 'GET' && request.url.path == 'favicon.ico') {
         return shelf.Response.notFound(null);
       } else {
         return handler(request);
       }
     });
 
-    return CodeServer._(handler, Uri.parse("http://localhost:${server.port}"));
+    return CodeServer._(handler, Uri.parse('http://localhost:${server.port}'));
   }
 
   CodeServer._(this._handler, this.url);
@@ -38,18 +38,18 @@ class CodeServer {
   /// Sets up a handler for the root of the server, "/", that serves a basic
   /// HTML page with a script tag that will run [dart].
   void handleDart(String dart) {
-    _handler.expect("GET", "/", (_) {
-      return shelf.Response.ok("""
+    _handler.expect('GET', '/', (_) {
+      return shelf.Response.ok('''
 <!doctype html>
 <html>
 <head>
   <script type="application/dart" src="index.dart"></script>
 </head>
 </html>
-""", headers: {'content-type': 'text/html'});
+''', headers: {'content-type': 'text/html'});
     });
 
-    _handler.expect("GET", "/index.dart", (_) {
+    _handler.expect('GET', '/index.dart', (_) {
       return shelf.Response.ok('''
 import "dart:html";
 
@@ -63,18 +63,18 @@ main() async {
   /// Sets up a handler for the root of the server, "/", that serves a basic
   /// HTML page with a script tag that will run [javaScript].
   void handleJavaScript(String javaScript) {
-    _handler.expect("GET", "/", (_) {
-      return shelf.Response.ok("""
+    _handler.expect('GET', '/', (_) {
+      return shelf.Response.ok('''
 <!doctype html>
 <html>
 <head>
   <script src="index.js"></script>
 </head>
 </html>
-""", headers: {'content-type': 'text/html'});
+''', headers: {'content-type': 'text/html'});
     });
 
-    _handler.expect("GET", "/index.js", (_) {
+    _handler.expect('GET', '/index.js', (_) {
       return shelf.Response.ok(javaScript,
           headers: {'content-type': 'application/javascript'});
     });
@@ -84,7 +84,7 @@ main() async {
   /// future that will complete to the WebSocket.
   Future<WebSocketChannel> handleWebSocket() {
     var completer = Completer<WebSocketChannel>();
-    _handler.expect("GET", "/", webSocketHandler(completer.complete));
+    _handler.expect('GET', '/', webSocketHandler(completer.complete));
     return completer.future;
   }
 }

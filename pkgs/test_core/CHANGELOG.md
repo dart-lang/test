@@ -1,3 +1,7 @@
+## 0.2.16-dev
+
+* Internal cleanup.
+
 ## 0.2.15
 
 * Add a `StringSink` argument to reporters to prepare for reporting to a file.

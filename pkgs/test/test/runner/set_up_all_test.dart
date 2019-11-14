@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -11,8 +11,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
-  test("an error causes the run to fail", () async {
-    await d.file("test.dart", r"""
+  test('an error causes the run to fail', () async {
+    await d.file('test.dart', r'''
         import 'package:test/test.dart';
 
         void main() {
@@ -20,16 +20,16 @@ void main() {
 
           test("test", () {});
         }
-        """).create();
+        ''').create();
 
-    var test = await runTest(["test.dart"]);
-    expect(test.stdout, emitsThrough(contains("-1: (setUpAll) [E]")));
-    expect(test.stdout, emitsThrough(contains("-1: Some tests failed.")));
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('-1: (setUpAll) [E]')));
+    expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
 
   test("doesn't run if no tests in the group are selected", () async {
-    await d.file("test.dart", r"""
+    await d.file('test.dart', r'''
         import 'package:test/test.dart';
 
         void main() {
@@ -43,15 +43,15 @@ void main() {
             test("test", () {});
           });
         }
-        """).create();
+        ''').create();
 
-    var test = await runTest(["test.dart", "--name", "without"]);
-    expect(test.stdout, neverEmits(contains("(setUpAll)")));
+    var test = await runTest(['test.dart', '--name', 'without']);
+    expect(test.stdout, neverEmits(contains('(setUpAll)')));
     await test.shouldExit(0);
   });
 
   test("doesn't run if no tests in the group match the platform", () async {
-    await d.file("test.dart", r"""
+    await d.file('test.dart', r'''
         import 'package:test/test.dart';
 
         void main() {
@@ -65,15 +65,15 @@ void main() {
             test("without", () {});
           });
         }
-        """).create();
+        ''').create();
 
-    var test = await runTest(["test.dart"]);
-    expect(test.stdout, neverEmits(contains("(setUpAll)")));
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, neverEmits(contains('(setUpAll)')));
     await test.shouldExit(0);
   });
 
   test("doesn't run if the group doesn't match the platform", () async {
-    await d.file("test.dart", r"""
+    await d.file('test.dart', r'''
         import 'package:test/test.dart';
 
         void main() {
@@ -87,10 +87,10 @@ void main() {
             test("without", () {});
           });
         }
-        """).create();
+        ''').create();
 
-    var test = await runTest(["test.dart"]);
-    expect(test.stdout, neverEmits(contains("(setUpAll)")));
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, neverEmits(contains('(setUpAll)')));
     await test.shouldExit(0);
   });
 }

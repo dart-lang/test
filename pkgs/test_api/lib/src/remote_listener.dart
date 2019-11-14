@@ -58,7 +58,7 @@ class RemoteListener {
     var printZone = hidePrints ? null : Zone.current;
     var spec = ZoneSpecification(print: (_, __, ___, line) {
       if (printZone != null) printZone.print(line);
-      channel.sink.add({"type": "print", "line": line});
+      channel.sink.add({'type': 'print', 'line': line});
     });
 
     // Work-around for https://github.com/dart-lang/sdk/issues/32556. Remove
@@ -73,7 +73,7 @@ class RemoteListener {
             main = getMain();
           } on NoSuchMethodError catch (_) {
             _sendLoadException(
-                channel, "No top-level main() function defined.");
+                channel, 'No top-level main() function defined.');
             return;
           } catch (error, stackTrace) {
             _sendError(channel, error, stackTrace, verboseChain);
@@ -82,11 +82,11 @@ class RemoteListener {
 
           if (main is! Function) {
             _sendLoadException(
-                channel, "Top-level main getter is not a function.");
+                channel, 'Top-level main getter is not a function.');
             return;
           } else if (main is! Function()) {
             _sendLoadException(
-                channel, "Top-level main() function takes arguments.");
+                channel, 'Top-level main() function takes arguments.');
             return;
           }
 
@@ -95,12 +95,12 @@ class RemoteListener {
           assert(message['type'] == 'initial');
 
           queue.rest.listen((message) {
-            if (message["type"] == "close") {
+            if (message['type'] == 'close') {
               controller.local.sink.close();
               return;
             }
 
-            assert(message["type"] == "suiteChannel");
+            assert(message['type'] == 'suiteChannel');
             SuiteChannelManager.current.connectIn(message['name'] as String,
                 channel.virtualChannel(message['id'] as int));
           });
@@ -155,15 +155,15 @@ class RemoteListener {
   ///
   /// [message] should describe the failure.
   static void _sendLoadException(StreamChannel channel, String message) {
-    channel.sink.add({"type": "loadException", "message": message});
+    channel.sink.add({'type': 'loadException', 'message': message});
   }
 
   /// Sends a message over [channel] indicating an error from user code.
   static void _sendError(
       StreamChannel channel, error, StackTrace stackTrace, bool verboseChain) {
     channel.sink.add({
-      "type": "error",
-      "error": RemoteException.serialize(
+      'type': 'error',
+      'error': RemoteException.serialize(
           error,
           StackTraceFormatter.current
               .formatStackTrace(stackTrace, verbose: verboseChain))
@@ -176,8 +176,8 @@ class RemoteListener {
   /// commands to run the tests.
   void _listen(MultiChannel channel) {
     channel.sink.add({
-      "type": "success",
-      "root": _serializeGroup(channel, _suite.group, [])
+      'type': 'success',
+      'root': _serializeGroup(channel, _suite.group, [])
     });
   }
 
@@ -188,13 +188,13 @@ class RemoteListener {
       MultiChannel channel, Group group, Iterable<Group> parents) {
     parents = parents.toList()..add(group);
     return {
-      "type": "group",
-      "name": group.name,
-      "metadata": group.metadata.serialize(),
-      "trace": group.trace?.toString(),
-      "setUpAll": _serializeTest(channel, group.setUpAll, parents),
-      "tearDownAll": _serializeTest(channel, group.tearDownAll, parents),
-      "entries": group.entries.map((entry) {
+      'type': 'group',
+      'name': group.name,
+      'metadata': group.metadata.serialize(),
+      'trace': group.trace?.toString(),
+      'setUpAll': _serializeTest(channel, group.setUpAll, parents),
+      'tearDownAll': _serializeTest(channel, group.tearDownAll, parents),
+      'entries': group.entries.map((entry) {
         return entry is Group
             ? _serializeGroup(channel, entry, parents)
             : _serializeTest(channel, entry as Test, parents);
@@ -217,11 +217,11 @@ class RemoteListener {
     });
 
     return {
-      "type": "test",
-      "name": test.name,
-      "metadata": test.metadata.serialize(),
-      "trace": test.trace?.toString(),
-      "channel": testChannel.id
+      'type': 'test',
+      'name': test.name,
+      'metadata': test.metadata.serialize(),
+      'trace': test.trace?.toString(),
+      'channel': testChannel.id
     };
   }
 
@@ -234,16 +234,16 @@ class RemoteListener {
 
     liveTest.onStateChange.listen((state) {
       channel.sink.add({
-        "type": "state-change",
-        "status": state.status.name,
-        "result": state.result.name
+        'type': 'state-change',
+        'status': state.status.name,
+        'result': state.result.name
       });
     });
 
     liveTest.onError.listen((asyncError) {
       channel.sink.add({
-        "type": "error",
-        "error": RemoteException.serialize(
+        'type': 'error',
+        'error': RemoteException.serialize(
             asyncError.error,
             StackTraceFormatter.current.formatStackTrace(asyncError.stackTrace,
                 verbose: liveTest.test.metadata.verboseTrace))
@@ -253,14 +253,14 @@ class RemoteListener {
     liveTest.onMessage.listen((message) {
       if (_printZone != null) _printZone.print(message.text);
       channel.sink.add({
-        "type": "message",
-        "message-type": message.type.name,
-        "text": message.text
+        'type': 'message',
+        'message-type': message.type.name,
+        'text': message.text
       });
     });
 
     runZoned(() {
-      liveTest.run().then((_) => channel.sink.add({"type": "complete"}));
+      liveTest.run().then((_) => channel.sink.add({'type': 'complete'}));
     }, zoneValues: {#test.runner.test_channel: channel});
   }
 }

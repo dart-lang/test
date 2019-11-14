@@ -15,7 +15,7 @@ import 'format_stack_trace.dart';
 /// Use [throwsA] instead. We strongly recommend that you add assertions about
 /// at least the type of the error, but you can write `throwsA(anything)` to
 /// mimic the behavior of this matcher.
-@Deprecated("Will be removed in 0.13.0")
+@Deprecated('Will be removed in 0.13.0')
 const Matcher throws = Throws();
 
 /// This can be used to match three kinds of objects:
@@ -38,7 +38,7 @@ const Matcher throws = Throws();
 Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 
 /// Use the [throwsA] function instead.
-@Deprecated("Will be removed in 0.13.0")
+@Deprecated('Will be removed in 0.13.0')
 class Throws extends AsyncMatcher {
   final Matcher _matcher;
 
@@ -48,7 +48,7 @@ class Throws extends AsyncMatcher {
   // function.
   /*FutureOr<String>*/ matchAsync(item) {
     if (item is! Function && item is! Future) {
-      return "was not a Function or Future";
+      return 'was not a Function or Future';
     }
 
     if (item is Future) {
@@ -73,7 +73,7 @@ class Throws extends AsyncMatcher {
 
   Description describe(Description description) {
     if (_matcher == null) {
-      return description.add("throws");
+      return description.add('throws');
     } else {
       return description.add('throws ').addDescriptionOf(_matcher);
     }

@@ -17,6 +17,7 @@ linter:
     - await_only_futures
     - implementation_imports
     - prefer_generic_function_type_aliases
+    - prefer_single_quotes
     - prefer_typing_uninitialized_variables
     - unnecessary_const
     - unnecessary_new

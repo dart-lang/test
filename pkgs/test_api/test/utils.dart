@@ -58,7 +58,7 @@ void expectSingleFailure(LiveTest liveTest) {
   expectErrors(liveTest, [
     (error) {
       expect(lastState.status, equals(Status.complete));
-      expect(error, isTestFailure("oh no"));
+      expect(error, isTestFailure('oh no'));
     }
   ]);
 }
@@ -73,7 +73,7 @@ void expectSingleError(LiveTest liveTest) {
   expectErrors(liveTest, [
     (error) {
       expect(lastState.status, equals(Status.complete));
-      expect(error, equals("oh no"));
+      expect(error, equals('oh no'));
     }
   ]);
 }
@@ -100,7 +100,7 @@ Matcher isApplicationException(message) =>
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(body()) {
-  var test = LocalTest("test", Metadata(), body);
+  var test = LocalTest('test', Metadata(), body);
   var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }

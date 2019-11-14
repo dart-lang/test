@@ -20,19 +20,19 @@ class Message {
 
 class MessageType {
   /// A message explicitly printed by the user's test.
-  static const print = MessageType._("print");
+  static const print = MessageType._('print');
 
   /// A message indicating that a test, or some portion of one, was skipped.
-  static const skip = MessageType._("skip");
+  static const skip = MessageType._('skip');
 
   /// The name of the message type.
   final String name;
 
   factory MessageType.parse(String name) {
     switch (name) {
-      case "print":
+      case 'print':
         return MessageType.print;
-      case "skip":
+      case 'skip':
         return MessageType.skip;
       default:
         throw ArgumentError('Invalid message type "$name".');

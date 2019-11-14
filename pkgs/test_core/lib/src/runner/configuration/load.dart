@@ -27,7 +27,7 @@ import 'runtime_settings.dart';
 /// A regular expression matching a Dart identifier.
 ///
 /// This also matches a package name, since they must be Dart identifiers.
-final _identifierRegExp = RegExp(r"[a-zA-Z_]\w*");
+final _identifierRegExp = RegExp(r'[a-zA-Z_]\w*');
 
 /// A regular expression matching allowed package names.
 ///
@@ -35,7 +35,7 @@ final _identifierRegExp = RegExp(r"[a-zA-Z_]\w*");
 /// compatibility with Google's internal Dart packages, but they may not be used
 /// when publishing a package to pub.dev.
 final _packageName =
-    RegExp("^${_identifierRegExp.pattern}(\\.${_identifierRegExp.pattern})*\$");
+    RegExp('^${_identifierRegExp.pattern}(\\.${_identifierRegExp.pattern})*\$');
 
 /// Loads configuration information from a YAML file at [path].
 ///
@@ -52,7 +52,7 @@ Configuration load(String path, {bool global = false}) {
 
   if (document is! Map) {
     throw SourceSpanFormatException(
-        "The configuration must be a YAML map.", document.span, source);
+        'The configuration must be a YAML map.', document.span, source);
   }
 
   var loader =
@@ -91,14 +91,14 @@ class _ConfigurationLoader {
   /// If an `include` node is contained in [node], merges and returns [config].
   Configuration _loadIncludeConfig() {
     if (!_runnerConfig) {
-      _disallow("include");
+      _disallow('include');
       return Configuration.empty;
     }
 
-    var includeNode = _document.nodes["include"];
+    var includeNode = _document.nodes['include'];
     if (includeNode == null) return Configuration.empty;
 
-    var includePath = _parseNode(includeNode, "include path", p.fromUri);
+    var includePath = _parseNode(includeNode, 'include path', p.fromUri);
     var basePath =
         p.join(p.dirname(p.fromUri(_document.span.sourceUrl)), includePath);
     try {
@@ -111,22 +111,22 @@ class _ConfigurationLoader {
 
   /// Loads test configuration that's allowed in the global configuration file.
   Configuration _loadGlobalTestConfig() {
-    var verboseTrace = _getBool("verbose_trace");
-    var chainStackTraces = _getBool("chain_stack_traces");
+    var verboseTrace = _getBool('verbose_trace');
+    var chainStackTraces = _getBool('chain_stack_traces');
     var foldStackFrames = _loadFoldedStackFrames();
-    var jsTrace = _getBool("js_trace");
+    var jsTrace = _getBool('js_trace');
 
-    var timeout = _parseValue("timeout", (value) => Timeout.parse(value));
+    var timeout = _parseValue('timeout', (value) => Timeout.parse(value));
 
-    var onPlatform = _getMap("on_platform",
-        key: (keyNode) => _parseNode(keyNode, "on_platform key",
+    var onPlatform = _getMap('on_platform',
+        key: (keyNode) => _parseNode(keyNode, 'on_platform key',
             (value) => PlatformSelector.parse(value, keyNode.span)),
         value: (valueNode) =>
-            _nestedConfig(valueNode, "on_platform value", runnerConfig: false));
+            _nestedConfig(valueNode, 'on_platform value', runnerConfig: false));
 
-    var onOS = _getMap("on_os",
+    var onOS = _getMap('on_os',
         key: (keyNode) {
-          _validate(keyNode, "on_os key must be a string.",
+          _validate(keyNode, 'on_os key must be a string.',
               (value) => value is String);
 
           var os = OperatingSystem.find(keyNode.value as String);
@@ -137,11 +137,11 @@ class _ConfigurationLoader {
               keyNode.span,
               _source);
         },
-        value: (valueNode) => _nestedConfig(valueNode, "on_os value"));
+        value: (valueNode) => _nestedConfig(valueNode, 'on_os value'));
 
-    var presets = _getMap("presets",
-        key: (keyNode) => _parseIdentifierLike(keyNode, "presets key"),
-        value: (valueNode) => _nestedConfig(valueNode, "presets value"));
+    var presets = _getMap('presets',
+        key: (keyNode) => _parseIdentifierLike(keyNode, 'presets key'),
+        value: (valueNode) => _nestedConfig(valueNode, 'presets value'));
 
     var config = Configuration(
             verboseTrace: verboseTrace,
@@ -149,8 +149,8 @@ class _ConfigurationLoader {
             timeout: timeout,
             presets: presets,
             chainStackTraces: chainStackTraces,
-            foldTraceExcept: foldStackFrames["except"],
-            foldTraceOnly: foldStackFrames["only"])
+            foldTraceExcept: foldStackFrames['except'],
+            foldTraceOnly: foldStackFrames['only'])
         .merge(_extractPresets<PlatformSelector>(
             onPlatform, (map) => Configuration(onPlatform: map)));
 
@@ -165,15 +165,15 @@ class _ConfigurationLoader {
   /// configuration fields.
   Configuration _loadLocalTestConfig() {
     if (_global) {
-      _disallow("skip");
-      _disallow("retry");
-      _disallow("test_on");
-      _disallow("add_tags");
-      _disallow("tags");
+      _disallow('skip');
+      _disallow('retry');
+      _disallow('test_on');
+      _disallow('add_tags');
+      _disallow('tags');
       return Configuration.empty;
     }
 
-    var skipRaw = _getValue("skip", "boolean or string",
+    var skipRaw = _getValue('skip', 'boolean or string',
         (value) => value is bool || value is String);
     String skipReason;
     bool skip;
@@ -184,18 +184,18 @@ class _ConfigurationLoader {
       skip = skipRaw as bool;
     }
 
-    var testOn = _parsePlatformSelector("test_on");
+    var testOn = _parsePlatformSelector('test_on');
 
     var addTags = _getList(
-        "add_tags", (tagNode) => _parseIdentifierLike(tagNode, "Tag name"));
+        'add_tags', (tagNode) => _parseIdentifierLike(tagNode, 'Tag name'));
 
-    var tags = _getMap("tags",
+    var tags = _getMap('tags',
         key: (keyNode) => _parseNode(
-            keyNode, "tags key", (value) => BooleanSelector.parse(value)),
+            keyNode, 'tags key', (value) => BooleanSelector.parse(value)),
         value: (valueNode) =>
-            _nestedConfig(valueNode, "tag value", runnerConfig: false));
+            _nestedConfig(valueNode, 'tag value', runnerConfig: false));
 
-    var retry = _getNonNegativeInt("retry");
+    var retry = _getNonNegativeInt('retry');
 
     return Configuration(
             skip: skip,
@@ -214,40 +214,40 @@ class _ConfigurationLoader {
   /// runner-level configuration fields.
   Configuration _loadGlobalRunnerConfig() {
     if (!_runnerConfig) {
-      _disallow("pause_after_load");
-      _disallow("reporter");
-      _disallow("concurrency");
-      _disallow("names");
-      _disallow("plain_names");
-      _disallow("platforms");
-      _disallow("add_presets");
-      _disallow("override_platforms");
-      _disallow("include");
+      _disallow('pause_after_load');
+      _disallow('reporter');
+      _disallow('concurrency');
+      _disallow('names');
+      _disallow('plain_names');
+      _disallow('platforms');
+      _disallow('add_presets');
+      _disallow('override_platforms');
+      _disallow('include');
       return Configuration.empty;
     }
 
-    var pauseAfterLoad = _getBool("pause_after_load");
-    var runSkipped = _getBool("run_skipped");
+    var pauseAfterLoad = _getBool('pause_after_load');
+    var runSkipped = _getBool('run_skipped');
 
-    var reporter = _getString("reporter");
+    var reporter = _getString('reporter');
     if (reporter != null && !allReporters.keys.contains(reporter)) {
-      _error('Unknown reporter "$reporter".', "reporter");
+      _error('Unknown reporter "$reporter".', 'reporter');
     }
 
-    var concurrency = _getInt("concurrency");
+    var concurrency = _getInt('concurrency');
 
     // The UI term "platform" corresponds with the implementation term
     // "runtime". The [Runtime] class used to be called [TestPlatform], but it
     // was changed to avoid conflicting with [SuitePlatform]. We decided not to
     // also change the UI to avoid a painful migration.
     var runtimes = _getList(
-        "platforms",
+        'platforms',
         (runtimeNode) => RuntimeSelection(
-            _parseIdentifierLike(runtimeNode, "Platform name"),
+            _parseIdentifierLike(runtimeNode, 'Platform name'),
             runtimeNode.span));
 
-    var chosenPresets = _getList("add_presets",
-        (presetNode) => _parseIdentifierLike(presetNode, "Preset name"));
+    var chosenPresets = _getList('add_presets',
+        (presetNode) => _parseIdentifierLike(presetNode, 'Preset name'));
 
     var overrideRuntimes = _loadOverrideRuntimes();
 
@@ -264,21 +264,21 @@ class _ConfigurationLoader {
   /// Loads the `override_platforms` field.
   Map<String, RuntimeSettings> _loadOverrideRuntimes() {
     var runtimesNode =
-        _getNode("override_platforms", "map", (value) => value is Map)
+        _getNode('override_platforms', 'map', (value) => value is Map)
             as YamlMap;
     if (runtimesNode == null) return const {};
 
     var runtimes = <String, RuntimeSettings>{};
     runtimesNode.nodes.forEach((identifierNode, valueNode) {
       var identifier = _parseIdentifierLike(
-          identifierNode as YamlNode, "Platform identifier");
+          identifierNode as YamlNode, 'Platform identifier');
 
-      _validate(valueNode, "Platform definition must be a map.",
+      _validate(valueNode, 'Platform definition must be a map.',
           (value) => value is Map);
       var map = valueNode as YamlMap;
 
-      var settings = _expect(map, "settings");
-      _validate(settings, "Must be a map.", (value) => value is Map);
+      var settings = _expect(map, 'settings');
+      _validate(settings, 'Must be a map.', (value) => value is Map);
 
       runtimes[identifier] = RuntimeSettings(
           identifier, (identifierNode as YamlNode).span, [settings as YamlMap]);
@@ -293,41 +293,41 @@ class _ConfigurationLoader {
   /// if there are any local test-level configuration fields.
   Configuration _loadLocalRunnerConfig() {
     if (!_runnerConfig || _global) {
-      _disallow("pub_serve");
-      _disallow("names");
-      _disallow("plain_names");
-      _disallow("paths");
-      _disallow("filename");
-      _disallow("include_tags");
-      _disallow("exclude_tags");
-      _disallow("define_platforms");
+      _disallow('pub_serve');
+      _disallow('names');
+      _disallow('plain_names');
+      _disallow('paths');
+      _disallow('filename');
+      _disallow('include_tags');
+      _disallow('exclude_tags');
+      _disallow('define_platforms');
       return Configuration.empty;
     }
 
-    var pubServePort = _getInt("pub_serve");
+    var pubServePort = _getInt('pub_serve');
 
-    var patterns = _getList("names", (nameNode) {
-      _validate(nameNode, "Names must be strings.", (value) => value is String);
-      return _parseNode(nameNode, "name", (value) => RegExp(value));
+    var patterns = _getList('names', (nameNode) {
+      _validate(nameNode, 'Names must be strings.', (value) => value is String);
+      return _parseNode(nameNode, 'name', (value) => RegExp(value));
     })
-      ..addAll(_getList("plain_names", (nameNode) {
+      ..addAll(_getList('plain_names', (nameNode) {
         _validate(
-            nameNode, "Names must be strings.", (value) => value is String);
-        return _parseNode(nameNode, "name", (value) => RegExp(value));
+            nameNode, 'Names must be strings.', (value) => value is String);
+        return _parseNode(nameNode, 'name', (value) => RegExp(value));
       }));
 
-    var paths = _getList("paths", (pathNode) {
-      _validate(pathNode, "Paths must be strings.", (value) => value is String);
-      _validate(pathNode, "Paths must be relative.",
+    var paths = _getList('paths', (pathNode) {
+      _validate(pathNode, 'Paths must be strings.', (value) => value is String);
+      _validate(pathNode, 'Paths must be relative.',
           (value) => p.url.isRelative(value as String));
 
-      return _parseNode(pathNode, "path", p.fromUri);
+      return _parseNode(pathNode, 'path', p.fromUri);
     });
 
-    var filename = _parseValue("filename", (value) => Glob(value));
+    var filename = _parseValue('filename', (value) => Glob(value));
 
-    var includeTags = _parseBooleanSelector("include_tags");
-    var excludeTags = _parseBooleanSelector("exclude_tags");
+    var includeTags = _parseBooleanSelector('include_tags');
+    var excludeTags = _parseBooleanSelector('exclude_tags');
 
     var defineRuntimes = _loadDefineRuntimes();
 
@@ -348,10 +348,10 @@ class _ConfigurationLoader {
   /// test [Chain].
   Map<String, List<String>> _loadFoldedStackFrames() {
     var foldOptionSet = false;
-    return _getMap("fold_stack_frames", key: (keyNode) {
-      _validate(keyNode, "Must be a string", (value) => value is String);
+    return _getMap('fold_stack_frames', key: (keyNode) {
+      _validate(keyNode, 'Must be a string', (value) => value is String);
       _validate(keyNode, 'Must be "only" or "except".',
-          (value) => value == "only" || value == "except");
+          (value) => value == 'only' || value == 'except');
 
       if (foldOptionSet) {
         throw SourceSpanFormatException(
@@ -364,14 +364,14 @@ class _ConfigurationLoader {
     }, value: (valueNode) {
       _validate(
           valueNode,
-          "Folded packages must be strings.",
+          'Folded packages must be strings.',
           (valueList) =>
               valueList is YamlList &&
               valueList.every((value) => value is String));
 
       _validate(
           valueNode,
-          "Invalid package name.",
+          'Invalid package name.',
           (valueList) => (valueList as Iterable)
               .every((value) => _packageName.hasMatch(value as String)));
 
@@ -382,27 +382,27 @@ class _ConfigurationLoader {
   /// Loads the `define_platforms` field.
   Map<String, CustomRuntime> _loadDefineRuntimes() {
     var runtimesNode =
-        _getNode("define_platforms", "map", (value) => value is Map) as YamlMap;
+        _getNode('define_platforms', 'map', (value) => value is Map) as YamlMap;
     if (runtimesNode == null) return const {};
 
     var runtimes = <String, CustomRuntime>{};
     runtimesNode.nodes.forEach((identifierNode, valueNode) {
       var identifier = _parseIdentifierLike(
-          identifierNode as YamlNode, "Platform identifier");
+          identifierNode as YamlNode, 'Platform identifier');
 
-      _validate(valueNode, "Platform definition must be a map.",
+      _validate(valueNode, 'Platform definition must be a map.',
           (value) => value is Map);
       var map = valueNode as YamlMap;
 
-      var nameNode = _expect(map, "name");
-      _validate(nameNode, "Must be a string.", (value) => value is String);
+      var nameNode = _expect(map, 'name');
+      _validate(nameNode, 'Must be a string.', (value) => value is String);
       var name = nameNode.value as String;
 
-      var parentNode = _expect(map, "extends");
-      var parent = _parseIdentifierLike(parentNode, "Platform parent");
+      var parentNode = _expect(map, 'extends');
+      var parent = _parseIdentifierLike(parentNode, 'Platform parent');
 
-      var settings = _expect(map, "settings");
-      _validate(settings, "Must be a map.", (value) => value is Map);
+      var settings = _expect(map, 'settings');
+      _validate(settings, 'Must be a map.', (value) => value is Map);
 
       runtimes[identifier] = CustomRuntime(
           name,
@@ -430,7 +430,7 @@ class _ConfigurationLoader {
   _getValue(String field, String typeName, bool typeTest(value)) {
     var value = _document[field];
     if (value == null || typeTest(value)) return value;
-    _error("$field must be ${a(typeName)}.", field);
+    _error('$field must be ${a(typeName)}.', field);
   }
 
   /// Returns the YAML node at [field].
@@ -440,32 +440,32 @@ class _ConfigurationLoader {
   YamlNode _getNode(String field, String typeName, bool typeTest(value)) {
     var node = _document.nodes[field];
     if (node == null) return null;
-    _validate(node, "$field must be ${a(typeName)}.", typeTest);
+    _validate(node, '$field must be ${a(typeName)}.', typeTest);
     return node;
   }
 
   /// Asserts that [field] is an int and returns its value.
   int _getInt(String field) =>
-      _getValue(field, "int", (value) => value is int) as int;
+      _getValue(field, 'int', (value) => value is int) as int;
 
   /// Asserts that [field] is a non-negative int and returns its value.
   int _getNonNegativeInt(String field) => _getValue(
-      field, "non-negative int", (value) => value is int && value >= 0) as int;
+      field, 'non-negative int', (value) => value is int && value >= 0) as int;
 
   /// Asserts that [field] is a boolean and returns its value.
   bool _getBool(String field) =>
-      _getValue(field, "boolean", (value) => value is bool) as bool;
+      _getValue(field, 'boolean', (value) => value is bool) as bool;
 
   /// Asserts that [field] is a string and returns its value.
   String _getString(String field) =>
-      _getValue(field, "string", (value) => value is String) as String;
+      _getValue(field, 'string', (value) => value is String) as String;
 
   /// Asserts that [field] is a list and runs [forElement] for each element it
   /// contains.
   ///
   /// Returns a list of values returned by [forElement].
   List<T> _getList<T>(String field, T forElement(YamlNode elementNode)) {
-    var node = _getNode(field, "list", (value) => value is List) as YamlList;
+    var node = _getNode(field, 'list', (value) => value is List) as YamlList;
     if (node == null) return [];
     return node.nodes.map(forElement).toList();
   }
@@ -476,18 +476,18 @@ class _ConfigurationLoader {
   /// of these defaults to asserting that the value is a string.
   Map<K, V> _getMap<K, V>(String field,
       {K key(YamlNode keyNode), V value(YamlNode valueNode)}) {
-    var node = _getNode(field, "map", (value) => value is Map) as YamlMap;
+    var node = _getNode(field, 'map', (value) => value is Map) as YamlMap;
     if (node == null) return {};
 
     key ??= (keyNode) {
       _validate(
-          keyNode, "$field keys must be strings.", (value) => value is String);
+          keyNode, '$field keys must be strings.', (value) => value is String);
 
       return keyNode.value as K;
     };
 
     value ??= (valueNode) {
-      _validate(valueNode, "$field values must be strings.",
+      _validate(valueNode, '$field values must be strings.',
           (value) => value is String);
 
       return valueNode.value as V;
@@ -500,8 +500,8 @@ class _ConfigurationLoader {
   /// Verifies that [node]'s value is an optionally hyphenated Dart identifier,
   /// and returns it
   String _parseIdentifierLike(YamlNode node, String name) {
-    _validate(node, "$name must be a string.", (value) => value is String);
-    _validate(node, "$name must be an (optionally hyphenated) Dart identifier.",
+    _validate(node, '$name must be a string.', (value) => value is String);
+    _validate(node, '$name must be an (optionally hyphenated) Dart identifier.',
         (value) => (value as String).contains(anchoredHyphenatedIdentifier));
     return node.value as String;
   }
@@ -524,7 +524,7 @@ class _ConfigurationLoader {
   /// If [parse] throws a [FormatException], it's wrapped to include [node]'s
   /// span.
   T _parseNode<T>(YamlNode node, String name, T parse(String value)) {
-    _validate(node, "$name must be a string.", (value) => value is String);
+    _validate(node, '$name must be a string.', (value) => value is String);
 
     try {
       return parse(node.value as String);
@@ -553,7 +553,7 @@ class _ConfigurationLoader {
   Configuration _nestedConfig(YamlNode node, String name, {bool runnerConfig}) {
     if (node == null || node.value == null) return Configuration.empty;
 
-    _validate(node, "$name must be a map.", (value) => value is Map);
+    _validate(node, '$name must be a map.', (value) => value is Map);
     var loader = _ConfigurationLoader(node as YamlMap, _source,
         global: _global, runnerConfig: runnerConfig ?? _runnerConfig);
     return loader.load();

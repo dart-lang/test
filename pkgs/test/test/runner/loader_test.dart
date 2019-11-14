@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -20,7 +20,7 @@ import '../utils.dart';
 
 Loader _loader;
 
-final _tests = """
+final _tests = '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -30,7 +30,7 @@ void main() {
   test("failure", () => throw new TestFailure('oh no'));
   test("error", () => throw 'oh no');
 }
-""";
+''';
 
 void main() {
   setUp(() async {
@@ -39,7 +39,7 @@ void main() {
 
   tearDown(() => _loader.close());
 
-  group(".loadFile()", () {
+  group('.loadFile()', () {
     RunnerSuite suite;
     setUp(() async {
       await d.file('a_test.dart', _tests).create();
@@ -51,19 +51,19 @@ void main() {
       suite = await loadSuite.getSuite();
     });
 
-    test("returns a suite with the file path and platform", () {
+    test('returns a suite with the file path and platform', () {
       expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
       expect(suite.platform.runtime, equals(Runtime.vm));
     });
 
-    test("returns entries with the correct names and platforms", () {
+    test('returns entries with the correct names and platforms', () {
       expect(suite.group.entries, hasLength(3));
-      expect(suite.group.entries[0].name, equals("success"));
-      expect(suite.group.entries[1].name, equals("failure"));
-      expect(suite.group.entries[2].name, equals("error"));
+      expect(suite.group.entries[0].name, equals('success'));
+      expect(suite.group.entries[1].name, equals('failure'));
+      expect(suite.group.entries[2].name, equals('error'));
     });
 
-    test("can load and run a successful test", () {
+    test('can load and run a successful test', () {
       var liveTest = (suite.group.entries[0] as RunnerTest).load(suite);
 
       expectStates(liveTest, [
@@ -75,21 +75,21 @@ void main() {
       return liveTest.run().whenComplete(() => liveTest.close());
     });
 
-    test("can load and run a failing test", () {
+    test('can load and run a failing test', () {
       var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
       expectSingleFailure(liveTest);
       return liveTest.run().whenComplete(() => liveTest.close());
     });
   });
 
-  group(".loadDir()", () {
-    test("ignores non-Dart files", () async {
+  group('.loadDir()', () {
+    test('ignores non-Dart files', () async {
       await d.file('a_test.txt', _tests).create();
       expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
           completion(isEmpty));
     });
 
-    test("ignores files in packages/ directories", () async {
+    test('ignores files in packages/ directories', () async {
       await d.dir('packages', [d.file('a_test.dart', _tests)]).create();
       expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
           completion(isEmpty));
@@ -101,7 +101,7 @@ void main() {
           completion(isEmpty));
     });
 
-    group("with suites loaded from a directory", () {
+    group('with suites loaded from a directory', () {
       List<RunnerSuite> suites;
       setUp(() async {
         await d.file('a_test.dart', _tests).create();
@@ -114,7 +114,7 @@ void main() {
             .toList();
       });
 
-      test("gives those suites the correct paths", () {
+      test('gives those suites the correct paths', () {
         expect(
             suites.map((suite) => suite.path),
             unorderedEquals([
@@ -124,8 +124,8 @@ void main() {
             ]));
       });
 
-      test("can run tests in those suites", () {
-        var suite = suites.firstWhere((suite) => suite.path.contains("a_test"));
+      test('can run tests in those suites', () {
+        var suite = suites.firstWhere((suite) => suite.path.contains('a_test'));
         var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
         expectSingleFailure(liveTest);
         return liveTest.run().whenComplete(() => liveTest.close());
@@ -133,12 +133,12 @@ void main() {
     });
   });
 
-  test("a print in a loaded file is piped through the LoadSuite", () async {
-    await d.file('a_test.dart', """
+  test('a print in a loaded file is piped through the LoadSuite', () async {
+    await d.file('a_test.dart', '''
       void main() {
         print('print within test');
       }
-    """).create();
+    ''').create();
     var suites = await _loader
         .loadFile(p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
         .toList();
@@ -147,7 +147,7 @@ void main() {
 
     var liveTest = (loadSuite.group.entries.single as Test).load(loadSuite);
     expect(liveTest.onMessage.first.then((message) => message.text),
-        completion(equals("print within test")));
+        completion(equals('print within test')));
     await liveTest.run();
     expectTestPassed(liveTest);
   });

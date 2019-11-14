@@ -237,7 +237,7 @@ void tearDown(callback()) => _declarer.tearDown(callback);
 /// instead runs the function after *all* tests in the current test suite.
 void addTearDown(callback()) {
   if (Invoker.current == null) {
-    throw StateError("addTearDown() may only be called within a test.");
+    throw StateError('addTearDown() may only be called within a test.');
   }
 
   Invoker.current.addTearDown(callback);

@@ -255,7 +255,7 @@ class Engine {
   /// closed.
   Future<bool> run() {
     if (_runCalled) {
-      throw StateError("Engine.run() may not be called more than once.");
+      throw StateError('Engine.run() may not be called more than once.');
     }
     _runCalled = true;
 
@@ -416,7 +416,7 @@ class Engine {
 
       if (skipped.metadata.skipReason != null) {
         controller
-            .message(Message.skip("Skip: ${skipped.metadata.skipReason}"));
+            .message(Message.skip('Skip: ${skipped.metadata.skipReason}'));
       }
 
       controller.setState(const State(Status.complete, Result.skipped));
@@ -437,7 +437,7 @@ class Engine {
 
     if (!_active.contains(liveTest)) {
       throw StateError("Can't restart inactive test "
-          "\"${liveTest.test.name}\".");
+          '\"${liveTest.test.name}\".');
     }
 
     _restarted.add(liveTest);

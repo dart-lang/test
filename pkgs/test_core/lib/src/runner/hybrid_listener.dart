@@ -2,14 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import "dart:async";
-import "dart:isolate";
+import 'dart:async';
+import 'dart:isolate';
 
-import "package:async/async.dart";
-import "package:stack_trace/stack_trace.dart";
-import "package:stream_channel/isolate_channel.dart";
-import "package:stream_channel/stream_channel.dart";
-import "package:test_api/src/util/remote_exception.dart"; // ignore: implementation_imports
+import 'package:async/async.dart';
+import 'package:stack_trace/stack_trace.dart';
+import 'package:stream_channel/isolate_channel.dart';
+import 'package:stream_channel/stream_channel.dart';
+import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// A sink transformer that wraps data and error events so that errors can be
@@ -17,10 +17,10 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 final _transformer = StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
     handleData: (data, sink) {
   ensureJsonEncodable(data);
-  sink.add({"type": "data", "data": data});
+  sink.add({'type': 'data', 'data': data});
 }, handleError: (error, stackTrace, sink) {
   sink.add(
-      {"type": "error", "error": RemoteException.serialize(error, stackTrace)});
+      {'type': 'error', 'error': RemoteException.serialize(error, stackTrace)});
 });
 
 /// Runs the body of a hybrid isolate and communicates its messages, errors, and
@@ -42,7 +42,7 @@ void listen(Function getMain(), List data) {
       try {
         main = getMain();
       } on NoSuchMethodError catch (_) {
-        _sendError(channel, "No top-level hybridMain() function defined.");
+        _sendError(channel, 'No top-level hybridMain() function defined.');
         return;
       } catch (error, stackTrace) {
         _sendError(channel, error, stackTrace);
@@ -50,12 +50,12 @@ void listen(Function getMain(), List data) {
       }
 
       if (main is! Function) {
-        _sendError(channel, "Top-level hybridMain is not a function.");
+        _sendError(channel, 'Top-level hybridMain is not a function.');
         return;
       } else if (main is! Function(StreamChannel) &&
           main is! Function(StreamChannel, Null)) {
         _sendError(channel,
-            "Top-level hybridMain() function must take one or two arguments.");
+            'Top-level hybridMain() function must take one or two arguments.');
         return;
       }
 
@@ -69,7 +69,7 @@ void listen(Function getMain(), List data) {
         main(transformedChannel, message);
       }
     }, zoneSpecification: ZoneSpecification(print: (_, __, ___, line) {
-      channel.sink.add({"type": "print", "line": line});
+      channel.sink.add({'type': 'print', 'line': line});
     }));
   }, onError: (error, stackTrace) async {
     _sendError(channel, error, stackTrace);
@@ -81,7 +81,7 @@ void listen(Function getMain(), List data) {
 /// Sends a message over [channel] indicating an error from user code.
 void _sendError(StreamChannel channel, error, [StackTrace stackTrace]) {
   channel.sink.add({
-    "type": "error",
-    "error": RemoteException.serialize(error, stackTrace ?? Chain.current())
+    'type': 'error',
+    'error': RemoteException.serialize(error, stackTrace ?? Chain.current())
   });
 }

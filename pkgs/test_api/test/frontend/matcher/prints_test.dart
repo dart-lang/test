@@ -10,26 +10,26 @@ import 'package:test/test.dart';
 import '../../utils.dart';
 
 void main() {
-  group("synchronous", () {
-    test("passes with an expected print", () {
-      expect(() => print("Hello, world!"), prints("Hello, world!\n"));
+  group('synchronous', () {
+    test('passes with an expected print', () {
+      expect(() => print('Hello, world!'), prints('Hello, world!\n'));
     });
 
-    test("combines multiple prints", () {
+    test('combines multiple prints', () {
       expect(() {
-        print("Hello");
-        print("World!");
-      }, prints("Hello\nWorld!\n"));
+        print('Hello');
+        print('World!');
+      }, prints('Hello\nWorld!\n'));
     });
 
-    test("works with a Matcher", () {
-      expect(() => print("Hello, world!"), prints(contains("Hello")));
+    test('works with a Matcher', () {
+      expect(() => print('Hello, world!'), prints(contains('Hello')));
     });
 
-    test("describes a failure nicely", () async {
-      var closure = () => print("Hello, world!");
+    test('describes a failure nicely', () async {
+      var closure = () => print('Hello, world!');
       var liveTest = await runTestBody(() {
-        expect(closure, prints("Goodbye, world!\n"));
+        expect(closure, prints('Goodbye, world!\n'));
       });
 
       expectTestFailed(
@@ -37,88 +37,88 @@ void main() {
           allOf([
             startsWith("Expected: prints 'Goodbye, world!\\n'\n"
                 "            ''\n"
-                "  Actual: <"),
-            endsWith(">\n"
+                '  Actual: <'),
+            endsWith('>\n'
                 "   Which: printed 'Hello, world!\\n'\n"
                 "                    ''\n"
-                "            which is different.\n"
-                "                  Expected: Goodbye, w ...\n"
-                "                    Actual: Hello, wor ...\n"
-                "                            ^\n"
-                "                   Differ at offset 0\n")
+                '            which is different.\n'
+                '                  Expected: Goodbye, w ...\n'
+                '                    Actual: Hello, wor ...\n'
+                '                            ^\n'
+                '                   Differ at offset 0\n')
           ]));
     });
 
-    test("describes a failure with a non-descriptive Matcher nicely", () async {
-      var closure = () => print("Hello, world!");
+    test('describes a failure with a non-descriptive Matcher nicely', () async {
+      var closure = () => print('Hello, world!');
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains("Goodbye")));
+        expect(closure, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
           liveTest,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
-                "  Actual: <"),
-            endsWith(">\n"
+                '  Actual: <'),
+            endsWith('>\n'
                 "   Which: printed 'Hello, world!\\n'\n"
                 "                    ''\n")
           ]));
     });
 
-    test("describes a failure with no text nicely", () async {
+    test('describes a failure with no text nicely', () async {
       var closure = () {};
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains("Goodbye")));
+        expect(closure, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
           liveTest,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
-                "  Actual: <"),
-            endsWith(">\n"
-                "   Which: printed nothing\n")
+                '  Actual: <'),
+            endsWith('>\n'
+                '   Which: printed nothing\n')
           ]));
     });
 
-    test("with a non-function", () async {
+    test('with a non-function', () async {
       var liveTest = await runTestBody(() {
-        expect(10, prints(contains("Goodbye")));
+        expect(10, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
           liveTest,
           "Expected: prints contains 'Goodbye'\n"
-          "  Actual: <10>\n"
-          "   Which: was not a unary Function\n");
+          '  Actual: <10>\n'
+          '   Which: was not a unary Function\n');
     });
   });
 
   group('asynchronous', () {
-    test("passes with an expected print", () {
-      expect(() => Future(() => print("Hello, world!")),
-          prints("Hello, world!\n"));
+    test('passes with an expected print', () {
+      expect(() => Future(() => print('Hello, world!')),
+          prints('Hello, world!\n'));
     });
 
-    test("combines multiple prints", () {
+    test('combines multiple prints', () {
       expect(
           () => Future(() {
-                print("Hello");
-                print("World!");
+                print('Hello');
+                print('World!');
               }),
-          prints("Hello\nWorld!\n"));
+          prints('Hello\nWorld!\n'));
     });
 
-    test("works with a Matcher", () {
-      expect(() => Future(() => print("Hello, world!")),
-          prints(contains("Hello")));
+    test('works with a Matcher', () {
+      expect(() => Future(() => print('Hello, world!')),
+          prints(contains('Hello')));
     });
 
-    test("describes a failure nicely", () async {
-      var closure = () => Future(() => print("Hello, world!"));
+    test('describes a failure nicely', () async {
+      var closure = () => Future(() => print('Hello, world!'));
       var liveTest = await runTestBody(() {
-        expect(closure, prints("Goodbye, world!\n"));
+        expect(closure, prints('Goodbye, world!\n'));
       });
 
       expectTestFailed(
@@ -126,48 +126,48 @@ void main() {
           allOf([
             startsWith("Expected: prints 'Goodbye, world!\\n'\n"
                 "            ''\n"
-                "  Actual: <"),
-            contains(">\n"
+                '  Actual: <'),
+            contains('>\n'
                 "   Which: printed 'Hello, world!\\n'\n"
                 "                    ''\n"
-                "            which is different.\n"
-                "                  Expected: Goodbye, w ...\n"
-                "                    Actual: Hello, wor ...\n"
-                "                            ^\n"
-                "                   Differ at offset 0")
+                '            which is different.\n'
+                '                  Expected: Goodbye, w ...\n'
+                '                    Actual: Hello, wor ...\n'
+                '                            ^\n'
+                '                   Differ at offset 0')
           ]));
     });
 
-    test("describes a failure with a non-descriptive Matcher nicely", () async {
-      var closure = () => Future(() => print("Hello, world!"));
+    test('describes a failure with a non-descriptive Matcher nicely', () async {
+      var closure = () => Future(() => print('Hello, world!'));
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains("Goodbye")));
+        expect(closure, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
           liveTest,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
-                "  Actual: <"),
-            contains(">\n"
+                '  Actual: <'),
+            contains('>\n'
                 "   Which: printed 'Hello, world!\\n'\n"
                 "                    ''")
           ]));
     });
 
-    test("describes a failure with no text nicely", () async {
+    test('describes a failure with no text nicely', () async {
       var closure = () => Future.value();
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains("Goodbye")));
+        expect(closure, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
           liveTest,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
-                "  Actual: <"),
-            contains(">\n"
-                "   Which: printed nothing")
+                '  Actual: <'),
+            contains('>\n'
+                '   Which: printed nothing')
           ]));
     });
 
@@ -184,9 +184,9 @@ void main() {
       var fired = false;
 
       unawaited(expectLater(() {
-        scheduleMicrotask(() => print("hello!"));
+        scheduleMicrotask(() => print('hello!'));
         return completer.future;
-      }, prints("hello!\n"))
+      }, prints('hello!\n'))
           .then((_) {
         fired = true;
       }));

@@ -46,7 +46,7 @@ class _Completes extends AsyncMatcher {
 
   // Avoid async/await so we synchronously start listening to [item].
   /*FutureOr<String>*/ matchAsync(item) {
-    if (item is! Future) return "was not a Future";
+    if (item is! Future) return 'was not a Future';
 
     return item.then((value) async {
       if (_matcher == null) return null;
@@ -91,7 +91,7 @@ class _DoesNotComplete extends Matcher {
   const _DoesNotComplete();
 
   Description describe(Description description) {
-    description.add("does not complete");
+    description.add('does not complete');
     return description;
   }
 
@@ -107,7 +107,7 @@ class _DoesNotComplete extends Matcher {
 
   Description describeMismatch(
       item, Description description, Map matchState, bool verbose) {
-    if (item is! Future) return description.add("$item is not a Future");
+    if (item is! Future) return description.add('$item is not a Future');
     return description;
   }
 }
