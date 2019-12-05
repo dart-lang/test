@@ -31,7 +31,8 @@ class SuiteChannelManager {
   ///
   /// This is zone-scoped, so [this] will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
-  T asCurrent<T>(T Function() body) => runZoned(body, zoneValues: {_currentKey: this});
+  T asCurrent<T>(T Function() body) =>
+      runZoned(body, zoneValues: {_currentKey: this});
 
   /// Creates a connection to the test runnner's channel with the given [name].
   StreamChannel connectOut(String name) {

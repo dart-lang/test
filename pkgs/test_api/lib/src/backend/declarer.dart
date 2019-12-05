@@ -250,7 +250,8 @@ class Declarer {
 
   /// Like [tearDownAll], but called from within a running [setUpAll] test to
   /// dynamically add a [tearDownAll].
-  void addTearDownAll(dynamic Function() callback) => _tearDownAlls.add(callback);
+  void addTearDownAll(dynamic Function() callback) =>
+      _tearDownAlls.add(callback);
 
   /// Finalizes and returns the group being declared.
   ///

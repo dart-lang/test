@@ -261,7 +261,7 @@ class ExpandedReporter implements Reporter {
     _lastProgressSuffix = suffix;
 
     if (suffix != null) message += suffix;
-     color ??= '';
+    color ??= '';
     var duration = _stopwatch.elapsed;
     var buffer = StringBuffer();
 

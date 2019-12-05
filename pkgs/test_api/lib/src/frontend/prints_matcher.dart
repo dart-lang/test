@@ -31,7 +31,7 @@ class _Prints extends AsyncMatcher {
   // Avoid async/await so we synchronously fail if the function is
   // synchronous.
   @override
-  dynamic/*FutureOr<String>*/ matchAsync(item) {
+  dynamic /*FutureOr<String>*/ matchAsync(item) {
     if (item is! Function()) return 'was not a unary Function';
 
     var buffer = StringBuffer();

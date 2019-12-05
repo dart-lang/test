@@ -128,7 +128,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   Future<String> matchQueue(StreamQueue queue) => _matchQueue(queue);
 
   @override
-  dynamic/*FutureOr<String>*/ matchAsync(item) {
+  dynamic /*FutureOr<String>*/ matchAsync(item) {
     StreamQueue queue;
     if (item is StreamQueue) {
       queue = item;

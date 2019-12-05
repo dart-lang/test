@@ -420,7 +420,8 @@ class Configuration {
   ///
   /// This is zone-scoped, so [this] will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
-  T asCurrent<T>(T Function() body) => runZoned(body, zoneValues: {_currentKey: this});
+  T asCurrent<T>(T Function() body) =>
+      runZoned(body, zoneValues: {_currentKey: this});
 
   /// Throws a [FormatException] if [this] refers to any undefined runtimes.
   void validateRuntimes(List<Runtime> allRuntimes) {
@@ -619,8 +620,8 @@ class Configuration {
 
     // Make sure the configuration knows about presets that were selected and
     // thus removed from [newPresets].
-    result._knownPresets = UnmodifiableSetView(
-        result.knownPresets.toSet()..addAll(presets.keys));
+    result._knownPresets =
+        UnmodifiableSetView(result.knownPresets.toSet()..addAll(presets.keys));
 
     return result;
   }

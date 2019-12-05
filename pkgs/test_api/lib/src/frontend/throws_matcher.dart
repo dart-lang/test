@@ -47,7 +47,7 @@ class Throws extends AsyncMatcher {
   // Avoid async/await so we synchronously fail if we match a synchronous
   // function.
   @override
-  dynamic/*FutureOr<String>*/ matchAsync(item) {
+  dynamic /*FutureOr<String>*/ matchAsync(item) {
     if (item is! Function && item is! Future) {
       return 'was not a Function or Future';
     }

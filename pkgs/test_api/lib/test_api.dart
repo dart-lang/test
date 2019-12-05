@@ -269,7 +269,8 @@ void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(dynamic Function() callback) => _declarer.tearDownAll(callback);
+void tearDownAll(dynamic Function() callback) =>
+    _declarer.tearDownAll(callback);
 
 /// Registers an exception that was caught for the current test.
 void registerException(error, [StackTrace stackTrace]) {

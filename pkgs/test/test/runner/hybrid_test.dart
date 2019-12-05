@@ -571,7 +571,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         }
       ''').create();
 
-    var test = await runTest(['test.dart',...arguments]);
+    var test = await runTest(['test.dart', ...arguments]);
     expect(
         test.stdout,
         containsInOrder(
