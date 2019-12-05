@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
@@ -94,7 +95,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       var invoker = Invoker.current;
       invoker.addOutstandingCallback();
 
-      invoke(() async {
+      unawaited(() async {
         var suite = await body();
         if (completer.isCompleted) {
           // If the load test has already been closed, close the suite it
@@ -105,7 +106,7 @@ class LoadSuite extends Suite implements RunnerSuite {
 
         completer.complete(suite == null ? null : Pair(suite, Zone.current));
         invoker.removeOutstandingCallback();
-      });
+      }());
 
       // If the test completes before the body callback, either an out-of-band
       // error occurred or the test was canceled. Either way, we return a `null`

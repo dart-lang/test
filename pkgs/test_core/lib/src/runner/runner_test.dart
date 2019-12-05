@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
@@ -15,7 +16,6 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'spawn_hybrid.dart';
 
@@ -85,14 +85,14 @@ class RunnerTest extends Test {
         return;
       }
 
-      invoke(() async {
+      unawaited(() async {
         // If the test is still running, send it a message telling it to shut
         // down ASAP. This causes the [Invoker] to eagerly throw exceptions
         // whenever the test touches it.
         testChannel.sink.add({'command': 'close'});
         await controller.completer.future;
         await testChannel.sink.close();
-      });
+      }());
     }, groups: groups);
     return controller.liveTest;
   }

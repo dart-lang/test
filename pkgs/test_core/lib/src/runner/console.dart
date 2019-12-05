@@ -6,8 +6,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:async/async.dart';
-
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:pedantic/pedantic.dart';
 
 import '../util/io.dart';
 
@@ -62,7 +61,7 @@ class Console {
   /// This prints the initial prompt and loops while waiting for user input.
   void start() {
     _running = true;
-    invoke(() async {
+    unawaited(() async {
       while (_running) {
         stdout.write('> ');
         _nextLine = stdinLines.cancelable((queue) => queue.next);
@@ -78,7 +77,7 @@ class Console {
           await command.body();
         }
       }
-    });
+    }());
   }
 
   /// Stops the console running.
