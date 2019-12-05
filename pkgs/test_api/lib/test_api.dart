@@ -94,7 +94,7 @@ Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(description, body(),
+void test(description, dynamic Function() body,
     {String testOn,
     Timeout timeout,
     skip,
@@ -172,7 +172,7 @@ void test(description, body(),
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(description, body(),
+void group(description, dynamic Function() body,
     {String testOn,
     Timeout timeout,
     skip,
@@ -207,7 +207,7 @@ void group(description, body(),
 ///
 /// Each callback at the top level or in a given group will be run in the order
 /// they were declared.
-void setUp(callback()) => _declarer.setUp(callback);
+void setUp(dynamic Function() callback) => _declarer.setUp(callback);
 
 /// Registers a function to be run after tests.
 ///
@@ -222,7 +222,7 @@ void setUp(callback()) => _declarer.setUp(callback);
 /// reverse of the order they were declared.
 ///
 /// See also [addTearDown], which adds tear-downs to a running test.
-void tearDown(callback()) => _declarer.tearDown(callback);
+void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
 
 /// Registers a function to be run after the current test.
 ///
@@ -235,7 +235,7 @@ void tearDown(callback()) => _declarer.tearDown(callback);
 ///
 /// If this is called from within a [setUpAll] or [tearDownAll] callback, it
 /// instead runs the function after *all* tests in the current test suite.
-void addTearDown(callback()) {
+void addTearDown(dynamic Function() callback) {
   if (Invoker.current == null) {
     throw StateError('addTearDown() may only be called within a test.');
   }
@@ -256,7 +256,7 @@ void addTearDown(callback()) {
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(callback()) => _declarer.setUpAll(callback);
+void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 
 /// Registers a function to be run once after all tests.
 ///
@@ -269,7 +269,7 @@ void setUpAll(callback()) => _declarer.setUpAll(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(callback()) => _declarer.tearDownAll(callback);
+void tearDownAll(dynamic Function() callback) => _declarer.tearDownAll(callback);
 
 /// Registers an exception that was caught for the current test.
 void registerException(error, [StackTrace stackTrace]) {

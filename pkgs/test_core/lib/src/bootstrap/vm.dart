@@ -9,7 +9,7 @@ import 'package:stream_channel/isolate_channel.dart';
 import 'package:test_core/src/runner/plugin/remote_platform_helpers.dart';
 
 /// Bootstraps a vm test to communicate with the test runner.
-void internalBootstrapVmTest(Function getMain(), SendPort sendPort) {
+void internalBootstrapVmTest(Function Function() getMain, SendPort sendPort) {
   var channel = serializeSuite(getMain);
   IsolateChannel.connectSend(sendPort).pipe(channel);
 }

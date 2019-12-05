@@ -10,7 +10,9 @@ import 'package:test_core/src/runner/environment.dart'; // ignore: implementatio
 
 /// The environment in which VM tests are loaded.
 class VMEnvironment implements Environment {
+  @override
   final supportsDebugging = true;
+  @override
   final Uri observatoryUrl;
 
   /// The VM service isolate object used to control this isolate.
@@ -19,10 +21,13 @@ class VMEnvironment implements Environment {
 
   VMEnvironment(this.observatoryUrl, this._isolate, this._client);
 
+  @override
   Uri get remoteDebuggerUrl => null;
 
+  @override
   Stream get onRestart => StreamController.broadcast().stream;
 
+  @override
   CancelableOperation displayPause() {
     var completer =
         CancelableCompleter(onCancel: () => _client.resume(_isolate.id));

@@ -18,27 +18,38 @@ import 'test.dart';
 class _LiveTest extends LiveTest {
   final LiveTestController _controller;
 
+  @override
   Suite get suite => _controller._suite;
 
+  @override
   List<Group> get groups => _controller._groups;
 
+  @override
   Test get test => _controller._test;
 
+  @override
   State get state => _controller._state;
 
+  @override
   Stream<State> get onStateChange =>
       _controller._onStateChangeController.stream;
 
+  @override
   List<AsyncError> get errors => UnmodifiableListView(_controller._errors);
 
+  @override
   Stream<AsyncError> get onError => _controller._onErrorController.stream;
 
+  @override
   Stream<Message> get onMessage => _controller._onMessageController.stream;
 
+  @override
   Future<void> get onComplete => _controller.onComplete;
 
+  @override
   Future<void> run() => _controller._run();
 
+  @override
   Future<void> close() => _controller._close();
 
   _LiveTest(this._controller);
@@ -76,7 +87,7 @@ class LiveTestController {
   final Function _onClose;
 
   /// The list of errors caught by the test.
-  final _errors = List<AsyncError>();
+  final _errors = <AsyncError>[];
 
   /// The current state of the test.
   var _state = const State(Status.pending, Result.success);
@@ -125,7 +136,8 @@ class LiveTestController {
   ///
   /// If [groups] is passed, it's used to populate the list of groups that
   /// contain this test. Otherwise, `suite.group` is used.
-  LiveTestController(Suite suite, this._test, void onRun(), void onClose(),
+  LiveTestController(
+      Suite suite, this._test, void Function() onRun, void Function() onClose,
       {Iterable<Group> groups})
       : _suite = suite,
         _onRun = onRun,

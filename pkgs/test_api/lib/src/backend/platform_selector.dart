@@ -10,10 +10,16 @@ import 'runtime.dart';
 import 'suite_platform.dart';
 
 /// The set of variable names that are valid for all platform selectors.
-final _universalValidVariables =
-    Set<String>.from(['posix', 'dart-vm', 'browser', 'js', 'blink', 'google'])
-      ..addAll(Runtime.builtIn.map((runtime) => runtime.identifier))
-      ..addAll(OperatingSystem.all.map((os) => os.identifier));
+final _universalValidVariables = {
+  'posix',
+  'dart-vm',
+  'browser',
+  'js',
+  'blink',
+  'google',
+  for (var runtime in Runtime.builtIn) runtime.identifier,
+  for (var os in OperatingSystem.all) os.identifier,
+};
 
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.
@@ -46,7 +52,7 @@ class PlatformSelector {
   /// [SourceSpanFormatException] using [span].
   ///
   /// If [span] is `null`, runs [body] as-is.
-  static T _wrapFormatException<T>(T body(), SourceSpan span) {
+  static T _wrapFormatException<T>(T Function() body, SourceSpan span) {
     if (span == null) return body();
 
     try {
@@ -103,10 +109,13 @@ class PlatformSelector {
     return PlatformSelector._(_inner.intersection(other._inner));
   }
 
+  @override
   String toString() => _inner.toString();
 
+  @override
   bool operator ==(other) =>
       other is PlatformSelector && _inner == other._inner;
 
+  @override
   int get hashCode => _inner.hashCode;
 }

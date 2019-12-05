@@ -418,7 +418,7 @@ class _ConfigurationLoader {
 
   /// Throws an exception with [message] if [test] returns `false` when passed
   /// [node]'s value.
-  void _validate(YamlNode node, String message, bool test(value)) {
+  void _validate(YamlNode node, String message, bool Function(dynamic) test) {
     if (test(node.value)) return;
     throw SourceSpanFormatException(message, node.span, _source);
   }
@@ -427,7 +427,8 @@ class _ConfigurationLoader {
   ///
   /// If [typeTest] returns `false` for that value, instead throws an error
   /// complaining that the field is not a [typeName].
-  _getValue(String field, String typeName, bool typeTest(value)) {
+  dynamic _getValue(
+      String field, String typeName, bool Function(dynamic) typeTest) {
     var value = _document[field];
     if (value == null || typeTest(value)) return value;
     _error('$field must be ${a(typeName)}.', field);
@@ -437,7 +438,8 @@ class _ConfigurationLoader {
   ///
   /// If [typeTest] returns `false` for that node's value, instead throws an
   /// error complaining that the field is not a [typeName].
-  YamlNode _getNode(String field, String typeName, bool typeTest(value)) {
+  YamlNode _getNode(
+      String field, String typeName, bool Function(dynamic) typeTest) {
     var node = _document.nodes[field];
     if (node == null) return null;
     _validate(node, '$field must be ${a(typeName)}.', typeTest);
@@ -464,7 +466,7 @@ class _ConfigurationLoader {
   /// contains.
   ///
   /// Returns a list of values returned by [forElement].
-  List<T> _getList<T>(String field, T forElement(YamlNode elementNode)) {
+  List<T> _getList<T>(String field, T Function(YamlNode) forElement) {
     var node = _getNode(field, 'list', (value) => value is List) as YamlList;
     if (node == null) return [];
     return node.nodes.map(forElement).toList();
@@ -475,7 +477,7 @@ class _ConfigurationLoader {
   /// Returns a map with the keys and values returned by [key] and [value]. Each
   /// of these defaults to asserting that the value is a string.
   Map<K, V> _getMap<K, V>(String field,
-      {K key(YamlNode keyNode), V value(YamlNode valueNode)}) {
+      {K Function(YamlNode) key, V Function(YamlNode) value}) {
     var node = _getNode(field, 'map', (value) => value is Map) as YamlMap;
     if (node == null) return {};
 
@@ -523,7 +525,7 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [node]'s
   /// span.
-  T _parseNode<T>(YamlNode node, String name, T parse(String value)) {
+  T _parseNode<T>(YamlNode node, String name, T Function(String) parse) {
     _validate(node, '$name must be a string.', (value) => value is String);
 
     try {
@@ -539,7 +541,7 @@ class _ConfigurationLoader {
   ///
   /// If [parse] throws a [FormatException], it's wrapped to include [field]'s
   /// span.
-  T _parseValue<T>(String field, T parse(String value)) {
+  T _parseValue<T>(String field, T Function(String) parse) {
     var node = _document.nodes[field];
     if (node == null) return null;
     return _parseNode(node, field, parse);
@@ -569,7 +571,7 @@ class _ConfigurationLoader {
   /// [SuiteConfiguration]s. The [create] function is used to construct
   /// [Configuration]s from the resolved maps.
   Configuration _extractPresets<T>(Map<T, Configuration> map,
-      Configuration create(Map<T, SuiteConfiguration> map)) {
+      Configuration Function(Map<T, SuiteConfiguration>) create) {
     if (map.isEmpty) return Configuration.empty;
 
     var base = <T, SuiteConfiguration>{};

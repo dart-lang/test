@@ -24,8 +24,11 @@ import 'test.dart';
 
 /// A test in this isolate.
 class LocalTest extends Test {
+  @override
   final String name;
+  @override
   final Metadata metadata;
+  @override
   final Trace trace;
 
   /// Whether this is a test defined using `setUpAll()` or `tearDownAll()`.
@@ -51,11 +54,13 @@ class LocalTest extends Test {
       this.isScaffoldAll);
 
   /// Loads a single runnable instance of this test.
+  @override
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     var invoker = Invoker._(suite, this, groups: groups, guarded: _guarded);
     return invoker.liveTest;
   }
 
+  @override
   Test forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
@@ -140,7 +145,7 @@ class Invoker {
 
   /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
   /// caught and dispatched to the appropriate [Invoker].
-  static T guard<T>(T callback()) =>
+  static T guard<T>(T Function() callback) =>
       runZoned(callback, zoneSpecification: ZoneSpecification(
           // Use [handleUncaughtError] rather than [onError] so we can
           // capture [zone] and with it the outstanding callback counter for
@@ -183,7 +188,7 @@ class Invoker {
   ///
   /// The [callback] may return a [Future]. Like all tear-downs, callbacks are
   /// run in the reverse of the order they're declared.
-  void addTearDown(callback()) {
+  void addTearDown(dynamic Function() callback) {
     if (closed) throw ClosedException();
 
     if (_test.isScaffoldAll) {

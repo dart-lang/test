@@ -42,7 +42,7 @@ class _Parser {
   Set<String> _prefixes;
 
   /// The actual contents of the file.
-  String _contents;
+  final String _contents;
 
   _Parser(this._path, this._contents, this._platformVariables) {
     // ignore: deprecated_member_use
@@ -162,7 +162,7 @@ class _Parser {
   /// constructor for the annotation, if any.
   ///
   /// Returns either `true` or a reason string.
-  _parseSkip(Annotation annotation, String constructorName) {
+  dynamic _parseSkip(Annotation annotation, String constructorName) {
     var args = annotation.arguments.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
   }
@@ -170,7 +170,7 @@ class _Parser {
   /// Parses a `Skip` constructor.
   ///
   /// Returns either `true` or a reason string.
-  _parseSkipConstructor(Expression constructor) {
+  dynamic _parseSkipConstructor(Expression constructor) {
     _findConstructorName(constructor, 'Skip');
     var arguments = _parseArguments(constructor);
     return arguments.isEmpty ? true : _parseString(arguments.first).stringValue;
@@ -283,9 +283,10 @@ class _Parser {
 
   Map<String, Expression> _parseNamedArguments(
           NodeList<Expression> arguments) =>
-      Map.fromIterable(arguments.whereType<NamedExpression>(),
-          key: (a) => (a as NamedExpression).name.label.name,
-          value: (a) => (a as NamedExpression).expression);
+      {
+        for (var a in arguments.whereType<NamedExpression>())
+          a.name.label.name: a.expression
+      };
 
   /// Asserts that [existing] is null.
   ///
@@ -435,7 +436,7 @@ class _Parser {
   /// By default, returns [Expression] keys and values. These can be overridden
   /// with the [key] and [value] parameters.
   Map<K, V> _parseMap<K, V>(Expression expression,
-      {K key(Expression expression), V value(Expression expression)}) {
+      {K Function(Expression) key, V Function(Expression) value}) {
     key ??= (expression) => expression as K;
     value ??= (expression) => expression as V;
 
@@ -505,7 +506,7 @@ class _Parser {
 
   /// Runs [fn] and contextualizes any [SourceSpanFormatException]s that occur
   /// in it relative to [literal].
-  T _contextualize<T>(StringLiteral literal, T fn()) {
+  T _contextualize<T>(StringLiteral literal, T Function() fn) {
     try {
       return fn();
     } on SourceSpanFormatException catch (error) {

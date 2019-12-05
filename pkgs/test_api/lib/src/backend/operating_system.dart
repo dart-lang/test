@@ -77,5 +77,6 @@ class OperatingSystem {
 
   const OperatingSystem._(this.name, this.identifier);
 
+  @override
   String toString() => name;
 }

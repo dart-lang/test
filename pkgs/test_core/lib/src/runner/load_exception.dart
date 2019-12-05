@@ -12,6 +12,7 @@ class LoadException implements Exception {
 
   LoadException(this.path, this.innerError);
 
+  @override
   String toString({bool color = false}) {
     var buffer = StringBuffer();
     if (color) buffer.write('\u001b[31m'); // red

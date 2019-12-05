@@ -7,5 +7,6 @@
 class ClosedException implements Exception {
   ClosedException();
 
+  @override
   String toString() => 'This test has been closed.';
 }

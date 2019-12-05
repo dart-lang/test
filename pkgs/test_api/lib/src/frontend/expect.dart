@@ -18,6 +18,7 @@ class TestFailure {
 
   TestFailure(this.message);
 
+  @override
   String toString() => message;
 }
 

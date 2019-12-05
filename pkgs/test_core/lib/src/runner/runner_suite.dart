@@ -68,7 +68,8 @@ class RunnerSuite extends Suite {
       this._controller, Group group, String path, SuitePlatform platform)
       : super(group, platform, path: path);
 
-  RunnerSuite filter(bool callback(Test test)) {
+  @override
+  RunnerSuite filter(bool Function(Test) callback) {
     var filtered = group.filter(callback);
     filtered ??= Group.root([], metadata: metadata);
     return RunnerSuite._(_controller, filtered, path, platform);
@@ -103,7 +104,7 @@ class RunnerSuiteController {
   final _onDebuggingController = StreamController<bool>.broadcast();
 
   /// The channel names that have already been used.
-  final _channelNames = Set<String>();
+  final _channelNames = <String>{};
 
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
       Future<Group> groupFuture, SuitePlatform platform,

@@ -27,8 +27,9 @@ abstract class AsyncMatcher extends Matcher {
   ///
   /// If this returns a [String] synchronously, [expect] will synchronously
   /// throw a [TestFailure] and [matches] will synchronusly return `false`.
-  /*FutureOr<String>*/ matchAsync(item);
+  dynamic/*FutureOr<String>*/ matchAsync(item);
 
+  @override
   bool matches(item, Map matchState) {
     var result = matchAsync(item);
     expect(result,
@@ -51,6 +52,7 @@ abstract class AsyncMatcher extends Matcher {
     return true;
   }
 
+  @override
   Description describeMismatch(
           item, Description description, Map matchState, bool verbose) =>
       StringDescription(matchState[this] as String);

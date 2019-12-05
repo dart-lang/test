@@ -17,10 +17,13 @@ import 'suite_platform.dart';
 /// directly. To run one, load a live version using [Test.load] and run it using
 /// [LiveTest.run].
 abstract class Test implements GroupEntry {
+  @override
   String get name;
 
+  @override
   Metadata get metadata;
 
+  @override
   Trace get trace;
 
   /// Loads a live version of this test, which can be used to run it a single
@@ -31,7 +34,9 @@ abstract class Test implements GroupEntry {
   /// defaults to just containing `suite.group`.
   LiveTest load(Suite suite, {Iterable<Group> groups});
 
+  @override
   Test forPlatform(SuitePlatform platform);
 
-  Test filter(bool callback(Test test)) => callback(this) ? this : null;
+  @override
+  Test filter(bool Function(Test) callback) => callback(this) ? this : null;
 }

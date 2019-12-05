@@ -20,7 +20,7 @@ class SuiteChannelManager {
   final _outgoingConnections = <String, StreamChannelCompleter>{};
 
   /// The channel names that have already been used.
-  final _names = Set<String>();
+  final _names = <String>{};
 
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
@@ -31,7 +31,7 @@ class SuiteChannelManager {
   ///
   /// This is zone-scoped, so [this] will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
-  T asCurrent<T>(T body()) => runZoned(body, zoneValues: {_currentKey: this});
+  T asCurrent<T>(T Function() body) => runZoned(body, zoneValues: {_currentKey: this});
 
   /// Creates a connection to the test runnner's channel with the given [name].
   StreamChannel connectOut(String name) {

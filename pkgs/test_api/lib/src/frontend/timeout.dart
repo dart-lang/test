@@ -141,16 +141,19 @@ class Timeout {
   /// If this is [none], returns `null`.
   Duration apply(Duration base) {
     if (this == none) return null;
-    return duration == null ? base * scaleFactor : duration;
+    return duration ?? base * scaleFactor;
   }
 
+  @override
   int get hashCode => duration.hashCode ^ 5 * scaleFactor.hashCode;
 
+  @override
   bool operator ==(other) =>
       other is Timeout &&
       other.duration == duration &&
       other.scaleFactor == scaleFactor;
 
+  @override
   String toString() {
     if (duration != null) return duration.toString();
     if (scaleFactor != null) return '${scaleFactor}x';

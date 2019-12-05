@@ -89,7 +89,7 @@ abstract class StreamMatcher extends Matcher {
   /// should be grammatically valid when used after the word "should". For
   /// example, it might be "emit the right events".
   factory StreamMatcher(
-          Future<String> matchQueue(StreamQueue queue), String description) =
+          Future<String> Function(StreamQueue) matchQueue, String description) =
       _StreamMatcher;
 
   /// Tries to match events emitted by [queue].
@@ -116,6 +116,7 @@ abstract class StreamMatcher extends Matcher {
 /// This is separate from the original type to hide the private [AsyncMatcher]
 /// interface.
 class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
+  @override
   final String description;
 
   /// The callback used to implement [matchQueue].
@@ -123,9 +124,11 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
 
   _StreamMatcher(this._matchQueue, this.description);
 
+  @override
   Future<String> matchQueue(StreamQueue queue) => _matchQueue(queue);
 
-  /*FutureOr<String>*/ matchAsync(item) {
+  @override
+  dynamic/*FutureOr<String>*/ matchAsync(item) {
     StreamQueue queue;
     if (item is StreamQueue) {
       queue = item;
@@ -185,6 +188,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
     });
   }
 
+  @override
   Description describe(Description description) =>
       description.add('should ').add(this.description);
 }

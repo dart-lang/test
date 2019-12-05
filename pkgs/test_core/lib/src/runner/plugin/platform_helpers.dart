@@ -60,7 +60,7 @@ RunnerSuiteController deserializeSuite(
   var completer = Completer<Group>();
 
   var loadSuiteZone = Zone.current;
-  handleError(error, StackTrace stackTrace) {
+  void handleError(error, StackTrace stackTrace) {
     disconnector.disconnect();
 
     if (completer.isCompleted) {

@@ -30,8 +30,8 @@ import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementat
 ///
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
-StreamChannel serializeSuite(Function getMain(),
-        {bool hidePrints = true, Future beforeLoad()}) =>
+StreamChannel serializeSuite(Function Function() getMain,
+        {bool hidePrints = true, Future Function() beforeLoad}) =>
     RemoteListener.start(getMain,
         hidePrints: hidePrints, beforeLoad: beforeLoad);
 

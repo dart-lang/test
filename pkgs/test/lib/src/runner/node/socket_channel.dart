@@ -22,9 +22,9 @@ class _Net {
 
 @JS()
 class _Socket {
-  external setEncoding(String encoding);
-  external on(String event, void callback(String chunk));
-  external write(String data);
+  external void setEncoding(String encoding);
+  external void on(String event, void Function(String chunk) callback);
+  external void write(String data);
 }
 
 /// Returns a [StreamChannel] of JSON-encodable objects that communicates over a

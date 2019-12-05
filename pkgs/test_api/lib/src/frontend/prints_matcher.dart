@@ -30,7 +30,8 @@ class _Prints extends AsyncMatcher {
 
   // Avoid async/await so we synchronously fail if the function is
   // synchronous.
-  /*FutureOr<String>*/ matchAsync(item) {
+  @override
+  dynamic/*FutureOr<String>*/ matchAsync(item) {
     if (item is! Function()) return 'was not a unary Function';
 
     var buffer = StringBuffer();
@@ -44,6 +45,7 @@ class _Prints extends AsyncMatcher {
         : _check(buffer.toString());
   }
 
+  @override
   Description describe(Description description) =>
       description.add('prints ').addDescriptionOf(_matcher);
 

@@ -196,7 +196,7 @@ class SuiteConfiguration {
       : _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
-        patterns = UnmodifiableSetView(patterns?.toSet() ?? Set()),
+        patterns = UnmodifiableSetView(patterns?.toSet() ?? {}),
         _runtimes = _list(runtimes),
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
@@ -369,6 +369,6 @@ class SuiteConfiguration {
     });
 
     if (merged == empty) return this;
-    return this.change(tags: newTags).merge(merged);
+    return change(tags: newTags).merge(merged);
   }
 }
