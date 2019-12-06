@@ -228,7 +228,7 @@ class _DeepMatcher extends Matcher {
     }
 
     // We're not adding any value to the actual value.
-    return ["", location];
+    return ['', location];
   }
 
   String _match(expected, actual, Map matchState) {
@@ -237,7 +237,7 @@ class _DeepMatcher extends Matcher {
     String reason;
     if (rp[0].isNotEmpty) {
       if (rp[1].isNotEmpty) {
-        reason = "${rp[0]} at location ${rp[1]}";
+        reason = '${rp[0]} at location ${rp[1]}';
       } else {
         reason = rp[0];
       }

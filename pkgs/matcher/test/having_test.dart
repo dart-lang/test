@@ -43,7 +43,7 @@ void main() {
   });
 
   group('CustomMater copy', () {
-    test("Feature Matcher", () {
+    test('Feature Matcher', () {
       var w = Widget();
       w.price = 10;
       shouldPass(w, _hasPrice(10));
@@ -53,11 +53,11 @@ void main() {
           _hasPrice(greaterThan(10)),
           "Expected: <Instance of 'Widget'> with `price`: a value greater than <10> "
           "Actual: <Instance of 'Widget'> "
-          "Which: has `price` with value <10> which is not "
-          "a value greater than <10>");
+          'Which: has `price` with value <10> which is not '
+          'a value greater than <10>');
     });
 
-    test("Custom Matcher Exception", () {
+    test('Custom Matcher Exception', () {
       shouldFail(
           'a',
           _badCustomMatcher(),
@@ -88,4 +88,4 @@ Matcher _hasPrice(matcher) =>
     const TypeMatcher<Widget>().having((e) => e.price, 'price', matcher);
 
 Matcher _badCustomMatcher() => const TypeMatcher<Widget>()
-    .having((e) => throw Exception("bang"), 'feature', {1: "a"});
+    .having((e) => throw Exception('bang'), 'feature', {1: 'a'});

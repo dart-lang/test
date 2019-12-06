@@ -21,17 +21,17 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
     if (object is Matcher) {
       var description = StringDescription();
       object.describe(description);
-      return "<$description>";
+      return '<$description>';
     }
 
     // Avoid looping infinitely on recursively-nested data structures.
-    if (seen.contains(object)) return "(recursive)";
+    if (seen.contains(object)) return '(recursive)';
     seen = seen.union({object});
     String pp(child) => _prettyPrint(child, indent + 2, seen, false);
 
     if (object is Iterable) {
       // Print the type name for non-List iterables.
-      var type = object is List ? "" : _typeName(object) + ":";
+      var type = object is List ? '' : _typeName(object) + ':';
 
       // Truncate the list of strings if it's longer than [maxItems].
       var strings = object.map(pp).toList();
@@ -44,18 +44,18 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
       var singleLine = "$type[${strings.join(', ')}]";
       if ((maxLineLength == null ||
               singleLine.length + indent <= maxLineLength) &&
-          !singleLine.contains("\n")) {
+          !singleLine.contains('\n')) {
         return singleLine;
       }
 
       // Otherwise, print each member on its own line.
-      return "$type[\n" +
+      return '$type[\n' +
           strings.map((string) {
             return _indent(indent + 2) + string;
-          }).join(",\n") +
-          "\n" +
+          }).join(',\n') +
+          '\n' +
           _indent(indent) +
-          "]";
+          ']';
     } else if (object is Map) {
       // Convert the contents of the map to string representations.
       var strings = object.keys.map((key) {
@@ -69,34 +69,34 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
 
       // If the printed string is short and doesn't contain a newline, print it
       // as a single line.
-      var singleLine = "{${strings.join(", ")}}";
+      var singleLine = '{${strings.join(", ")}}';
       if ((maxLineLength == null ||
               singleLine.length + indent <= maxLineLength) &&
-          !singleLine.contains("\n")) {
+          !singleLine.contains('\n')) {
         return singleLine;
       }
 
       // Otherwise, print each key/value pair on its own line.
-      return "{\n" +
+      return '{\n' +
           strings.map((string) {
             return _indent(indent + 2) + string;
-          }).join(",\n") +
-          "\n" +
+          }).join(',\n') +
+          '\n' +
           _indent(indent) +
-          "}";
+          '}';
     } else if (object is String) {
       // Escape strings and print each line on its own line.
-      var lines = object.split("\n");
+      var lines = object.split('\n');
       return "'" +
           lines.map(_escapeString).join("\\n'\n${_indent(indent + 2)}'") +
           "'";
     } else {
-      var value = object.toString().replaceAll("\n", _indent(indent) + "\n");
-      var defaultToString = value.startsWith("Instance of ");
+      var value = object.toString().replaceAll('\n', _indent(indent) + '\n');
+      var defaultToString = value.startsWith('Instance of ');
 
       // If this is the top-level call to [prettyPrint], wrap the value on angle
       // brackets to set it apart visually.
-      if (top) value = "<$value>";
+      if (top) value = '<$value>';
 
       // Print the type of objects with custom [toString] methods. Primitive
       // objects and objects that don't implement a custom [toString] don't need
@@ -111,7 +111,7 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
           defaultToString) {
         return value;
       } else {
-        return "${_typeName(object)}:$value";
+        return '${_typeName(object)}:$value';
       }
     }
   }
@@ -124,10 +124,10 @@ String _indent(int length) => List.filled(length, ' ').join('');
 /// Returns the name of the type of [x] with fallbacks for core types with
 /// private implementations.
 String _typeName(x) {
-  if (x is Type) return "Type";
-  if (x is Uri) return "Uri";
-  if (x is Set) return "Set";
-  if (x is BigInt) return "BigInt";
+  if (x is Type) return 'Type';
+  if (x is Uri) return 'Uri';
+  if (x is Set) return 'Set';
+  if (x is BigInt) return 'BigInt';
   return '${x.runtimeType}';
 }
 

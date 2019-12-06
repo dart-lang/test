@@ -160,7 +160,7 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
 
   @override
   Description describe(Description description) =>
-      description.add("return normally");
+      description.add('return normally');
 
   @override
   Description describeTypedMismatch(Function item,
@@ -305,7 +305,7 @@ class _In<T> extends FeatureMatcher<T> {
 /// For example:
 ///
 ///     expect(v, predicate((x) => ((x % 2) == 0), "is even"))
-Matcher predicate<T>(bool f(T value),
+Matcher predicate<T>(bool Function(T) f,
         [String description = 'satisfies function']) =>
     _Predicate(f, description);
 

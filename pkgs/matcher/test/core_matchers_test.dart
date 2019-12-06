@@ -10,34 +10,34 @@ import 'test_utils.dart';
 void main() {
   test('isTrue', () {
     shouldPass(true, isTrue);
-    shouldFail(false, isTrue, "Expected: true Actual: <false>");
+    shouldFail(false, isTrue, 'Expected: true Actual: <false>');
   });
 
   test('isFalse', () {
     shouldPass(false, isFalse);
-    shouldFail(10, isFalse, "Expected: false Actual: <10>");
-    shouldFail(true, isFalse, "Expected: false Actual: <true>");
+    shouldFail(10, isFalse, 'Expected: false Actual: <10>');
+    shouldFail(true, isFalse, 'Expected: false Actual: <true>');
   });
 
   test('isNull', () {
     shouldPass(null, isNull);
-    shouldFail(false, isNull, "Expected: null Actual: <false>");
+    shouldFail(false, isNull, 'Expected: null Actual: <false>');
   });
 
   test('isNotNull', () {
     shouldPass(false, isNotNull);
-    shouldFail(null, isNotNull, "Expected: not null Actual: <null>");
+    shouldFail(null, isNotNull, 'Expected: not null Actual: <null>');
   });
 
   test('isNaN', () {
     shouldPass(double.nan, isNaN);
-    shouldFail(3.1, isNaN, "Expected: NaN Actual: <3.1>");
+    shouldFail(3.1, isNaN, 'Expected: NaN Actual: <3.1>');
     shouldFail('not a num', isNaN, endsWith('not an <Instance of \'num\'>'));
   });
 
   test('isNotNaN', () {
     shouldPass(3.1, isNotNaN);
-    shouldFail(double.nan, isNotNaN, "Expected: not NaN Actual: <NaN>");
+    shouldFail(double.nan, isNotNaN, 'Expected: not NaN Actual: <NaN>');
     shouldFail('not a num', isNotNaN, endsWith('not an <Instance of \'num\'>'));
   });
 
@@ -45,7 +45,7 @@ void main() {
     var a = {};
     var b = {};
     shouldPass(a, same(a));
-    shouldFail(b, same(a), "Expected: same instance as {} Actual: {}");
+    shouldFail(b, same(a), 'Expected: same instance as {} Actual: {}');
   });
 
   test('equals', () {
@@ -66,15 +66,15 @@ void main() {
     shouldFail(
         [1, 2, 3, 4, 5, 6, 7, 8, 9],
         equals(set1),
-        matches(r"Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]"
-            r"  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9\]"
-            r"   Which: does not contain 10"));
+        matches(r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
+            r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9\]'
+            r'   Which: does not contain 10'));
     shouldFail(
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
         equals(set1),
-        matches(r"Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]"
-            r"  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11\]"
-            r"   Which: larger than expected"));
+        matches(r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
+            r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11\]'
+            r'   Which: larger than expected'));
   });
 
   test('anything', () {
@@ -82,7 +82,7 @@ void main() {
     shouldPass(0, anything);
     shouldPass(null, anything);
     shouldPass(a, anything);
-    shouldFail(a, isNot(anything), "Expected: not anything Actual: {}");
+    shouldFail(a, isNot(anything), 'Expected: not anything Actual: {}');
   });
 
   test('returnsNormally', () {
@@ -90,9 +90,9 @@ void main() {
     shouldFail(
         doesThrow,
         returnsNormally,
-        matches(r"Expected: return normally"
-            r"  Actual: <Closure.*>"
-            r"   Which: threw StateError:<Bad state: X>"));
+        matches(r'Expected: return normally'
+            r'  Actual: <Closure.*>'
+            r'   Which: threw StateError:<Bad state: X>'));
     shouldFail('not a function', returnsNormally,
         contains('not an <Instance of \'Function\'>'));
   });
@@ -106,26 +106,26 @@ void main() {
     shouldFail(
         0,
         hasLength(0),
-        "Expected: an object with length of <0> "
-        "Actual: <0> "
-        "Which: has no length property");
+        'Expected: an object with length of <0> '
+        'Actual: <0> '
+        'Which: has no length property');
 
     b.add(0);
     shouldPass(b, hasLength(1));
     shouldFail(
         b,
         hasLength(2),
-        "Expected: an object with length of <2> "
-        "Actual: [0] "
-        "Which: has length of <1>");
+        'Expected: an object with length of <2> '
+        'Actual: [0] '
+        'Which: has length of <1>');
 
     b.add(0);
     shouldFail(
         b,
         hasLength(1),
-        "Expected: an object with length of <1> "
-        "Actual: [0, 0] "
-        "Which: has length of <2>");
+        'Expected: an object with length of <1> '
+        'Actual: [0, 0] '
+        'Which: has length of <2>');
     shouldPass(b, hasLength(2));
   });
 
@@ -133,7 +133,7 @@ void main() {
     shouldFail(
         'error',
         equals(5.1),
-        "Expected: <5.1> "
+        'Expected: <5.1> '
             "Actual: 'error'");
   });
 
@@ -141,7 +141,7 @@ void main() {
     shouldFail(
         ['error'],
         equals([5.1]),
-        "Expected: [5.1] "
+        'Expected: [5.1] '
         "Actual: ['error'] "
         "Which: was 'error' instead of <5.1> at location [0]");
   });
@@ -154,7 +154,7 @@ void main() {
         equals([
           [5.1]
         ]),
-        "Expected: [[5.1]] "
+        'Expected: [[5.1]] '
         "Actual: [['error']] "
         "Which: was 'error' instead of <5.1> at location [0][0]");
   });
@@ -174,7 +174,7 @@ void main() {
     ];
     var reason1 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'bar'], ['foo'], 3, []] "
-        "Which: was <3> instead of <4> at location [2]";
+        'Which: was <3> instead of <4> at location [2]';
 
     var actual2 = [
       ['foo', 'barry'],
@@ -215,15 +215,15 @@ void main() {
 
   group('Predicate Matchers', () {
     test('isInstanceOf', () {
-      shouldFail(0, predicate((x) => x is String, "an instance of String"),
-          "Expected: an instance of String Actual: <0>");
-      shouldPass('cow', predicate((x) => x is String, "an instance of String"));
+      shouldFail(0, predicate((x) => x is String, 'an instance of String'),
+          'Expected: an instance of String Actual: <0>');
+      shouldPass('cow', predicate((x) => x is String, 'an instance of String'));
 
       if (isDart2) {
         // With Dart2 semantics, predicate picks up a type argument of `bool`
         // and we get nice type checking.
         // Without Dart2 semantics a gnarly type error is thrown.
-        shouldFail(0, predicate((bool x) => x, "bool value is true"),
+        shouldFail(0, predicate((bool x) => x, 'bool value is true'),
             endsWith("not an <Instance of \'bool\'>"));
       }
     });

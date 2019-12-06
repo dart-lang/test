@@ -13,9 +13,9 @@ void main() {
     shouldFail(
         9,
         greaterThan(10),
-        "Expected: a value greater than <10> "
-        "Actual: <9> "
-        "Which: is not a value greater than <10>");
+        'Expected: a value greater than <10> '
+        'Actual: <9> '
+        'Which: is not a value greater than <10>');
   });
 
   test('greaterThanOrEqualTo', () {
@@ -23,18 +23,18 @@ void main() {
     shouldFail(
         9,
         greaterThanOrEqualTo(10),
-        "Expected: a value greater than or equal to <10> "
-        "Actual: <9> "
-        "Which: is not a value greater than or equal to <10>");
+        'Expected: a value greater than or equal to <10> '
+        'Actual: <9> '
+        'Which: is not a value greater than or equal to <10>');
   });
 
   test('lessThan', () {
     shouldFail(
         10,
         lessThan(9),
-        "Expected: a value less than <9> "
-        "Actual: <10> "
-        "Which: is not a value less than <9>");
+        'Expected: a value less than <9> '
+        'Actual: <10> '
+        'Which: is not a value less than <9>');
     shouldPass(9, lessThan(10));
   });
 
@@ -43,9 +43,9 @@ void main() {
     shouldFail(
         11,
         lessThanOrEqualTo(10),
-        "Expected: a value less than or equal to <10> "
-        "Actual: <11> "
-        "Which: is not a value less than or equal to <10>");
+        'Expected: a value less than or equal to <10> '
+        'Actual: <11> '
+        'Which: is not a value less than or equal to <10>');
   });
 
   test('isZero', () {
@@ -53,18 +53,18 @@ void main() {
     shouldFail(
         1,
         isZero,
-        "Expected: a value equal to <0> "
-        "Actual: <1> "
-        "Which: is not a value equal to <0>");
+        'Expected: a value equal to <0> '
+        'Actual: <1> '
+        'Which: is not a value equal to <0>');
   });
 
   test('isNonZero', () {
     shouldFail(
         0,
         isNonZero,
-        "Expected: a value not equal to <0> "
-        "Actual: <0> "
-        "Which: is not a value not equal to <0>");
+        'Expected: a value not equal to <0> '
+        'Actual: <0> '
+        'Which: is not a value not equal to <0>');
     shouldPass(1, isNonZero);
   });
 
@@ -72,15 +72,15 @@ void main() {
     shouldFail(
         -1,
         isPositive,
-        "Expected: a positive value "
-        "Actual: <-1> "
-        "Which: is not a positive value");
+        'Expected: a positive value '
+        'Actual: <-1> '
+        'Which: is not a positive value');
     shouldFail(
         0,
         isPositive,
-        "Expected: a positive value "
-        "Actual: <0> "
-        "Which: is not a positive value");
+        'Expected: a positive value '
+        'Actual: <0> '
+        'Which: is not a positive value');
     shouldPass(1, isPositive);
   });
 
@@ -89,9 +89,9 @@ void main() {
     shouldFail(
         0,
         isNegative,
-        "Expected: a negative value "
-        "Actual: <0> "
-        "Which: is not a negative value");
+        'Expected: a negative value '
+        'Actual: <0> '
+        'Which: is not a negative value');
   });
 
   test('isNonPositive', () {
@@ -100,9 +100,9 @@ void main() {
     shouldFail(
         1,
         isNonPositive,
-        "Expected: a non-positive value "
-        "Actual: <1> "
-        "Which: is not a non-positive value");
+        'Expected: a non-positive value '
+        'Actual: <1> '
+        'Which: is not a non-positive value');
   });
 
   test('isNonNegative', () {
@@ -111,9 +111,9 @@ void main() {
     shouldFail(
         -1,
         isNonNegative,
-        "Expected: a non-negative value "
-        "Actual: <-1> "
-        "Which: is not a non-negative value");
+        'Expected: a non-negative value '
+        'Actual: <-1> '
+        'Which: is not a non-negative value');
   });
 
   group('NaN', () {
@@ -121,30 +121,30 @@ void main() {
       shouldFail(
           double.nan,
           greaterThan(10),
-          "Expected: a value greater than <10> "
-          "Actual: <NaN> "
-          "Which: is not a value greater than <10>");
+          'Expected: a value greater than <10> '
+          'Actual: <NaN> '
+          'Which: is not a value greater than <10>');
       shouldFail(
           10,
           greaterThan(double.nan),
-          "Expected: a value greater than <NaN> "
-          "Actual: <10> "
-          "Which: is not a value greater than <NaN>");
+          'Expected: a value greater than <NaN> '
+          'Actual: <10> '
+          'Which: is not a value greater than <NaN>');
     });
 
     test('lessThanOrEqualTo', () {
       shouldFail(
           double.nan,
           lessThanOrEqualTo(10),
-          "Expected: a value less than or equal to <10> "
-          "Actual: <NaN> "
-          "Which: is not a value less than or equal to <10>");
+          'Expected: a value less than or equal to <10> '
+          'Actual: <NaN> '
+          'Which: is not a value less than or equal to <10>');
       shouldFail(
           10,
           lessThanOrEqualTo(double.nan),
-          "Expected: a value less than or equal to <NaN> "
-          "Actual: <10> "
-          "Which: is not a value less than or equal to <NaN>");
+          'Expected: a value less than or equal to <NaN> '
+          'Actual: <10> '
+          'Which: is not a value less than or equal to <NaN>');
     });
   });
 }

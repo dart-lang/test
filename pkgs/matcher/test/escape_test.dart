@@ -40,8 +40,8 @@ void _testEscaping(String name, String source, String target) {
   test(name, () {
     var escaped = escape(source);
     expect(escaped == target, isTrue,
-        reason: "Expected escaped value: $target\n"
-            "  Actual escaped value: $escaped");
+        reason: 'Expected escaped value: $target\n'
+            '  Actual escaped value: $escaped');
   });
 }
 

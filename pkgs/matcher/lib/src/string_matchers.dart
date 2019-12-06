@@ -47,12 +47,10 @@ Matcher equalsIgnoringWhitespace(String value) =>
     _IsEqualIgnoringWhitespace(value);
 
 class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
-  final String _value;
   final String _matchValue;
 
   _IsEqualIgnoringWhitespace(String value)
-      : _value = value,
-        _matchValue = collapseWhitespace(value);
+      : _matchValue = collapseWhitespace(value);
 
   @override
   bool typedMatches(String item, Map matchState) =>

@@ -21,7 +21,7 @@ const _escapeMap = {
 
 /// A [RegExp] that matches whitespace characters that should be escaped.
 final _escapeRegExp = RegExp(
-    "[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_getHexLiteral).join()}]");
+    '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_getHexLiteral).join()}]');
 
 /// Useful utility for nesting match states.
 void addStateInfo(Map matchState, Map values) {

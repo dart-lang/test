@@ -14,16 +14,17 @@ class HavingMatcher<T> implements TypeMatcher<T> {
   final List<_FunctionMatcher> _functionMatchers;
 
   HavingMatcher(TypeMatcher<T> parent, String description,
-      Object feature(T source), Object matcher,
+      Object Function(T) feature, Object matcher,
       [Iterable<_FunctionMatcher> existing])
       : _parent = parent,
-        _functionMatchers = <_FunctionMatcher>[]
-          ..addAll(existing ?? [])
-          ..add(_FunctionMatcher<T>(description, feature, matcher));
+        _functionMatchers = <_FunctionMatcher>[
+          ...?existing,
+          _FunctionMatcher<T>(description, feature, matcher)
+        ];
 
   @override
   TypeMatcher<T> having(
-          Object feature(T source), String description, Object matcher) =>
+          Object Function(T) feature, String description, Object matcher) =>
       HavingMatcher(_parent, description, feature, matcher, _functionMatchers);
 
   @override

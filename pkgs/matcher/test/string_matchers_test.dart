@@ -13,13 +13,13 @@ void main() {
         contains('Differ at offset 7'));
   });
 
-  test("Retains outer matcher mismatch text", () {
+  test('Retains outer matcher mismatch text', () {
     shouldFail(
         {'word': 'thing'},
         containsPair('word', equals('notthing')),
         allOf([
           contains("contains key 'word' but with value is different"),
-          contains("Differ at offset 0")
+          contains('Differ at offset 0')
         ]));
   });
 
@@ -30,8 +30,8 @@ void main() {
 
   test('isEmpty', () {
     shouldPass('', isEmpty);
-    shouldFail(null, isEmpty, startsWith("Expected: empty  Actual: <null>"));
-    shouldFail(0, isEmpty, startsWith("Expected: empty  Actual: <0>"));
+    shouldFail(null, isEmpty, startsWith('Expected: empty  Actual: <null>'));
+    shouldFail(0, isEmpty, startsWith('Expected: empty  Actual: <0>'));
     shouldFail('a', isEmpty, startsWith("Expected: empty  Actual: 'a'"));
   });
 
@@ -46,8 +46,8 @@ void main() {
   test('isNotEmpty', () {
     shouldFail('', isNotEmpty, startsWith("Expected: non-empty  Actual: ''"));
     shouldFail(
-        null, isNotEmpty, startsWith("Expected: non-empty  Actual: <null>"));
-    shouldFail(0, isNotEmpty, startsWith("Expected: non-empty  Actual: <0>"));
+        null, isNotEmpty, startsWith('Expected: non-empty  Actual: <null>'));
+    shouldFail(0, isNotEmpty, startsWith('Expected: non-empty  Actual: <0>'));
     shouldPass('a', isNotEmpty);
   });
 

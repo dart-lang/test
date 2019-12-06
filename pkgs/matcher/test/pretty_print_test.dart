@@ -14,12 +14,12 @@ class DefaultToString {}
 
 class CustomToString {
   @override
-  String toString() => "string representation";
+  String toString() => 'string representation';
 }
 
 class _PrivateName {
   @override
-  String toString() => "string representation";
+  String toString() => 'string representation';
 }
 
 class _PrivateNameIterable extends IterableMixin {
@@ -63,13 +63,13 @@ void main() {
     test('containing a multiline string', () {
       expect(
           prettyPrint(['foo', 'bar\nbaz\nbip', 'qux']),
-          equals("[\n"
+          equals('[\n'
               "  'foo',\n"
               "  'bar\\n'\n"
               "    'baz\\n'\n"
               "    'bip',\n"
               "  'qux'\n"
-              "]"));
+              ']'));
     });
 
     test('containing a matcher', () {
@@ -79,68 +79,68 @@ void main() {
 
     test("that's under maxLineLength", () {
       expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 30),
-          equals("[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]"));
+          equals('[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'));
     });
 
     test("that's over maxLineLength", () {
       expect(
           prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 29),
-          equals("[\n"
-              "  0,\n"
-              "  1,\n"
-              "  2,\n"
-              "  3,\n"
-              "  4,\n"
-              "  5,\n"
-              "  6,\n"
-              "  7,\n"
-              "  8,\n"
-              "  9\n"
-              "]"));
+          equals('[\n'
+              '  0,\n'
+              '  1,\n'
+              '  2,\n'
+              '  3,\n'
+              '  4,\n'
+              '  5,\n'
+              '  6,\n'
+              '  7,\n'
+              '  8,\n'
+              '  9\n'
+              ']'));
     });
 
-    test("factors indentation into maxLineLength", () {
+    test('factors indentation into maxLineLength', () {
       expect(
           prettyPrint([
-            "foo\nbar",
+            'foo\nbar',
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
           ], maxLineLength: 30),
-          equals("[\n"
+          equals('[\n'
               "  'foo\\n'\n"
               "    'bar',\n"
-              "  [\n"
-              "    0,\n"
-              "    1,\n"
-              "    2,\n"
-              "    3,\n"
-              "    4,\n"
-              "    5,\n"
-              "    6,\n"
-              "    7,\n"
-              "    8,\n"
-              "    9\n"
-              "  ]\n"
-              "]"));
+              '  [\n'
+              '    0,\n'
+              '    1,\n'
+              '    2,\n'
+              '    3,\n'
+              '    4,\n'
+              '    5,\n'
+              '    6,\n'
+              '    7,\n'
+              '    8,\n'
+              '    9\n'
+              '  ]\n'
+              ']'));
     });
 
     test("that's under maxItems", () {
       expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxItems: 10),
-          equals("[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]"));
+          equals('[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'));
     });
 
     test("that's over maxItems", () {
       expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxItems: 9),
-          equals("[0, 1, 2, 3, 4, 5, 6, 7, ...]"));
+          equals('[0, 1, 2, 3, 4, 5, 6, 7, ...]'));
     });
 
     test("that's recursive", () {
       var list = <dynamic>[1, 2, 3];
       list.add(list);
-      expect(prettyPrint(list), equals("[1, 2, 3, (recursive)]"));
+      expect(prettyPrint(list), equals('[1, 2, 3, (recursive)]'));
     });
   });
 
-  group("with a map", () {
+  group('with a map', () {
     test('containing primitive objects', () {
       expect(prettyPrint({'foo': 1, 'bar': true}),
           equals("{'foo': 1, 'bar': true}"));
@@ -149,31 +149,31 @@ void main() {
     test('containing a multiline string key', () {
       expect(
           prettyPrint({'foo\nbar': 1, 'bar': true}),
-          equals("{\n"
+          equals('{\n'
               "  'foo\\n'\n"
               "    'bar': 1,\n"
               "  'bar': true\n"
-              "}"));
+              '}'));
     });
 
     test('containing a multiline string value', () {
       expect(
           prettyPrint({'foo': 'bar\nbaz', 'qux': true}),
-          equals("{\n"
+          equals('{\n'
               "  'foo': 'bar\\n'\n"
               "    'baz',\n"
               "  'qux': true\n"
-              "}"));
+              '}'));
     });
 
     test('containing a multiline string key/value pair', () {
       expect(
           prettyPrint({'foo\nbar': 'baz\nqux'}),
-          equals("{\n"
+          equals('{\n'
               "  'foo\\n'\n"
               "    'bar': 'baz\\n'\n"
               "    'qux'\n"
-              "}"));
+              '}'));
     });
 
     test('containing a matcher key', () {
@@ -194,30 +194,30 @@ void main() {
     test("that's over maxLineLength", () {
       expect(
           prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 31),
-          equals("{\n"
+          equals('{\n'
               "  '0': 1,\n"
               "  '2': 3,\n"
               "  '4': 5,\n"
               "  '6': 7\n"
-              "}"));
+              '}'));
     });
 
-    test("factors indentation into maxLineLength", () {
+    test('factors indentation into maxLineLength', () {
       expect(
           prettyPrint([
-            "foo\nbar",
+            'foo\nbar',
             {'0': 1, '2': 3, '4': 5, '6': 7}
           ], maxLineLength: 32),
-          equals("[\n"
+          equals('[\n'
               "  'foo\\n'\n"
               "    'bar',\n"
-              "  {\n"
+              '  {\n'
               "    '0': 1,\n"
               "    '2': 3,\n"
               "    '4': 5,\n"
               "    '6': 7\n"
-              "  }\n"
-              "]"));
+              '  }\n'
+              ']'));
     });
 
     test("that's under maxItems", () {
@@ -252,13 +252,13 @@ void main() {
       expect(
           prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
           equals(isDart2
-              ? "MappedListIterable<int, int>:[2, 4, 6, 8]"
-              : "MappedListIterable:[2, 4, 6, 8]"));
+              ? 'MappedListIterable<int, int>:[2, 4, 6, 8]'
+              : 'MappedListIterable:[2, 4, 6, 8]'));
     });
 
     test("that's not a list and has a private name", () {
       expect(prettyPrint(_PrivateNameIterable()),
-          equals("_PrivateNameIterable:[1, 2, 3]"));
+          equals('_PrivateNameIterable:[1, 2, 3]'));
     });
   });
 

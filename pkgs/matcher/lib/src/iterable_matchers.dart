@@ -237,8 +237,8 @@ class _UnorderedMatches extends _IterableMatcher {
 /// The [comparator] function, taking an expected and an actual argument, and
 /// returning whether they match, will be applied to each pair in order.
 /// [description] should be a meaningful name for the comparator.
-Matcher pairwiseCompare<S, T>(
-        Iterable<S> expected, bool comparator(S a, T b), String description) =>
+Matcher pairwiseCompare<S, T>(Iterable<S> expected,
+        bool Function(S, T) comparator, String description) =>
     _PairwiseCompare(expected, comparator, description);
 
 typedef _Comparator<S, T> = bool Function(S a, T b);
@@ -280,9 +280,9 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
     } else {
       return mismatchDescription
           .add('has ')
-          .addDescriptionOf(matchState["actual"])
+          .addDescriptionOf(matchState['actual'])
           .add(' which is not $_description ')
-          .addDescriptionOf(matchState["expected"])
+          .addDescriptionOf(matchState['expected'])
           .add(' at index ${matchState["index"]}');
     }
   }

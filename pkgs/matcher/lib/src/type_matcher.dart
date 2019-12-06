@@ -80,7 +80,7 @@ class TypeMatcher<T> extends Matcher {
   ///    .having((e) => e.end, 'end', isNull);
   /// ```
   TypeMatcher<T> having(
-          Object feature(T source), String description, Object matcher) =>
+          Object Function(T) feature, String description, Object matcher) =>
       HavingMatcher(this, description, feature, matcher);
 
   @override
