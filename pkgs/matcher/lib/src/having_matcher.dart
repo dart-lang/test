@@ -11,13 +11,13 @@ import 'util.dart';
 /// by calls to [TypeMatcher.having].
 class HavingMatcher<T> implements TypeMatcher<T> {
   final TypeMatcher<T> _parent;
-  final List<_FunctionMatcher> _functionMatchers;
+  final List<_FunctionMatcher<T>> _functionMatchers;
 
   HavingMatcher(TypeMatcher<T> parent, String description,
       Object Function(T) feature, Object matcher,
-      [Iterable<_FunctionMatcher> existing])
+      [Iterable<_FunctionMatcher<T>> existing])
       : _parent = parent,
-        _functionMatchers = <_FunctionMatcher>[
+        _functionMatchers = [
           ...?existing,
           _FunctionMatcher<T>(description, feature, matcher)
         ];
