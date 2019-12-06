@@ -35,7 +35,7 @@ class Loader {
   final _config = Configuration.current;
 
   /// All suites that have been created by the loader.
-  final _suites = Set<RunnerSuite>();
+  final _suites = <RunnerSuite>{};
 
   /// Memoizers for platform plugins, indexed by the runtimes they support.
   final _platformPlugins = <Runtime, AsyncMemoizer<PlatformPlugin>>{};

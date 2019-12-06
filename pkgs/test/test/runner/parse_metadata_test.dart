@@ -13,14 +13,14 @@ final _path = 'test.dart';
 
 void main() {
   test('returns empty metadata for an empty file', () {
-    var metadata = parseMetadata(_path, '', Set());
+    var metadata = parseMetadata(_path, '', {});
     expect(metadata.testOn, equals(PlatformSelector.all));
     expect(metadata.timeout.scaleFactor, equals(1));
   });
 
   test('ignores irrelevant annotations', () {
     var metadata =
-        parseMetadata(_path, '@Fblthp\n@Fblthp.foo\nlibrary foo;', Set());
+        parseMetadata(_path, '@Fblthp\n@Fblthp.foo\nlibrary foo;', {});
     expect(metadata.testOn, equals(PlatformSelector.all));
   });
 
@@ -29,21 +29,21 @@ void main() {
         _path,
         "@foo.TestOn('vm')\n"
         "import 'package:test/test.dart' as foo;",
-        Set());
+        {});
     expect(metadata.testOn.evaluate(SuitePlatform(Runtime.vm)), isTrue);
     expect(metadata.testOn.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
   });
 
   group('@TestOn:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(_path, "@TestOn('vm')\nlibrary foo;", Set());
+      var metadata = parseMetadata(_path, "@TestOn('vm')\nlibrary foo;", {});
       expect(metadata.testOn.evaluate(SuitePlatform(Runtime.vm)), isTrue);
       expect(metadata.testOn.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
     });
 
     test('ignores a constructor named TestOn', () {
       var metadata =
-          parseMetadata(_path, "@foo.TestOn('foo')\nlibrary foo;", Set());
+          parseMetadata(_path, "@foo.TestOn('foo')\nlibrary foo;", {});
       expect(metadata.testOn, equals(PlatformSelector.all));
     });
 
@@ -51,7 +51,7 @@ void main() {
       test('multiple @TestOns', () {
         expect(
             () => parseMetadata(
-                _path, "@TestOn('foo')\n@TestOn('bar')\nlibrary foo;", Set()),
+                _path, "@TestOn('foo')\n@TestOn('bar')\nlibrary foo;", {}),
             throwsFormatException);
       });
     });
@@ -59,9 +59,7 @@ void main() {
 
   group('@Timeout:', () {
     test('parses a valid duration annotation', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @Timeout(const Duration(
     hours: 1,
     minutes: 2,
@@ -70,8 +68,7 @@ void main() {
     microseconds: 5))
 
 library foo;
-''',
-          Set());
+''', {});
       expect(
           metadata.timeout.duration,
           equals(Duration(
@@ -83,9 +80,7 @@ library foo;
     });
 
     test('parses a valid duration omitting const', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @Timeout(Duration(
     hours: 1,
     minutes: 2,
@@ -94,8 +89,7 @@ library foo;
     microseconds: 5))
 
 library foo;
-''',
-          Set());
+''', {});
       expect(
           metadata.timeout.duration,
           equals(Duration(
@@ -107,9 +101,7 @@ library foo;
     });
 
     test('parses a valid duration with an import prefix', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @Timeout(core.Duration(
     hours: 1,
     minutes: 2,
@@ -117,8 +109,7 @@ library foo;
     milliseconds: 4,
     microseconds: 5))
 import 'dart:core' as core;
-''',
-          Set());
+''', {});
       expect(
           metadata.timeout.duration,
           equals(Duration(
@@ -130,55 +121,43 @@ import 'dart:core' as core;
     });
 
     test('parses a valid int factor annotation', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @Timeout.factor(1)
 
 library foo;
-''',
-          Set());
+''', {});
       expect(metadata.timeout.scaleFactor, equals(1));
     });
 
     test('parses a valid int factor annotation with an import prefix', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @test.Timeout.factor(1)
 import 'package:test/test.dart' as test;
-''',
-          Set());
+''', {});
       expect(metadata.timeout.scaleFactor, equals(1));
     });
 
     test('parses a valid double factor annotation', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @Timeout.factor(0.5)
 
 library foo;
-''',
-          Set());
+''', {});
       expect(metadata.timeout.scaleFactor, equals(0.5));
     });
 
     test('parses a valid Timeout.none annotation', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @Timeout.none
 
 library foo;
-''',
-          Set());
+''', {});
       expect(metadata.timeout, same(Timeout.none));
     });
 
     test('ignores a constructor named Timeout', () {
       var metadata =
-          parseMetadata(_path, "@foo.Timeout('foo')\nlibrary foo;", Set());
+          parseMetadata(_path, "@foo.Timeout('foo')\nlibrary foo;", {});
       expect(metadata.timeout.scaleFactor, equals(1));
     });
 
@@ -186,7 +165,7 @@ library foo;
       test('multiple @Timeouts', () {
         expect(
             () => parseMetadata(_path,
-                '@Timeout.factor(1)\n@Timeout.factor(2)\nlibrary foo;', Set()),
+                '@Timeout.factor(1)\n@Timeout.factor(2)\nlibrary foo;', {}),
             throwsFormatException);
       });
     });
@@ -194,21 +173,19 @@ library foo;
 
   group('@Skip:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(_path, '@Skip()\nlibrary foo;', Set());
+      var metadata = parseMetadata(_path, '@Skip()\nlibrary foo;', {});
       expect(metadata.skip, isTrue);
       expect(metadata.skipReason, isNull);
     });
 
     test('parses a valid annotation with a reason', () {
-      var metadata =
-          parseMetadata(_path, "@Skip('reason')\nlibrary foo;", Set());
+      var metadata = parseMetadata(_path, "@Skip('reason')\nlibrary foo;", {});
       expect(metadata.skip, isTrue);
       expect(metadata.skipReason, equals('reason'));
     });
 
     test('ignores a constructor named Skip', () {
-      var metadata =
-          parseMetadata(_path, "@foo.Skip('foo')\nlibrary foo;", Set());
+      var metadata = parseMetadata(_path, "@foo.Skip('foo')\nlibrary foo;", {});
       expect(metadata.skip, isFalse);
     });
 
@@ -216,7 +193,7 @@ library foo;
       test('multiple @Skips', () {
         expect(
             () => parseMetadata(
-                _path, "@Skip('foo')\n@Skip('bar')\nlibrary foo;", Set()),
+                _path, "@Skip('foo')\n@Skip('bar')\nlibrary foo;", {}),
             throwsFormatException);
       });
     });
@@ -224,13 +201,12 @@ library foo;
 
   group('@Tags:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(_path, "@Tags(['a'])\nlibrary foo;", Set());
+      var metadata = parseMetadata(_path, "@Tags(['a'])\nlibrary foo;", {});
       expect(metadata.tags, equals(['a']));
     });
 
     test('ignores a constructor named Tags', () {
-      var metadata =
-          parseMetadata(_path, "@foo.Tags(['a'])\nlibrary foo;", Set());
+      var metadata = parseMetadata(_path, "@foo.Tags(['a'])\nlibrary foo;", {});
       expect(metadata.tags, isEmpty);
     });
 
@@ -238,14 +214,14 @@ library foo;
       test('multiple @Tags', () {
         expect(
             () => parseMetadata(
-                _path, "@Tags(['a'])\n@Tags(['b'])\nlibrary foo;", Set()),
+                _path, "@Tags(['a'])\n@Tags(['b'])\nlibrary foo;", {}),
             throwsFormatException);
       });
 
       test('String interpolation', () {
         expect(
             () => parseMetadata(
-                _path, "@Tags(['\$a'])\nlibrary foo;\nconst a = 'a';", Set()),
+                _path, "@Tags(['\$a'])\nlibrary foo;\nconst a = 'a';", {}),
             throwsFormatException);
       });
     });
@@ -253,15 +229,12 @@ library foo;
 
   group('@OnPlatform:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @OnPlatform({
   'chrome': Timeout.factor(2),
   'vm': [Skip(), Timeout.factor(3)]
 })
-library foo;''',
-          Set());
+library foo;''', {});
 
       var key = metadata.onPlatform.keys.first;
       expect(key.evaluate(SuitePlatform(Runtime.chrome)), isTrue);
@@ -278,16 +251,13 @@ library foo;''',
     });
 
     test('parses a valid annotation with an import prefix', () {
-      var metadata = parseMetadata(
-          _path,
-          '''
+      var metadata = parseMetadata(_path, '''
 @test.OnPlatform({
   'chrome': test.Timeout.factor(2),
   'vm': [test.Skip(), test.Timeout.factor(3)]
 })
 import 'package:test/test.dart' as test;
-''',
-          Set());
+''', {});
 
       var key = metadata.onPlatform.keys.first;
       expect(key.evaluate(SuitePlatform(Runtime.chrome)), isTrue);
@@ -305,7 +275,7 @@ import 'package:test/test.dart' as test;
 
     test('ignores a constructor named OnPlatform', () {
       var metadata =
-          parseMetadata(_path, "@foo.OnPlatform('foo')\nlibrary foo;", Set());
+          parseMetadata(_path, "@foo.OnPlatform('foo')\nlibrary foo;", {});
       expect(metadata.testOn, equals(PlatformSelector.all));
     });
 
@@ -313,30 +283,28 @@ import 'package:test/test.dart' as test;
       test('a map with a unparseable key', () {
         expect(
             () => parseMetadata(
-                _path, "@OnPlatform({'invalid': Skip()})\nlibrary foo;", Set()),
+                _path, "@OnPlatform({'invalid': Skip()})\nlibrary foo;", {}),
             throwsFormatException);
       });
 
       test('a map with an invalid value', () {
         expect(
             () => parseMetadata(_path,
-                "@OnPlatform({'vm': const TestOn('vm')})\nlibrary foo;", Set()),
+                "@OnPlatform({'vm': const TestOn('vm')})\nlibrary foo;", {}),
             throwsFormatException);
       });
 
       test('a map with an invalid value in a list', () {
         expect(
-            () => parseMetadata(
-                _path,
-                "@OnPlatform({'vm': [const TestOn('vm')]})\nlibrary foo;",
-                Set()),
+            () => parseMetadata(_path,
+                "@OnPlatform({'vm': [const TestOn('vm')]})\nlibrary foo;", {}),
             throwsFormatException);
       });
 
       test('multiple @OnPlatforms', () {
         expect(
             () => parseMetadata(
-                _path, '@OnPlatform({})\n@OnPlatform({})\nlibrary foo;', Set()),
+                _path, '@OnPlatform({})\n@OnPlatform({})\nlibrary foo;', {}),
             throwsFormatException);
       });
     });

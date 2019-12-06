@@ -425,7 +425,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         }
       ''').create();
 
-    var test = await runTest(['test.dart']..addAll(arguments));
+    var test = await runTest(['test.dart', ...arguments]);
     expect(test.stdout,
         containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
@@ -452,7 +452,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         '''),
     ]).create();
 
-    var test = await runTest(['test/dir/subdir/test.dart']..addAll(arguments));
+    var test = await runTest(['test/dir/subdir/test.dart', ...arguments]);
     expect(test.stdout,
         containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
@@ -481,7 +481,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         '''),
     ]).create();
 
-    var test = await runTest(['test/dir/subdir/test.dart']..addAll(arguments));
+    var test = await runTest(['test/dir/subdir/test.dart', ...arguments]);
     expect(test.stdout,
         containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
@@ -508,7 +508,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         }
       ''').create();
 
-    var test = await runTest(['test.dart']..addAll(arguments));
+    var test = await runTest(['test.dart', ...arguments]);
     expect(test.stdout,
         containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
@@ -534,7 +534,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         }
       ''').create();
 
-    var test = await runTest(['test.dart']..addAll(arguments));
+    var test = await runTest(['test.dart', ...arguments]);
     expect(test.stdout,
         containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
@@ -571,7 +571,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
         }
       ''').create();
 
-    var test = await runTest(['test.dart']..addAll(arguments));
+    var test = await runTest(['test.dart', ...arguments]);
     expect(
         test.stdout,
         containsInOrder(

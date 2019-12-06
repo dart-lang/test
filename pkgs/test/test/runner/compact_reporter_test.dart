@@ -424,8 +424,8 @@ $tests
     }
   ''').create();
 
-  var test =
-      await runTest(['test.dart']..addAll(args ?? []), reporter: 'compact');
+  var test = await runTest(['test.dart', if (args != null) ...args],
+      reporter: 'compact');
   await test.shouldExit();
 
   var stdoutLines = await test.stdout.rest.toList();

@@ -8,7 +8,7 @@ import 'package:test_core/src/runner/plugin/remote_platform_helpers.dart'; // ig
 import '../runner/browser/post_message_channel.dart';
 
 /// Bootstraps a browser test to communicate with the test runner.
-void internalBootstrapBrowserTest(Function getMain()) {
+void internalBootstrapBrowserTest(Function Function() getMain) {
   var channel =
       serializeSuite(getMain, hidePrints: false, beforeLoad: () async {
     var serialized =

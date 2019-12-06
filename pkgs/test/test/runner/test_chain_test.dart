@@ -77,5 +77,5 @@ void main() {
     var test = await runTest(['test.dart']);
     expect(test.stdoutStream(), emitsThrough(contains('package:test')));
     await test.shouldExit(1);
-  });
+  }, skip: 'https://github.com/dart-lang/test/issues/1120');
 }

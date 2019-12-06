@@ -33,6 +33,7 @@ class JSStackTraceMapper extends StackTraceMapper {
         _sdkRoot = sdkRoot;
 
   /// Converts [trace] into a Dart stack trace.
+  @override
   StackTrace mapStackTrace(StackTrace trace) {
     _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);
     return mapper.mapStackTrace(_mapping, trace,
@@ -40,6 +41,7 @@ class JSStackTraceMapper extends StackTraceMapper {
   }
 
   /// Returns a Map representation which is suitable for JSON serialization.
+  @override
   Map<String, dynamic> serialize() {
     return {
       'mapContents': _mapContents,
@@ -55,7 +57,7 @@ class JSStackTraceMapper extends StackTraceMapper {
   /// representation.
   static StackTraceMapper deserialize(Map serialized) {
     if (serialized == null) return null;
-    String packageRoot = serialized['packageRoot'] as String ?? '';
+    var packageRoot = serialized['packageRoot'] as String ?? '';
     return JSStackTraceMapper(serialized['mapContents'] as String,
         sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
         packageResolver: packageRoot.isNotEmpty

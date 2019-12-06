@@ -8,7 +8,7 @@ import 'package:test_core/src/runner/plugin/remote_platform_helpers.dart'; // ig
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 
 /// Bootstraps a browser test to communicate with the test runner.
-void internalBootstrapNodeTest(Function getMain()) {
+void internalBootstrapNodeTest(Function Function() getMain) {
   var channel = serializeSuite(getMain, beforeLoad: () async {
     var serialized = await suiteChannel('test.node.mapper').stream.first;
     if (serialized == null || serialized is! Map) return;

@@ -80,7 +80,7 @@ class BrowserManager {
   ///
   /// These are used to mark suites as debugging or not based on the browser's
   /// pings.
-  final _controllers = Set<RunnerSuiteController>();
+  final _controllers = <RunnerSuiteController>{};
 
   // A timer that's reset whenever we receive a message from the browser.
   //
@@ -213,7 +213,7 @@ class BrowserManager {
 
     var suiteID = _suiteID++;
     RunnerSuiteController controller;
-    closeIframe() {
+    void closeIframe() {
       if (_closed) return;
       _controllers.remove(controller);
       _channel.sink.add({'command': 'closeSuite', 'id': suiteID});
@@ -310,16 +310,21 @@ class BrowserManager {
 class _BrowserEnvironment implements Environment {
   final BrowserManager _manager;
 
+  @override
   final supportsDebugging = true;
 
+  @override
   final Uri observatoryUrl;
 
+  @override
   final Uri remoteDebuggerUrl;
 
+  @override
   final Stream onRestart;
 
   _BrowserEnvironment(this._manager, this.observatoryUrl,
       this.remoteDebuggerUrl, this.onRestart);
 
+  @override
   CancelableOperation displayPause() => _manager._displayPause();
 }

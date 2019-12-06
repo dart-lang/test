@@ -48,16 +48,16 @@ class JsonReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = Set<StreamSubscription>();
+  final _subscriptions = <StreamSubscription>{};
 
   /// An expando that associates unique IDs with [LiveTest]s.
-  final _liveTestIDs = Map<LiveTest, int>();
+  final _liveTestIDs = <LiveTest, int>{};
 
   /// An expando that associates unique IDs with [Suite]s.
-  final _suiteIDs = Map<Suite, int>();
+  final _suiteIDs = <Suite, int>{};
 
   /// An expando that associates unique IDs with [Group]s.
-  final _groupIDs = Map<Group, int>();
+  final _groupIDs = <Group, int>{};
 
   /// The next ID to associate with a [LiveTest].
   var _nextID = 0;
@@ -81,6 +81,7 @@ class JsonReporter implements Reporter {
         {'protocolVersion': '0.1.1', 'runnerVersion': testVersion, 'pid': pid});
   }
 
+  @override
   void pause() {
     if (_paused) return;
     _paused = true;
@@ -92,6 +93,7 @@ class JsonReporter implements Reporter {
     }
   }
 
+  @override
   void resume() {
     if (!_paused) return;
     _paused = false;
@@ -103,6 +105,7 @@ class JsonReporter implements Reporter {
     }
   }
 
+  @override
   void cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();

@@ -36,7 +36,7 @@ final String _globalConfigPath = () {
   }
 }();
 
-main(List<String> args) async {
+void main(List<String> args) async {
   await _execute(args);
   completeShutdown();
 }

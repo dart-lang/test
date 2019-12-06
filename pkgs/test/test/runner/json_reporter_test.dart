@@ -594,7 +594,7 @@ import 'package:test/test.dart';
 
   await d.file('test.dart', testContent.toString()).create();
 
-  var test = await runTest(['test.dart']..addAll(args), reporter: 'json');
+  var test = await runTest(['test.dart', ...args], reporter: 'json');
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();
@@ -605,8 +605,8 @@ import 'package:test/test.dart';
 
   // TODO(nweiz): validate each event against the JSON schema when
   // patefacio/json_schema#4 is merged.
-
-  decodeLine(String l) => jsonDecode(l)..remove('time')..remove('stackTrace');
+  dynamic decodeLine(String l) =>
+      jsonDecode(l)..remove('time')..remove('stackTrace');
 
   // Should contain all suites message.
   expect(stdoutLines.map(decodeLine), containsAll([_allSuites()]));

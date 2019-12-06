@@ -29,6 +29,7 @@ user_pref("dom.max_script_run_time", 0);
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class Firefox extends Browser {
+  @override
   final name = 'Firefox';
 
   Firefox(url, {ExecutableSettings settings})
@@ -41,11 +42,15 @@ class Firefox extends Browser {
     var dir = createTempDir();
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
-    var process = await Process.start(
-        settings.executable,
-        ['--profile', '$dir', url.toString(), '--no-remote']
-          ..addAll(settings.arguments),
-        environment: {'MOZ_CRASHREPORTER_DISABLE': '1'});
+    var process = await Process.start(settings.executable, [
+      '--profile',
+      '$dir',
+      url.toString(),
+      '--no-remote',
+      ...settings.arguments,
+    ], environment: {
+      'MOZ_CRASHREPORTER_DISABLE': '1'
+    });
 
     unawaited(process.exitCode
         .then((_) => Directory(dir).deleteSync(recursive: true)));

@@ -61,7 +61,7 @@ abstract class Browser {
   /// which asynchronously returns the browser process. Any errors in
   /// [startBrowser] (even those raised asynchronously after it returns) are
   /// piped to [onExit] and will cause the browser to be killed.
-  Browser(Future<Process> startBrowser()) {
+  Browser(Future<Process> Function() startBrowser) {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
@@ -70,7 +70,7 @@ abstract class Browser {
       _processCompleter.complete(process);
 
       var output = Uint8Buffer();
-      drainOutput(Stream<List<int>> stream) {
+      void drainOutput(Stream<List<int>> stream) {
         try {
           _ioSubscriptions
               .add(stream.listen(output.addAll, cancelOnError: true));
@@ -115,7 +115,7 @@ abstract class Browser {
       // Make sure the process dies even if the error wasn't fatal.
       _process.then((process) => process.kill());
 
-      if (stackTrace == null) stackTrace = Trace.current();
+      stackTrace ??= Trace.current();
       if (_onExitCompleter.isCompleted) return;
       _onExitCompleter.completeError(
           ApplicationException(

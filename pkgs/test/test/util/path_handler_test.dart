@@ -12,7 +12,8 @@ void main() {
   PathHandler handler;
   setUp(() => handler = PathHandler());
 
-  _handle(shelf.Request request) => Future.sync(() => handler.handler(request));
+  Future<shelf.Response> _handle(shelf.Request request) =>
+      Future.sync(() => handler.handler(request));
 
   test('returns a 404 for a root URL', () async {
     var request = shelf.Request('GET', Uri.parse('http://localhost/'));

@@ -41,5 +41,6 @@ class MessageType {
 
   const MessageType._(this.name);
 
+  @override
   String toString() => name;
 }

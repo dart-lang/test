@@ -121,15 +121,15 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// This is used to make sure that a given test suite is only compiled once
   /// per run, rather than once per browser per run.
-  final _compileFutures = Map<String, Future>();
+  final _compileFutures = <String, Future>{};
 
   /// Mappers for Dartifying stack traces, indexed by test path.
-  final _mappers = Map<String, StackTraceMapper>();
+  final _mappers = <String, StackTraceMapper>{};
 
   BrowserPlatform._(this._server, Configuration config, String faviconPath,
       {String root})
       : _config = config,
-        _root = root == null ? p.current : root,
+        _root = root ?? p.current,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
         _http = config.pubServeUrl == null ? null : HttpClient() {
     var cascade = shelf.Cascade().add(_webSocketHandler.handler);
@@ -200,13 +200,16 @@ class BrowserPlatform extends PlatformPlugin
     return shelf.Response.notFound('Not found.');
   }
 
+  @override
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
       ExecutableSettings.parse(settings);
 
+  @override
   ExecutableSettings mergePlatformSettings(
           ExecutableSettings settings1, ExecutableSettings settings2) =>
       settings1.merge(settings2);
 
+  @override
   void customizePlatform(Runtime runtime, ExecutableSettings settings) {
     var oldSettings =
         _browserSettings[runtime] ?? _browserSettings[runtime.root];
@@ -218,6 +221,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
+  @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     var browser = platform.runtime;
@@ -272,6 +276,7 @@ class BrowserPlatform extends PlatformPlugin
     return suite;
   }
 
+  @override
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw UnimplementedError();
 
@@ -393,7 +398,7 @@ class BrowserPlatform extends PlatformPlugin
     var completer = Completer<WebSocketChannel>.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
-    var hostUrl = (_config.pubServeUrl == null ? url : _config.pubServeUrl)
+    var hostUrl = (_config.pubServeUrl ?? url)
         .resolve('packages/test/src/runner/browser/static/index.html')
         .replace(queryParameters: {
       'managerUrl': webSocketUrl.toString(),
@@ -415,6 +420,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// Note that this doesn't close the server itself. Browser tests can still be
   /// loaded, they'll just spawn new browsers.
+  @override
   Future closeEphemeral() {
     var managers = _browserManagers.values.toList();
     _browserManagers.clear();
@@ -429,6 +435,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
+  @override
   Future close() => _closeMemo.runOnce(() async {
         var futures =
             _browserManagers.values.map<Future<dynamic>>((future) async {

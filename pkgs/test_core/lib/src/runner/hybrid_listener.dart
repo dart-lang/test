@@ -32,7 +32,7 @@ final _transformer = StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
 ///
 /// The [data] argument contains two values: a [SendPort] that communicates with
 /// the main isolate, and a message to pass to `hybridMain()`.
-void listen(Function getMain(), List data) {
+void listen(Function Function() getMain, List data) {
   var channel = IsolateChannel.connectSend(data.first as SendPort);
   var message = data.last;
 

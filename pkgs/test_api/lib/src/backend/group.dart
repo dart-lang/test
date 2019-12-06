@@ -13,10 +13,13 @@ import 'test.dart';
 ///
 /// It includes metadata that applies to all contained tests.
 class Group implements GroupEntry {
+  @override
   final String name;
 
+  @override
   final Metadata metadata;
 
+  @override
   final Trace trace;
 
   /// The children of this group.
@@ -49,8 +52,9 @@ class Group implements GroupEntry {
   Group(this.name, Iterable<GroupEntry> entries,
       {Metadata metadata, this.trace, this.setUpAll, this.tearDownAll})
       : entries = List<GroupEntry>.unmodifiable(entries),
-        metadata = metadata == null ? Metadata() : metadata;
+        metadata = metadata ?? Metadata();
 
+  @override
   Group forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     var newMetadata = metadata.forPlatform(platform);
@@ -63,7 +67,8 @@ class Group implements GroupEntry {
         tearDownAll: tearDownAll);
   }
 
-  Group filter(bool callback(Test test)) {
+  @override
+  Group filter(bool Function(Test) callback) {
     var filtered = _map((entry) => entry.filter(callback));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
     return Group(name, filtered,
@@ -76,7 +81,7 @@ class Group implements GroupEntry {
   /// Returns the entries of this group mapped using [callback].
   ///
   /// Any `null` values returned by [callback] will be removed.
-  List<GroupEntry> _map(GroupEntry callback(GroupEntry entry)) {
+  List<GroupEntry> _map(GroupEntry Function(GroupEntry) callback) {
     return entries
         .map((entry) => callback(entry))
         .where((entry) => entry != null)

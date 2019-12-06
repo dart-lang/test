@@ -62,22 +62,27 @@ class NodePlatform extends PlatformPlugin
       : _config = Configuration.current,
         _http = Configuration.current.pubServeUrl == null ? null : HttpClient();
 
+  @override
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
       ExecutableSettings.parse(settings);
 
+  @override
   ExecutableSettings mergePlatformSettings(
           ExecutableSettings settings1, ExecutableSettings settings2) =>
       settings1.merge(settings2);
 
+  @override
   void customizePlatform(Runtime runtime, ExecutableSettings settings) {
     var oldSettings = _settings[runtime] ?? _settings[runtime.root];
     if (oldSettings != null) settings = oldSettings.merge(settings);
     _settings[runtime] = settings;
   }
 
+  @override
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw UnimplementedError();
 
+  @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);
@@ -279,6 +284,7 @@ class NodePlatform extends PlatformPlugin
     }
   }
 
+  @override
   Future close() => _closeMemo.runOnce(() async {
         await _compilers.close();
 

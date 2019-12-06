@@ -16,7 +16,9 @@ class RuntimeSelection {
 
   RuntimeSelection(this.name, [this.span]);
 
+  @override
   bool operator ==(other) => other is RuntimeSelection && other.name == name;
 
+  @override
   int get hashCode => name.hashCode;
 }

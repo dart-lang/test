@@ -44,8 +44,8 @@ class RemoteListener {
   ///
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
-  static StreamChannel start(Function getMain(),
-      {bool hidePrints = true, Future beforeLoad()}) {
+  static StreamChannel start(Function Function() getMain,
+      {bool hidePrints = true, Future Function() beforeLoad}) {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
@@ -121,7 +121,8 @@ class RemoteListener {
 
           if (beforeLoad != null) await beforeLoad();
 
-          await declarer.declare(main as Function());
+          // TODO - is this await necessary?
+          await (declarer.declare(main as Function()) as dynamic);
 
           var suite = Suite(
               declarer.build(), SuitePlatform.deserialize(message['platform']),

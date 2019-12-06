@@ -92,7 +92,7 @@ String createTempDir() =>
 ///
 /// Returns a future that completes to the value that the future returned from
 /// [fn] completes to.
-Future withTempDir(Future fn(String path)) {
+Future withTempDir(Future Function(String) fn) {
   return Future.sync(() {
     var tempDir = createTempDir();
     return Future.sync(() => fn(tempDir))
@@ -139,7 +139,7 @@ String wordWrap(String text) {
 /// If [print] is `true`, this prints the message using [print] to associate it
 /// with the current test. Otherwise, it prints it using [stderr].
 void warn(String message, {bool color, bool print = false}) {
-  if (color == null) color = canUseSpecialChars;
+  color ??= canUseSpecialChars;
   var header = color ? '\u001b[33mWarning:\u001b[0m' : 'Warning:';
   (print ? core.print : stderr.writeln)(wordWrap('$header $message\n'));
 }
@@ -153,7 +153,7 @@ void warn(String message, {bool color, bool print = false}) {
 ///
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
-Future<T> getUnusedPort<T>(FutureOr<T> tryPort(int port)) async {
+Future<T> getUnusedPort<T>(FutureOr<T> Function(int port) tryPort) async {
   T value;
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());

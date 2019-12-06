@@ -196,25 +196,23 @@ void main() {
   group('validatePlatformSelectors', () {
     test('succeeds if onPlatform uses valid platforms', () {
       Metadata.parse(onPlatform: {'vm || browser': Skip()})
-          .validatePlatformSelectors(Set.from(['vm']));
+          .validatePlatformSelectors({'vm'});
     });
 
     test('succeeds if testOn uses valid platforms', () {
-      Metadata.parse(testOn: 'vm || browser')
-          .validatePlatformSelectors(Set.from(['vm']));
+      Metadata.parse(testOn: 'vm || browser').validatePlatformSelectors({'vm'});
     });
 
     test('fails if onPlatform uses an invalid platform', () {
       expect(() {
         Metadata.parse(onPlatform: {'unknown': Skip()})
-            .validatePlatformSelectors(Set.from(['vm']));
+            .validatePlatformSelectors({'vm'});
       }, throwsFormatException);
     });
 
     test('fails if testOn uses an invalid platform', () {
       expect(() {
-        Metadata.parse(testOn: 'unknown')
-            .validatePlatformSelectors(Set.from(['vm']));
+        Metadata.parse(testOn: 'unknown').validatePlatformSelectors({'vm'});
       }, throwsFormatException);
     });
   });

@@ -33,9 +33,11 @@ class VMPlatform extends PlatformPlugin {
 
   VMPlatform();
 
+  @override
   StreamChannel loadChannel(String path, SuitePlatform platform) =>
       throw UnimplementedError();
 
+  @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     assert(platform.runtime == Runtime.vm);

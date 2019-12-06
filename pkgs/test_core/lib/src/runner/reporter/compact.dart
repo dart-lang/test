@@ -99,7 +99,7 @@ class CompactReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = Set<StreamSubscription>();
+  final _subscriptions = <StreamSubscription>{};
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
@@ -114,6 +114,7 @@ class CompactReporter implements Reporter {
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
+  @override
   void pause() {
     if (_paused) return;
     _paused = true;
@@ -132,6 +133,7 @@ class CompactReporter implements Reporter {
     }
   }
 
+  @override
   void resume() {
     if (!_paused) return;
     _paused = false;
@@ -143,6 +145,7 @@ class CompactReporter implements Reporter {
     }
   }
 
+  @override
   void cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();
@@ -309,7 +312,7 @@ class CompactReporter implements Reporter {
     _lastProgressTruncated = truncate;
 
     if (suffix != null) message += suffix;
-    if (color == null) color = '';
+    color ??= '';
     var duration = _stopwatch.elapsed;
     var buffer = StringBuffer();
 

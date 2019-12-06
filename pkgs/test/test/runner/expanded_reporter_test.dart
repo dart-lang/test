@@ -327,7 +327,7 @@ $tests
     }
   ''').create();
 
-  var test = await runTest(['test.dart']..addAll(args ?? []));
+  var test = await runTest(['test.dart', if (args != null) ...args]);
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

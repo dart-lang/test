@@ -18,25 +18,35 @@ import 'live_suite.dart';
 class _LiveSuite extends LiveSuite {
   final LiveSuiteController _controller;
 
+  @override
   RunnerSuite get suite => _controller._suite;
 
+  @override
   bool get isComplete => _controller._isComplete;
 
+  @override
   Future get onComplete => _controller._onCompleteGroup.future;
 
+  @override
   bool get isClosed => _controller._onCloseCompleter.isCompleted;
 
+  @override
   Future get onClose => _controller._onCloseCompleter.future;
 
+  @override
   Stream<LiveTest> get onTestStarted =>
       _controller._onTestStartedController.stream;
 
+  @override
   Set<LiveTest> get passed => UnmodifiableSetView(_controller._passed);
 
+  @override
   Set<LiveTest> get skipped => UnmodifiableSetView(_controller._skipped);
 
+  @override
   Set<LiveTest> get failed => UnmodifiableSetView(_controller._failed);
 
+  @override
   LiveTest get active => _controller._active;
 
   _LiveSuite(this._controller);
@@ -76,13 +86,13 @@ class LiveSuiteController {
       StreamController<LiveTest>.broadcast(sync: true);
 
   /// The set that backs [LiveTest.passed].
-  final _passed = Set<LiveTest>();
+  final _passed = <LiveTest>{};
 
   /// The set that backs [LiveTest.skipped].
-  final _skipped = Set<LiveTest>();
+  final _skipped = <LiveTest>{};
 
   /// The set that backs [LiveTest.failed].
-  final _failed = Set<LiveTest>();
+  final _failed = <LiveTest>{};
 
   /// The test exposed through [LiveTest.active].
   LiveTest _active;

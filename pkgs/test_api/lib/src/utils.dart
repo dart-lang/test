@@ -43,8 +43,13 @@ final _vowel = RegExp('[aeiou]');
 /// Directories that are specific to OS X.
 ///
 /// This is used to try to distinguish OS X and Linux in [currentOSGuess].
-final _macOSDirectories = Set<String>.from(
-    ['/Applications', '/Library', '/Network', '/System', '/Users']);
+final _macOSDirectories = {
+  '/Applications',
+  '/Library',
+  '/Network',
+  '/System',
+  '/Users',
+};
 
 /// Returns the best guess for the current operating system without using
 /// `dart:io`.
@@ -77,13 +82,16 @@ class Pair<E, F> {
 
   Pair(this.first, this.last);
 
+  @override
   String toString() => '($first, $last)';
 
+  @override
   bool operator ==(other) {
     if (other is! Pair) return false;
     return other.first == first && other.last == last;
   }
 
+  @override
   int get hashCode => first.hashCode ^ last.hashCode;
 }
 
@@ -141,7 +149,7 @@ String withoutColors(String str) => str.replaceAll(_colorCode, '');
 ///
 /// The return value *may or may not* be unmodifiable.
 Map<K, V> mergeUnmodifiableMaps<K, V>(Map<K, V> map1, Map<K, V> map2,
-    {V value(V value1, V value2)}) {
+    {V Function(V, V) value}) {
   if (map1.isEmpty) return map2;
   if (map2.isEmpty) return map1;
   return mergeMaps(map1, map2, value: value);
@@ -237,7 +245,7 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
 ///
 /// This is useful for making a block of code async without forcing the
 /// containing method to return a future.
-void invoke(fn()) {
+void invoke(void Function() fn) {
   fn();
 }
 

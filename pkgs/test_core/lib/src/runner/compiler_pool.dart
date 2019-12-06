@@ -30,7 +30,7 @@ class CompilerPool {
   final Pool _pool;
 
   /// The currently-active dart2js processes.
-  final _processes = Set<Process>();
+  final _processes = <Process>{};
 
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
@@ -67,10 +67,10 @@ class CompilerPool {
           '--enable-asserts',
           wrapperPath,
           '--out=$jsPath',
-          await PackageResolver.current.processArgument
-        ]
-          ..addAll(_extraArgs)
-          ..addAll(suiteConfig.dart2jsArgs);
+          await PackageResolver.current.processArgument,
+          ..._extraArgs,
+          ...suiteConfig.dart2jsArgs
+        ];
 
         if (_config.color) args.add('--enable-diagnostic-colors');
 

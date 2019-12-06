@@ -13,7 +13,7 @@ import '../backend/invoker.dart';
 /// callbacks registered outside of [body].
 ///
 /// This may only be called within a test.
-Future errorsDontStopTest(body()) {
+Future errorsDontStopTest(dynamic Function() body) {
   var completer = Completer();
 
   Invoker.current.addOutstandingCallback();

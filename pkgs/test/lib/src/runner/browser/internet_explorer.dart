@@ -14,6 +14,7 @@ import '../executable_settings.dart';
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class InternetExplorer extends Browser {
+  @override
   final name = 'Internet Explorer';
 
   InternetExplorer(url, {ExecutableSettings settings})
@@ -24,7 +25,10 @@ class InternetExplorer extends Browser {
   static Future<Process> _startBrowser(url, ExecutableSettings settings) {
     settings ??= defaultSettings[Runtime.internetExplorer];
 
-    return Process.start(settings.executable,
-        ['-extoff', url.toString()]..addAll(settings.arguments));
+    return Process.start(settings.executable, [
+      '-extoff',
+      '$url',
+      ...settings.arguments,
+    ]);
   }
 }
