@@ -48,9 +48,9 @@ class Suite {
   ///
   /// Unlike [GroupEntry.filter], this never returns `null`. If all entries are
   /// filtered out, it returns an empty suite.
-  Suite filter(bool callback(Test test)) {
+  Suite filter(bool Function(Test) callback) {
     var filtered = group.filter(callback);
-    if (filtered == null) filtered = Group.root([], metadata: metadata);
+    filtered ??= Group.root([], metadata: metadata);
     return Suite(filtered, platform, path: path);
   }
 

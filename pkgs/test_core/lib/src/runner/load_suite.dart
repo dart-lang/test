@@ -52,9 +52,13 @@ final _timeout = Duration(minutes: 12);
 /// suite itself is returned by [suite] once it's avaialble, but any errors or
 /// prints will be emitted through the running [LiveTest].
 class LoadSuite extends Suite implements RunnerSuite {
+  @override
   final environment = const PluginEnvironment();
+  @override
   final SuiteConfiguration config;
+  @override
   final isDebugging = false;
+  @override
   final onDebugging = StreamController<bool>().stream;
 
   @override
@@ -88,7 +92,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
   factory LoadSuite(String name, SuiteConfiguration config,
-      SuitePlatform platform, FutureOr<RunnerSuite> body(),
+      SuitePlatform platform, FutureOr<RunnerSuite> Function() body,
       {String path}) {
     var completer = Completer<Pair<RunnerSuite, Zone>>.sync();
     return LoadSuite._(name, config, platform, () {
@@ -127,7 +131,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite.forLoadException(
       LoadException exception, SuiteConfiguration config,
       {SuitePlatform platform, StackTrace stackTrace}) {
-    if (stackTrace == null) stackTrace = Trace.current();
+    stackTrace ??= Trace.current();
 
     return LoadSuite(
         'loading ${exception.path}',
@@ -144,8 +148,8 @@ class LoadSuite extends Suite implements RunnerSuite {
         path: suite.path);
   }
 
-  LoadSuite._(String name, this.config, SuitePlatform platform, void body(),
-      this._suiteAndZone, {String path})
+  LoadSuite._(String name, this.config, SuitePlatform platform,
+      void Function() body, this._suiteAndZone, {String path})
       : super(
             Group.root(
                 [LocalTest(name, Metadata(timeout: Timeout(_timeout)), body)]),
@@ -169,7 +173,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If [suite] completes to `null`, [change] won't be run. [change] is run
   /// within the load test's zone, so any errors or prints it emits will be
   /// associated with that test.
-  LoadSuite changeSuite(RunnerSuite change(RunnerSuite suite)) {
+  LoadSuite changeSuite(RunnerSuite Function(RunnerSuite) change) {
     return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 
@@ -198,14 +202,17 @@ class LoadSuite extends Suite implements RunnerSuite {
     throw 'unreachable';
   }
 
-  LoadSuite filter(bool callback(Test test)) {
+  @override
+  LoadSuite filter(bool Function(Test) callback) {
     var filtered = this.group.filter(callback);
-    if (filtered == null) filtered = Group.root([], metadata: metadata);
+    filtered ??= Group.root([], metadata: metadata);
     return LoadSuite._filtered(this, filtered);
   }
 
+  @override
   StreamChannel channel(String name) =>
       throw UnsupportedError('LoadSuite.channel() is not supported.');
 
+  @override
   Future close() async {}
 }

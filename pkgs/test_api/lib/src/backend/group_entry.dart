@@ -35,5 +35,5 @@ abstract class GroupEntry {
   ///
   /// Returns `null` if this is a test that doesn't match [callback] or a group
   /// where no child tests match [callback].
-  GroupEntry filter(bool callback(Test test));
+  GroupEntry filter(bool Function(Test) callback);
 }

@@ -615,7 +615,7 @@ void main() {
   });
 }
 
-LocalTest _localTest(body(), {Metadata metadata}) {
-  if (metadata == null) metadata = Metadata();
+LocalTest _localTest(dynamic Function() body, {Metadata metadata}) {
+  metadata ??= Metadata();
   return LocalTest('test', metadata, body);
 }

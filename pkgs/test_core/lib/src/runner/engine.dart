@@ -108,7 +108,7 @@ class Engine {
   final _group = FutureGroup();
 
   /// All of the engine's stream subscriptions.
-  final _subscriptions = Set<StreamSubscription>();
+  final _subscriptions = <StreamSubscription>{};
 
   /// A sink used to pass [RunnerSuite]s in to the engine to run.
   ///
@@ -125,7 +125,7 @@ class Engine {
   /// Note that if a [LoadSuite] is added, this will only contain that suite,
   /// not the suite it loads.
   Set<RunnerSuite> get addedSuites => UnmodifiableSetView(_addedSuites);
-  final _addedSuites = Set<RunnerSuite>();
+  final _addedSuites = <RunnerSuite>{};
 
   /// A broadcast stream that emits each [RunnerSuite] as it's added to the
   /// engine via [suiteSink].
@@ -146,7 +146,7 @@ class Engine {
   /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
   /// be in this set.
   Set<LiveSuite> get liveSuites => UnmodifiableSetView(_liveSuites);
-  final _liveSuites = Set<LiveSuite>();
+  final _liveSuites = <LiveSuite>{};
 
   /// A broadcast stream that emits each [LiveSuite] as it's loaded.
   ///
@@ -196,13 +196,13 @@ class Engine {
   ///
   /// This is always a subset of [active]. Once a test in here has finished
   /// running, it's run again.
-  final _restarted = Set<LiveTest>();
+  final _restarted = <LiveTest>{};
 
   /// The tests from [LoadSuite]s that are still running, in the order they
   /// began running.
   ///
   /// This is separate from [active] because load tests aren't always surfaced.
-  final _activeLoadTests = List<LiveTest>();
+  final _activeLoadTests = <LiveTest>{};
 
   /// Whether this engine is idle—that is, not currently executing a test.
   bool get isIdle => _group.isIdle;
@@ -225,7 +225,7 @@ class Engine {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
-      if (_closedBeforeDone == null) _closedBeforeDone = false;
+      _closedBeforeDone ??= false;
     }).catchError((_) {
       // Don't top-level errors. They'll be thrown via [success] anyway.
     });

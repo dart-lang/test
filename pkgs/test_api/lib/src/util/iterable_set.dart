@@ -19,17 +19,22 @@ class IterableSet<E> extends SetMixin<E> with UnmodifiableSetMixin<E> {
   /// The base iterable that set operations forward to.
   final Iterable<E> _base;
 
+  @override
   int get length => _base.length;
 
+  @override
   Iterator<E> get iterator => _base.iterator;
 
   /// Creates a [Set] view of [base].
   IterableSet(this._base);
 
+  @override
   bool contains(Object element) => _base.contains(element);
 
+  @override
   E lookup(Object needle) =>
       _base.firstWhere((element) => element == needle, orElse: () => null);
 
+  @override
   Set<E> toSet() => _base.toSet();
 }

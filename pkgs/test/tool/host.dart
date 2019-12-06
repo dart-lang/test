@@ -38,7 +38,8 @@ class _JSApi {
   /// running.
   external Function get restartCurrent;
 
-  external factory _JSApi({void resume(), void restartCurrent()});
+  external factory _JSApi(
+      {void Function() resume, void Function() restartCurrent});
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
@@ -46,10 +47,10 @@ class _JSApi {
 external set _jsApi(_JSApi api);
 
 /// The iframes created for each loaded test suite, indexed by the suite id.
-final _iframes = Map<int, IFrameElement>();
+final _iframes = <int, IFrameElement>{};
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = Map<int, List<StreamSubscription>>();
+final _subscriptions = <int, List<StreamSubscription>>{};
 
 /// The URL for the current page.
 final _currentUrl = Uri.parse(window.location.href);

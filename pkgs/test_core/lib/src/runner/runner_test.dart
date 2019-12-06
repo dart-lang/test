@@ -21,8 +21,11 @@ import 'spawn_hybrid.dart';
 
 /// A test running remotely, controlled by a stream channel.
 class RunnerTest extends Test {
+  @override
   final String name;
+  @override
   final Metadata metadata;
+  @override
   final Trace trace;
 
   /// The channel used to communicate with the test's [IframeListener].
@@ -32,6 +35,7 @@ class RunnerTest extends Test {
 
   RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
+  @override
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     LiveTestController controller;
     VirtualChannel testChannel;
@@ -97,6 +101,7 @@ class RunnerTest extends Test {
     return controller.liveTest;
   }
 
+  @override
   Test forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);

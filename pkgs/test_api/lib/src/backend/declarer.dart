@@ -50,13 +50,13 @@ class Declarer {
   final bool _noRetry;
 
   /// The set-up functions to run for each test in this group.
-  final _setUps = List<Function()>();
+  final _setUps = <dynamic Function()>[];
 
   /// The tear-down functions to run for each test in this group.
-  final _tearDowns = List<Function()>();
+  final _tearDowns = <dynamic Function()>[];
 
   /// The set-up functions to run once for this group.
-  final _setUpAlls = List<Function()>();
+  final _setUpAlls = <dynamic Function()>[];
 
   /// The default timeout for synthetic tests.
   final _timeout = Timeout(Duration(minutes: 12));
@@ -69,7 +69,7 @@ class Declarer {
   Trace _setUpAllTrace;
 
   /// The tear-down functions to run once for this group.
-  final _tearDownAlls = List<Function()>();
+  final _tearDownAlls = <Function()>[];
 
   /// The trace for the first call to [tearDownAll].
   ///
@@ -78,13 +78,13 @@ class Declarer {
   Trace _tearDownAllTrace;
 
   /// The children of this group, either tests or sub-groups.
-  final _entries = List<GroupEntry>();
+  final _entries = <GroupEntry>[];
 
   /// Whether [build] has been called for this declarer.
   bool _built = false;
 
   /// The tests and/or groups that have been flagged as solo.
-  final _soloEntries = Set<GroupEntry>();
+  final _soloEntries = <GroupEntry>[];
 
   /// Whether any tests and/or groups have been flagged as solo.
   bool get _solo => _soloEntries.isNotEmpty;
@@ -127,10 +127,11 @@ class Declarer {
   /// Runs [body] with this declarer as [Declarer.current].
   ///
   /// Returns the return value of [body].
-  declare(body()) => runZoned(body, zoneValues: {#test.declarer: this});
+  void declare(void Function() body) =>
+      runZoned(body, zoneValues: {#test.declarer: this});
 
   /// Defines a test case with the given name and body.
-  void test(String name, body(),
+  void test(String name, dynamic Function() body,
       {String testOn,
       Timeout timeout,
       skip,
@@ -181,7 +182,7 @@ class Declarer {
   }
 
   /// Creates a group of tests.
-  void group(String name, void body(),
+  void group(String name, void Function() body,
       {String testOn,
       Timeout timeout,
       skip,
@@ -222,26 +223,26 @@ class Declarer {
   String _prefix(String name) => _name == null ? name : '$_name $name';
 
   /// Registers a function to be run before each test in this group.
-  void setUp(callback()) {
+  void setUp(dynamic Function() callback) {
     _checkNotBuilt('setUp');
     _setUps.add(callback);
   }
 
   /// Registers a function to be run after each test in this group.
-  void tearDown(callback()) {
+  void tearDown(dynamic Function() callback) {
     _checkNotBuilt('tearDown');
     _tearDowns.add(callback);
   }
 
   /// Registers a function to be run once before all tests.
-  void setUpAll(callback()) {
+  void setUpAll(dynamic Function() callback) {
     _checkNotBuilt('setUpAll');
     if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
     _setUpAlls.add(callback);
   }
 
   /// Registers a function to be run once after all tests.
-  void tearDownAll(callback()) {
+  void tearDownAll(dynamic Function() callback) {
     _checkNotBuilt('tearDownAll');
     if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
     _tearDownAlls.add(callback);
@@ -249,7 +250,8 @@ class Declarer {
 
   /// Like [tearDownAll], but called from within a running [setUpAll] test to
   /// dynamically add a [tearDownAll].
-  void addTearDownAll(callback()) => _tearDownAlls.add(callback);
+  void addTearDownAll(dynamic Function() callback) =>
+      _tearDownAlls.add(callback);
 
   /// Finalizes and returns the group being declared.
   ///

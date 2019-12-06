@@ -125,7 +125,7 @@ void main() {
       testWithCompiler('when run on Chrome', (compilerArgs) async {
         await d.dir('web').create();
 
-        var pub = await runPubServe(args: ['web']..addAll(compilerArgs));
+        var pub = await runPubServe(args: ['web', ...compilerArgs]);
         var test = await runTest([_pubServeArg, '-p', 'chrome']);
         expect(
             test.stdout,
@@ -343,7 +343,9 @@ final Iterable<String> _compilers = ['dart2js', 'dartdevc'];
 /// Runs the test described by [testFn] once for each supported compiler on the
 /// current [Platform.version], passing the relevant compiler args for pub serve
 /// as the first argument.
-void testWithCompiler(String name, testFn(List<String> compilerArgs), {tags}) {
+void testWithCompiler(
+    String name, dynamic Function(List<String> compilerArgs) testFn,
+    {tags}) {
   for (var compiler in _compilers) {
     var compilerArgs = ['--web-compiler', compiler];
     test('$name with $compiler', () => testFn(compilerArgs), tags: tags);

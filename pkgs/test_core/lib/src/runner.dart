@@ -58,7 +58,7 @@ class Runner {
   ///
   /// This is used to avoid printing duplicate warnings when a suite is loaded
   /// on multiple platforms.
-  final _tagWarningSuites = Set<String>();
+  final _tagWarningSuites = <String>{};
 
   /// The current debug operation, if any.
   ///
@@ -320,10 +320,10 @@ class Runner {
   /// This returns a map from tag names to lists of entries that use those tags.
   Map<String, List<GroupEntry>> _collectUnknownTags(Suite suite) {
     var unknownTags = <String, List<GroupEntry>>{};
-    var currentTags = Set<String>();
+    var currentTags = <String>{};
 
-    collect(GroupEntry entry) {
-      var newTags = Set<String>();
+    void collect(GroupEntry entry) {
+      var newTags = <String>{};
       for (var unknownTag
           in entry.metadata.tags.difference(_config.knownTags)) {
         if (currentTags.contains(unknownTag)) continue;

@@ -29,7 +29,7 @@ class RemoteException implements Exception {
   ///
   /// Other than JSON- and isolate-safety, no guarantees are made about the
   /// serialized format.
-  static serialize(error, StackTrace stackTrace) {
+  static Map<String, dynamic> serialize(error, StackTrace stackTrace) {
     String message;
     if (error is String) {
       message = error;
@@ -77,6 +77,7 @@ class RemoteException implements Exception {
 
   RemoteException._(this.message, this.type, this._toString);
 
+  @override
   String toString() => _toString;
 }
 

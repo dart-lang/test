@@ -100,7 +100,7 @@ class Metadata {
                 '"$platform".');
           }
 
-          skip = metadatum.reason == null ? true : metadatum.reason;
+          skip = metadatum.reason ?? true;
         } else {
           throw ArgumentError('Metadata for platform "$platform" must be a '
               'Timeout, Skip, or List of those; was "$metadata".');
@@ -116,8 +116,8 @@ class Metadata {
   ///
   /// Throws an [ArgumentError] if [tags] is not a [String] or an [Iterable].
   static Set<String> _parseTags(tags) {
-    if (tags == null) return Set();
-    if (tags is String) return Set.from([tags]);
+    if (tags == null) return {};
+    if (tags is String) return {tags};
     if (tags is! Iterable) {
       throw ArgumentError.value(
           tags, 'tags', 'must be either a String or an Iterable.');
@@ -149,7 +149,7 @@ class Metadata {
       Map<PlatformSelector, Metadata> onPlatform,
       Map<BooleanSelector, Metadata> forTag}) {
     // Returns metadata without forTag resolved at all.
-    _unresolved() => Metadata._(
+    Metadata _unresolved() => Metadata._(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -194,13 +194,13 @@ class Metadata {
       Iterable<String> tags,
       Map<PlatformSelector, Metadata> onPlatform,
       Map<BooleanSelector, Metadata> forTag})
-      : testOn = testOn == null ? PlatformSelector.all : testOn,
-        timeout = timeout == null ? const Timeout.factor(1) : timeout,
+      : testOn = testOn ?? PlatformSelector.all,
+        timeout = timeout ?? const Timeout.factor(1),
         _skip = skip,
         _verboseTrace = verboseTrace,
         _chainStackTraces = chainStackTraces,
         _retry = retry,
-        tags = UnmodifiableSetView(tags == null ? Set() : tags.toSet()),
+        tags = UnmodifiableSetView(tags == null ? {} : tags.toSet()),
         onPlatform =
             onPlatform == null ? const {} : UnmodifiableMapView(onPlatform),
         forTag = forTag == null ? const {} : UnmodifiableMapView(forTag) {
@@ -224,7 +224,7 @@ class Metadata {
       : testOn = testOn == null
             ? PlatformSelector.all
             : PlatformSelector.parse(testOn),
-        timeout = timeout == null ? const Timeout.factor(1) : timeout,
+        timeout = timeout ?? const Timeout.factor(1),
         _skip = skip == null ? null : skip != false,
         _verboseTrace = verboseTrace,
         _chainStackTraces = chainStackTraces,
@@ -254,9 +254,11 @@ class Metadata {
         _chainStackTraces = serialized['chainStackTraces'] as bool,
         _retry = serialized['retry'] as int,
         tags = Set.from(serialized['tags'] as Iterable),
-        onPlatform = Map.fromIterable(serialized['onPlatform'] as Iterable,
-            key: (pair) => PlatformSelector.parse(pair.first as String),
-            value: (pair) => Metadata.deserialize(pair.last)),
+        onPlatform = {
+          for (var pair in serialized['onPlatform'])
+            PlatformSelector.parse(pair.first as String):
+                Metadata.deserialize(pair.last)
+        },
         forTag = (serialized['forTag'] as Map).map((key, nested) => MapEntry(
             BooleanSelector.parse(key as String),
             Metadata.deserialize(nested)));
@@ -328,10 +330,10 @@ class Metadata {
       Map<BooleanSelector, Metadata> forTag}) {
     testOn ??= this.testOn;
     timeout ??= this.timeout;
-    skip ??= this._skip;
-    verboseTrace ??= this._verboseTrace;
-    chainStackTraces ??= this._chainStackTraces;
-    retry ??= this._retry;
+    skip ??= _skip;
+    verboseTrace ??= _verboseTrace;
+    chainStackTraces ??= _chainStackTraces;
+    retry ??= _retry;
     skipReason ??= this.skipReason;
     onPlatform ??= this.onPlatform;
     tags ??= this.tags;
@@ -364,7 +366,7 @@ class Metadata {
 
   /// Serializes [this] into a JSON-safe object that can be deserialized using
   /// [new Metadata.deserialize].
-  serialize() {
+  Map<String, dynamic> serialize() {
     // Make this a list to guarantee that the order is preserved.
     var serializedOnPlatform = [];
     onPlatform.forEach((key, value) {
@@ -387,7 +389,7 @@ class Metadata {
   }
 
   /// Serializes timeout into a JSON-safe object.
-  _serializeTimeout(Timeout timeout) {
+  dynamic _serializeTimeout(Timeout timeout) {
     if (timeout == Timeout.none) return 'none';
     return {
       'duration':

@@ -199,7 +199,7 @@ StreamMatcher emitsThrough(matcher) {
   return StreamMatcher((queue) async {
     var failures = <String>[];
 
-    tryHere() => queue.withTransaction((copy) async {
+    Future<bool> tryHere() => queue.withTransaction((copy) async {
           var result = await streamMatcher.matchQueue(copy);
           if (result == null) return true;
           failures.add(result);

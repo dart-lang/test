@@ -264,7 +264,7 @@ class _Parser {
 
   /// Runs [parse] on the value of the option [name], and wraps any
   /// [FormatException] it throws with additional information.
-  T _parseOption<T>(String name, T parse(String value)) {
+  T _parseOption<T>(String name, T Function(String) parse) {
     if (!_options.wasParsed(name)) return null;
 
     var value = _options[name];
@@ -275,7 +275,7 @@ class _Parser {
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.
-  T _wrapFormatException<T>(String name, T parse()) {
+  T _wrapFormatException<T>(String name, T Function() parse) {
     try {
       return parse();
     } on FormatException catch (error) {

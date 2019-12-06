@@ -22,12 +22,12 @@ class StackTraceFormatter {
   /// as-is.
   StackTraceMapper _mapper;
 
-  /// The list of packages to fold when producing terse [Chain]s.
-  var _except = Set<String>.from(['test', 'stream_channel', 'test_api']);
+  /// The set of packages to fold when producing terse [Chain]s.
+  var _except = {'test', 'stream_channel', 'test_api'};
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// terse [Chain]s.
-  var _only = Set<String>();
+  var _only = <String>{};
 
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
@@ -38,7 +38,8 @@ class StackTraceFormatter {
   ///
   /// This is zone-scoped, so [this] will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
-  T asCurrent<T>(T body()) => runZoned(body, zoneValues: {_currentKey: this});
+  T asCurrent<T>(T Function() body) =>
+      runZoned(body, zoneValues: {_currentKey: this});
 
   /// Configure how stack traces are formatted.
   ///

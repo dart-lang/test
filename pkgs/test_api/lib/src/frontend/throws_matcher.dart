@@ -42,11 +42,12 @@ Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 class Throws extends AsyncMatcher {
   final Matcher _matcher;
 
-  const Throws([Matcher matcher]) : this._matcher = matcher;
+  const Throws([Matcher matcher]) : _matcher = matcher;
 
   // Avoid async/await so we synchronously fail if we match a synchronous
   // function.
-  /*FutureOr<String>*/ matchAsync(item) {
+  @override
+  dynamic /*FutureOr<String>*/ matchAsync(item) {
     if (item is! Function && item is! Future) {
       return 'was not a Function or Future';
     }
@@ -71,6 +72,7 @@ class Throws extends AsyncMatcher {
     }
   }
 
+  @override
   Description describe(Description description) {
     if (_matcher == null) {
       return description.add('throws');

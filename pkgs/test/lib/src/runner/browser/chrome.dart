@@ -22,8 +22,10 @@ import 'default_settings.dart';
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class Chrome extends Browser {
+  @override
   final name = 'Chrome';
 
+  @override
   final Future<Uri> remoteDebuggerUrl;
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
@@ -86,6 +88,6 @@ class Chrome extends Browser {
     }, remoteDebuggerCompleter.future);
   }
 
-  Chrome._(Future<Process> startBrowser(), this.remoteDebuggerUrl)
+  Chrome._(Future<Process> Function() startBrowser, this.remoteDebuggerUrl)
       : super(startBrowser);
 }

@@ -153,5 +153,6 @@ class Runtime {
     throw StateError('A child platform may not be extended.');
   }
 
+  @override
   String toString() => name;
 }

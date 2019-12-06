@@ -59,11 +59,12 @@ abstract class LiveSuite {
   ///
   /// This is guaranteed to contain the same tests as the union of [passed],
   /// [skipped], [failed], and [active].
-  Set<LiveTest> get liveTests {
-    var sets = [passed, skipped, failed];
-    if (active != null) sets.add(Set.from([active]));
-    return UnionSet.from(sets);
-  }
+  Set<LiveTest> get liveTests => UnionSet.from([
+        passed,
+        skipped,
+        failed,
+        if (active != null) {active}
+      ]);
 
   /// A stream that emits each [LiveTest] in this suite as it's about to start
   /// running.

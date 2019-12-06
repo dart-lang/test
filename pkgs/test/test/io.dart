@@ -76,7 +76,7 @@ Future<TestProcess> runTest(Iterable<String> args,
   if (reporter != null) allArgs.add('--reporter=$reporter');
   allArgs.addAll(args);
 
-  if (environment == null) environment = {};
+  environment ??= {};
   environment.putIfAbsent('_DART_TEST_TESTING', () => 'true');
 
   return await runDart(allArgs,
@@ -90,11 +90,12 @@ Future<TestProcess> runDart(Iterable<String> args,
     {Map<String, String> environment,
     String description,
     bool forwardStdio = false}) async {
-  var allArgs = <String>[]
-    ..addAll(Platform.executableArguments.where((arg) =>
-        !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')))
-    ..add(await PackageResolver.current.processArgument)
-    ..addAll(args);
+  var allArgs = <String>[
+    ...Platform.executableArguments.where((arg) =>
+        !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
+    await PackageResolver.current.processArgument,
+    ...args
+  ];
 
   return await TestProcess.start(
       p.absolute(Platform.resolvedExecutable), allArgs,

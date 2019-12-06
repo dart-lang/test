@@ -82,7 +82,7 @@ class ExpandedReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = Set<StreamSubscription>();
+  final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
 
@@ -119,6 +119,7 @@ class ExpandedReporter implements Reporter {
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
+  @override
   void pause() {
     if (_paused) return;
     _paused = true;
@@ -130,6 +131,7 @@ class ExpandedReporter implements Reporter {
     }
   }
 
+  @override
   void resume() {
     if (!_paused) return;
     _stopwatch.start();
@@ -139,6 +141,7 @@ class ExpandedReporter implements Reporter {
     }
   }
 
+  @override
   void cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();
@@ -258,7 +261,7 @@ class ExpandedReporter implements Reporter {
     _lastProgressSuffix = suffix;
 
     if (suffix != null) message += suffix;
-    if (color == null) color = '';
+    color ??= '';
     var duration = _stopwatch.elapsed;
     var buffer = StringBuffer();
 

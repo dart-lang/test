@@ -112,12 +112,12 @@ class Configuration {
   final int totalShards;
 
   /// The list of packages to fold when producing [StackTrace]s.
-  Set<String> get foldTraceExcept => _foldTraceExcept ?? Set();
+  Set<String> get foldTraceExcept => _foldTraceExcept ?? {};
   final Set<String> _foldTraceExcept;
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// [StackTrace]s.
-  Set<String> get foldTraceOnly => _foldTraceOnly ?? Set();
+  Set<String> get foldTraceOnly => _foldTraceOnly ?? {};
   final Set<String> _foldTraceOnly;
 
   /// The paths from which to load tests.
@@ -362,7 +362,7 @@ class Configuration {
         _foldTraceExcept = _set(foldTraceExcept),
         _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
-        chosenPresets = UnmodifiableSetView(chosenPresets?.toSet() ?? Set()),
+        chosenPresets = UnmodifiableSetView(chosenPresets?.toSet() ?? {}),
         presets = _map(presets),
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
@@ -420,7 +420,8 @@ class Configuration {
   ///
   /// This is zone-scoped, so [this] will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
-  T asCurrent<T>(T body()) => runZoned(body, zoneValues: {_currentKey: this});
+  T asCurrent<T>(T Function() body) =>
+      runZoned(body, zoneValues: {_currentKey: this});
 
   /// Throws a [FormatException] if [this] refers to any undefined runtimes.
   void validateRuntimes(List<Runtime> allRuntimes) {
@@ -615,12 +616,12 @@ class Configuration {
             merged.merge(newPresets.remove(preset) ?? Configuration.empty));
 
     if (merged == empty) return this;
-    var result = this.change(presets: newPresets).merge(merged);
+    var result = change(presets: newPresets).merge(merged);
 
     // Make sure the configuration knows about presets that were selected and
     // thus removed from [newPresets].
-    result._knownPresets = UnmodifiableSetView(
-        result.knownPresets.toSet()..addAll(this.presets.keys));
+    result._knownPresets =
+        UnmodifiableSetView(result.knownPresets.toSet()..addAll(presets.keys));
 
     return result;
   }

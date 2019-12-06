@@ -20,6 +20,7 @@ import '../executable_settings.dart';
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class Safari extends Browser {
+  @override
   final name = 'Safari';
 
   Safari(url, {ExecutableSettings settings})

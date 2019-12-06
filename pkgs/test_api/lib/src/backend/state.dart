@@ -27,11 +27,14 @@ class State {
 
   const State(this.status, this.result);
 
+  @override
   bool operator ==(other) =>
       other is State && status == other.status && result == other.result;
 
+  @override
   int get hashCode => status.hashCode ^ (7 * result.hashCode);
 
+  @override
   String toString() {
     if (status == Status.pending) return 'pending';
     if (status == Status.complete) return result.toString();
@@ -75,6 +78,7 @@ class Status {
 
   const Status._(this.name);
 
+  @override
   String toString() => name;
 }
 
@@ -134,5 +138,6 @@ class Result {
 
   const Result._(this.name);
 
+  @override
   String toString() => name;
 }

@@ -42,8 +42,10 @@ page.open(system.args[1], function(status) {
 ///
 /// Any errors starting or running the process are reported through [onExit].
 class PhantomJS extends Browser {
+  @override
   final name = 'PhantomJS';
 
+  @override
   final Future<Uri> remoteDebuggerUrl;
 
   factory PhantomJS(url, {ExecutableSettings settings, bool debug = false}) {
@@ -88,6 +90,6 @@ class PhantomJS extends Browser {
     }, remoteDebuggerCompleter.future);
   }
 
-  PhantomJS._(Future<Process> startBrowser(), this.remoteDebuggerUrl)
+  PhantomJS._(Future<Process> Function() startBrowser, this.remoteDebuggerUrl)
       : super(startBrowser);
 }

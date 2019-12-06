@@ -99,7 +99,7 @@ Matcher isApplicationException(message) =>
         .having((e) => e.message, 'message', message);
 
 /// Returns a local [LiveTest] that runs [body].
-LiveTest createTest(body()) {
+LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(), body);
   var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
@@ -108,7 +108,7 @@ LiveTest createTest(body()) {
 /// Runs [body] as a test.
 ///
 /// Once it completes, returns the [LiveTest] used to run it.
-Future<LiveTest> runTestBody(body()) async {
+Future<LiveTest> runTestBody(dynamic Function() body) async {
   var liveTest = createTest(body);
   await liveTest.run();
   return liveTest;
@@ -144,7 +144,8 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// is called at some later time.
 ///
 /// [stopBlocking] is passed the return value of [test].
-Future expectTestBlocks(test(), stopBlocking(value)) async {
+Future expectTestBlocks(
+    dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
   LiveTest liveTest;
   Future future;
   liveTest = createTest(() {
@@ -167,7 +168,7 @@ Future expectTestBlocks(test(), stopBlocking(value)) async {
 ///
 /// This is typically used to run multiple tests where later tests make
 /// assertions about the results of previous ones.
-Future expectTestsPass(void body()) async {
+Future expectTestsPass(void Function() body) async {
   var engine = declareEngine(body);
   var success = await engine.run();
 
@@ -179,13 +180,14 @@ Future expectTestsPass(void body()) async {
 }
 
 /// Runs [body] with a declarer and returns the declared entries.
-List<GroupEntry> declare(void body()) {
+List<GroupEntry> declare(void Function() body) {
   var declarer = Declarer()..declare(body);
   return declarer.build().entries;
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
-Engine declareEngine(void body(), {bool runSkipped = false, String coverage}) {
+Engine declareEngine(void Function() body,
+    {bool runSkipped = false, String coverage}) {
   var declarer = Declarer()..declare(body);
   return Engine.withSuites([
     RunnerSuite(

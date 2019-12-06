@@ -58,5 +58,5 @@ class PathHandler {
 /// A trie node.
 class _Node {
   shelf.Handler handler;
-  final children = Map<String, _Node>();
+  final children = <String, _Node>{};
 }
