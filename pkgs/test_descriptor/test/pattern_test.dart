@@ -11,7 +11,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'utils.dart';
 
 void main() {
-  group("validate()", () {
+  group('validate()', () {
     test("succeeds if there's a file matching the pattern and the child",
         () async {
       await d.file('foo', 'blap').create();
@@ -26,8 +26,8 @@ void main() {
     });
 
     test(
-        "succeeds if multiple files match the pattern but only one matches "
-        "the child entry", () async {
+        'succeeds if multiple files match the pattern but only one matches '
+        'the child entry', () async {
       await d.file('foo', 'blap').create();
       await d.file('fee', 'blak').create();
       await d.file('faa', 'blut').create();
@@ -58,15 +58,15 @@ void main() {
     });
 
     test(
-        "fails if there are multiple files matching the pattern and the child "
-        "entry", () async {
+        'fails if there are multiple files matching the pattern and the child '
+        'entry', () async {
       await d.file('foo', 'bar').create();
       await d.file('fee', 'bar').create();
       await d.file('faa', 'bar').create();
       expect(
           d.filePattern(RegExp(r'f..'), 'bar').validate(),
           throwsA(toString(startsWith(
-              "Multiple valid entries found in sandbox matching /f../:"))));
+              'Multiple valid entries found in sandbox matching /f../:'))));
     });
   });
 }

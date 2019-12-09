@@ -41,7 +41,7 @@ class DirectoryDescriptor extends Descriptor {
         name,
         Directory(path).listSync().map((entity) {
           // Ignore hidden files.
-          if (p.basename(entity.path).startsWith(".")) return null;
+          if (p.basename(entity.path).startsWith('.')) return null;
 
           if (entity is Directory) {
             return DirectoryDescriptor.fromFilesystem(
@@ -55,12 +55,14 @@ class DirectoryDescriptor extends Descriptor {
         }).where((path) => path != null));
   }
 
+  @override
   Future create([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     await Directory(fullPath).create(recursive: true);
     await Future.wait(contents.map((entry) => entry.create(fullPath)));
   }
 
+  @override
   Future validate([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     if (!(await Directory(fullPath).exists())) {
@@ -85,12 +87,12 @@ class DirectoryDescriptor extends Descriptor {
     } else if (url is Uri) {
       path = url.toString();
     } else {
-      throw ArgumentError.value(url, "url", "must be a Uri or a String.");
+      throw ArgumentError.value(url, 'url', 'must be a Uri or a String.');
     }
 
     if (!p.url.isWithin('.', path)) {
       throw ArgumentError.value(
-          url, "url", "must be relative and beneath the base URL.");
+          url, 'url', 'must be relative and beneath the base URL.');
     }
 
     return StreamCompleter.fromFuture(Future.sync(() {
@@ -121,5 +123,6 @@ class DirectoryDescriptor extends Descriptor {
     }));
   }
 
+  @override
   String describe() => describeDirectory(name, contents);
 }

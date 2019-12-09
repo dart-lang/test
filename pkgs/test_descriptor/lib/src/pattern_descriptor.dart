@@ -31,7 +31,7 @@ class PatternDescriptor extends Descriptor {
   /// matching [pattern].
   final _EntryCreator _fn;
 
-  PatternDescriptor(this.pattern, Descriptor child(String basename))
+  PatternDescriptor(this.pattern, Descriptor Function(String basename) child)
       : _fn = child,
         super('$pattern');
 
@@ -40,6 +40,7 @@ class PatternDescriptor extends Descriptor {
   /// matching [pattern], then passes each of their names to `child` provided
   /// in the constructor and validates the result. If exactly one succeeds,
   /// `this` is considered valid.
+  @override
   Future validate([String parent]) async {
     var inSandbox = parent == null;
     parent ??= sandbox;
@@ -51,7 +52,7 @@ class PatternDescriptor extends Descriptor {
         .toList();
     matchingEntries.sort();
 
-    var location = inSandbox ? "sandbox" : '"${prettyPath(parent)}"';
+    var location = inSandbox ? 'sandbox' : '"${prettyPath(parent)}"';
     if (matchingEntries.isEmpty) {
       fail('No entries found in $location matching $_patternDescription.');
     }
@@ -80,7 +81,8 @@ class PatternDescriptor extends Descriptor {
     }
   }
 
-  String describe() => "entry matching $_patternDescription";
+  @override
+  String describe() => 'entry matching $_patternDescription';
 
   String get _patternDescription {
     if (pattern is String) return '"$pattern"';
@@ -93,6 +95,7 @@ class PatternDescriptor extends Descriptor {
     return '/${regExp.pattern}/$flags';
   }
 
+  @override
   Future create([String parent]) {
     throw UnsupportedError("Pattern descriptors don't support create().");
   }

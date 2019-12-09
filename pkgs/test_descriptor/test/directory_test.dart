@@ -17,8 +17,8 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'utils.dart';
 
 void main() {
-  group("create()", () {
-    test("creates a directory and its contents", () async {
+  group('create()', () {
+    test('creates a directory and its contents', () async {
       await d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
@@ -42,7 +42,7 @@ void main() {
           completion(equals('subcontents2')));
     });
 
-    test("works if the directory already exists", () async {
+    test('works if the directory already exists', () async {
       await d.dir('dir').create();
       await d.dir('dir', [d.file('name.txt', 'contents')]).create();
 
@@ -51,8 +51,8 @@ void main() {
     });
   });
 
-  group("validate()", () {
-    test("completes successfully if the filesystem matches the descriptor",
+  group('validate()', () {
+    test('completes successfully if the filesystem matches the descriptor',
         () async {
       var dirPath = p.join(d.sandbox, 'dir');
       var subdirPath = p.join(dirPath, 'subdir');
@@ -93,7 +93,7 @@ void main() {
               equals('Directory not found: "${p.join('dir', 'subdir')}".'))));
     });
 
-    test("emits an error for each child that fails to validate", () async {
+    test('emits an error for each child that fails to validate', () async {
       var dirPath = p.join(d.sandbox, 'dir');
       var subdirPath = p.join(dirPath, 'subdir');
       await Directory(subdirPath).create(recursive: true);
@@ -132,15 +132,15 @@ void main() {
     });
   });
 
-  group("load()", () {
-    test("loads a file", () {
+  group('load()', () {
+    test('loads a file', () {
       var dir = d.dir('dir',
           [d.file('name.txt', 'contents'), d.file('other.txt', 'wrong')]);
       expect(utf8.decodeStream(dir.load('name.txt')),
           completion(equals('contents')));
     });
 
-    test("loads a deeply-nested file", () {
+    test('loads a deeply-nested file', () {
       var dir = d.dir('dir', [
         d.dir('subdir',
             [d.file('name.txt', 'subcontents'), d.file('other.txt', 'wrong')]),
@@ -152,7 +152,7 @@ void main() {
           completion(equals('subcontents')));
     });
 
-    test("fails to load a nested directory", () {
+    test('fails to load a nested directory', () {
       var dir = d.dir('dir', [
         d.dir('subdir', [
           d.dir('subsubdir', [d.file('name.txt', 'subcontents')])
@@ -166,7 +166,7 @@ void main() {
               '"subsubdir" within "dir/subdir".'))));
     });
 
-    test("fails to load an absolute path", () {
+    test('fails to load an absolute path', () {
       var dir = d.dir('dir', [d.file('name.txt', 'contents')]);
       expect(() => dir.load('/name.txt'), throwsArgumentError);
     });
@@ -187,7 +187,7 @@ void main() {
               '"not-name.txt" within "dir/subdir".'))));
     });
 
-    test("fails to load a file that exists multiple times", () {
+    test('fails to load a file that exists multiple times', () {
       var dir = d.dir('dir', [
         d.dir('subdir',
             [d.file('name.txt', 'contents'), d.file('name.txt', 'contents')])
@@ -199,7 +199,7 @@ void main() {
               '"name.txt" within "dir/subdir".'))));
     });
 
-    test("loads a file next to a subdirectory with the same name", () {
+    test('loads a file next to a subdirectory with the same name', () {
       var dir = d.dir('dir', [
         d.file('name', 'contents'),
         d.dir('name', [d.file('subfile', 'contents')])
@@ -210,7 +210,7 @@ void main() {
     });
   });
 
-  group("describe()", () {
+  group('describe()', () {
     bool oldAscii;
     setUpAll(() {
       oldAscii = term_glyph.ascii;
@@ -221,18 +221,18 @@ void main() {
       term_glyph.ascii = oldAscii;
     });
 
-    test("lists the contents of the directory", () {
+    test('lists the contents of the directory', () {
       var dir = d.dir('dir',
           [d.file('file1.txt', 'contents1'), d.file('file2.txt', 'contents2')]);
 
       expect(
           dir.describe(),
-          equals("dir\n"
-              "+-- file1.txt\n"
+          equals('dir\n'
+              '+-- file1.txt\n'
               "'-- file2.txt"));
     });
 
-    test("lists the contents of nested directories", () {
+    test('lists the contents of nested directories', () {
       var dir = d.dir('dir', [
         d.file('file1.txt', 'contents1'),
         d.dir('subdir', [
@@ -245,23 +245,23 @@ void main() {
 
       expect(
           dir.describe(),
-          equals("dir\n"
-              "+-- file1.txt\n"
-              "+-- subdir\n"
-              "|   +-- subfile1.txt\n"
-              "|   +-- subfile2.txt\n"
+          equals('dir\n'
+              '+-- file1.txt\n'
+              '+-- subdir\n'
+              '|   +-- subfile1.txt\n'
+              '|   +-- subfile2.txt\n'
               "|   '-- subsubdir\n"
               "|       '-- subsubfile.txt\n"
               "'-- file2.txt"));
     });
 
-    test("with no contents returns the directory name", () {
+    test('with no contents returns the directory name', () {
       expect(d.dir('dir').describe(), equals('dir'));
     });
   });
 
-  group("fromFilesystem()", () {
-    test("creates a descriptor based on the physical filesystem", () async {
+  group('fromFilesystem()', () {
+    test('creates a descriptor based on the physical filesystem', () async {
       var dir = d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
@@ -273,12 +273,12 @@ void main() {
 
       await dir.create();
       var descriptor =
-          d.DirectoryDescriptor.fromFilesystem("dir", p.join(d.sandbox, 'dir'));
+          d.DirectoryDescriptor.fromFilesystem('dir', p.join(d.sandbox, 'dir'));
       await descriptor.create(p.join(d.sandbox, 'dir2'));
       await dir.validate(p.join(d.sandbox, 'dir2'));
     });
 
-    test("ignores hidden files", () async {
+    test('ignores hidden files', () async {
       await d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
@@ -289,7 +289,7 @@ void main() {
       ]).create();
 
       var descriptor = d.DirectoryDescriptor.fromFilesystem(
-          "dir2", p.join(d.sandbox, 'dir'));
+          'dir2', p.join(d.sandbox, 'dir'));
       await descriptor.create();
 
       await d.dir('dir2', [
@@ -301,7 +301,7 @@ void main() {
     });
   });
 
-  test("io refers to the directory within the sandbox", () {
+  test('io refers to the directory within the sandbox', () {
     expect(d.file('dir').io.path, equals(p.join(d.sandbox, 'dir')));
   });
 }

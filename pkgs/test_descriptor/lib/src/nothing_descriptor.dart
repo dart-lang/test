@@ -18,8 +18,10 @@ import 'utils.dart';
 class NothingDescriptor extends Descriptor {
   NothingDescriptor(String name) : super(name);
 
+  @override
   Future create([String parent]) async {}
 
+  @override
   Future validate([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     var pretty = prettyPath(fullPath);
@@ -32,5 +34,6 @@ class NothingDescriptor extends Descriptor {
     }
   }
 
+  @override
   String describe() => 'nothing at "$name"';
 }

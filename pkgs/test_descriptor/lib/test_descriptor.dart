@@ -43,7 +43,7 @@ FileDescriptor file(String name, [contents]) => FileDescriptor(name, contents);
 /// children exist. To ensure that a particular child doesn't exist, use
 /// [nothing].
 DirectoryDescriptor dir(String name, [Iterable<Descriptor> contents]) =>
-    DirectoryDescriptor(name, contents == null ? <Descriptor>[] : contents);
+    DirectoryDescriptor(name, contents ?? <Descriptor>[]);
 
 /// Creates a new [NothingDescriptor] descriptor that asserts that no entry
 /// named [name] exists.
@@ -61,7 +61,8 @@ NothingDescriptor nothing(String name) => NothingDescriptor(name);
 /// [child].
 ///
 /// [Descriptor.create] is not supported for this descriptor.
-PatternDescriptor pattern(Pattern name, Descriptor child(String basename)) =>
+PatternDescriptor pattern(
+        Pattern name, Descriptor Function(String basename) child) =>
     PatternDescriptor(name, child);
 
 /// A convenience method for creating a [PatternDescriptor] descriptor that

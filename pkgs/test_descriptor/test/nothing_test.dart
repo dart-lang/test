@@ -14,13 +14,13 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'utils.dart';
 
 void main() {
-  test("create() does nothing", () async {
+  test('create() does nothing', () async {
     await d.nothing('foo').create();
     expect(File(p.join(d.sandbox, 'foo')).exists(), completion(isFalse));
     expect(Directory(p.join(d.sandbox, 'foo')).exists(), completion(isFalse));
   });
 
-  group("validate()", () {
+  group('validate()', () {
     test("succeeds if nothing's there", () async {
       await d.nothing('foo').validate();
     });

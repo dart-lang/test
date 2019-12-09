@@ -59,6 +59,7 @@ abstract class FileDescriptor extends Descriptor {
   /// A protected constructor that's only intended for subclasses.
   FileDescriptor.protected(String name) : super(name);
 
+  @override
   Future create([String parent]) async {
     // Create the stream before we call [File.openWrite] because it may fail
     // fast (e.g. if this is a matcher file).
@@ -70,6 +71,7 @@ abstract class FileDescriptor extends Descriptor {
     }
   }
 
+  @override
   Future validate([String parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     var pretty = prettyPath(fullPath);
@@ -97,6 +99,7 @@ abstract class FileDescriptor extends Descriptor {
   /// This isn't supported for matcher descriptors.
   Stream<List<int>> readAsBytes();
 
+  @override
   String describe() => name;
 }
 
@@ -106,8 +109,10 @@ class _BinaryFileDescriptor extends FileDescriptor {
 
   _BinaryFileDescriptor(String name, this._contents) : super.protected(name);
 
+  @override
   Stream<List<int>> readAsBytes() => Stream.fromIterable([_contents]);
 
+  @override
   Future _validate(String prettPath, List<int> actualContents) async {
     if (const IterableEquality().equals(_contents, actualContents)) return null;
     // TODO(nweiz): show a hex dump here if the data is small enough.
@@ -121,11 +126,14 @@ class _StringFileDescriptor extends FileDescriptor {
 
   _StringFileDescriptor(String name, this._contents) : super.protected(name);
 
+  @override
   Future<String> read() async => _contents;
 
+  @override
   Stream<List<int>> readAsBytes() =>
       Stream.fromIterable([utf8.encode(_contents)]);
 
+  @override
   Future _validate(String prettyPath, List<int> actualContents) {
     var actualContentsText = utf8.decode(actualContents);
     if (_contents == actualContentsText) return null;
@@ -163,8 +171,8 @@ class _StringFileDescriptor extends FileDescriptor {
     }
 
     return 'File "$prettyPath" should contain:\n'
-        "${addBar(expected)}\n"
-        "but actually contained:\n"
+        '${addBar(expected)}\n'
+        'but actually contained:\n'
         "${results.join('\n')}";
   }
 }
@@ -181,9 +189,11 @@ class _MatcherFileDescriptor extends FileDescriptor {
       : _isBinary = isBinary,
         super.protected(name);
 
+  @override
   Stream<List<int>> readAsBytes() =>
       throw UnsupportedError("Matcher files can't be created or read.");
 
+  @override
   Future _validate(String prettyPath, List<int> actualContents) async {
     try {
       expect(

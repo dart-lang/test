@@ -16,15 +16,15 @@ import 'sandbox.dart';
 final utf8 = const Utf8Codec(allowMalformed: true);
 
 /// Prepends a vertical bar to [text].
-String addBar(String text) => prefixLines(text, "${glyph.verticalLine} ",
-    first: "${glyph.downEnd} ", last: "${glyph.upEnd} ", single: "| ");
+String addBar(String text) => prefixLines(text, '${glyph.verticalLine} ',
+    first: '${glyph.downEnd} ', last: '${glyph.upEnd} ', single: '| ');
 
 /// Indents [text], and adds a bullet at the beginning.
 String addBullet(String text) =>
-    prefixLines(text, "  ", first: "${glyph.bullet} ");
+    prefixLines(text, '  ', first: '${glyph.bullet} ');
 
 /// Converts [strings] to a bulleted list.
-String bullet(Iterable<String> strings) => strings.map(addBullet).join("\n");
+String bullet(Iterable<String> strings) => strings.map(addBullet).join('\n');
 
 /// Returns a human-readable description of a directory with the given [name]
 /// and [contents].
@@ -60,13 +60,13 @@ String prefixLines(String text, String prefix,
   single ??= first ?? last ?? prefix;
 
   var lines = text.split('\n');
-  if (lines.length == 1) return "$single$text";
+  if (lines.length == 1) return '$single$text';
 
-  var buffer = StringBuffer("$first${lines.first}\n");
+  var buffer = StringBuffer('$first${lines.first}\n');
   for (var line in lines.skip(1).take(lines.length - 2)) {
-    buffer.writeln("$prefix$line");
+    buffer.writeln('$prefix$line');
   }
-  buffer.write("$last${lines.last}");
+  buffer.write('$last${lines.last}');
   return buffer.toString();
 }
 

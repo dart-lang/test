@@ -12,11 +12,11 @@ import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 void main() {
-  test("accessing the getter creates the directory", () {
+  test('accessing the getter creates the directory', () {
     expect(Directory(d.sandbox).existsSync(), isTrue);
   });
 
-  test("the directory is deleted after the test", () {
+  test('the directory is deleted after the test', () {
     String sandbox;
     addTearDown(() {
       expect(Directory(sandbox).existsSync(), isFalse);
@@ -25,7 +25,7 @@ void main() {
     sandbox = d.sandbox;
   });
 
-  test("path() returns a path in the sandbox", () {
-    expect(d.path("foo"), equals(p.join(d.sandbox, "foo")));
+  test('path() returns a path in the sandbox', () {
+    expect(d.path('foo'), equals(p.join(d.sandbox, 'foo')));
   });
 }

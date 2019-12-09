@@ -33,6 +33,7 @@ class ArchiveDescriptor extends Descriptor implements FileDescriptor {
     return archive;
   }
 
+  @override
   File get io => File(p.join(sandbox, name));
 
   /// Returns [ArchiveFile]s for each file in [descriptors].
@@ -42,7 +43,7 @@ class ArchiveDescriptor extends Descriptor implements FileDescriptor {
       [String parent]) async {
     return (await waitAndReportErrors(descriptors.map((descriptor) async {
       var fullName =
-          parent == null ? descriptor.name : "$parent/${descriptor.name}";
+          parent == null ? descriptor.name : '$parent/${descriptor.name}';
 
       if (descriptor is FileDescriptor) {
         var bytes = await collectBytes(descriptor.readAsBytes());
@@ -57,8 +58,8 @@ class ArchiveDescriptor extends Descriptor implements FileDescriptor {
         return await _files(descriptor.contents, fullName);
       } else {
         throw UnsupportedError(
-            "An archive can only be created from FileDescriptors and "
-            "DirectoryDescriptors.");
+            'An archive can only be created from FileDescriptors and '
+            'DirectoryDescriptors.');
       }
     })))
         .expand((files) => files);
@@ -68,6 +69,7 @@ class ArchiveDescriptor extends Descriptor implements FileDescriptor {
       : contents = List.unmodifiable(contents),
         super(name);
 
+  @override
   Future create([String parent]) async {
     var path = p.join(parent ?? sandbox, name);
     var file = File(path).openWrite();
@@ -83,14 +85,17 @@ class ArchiveDescriptor extends Descriptor implements FileDescriptor {
     }
   }
 
+  @override
   Future<String> read() async => throw UnsupportedError(
-      "ArchiveDescriptor.read() is not supported. Use Archive.readAsBytes() "
-      "instead.");
+      'ArchiveDescriptor.read() is not supported. Use Archive.readAsBytes() '
+      'instead.');
 
+  @override
   Stream<List<int>> readAsBytes() => Stream.fromFuture(() async {
         return _encodeFunction()(await archive);
       }());
 
+  @override
   Future<void> validate([String parent]) async {
     // Access this first so we eaerly throw an error for a path with an invalid
     // extension.
@@ -141,40 +146,41 @@ class ArchiveDescriptor extends Descriptor implements FileDescriptor {
   /// Returns the function to use to encode this file to binary, based on its
   /// [name].
   List<int> Function(Archive) _encodeFunction() {
-    if (name.endsWith(".zip")) {
+    if (name.endsWith('.zip')) {
       return ZipEncoder().encode;
-    } else if (name.endsWith(".tar")) {
+    } else if (name.endsWith('.tar')) {
       return TarEncoder().encode;
-    } else if (name.endsWith(".tar.gz") ||
-        name.endsWith(".tar.gzip") ||
-        name.endsWith(".tgz")) {
+    } else if (name.endsWith('.tar.gz') ||
+        name.endsWith('.tar.gzip') ||
+        name.endsWith('.tgz')) {
       return (archive) => GZipEncoder().encode(TarEncoder().encode(archive));
-    } else if (name.endsWith(".tar.bz2") || name.endsWith(".tar.bzip2")) {
+    } else if (name.endsWith('.tar.bz2') || name.endsWith('.tar.bzip2')) {
       return (archive) => BZip2Encoder().encode(TarEncoder().encode(archive));
     } else {
-      throw UnsupportedError("Unknown file format $name.");
+      throw UnsupportedError('Unknown file format $name.');
     }
   }
 
   /// Returns the function to use to decode this file from binary, based on its
   /// [name].
   Archive Function(List<int>) _decodeFunction() {
-    if (name.endsWith(".zip")) {
+    if (name.endsWith('.zip')) {
       return ZipDecoder().decodeBytes;
-    } else if (name.endsWith(".tar")) {
+    } else if (name.endsWith('.tar')) {
       return TarDecoder().decodeBytes;
-    } else if (name.endsWith(".tar.gz") ||
-        name.endsWith(".tar.gzip") ||
-        name.endsWith(".tgz")) {
+    } else if (name.endsWith('.tar.gz') ||
+        name.endsWith('.tar.gzip') ||
+        name.endsWith('.tgz')) {
       return (archive) =>
           TarDecoder().decodeBytes(GZipDecoder().decodeBytes(archive));
-    } else if (name.endsWith(".tar.bz2") || name.endsWith(".tar.bzip2")) {
+    } else if (name.endsWith('.tar.bz2') || name.endsWith('.tar.bzip2')) {
       return (archive) =>
           TarDecoder().decodeBytes(BZip2Decoder().decodeBytes(archive));
     } else {
-      throw UnsupportedError("Unknown file format $name.");
+      throw UnsupportedError('Unknown file format $name.');
     }
   }
 
+  @override
   String describe() => describeDirectory(name, contents);
 }

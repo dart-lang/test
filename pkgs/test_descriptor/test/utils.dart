@@ -20,5 +20,5 @@ Matcher toString(matcher) {
   return predicate((object) {
     expect(object.toString(), matcher);
     return true;
-  }, "toString() matches $matcher");
+  }, 'toString() matches $matcher');
 }

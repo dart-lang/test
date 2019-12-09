@@ -13,7 +13,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'utils.dart';
 
 void main() {
-  group("create()", () {
+  group('create()', () {
     test('creates a text file', () async {
       await d.file('name.txt', 'contents').create();
 
@@ -42,7 +42,7 @@ void main() {
     });
   });
 
-  group("validate()", () {
+  group('validate()', () {
     test('succeeds if the filesystem matches a text descriptor', () async {
       await File(p.join(d.sandbox, 'name.txt')).writeAsString('contents');
       await d.file('name.txt', 'contents').validate();
@@ -118,40 +118,40 @@ void main() {
     });
   });
 
-  group("reading", () {
-    test("read() returns the contents of a text file as a string", () {
+  group('reading', () {
+    test('read() returns the contents of a text file as a string', () {
       expect(d.file('name.txt', 'contents').read(),
           completion(equals('contents')));
     });
 
-    test("read() returns the contents of a binary file as a string", () {
+    test('read() returns the contents of a binary file as a string', () {
       expect(d.file('name.txt', [0x68, 0x65, 0x6c, 0x6c, 0x6f]).read(),
           completion(equals('hello')));
     });
 
-    test("read() fails for a matcher file", () {
+    test('read() fails for a matcher file', () {
       expect(d.file('name.txt', contains('hi')).read, throwsUnsupportedError);
     });
 
-    test("readAsBytes() returns the contents of a text file as a byte stream",
+    test('readAsBytes() returns the contents of a text file as a byte stream',
         () {
       expect(utf8.decodeStream(d.file('name.txt', 'contents').readAsBytes()),
           completion(equals('contents')));
     });
 
-    test("readAsBytes() returns the contents of a binary file as a byte stream",
+    test('readAsBytes() returns the contents of a binary file as a byte stream',
         () {
       expect(byteStreamToList(d.file('name.txt', [0, 1, 2, 3]).readAsBytes()),
           completion(equals([0, 1, 2, 3])));
     });
 
-    test("readAsBytes() fails for a matcher file", () {
+    test('readAsBytes() fails for a matcher file', () {
       expect(d.file('name.txt', contains('hi')).readAsBytes,
           throwsUnsupportedError);
     });
   });
 
-  test("io refers to the file within the sandbox", () {
+  test('io refers to the file within the sandbox', () {
     expect(d.file('name.txt').io.path, equals(p.join(d.sandbox, 'name.txt')));
   });
 }
