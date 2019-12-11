@@ -6,8 +6,8 @@
 
 import 'dart:convert';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -70,12 +70,12 @@ void main() {
             'dart_test.yaml',
             jsonEncode({
               'fold_stack_frames': {
-                'only': ['test']
+                'only': ['test_api']
               }
             }))
         .create();
     var test = await runTest(['test.dart']);
-    expect(test.stdoutStream(), emitsThrough(contains('package:test')));
+    expect(test.stdoutStream(), emitsThrough(contains('package:test_api')));
     await test.shouldExit(1);
-  }, skip: 'https://github.com/dart-lang/test/issues/1120');
+  });
 }
