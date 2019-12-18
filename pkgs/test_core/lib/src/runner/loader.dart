@@ -179,7 +179,8 @@ class Loader {
       return;
     }
 
-    if (_config.suiteDefaults.excludeTags.evaluate(suiteConfig.metadata.tags)) {
+    if (_config.suiteDefaults.excludeTags
+        .evaluate(suiteConfig.metadata.tags.contains)) {
       return;
     }
 

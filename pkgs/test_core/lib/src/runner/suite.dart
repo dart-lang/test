@@ -364,7 +364,7 @@ class SuiteConfiguration {
     // Otherwise, resolve the tag-specific components.
     var newTags = Map<BooleanSelector, SuiteConfiguration>.from(tags);
     var merged = tags.keys.fold(empty, (SuiteConfiguration merged, selector) {
-      if (!selector.evaluate(_metadata.tags)) return merged;
+      if (!selector.evaluate(_metadata.tags.contains)) return merged;
       return merged.merge(newTags.remove(selector));
     });
 
