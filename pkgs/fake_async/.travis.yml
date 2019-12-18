@@ -2,7 +2,7 @@ language: dart
 
 dart:
   - dev
-  - 2.0.0
+  - 2.2.0
 
 dart_task:
   - test: --platform vm,chrome
@@ -15,7 +15,7 @@ matrix:
     - dart: dev
       dart_task:
         dartanalyzer: --fatal-warnings --fatal-hints .
-    - dart: 2.0.0
+    - dart: 2.2.0
       dart_task:
         dartanalyzer: --fatal-warnings .
 

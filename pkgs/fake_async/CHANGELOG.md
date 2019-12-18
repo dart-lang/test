@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Update min SDK to 2.2.0
+
 ## 1.0.1
 
 * Update to lowercase Dart core library constants.

@@ -66,7 +66,7 @@ class FakeAsync {
   final _microtasks = Queue<_Microtask>();
 
   /// All timers created within [run].
-  final _timers = Set<_FakeTimer>();
+  final _timers = <_FakeTimer>{};
 
   /// The number of active periodic timers created within a call to [run] or
   /// [fakeAsync].
