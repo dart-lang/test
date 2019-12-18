@@ -172,7 +172,7 @@ class Metadata {
     // doing it for every test individually.
     var empty = Metadata._();
     var merged = forTag.keys.toList().fold(empty, (Metadata merged, selector) {
-      if (!selector.evaluate(tags)) return merged;
+      if (!selector.evaluate(tags.contains)) return merged;
       return merged.merge(forTag.remove(selector));
     });
 
