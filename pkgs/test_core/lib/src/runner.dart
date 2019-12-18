@@ -261,12 +261,12 @@ class Runner {
           }
 
           // If the user provided tags, skip tests that don't match all of them.
-          if (!suite.config.includeTags.evaluate(test.metadata.tags)) {
+          if (!suite.config.includeTags.evaluate(test.metadata.tags.contains)) {
             return false;
           }
 
           // Skip tests that do match any tags the user wants to exclude.
-          if (suite.config.excludeTags.evaluate(test.metadata.tags)) {
+          if (suite.config.excludeTags.evaluate(test.metadata.tags.contains)) {
             return false;
           }
 
