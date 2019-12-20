@@ -14,11 +14,10 @@ import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/version.dart';
-
+import 'runner.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
@@ -36,7 +35,7 @@ final String _globalConfigPath = () {
   }
 }();
 
-void main(List<String> args) async {
+Future<void> main(List<String> args) async {
   await _execute(args);
   completeShutdown();
 }
