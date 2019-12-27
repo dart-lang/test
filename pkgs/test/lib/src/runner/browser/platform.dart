@@ -185,16 +185,23 @@ class BrowserPlatform extends PlatformPlugin
       var scriptBase = htmlEscape.convert(p.basename(test));
       var link = '<link rel="x-dart-test" href="$scriptBase">';
 
-      return shelf.Response.ok('''
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${htmlEscape.convert(test)} Test</title>
-          $link
-          <script src="packages/test/dart.js"></script>
-        </head>
-        </html>
-      ''', headers: {'Content-Type': 'text/html'});
+      if (_config.customHtmlTemplatePath != null) {
+        var contents = File(_config.customHtmlTemplatePath).readAsStringSync();
+        var processedContents = contents.replaceFirst('{testScript}', link);
+        return shelf.Response.ok(processedContents,
+            headers: {'Content-Type': 'text/html'});
+      } else {
+        return shelf.Response.ok('''
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>${htmlEscape.convert(test)} Test</title>
+            $link
+            <script src="packages/test/dart.js"></script>
+          </head>
+          </html>
+        ''', headers: {'Content-Type': 'text/html'});
+      }
     }
 
     return shelf.Response.notFound('Not found.');
@@ -231,13 +238,24 @@ class BrowserPlatform extends PlatformPlugin
       throw ArgumentError('$browser is not a browser.');
     }
 
-    var htmlPath = p.withoutExtension(path) + '.html';
-    if (File(htmlPath).existsSync() &&
-        !File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
-      throw LoadException(
-          path,
-          '"${htmlPath}" must contain <script src="packages/test/dart.js">'
-          '</script>.');
+    var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
+    var htmlPathFromTestPathExists = File(htmlPathFromTestPath).existsSync();
+
+    if (!htmlPathFromTestPathExists && _config.customHtmlTemplatePath != null) {
+      var htmlTemplatePath = _config.customHtmlTemplatePath;
+      if (!File(htmlTemplatePath).existsSync()) {
+        throw LoadException(
+            path, '"${htmlTemplatePath}" does not exist or is not readable');
+      }
+
+      final templateFileContents = File(htmlTemplatePath).readAsStringSync();
+      if ('\{testScript\}'.allMatches(templateFileContents).length != 1) {
+        throw LoadException(path,
+            '"${htmlTemplatePath}" must contain exactly one {testScript} placeholder');
+      }
+      checkHtmlCorrectness(htmlTemplatePath, path);
+    } else if (htmlPathFromTestPathExists) {
+      checkHtmlCorrectness(htmlPathFromTestPath, path);
     }
 
     Uri suiteUrl;
@@ -274,6 +292,15 @@ class BrowserPlatform extends PlatformPlugin
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;
+  }
+
+  void checkHtmlCorrectness(String htmlPath, String path) {
+    if (!File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
+      throw LoadException(
+          path,
+          '"${htmlPath}" must contain <script src="packages/test/dart.js">'
+          '</script>.');
+    }
   }
 
   @override

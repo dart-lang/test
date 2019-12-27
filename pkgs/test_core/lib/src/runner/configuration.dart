@@ -43,6 +43,10 @@ class Configuration {
   bool get help => _help ?? false;
   final bool _help;
 
+  /// Custom HTML template file
+  String get customHtmlTemplatePath => _customHtmlTemplatePath;
+  final String _customHtmlTemplatePath;
+
   /// Whether `--version` was passed.
   bool get version => _version ?? false;
   final bool _version;
@@ -216,6 +220,7 @@ class Configuration {
 
   factory Configuration(
       {bool help,
+      String customHtmlTemplatePath,
       bool version,
       bool pauseAfterLoad,
       bool debug,
@@ -263,6 +268,7 @@ class Configuration {
     var chosenPresetSet = chosenPresets?.toSet();
     var configuration = Configuration._(
         help: help,
+        customHtmlTemplatePath: customHtmlTemplatePath,
         version: version,
         pauseAfterLoad: pauseAfterLoad,
         debug: debug,
@@ -323,6 +329,7 @@ class Configuration {
   /// Unlike [new Configuration], this assumes [presets] is already resolved.
   Configuration._(
       {bool help,
+      String customHtmlTemplatePath,
       bool version,
       bool pauseAfterLoad,
       bool debug,
@@ -346,6 +353,7 @@ class Configuration {
       bool noRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
+        _customHtmlTemplatePath = customHtmlTemplatePath,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
         _debug = debug,
@@ -470,6 +478,8 @@ class Configuration {
 
     var result = Configuration._(
         help: other._help ?? _help,
+        customHtmlTemplatePath:
+            other._customHtmlTemplatePath ?? _customHtmlTemplatePath,
         version: other._version ?? _version,
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
@@ -511,6 +521,7 @@ class Configuration {
   /// always replaced by the new one.
   Configuration change(
       {bool help,
+      String customHtmlTemplatePath,
       bool version,
       bool pauseAfterLoad,
       bool color,
@@ -554,6 +565,8 @@ class Configuration {
       Iterable<String> addTags}) {
     var config = Configuration._(
         help: help ?? _help,
+        customHtmlTemplatePath:
+            customHtmlTemplatePath ?? _customHtmlTemplatePath,
         version: version ?? _version,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,
