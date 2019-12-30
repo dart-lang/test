@@ -239,9 +239,9 @@ class BrowserPlatform extends PlatformPlugin
     }
 
     var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
-    var htmlPathFromTestPathExists = File(htmlPathFromTestPath).existsSync();
-
-    if (!htmlPathFromTestPathExists && _config.customHtmlTemplatePath != null) {
+    if (File(htmlPathFromTestPath).existsSync()) {
+      checkHtmlCorrectness(htmlPathFromTestPath, path);
+    } else if (_config.customHtmlTemplatePath != null) {
       var htmlTemplatePath = _config.customHtmlTemplatePath;
       if (!File(htmlTemplatePath).existsSync()) {
         throw LoadException(
@@ -254,8 +254,6 @@ class BrowserPlatform extends PlatformPlugin
             '"${htmlTemplatePath}" must contain exactly one {testScript} placeholder');
       }
       checkHtmlCorrectness(htmlTemplatePath, path);
-    } else if (htmlPathFromTestPathExists) {
-      checkHtmlCorrectness(htmlPathFromTestPath, path);
     }
 
     Uri suiteUrl;
