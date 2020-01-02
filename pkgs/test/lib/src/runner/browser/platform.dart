@@ -191,7 +191,7 @@ class BrowserPlatform extends PlatformPlugin
       var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
       var contents = File(template).readAsStringSync();
       var processedContents = contents
-          .replaceFirst('{testScript}', link)
+          .replaceFirst('{{testScript}}', link)
           .replaceAll('{{testName}}', testName);
       return shelf.Response.ok(processedContents,
           headers: {'Content-Type': 'text/html'});
@@ -242,9 +242,9 @@ class BrowserPlatform extends PlatformPlugin
       }
 
       final templateFileContents = File(htmlTemplatePath).readAsStringSync();
-      if ('\{testScript\}'.allMatches(templateFileContents).length != 1) {
+      if ('{{testScript}}'.allMatches(templateFileContents).length != 1) {
         throw LoadException(path,
-            '"${htmlTemplatePath}" must contain exactly one {testScript} placeholder');
+            '"${htmlTemplatePath}" must contain exactly one {{testScript}} placeholder');
       }
       checkHtmlCorrectness(htmlTemplatePath, path);
     }

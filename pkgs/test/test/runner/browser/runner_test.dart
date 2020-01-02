@@ -231,7 +231,7 @@ void main() {
       await d.file('html_template.html.tpl', '''
 <html>
 <head>
-  {testScript}
+  {{testScript}}
   <script src="packages/test/dart.js"></script>
 </head>
 <body>
@@ -278,7 +278,7 @@ void main() {
         await test.shouldExit(1);
       }, tags: 'chrome');
 
-      test("that doesn't contain the {testScript} tag", () async {
+      test("that doesn't contain the {{testScript}} tag", () async {
         await d.file('html_template.html.tpl', '''
 <html>
 <head>
@@ -296,17 +296,17 @@ void main() {
             test.stdout,
             containsInOrder([
               '-1: compiling test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {testScript} placeholder'
+              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
             ]));
         await test.shouldExit(1);
       }, tags: 'chrome');
 
-      test('that contains more than one {testScript} tag', () async {
+      test('that contains more than one {{testScript}} tag', () async {
         await d.file('html_template.html.tpl', '''
 <html>
 <head>
-  {testScript}
-  {testScript}
+  {{testScript}}
+  {{testScript}}
   <script src="packages/test/dart.js"></script>
 </head>
 <body>
@@ -321,7 +321,7 @@ void main() {
             test.stdout,
             containsInOrder([
               '-1: compiling test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {testScript} placeholder'
+              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
             ]));
         await test.shouldExit(1);
       }, tags: 'chrome');
@@ -330,7 +330,7 @@ void main() {
         await d.file('html_template.html.tpl', '''
 <html>
 <head>
-  {testScript}
+  {{testScript}}
 </head>
 </html>
 ''').create();
@@ -413,7 +413,7 @@ void main() {
           await d.file('html_template.html.tpl', '''
   <html>
   <head>
-    {testScript}
+    {{testScript}}
     <script src="packages/test/dart.js"></script>
   </head>
   <body>
@@ -455,7 +455,7 @@ void main() {
   <html>
   <head>
     <title>{{testName}}</title>
-    {testScript}
+    {{testScript}}
     <script src="packages/test/dart.js"></script>
   </head>
   <body>
@@ -553,7 +553,7 @@ void main() {
         await d.file('html_template.html.tpl', '''
 <html>
 <head>
-  {testScript}
+  {{testScript}}
   <script src="packages/test/dart.js"></script>
 </head>
 <body>
