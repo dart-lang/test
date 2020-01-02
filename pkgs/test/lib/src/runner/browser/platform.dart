@@ -239,8 +239,8 @@ class BrowserPlatform extends PlatformPlugin
               p.basename(_config.customHtmlTemplatePath)) {
         throw LoadException(
             path,
-            'template file ${p.basename(_config.customHtmlTemplatePath)} cannot be named '
-            'like the test file ${p.basename(path)}');
+            'template file "${p.basename(_config.customHtmlTemplatePath)}" cannot be named '
+            'like the test file.');
       }
       _checkHtmlCorrectness(htmlPathFromTestPath, path);
     } else if (_config.customHtmlTemplatePath != null) {

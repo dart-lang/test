@@ -364,8 +364,8 @@ void main() {
             test.stdout,
             containsInOrder([
               '-1: compiling test.dart [E]',
-              'Failed to load "test.dart": template file test.html cannot be named '
-                  'like the test file test.dart'
+              'Failed to load "test.dart": template file "test.html" cannot be named '
+                  'like the test file.'
             ]));
         await test.shouldExit(1);
       });
