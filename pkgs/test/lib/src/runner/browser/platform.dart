@@ -55,6 +55,8 @@ class BrowserPlatform extends PlatformPlugin
         Configuration.current,
         p.fromUri(await Isolate.resolvePackageUri(
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
+        p.fromUri(await Isolate.resolvePackageUri(Uri.parse(
+            'package:test/src/runner/browser/static/default.html.tpl'))),
         root: root);
   }
 
@@ -126,7 +128,11 @@ class BrowserPlatform extends PlatformPlugin
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = <String, StackTraceMapper>{};
 
+  /// The default template for html tests
+  final String _defaultTemplatePath;
+
   BrowserPlatform._(this._server, Configuration config, String faviconPath,
+      this._defaultTemplatePath,
       {String root})
       : _config = config,
         _root = root ?? p.current,
@@ -179,29 +185,16 @@ class BrowserPlatform extends PlatformPlugin
 
     if (path.endsWith('.html')) {
       var test = p.withoutExtension(path) + '.dart';
-
-      // Link to the Dart wrapper on Dartium and the compiled JS version
-      // elsewhere.
       var scriptBase = htmlEscape.convert(p.basename(test));
       var link = '<link rel="x-dart-test" href="$scriptBase">';
-
-      if (_config.customHtmlTemplatePath != null) {
-        var contents = File(_config.customHtmlTemplatePath).readAsStringSync();
-        var processedContents = contents.replaceFirst('{testScript}', link);
-        return shelf.Response.ok(processedContents,
-            headers: {'Content-Type': 'text/html'});
-      } else {
-        return shelf.Response.ok('''
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>${htmlEscape.convert(test)} Test</title>
-            $link
-            <script src="packages/test/dart.js"></script>
-          </head>
-          </html>
-        ''', headers: {'Content-Type': 'text/html'});
-      }
+      var testName = htmlEscape.convert(test);
+      var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
+      var contents = File(template).readAsStringSync();
+      var processedContents = contents
+          .replaceFirst('{testScript}', link)
+          .replaceAll('{{testName}}', testName);
+      return shelf.Response.ok(processedContents,
+          headers: {'Content-Type': 'text/html'});
     }
 
     return shelf.Response.notFound('Not found.');

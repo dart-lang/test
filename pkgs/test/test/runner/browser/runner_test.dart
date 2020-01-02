@@ -402,44 +402,91 @@ void main() {
     }, tags: 'chrome');
 
     group('with a custom HTML template file', () {
-      setUp(() async {
-        await d
-            .file(
-                'global_test.yaml',
-                jsonEncode(
-                    {'custom_html_template_path': 'html_template.html.tpl'}))
-            .create();
-        await d.file('html_template.html.tpl', '''
-<html>
-<head>
-  {testScript}
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+      group('without a {{testName}} tag', () {
+        setUp(() async {
+          await d
+              .file(
+                  'global_test.yaml',
+                  jsonEncode(
+                      {'custom_html_template_path': 'html_template.html.tpl'}))
+              .create();
+          await d.file('html_template.html.tpl', '''
+  <html>
+  <head>
+    {testScript}
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    <div id="foo"></div>
+  </body>
+  </html>
+  ''').create();
 
-        await d.file('test.dart', '''
-import 'dart:html';
+          await d.file('test.dart', '''
+  import 'dart:html';
 
-import 'package:test/test.dart';
+  import 'package:test/test.dart';
 
-void main() {
-  test("success", () {
-    expect(document.querySelector('#foo'), isNotNull);
-  });
-}
-''').create();
+  void main() {
+    test("success", () {
+      expect(document.querySelector('#foo'), isNotNull);
+    });
+  }
+  ''').create();
+        });
+
+        test('on Chrome', () async {
+          var test = await runTest(['-p', 'chrome', 'test.dart'],
+              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
       });
 
-      test('on Chrome', () async {
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
-        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-        await test.shouldExit(0);
-      }, tags: 'chrome');
+      group('with a {{testName}} tag', () {
+        setUp(() async {
+          await d
+              .file(
+                  'global_test.yaml',
+                  jsonEncode(
+                      {'custom_html_template_path': 'html_template.html.tpl'}))
+              .create();
+          await d.file('html_template.html.tpl', '''
+  <html>
+  <head>
+    <title>{{testName}}</title>
+    {testScript}
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    <div id="foo"></div>
+  </body>
+  </html>
+  ''').create();
+
+          await d.file('test-with-title.dart', '''
+  import 'dart:html';
+
+  import 'package:test/test.dart';
+
+  void main() {
+    test("success", () {
+      expect(document.querySelector('#foo'), isNotNull);
+    });
+    test("title", () {
+      expect(document.title, 'test-with-title.dart');
+    });
+  }
+  ''').create();
+        });
+
+        test('on Chrome', () async {
+          var test = await runTest(['-p', 'chrome', 'test-with-title.dart'],
+              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+      });
     });
 
     group('with a custom HTML file', () {
