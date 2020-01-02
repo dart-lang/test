@@ -343,6 +343,32 @@ void main() {
             ]));
         await test.shouldExit(1);
       }, tags: 'chrome');
+
+      test('that is named like the test file', () async {
+        await d.file('test.html', '''
+<html>
+<head>
+  {{testScript}}
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+''').create();
+
+        await d
+            .file('global_test_2.yaml',
+                jsonEncode({'custom_html_template_path': 'test.html'}))
+            .create();
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test_2.yaml'});
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: compiling test.dart [E]',
+              'Failed to load "test.dart": template file test.html cannot be named '
+                  'like the test file test.dart'
+            ]));
+        await test.shouldExit(1);
+      });
     });
   });
 

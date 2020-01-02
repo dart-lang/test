@@ -234,6 +234,14 @@ class BrowserPlatform extends PlatformPlugin
 
     var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
     if (File(htmlPathFromTestPath).existsSync()) {
+      if (_config.customHtmlTemplatePath != null &&
+          p.basename(htmlPathFromTestPath) ==
+              p.basename(_config.customHtmlTemplatePath)) {
+        throw LoadException(
+            path,
+            'template file ${p.basename(_config.customHtmlTemplatePath)} cannot be named '
+            'like the test file ${p.basename(path)}');
+      }
       _checkHtmlCorrectness(htmlPathFromTestPath, path);
     } else if (_config.customHtmlTemplatePath != null) {
       var htmlTemplatePath = _config.customHtmlTemplatePath;

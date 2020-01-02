@@ -528,7 +528,8 @@ If you want to share the same HTML file across all tests, you can provide a
 This file should follow the rules above, except that instead of the link tag
 add exactly one `{testScript}` in the place where you want the template processor to insert it.
 
-The template can't end with `.html` since the test loader will not able to process it and an error will be thrown.
+The template can't be named like any test file, as that would clash with using the
+custom HTML mechanics. In such a case, an error will be thrown.
 
 For example:
 
