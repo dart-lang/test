@@ -44,8 +44,7 @@ class Configuration {
   final bool _help;
 
   /// Custom HTML template file
-  String get customHtmlTemplatePath => _customHtmlTemplatePath;
-  final String _customHtmlTemplatePath;
+  final String customHtmlTemplatePath;
 
   /// Whether `--version` was passed.
   bool get version => _version ?? false;
@@ -353,7 +352,7 @@ class Configuration {
       bool noRetry,
       SuiteConfiguration suiteDefaults})
       : _help = help,
-        _customHtmlTemplatePath = customHtmlTemplatePath,
+        customHtmlTemplatePath = customHtmlTemplatePath,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
         _debug = debug,
@@ -479,7 +478,7 @@ class Configuration {
     var result = Configuration._(
         help: other._help ?? _help,
         customHtmlTemplatePath:
-            other._customHtmlTemplatePath ?? _customHtmlTemplatePath,
+            other.customHtmlTemplatePath ?? customHtmlTemplatePath,
         version: other._version ?? _version,
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
         color: other._color ?? _color,
@@ -566,7 +565,7 @@ class Configuration {
     var config = Configuration._(
         help: help ?? _help,
         customHtmlTemplatePath:
-            customHtmlTemplatePath ?? _customHtmlTemplatePath,
+            customHtmlTemplatePath ?? this.customHtmlTemplatePath,
         version: version ?? _version,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
         color: color ?? _color,

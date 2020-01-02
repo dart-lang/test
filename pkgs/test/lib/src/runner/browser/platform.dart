@@ -191,6 +191,7 @@ class BrowserPlatform extends PlatformPlugin
       var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
       var contents = File(template).readAsStringSync();
       var processedContents = contents
+          // Checked during loading phase that there is only one {{testScript}} placeholder
           .replaceFirst('{{testScript}}', link)
           .replaceAll('{{testName}}', testName);
       return shelf.Response.ok(processedContents,
@@ -233,7 +234,7 @@ class BrowserPlatform extends PlatformPlugin
 
     var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
     if (File(htmlPathFromTestPath).existsSync()) {
-      checkHtmlCorrectness(htmlPathFromTestPath, path);
+      _checkHtmlCorrectness(htmlPathFromTestPath, path);
     } else if (_config.customHtmlTemplatePath != null) {
       var htmlTemplatePath = _config.customHtmlTemplatePath;
       if (!File(htmlTemplatePath).existsSync()) {
@@ -246,7 +247,7 @@ class BrowserPlatform extends PlatformPlugin
         throw LoadException(path,
             '"${htmlTemplatePath}" must contain exactly one {{testScript}} placeholder');
       }
-      checkHtmlCorrectness(htmlTemplatePath, path);
+      _checkHtmlCorrectness(htmlTemplatePath, path);
     }
 
     Uri suiteUrl;
@@ -285,7 +286,7 @@ class BrowserPlatform extends PlatformPlugin
     return suite;
   }
 
-  void checkHtmlCorrectness(String htmlPath, String path) {
+  void _checkHtmlCorrectness(String htmlPath, String path) {
     if (!File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
       throw LoadException(
           path,
