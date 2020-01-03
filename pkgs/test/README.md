@@ -526,7 +526,9 @@ the following HTML file:
 If you want to share the same HTML file across all tests, you can provide a
 `custom-html-template-path` configuration option to your configuration file.
 This file should follow the rules above, except that instead of the link tag
-add exactly one `{testScript}` in the place where you want the template processor to insert it.
+add exactly one `{{testScript}}` in the place where you want the template processor to insert it.
+
+You can also optionally use any number of `{{testName}}` placeholders which will be replaced by the test filename.
 
 The template can't be named like any test file, as that would clash with using the
 custom HTML mechanics. In such a case, an error will be thrown.
@@ -542,8 +544,8 @@ custom-html-template-path: html_template.html.tpl
 <!-- html_template.html.tpl -->
 <html>
   <head>
-    <title>Custom HTML Template</title>
-    {testScript}
+    <title>{{testName}} Test</title>
+    {{testScript}}
     <script src="packages/test/dart.js"></script>
   </head>
   <body>
