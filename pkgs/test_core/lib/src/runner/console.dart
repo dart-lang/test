@@ -6,9 +6,9 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:async/async.dart';
-import 'package:pedantic/pedantic.dart';
 
 import '../util/io.dart';
+import '../util/unawaited.dart';
 
 /// An interactive console for taking user commands.
 class Console {

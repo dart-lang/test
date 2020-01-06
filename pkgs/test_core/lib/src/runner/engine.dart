@@ -8,7 +8,6 @@ import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -19,6 +18,7 @@ import 'package:test_api/src/backend/state.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
 
+import '../util/unawaited.dart';
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
 import 'live_suite_controller.dart';

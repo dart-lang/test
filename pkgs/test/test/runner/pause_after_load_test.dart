@@ -7,8 +7,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
+import 'package:test_core/src/util/unawaited.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';

@@ -19,7 +19,6 @@ dependencies:
   meta: ^1.1.5
   package_resolver: ^1.0.0
   path: ^1.2.0
-  pedantic: ^1.0.0
   pool: ^1.3.0
   source_map_stack_trace: ^1.1.4
   source_maps: ^0.10.2
@@ -33,6 +32,9 @@ dependencies:
   matcher: ">=0.12.6 <0.12.7"
   # Use an exact version until the test_api package is stable.
   test_api: 0.2.11
+
+dev_dependencies:
+  pedantic: ^1.0.0
 
 dependency_overrides:
   test_api:

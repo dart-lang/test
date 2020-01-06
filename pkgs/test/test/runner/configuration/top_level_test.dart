@@ -8,9 +8,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
+import 'package:test_core/src/util/unawaited.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';

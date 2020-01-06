@@ -13,9 +13,9 @@ import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
+import 'package:test_api/src/utils.dart';
 
 import '../utils.dart';
-
 void main() {
   Suite suite;
   setUp(() {
