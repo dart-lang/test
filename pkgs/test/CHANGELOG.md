@@ -3,10 +3,6 @@
 * Add `customHtmlTemplateFile` configuration option to allow sharing an
   html template between tests
 
-## 1.9.5
-
-* Internal cleanup.
-
 ## 1.9.4
 
 * Extend the timeout for synthetic tests, e.g. `tearDownAll`.
