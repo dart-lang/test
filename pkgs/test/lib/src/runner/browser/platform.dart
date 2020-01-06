@@ -55,6 +55,8 @@ class BrowserPlatform extends PlatformPlugin
         Configuration.current,
         p.fromUri(await Isolate.resolvePackageUri(
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
+        p.fromUri(await Isolate.resolvePackageUri(Uri.parse(
+            'package:test/src/runner/browser/static/default.html.tpl'))),
         root: root);
   }
 
@@ -126,7 +128,11 @@ class BrowserPlatform extends PlatformPlugin
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = <String, StackTraceMapper>{};
 
+  /// The default template for html tests.
+  final String _defaultTemplatePath;
+
   BrowserPlatform._(this._server, Configuration config, String faviconPath,
+      this._defaultTemplatePath,
       {String root})
       : _config = config,
         _root = root ?? p.current,
@@ -179,22 +185,17 @@ class BrowserPlatform extends PlatformPlugin
 
     if (path.endsWith('.html')) {
       var test = p.withoutExtension(path) + '.dart';
-
-      // Link to the Dart wrapper on Dartium and the compiled JS version
-      // elsewhere.
       var scriptBase = htmlEscape.convert(p.basename(test));
       var link = '<link rel="x-dart-test" href="$scriptBase">';
-
-      return shelf.Response.ok('''
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${htmlEscape.convert(test)} Test</title>
-          $link
-          <script src="packages/test/dart.js"></script>
-        </head>
-        </html>
-      ''', headers: {'Content-Type': 'text/html'});
+      var testName = htmlEscape.convert(test);
+      var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
+      var contents = File(template).readAsStringSync();
+      var processedContents = contents
+          // Checked during loading phase that there is only one {{testScript}} placeholder.
+          .replaceFirst('{{testScript}}', link)
+          .replaceAll('{{testName}}', testName);
+      return shelf.Response.ok(processedContents,
+          headers: {'Content-Type': 'text/html'});
     }
 
     return shelf.Response.notFound('Not found.');
@@ -231,13 +232,30 @@ class BrowserPlatform extends PlatformPlugin
       throw ArgumentError('$browser is not a browser.');
     }
 
-    var htmlPath = p.withoutExtension(path) + '.html';
-    if (File(htmlPath).existsSync() &&
-        !File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
-      throw LoadException(
-          path,
-          '"${htmlPath}" must contain <script src="packages/test/dart.js">'
-          '</script>.');
+    var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
+    if (File(htmlPathFromTestPath).existsSync()) {
+      if (_config.customHtmlTemplatePath != null &&
+          p.basename(htmlPathFromTestPath) ==
+              p.basename(_config.customHtmlTemplatePath)) {
+        throw LoadException(
+            path,
+            'template file "${p.basename(_config.customHtmlTemplatePath)}" cannot be named '
+            'like the test file.');
+      }
+      _checkHtmlCorrectness(htmlPathFromTestPath, path);
+    } else if (_config.customHtmlTemplatePath != null) {
+      var htmlTemplatePath = _config.customHtmlTemplatePath;
+      if (!File(htmlTemplatePath).existsSync()) {
+        throw LoadException(
+            path, '"${htmlTemplatePath}" does not exist or is not readable');
+      }
+
+      final templateFileContents = File(htmlTemplatePath).readAsStringSync();
+      if ('{{testScript}}'.allMatches(templateFileContents).length != 1) {
+        throw LoadException(path,
+            '"${htmlTemplatePath}" must contain exactly one {{testScript}} placeholder');
+      }
+      _checkHtmlCorrectness(htmlTemplatePath, path);
     }
 
     Uri suiteUrl;
@@ -274,6 +292,15 @@ class BrowserPlatform extends PlatformPlugin
         mapper: browser.isJS ? _mappers[path] : null);
     if (_closed) return null;
     return suite;
+  }
+
+  void _checkHtmlCorrectness(String htmlPath, String path) {
+    if (!File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
+      throw LoadException(
+          path,
+          '"${htmlPath}" must contain <script src="packages/test/dart.js">'
+          '</script>.');
+    }
   }
 
   @override

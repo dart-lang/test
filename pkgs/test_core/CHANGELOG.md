@@ -1,6 +1,8 @@
 ## 0.2.16-dev
 
 * Internal cleanup.
+* Add `customHtmlTemplateFile` configuration option to allow sharing an
+  html template between tests
 
 ## 0.2.15
 

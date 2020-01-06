@@ -1,3 +1,8 @@
+## 1.10.0-dev
+
+* Add `customHtmlTemplateFile` configuration option to allow sharing an
+  html template between tests
+
 ## 1.9.5
 
 * Internal cleanup.
