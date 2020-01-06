@@ -77,11 +77,6 @@ class Configuration {
   /// the value is the filepath to which its output should be written.
   final Map<String, String> fileReporters;
 
-  /// Whether the JSON reporter is used either as the stdout reporter or as a
-  /// file reporter.
-  bool get usesJsonReporter =>
-      _reporter == 'json' || fileReporters.containsKey('json');
-
   /// Whether to disable retries of tests.
   bool get noRetry => _noRetry ?? false;
   final bool _noRetry;

@@ -51,7 +51,7 @@ RunnerSuiteController deserializeSuite(
     'metadata': suiteConfig.metadata.serialize(),
     'asciiGlyphs': Platform.isWindows,
     'path': path,
-    'collectTraces': Configuration.current.usesJsonReporter,
+    'collectTraces': Configuration.current.reporter == 'json' || Configuration.current.fileReporters.containsKey('json'),
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
