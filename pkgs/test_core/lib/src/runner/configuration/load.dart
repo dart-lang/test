@@ -236,14 +236,16 @@ class _ConfigurationLoader {
     }
 
     var fileReporters = _getMap('file_reporters', key: (keyNode) {
-      _validate(keyNode, 'file_reporters key must be a string', (value) => value is String);
+      _validate(keyNode, 'file_reporters key must be a string',
+          (value) => value is String);
       final reporter = keyNode.value as String;
       if (!allReporters.keys.contains(reporter)) {
         _error('Unknown reporter "$reporter".', 'file_reporters');
       }
       return reporter;
     }, value: (valueNode) {
-      _validate(valueNode, 'file_reporters value must be a string', (value) => value is String);
+      _validate(valueNode, 'file_reporters value must be a string',
+          (value) => value is String);
       return valueNode.value as String;
     });
 

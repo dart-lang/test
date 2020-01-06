@@ -23,6 +23,7 @@ void main() {
         expect(merged.configurationPath, equals('dart_test.yaml'));
         expect(merged.dart2jsPath, equals(p.join(sdkDir, 'bin', 'dart2js')));
         expect(merged.reporter, equals(defaultReporter));
+        expect(merged.fileReporters, isEmpty);
         expect(merged.pubServeUrl, isNull);
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
@@ -39,6 +40,7 @@ void main() {
             configurationPath: 'special_test.yaml',
             dart2jsPath: '/tmp/dart2js',
             reporter: 'json',
+            fileReporters: {'json': 'out.json'},
             pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
@@ -52,6 +54,7 @@ void main() {
         expect(merged.configurationPath, equals('special_test.yaml'));
         expect(merged.dart2jsPath, equals('/tmp/dart2js'));
         expect(merged.reporter, equals('json'));
+        expect(merged.fileReporters, equals({'json': 'out.json'}));
         expect(merged.pubServeUrl.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
@@ -68,6 +71,7 @@ void main() {
             configurationPath: 'special_test.yaml',
             dart2jsPath: '/tmp/dart2js',
             reporter: 'json',
+            fileReporters: {'json': 'out.json'},
             pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
@@ -81,6 +85,7 @@ void main() {
         expect(merged.configurationPath, equals('special_test.yaml'));
         expect(merged.dart2jsPath, equals('/tmp/dart2js'));
         expect(merged.reporter, equals('json'));
+        expect(merged.fileReporters, equals({'json': 'out.json'}));
         expect(merged.pubServeUrl.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
@@ -99,6 +104,7 @@ void main() {
             configurationPath: 'special_test.yaml',
             dart2jsPath: '/tmp/dart2js',
             reporter: 'json',
+            fileReporters: {'json': 'old.json'},
             pubServePort: 1234,
             shardIndex: 2,
             totalShards: 4,
@@ -112,6 +118,7 @@ void main() {
             configurationPath: 'test_special.yaml',
             dart2jsPath: '../dart2js',
             reporter: 'compact',
+            fileReporters: {'json': 'new.json'},
             pubServePort: 5678,
             shardIndex: 3,
             totalShards: 10,
@@ -126,6 +133,7 @@ void main() {
         expect(merged.configurationPath, equals('test_special.yaml'));
         expect(merged.dart2jsPath, equals('../dart2js'));
         expect(merged.reporter, equals('compact'));
+        expect(merged.fileReporters, equals({'json': 'new.json'}));
         expect(merged.pubServeUrl.port, equals(5678));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
