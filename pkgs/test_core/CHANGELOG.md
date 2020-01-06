@@ -1,4 +1,4 @@
-## 0.2.16-dev
+## 0.2.16
 
 * Internal cleanup.
 * Add `customHtmlTemplateFile` configuration option to allow sharing an
