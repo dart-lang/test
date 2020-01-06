@@ -124,6 +124,10 @@ final ArgParser _parser = (() {
       defaultsTo: defaultReporter,
       allowed: reporterDescriptions.keys.toList(),
       allowedHelp: reporterDescriptions);
+  parser.addOption('file-reporter',
+      help: 'The reporter used to write test results to a file.\n'
+          'Should be in the form <reporter>:<filepath>, '
+          'e.g. "json:reports/tests.json"');
   parser.addFlag('verbose-trace',
       negatable: false,
       help: 'Whether to emit stack traces with core library frames.');
@@ -235,6 +239,7 @@ class _Parser {
         dart2jsArgs: _ifParsed('dart2js-args'),
         precompiledPath: _ifParsed('precompiled'),
         reporter: _ifParsed('reporter'),
+        fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),
         pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),
@@ -272,6 +277,17 @@ class _Parser {
 
     return _wrapFormatException(name, () => parse(value as String));
   }
+
+  Map<String, String> _parseFileReporterOption() =>
+      _parseOption('file-reporter', (value) {
+        if (!value.contains(':')) {
+          throw FormatException(
+              'option must be in the form <reporter>:<filepath>, e.g. '
+              '"json:reports/tests.json"');
+        }
+        final sep = value.indexOf(':');
+        return {value.substring(0, sep): value.substring(sep + 1)};
+      });
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.

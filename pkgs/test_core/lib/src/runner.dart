@@ -16,6 +16,7 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/reporter/multiplex.dart';
 
 import 'util/io.dart';
 import 'runner/application_exception.dart';
@@ -74,9 +75,21 @@ class Runner {
         var engine =
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
-        var reporterDetails = allReporters[config.reporter];
         return Runner._(
-            engine, reporterDetails.factory(config, engine, stdout));
+          engine,
+          MultiplexReporter([
+            // Standard reporter.
+            allReporters[config.reporter].factory(config, engine, stdout),
+            // File reporters.
+            for (var reporter in config.fileReporters.keys)
+              allReporters[reporter].factory(
+                  config,
+                  engine,
+                  (File(config.fileReporters[reporter])
+                        ..createSync(recursive: true))
+                      .openWrite()),
+          ]),
+        );
       });
 
   Runner._(this._engine, this._reporter);

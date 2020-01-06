@@ -85,7 +85,7 @@ class _Debugger {
   /// Whether [close] has been called.
   bool _closed = false;
 
-  bool get _json => _config.reporter == 'json';
+  bool get _json => _config.usesJsonReporter;
 
   _Debugger(this._engine, this._reporter, this._suite)
       : _console = Console(color: Configuration.current.color) {

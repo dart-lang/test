@@ -73,6 +73,15 @@ class Configuration {
   String get reporter => _reporter ?? defaultReporter;
   final String _reporter;
 
+  /// The map of file reporters where the key is the name of the reporter and
+  /// the value is the filepath to which its output should be written.
+  final Map<String, String> fileReporters;
+
+  /// Whether the JSON reporter is used either as the stdout reporter or as a
+  /// file reporter.
+  bool get usesJsonReporter =>
+      _reporter == 'json' || fileReporters.containsKey('json');
+
   /// Whether to disable retries of tests.
   bool get noRetry => _noRetry ?? false;
   final bool _noRetry;
@@ -223,6 +232,7 @@ class Configuration {
       String configurationPath,
       String dart2jsPath,
       String reporter,
+      Map<String, String> fileReporters,
       String coverage,
       int pubServePort,
       int concurrency,
@@ -270,6 +280,7 @@ class Configuration {
         configurationPath: configurationPath,
         dart2jsPath: dart2jsPath,
         reporter: reporter,
+        fileReporters: fileReporters,
         coverage: coverage,
         pubServePort: pubServePort,
         concurrency: concurrency,
@@ -330,6 +341,7 @@ class Configuration {
       String configurationPath,
       String dart2jsPath,
       String reporter,
+      Map<String, String> fileReporters,
       String coverage,
       int pubServePort,
       int concurrency,
@@ -353,6 +365,7 @@ class Configuration {
         _configurationPath = configurationPath,
         _dart2jsPath = dart2jsPath,
         _reporter = reporter,
+        fileReporters = fileReporters ?? {},
         _coverage = coverage,
         pubServeUrl = pubServePort == null
             ? null
@@ -476,6 +489,7 @@ class Configuration {
         configurationPath: other._configurationPath ?? _configurationPath,
         dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         reporter: other._reporter ?? _reporter,
+        fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other._coverage ?? _coverage,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
