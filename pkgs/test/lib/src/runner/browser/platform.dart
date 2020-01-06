@@ -128,7 +128,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = <String, StackTraceMapper>{};
 
-  /// The default template for html tests
+  /// The default template for html tests.
   final String _defaultTemplatePath;
 
   BrowserPlatform._(this._server, Configuration config, String faviconPath,
@@ -191,7 +191,7 @@ class BrowserPlatform extends PlatformPlugin
       var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
       var contents = File(template).readAsStringSync();
       var processedContents = contents
-          // Checked during loading phase that there is only one {{testScript}} placeholder
+          // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', link)
           .replaceAll('{{testName}}', testName);
       return shelf.Response.ok(processedContents,

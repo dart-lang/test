@@ -43,7 +43,7 @@ class Configuration {
   bool get help => _help ?? false;
   final bool _help;
 
-  /// Custom HTML template file
+  /// Custom HTML template file.
   final String customHtmlTemplatePath;
 
   /// Whether `--version` was passed.
