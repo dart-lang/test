@@ -41,7 +41,7 @@ class SuitePlatform {
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
-  /// [SuitePlatform] using [new SuitePlatform.deserialize].
+  /// [SuitePlatform] using [SuitePlatform.deserialize].
   Object serialize() => {
         'runtime': runtime.serialize(),
         'os': os.identifier,

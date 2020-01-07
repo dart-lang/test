@@ -20,7 +20,7 @@ void main() {
     var server = await CodeServer.start();
 
     server.handleJavaScript('''
-var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
+var webSocket = WebSocket(window.location.href.replace("http://", "ws://"));
 webSocket.addEventListener("open", function() {
   webSocket.send("loaded!");
 });
@@ -71,7 +71,7 @@ void main() {
 import 'package:test/test.dart';
 
 void main() {
-  test("failure", () => throw new TestFailure("oh no"));
+  test("failure", () => throw TestFailure("oh no"));
 }
 ''').create();
 

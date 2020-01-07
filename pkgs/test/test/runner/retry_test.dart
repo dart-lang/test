@@ -21,7 +21,7 @@ void main() {
             test("eventually passes", () {
                attempt++;
                if(attempt <= 1 ) {
-                 throw new TestFailure("oh no");
+                 throw TestFailure("oh no");
                }
             }, retry: 1);
           }
@@ -45,7 +45,7 @@ void main() {
             test("eventually passes", () {
                attempt++;
                if(attempt <= 1 ) {
-                 throw new TestFailure("oh no");
+                 throw TestFailure("oh no");
                }
             });
           }
@@ -69,7 +69,7 @@ void main() {
             test("failure", () {
                attempt++;
                if(attempt <= 3) {
-                 throw new TestFailure("oh no");
+                 throw TestFailure("oh no");
                }
             });
           }
@@ -92,7 +92,7 @@ void main() {
               test("failure", () {
                  attempt++;
                  if(attempt <= 3) {
-                   throw new TestFailure("oh no");
+                   throw TestFailure("oh no");
                  }
               });
              }, retry: 3);
@@ -112,8 +112,8 @@ void main() {
               import 'package:test/test.dart';
 
               void main() {
-                var completer1 = new Completer();
-                var completer2 = new Completer();
+                var completer1 = Completer();
+                var completer2 = Completer();
                 test("first", () {
                   completer1.future.then((_) {
                     completer2.complete();
@@ -148,7 +148,7 @@ void main() {
                 test("eventually passes", () {
                  attempt++;
                  if(attempt <= 2) {
-                   throw new TestFailure("oh no");
+                   throw TestFailure("oh no");
                  }
                 }, retry: 2);
               }
@@ -166,16 +166,16 @@ void main() {
               import 'package:test/test.dart';
 
               var attempt = 0;
-              Completer completer = new Completer();
+              Completer completer = Completer();
               void main() {
                 test("failure", () async {
                   attempt++;
                   if (attempt == 1) {
                     completer.future.then((_) => throw 'some error');
-                    throw new TestFailure("oh no");
+                    throw TestFailure("oh no");
                   }
                   completer.complete(null);
-                  await new Future((){});
+                  await Future((){});
                 }, retry: 1);
               }
           ''').create();
@@ -193,7 +193,7 @@ void main() {
 
               void main() {
                 test("failure", () {
-                 throw new TestFailure("oh no");
+                 throw TestFailure("oh no");
                 }, retry: 2);
               }
           ''').create();
@@ -214,7 +214,7 @@ void main() {
                 test("eventually passes", () {
                 attempt++;
                 if (attempt != 2){
-                 throw new TestFailure("oh no");
+                 throw TestFailure("oh no");
                 }
                 }, retry: 5);
           }

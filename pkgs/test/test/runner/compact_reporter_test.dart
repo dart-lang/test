@@ -38,9 +38,9 @@ void main() {
 
   test('runs several failing tests and reports when each fails', () {
     return _expectReport('''
-        test('failure 1', () => throw new TestFailure('oh no'));
-        test('failure 2', () => throw new TestFailure('oh no'));
-        test('failure 3', () => throw new TestFailure('oh no'));''', '''
+        test('failure 1', () => throw TestFailure('oh no'));
+        test('failure 2', () => throw TestFailure('oh no'));
+        test('failure 3', () => throw TestFailure('oh no'));''', '''
         +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
@@ -82,9 +82,9 @@ void main() {
 
   test('runs failing tests along with successful tests', () {
     return _expectReport('''
-        test('failure 1', () => throw new TestFailure('oh no'));
+        test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
-        test('failure 2', () => throw new TestFailure('oh no'));
+        test('failure 2', () => throw TestFailure('oh no'));
         test('success 2', () {});''', '''
         +0: loading test.dart
         +0: failure 1
@@ -110,12 +110,12 @@ void main() {
     return _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
-        var completer = new Completer();
+        var completer = Completer();
         test('failures', () {
-          new Future.microtask(() => throw 'first error');
-          new Future.microtask(() => throw 'second error');
-          new Future.microtask(() => throw 'third error');
-          new Future.microtask(completer.complete);
+          Future.microtask(() => throw 'first error');
+          Future.microtask(() => throw 'second error');
+          Future.microtask(() => throw 'third error');
+          Future.microtask(completer.complete);
         });
         test('wait', () => completer.future);''', '''
         +0: loading test.dart
@@ -152,7 +152,7 @@ void main() {
                'longer. Even more. We have to get to at least 200 characters. '
                'I know that seems like a lot, but I believe in you. A little '
                'more... okay, that should do it.',
-           () => throw new TestFailure('oh no'));''', '''
+           () => throw TestFailure('oh no'));''', '''
         +0: loading test.dart
         +0: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
         +0 -1: really gosh dang long test name. Even longer than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it. [E]
@@ -187,15 +187,15 @@ void main() {
       return _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
-        var testDone = new Completer();
-        var waitStarted = new Completer();
+        var testDone = Completer();
+        var waitStarted = Completer();
         test('test', () {
           waitStarted.future.then((_) {
-            new Future(() => print("one"));
-            new Future(() => print("two"));
-            new Future(() => print("three"));
-            new Future(() => print("four"));
-            new Future(testDone.complete);
+            Future(() => print("one"));
+            Future(() => print("two"));
+            Future(() => print("three"));
+            Future(() => print("four"));
+            Future(testDone.complete);
           });
         });
 
@@ -221,7 +221,7 @@ void main() {
       return _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
-        var completer = new Completer();
+        var completer = Completer();
         test('test', () {
           scheduleMicrotask(() {
             print("three");
@@ -287,7 +287,7 @@ void main() {
       return _expectReport('''
           test('slow', () async {
             print('hello');
-            await new Future.delayed(new Duration(seconds: 3));
+            await Future.delayed(Duration(seconds: 3));
             print('goodbye');
           });''', '''
           +0: loading test.dart
@@ -353,10 +353,10 @@ void main() {
 
     test('runs skipped tests along with successful and failing tests', () {
       return _expectReport('''
-          test('failure 1', () => throw new TestFailure('oh no'));
+          test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
-          test('failure 2', () => throw new TestFailure('oh no'));
+          test('failure 2', () => throw TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''', '''
           +0: loading test.dart

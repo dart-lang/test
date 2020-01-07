@@ -24,7 +24,7 @@ final _failure = '''
   import 'package:test/test.dart';
 
   void main() {
-    test("failure", () => throw new TestFailure("oh no"));
+    test("failure", () => throw TestFailure("oh no"));
   }
 ''';
 
@@ -140,7 +140,7 @@ void main() {
         void main() {
           test("test", () {
             if (const bool.fromEnvironment("node")) {
-              throw new TestFailure("oh no");
+              throw TestFailure("oh no");
             }
           });
         }
@@ -160,7 +160,7 @@ void main() {
       void main() {
         test("test", () {
           print("Hello,");
-          return new Future(() => print("world!"));
+          return Future(() => print("world!"));
         });
       }
     ''').create();
@@ -183,7 +183,7 @@ void main() {
       void main() {
         test("test", () {
           log("Hello,");
-          return new Future(() => log("world!"));
+          return Future(() => log("world!"));
         });
       }
     ''').create();
@@ -254,7 +254,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("fail", () => throw 'oh no', onPlatform: {"node": new Skip()});
+          test("fail", () => throw 'oh no', onPlatform: {"node": Skip()});
         }
       ''').create();
 
@@ -270,7 +270,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("success", () {}, onPlatform: {"browser": new Skip()});
+          test("success", () {}, onPlatform: {"browser": Skip()});
         }
       ''').create();
 
@@ -287,7 +287,7 @@ void main() {
 
         void main() {
           test("fail", () => throw 'oh no',
-              onPlatform: {"${currentOS.identifier}": new Skip()});
+              onPlatform: {"${currentOS.identifier}": Skip()});
         }
       ''').create();
 
@@ -303,7 +303,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("success", () {}, onPlatform: {"${otherOS}": new Skip()});
+          test("success", () {}, onPlatform: {"${otherOS}": Skip()});
         }
       ''').create();
 

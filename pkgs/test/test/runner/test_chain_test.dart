@@ -20,8 +20,8 @@ void main() {
 
             void main() {
               test("failure", () async{
-                await new Future((){});
-                await new Future((){});
+                await Future((){});
+                await Future((){});
                 throw "oh no";
               });
             }

@@ -48,7 +48,7 @@ final OperatingSystem currentOS = (() {
   throw UnsupportedError('Unsupported operating system "$name".');
 })();
 
-// TODO(nweiz): Make this `new SuitePlatform.current()` once we only support
+// TODO(nweiz): Make this `SuitePlatform.current()` once we only support
 // Dart 2 and we can import `dart:io` from within cross-platform libraries. See
 // commit 4ffda6d2.
 /// Returns a [SuitePlatform] with the given [runtime], and with [os] and

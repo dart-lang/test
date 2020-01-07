@@ -32,7 +32,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -61,7 +61,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 

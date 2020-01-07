@@ -147,8 +147,8 @@ void main() {
 
           void main() {
             test("failure", () async{
-              await new Future((){});
-              await new Future((){});
+              await Future((){});
+              await Future((){});
               throw "oh no";
             });
           }
@@ -390,7 +390,7 @@ transformers:
 
           Future apply(Transform transform) async {
             var contents = await transform.primaryInput.readAsString();
-            transform.addOutput(new Asset.fromString(
+            transform.addOutput(Asset.fromString(
                 transform.primaryInput.id,
                 contents.replaceAll("isFalse", "isTrue")));
           }
@@ -449,7 +449,7 @@ transformers:
       import 'package:test/test.dart';
 
       void main() {
-        test("success", () => new Future.delayed(Duration.zero));
+        test("success", () => Future.delayed(Duration.zero));
       }
     ''').create();
 
@@ -492,7 +492,7 @@ transformers:
       import 'package:test/test.dart';
 
       void main() {
-        test("success", () => new Future.delayed(Duration.zero));
+        test("success", () => Future.delayed(Duration.zero));
       }
     ''').create();
 

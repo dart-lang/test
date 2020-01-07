@@ -33,17 +33,17 @@ are made using [`expect()`]:
 [`expect()`]: https://pub.dev/documentation/test_api/latest/test_api/expect.html
 
 ```dart
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("String.split() splits the string on the delimiter", () {
-    var string = "foo,bar,baz";
-    expect(string.split(","), equals(["foo", "bar", "baz"]));
+  test('String.split() splits the string on the delimiter', () {
+    var string = 'foo,bar,baz';
+    expect(string.split(','), equals(['foo', 'bar', 'baz']));
   });
 
-  test("String.trim() removes surrounding whitespace", () {
-    var string = "  foo ";
-    expect(string.trim(), equals("foo"));
+  test('String.trim() removes surrounding whitespace', () {
+    var string = '  foo ';
+    expect(string.trim(), equals('foo'));
   });
 }
 ```
@@ -54,28 +54,28 @@ description is added to the beginning of its test's descriptions.
 [`group()`]: https://pub.dev/documentation/test_api/latest/test_api/group.html
 
 ```dart
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  group("String", () {
-    test(".split() splits the string on the delimiter", () {
-      var string = "foo,bar,baz";
-      expect(string.split(","), equals(["foo", "bar", "baz"]));
+  group('String', () {
+    test('.split() splits the string on the delimiter', () {
+      var string = 'foo,bar,baz';
+      expect(string.split(','), equals(['foo', 'bar', 'baz']));
     });
 
-    test(".trim() removes surrounding whitespace", () {
-      var string = "  foo ";
-      expect(string.trim(), equals("foo"));
+    test('.trim() removes surrounding whitespace', () {
+      var string = '  foo ';
+      expect(string.trim(), equals('foo'));
     });
   });
 
-  group("int", () {
-    test(".remainder() returns the remainder of division", () {
+  group('int', () {
+    test('.remainder() returns the remainder of division', () {
       expect(11.remainder(3), equals(2));
     });
 
-    test(".toRadixString() returns a hex string", () {
-      expect(11.toRadixString(16), equals("b"));
+    test('.toRadixString() returns a hex string', () {
+      expect(11.toRadixString(16), equals('b'));
     });
   });
 }
@@ -87,14 +87,14 @@ complex validations:
 [`matcher`]: https://pub.dev/documentation/matcher/latest/matcher/matcher-library.html
 
 ```dart
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test(".split() splits the string on the delimiter", () {
-    expect("foo,bar,baz", allOf([
-      contains("foo"),
-      isNot(startsWith("bar")),
-      endsWith("baz")
+  test('.split() splits the string on the delimiter', () {
+    expect('foo,bar,baz', allOf([
+      contains('foo'),
+      isNot(startsWith('bar')),
+      endsWith('baz')
     ]));
   });
 }
@@ -106,14 +106,14 @@ suite, and `tearDown()` will run after. `tearDown()` will run even if a test
 fails, to ensure that it has a chance to clean up after itself.
 
 ```dart
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
   HttpServer server;
   Uri url;
   setUp(() async {
     server = await HttpServer.bind('localhost', 0);
-    url = Uri.parse("http://${server.address.host}:${server.port}");
+    url = Uri.parse('http://${server.address.host}:${server.port}');
   });
 
   tearDown(() async {
@@ -195,11 +195,11 @@ file should run on. Just put it at the top of your file, before any `library` or
 `import` declarations:
 
 ```dart
-@TestOn("vm")
+@TestOn('vm')
 
-import "dart:io";
+import 'dart:io';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
   // ...
@@ -274,7 +274,7 @@ only supports boolean operations. The following identifiers are defined:
   equivalent to `!windows`.
 
 For example, if you wanted to run a test on every browser but Chrome, you would
-write `@TestOn("browser && !chrome")`.
+write `@TestOn('browser && !chrome')`.
 
 ### Running Tests on Node.js
 
@@ -290,7 +290,7 @@ meant to be used by JavaScript code.
 The test runner looks for an executable named `node` (on Mac OS or Linux) or
 `node.exe` (on Windows) on your system path. When compiling Node.js tests, it
 passes `-Dnode=true`, so tests can determine whether they're running on Node
-using [`const bool.fromEnvironment("node")`][bool.fromEnvironment]. It also sets
+using [`const bool.fromEnvironment('node')`][bool.fromEnvironment]. It also sets
 `--server-mode`, which will tell the compiler that `dart:html` is not available.
 
 [bool.fromEnvironment]: https://api.dart.dev/stable/dart-core/bool/bool.fromEnvironment.html
@@ -304,13 +304,13 @@ Tests written with `async`/`await` will work automatically. The test runner
 won't consider the test finished until the returned `Future` completes.
 
 ```dart
-import "dart:async";
+import 'dart:async';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("new Future.value() returns the value", () async {
-    var value = await new Future.value(10);
+  test('Future.value() returns the value', () async {
+    var value = await Future.value(10);
     expect(value, equals(10));
   });
 }
@@ -324,13 +324,13 @@ matcher against that `Future`'s value.
 [`completion()`]: https://pub.dev/documentation/test_api/latest/test_api/completion.html
 
 ```dart
-import "dart:async";
+import 'dart:async';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("new Future.value() returns the value", () {
-    expect(new Future.value(10), completion(equals(10)));
+  test('Future.value() returns the value', () {
+    expect(Future.value(10), completion(equals(10)));
   });
 }
 ```
@@ -342,14 +342,14 @@ particular type of exception is thrown:
 [`throwsA()`]: https://pub.dev/documentation/test_api/latest/test_api/throwsA.html
 
 ```dart
-import "dart:async";
+import 'dart:async';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("new Future.error() throws the error", () {
-    expect(new Future.error("oh no"), throwsA(equals("oh no")));
-    expect(new Future.error(new StateError("bad state")), throwsStateError);
+  test('Future.error() throws the error', () {
+    expect(Future.error('oh no'), throwsA(equals('oh no')));
+    expect(Future.error(StateError('bad state')), throwsStateError);
   });
 }
 ```
@@ -360,13 +360,13 @@ will cause the test to fail if it's called too often; second, it keeps the test
 from finishing until the function is called the requisite number of times.
 
 ```dart
-import "dart:async";
+import 'dart:async';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("Stream.fromIterable() emits the values in the iterable", () {
-    var stream = new Stream.fromIterable([1, 2, 3]);
+  test('Stream.fromIterable() emits the values in the iterable', () {
+    var stream = Stream.fromIterable([1, 2, 3]);
 
     stream.listen(expectAsync1((number) {
       expect(number, inInclusiveRange(1, 3));
@@ -387,29 +387,29 @@ example:
 [Stream]: https://api.dart.dev/stable/dart-async/Stream-class.html
 
 ```dart
-import "dart:async";
+import 'dart:async';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("process emits status messages", () {
+  test('process emits status messages', () {
     // Dummy data to mimic something that might be emitted by a process.
-    var stdoutLines = new Stream.fromIterable([
-      "Ready.",
-      "Loading took 150ms.",
-      "Succeeded!"
+    var stdoutLines = Stream.fromIterable([
+      'Ready.',
+      'Loading took 150ms.',
+      'Succeeded!'
     ]);
 
     expect(stdoutLines, emitsInOrder([
       // Values match individual events.
-      "Ready.",
+      'Ready.',
 
       // Matchers also run against individual events.
-      startsWith("Loading took"),
+      startsWith('Loading took'),
 
       // Stream matchers can be nested. This asserts that one of two events are
       // emitted after the "Loading took" line.
-      emitsAnyOf(["Succeeded!", "Failed!"]),
+      emitsAnyOf(['Succeeded!', 'Failed!']),
 
       // By default, more events are allowed after the matcher finishes
       // matching. This asserts instead that the stream emits a done event and
@@ -430,29 +430,29 @@ which can only have one subscriber. For example:
 [`StreamQueue`]: https://pub.dev/documentation/async/latest/async/StreamQueue-class.html
 
 ```dart
-import "dart:async";
+import 'dart:async';
 
-import "package:async/async.dart";
-import "package:test/test.dart";
+import 'package:async/async.dart';
+import 'package:test/test.dart';
 
 void main() {
-  test("process emits a WebSocket URL", () async {
+  test('process emits a WebSocket URL', () async {
     // Wrap the Stream in a StreamQueue so that we can request events.
-    var stdout = new StreamQueue(new Stream.fromIterable([
-      "WebSocket URL:",
-      "ws://localhost:1234/",
-      "Waiting for connection..."
+    var stdout = StreamQueue(Stream.fromIterable([
+      'WebSocket URL:',
+      'ws://localhost:1234/',
+      'Waiting for connection...'
     ]));
 
     // Ignore lines from the process until it's about to emit the URL.
-    await expect(stdout, emitsThrough("WebSocket URL:"));
+    await expect(stdout, emitsThrough('WebSocket URL:'));
 
     // Parse the next line as a URL.
     var url = Uri.parse(await stdout.next);
     expect(url.host, equals('localhost'));
 
     // You can match against the same StreamQueue multiple times.
-    await expect(stdout, emits("Waiting for connection..."));
+    await expect(stdout, emits('Waiting for connection...'));
   });
 }
 ```
@@ -474,8 +474,7 @@ The following built-in stream matchers are available:
 * [`neverEmits()`] matches a stream that finishes *without* matching an inner
   matcher.
 
-You can also define your own custom stream matchers by calling
-[`new StreamMatcher()`].
+You can also define your own custom stream matchers with [`StreamMatcher()`].
 
 [`emits()`]: https://pub.dev/documentation/test_api/latest/test_api/emits.html
 [`emitsError()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsError.html
@@ -486,7 +485,7 @@ You can also define your own custom stream matchers by calling
 [`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInOrder.html
 [`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInAnyOrder.html
 [`neverEmits()`]: https://pub.dev/documentation/test_api/latest/test_api/neverEmits.html
-[`new StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/test_api/StreamMatcher-class.html
+[`StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/test_api/StreamMatcher-class.html
 
 ## Running Tests With Custom HTML
 
@@ -571,9 +570,9 @@ should be used instead.
 To skip a test suite, put a `@Skip` annotation at the top of the file:
 
 ```dart
-@Skip("currently failing (see issue 1234)")
+@Skip('currently failing (see issue 1234)')
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
   // ...
@@ -587,16 +586,16 @@ Groups and individual tests can be skipped by passing the `skip` parameter. This
 can be either `true` or a String describing why the test is skipped. For example:
 
 ```dart
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  group("complicated algorithm tests", () {
+  group('complicated algorithm tests', () {
     // ...
   }, skip: "the algorithm isn't quite right");
 
-  test("error-checking test", () {
+  test('error-checking test', () {
     // ...
-  }, skip: "TODO: add error-checking.");
+  }, skip: 'TODO: add error-checking.');
 }
 ```
 
@@ -609,7 +608,7 @@ for a test suite, put a `@Timeout` annotation at the top of the file:
 ```dart
 @Timeout(const Duration(seconds: 45))
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
   // ...
@@ -624,16 +623,16 @@ Timeouts can be set for tests and groups using the `timeout` parameter. This
 parameter takes a `Timeout` object just like the annotation. For example:
 
 ```dart
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  group("slow tests", () {
+  group('slow tests', () {
     // ...
 
-    test("even slower test", () {
+    test('even slower test', () {
       // ...
-    }, timeout: new Timeout.factor(2))
-  }, timeout: new Timeout(new Duration(minutes: 1)));
+    }, timeout: Timeout.factor(2))
+  }, timeout: Timeout(Duration(minutes: 1)));
 }
 ```
 
@@ -652,16 +651,16 @@ and `group()`. For example:
 ```dart
 @OnPlatform(const {
   // Give Windows some extra wiggle-room before timing out.
-  "windows": const Timeout.factor(2)
+  'windows': const Timeout.factor(2)
 })
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("do a thing", () {
+  test('do a thing', () {
     // ...
   }, onPlatform: {
-    "safari": new Skip("Safari is currently broken (see #1234)")
+    'safari': Skip('Safari is currently broken (see #1234)')
   });
 }
 ```
@@ -692,18 +691,18 @@ Tags are defined using the `@Tags` annotation for suites and the `tags` named
 parameter to `test()` and `group()`. For example:
 
 ```dart
-@Tags(const ["browser"])
+@Tags(const ['browser'])
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("successfully launches Chrome", () {
+  test('successfully launches Chrome', () {
     // ...
-  }, tags: "chrome");
+  }, tags: 'chrome');
 
-  test("launches two browsers at once", () {
+  test('launches two browsers at once', () {
     // ...
-  }, tags: ["chrome", "firefox"]);
+  }, tags: ['chrome', 'firefox']);
 }
 ```
 
@@ -800,9 +799,9 @@ communicates with the hybrid isolate. For example:
 
 // The library loaded by spawnHybridUri() can import any packages that your
 // package depends on, including those that only work on the VM.
-import "package:shelf/shelf_io.dart" as io;
-import "package:shelf_web_socket/shelf_web_socket.dart";
-import "package:stream_channel/stream_channel.dart";
+import 'package:shelf/shelf_io.dart' as io;
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 // Once the hybrid isolate starts, it will call the special function
 // hybridMain() with a StreamChannel that's connected to the channel
@@ -810,7 +809,7 @@ import "package:stream_channel/stream_channel.dart";
 hybridMain(StreamChannel channel) async {
   // Start a WebSocket server that just sends "hello!" to its clients.
   var server = await io.serve(webSocketHandler((webSocket) {
-    webSocket.sink.add("hello!");
+    webSocket.sink.add('hello!');
   }), 'localhost', 0);
 
   // Send the port number of the WebSocket server to the browser test, so
@@ -821,24 +820,24 @@ hybridMain(StreamChannel channel) async {
 
 // ## test/web_socket_test.dart
 
-@TestOn("browser")
+@TestOn('browser')
 
-import "dart:html";
+import 'dart:html';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 void main() {
-  test("connects to a server-side WebSocket", () async {
+  test('connects to a server-side WebSocket', () async {
     // Each spawnHybrid function returns a StreamChannel that communicates with
     // the hybrid isolate. You can close this channel to kill the isolate.
-    var channel = spawnHybridUri("web_socket_server.dart");
+    var channel = spawnHybridUri('web_socket_server.dart');
 
     // Get the port for the WebSocket server from the hybrid isolate.
     var port = await channel.stream.first;
 
-    var socket = new WebSocket('ws://localhost:$port');
+    var socket = WebSocket('ws://localhost:$port');
     var message = await socket.onMessage.first;
-    expect(message.data, equals("hello!"));
+    expect(message.data, equals('hello!'));
   });
 }
 ```

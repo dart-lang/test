@@ -123,8 +123,8 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          var skipCompleter = new Completer();
-          var waitCompleter = new Completer();
+          var skipCompleter = Completer();
+          var waitCompleter = Completer();
           test("skip", () {
             skipCompleter.future.then((_) {
               waitCompleter.complete();

@@ -21,7 +21,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("timeout", () async {
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
   });
 }
 ''').create();
@@ -42,7 +42,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("timeout", () async {
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
   });
 }
 ''').create();
@@ -66,7 +66,7 @@ void main() {
   test("timeout", () async {
     runCount++;
     if (runCount <=2) {
-      await new Future.delayed(new Duration(milliseconds: 1000));
+      await Future.delayed(Duration(milliseconds: 1000));
     }
   }, retry: 3);
 }
@@ -92,11 +92,11 @@ import 'package:test/test.dart';
 
 void main() {
   test("no timeout", () async {
-    await new Future.delayed(new Duration(milliseconds: 250));
+    await Future.delayed(Duration(milliseconds: 250));
   });
 
   test("timeout", () async {
-    await new Future.delayed(new Duration(milliseconds: 750));
+    await Future.delayed(Duration(milliseconds: 750));
   });
 }
 ''').create();

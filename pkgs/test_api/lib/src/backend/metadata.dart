@@ -365,7 +365,7 @@ class Metadata {
   }
 
   /// Serializes [this] into a JSON-safe object that can be deserialized using
-  /// [new Metadata.deserialize].
+  /// [Metadata.deserialize].
   Map<String, dynamic> serialize() {
     // Make this a list to guarantee that the order is preserved.
     var serializedOnPlatform = [];

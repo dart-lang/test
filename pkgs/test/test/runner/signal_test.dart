@@ -84,14 +84,14 @@ import 'package:test/test.dart';
 
 void main() {
   tearDownAll(() {
-    new File("output_all").writeAsStringSync("ran tearDownAll");
+    File("output_all").writeAsStringSync("ran tearDownAll");
   });
 
-  tearDown(() => new File("output").writeAsStringSync("ran tearDown"));
+  tearDown(() => File("output").writeAsStringSync("ran tearDown"));
 
   test("test", () {
     print("running test");
-    return new Future.delayed(new Duration(seconds: 1));
+    return Future.delayed(Duration(seconds: 1));
   });
 }
 ''').create();
@@ -115,8 +115,8 @@ import 'package:test/test.dart';
 void main() {
   tearDownAll(() async {
     print("running tearDownAll");
-    await new Future.delayed(new Duration(seconds: 1));
-    new File("output").writeAsStringSync("ran tearDownAll");
+    await Future.delayed(Duration(seconds: 1));
+    File("output").writeAsStringSync("ran tearDownAll");
   });
 
   test("test", () {});
@@ -142,7 +142,7 @@ void main() {
     print("running test");
 
     // Allow an event loop to pass so the preceding print can be handled.
-    return new Future(() {
+    return Future(() {
       // Loop forever so that if the test isn't stopped while running, it never
       // stops.
       while (true) {}
@@ -192,13 +192,13 @@ void main() {
   var expectThrewError = false;
 
   tearDown(() {
-    new File("output").writeAsStringSync(expectThrewError.toString());
+    File("output").writeAsStringSync(expectThrewError.toString());
   });
 
   test("test", () async {
     print("running test");
 
-    await new Future.delayed(new Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 1));
     try {
       expect(true, isTrue);
     } catch (_) {
@@ -227,13 +227,13 @@ void main() {
   var expectAsyncThrewError = false;
 
   tearDown(() {
-    new File("output").writeAsStringSync(expectAsyncThrewError.toString());
+    File("output").writeAsStringSync(expectAsyncThrewError.toString());
   });
 
   test("test", () async {
     print("running test");
 
-    await new Future.delayed(new Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 1));
     try {
       expectAsync0(() {});
     } catch (_) {
