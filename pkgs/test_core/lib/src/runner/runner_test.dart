@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
@@ -16,7 +16,6 @@ import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementa
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
-import '../util/unawaited.dart';
 import 'spawn_hybrid.dart';
 
 /// A test running remotely, controlled by a stream channel.

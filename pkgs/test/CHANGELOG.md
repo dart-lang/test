@@ -1,7 +1,9 @@
-## 1.10.0-dev
+## 1.10.0
 
 * Add `customHtmlTemplateFile` configuration option to allow sharing an
   html template between tests
+* Depend on the latest `package:test_core`.
+* Depend on the latest `package:test_api`.
 
 ## 1.9.4
 

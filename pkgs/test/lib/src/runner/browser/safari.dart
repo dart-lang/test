@@ -7,11 +7,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-
+import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
-import '../../util/unawaited.dart';
 import '../executable_settings.dart';
 import 'browser.dart';
 import 'default_settings.dart';
