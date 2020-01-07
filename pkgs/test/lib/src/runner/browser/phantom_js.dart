@@ -7,12 +7,10 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
-
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-
+import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/exit_codes.dart' // ignore: implementation_imports
     as exit_codes;
-import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';

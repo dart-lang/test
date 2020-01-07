@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:pedantic/pedantic.dart';
+import 'package:test_api/src/utils.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

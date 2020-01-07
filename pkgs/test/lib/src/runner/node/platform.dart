@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:multi_server_socket/multi_server_socket.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
-import 'package:pedantic/pedantic.dart';
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';

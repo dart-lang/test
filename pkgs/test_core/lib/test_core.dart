@@ -10,7 +10,6 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports

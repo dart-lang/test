@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../frontend/expect.dart';

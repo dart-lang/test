@@ -1,7 +1,8 @@
-## 0.2.12-dev
+## 0.2.12
 
 * Link to docs on setting timeout when a test times out with the default
   duration.
+* No longer directly depend on `package:pedantic`.
 
 ## 0.2.11
 
