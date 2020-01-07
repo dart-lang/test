@@ -64,7 +64,6 @@ Declarer get _declarer {
 
     var success = await runZoned(() => Invoker.guard(engine.run),
         zoneValues: {#test.declarer: _globalDeclarer});
-    // TODO(nweiz): Set the exit code on the VM when issue 6943 is fixed.
     if (success) return null;
     print('');
     unawaited(Future.error('Dummy exception to set exit code.'));

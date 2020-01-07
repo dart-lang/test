@@ -192,8 +192,6 @@ StreamChannel spawnHybridCode(String dartCode,
 StreamChannel _spawn(String uri, Object message, {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel;
   if (channel == null) {
-    // TODO(nweiz): Link to an issue tracking support when running the test file
-    // directly.
     throw UnsupportedError("Can't connect to the test runner.\n"
         'spawnHybridUri() is currently only supported within "pub run test".');
   }
