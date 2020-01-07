@@ -1,4 +1,4 @@
-// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -122,15 +122,7 @@ $tests
     return line.substring(indentation);
   }).join('\n');
 
-  // In Dart 1.24, stack traces with Future constructors output as
-  // `new Future` instead of `Future.Future`.
-  // Support running tests in both old and new styles.
-  expect(
-      actual,
-      anyOf(
-          equals(stdoutExpected),
-          equals(
-              stdoutExpected.replaceAll(' Future.Future.', ' new Future.'))));
+  expect(actual, equals(stdoutExpected));
 
   // ---- file reporter verification ----
   var fileOutputLines =

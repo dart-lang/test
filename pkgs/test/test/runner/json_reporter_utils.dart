@@ -1,3 +1,7 @@
+// Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.import 'dart:convert';
+
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
@@ -6,12 +10,11 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 import 'package:test_core/src/runner/version.dart';
 
-/// Asserts that the tests defined by [tests] produce the JSON events in
-/// [expected].
+/// Asserts that the outputs from running tests with a JSON reporter match the
+/// given expectations.
 ///
-/// If [externalLibraries] are provided it should be a map of relative file
-/// paths to contents. All libraries will be added as imports to the test, and
-/// files will be created for them.
+/// Verifies that [outputLines] matches each set of matchers in [expected],
+/// includes the [testPid] from the test process, and ends with [done].
 Future expectJsonReport(List<String> outputLines, int testPid,
     List<List<dynamic /*Map|Matcher*/ >> expected, Map done) async {
   // Ensure the output is of the same length, including start, done and all
