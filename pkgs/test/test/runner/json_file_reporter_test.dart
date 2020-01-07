@@ -12,6 +12,7 @@ import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 
 import '../io.dart';
 import 'json_reporter_utils.dart';
@@ -84,6 +85,22 @@ void main() {
         testDoneJson(5, result: 'failure'),
       ]
     ], doneJson(success: false));
+  });
+
+  group('reports an error if --file-reporter', () {
+    test('is not in the form <reporter>:<filepath>', () async {
+      var test = await runTest(['--file-reporter=json']);
+      expect(test.stderr,
+          emits(contains('option must be in the form <reporter>:<filepath>')));
+      await test.shouldExit(exit_codes.usage);
+    });
+
+    test('targets a non-existent reporter', () async {
+      var test = await runTest(['--file-reporter=nope:output.txt']);
+      expect(
+          test.stderr, emits(contains('"nope" is not a supported reporter')));
+      await test.shouldExit(exit_codes.usage);
+    });
   });
 }
 

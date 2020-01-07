@@ -286,7 +286,11 @@ class _Parser {
               '"json:reports/tests.json"');
         }
         final sep = value.indexOf(':');
-        return {value.substring(0, sep): value.substring(sep + 1)};
+        final reporter = value.substring(0, sep);
+        if (!allReporters.containsKey(reporter)) {
+          throw FormatException('"$reporter" is not a supported reporter');
+        }
+        return {reporter: value.substring(sep + 1)};
       });
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
