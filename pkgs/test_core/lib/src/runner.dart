@@ -75,6 +75,14 @@ class Runner {
         var engine =
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
+        Reporter createFileReporter(String reporterName, String filepath) {
+          final sink = (File(config.fileReporters[reporterName])
+                ..createSync(recursive: true))
+              .openWrite();
+          return allReporters[reporterName]
+              .factory(config, engine, sink, onDone: sink.flush);
+        }
+
         return Runner._(
           engine,
           MultiplexReporter([
@@ -82,12 +90,7 @@ class Runner {
             allReporters[config.reporter].factory(config, engine, stdout),
             // File reporters.
             for (var reporter in config.fileReporters.keys)
-              allReporters[reporter].factory(
-                  config,
-                  engine,
-                  (File(config.fileReporters[reporter])
-                        ..createSync(recursive: true))
-                      .openWrite()),
+              createFileReporter(reporter, config.fileReporters[reporter]),
           ]),
         );
       });

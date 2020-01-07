@@ -62,11 +62,16 @@ class JsonReporter implements Reporter {
   /// The next ID to associate with a [LiveTest].
   var _nextID = 0;
 
+  final FutureOr<void> Function() _onDoneCallback;
+
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine, StringSink sink) =>
+  static JsonReporter watch(Engine engine, StringSink sink,
+          {FutureOr<void> Function() onDone}) =>
       JsonReporter._(engine, sink);
 
-  JsonReporter._(this._engine, this._sink) : _config = Configuration.current {
+  JsonReporter._(this._engine, this._sink, {FutureOr<void> Function() onDone})
+      : _config = Configuration.current,
+        _onDoneCallback = onDone {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -276,6 +281,9 @@ class JsonReporter implements Reporter {
     _stopwatch.stop();
 
     _emit('done', {'success': success});
+    if (_onDoneCallback != null) {
+      _onDoneCallback();
+    }
   }
 
   /// Returns the configuration for [suite].
