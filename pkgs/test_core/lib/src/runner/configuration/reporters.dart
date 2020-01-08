@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
@@ -16,8 +15,7 @@ import '../reporter/json.dart';
 
 /// Constructs a reporter for the provided engine with the provided
 /// configuration.
-typedef ReporterFactory = Reporter Function(Configuration, Engine, StringSink,
-    {FutureOr<void> Function() onDone});
+typedef ReporterFactory = Reporter Function(Configuration, Engine, StringSink);
 
 /// Container for a reporter description and corresponding factory.
 class ReporterDetails {
@@ -33,16 +31,16 @@ final UnmodifiableMapView<String, ReporterDetails> allReporters =
 final _allReporters = <String, ReporterDetails>{
   'expanded': ReporterDetails(
       'A separate line for each update.',
-      (config, engine, sink, {onDone}) => ExpandedReporter.watch(engine, sink,
+      (config, engine, sink) => ExpandedReporter.watch(engine, sink,
           color: config.color,
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'compact': ReporterDetails('A single line, updated continuously.',
-      (_, engine, sink, {onDone}) => CompactReporter.watch(engine, sink)),
+      (_, engine, sink) => CompactReporter.watch(engine, sink)),
   'json': ReporterDetails(
       'A machine-readable format (see https://goo.gl/gBsV1a).',
-      (_, engine, sink, {onDone}) => JsonReporter.watch(engine, sink)),
+      (_, engine, sink) => JsonReporter.watch(engine, sink)),
 };
 
 final defaultReporter =

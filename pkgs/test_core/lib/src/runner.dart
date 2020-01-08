@@ -70,17 +70,20 @@ class Runner {
   final _closeMemo = AsyncMemoizer();
   bool get _closed => _closeMemo.hasRun;
 
+  /// Sinks created for each file reporter (if there are any).
+  final List<IOSink> _sinks;
+
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
         var engine =
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
+        var sinks = <IOSink>[];
         Reporter createFileReporter(String reporterName, String filepath) {
-          final sink = (File(config.fileReporters[reporterName])
-                ..createSync(recursive: true))
-              .openWrite();
-          return allReporters[reporterName]
-              .factory(config, engine, sink, onDone: sink.flush);
+          final sink =
+              (File(filepath)..createSync(recursive: true)).openWrite();
+          sinks.add(sink);
+          return allReporters[reporterName].factory(config, engine, sink);
         }
 
         return Runner._(
@@ -92,10 +95,11 @@ class Runner {
             for (var reporter in config.fileReporters.keys)
               createFileReporter(reporter, config.fileReporters[reporter]),
           ]),
+          sinks,
         );
       });
 
-  Runner._(this._engine, this._reporter);
+  Runner._(this._engine, this._reporter, this._sinks);
 
   /// Starts the runner.
   ///
@@ -247,6 +251,10 @@ class Runner {
         await Future.wait([_loader.closeEphemeral(), _engine.close()]);
         if (timer != null) timer.cancel();
         await _loader.close();
+
+        // Flush any IOSinks created for file reporters.
+        await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
+        _sinks.clear();
       });
 
   /// Return a stream of [LoadSuite]s in [_config.paths].
