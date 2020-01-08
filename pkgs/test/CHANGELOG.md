@@ -1,3 +1,7 @@
+## 1.10.1-dev
+
+* Internal cleanup.
+
 ## 1.10.0
 
 * Add `customHtmlTemplateFile` configuration option to allow sharing an
