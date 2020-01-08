@@ -10,6 +10,7 @@
 * [Asynchronous Tests](#asynchronous-tests)
   * [Stream Matchers](#stream-matchers)
 * [Running Tests With Custom HTML](#running-tests-with-custom-html)
+  * [Providing a custom HTML template](#providing-a-custom-html-template)
 * [Configuring Tests](#configuring-tests)
   * [Skipping Tests](#skipping-tests)
   * [Timeouts](#timeouts)
@@ -493,7 +494,9 @@ By default, the test runner will generate its own empty HTML file for browser
 tests. However, tests that need custom HTML can create their own files. These
 files have three requirements:
 
-* They must have the same name as the test, with `.dart` replaced by `.html`.
+* They must have the same name as the test, with `.dart` replaced by `.html`. You can also
+  provide a configuration path to an html file if you want it to be reused across all tests.
+  See [Providing a custom HTML template](#providing-a-custom-html-template) below.
 
 * They must contain a `link` tag with `rel="x-dart-test"` and an `href`
   attribute pointing to the test script.
@@ -517,6 +520,40 @@ the following HTML file:
   </body>
 </html>
 ```
+
+### Providing a custom HTML template
+
+If you want to share the same HTML file across all tests, you can provide a
+`custom-html-template-path` configuration option to your configuration file.
+This file should follow the rules above, except that instead of the link tag
+add exactly one `{{testScript}}` in the place where you want the template processor to insert it.
+
+You can also optionally use any number of `{{testName}}` placeholders which will be replaced by the test filename.
+
+The template can't be named like any test file, as that would clash with using the
+custom HTML mechanics. In such a case, an error will be thrown.
+
+For example:
+
+```yaml
+custom-html-template-path: html_template.html.tpl
+```
+
+```html
+<!doctype html>
+<!-- html_template.html.tpl -->
+<html>
+  <head>
+    <title>{{testName}} Test</title>
+    {{testScript}}
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    // ...
+  </body>
+</html>
+```
+
 
 ## Configuring Tests
 

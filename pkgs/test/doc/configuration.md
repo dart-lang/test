@@ -47,6 +47,7 @@ tags:
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
   * [`fold_stack_frames`](#fold_stack_frames)
+  * [`custom_html_template_path`](#custom_html_template_path)
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
@@ -463,6 +464,11 @@ dart:async                  _asyncThenWrapperHelper
 test/sample_test.dart 5:27  main.<fn>
 ```
 
+### `custom_html_template_path`
+
+This field specifies the path of the HTML template file to be used for tests run in an HTML environment.
+Any HTML file that is named the same as the test and in the same directory will take precedence over the template.
+For more information about the usage of this option see [Providing a custom HTML template](https://github.com/dart-lang/test/blob/master/README.md#providing-a-custom-html-template)
 
 ## Configuring Tags
 

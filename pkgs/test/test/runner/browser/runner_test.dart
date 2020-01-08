@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+import 'dart:convert';
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -207,8 +208,168 @@ void main() {
       await test.shouldExit(1);
     }, tags: 'chrome');
 
-    // TODO(nweiz): test what happens when a test file is unreadable once issue
-    // 15078 is fixed.
+    test(
+        'still errors even with a custom HTML template set since it will take precedence',
+        () async {
+      await d.file('test.dart', 'void main() {}').create();
+
+      await d.file('test.html', '''
+<html>
+<head>
+  <link rel="x-dart-test" href="test.dart">
+</head>
+</html>
+''').create();
+
+      await d
+          .file(
+              'global_test.yaml',
+              jsonEncode(
+                  {'custom_html_template_path': 'html_template.html.tpl'}))
+          .create();
+
+      await d.file('html_template.html.tpl', '''
+<html>
+<head>
+  {{testScript}}
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+''').create();
+
+      var test = await runTest(['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": "test.html" must contain '
+                '<script src="packages/test/dart.js"></script>.'
+          ]));
+      await test.shouldExit(1);
+    }, tags: 'chrome');
+
+    group('with a custom HTML template', () {
+      setUp(() async {
+        await d.file('test.dart', _success).create();
+        await d
+            .file(
+                'global_test.yaml',
+                jsonEncode(
+                    {'custom_html_template_path': 'html_template.html.tpl'}))
+            .create();
+      });
+
+      test('that does not exist', () async {
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: compiling test.dart [E]',
+              'Failed to load "test.dart": "html_template.html.tpl" does not exist or is not readable'
+            ]));
+        await test.shouldExit(1);
+      }, tags: 'chrome');
+
+      test("that doesn't contain the {{testScript}} tag", () async {
+        await d.file('html_template.html.tpl', '''
+<html>
+<head>
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: compiling test.dart [E]',
+              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
+            ]));
+        await test.shouldExit(1);
+      }, tags: 'chrome');
+
+      test('that contains more than one {{testScript}} tag', () async {
+        await d.file('html_template.html.tpl', '''
+<html>
+<head>
+  {{testScript}}
+  {{testScript}}
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: compiling test.dart [E]',
+              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
+            ]));
+        await test.shouldExit(1);
+      }, tags: 'chrome');
+
+      test('that has no script tag', () async {
+        await d.file('html_template.html.tpl', '''
+<html>
+<head>
+  {{testScript}}
+</head>
+</html>
+''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: compiling test.dart [E]',
+              'Failed to load "test.dart": "html_template.html.tpl" must contain '
+                  '<script src="packages/test/dart.js"></script>.'
+            ]));
+        await test.shouldExit(1);
+      }, tags: 'chrome');
+
+      test('that is named like the test file', () async {
+        await d.file('test.html', '''
+<html>
+<head>
+  {{testScript}}
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+''').create();
+
+        await d
+            .file('global_test_2.yaml',
+                jsonEncode({'custom_html_template_path': 'test.html'}))
+            .create();
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test_2.yaml'});
+        expect(
+            test.stdout,
+            containsInOrder([
+              '-1: compiling test.dart [E]',
+              'Failed to load "test.dart": template file "test.html" cannot be named '
+                  'like the test file.'
+            ]));
+        await test.shouldExit(1);
+      });
+    });
   });
 
   group('runs successful tests', () {
@@ -263,6 +424,94 @@ void main() {
       await test.shouldExit(0);
     }, tags: 'chrome');
 
+    group('with a custom HTML template file', () {
+      group('without a {{testName}} tag', () {
+        setUp(() async {
+          await d
+              .file(
+                  'global_test.yaml',
+                  jsonEncode(
+                      {'custom_html_template_path': 'html_template.html.tpl'}))
+              .create();
+          await d.file('html_template.html.tpl', '''
+  <html>
+  <head>
+    {{testScript}}
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    <div id="foo"></div>
+  </body>
+  </html>
+  ''').create();
+
+          await d.file('test.dart', '''
+  import 'dart:html';
+
+  import 'package:test/test.dart';
+
+  void main() {
+    test("success", () {
+      expect(document.querySelector('#foo'), isNotNull);
+    });
+  }
+  ''').create();
+        });
+
+        test('on Chrome', () async {
+          var test = await runTest(['-p', 'chrome', 'test.dart'],
+              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+      });
+
+      group('with a {{testName}} tag', () {
+        setUp(() async {
+          await d
+              .file(
+                  'global_test.yaml',
+                  jsonEncode(
+                      {'custom_html_template_path': 'html_template.html.tpl'}))
+              .create();
+          await d.file('html_template.html.tpl', '''
+  <html>
+  <head>
+    <title>{{testName}}</title>
+    {{testScript}}
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    <div id="foo"></div>
+  </body>
+  </html>
+  ''').create();
+
+          await d.file('test-with-title.dart', '''
+  import 'dart:html';
+
+  import 'package:test/test.dart';
+
+  void main() {
+    test("success", () {
+      expect(document.querySelector('#foo'), isNotNull);
+    });
+    test("title", () {
+      expect(document.title, 'test-with-title.dart');
+    });
+  }
+  ''').create();
+        });
+
+        test('on Chrome', () async {
+          var test = await runTest(['-p', 'chrome', 'test-with-title.dart'],
+              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+      });
+    });
+
     group('with a custom HTML file', () {
       setUp(() async {
         await d.file('test.dart', '''
@@ -313,6 +562,31 @@ void main() {
 ''').create();
 
         var test = await runTest(['-p', 'chrome', 'test.dart']);
+        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+        await test.shouldExit(0);
+      }, tags: 'chrome');
+
+      test('takes precedence over provided HTML template', () async {
+        await d
+            .file(
+                'global_test.yaml',
+                jsonEncode(
+                    {'custom_html_template_path': 'html_template.html.tpl'}))
+            .create();
+        await d.file('html_template.html.tpl', '''
+<html>
+<head>
+  {{testScript}}
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="not-foo"></div>
+</body>
+</html>
+''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
         expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
         await test.shouldExit(0);
       }, tags: 'chrome');

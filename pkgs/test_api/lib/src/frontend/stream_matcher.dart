@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
-import 'package:pedantic/pedantic.dart';
 
 import '../utils.dart';
 import 'async_matcher.dart';

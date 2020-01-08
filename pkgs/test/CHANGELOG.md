@@ -1,6 +1,9 @@
-## 1.9.5
+## 1.10.0
 
-* Internal cleanup.
+* Add `customHtmlTemplateFile` configuration option to allow sharing an
+  html template between tests
+* Depend on the latest `package:test_core`.
+* Depend on the latest `package:test_api`.
 
 ## 1.9.4
 

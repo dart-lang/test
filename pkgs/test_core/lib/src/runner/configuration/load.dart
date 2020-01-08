@@ -266,8 +266,11 @@ class _ConfigurationLoader {
 
     var overrideRuntimes = _loadOverrideRuntimes();
 
+    var customHtmlTemplatePath = _getString('custom_html_template_path');
+
     return Configuration(
         pauseAfterLoad: pauseAfterLoad,
+        customHtmlTemplatePath: customHtmlTemplatePath,
         runSkipped: runSkipped,
         reporter: reporter,
         fileReporters: fileReporters,
