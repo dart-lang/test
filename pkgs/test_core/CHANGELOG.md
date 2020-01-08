@@ -3,6 +3,8 @@
 * Internal cleanup.
 * Add `customHtmlTemplateFile` configuration option to allow sharing an
   html template between tests
+* Add `file_reporters` configuration option and `--file-reporter` CLI option to
+  allow specifying a separate reporter that writes to a file instead of stdout.
 * Depend on the latest `test_api`.
 
 ## 0.2.15
