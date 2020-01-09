@@ -16,6 +16,7 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/reporter/multiplex.dart';
 
 import 'util/io.dart';
 import 'runner/application_exception.dart';
@@ -69,17 +70,36 @@ class Runner {
   final _closeMemo = AsyncMemoizer();
   bool get _closed => _closeMemo.hasRun;
 
+  /// Sinks created for each file reporter (if there are any).
+  final List<IOSink> _sinks;
+
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
         var engine =
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
-        var reporterDetails = allReporters[config.reporter];
+        var sinks = <IOSink>[];
+        Reporter createFileReporter(String reporterName, String filepath) {
+          final sink =
+              (File(filepath)..createSync(recursive: true)).openWrite();
+          sinks.add(sink);
+          return allReporters[reporterName].factory(config, engine, sink);
+        }
+
         return Runner._(
-            engine, reporterDetails.factory(config, engine, stdout));
+          engine,
+          MultiplexReporter([
+            // Standard reporter.
+            allReporters[config.reporter].factory(config, engine, stdout),
+            // File reporters.
+            for (var reporter in config.fileReporters.keys)
+              createFileReporter(reporter, config.fileReporters[reporter]),
+          ]),
+          sinks,
+        );
       });
 
-  Runner._(this._engine, this._reporter);
+  Runner._(this._engine, this._reporter, this._sinks);
 
   /// Starts the runner.
   ///
@@ -231,6 +251,10 @@ class Runner {
         await Future.wait([_loader.closeEphemeral(), _engine.close()]);
         if (timer != null) timer.cancel();
         await _loader.close();
+
+        // Flush any IOSinks created for file reporters.
+        await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
+        _sinks.clear();
       });
 
   /// Return a stream of [LoadSuite]s in [_config.paths].

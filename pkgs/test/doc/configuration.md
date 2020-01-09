@@ -436,6 +436,19 @@ reporter: expanded
 This field is not supported in the
 [global configuration file](#global-configuration).
 
+### `file_reporters`
+
+This field specifies additional reporters to use that will write their output to
+a file rather than stdout. It should be a map of reporter names to filepaths.
+
+```yaml
+file_reporters:
+  json: reports/tests.json
+```
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
 ### `fold_stack_frames`
 
 This field controls which packages' stack frames will be folded away

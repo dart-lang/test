@@ -216,6 +216,7 @@ class _ConfigurationLoader {
     if (!_runnerConfig) {
       _disallow('pause_after_load');
       _disallow('reporter');
+      _disallow('file_reporters');
       _disallow('concurrency');
       _disallow('names');
       _disallow('plain_names');
@@ -233,6 +234,20 @@ class _ConfigurationLoader {
     if (reporter != null && !allReporters.keys.contains(reporter)) {
       _error('Unknown reporter "$reporter".', 'reporter');
     }
+
+    var fileReporters = _getMap('file_reporters', key: (keyNode) {
+      _validate(keyNode, 'file_reporters key must be a string',
+          (value) => value is String);
+      final reporter = keyNode.value as String;
+      if (!allReporters.keys.contains(reporter)) {
+        _error('Unknown reporter "$reporter".', 'file_reporters');
+      }
+      return reporter;
+    }, value: (valueNode) {
+      _validate(valueNode, 'file_reporters value must be a string',
+          (value) => value is String);
+      return valueNode.value as String;
+    });
 
     var concurrency = _getInt('concurrency');
 
@@ -258,6 +273,7 @@ class _ConfigurationLoader {
         customHtmlTemplatePath: customHtmlTemplatePath,
         runSkipped: runSkipped,
         reporter: reporter,
+        fileReporters: fileReporters,
         concurrency: concurrency,
         runtimes: runtimes,
         chosenPresets: chosenPresets,
