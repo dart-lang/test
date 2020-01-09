@@ -2,9 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO(nweiz): This is under lib so that it can be used by the unittest dummy
-// package. Once that package is no longer being updated, move this back into
-// bin.
 import 'dart:async';
 import 'dart:io';
 

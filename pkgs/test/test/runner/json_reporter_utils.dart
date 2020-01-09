@@ -22,8 +22,6 @@ Future expectJsonReport(List<String> outputLines, int testPid,
   expect(outputLines.length, equals(expected.fold(3, (a, m) => a + m.length)),
       reason: 'Expected $outputLines to match $expected.');
 
-  // TODO(nweiz): validate each event against the JSON schema when
-  // patefacio/json_schema#4 is merged.
   dynamic decodeLine(String l) =>
       jsonDecode(l)..remove('time')..remove('stackTrace');
 
