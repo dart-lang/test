@@ -1,6 +1,5 @@
 name: test
-version: 1.11.0
-author: Dart Team <misc@dartlang.org>
+version: 1.11.1-dev
 description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 
