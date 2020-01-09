@@ -34,8 +34,6 @@ Future<Isolate> runInIsolate(String code, message,
       onExit: onExit);
 }
 
-// TODO(nweiz): Move this into the analyzer once it starts using SourceSpan
-// (issue 22977).
 /// Takes a span whose source is the value of a string that has been parsed from
 /// a Dart file and returns the corresponding span from within that Dart file.
 ///

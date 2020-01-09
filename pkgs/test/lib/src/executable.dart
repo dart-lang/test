@@ -19,6 +19,5 @@ void main(List<String> args) async {
     Runtime.internetExplorer
   ], () => BrowserPlatform.start());
 
-  // TODO figure out if this await is necessary
-  await (executable.main(args) as dynamic);
+  await executable.main(args);
 }

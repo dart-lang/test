@@ -119,19 +119,19 @@ void main() {
           first error
           test.dart 10:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
+          dart:async       new Future.microtask
           test.dart 10:15  main.<fn>
 
           second error
           test.dart 11:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
+          dart:async       new Future.microtask
           test.dart 11:15  main.<fn>
 
           third error
           test.dart 12:38  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async       Future.Future.microtask
+          dart:async       new Future.microtask
           test.dart 12:15  main.<fn>
 
         +0 -1: wait
@@ -345,11 +345,5 @@ $tests
     return line.substring(indentation);
   }).join('\n');
 
-  // In Dart 1.24, stack traces with Future constructors output as
-  // `new Future` instead of `Future.Future`.
-  // Support running tests in both old and new styles.
-  expect(
-      actual,
-      anyOf(equals(expected),
-          equals(expected.replaceAll(' Future.Future.', ' new Future.'))));
+  expect(actual, equals(expected));
 }

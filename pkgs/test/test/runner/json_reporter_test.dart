@@ -603,8 +603,6 @@ import 'package:test/test.dart';
   expect(stdoutLines.length, equals(expected.fold(3, (a, m) => a + m.length)),
       reason: 'Expected $stdoutLines to match $expected.');
 
-  // TODO(nweiz): validate each event against the JSON schema when
-  // patefacio/json_schema#4 is merged.
   dynamic decodeLine(String l) =>
       jsonDecode(l)..remove('time')..remove('stackTrace');
 
