@@ -112,6 +112,9 @@ Usage: pub run test [files or directories...]
           [expanded] (default)        A separate line for each update.
           [json]                      A machine-readable format (see https://goo.gl/gBsV1a).
 
+    --file-reporter                   The reporter used to write test results to a file.
+                                      Should be in the form <reporter>:<filepath>, e.g. "json:reports/tests.json"
+
     --verbose-trace                   Whether to emit stack traces with core library frames.
     --js-trace                        Whether to emit raw JavaScript stack traces for browser tests.
     --[no-]color                      Whether to use terminal colors.

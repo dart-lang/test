@@ -1,6 +1,7 @@
-## 1.10.1-dev
+## 1.11.0
 
-* Internal cleanup.
+* Add `file_reporters` configuration option and `--file-reporter` CLI option to
+  allow specifying a separate reporter that writes to a file instead of stdout.
 
 ## 1.10.0
 

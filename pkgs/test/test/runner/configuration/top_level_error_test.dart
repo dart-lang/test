@@ -157,6 +157,51 @@ void main() {
     });
   });
 
+  group('file_reporters', () {
+    test('rejects an invalid type', () async {
+      await d
+          .file('dart_test.yaml', jsonEncode({'file_reporters': 12}))
+          .create();
+
+      var test = await runTest(['test.dart']);
+      expect(
+          test.stderr, containsInOrder(['file_reporters must be a map', '^^']));
+      await test.shouldExit(exit_codes.data);
+    });
+
+    test('rejects an invalid value type', () async {
+      await d
+          .file(
+              'dart_test.yaml',
+              jsonEncode({
+                'file_reporters': {'json': 12}
+              }))
+          .create();
+
+      var test = await runTest(['test.dart']);
+      expect(test.stderr,
+          containsInOrder(['file_reporters value must be a string', '^^']));
+      await test.shouldExit(exit_codes.data);
+    });
+
+    test('rejects an invalid name', () async {
+      await d
+          .file(
+              'dart_test.yaml',
+              jsonEncode({
+                'file_reporters': {'non-existent': 'out'}
+              }))
+          .create();
+
+      var test = await runTest(['test.dart']);
+      expect(
+          test.stderr,
+          containsInOrder(
+              ['Unknown reporter "non-existent"', '^^^^^^^^^^^^^^']));
+      await test.shouldExit(exit_codes.data);
+    });
+  });
+
   test('rejects an invalid pub serve port', () async {
     await d.file('dart_test.yaml', jsonEncode({'pub_serve': 'foo'})).create();
 

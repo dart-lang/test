@@ -64,6 +64,7 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 /// Runs the test executable with the package root set properly.
 Future<TestProcess> runTest(Iterable<String> args,
     {String reporter,
+    String fileReporter,
     int concurrency,
     Map<String, String> environment,
     bool forwardStdio = false}) async {
@@ -71,10 +72,11 @@ Future<TestProcess> runTest(Iterable<String> args,
 
   var allArgs = [
     p.absolute(p.join(await packageDir, 'bin/test.dart')),
-    '--concurrency=$concurrency'
+    '--concurrency=$concurrency',
+    if (reporter != null) '--reporter=$reporter',
+    if (fileReporter != null) '--file-reporter=$fileReporter',
+    ...?args,
   ];
-  if (reporter != null) allArgs.add('--reporter=$reporter');
-  allArgs.addAll(args);
 
   environment ??= {};
   environment.putIfAbsent('_DART_TEST_TESTING', () => 'true');
