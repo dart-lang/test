@@ -293,7 +293,9 @@ class Declarer {
   /// completes immediately.
   Future _runSetUps() async {
     if (_parent != null) await _parent._runSetUps();
-    await Future.forEach(_setUps, (setUp) => setUp());
+    for (final setup in _setUps) {
+      await setup();
+    }
   }
 
   /// Returns a [Test] that runs the callbacks in [_setUpAll].
