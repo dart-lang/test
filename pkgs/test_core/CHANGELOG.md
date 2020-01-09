@@ -1,8 +1,7 @@
-## 0.2.17-dev
+## 0.2.17
 
 * Add `file_reporters` configuration option and `--file-reporter` CLI option to
   allow specifying a separate reporter that writes to a file instead of stdout.
-* Internal cleanup.
 
 ## 0.2.16
 
