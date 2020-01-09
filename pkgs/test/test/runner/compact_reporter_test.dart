@@ -122,22 +122,22 @@ void main() {
         +0: failures
         +0 -1: failures [E]
           first error
-          test.dart 10:38  main.<fn>.<fn>
+          test.dart 10:34  main.<fn>.<fn>
           ===== asynchronous gap ===========================
           dart:async       new Future.microtask
-          test.dart 10:15  main.<fn>
+          test.dart 10:18  main.<fn>
 
           second error
-          test.dart 11:38  main.<fn>.<fn>
+          test.dart 11:34  main.<fn>.<fn>
           ===== asynchronous gap ===========================
           dart:async       new Future.microtask
-          test.dart 11:15  main.<fn>
+          test.dart 11:18  main.<fn>
 
           third error
-          test.dart 12:38  main.<fn>.<fn>
+          test.dart 12:34  main.<fn>.<fn>
           ===== asynchronous gap ===========================
           dart:async       new Future.microtask
-          test.dart 12:15  main.<fn>
+          test.dart 12:18  main.<fn>
 
 
         +0 -1: wait
