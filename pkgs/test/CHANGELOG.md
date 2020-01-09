@@ -1,13 +1,13 @@
 ## 1.10.1-dev
 
+* Add `file_reporters` configuration option and `--file-reporter` CLI option to
+  allow specifying a separate reporter that writes to a file instead of stdout.
 * Internal cleanup.
 
 ## 1.10.0
 
 * Add `customHtmlTemplateFile` configuration option to allow sharing an
   html template between tests
-* Add `file_reporters` configuration option and `--file-reporter` CLI option to
-  allow specifying a separate reporter that writes to a file instead of stdout.
 * Depend on the latest `package:test_core`.
 * Depend on the latest `package:test_api`.
 
