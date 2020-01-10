@@ -37,7 +37,7 @@ void main() {
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
       });
 
-      test("if only the new configuration's is defined, uses it", () {
+      test("if only the configuration's is defined, uses it", () {
         var merged = SuiteConfiguration().merge(SuiteConfiguration(
             jsTrace: true,
             runSkipped: true,
@@ -53,7 +53,7 @@ void main() {
       });
 
       test(
-          "if the two configurations conflict, uses the new configuration's "
+          "if the two configurations conflict, uses the configuration's "
           'values', () {
         var older = SuiteConfiguration(
             jsTrace: false,
@@ -92,7 +92,7 @@ void main() {
             merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
       });
 
-      test("if only the new configuration's is defined, uses it", () {
+      test("if only the configuration's is defined, uses it", () {
         var merged = SuiteConfiguration().merge(SuiteConfiguration(
             includeTags: BooleanSelector.parse('foo || bar'),
             excludeTags: BooleanSelector.parse('baz || bang')));
@@ -131,7 +131,7 @@ void main() {
         expect(merged.patterns, equals(['beep', 'boop']));
       });
 
-      test("if only the new configuration's is defined, uses it", () {
+      test("if only the configuration's is defined, uses it", () {
         var merged = SuiteConfiguration()
             .merge(SuiteConfiguration(patterns: ['beep', 'boop']));
 
@@ -159,7 +159,7 @@ void main() {
         expect(merged.dart2jsArgs, equals(['--foo', '--bar']));
       });
 
-      test("if only the new configuration's is defined, uses it", () {
+      test("if only the configuration's is defined, uses it", () {
         var merged = SuiteConfiguration()
             .merge(SuiteConfiguration(dart2jsArgs: ['--foo', '--bar']));
         expect(merged.dart2jsArgs, equals(['--foo', '--bar']));

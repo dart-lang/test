@@ -19,7 +19,7 @@ void main() {
 
         void main() {
           test("selected 1", () {});
-          test("nope", () => throw new TestFailure("oh no"));
+          test("nope", () => throw TestFailure("oh no"));
           test("selected 2", () {});
         }
       ''').create();
@@ -35,7 +35,7 @@ void main() {
 
         void main() {
           test("test 1", () {});
-          test("test 2", () => throw new TestFailure("oh no"));
+          test("test 2", () => throw TestFailure("oh no"));
           test("test 3", () {});
         }
       ''').create();
@@ -51,7 +51,7 @@ void main() {
 
         void main() {
           test("selected 1", () {});
-          test("nope", () => throw new TestFailure("oh no"));
+          test("nope", () => throw TestFailure("oh no"));
           test("selected 2", () {});
         }
       ''').create();
@@ -98,7 +98,7 @@ void main() {
 
         void main() {
           test("selected 1", () {});
-          test("nope", () => throw new TestFailure("oh no"));
+          test("nope", () => throw TestFailure("oh no"));
           test("selected 2", () {});
         }
       ''').create();
@@ -113,8 +113,8 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test 1", () => throw new TestFailure("oh no"));
-          test("test 2", () => throw new TestFailure("oh no"));
+          test("test 1", () => throw TestFailure("oh no"));
+          test("test 2", () => throw TestFailure("oh no"));
           test("test [12]", () {});
         }
       ''').create();
@@ -130,7 +130,7 @@ void main() {
 
         void main() {
           test("selected 1", () {});
-          test("nope", () => throw new TestFailure("oh no"));
+          test("nope", () => throw TestFailure("oh no"));
           test("selected 2", () {});
         }
       ''').create();
@@ -162,7 +162,7 @@ void main() {
 
       void main() {
         test("selected 1", () {});
-        test("nope", () => throw new TestFailure("oh no"));
+        test("nope", () => throw TestFailure("oh no"));
         test("selected 2", () {});
       }
     ''').create();

@@ -71,7 +71,7 @@ void main() {
 import 'package:test/test.dart';
 
 void main() {
-  test("failure", () => throw new TestFailure("oh no"));
+  test("failure", () => throw TestFailure("oh no"));
 }
 ''').create();
 

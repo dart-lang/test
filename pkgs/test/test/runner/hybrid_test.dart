@@ -61,7 +61,7 @@ void main() {
 
               void hybridMain(StreamChannel channel) {
                 channel.sink
-                  ..add(new File("$path").readAsStringSync())
+                  ..add(File("$path").readAsStringSync())
                   ..close();
               }
             """).stream.first, completion(contains("hybrid emits numbers")));
@@ -113,7 +113,7 @@ void main() {
         import "package:stream_channel/stream_channel.dart";
 
         void hybridMain(StreamChannel channel) {
-          channel.sink.addError("oh no!", new Trace.current());
+          channel.sink.addError("oh no!", Trace.current());
         }
       ''');
 
@@ -164,7 +164,7 @@ void main() {
         import "package:test/test.dart";
 
         void hybridMain(StreamChannel channel) {
-          throw new TestFailure("oh no!");
+          throw TestFailure("oh no!");
         }
       ''');
 
@@ -368,7 +368,7 @@ void main() {
                 });
               }
             """, stayAlive: true);
-            queue = new StreamQueue(channel.stream);
+            queue = StreamQueue(channel.stream);
             sink = channel.sink;
           });
 

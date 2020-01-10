@@ -27,7 +27,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {});
-  test("failure", () => throw new TestFailure('oh no'));
+  test("failure", () => throw TestFailure('oh no'));
   test("error", () => throw 'oh no');
 }
 ''';

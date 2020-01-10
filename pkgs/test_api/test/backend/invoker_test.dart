@@ -46,8 +46,8 @@ void main() {
       Status status;
       var completer = Completer();
       var liveTest = _localTest(() {
-        // Use [new Future] in particular to wait longer than a microtask for
-        // the test to complete.
+        // Use the event loop to wait longer than a microtask for the test to
+        // complete.
         Future(() {
           status = Invoker.current.liveTest.state.status;
           completer.complete(Invoker.current);

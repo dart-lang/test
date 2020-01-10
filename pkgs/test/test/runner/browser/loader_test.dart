@@ -45,7 +45,7 @@ void main() {
 
       void main() {
         test("success", () {});
-        test("failure", () => throw new TestFailure('oh no'));
+        test("failure", () => throw TestFailure('oh no'));
         test("error", () => throw 'oh no');
       }
     ''').create();
@@ -103,13 +103,13 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 Future main() {
-  return new Future(() {
+  return Future(() {
     test("success", () {});
 
-    return new Future(() {
-      test("failure", () => throw new TestFailure('oh no'));
+    return Future(() {
+      test("failure", () => throw TestFailure('oh no'));
 
-      return new Future(() {
+      return Future(() {
         test("error", () => throw 'oh no');
       });
     });

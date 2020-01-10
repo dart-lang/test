@@ -23,7 +23,7 @@ final _failure = '''
 import 'package:test/test.dart';
 
 void main() {
-  test("failure", () => throw new TestFailure("oh no"));
+  test("failure", () => throw TestFailure("oh no"));
 }
 ''';
 
@@ -603,7 +603,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("test", () {
-    if (p.style == p.Style.url) throw new TestFailure("oh no");
+    if (p.style == p.Style.url) throw TestFailure("oh no");
   });
 }
 ''').create();
@@ -622,7 +622,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("test", () {
-    if (p.style != p.Style.url) throw new TestFailure("oh no");
+    if (p.style != p.Style.url) throw TestFailure("oh no");
   });
 }
 ''').create();
@@ -684,7 +684,7 @@ import 'package:test/test.dart';
 void main() {
   test("test", () {
     print("Hello,");
-    return new Future(() => print("world!"));
+    return Future(() => print("world!"));
   });
 }
 ''').create();
@@ -727,7 +727,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("timeout", () => new Future.delayed(Duration.zero));
+  test("timeout", () => Future.delayed(Duration.zero));
 }
 ''').create();
 
@@ -747,7 +747,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("fail", () => throw 'oh no', onPlatform: {"browser": new Skip()});
+  test("fail", () => throw 'oh no', onPlatform: {"browser": Skip()});
 }
 ''').create();
 
@@ -763,7 +763,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("success", () {}, onPlatform: {"vm": new Skip()});
+  test("success", () {}, onPlatform: {"vm": Skip()});
 }
 ''').create();
 
@@ -780,10 +780,10 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
     throw 'oh no';
   }, onPlatform: {
-    "browser": new Timeout(Duration.zero)
+    "browser": Timeout(Duration.zero)
   });
 }
 ''').create();
@@ -804,7 +804,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {}, onPlatform: {
-    "vm": new Timeout(new Duration(seconds: 0))
+    "vm": Timeout(Duration(seconds: 0))
   });
 }
 ''').create();
@@ -822,11 +822,11 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {}, onPlatform: {
-    "browser": new Skip("first"),
-    "browser || windows": new Skip("second"),
-    "browser || linux": new Skip("third"),
-    "browser || mac-os": new Skip("fourth"),
-    "browser || android": new Skip("fifth")
+    "browser": Skip("first"),
+    "browser || windows": Skip("second"),
+    "browser || linux": Skip("third"),
+    "browser || mac-os": Skip("fourth"),
+    "browser || android": Skip("fifth")
   });
 }
 ''').create();
@@ -890,7 +890,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
     throw 'oh no';
   });
 }

@@ -29,7 +29,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("failure", () => throw new TestFailure("oh no"));
+  test("failure", () => throw TestFailure("oh no"));
 }
 ''';
 
@@ -468,7 +468,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("fail", () => throw 'oh no', onPlatform: {"vm": new Skip()});
+  test("fail", () => throw 'oh no', onPlatform: {"vm": Skip()});
 }
 ''').create();
 
@@ -484,7 +484,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 
 void main() {
-  test("success", () {}, onPlatform: {"chrome": new Skip()});
+  test("success", () {}, onPlatform: {"chrome": Skip()});
 }
 ''').create();
 
@@ -501,10 +501,10 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
     throw 'oh no';
   }, onPlatform: {
-    "vm": new Timeout(Duration.zero)
+    "vm": Timeout(Duration.zero)
   });
 }
 ''').create();
@@ -525,7 +525,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {}, onPlatform: {
-    "chrome": new Timeout(new Duration(seconds: 0))
+    "chrome": Timeout(Duration(seconds: 0))
   });
 }
 ''').create();
@@ -543,11 +543,11 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () {}, onPlatform: {
-    "vm": new Skip("first"),
-    "vm || windows": new Skip("second"),
-    "vm || linux": new Skip("third"),
-    "vm || mac-os": new Skip("fourth"),
-    "vm || android": new Skip("fifth")
+    "vm": Skip("first"),
+    "vm || windows": Skip("second"),
+    "vm || linux": Skip("third"),
+    "vm || mac-os": Skip("fourth"),
+    "vm || android": Skip("fifth")
   });
 }
 ''').create();
@@ -571,7 +571,7 @@ void main() {
   group("group", () {
     test("success", () {});
   }, onPlatform: {
-    "vm": new Skip()
+    "vm": Skip()
   });
 }
 ''').create();
@@ -631,7 +631,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("fail", () async {
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
     throw 'oh no';
   });
 }

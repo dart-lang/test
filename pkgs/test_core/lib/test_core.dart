@@ -106,15 +106,15 @@ Declarer get _declarer {
 /// annotation classes: [Timeout], [Skip], or lists of those. These
 /// annotations apply only on the given platforms. For example:
 ///
-///     test("potentially slow test", () {
+///     test('potentially slow test', () {
 ///       // ...
 ///     }, onPlatform: {
 ///       // This test is especially slow on Windows.
-///       "windows": new Timeout.factor(2),
-///       "browser": [
-///         new Skip("TODO: add browser support"),
+///       'windows': Timeout.factor(2),
+///       'browser': [
+///         Skip('TODO: add browser support'),
 ///         // This will be slow on browsers once it works on them.
-///         new Timeout.factor(2)
+///         Timeout.factor(2)
 ///       ]
 ///     });
 ///
@@ -184,15 +184,15 @@ void test(description, dynamic Function() body,
 /// annotation classes: [Timeout], [Skip], or lists of those. These
 /// annotations apply only on the given platforms. For example:
 ///
-///     group("potentially slow tests", () {
+///     group('potentially slow tests', () {
 ///       // ...
 ///     }, onPlatform: {
 ///       // These tests are especially slow on Windows.
-///       "windows": new Timeout.factor(2),
-///       "browser": [
-///         new Skip("TODO: add browser support"),
+///       'windows': Timeout.factor(2),
+///       'browser': [
+///         Skip('TODO: add browser support'),
 ///         // They'll be slow on browsers once it works on them.
-///         new Timeout.factor(2)
+///         Timeout.factor(2)
 ///       ]
 ///     });
 ///

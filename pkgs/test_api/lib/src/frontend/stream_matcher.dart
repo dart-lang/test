@@ -45,7 +45,7 @@ typedef _MatchQueue = Future<String> Function(StreamQueue queue);
 /// at different times:
 ///
 /// ```dart
-/// var stdout = new StreamQueue(stdoutLineStream);
+/// var stdout = StreamQueue(stdoutLineStream);
 ///
 /// // Ignore lines from the process until it's about to emit the URL.
 /// await expect(stdout, emitsThrough("WebSocket URL:"));

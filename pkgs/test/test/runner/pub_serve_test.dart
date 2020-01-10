@@ -51,7 +51,7 @@ class MyTransformer extends Transformer {
 
   Future apply(Transform transform) async {
     var contents = await transform.primaryInput.readAsString();
-    transform.addOutput(new Asset.fromString(
+    transform.addOutput(Asset.fromString(
         transform.primaryInput.id,
         contents.replaceAll("isFalse", "isTrue")));
   }

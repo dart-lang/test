@@ -29,8 +29,8 @@ final ArgParser _parser = (() {
       negatable: false, help: "Shows the package's version.");
 
   // Note that defaultsTo declarations here are only for documentation purposes.
-  // We pass null values rather than defaults to [new Configuration] so that it
-  // merges properly with the config file.
+  // We pass null instead of the default so that it merges properly with the
+  // config file.
 
   parser.addSeparator('======== Selecting Tests');
   parser.addMultiOption('name',

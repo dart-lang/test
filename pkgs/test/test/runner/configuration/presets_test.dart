@@ -32,7 +32,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -56,7 +56,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -86,7 +86,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -114,7 +114,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -144,7 +144,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -188,8 +188,8 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test 1", () => new Future.delayed(Duration.zero), tags: "foo");
-          test("test 2", () => new Future.delayed(Duration.zero));
+          test("test 1", () => Future.delayed(Duration.zero), tags: "foo");
+          test("test 2", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -232,7 +232,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -261,7 +261,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 
@@ -305,7 +305,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("test", () => new Future.delayed(Duration.zero));
+          test("test", () => Future.delayed(Duration.zero));
         }
       ''').create();
 

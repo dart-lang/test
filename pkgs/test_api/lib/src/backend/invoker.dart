@@ -396,8 +396,7 @@ class Invoker {
           // corresponding [onStateChange], which violates the timing
           // guarantees.
           //
-          // Using [new Future] also avoids starving the DOM or other
-          // microtask-level events.
+          // Use the event loop over the microtask queue to avoid starvation.
           unawaited(Future(() async {
             await _test._body();
             await unclosable(_runTearDowns);

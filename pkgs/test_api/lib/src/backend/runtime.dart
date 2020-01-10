@@ -121,7 +121,7 @@ class Runtime {
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
-  /// [Runtime] using [new Runtime.deserialize].
+  /// [Runtime] using [Runtime.deserialize].
   Object serialize() {
     if (builtIn.contains(this)) return identifier;
 
