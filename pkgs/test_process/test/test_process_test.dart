@@ -14,34 +14,34 @@ import 'package:test_process/test_process.dart';
 final throwsTestFailure = throwsA(TypeMatcher<TestFailure>());
 
 void main() {
-  group("shouldExit()", () {
-    test("succeeds when the process exits with the given exit code", () async {
+  group('shouldExit()', () {
+    test('succeeds when the process exits with the given exit code', () async {
       var process = await startDartProcess('exitCode = 42;');
       expect(process.exitCode, completion(equals(42)));
       await process.shouldExit(greaterThan(12));
     });
 
-    test("fails when the process exits with a different exit code", () async {
+    test('fails when the process exits with a different exit code', () async {
       var process = await startDartProcess('exitCode = 1;');
       expect(process.exitCode, completion(equals(1)));
       expect(process.shouldExit(greaterThan(12)), throwsTestFailure);
     });
 
-    test("allows any exit code without an assertion", () async {
+    test('allows any exit code without an assertion', () async {
       var process = await startDartProcess('exitCode = 1;');
       expect(process.exitCode, completion(equals(1)));
       await process.shouldExit();
     });
   });
 
-  test("kill() stops the process", () async {
+  test('kill() stops the process', () async {
     var process = await startDartProcess('while (true);');
 
     // Should terminate.
     await process.kill();
   });
 
-  group("stdout and stderr", () {
+  group('stdout and stderr', () {
     test("expose the process's standard io", () async {
       var process = await startDartProcess(r'''
         print("hello");
@@ -54,7 +54,7 @@ void main() {
       await process.shouldExit(0);
     });
 
-    test("close when the process exits", () async {
+    test('close when the process exits', () async {
       var process = await startDartProcess('');
       expect(expectLater(process.stdout, emits('hello')), throwsTestFailure);
       expect(expectLater(process.stderr, emits('world')), throwsTestFailure);
@@ -85,19 +85,19 @@ void main() {
     expect(process.stderrStream(), emitsInOrder(['hi', emitsDone]));
   });
 
-  test("stdin writes to the process", () async {
+  test('stdin writes to the process', () async {
     var process = await startDartProcess(r'''
       stdinLines.listen((line) => print("> $line"));
     ''');
 
-    process.stdin.writeln("hello");
-    await expectLater(process.stdout, emits("> hello"));
-    process.stdin.writeln("world");
-    await expectLater(process.stdout, emits("> world"));
+    process.stdin.writeln('hello');
+    await expectLater(process.stdout, emits('> hello'));
+    process.stdin.writeln('world');
+    await expectLater(process.stdout, emits('> world'));
     await process.kill();
   });
 
-  test("signal sends a signal to the process", () async {
+  test('signal sends a signal to the process', () async {
     var process = await startDartProcess(r'''
       ProcessSignal.sighup.watch().listen((_) => print("HUP"));
       print("ready");
@@ -107,7 +107,7 @@ void main() {
     process.signal(ProcessSignal.sighup);
     await expectLater(process.stdout, emits('HUP'));
     await process.kill();
-  }, testOn: "!windows");
+  }, testOn: '!windows');
 }
 
 /// Starts a Dart process running [script] in a main method.

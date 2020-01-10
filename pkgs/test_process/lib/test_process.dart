@@ -123,7 +123,7 @@ class TestProcess {
             .transform(const LineSplitter())) {
     addTearDown(_tearDown);
     expect(_process.exitCode.then((_) => _logOutput()), completes,
-        reason: "Process `$description` never exited.");
+        reason: 'Process `$description` never exited.');
 
     _stdout = StreamQueue(stdoutStream());
     _stderr = StreamQueue(stderrStream());
@@ -135,12 +135,12 @@ class TestProcess {
     // [stdoutStream] or [stderrStream] output.
     _stdoutSplitter.split().listen((line) {
       if (forwardStdio) print(line);
-      _log.add("    $line");
+      _log.add('    $line');
     });
 
     _stderrSplitter.split().listen((line) {
       if (forwardStdio) print(line);
-      _log.add("[e] $line");
+      _log.add('[e] $line');
     });
   }
 
@@ -168,14 +168,14 @@ class TestProcess {
     await Future.delayed(Duration.zero);
 
     var buffer = StringBuffer();
-    buffer.write("Process `$description` ");
+    buffer.write('Process `$description` ');
     if (exitCodeOrNull == null) {
-      buffer.writeln("was killed with SIGKILL in a tear-down. Output:");
+      buffer.writeln('was killed with SIGKILL in a tear-down. Output:');
     } else {
-      buffer.writeln("exited with exitCode $exitCodeOrNull. Output:");
+      buffer.writeln('exited with exitCode $exitCodeOrNull. Output:');
     }
 
-    buffer.writeln(_log.join("\n"));
+    buffer.writeln(_log.join('\n'));
     printOnFailure(buffer.toString());
   }
 
@@ -230,6 +230,6 @@ class TestProcess {
     var exitCode = await this.exitCode;
     if (expectedExitCode == null) return;
     expect(exitCode, expectedExitCode,
-        reason: "Process `$description` had an unexpected exit code.");
+        reason: 'Process `$description` had an unexpected exit code.');
   }
 }
