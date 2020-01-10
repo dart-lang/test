@@ -20,7 +20,7 @@ void main() {
     var server = await CodeServer.start();
 
     server.handleJavaScript('''
-var webSocket = WebSocket(window.location.href.replace("http://", "ws://"));
+var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
 webSocket.addEventListener("open", function() {
   webSocket.send("loaded!");
 });
