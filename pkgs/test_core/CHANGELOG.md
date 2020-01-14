@@ -1,3 +1,7 @@
+## 0.2.18
+
+* Allow `test_api` `0.2.13` to work around a bug in the SDK version `2.3.0`.
+
 ## 0.2.17
 
 * Add `file_reporters` configuration option and `--file-reporter` CLI option to
