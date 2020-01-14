@@ -1,4 +1,6 @@
-## 1.0.5-dev
+## 1.0.5
+
+* Don't allow the test to time out as long as the process is emitting output.
 
 ## 1.0.4
 

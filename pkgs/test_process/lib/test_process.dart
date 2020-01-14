@@ -134,11 +134,13 @@ class TestProcess {
     // Call [split] explicitly because we don't want to log overridden
     // [stdoutStream] or [stderrStream] output.
     _stdoutSplitter.split().listen((line) {
+      _heartbeat();
       if (forwardStdio) print(line);
       _log.add('    $line');
     });
 
     _stderrSplitter.split().listen((line) {
+      _heartbeat();
       if (forwardStdio) print(line);
       _log.add('[e] $line');
     });
@@ -231,5 +233,13 @@ class TestProcess {
     if (expectedExitCode == null) return;
     expect(exitCode, expectedExitCode,
         reason: 'Process `$description` had an unexpected exit code.');
+  }
+
+  /// Signal to the test runner that the test is still making progress and
+  /// shouldn't time out.
+  void _heartbeat() {
+    // Interacting with the test runner's asynchronous expectation logic will
+    // notify it that the test is alive.
+    expectAsync0(() {})();
   }
 }

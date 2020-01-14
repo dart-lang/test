@@ -1,5 +1,5 @@
 name: test_process
-version: 1.0.5-dev
+version: 1.0.5
 
 description: A package for testing subprocesses.
 homepage: https://github.com/dart-lang/test_process
