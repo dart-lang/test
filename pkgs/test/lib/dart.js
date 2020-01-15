@@ -56,7 +56,7 @@ script.src = link.href + '.browser_test.dart.js';
 
 script.onerror = function(event) {
   var message = "Failed to load script at " + script.src +
-      (event.message ? ": " + event.message : ".");
+      (event.message ? ": " + event.message : ".") + " Make sure the script is being generated/processed.";
   sendLoadException(message);
 }
 
