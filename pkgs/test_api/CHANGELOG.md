@@ -1,6 +1,7 @@
-## 0.2.13-dev
+## 0.2.13
 
-* Internal cleanup.
+* Work around a bug in the `2.3.0` SDK by avoiding for-loop elements at the top
+  level.
 
 ## 0.2.12
 
