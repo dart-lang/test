@@ -1,10 +1,10 @@
 name: test_api
-version: 0.2.13
+version: 0.2.14-dev
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 
 environment:
-  sdk: ">=2.3.0 <3.0.0"
+  sdk: ">=2.4.0 <3.0.0"
 
 dependencies:
   async: ^2.0.0

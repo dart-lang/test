@@ -1,3 +1,7 @@
+## 0.2.19-dev
+
+* Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.
+
 ## 0.2.18
 
 * Allow `test_api` `0.2.13` to work around a bug in the SDK version `2.3.0`.
