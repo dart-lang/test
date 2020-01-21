@@ -7,11 +7,12 @@ import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
-
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import '../runtime_selection.dart';
+
+import '../../util/io.dart';
 import '../configuration.dart';
+import '../runtime_selection.dart';
 import 'reporters.dart';
 import 'values.dart';
 
@@ -225,6 +226,20 @@ class _Parser {
       return seed;
     });
 
+    var color = _ifParsed<bool>('color') ?? canUseSpecialChars;
+
+    var platform = _ifParsed<List<String>>('platform')
+        ?.map((runtime) => RuntimeSelection(runtime))
+        ?.toList();
+    if (platform
+            ?.any((runtime) => runtime.name == Runtime.phantomJS.identifier) ??
+        false) {
+      var yellow = color ? '\u001b[33m' : '';
+      var noColor = color ? '\u001b[0m' : '';
+      print('${yellow}Warning:$noColor '
+          'PhatomJS is deprecated and will be removed in version ^2.0.0');
+    }
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -233,7 +248,7 @@ class _Parser {
         jsTrace: _ifParsed('js-trace'),
         pauseAfterLoad: _ifParsed('pause-after-load'),
         debug: _ifParsed('debug'),
-        color: _ifParsed('color'),
+        color: color,
         configurationPath: _ifParsed('configuration'),
         dart2jsPath: _ifParsed('dart2js-path'),
         dart2jsArgs: _ifParsed('dart2js-args'),
@@ -247,9 +262,7 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
         patterns: patterns,
-        runtimes: _ifParsed<List<String>>('platform')
-            ?.map((runtime) => RuntimeSelection(runtime))
-            ?.toList(),
+        runtimes: platform,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
         paths: _options.rest.isEmpty ? null : _options.rest,

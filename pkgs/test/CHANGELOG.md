@@ -1,6 +1,8 @@
 ## 1.11.2-dev
 
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.
+* Deprecate `PhantomJS` and provide warning when used. Support for `PhantomJS`
+  will be removed in version `2.0.0`.
 
 ## 1.11.1
 
