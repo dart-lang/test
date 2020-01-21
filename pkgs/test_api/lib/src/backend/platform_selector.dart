@@ -16,10 +16,10 @@ final _universalValidVariables = {
   'browser',
   'js',
   'blink',
-  'google'
-}
-  ..addAll(Runtime.builtIn.map((r) => r.identifier))
-  ..addAll(OperatingSystem.all.map((os) => os.identifier));
+  'google',
+  for (var runtime in Runtime.builtIn) runtime.identifier,
+  for (var os in OperatingSystem.all) os.identifier,
+};
 
 /// An expression for selecting certain platforms, including operating systems
 /// and browsers.

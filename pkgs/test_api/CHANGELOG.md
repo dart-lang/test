@@ -1,3 +1,7 @@
+## 0.2.14
+
+* Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.
+
 ## 0.2.13
 
 * Work around a bug in the `2.3.0` SDK by avoiding for-loop elements at the top
