@@ -241,14 +241,6 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
   return controller.stream;
 }
 
-/// Runs [fn] and discards its return value.
-///
-/// This is useful for making a block of code async without forcing the
-/// containing method to return a future.
-void invoke(void Function() fn) {
-  fn();
-}
-
 /// Returns a random base64 string containing [bytes] bytes of data.
 ///
 /// [seed] is passed to [math.Random].
