@@ -171,6 +171,19 @@ pub run test --total-shards 3 --shard-index 1 path/to/test.dart
 pub run test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
 
+### Shuffling Tests
+Test order can be shuffled with the `--test-randomize-ordering-seed` argument.
+This allows you to shuffle your tests with a specific seed (deterministic) or
+a random seed for each run. For example, consider the following test runs:
+
+```bash
+pub run test --test-randomize-ordering-seed=12345
+pub run test --test-randomize-ordering-seed=random
+```
+
+Setting `--test-randomize-ordering-seed=0` will have the same effect as not
+specifying it at all, meaning the test order will remain as-is.
+
 ### Collecting Code Coverage
 To collect code coverage, you can run tests with the `--coverage <directory>`
 argument. The directory specified can be an absolute or relative path. 

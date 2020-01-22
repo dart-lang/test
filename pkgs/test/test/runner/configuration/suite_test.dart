@@ -20,7 +20,7 @@ void main() {
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, isNull);
         expect(merged.runtimes, equals([Runtime.vm.identifier]));
-        expect(merged.testRandomizeOrderingSeed, 0);
+        expect(merged.testRandomizeOrderingSeed, null);
       });
 
       test("if only the old configuration's is defined, uses it", () {

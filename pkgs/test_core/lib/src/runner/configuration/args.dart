@@ -220,7 +220,7 @@ class _Parser {
       var seed = value == 'random'
           ? Random().nextInt(4294967295)
           : int.parse(value).toUnsigned(32);
-      if (seed != null && seed > 0) {
+      if (seed != null) {
         print('Shuffling test order with --test-randomize-ordering-seed=$seed');
       }
       return seed;

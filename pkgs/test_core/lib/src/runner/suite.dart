@@ -85,10 +85,9 @@ class SuiteConfiguration {
   final Map<PlatformSelector, SuiteConfiguration> onPlatform;
 
   /// The seed with which to shuffle the test order.
-  /// Default value is 0 if not provided and will not change the test order.
+  /// Default value is null if not provided and will not change the test order.
   /// The same seed will shuffle the tests in the same way every time.
-  int get testRandomizeOrderingSeed => _testRandomizeOrderingSeed ?? 0;
-  final int _testRandomizeOrderingSeed;
+  final int testRandomizeOrderingSeed;
 
   /// The global test metadata derived from this configuration.
   Metadata get metadata {
@@ -202,7 +201,7 @@ class SuiteConfiguration {
         excludeTags = excludeTags ?? BooleanSelector.none,
         tags = _map(tags),
         onPlatform = _map(onPlatform),
-        _testRandomizeOrderingSeed = testRandomizeOrderingSeed,
+        testRandomizeOrderingSeed = testRandomizeOrderingSeed,
         _metadata = metadata ?? Metadata.empty;
 
   /// Creates a new [SuiteConfiguration] that takes its configuration from
@@ -252,7 +251,7 @@ class SuiteConfiguration {
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
         testRandomizeOrderingSeed:
-            other._testRandomizeOrderingSeed ?? _testRandomizeOrderingSeed,
+            other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
   }
@@ -295,7 +294,7 @@ class SuiteConfiguration {
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
         testRandomizeOrderingSeed:
-            testRandomizeOrderingSeed ?? _testRandomizeOrderingSeed,
+            testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         metadata: _metadata.change(
             timeout: timeout,
             verboseTrace: verboseTrace,
