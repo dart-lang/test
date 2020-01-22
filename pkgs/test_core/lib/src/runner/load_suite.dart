@@ -6,27 +6,23 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import 'runner_suite.dart';
-import 'suite.dart';
-
 import '../../test_core.dart';
-
-// ignore: uri_does_not_exist
 import '../util/io_stub.dart'
     // ignore: uri_does_not_exist
     if (dart.library.io) '../util/io.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
+import 'runner_suite.dart';
+import 'suite.dart';
 
 /// The timeout for loading a test suite.
 ///
@@ -214,4 +210,8 @@ class LoadSuite extends Suite implements RunnerSuite {
 
   @override
   Future close() async {}
+
+  @override
+  Future<Map<String, dynamic>> gatherCoverage() =>
+      throw UnsupportedError('Coverage is not supported for LoadSuite tests.');
 }

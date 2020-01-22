@@ -285,7 +285,7 @@ class Engine {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
           controller.noMoreLiveTests();
-          if (_coverage != null) await gatherCoverage(_coverage, controller);
+          if (_coverage != null) await writeCoverage(_coverage, controller);
           loadResource.allowRelease(() => controller.close());
         });
       }());

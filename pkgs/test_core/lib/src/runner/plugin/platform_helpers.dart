@@ -7,19 +7,18 @@ import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
-import '../runner_suite.dart';
-import '../environment.dart';
-import '../suite.dart';
 import '../configuration.dart';
+import '../environment.dart';
 import '../load_exception.dart';
+import '../runner_suite.dart';
 import '../runner_test.dart';
+import '../suite.dart';
 
 /// A helper method for creating a [RunnerSuiteController] containing tests
 /// that communicate over [channel].
@@ -35,13 +34,17 @@ import '../runner_test.dart';
 ///
 /// If [mapper] is passed, it will be used to adjust stack traces for any errors
 /// emitted by tests.
+///
+/// [gatherCoverage] is a callback which returns a hit-map containing merged
+/// coverage report suitable for use with `package:coverage`.
 RunnerSuiteController deserializeSuite(
     String path,
     SuitePlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel channel,
-    Object message) {
+    Object message,
+    {Future<Map<String, dynamic>> Function() gatherCoverage}) {
   var disconnector = Disconnector();
   var suiteChannel = MultiChannel(channel.transform(disconnector));
 
@@ -110,7 +113,8 @@ RunnerSuiteController deserializeSuite(
   return RunnerSuiteController(
       environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
-      onClose: () => disconnector.disconnect().catchError(handleError));
+      onClose: () => disconnector.disconnect().catchError(handleError),
+      gatherCoverage: gatherCoverage);
 }
 
 /// A utility class for storing state while deserializing tests.
