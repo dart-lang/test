@@ -1,10 +1,11 @@
-## 0.2.19-dev
+## 0.3.0-dev
 
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.
 * Deprecate `PhantomJS` and provide warning when used. Support for `PhantomJS`
   will be removed in version `2.0.0`.
 * Differentiate between test-randomize-ordering-seed not set and 0 being chosen
   as the random seed.
+* `deserializeSuite` now takes an optional `gatherCoverage` callback.
 
 ## 0.2.18
 

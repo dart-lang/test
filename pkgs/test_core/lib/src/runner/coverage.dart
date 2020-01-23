@@ -5,29 +5,20 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 
 import 'live_suite_controller.dart';
 
-/// Collects coverage and outputs to the [coverage] path.
-Future<void> gatherCoverage(
-    String coverage, LiveSuiteController controller) async {
-  final suite = controller.liveSuite.suite;
-
-  if (!suite.platform.runtime.isDartVM) return;
-
-  final isolateId = Uri.parse(suite.environment.observatoryUrl.fragment)
-      .queryParameters['isolateId'];
-
-  final cov = await collect(
-      suite.environment.observatoryUrl, false, false, false, {},
-      isolateIds: {isolateId});
-
-  final outfile = File(p.join('$coverage', '${suite.path}.vm.json'))
+/// Collects coverage and outputs to the [coveragePath] path.
+Future<void> writeCoverage(
+    String coveragePath, LiveSuiteController controller) async {
+  var suite = controller.liveSuite.suite;
+  var coverage = await controller.liveSuite.suite.gatherCoverage();
+  final outfile = File(p.join(coveragePath,
+      '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json'))
     ..createSync(recursive: true);
   final out = outfile.openWrite();
-  out.write(json.encode(cov));
+  out.write(json.encode(coverage));
   await out.flush();
   await out.close();
 }

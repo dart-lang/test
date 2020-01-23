@@ -6,14 +6,13 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
-import 'suite.dart';
 import 'environment.dart';
+import 'suite.dart';
 
 /// A suite produced and consumed by the test runner that has runner-specific
 /// logic and lifecycle management.
@@ -77,6 +76,13 @@ class RunnerSuite extends Suite {
 
   /// Closes the suite and releases any resources associated with it.
   Future close() => _controller._close();
+
+  /// Collects a hit-map containing merged coverage.
+  ///
+  /// Result is suitable for input to the coverage formatters provided by
+  /// `package:coverage`.
+  Future<Map<String, dynamic>> gatherCoverage() async =>
+      (await _controller._gatherCoverage?.call()) ?? {};
 }
 
 /// A class that exposes and controls a [RunnerSuite].
@@ -106,10 +112,16 @@ class RunnerSuiteController {
   /// The channel names that have already been used.
   final _channelNames = <String>{};
 
+  /// Collects a hit-map containing merged coverage.
+  final Future<Map<String, dynamic>> Function() _gatherCoverage;
+
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
       Future<Group> groupFuture, SuitePlatform platform,
-      {String path, Function() onClose})
-      : _onClose = onClose {
+      {String path,
+      Function() onClose,
+      Future<Map<String, dynamic>> Function() gatherCoverage})
+      : _onClose = onClose,
+        _gatherCoverage = gatherCoverage {
     _suite =
         groupFuture.then((group) => RunnerSuite._(this, group, path, platform));
   }
@@ -117,9 +129,11 @@ class RunnerSuiteController {
   /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
   /// an external source.
   RunnerSuiteController._local(this._environment, this._config,
-      {Function() onClose})
+      {Function() onClose,
+      Future<Map<String, dynamic>> Function() gatherCoverage})
       : _suiteChannel = null,
-        _onClose = onClose;
+        _onClose = onClose,
+        _gatherCoverage = gatherCoverage;
 
   /// Sets whether the suite is paused for debugging.
   ///

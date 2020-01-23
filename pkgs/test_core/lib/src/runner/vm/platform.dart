@@ -7,23 +7,23 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/dart.dart' // ignore: implementation_imports
-    as dart;
 import 'package:vm_service/vm_service.dart' hide Isolate;
 import 'package:vm_service/vm_service_io.dart';
 
+import '../../runner/configuration.dart';
+import '../../runner/environment.dart';
+import '../../runner/load_exception.dart';
+import '../../runner/platform.dart';
+import '../../runner/plugin/platform_helpers.dart';
+import '../../runner/runner_suite.dart';
+import '../../runner/suite.dart';
+import '../../util/dart.dart' as dart;
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -61,7 +61,7 @@ class VMPlatform extends PlatformPlugin {
       sink.close();
     }));
 
-    VMEnvironment environment;
+    Environment environment;
     IsolateRef isolateRef;
     if (_config.debug) {
       // Print an empty line because the VM prints an "Observatory listening on"
@@ -87,8 +87,11 @@ class VMPlatform extends PlatformPlugin {
       environment = VMEnvironment(url, isolateRef, client);
     }
 
-    var controller = deserializeSuite(path, platform, suiteConfig,
-        environment ?? PluginEnvironment(), channel, message);
+    environment ??= PluginEnvironment();
+
+    var controller = deserializeSuite(
+        path, platform, suiteConfig, environment, channel, message,
+        gatherCoverage: () => _gatherCoverage(environment));
 
     if (isolateRef != null) {
       await client.streamListen('Debug');
@@ -150,6 +153,13 @@ Future<Isolate> _spawnPrecompiledIsolate(
   return await Isolate.spawnUri(p.toUri(testPath), [], message,
       packageConfig: p.toUri(p.join(precompiledPath, '.packages')),
       checked: true);
+}
+
+Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
+  final isolateId = Uri.parse(environment.observatoryUrl.fragment)
+      .queryParameters['isolateId'];
+  return await collect(environment.observatoryUrl, false, false, false, {},
+      isolateIds: {isolateId});
 }
 
 Future<Isolate> _spawnPubServeIsolate(
