@@ -186,7 +186,7 @@ specifying it at all, meaning the test order will remain as-is.
 
 ### Collecting Code Coverage
 To collect code coverage, you can run tests with the `--coverage <directory>`
-argument. The directory specified can be an absolute or relative path. 
+argument. The directory specified can be an absolute or relative path.
 If a directory does not exist at the path specified, a directory will be
 created. If a directory does exist, files may be overwritten with the latest
 coverage data, if they conflict.
@@ -196,7 +196,8 @@ and the resulting coverage files will be outputted in the directory specified.
 The files can then be formatted using the `package:coverage`
 `format_coverage` executable.
 
-Coverage gathering is currently only implemented for tests run in the Dart VM.
+Coverage gathering is currently only implemented for tests run on the Dart VM or
+Chrome.
 
 ### Restricting Tests to Certain Platforms
 
@@ -765,7 +766,7 @@ A configuration file can do much more than just set global defaults. See
 
 Tests can be debugged interactively using platforms' built-in development tools.
 Tests running on browsers can use those browsers' development consoles to inspect
-the document, set breakpoints, and step through code. Those running on the Dart 
+the document, set breakpoints, and step through code. Those running on the Dart
 VM use [the Dart Observatory][observatory]'s .
 
 [observatory]: https://dart-lang.github.io/observatory/

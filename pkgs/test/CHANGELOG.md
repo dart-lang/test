@@ -3,6 +3,8 @@
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.
 * Deprecate `PhantomJS` and provide warning when used. Support for `PhantomJS`
   will be removed in version `2.0.0`.
+* Support coverage collection for the Chrome platform. See `README.md` for usage
+  details.
 
 ## 1.11.1
 
