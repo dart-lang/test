@@ -14,7 +14,7 @@ Future<void> writeCoverage(
     String coveragePath, LiveSuiteController controller) async {
   var suite = controller.liveSuite.suite;
   var coverage = await controller.liveSuite.suite.gatherCoverage();
-  final outfile = File(p.join('$coveragePath',
+  final outfile = File(p.join(coveragePath,
       '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json'))
     ..createSync(recursive: true);
   final out = outfile.openWrite();
