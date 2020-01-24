@@ -11,12 +11,26 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_process/test_process.dart';
 
 import '../io.dart';
 
 void main() {
   group('with the --coverage flag,', () {
-    test('gathers coverage for VM tests', () async {
+    Directory coverageDirectory;
+
+    Future<void> _validateCoverage(
+        TestProcess test, String coveragePath) async {
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+
+      final coverageFile = File(p.join(coverageDirectory.path, coveragePath));
+      final coverage = await coverageFile.readAsString();
+      final jsonCoverage = json.decode(coverage);
+      expect(jsonCoverage['coverage'], isNotEmpty);
+    }
+
+    setUp(() async {
       await d.file('test.dart', '''
         import 'package:test/test.dart';
 
@@ -27,24 +41,24 @@ void main() {
         }
       ''').create();
 
-      final coverageDirectory =
-          Directory(p.join(Directory.current.path, 'test_coverage'));
-      expect(await coverageDirectory.exists(), isFalse,
-          reason:
-              'Coverage directory exists, cannot safely run coverage tests. Delete the ${coverageDirectory.path} directory to fix.');
+      coverageDirectory =
+          await Directory.systemTemp.createTemp('test_coverage');
+    });
 
+    tearDown(() async {
+      await coverageDirectory.delete(recursive: true);
+    });
+
+    test('gathers coverage for VM tests', () async {
       var test =
           await runTest(['--coverage', coverageDirectory.path, 'test.dart']);
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-      await test.shouldExit(0);
+      await _validateCoverage(test, 'test.dart.vm.json');
+    });
 
-      final coverageFile =
-          File(p.join(coverageDirectory.path, 'test.dart.vm.json'));
-      final coverage = await coverageFile.readAsString();
-      final jsonCoverage = json.decode(coverage);
-      expect(jsonCoverage['coverage'], isNotEmpty);
-
-      await coverageDirectory.delete(recursive: true);
+    test('gathers coverage for Chrome tests', () async {
+      var test = await runTest(
+          ['--coverage', coverageDirectory.path, 'test.dart', '-p', 'chrome']);
+      await _validateCoverage(test, 'test.dart.chrome.json');
     });
   });
 }

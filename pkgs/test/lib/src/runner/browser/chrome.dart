@@ -3,17 +3,21 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:coverage/coverage.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 import '../executable_settings.dart';
 import 'browser.dart';
 import 'default_settings.dart';
 
-// TODO(nweiz): move this into its own package?
 /// A class for running an instance of Chrome.
 ///
 /// Most of the communication with the browser is expected to happen via HTTP,
@@ -28,11 +32,16 @@ class Chrome extends Browser {
   @override
   final Future<Uri> remoteDebuggerUrl;
 
+  final Future<WipConnection> _tabConnection;
+  final Map<String, String> _idToUrl;
+
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
   factory Chrome(Uri url, {ExecutableSettings settings, bool debug = false}) {
     settings ??= defaultSettings[Runtime.chrome];
     var remoteDebuggerCompleter = Completer<Uri>.sync();
+    var connectionCompleter = Completer<WipConnection>();
+    var idToUrl = <String, String>{};
     return Chrome._(() async {
       var tryPort = ([int port]) async {
         var dir = createTempDir();
@@ -73,6 +82,8 @@ class Chrome extends Browser {
         if (port != null) {
           remoteDebuggerCompleter.complete(
               getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')));
+
+          connectionCompleter.complete(_connect(process, port, idToUrl));
         } else {
           remoteDebuggerCompleter.complete(null);
         }
@@ -85,9 +96,83 @@ class Chrome extends Browser {
 
       if (!debug) return tryPort();
       return getUnusedPort<Process>(tryPort);
-    }, remoteDebuggerCompleter.future);
+    }, remoteDebuggerCompleter.future, connectionCompleter.future, idToUrl);
   }
 
-  Chrome._(Future<Process> Function() startBrowser, this.remoteDebuggerUrl)
+  /// Returns a Dart based hit-map containing coverage report, suitable for use
+  /// with `package:coverage`.
+  Future<Map<String, dynamic>> gatherCoverage() async {
+    var tabConnection = await _tabConnection;
+    var response = await tabConnection.debugger.connection
+        .sendCommand('Profiler.takePreciseCoverage', {});
+    var result = response.result['result'];
+    var coverage = await parseChromeCoverage(
+      (result as List).cast(),
+      _sourceProvider,
+      _sourceMapProvider,
+      _sourceUriProvider,
+    );
+    return coverage;
+  }
+
+  Chrome._(Future<Process> Function() startBrowser, this.remoteDebuggerUrl,
+      this._tabConnection, this._idToUrl)
       : super(startBrowser);
+
+  Future<Uri> _sourceUriProvider(String sourceUrl, String scriptId) async {
+    var script = _idToUrl[scriptId];
+    if (script == null) return null;
+    var uri = Uri.parse(script);
+    var path = p.join(
+        p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
+        sourceUrl);
+    return path.contains('/packages/')
+        ? Uri(scheme: 'package', path: path.split('/packages/').last)
+        : Uri.file(p.absolute(path));
+  }
+
+  Future<String> _sourceMapProvider(String scriptId) async {
+    var script = _idToUrl[scriptId];
+    if (script == null) return null;
+    var mapResponse = await http.get('$script.map');
+    if (mapResponse.statusCode != HttpStatus.ok) return null;
+    return mapResponse.body;
+  }
+
+  Future<String> _sourceProvider(String scriptId) async {
+    var script = _idToUrl[scriptId];
+    if (script == null) return null;
+    var scriptResponse = await http.get(script);
+    if (scriptResponse.statusCode != HttpStatus.ok) return null;
+    return scriptResponse.body;
+  }
+}
+
+Future<WipConnection> _connect(
+    Process process, int port, Map<String, String> idToUrl) async {
+  // Wait for Chrome to be in a ready state.
+  await process.stderr
+      .transform(utf8.decoder)
+      .transform(LineSplitter())
+      .firstWhere((line) => line.startsWith('DevTools listening'));
+
+  var chromeConnection = ChromeConnection('localhost', port);
+  var tab = (await chromeConnection.getTabs()).first;
+  var tabConnection = await tab.connect();
+
+  // Enable debugging.
+  await tabConnection.debugger.enable();
+
+  // Coverage reports are in terms of scriptIds so keep note of URLs.
+  tabConnection.debugger.onScriptParsed.listen((data) {
+    var script = data.script;
+    if (script.url.isNotEmpty) idToUrl[script.scriptId] = script.url;
+  });
+
+  // Enable coverage collection.
+  await tabConnection.debugger.connection.sendCommand('Profiler.enable', {});
+  await tabConnection.debugger.connection.sendCommand(
+      'Profiler.startPreciseCoverage', {'detailed': true, 'callCount': false});
+
+  return tabConnection;
 }
