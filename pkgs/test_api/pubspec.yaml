@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   async: ^2.0.0
-  boolean_selector: ^1.0.0
+  boolean_selector: ">=1.0.0 <3.0.0"
   collection: ^1.8.0
   meta: ^1.1.5
   path: ^1.2.0
