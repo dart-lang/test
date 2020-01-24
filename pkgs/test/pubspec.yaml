@@ -1,5 +1,5 @@
 name: test
-version: 1.11.2-dev
+version: 1.12.0-dev
 description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 
@@ -46,7 +46,3 @@ dependency_overrides:
     path: ../test_api
   test_core:
     path: ../test_core
-  coverage:
-    git:
-      url: https://github.com/dart-lang/coverage.git
-      ref: 3bd5b4d41c1a6c2780b637da8ec6a5d69deda826

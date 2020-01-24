@@ -83,7 +83,7 @@ class Chrome extends Browser {
           remoteDebuggerCompleter.complete(
               getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')));
 
-          connectionCompleter.complete(await _connect(process, port, idToUrl));
+          connectionCompleter.complete(_connect(process, port, idToUrl));
         } else {
           remoteDebuggerCompleter.complete(null);
         }
