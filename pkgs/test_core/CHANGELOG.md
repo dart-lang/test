@@ -6,6 +6,9 @@
 * Differentiate between test-randomize-ordering-seed not set and 0 being chosen
   as the random seed.
 * `deserializeSuite` now takes an optional `gatherCoverage` callback.
+* Support retrying of entire test suites when they fail to load.
+* Fix the `compiling` message in precompiled mode so it says `loading` instead,
+  which is more accurate.
 
 ## 0.2.18
 

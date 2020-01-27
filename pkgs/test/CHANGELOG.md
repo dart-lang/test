@@ -5,9 +5,6 @@
   will be removed in version `2.0.0`.
 * Support coverage collection for the Chrome platform. See `README.md` for usage
   details.
-* Support retrying of entire test suites when they fail to load.
-* Fix the `compiling` message in precompiled mode so it says `loading` instead,
-  which is more accurate.
 
 ## 1.11.1
 
