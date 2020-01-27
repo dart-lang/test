@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:analyzer/analyzer.dart' hide Configuration;
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-import 'package:pool/pool.dart';
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
@@ -56,10 +55,6 @@ class Loader {
 
   /// The user-provided settings for runtimes.
   final _parsedRuntimeSettings = <Runtime, Object>{};
-
-  /// Pool that limits the number of suites loaded at once to the current
-  /// configurations concurrency limit.
-  final _loadingPool = Pool(Configuration.current.concurrency);
 
   /// All plaforms supported by this [Loader].
   List<Runtime> get allRuntimes => List.unmodifiable(_platformCallbacks.keys);
@@ -225,43 +220,34 @@ class Loader {
                   ? 'compiling '
                   : 'loading ') +
               path;
-      yield LoadSuite(
-          name,
-          platformConfig,
-          platform,
-          () => _loadingPool.withResource<RunnerSuite>(() async {
-                var memo = _platformPlugins[platform.runtime];
+      yield LoadSuite(name, platformConfig, platform, () async {
+        var memo = _platformPlugins[platform.runtime];
 
-                var retriesLeft = suiteConfig.metadata.retry;
-                while (true) {
-                  try {
-                    var plugin = await memo
-                        .runOnce(_platformCallbacks[platform.runtime]);
-                    _customizePlatform(plugin, platform.runtime);
-                    var suite = await plugin.load(
-                        path,
-                        platform,
-                        platformConfig,
-                        {'platformVariables': _runtimeVariables.toList()});
-                    if (suite != null) _suites.add(suite);
-                    return suite;
-                  } catch (error, stackTrace) {
-                    if (retriesLeft > 0) {
-                      retriesLeft--;
-                      print(
-                          'Retrying load of $path in 1s ($retriesLeft remaining)');
-                      await Future.delayed(Duration(seconds: 1));
-                      continue;
-                    }
-                    if (error is LoadException) {
-                      rethrow;
-                    }
-                    await Future.error(LoadException(path, error), stackTrace);
-                    return null;
-                  }
-                }
-              }),
-          path: path);
+        var retriesLeft = suiteConfig.metadata.retry;
+        while (true) {
+          try {
+            var plugin =
+                await memo.runOnce(_platformCallbacks[platform.runtime]);
+            _customizePlatform(plugin, platform.runtime);
+            var suite = await plugin.load(path, platform, platformConfig,
+                {'platformVariables': _runtimeVariables.toList()});
+            if (suite != null) _suites.add(suite);
+            return suite;
+          } catch (error, stackTrace) {
+            if (retriesLeft > 0) {
+              retriesLeft--;
+              print('Retrying load of $path in 1s ($retriesLeft remaining)');
+              await Future.delayed(Duration(seconds: 1));
+              continue;
+            }
+            if (error is LoadException) {
+              rethrow;
+            }
+            await Future.error(LoadException(path, error), stackTrace);
+            return null;
+          }
+        }
+      }, path: path);
     }
   }
 
