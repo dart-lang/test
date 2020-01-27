@@ -223,17 +223,29 @@ class Loader {
       yield LoadSuite(name, platformConfig, platform, () async {
         var memo = _platformPlugins[platform.runtime];
 
-        try {
-          var plugin = await memo.runOnce(_platformCallbacks[platform.runtime]);
-          _customizePlatform(plugin, platform.runtime);
-          var suite = await plugin.load(path, platform, platformConfig,
-              {'platformVariables': _runtimeVariables.toList()});
-          if (suite != null) _suites.add(suite);
-          return suite;
-        } catch (error, stackTrace) {
-          if (error is LoadException) rethrow;
-          await Future.error(LoadException(path, error), stackTrace);
-          return null;
+        var retriesLeft = suiteConfig.metadata.retry;
+        while (true) {
+          try {
+            var plugin =
+                await memo.runOnce(_platformCallbacks[platform.runtime]);
+            _customizePlatform(plugin, platform.runtime);
+            var suite = await plugin.load(path, platform, platformConfig,
+                {'platformVariables': _runtimeVariables.toList()});
+            if (suite != null) _suites.add(suite);
+            return suite;
+          } catch (error, stackTrace) {
+            if (retriesLeft > 0) {
+              retriesLeft--;
+              print('Retrying load of $path in 1s ($retriesLeft remaining)');
+              await Future.delayed(Duration(seconds: 1));
+              continue;
+            }
+            if (error is LoadException) {
+              rethrow;
+            }
+            await Future.error(LoadException(path, error), stackTrace);
+            return null;
+          }
         }
       }, path: path);
     }
