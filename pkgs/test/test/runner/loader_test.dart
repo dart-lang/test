@@ -191,6 +191,8 @@ void main() {
         }
         parent.print(zone, message);
       }));
+
+      expect(firstFailureCompleter.isCompleted, true);
     });
   });
 
