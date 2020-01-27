@@ -3,7 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -150,6 +152,48 @@ void main() {
         completion(equals('print within test')));
     await liveTest.run();
     expectTestPassed(liveTest);
+  });
+
+  group('LoadException', () {
+    test('suites can be retried', () async {
+      var numRetries = 5;
+
+      await d.file('a_test.dart', '''
+      import 'hello.dart';
+
+      void main() {}
+    ''').create();
+
+      var firstFailureCompleter = Completer<void>();
+
+      // After the first load failure we create the missing dependency.
+      unawaited(firstFailureCompleter.future.then((_) async {
+        await d.file('hello.dart', '''
+      String get message => 'hello';
+    ''').create();
+      }));
+
+      await runZoned(() async {
+        var suites = await _loader
+            .loadFile(p.join(d.sandbox, 'a_test.dart'),
+                SuiteConfiguration(retry: numRetries))
+            .toList();
+        expect(suites, hasLength(1));
+        var loadSuite = suites.first;
+        var suite = await loadSuite.getSuite();
+        expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
+        expect(suite.platform.runtime, equals(Runtime.vm));
+      }, zoneSpecification:
+          ZoneSpecification(print: (_, parent, zone, message) {
+        if (message.contains('Retrying load of') &&
+            !firstFailureCompleter.isCompleted) {
+          firstFailureCompleter.complete(null);
+        }
+        parent.print(zone, message);
+      }));
+
+      expect(firstFailureCompleter.isCompleted, true);
+    });
   });
 
   // TODO: Test load suites. Don't forget to test that prints in loaded files
