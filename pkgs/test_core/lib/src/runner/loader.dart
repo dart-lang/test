@@ -215,7 +215,11 @@ class Loader {
         continue;
       }
 
-      var name = (platform.runtime.isJS ? 'compiling ' : 'loading ') + path;
+      var name =
+          (platform.runtime.isJS && platformConfig.precompiledPath == null
+                  ? 'compiling '
+                  : 'loading ') +
+              path;
       yield LoadSuite(name, platformConfig, platform, () async {
         var memo = _platformPlugins[platform.runtime];
 
