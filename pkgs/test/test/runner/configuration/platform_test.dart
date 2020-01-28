@@ -69,8 +69,8 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: [VM] test [E]',
-            '-2: [Chrome] test [E]',
+            '-1: [Chrome] test [E]',
+            '-2: [VM] test [E]',
             '-2: Some tests failed.'
           ]));
       await test.shouldExit(1);
