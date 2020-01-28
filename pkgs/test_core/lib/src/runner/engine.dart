@@ -208,10 +208,9 @@ class Engine {
   // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
-  /// [concurrency] controls how many suites are run at once, and defaults to 1.
-  /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
-  /// four times [concurrency].
-  Engine({int concurrency, int maxSuites, String coverage})
+  /// [concurrency] controls how many suites are loaded and ran at once, and
+  /// defaults to 1.
+  Engine({int concurrency, String coverage})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage {
     _group.future.then((_) {
