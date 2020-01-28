@@ -19,6 +19,7 @@ import 'package:test_core/src/runner/application_exception.dart';
 import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
+import 'package:test_core/src/runner/load_suite.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test/test.dart';
 
@@ -201,3 +202,7 @@ Engine declareEngine(void Function() body,
 /// Returns a [RunnerSuite] with a default environment and configuration.
 RunnerSuite runnerSuite(Group root) => RunnerSuite(
     const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);
+
+/// Returns a [LoadSuite] with a default configuration.
+LoadSuite loadSuite(String name, FutureOr<RunnerSuite> Function() body) =>
+    LoadSuite(name, SuiteConfiguration.empty, suitePlatform, body);

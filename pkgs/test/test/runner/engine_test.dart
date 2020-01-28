@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
@@ -273,6 +274,45 @@ void main() {
       }));
 
       return engine.run();
+    });
+  });
+
+  group('concurrency', () {
+    test('is shared between runner and load suites', () async {
+      for (var concurrency = 1; concurrency < 5; concurrency++) {
+        var testsRunning = 0;
+        var maxActualConcurrency = 0;
+        var testCount = concurrency * 2;
+
+        Future<void> updateAndCheckConcurrency() async {
+          testsRunning++;
+          maxActualConcurrency = max(maxActualConcurrency, testsRunning);
+          expect(testsRunning, lessThanOrEqualTo(concurrency));
+          await Future.delayed(Duration(milliseconds: 100));
+          testsRunning--;
+        }
+
+        var tests = declare(() {
+          for (var i = 0; i < testCount; i++) {
+            test('test ${i + 1}', () async {
+              await updateAndCheckConcurrency();
+            });
+          }
+        });
+        var engine = Engine.withSuites([
+          for (var i = 0; i < testCount; i++)
+            loadSuite('group $i', () async {
+              await updateAndCheckConcurrency();
+              return runnerSuite(Group.root([tests[i]]));
+            }),
+        ], concurrency: concurrency);
+
+        await engine.run();
+        expect(engine.liveTests.length, testCount);
+
+        // We should reach but not exceed max concurrency
+        expect(maxActualConcurrency, concurrency);
+      }
     });
   });
 }
