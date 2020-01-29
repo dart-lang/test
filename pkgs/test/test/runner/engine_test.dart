@@ -297,6 +297,8 @@ void main() {
             maxTestConcurrency = max(maxTestConcurrency, testsRunning);
             expect(testsRunning, lessThanOrEqualTo(concurrency));
           }
+          // Simulate the test/loading taking some amount of time so that
+          // we actually reach max concurrency.
           await Future.delayed(Duration(milliseconds: 100));
           if (!isLoadSuite) {
             testsRunning--;
