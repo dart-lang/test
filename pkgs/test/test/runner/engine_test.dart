@@ -280,16 +280,28 @@ void main() {
   group('concurrency', () {
     test('is shared between runner and load suites', () async {
       for (var concurrency = 1; concurrency < 5; concurrency++) {
+        var testsLoaded = 0;
+        var maxLoadConcurrency = 0;
         var testsRunning = 0;
-        var maxActualConcurrency = 0;
+        var maxTestConcurrency = 0;
         var testCount = concurrency * 2;
 
-        Future<void> updateAndCheckConcurrency() async {
-          testsRunning++;
-          maxActualConcurrency = max(maxActualConcurrency, testsRunning);
-          expect(testsRunning, lessThanOrEqualTo(concurrency));
+        Future<void> updateAndCheckConcurrency(
+            {bool isLoadSuite = false}) async {
+          if (isLoadSuite) {
+            testsLoaded++;
+            maxLoadConcurrency = max(maxLoadConcurrency, testsLoaded);
+            expect(testsLoaded, lessThanOrEqualTo(concurrency));
+          } else {
+            testsRunning++;
+            maxTestConcurrency = max(maxTestConcurrency, testsRunning);
+            expect(testsRunning, lessThanOrEqualTo(concurrency));
+          }
           await Future.delayed(Duration(milliseconds: 100));
-          testsRunning--;
+          if (!isLoadSuite) {
+            testsRunning--;
+            testsLoaded--;
+          }
         }
 
         var tests = declare(() {
@@ -302,7 +314,7 @@ void main() {
         var engine = Engine.withSuites([
           for (var i = 0; i < testCount; i++)
             loadSuite('group $i', () async {
-              await updateAndCheckConcurrency();
+              await updateAndCheckConcurrency(isLoadSuite: true);
               return runnerSuite(Group.root([tests[i]]));
             }),
         ], concurrency: concurrency);
@@ -311,7 +323,8 @@ void main() {
         expect(engine.liveTests.length, testCount);
 
         // We should reach but not exceed max concurrency
-        expect(maxActualConcurrency, concurrency);
+        expect(maxTestConcurrency, concurrency);
+        expect(maxLoadConcurrency, concurrency);
       }
     });
   });
