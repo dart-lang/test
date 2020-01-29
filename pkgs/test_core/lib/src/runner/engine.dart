@@ -73,12 +73,6 @@ class Engine {
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
 
-  /// A pool that limits the number of test suites loaded concurrently.
-  ///
-  /// Once this reaches its limit, loading any additional test suites will cause
-  /// previous suites to be unloaded in the order they completed.
-  final Pool _loadPool;
-
   /// A completer that will complete when [this] is unpaused.
   ///
   /// If [this] isn't paused, [_pauseCompleter] is `null`.
@@ -96,8 +90,7 @@ class Engine {
   /// This will be `null` if [close] was called before all the tests finished
   /// running.
   Future<bool> get success async {
-    await Future.wait(<Future>[_group.future, _loadPool.done],
-        eagerError: true);
+    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
     if (_closedBeforeDone) return null;
     return liveTests.every((liveTest) =>
         liveTest.state.result.isPassing &&
@@ -215,12 +208,10 @@ class Engine {
   // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
-  /// [concurrency] controls how many suites are run at once, and defaults to 1.
-  /// [maxSuites] controls how many suites are *loaded* at once, and defaults to
-  /// four times [concurrency].
-  Engine({int concurrency, int maxSuites, String coverage})
+  /// [concurrency] controls how many suites are loaded and ran at once, and
+  /// defaults to 1.
+  Engine({int concurrency, String coverage})
       : _runPool = Pool(concurrency ?? 1),
-        _loadPool = Pool(maxSuites ?? (concurrency ?? 1) * 2),
         _coverage = coverage {
     _group.future.then((_) {
       _onTestStartedGroup.close();
@@ -265,35 +256,32 @@ class Engine {
       _onSuiteAddedController.add(suite);
 
       _group.add(() async {
-        var loadResource = await _loadPool.request();
-
+        var resource = await _runPool.request();
         LiveSuiteController controller;
-        if (suite is LoadSuite) {
-          await _onUnpaused;
-          controller = await _addLoadSuite(suite);
-          if (controller == null) {
-            loadResource.release();
-            return;
+        try {
+          if (suite is LoadSuite) {
+            await _onUnpaused;
+            controller = await _addLoadSuite(suite);
+            if (controller == null) return;
+          } else {
+            controller = LiveSuiteController(suite);
           }
-        } else {
-          controller = LiveSuiteController(suite);
-        }
 
-        _addLiveSuite(controller.liveSuite);
+          _addLiveSuite(controller.liveSuite);
 
-        await _runPool.withResource(() async {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
           controller.noMoreLiveTests();
           if (_coverage != null) await writeCoverage(_coverage, controller);
-          loadResource.allowRelease(() => controller.close());
-        });
+        } finally {
+          resource.allowRelease(() => controller?.close());
+        }
       }());
     }, onDone: () {
       _subscriptions.remove(subscription);
       _onSuiteAddedController.close();
       _group.close();
-      _loadPool.close();
+      _runPool.close();
     });
     _subscriptions.add(subscription);
 
@@ -558,11 +546,11 @@ class Engine {
     var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
-    // Closing the load pool will close the test suites as soon as their tests
+    // Closing the run pool will close the test suites as soon as their tests
     // are done. For browser suites this is effectively immediate since their
     // tests shut down as soon as they're closed, but for VM suites we may need
     // to wait for tearDowns or tearDownAlls to run.
-    futures.add(_loadPool.close());
+    futures.add(_runPool.close());
     await Future.wait(futures, eagerError: true);
   }
 }

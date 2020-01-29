@@ -26,7 +26,7 @@ void main() {
         ['-p', 'chrome', '-p', 'vm', '-j', '1', 'test.dart'],
         reporter: 'compact');
 
-    expect(test.stdout, containsInOrder(['[VM]', '[Chrome]']));
+    expect(test.stdout, containsInOrder(['[Chrome]', '[VM]']));
     await test.shouldExit(0);
   }, tags: 'chrome');
 }

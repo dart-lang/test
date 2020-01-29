@@ -9,6 +9,14 @@
 * Support retrying of entire test suites when they fail to load.
 * Fix the `compiling` message in precompiled mode so it says `loading` instead,
   which is more accurate.
+* Change the behavior of the concurrency setting so that loading and running
+  don't have separate pools.
+  * The loading and running of a test are now done with the same resource, and
+    the concurrency setting uniformly affects each. With `-j1` only a single
+    test will ever be loaded at a time.
+  * Previously the loading pool was 2x larger than the actual concurrency
+    setting which could cause flaky tests due to tests being loaded while
+    other tests were running, even with `-j1`.
 
 ## 0.2.18
 
