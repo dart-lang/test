@@ -17,6 +17,7 @@
   * Previously the loading pool was 2x larger than the actual concurrency
     setting which could cause flaky tests due to tests being loaded while
     other tests were running, even with `-j1`.
+* Avoid printing uncaught errors within `spawnHybridUri`.
 
 ## 0.2.18
 
