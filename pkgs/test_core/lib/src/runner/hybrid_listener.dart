@@ -74,7 +74,7 @@ void listen(Function Function() getMain, List data) {
   }, onError: (error, stackTrace) async {
     _sendError(channel, error, stackTrace);
     await channel.sink.close();
-    Zone.current.handleUncaughtError(error, stackTrace);
+    Isolate.current.kill();
   });
 }
 
