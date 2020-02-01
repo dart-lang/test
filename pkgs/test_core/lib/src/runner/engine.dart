@@ -534,8 +534,6 @@ class Engine {
   /// Closing [suiteSink] indicates that no more input will be provided, closing
   /// the engine indicates that no more output should be emitted.
   Future close() async {
-    // TODO(grouma) - Remove this unecessary await.
-    await Future(() {});
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
     await _onSuiteAddedController.close();
