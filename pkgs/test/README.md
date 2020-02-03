@@ -459,14 +459,14 @@ void main() {
     ]));
 
     // Ignore lines from the process until it's about to emit the URL.
-    await expect(stdout, emitsThrough('WebSocket URL:'));
+    await expectLater(stdout, emitsThrough('WebSocket URL:'));
 
     // Parse the next line as a URL.
     var url = Uri.parse(await stdout.next);
     expect(url.host, equals('localhost'));
 
     // You can match against the same StreamQueue multiple times.
-    await expect(stdout, emits('Waiting for connection...'));
+    await expectLater(stdout, emits('Waiting for connection...'));
   });
 }
 ```
