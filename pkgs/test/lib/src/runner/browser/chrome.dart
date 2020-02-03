@@ -83,7 +83,7 @@ class Chrome extends Browser {
           remoteDebuggerCompleter.complete(
               getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')));
 
-          connectionCompleter.complete(_connect(process, port, idToUrl));
+          connectionCompleter.complete(_connect(process, port, idToUrl, url));
         } else {
           remoteDebuggerCompleter.complete(null);
         }
@@ -149,7 +149,7 @@ class Chrome extends Browser {
 }
 
 Future<WipConnection> _connect(
-    Process process, int port, Map<String, String> idToUrl) async {
+    Process process, int port, Map<String, String> idToUrl, Uri url) async {
   // Wait for Chrome to be in a ready state.
   await process.stderr
       .transform(utf8.decoder)
@@ -157,7 +157,20 @@ Future<WipConnection> _connect(
       .firstWhere((line) => line.startsWith('DevTools listening'));
 
   var chromeConnection = ChromeConnection('localhost', port);
-  var tab = (await chromeConnection.getTabs()).first;
+  ChromeTab tab;
+  var attempt = 0;
+  while (tab == null) {
+    attempt++;
+    var tabs = await chromeConnection.getTabs();
+    tab =
+        tabs.firstWhere((tab) => tab.url == url.toString(), orElse: () => null);
+    if (tab == null) {
+      await Future.delayed(Duration(milliseconds: 100));
+      if (attempt > 5) {
+        throw StateError('Could not connect to test tab with url: $url');
+      }
+    }
+  }
   var tabConnection = await tab.connect();
 
   // Enable debugging.
