@@ -8,7 +8,6 @@ import 'dart:isolate';
 
 // ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart';
-import 'package:package_resolver/package_resolver.dart';
 import 'package:source_span/source_span.dart';
 
 import 'string_literal_iterator.dart';
@@ -19,20 +18,13 @@ import 'string_literal_iterator.dart';
 /// they will be resolved in the same context as the host isolate. [message] is
 /// passed to the [main] method of the code being run; the caller is responsible
 /// for using this to establish communication with the isolate.
-///
-/// If [resolver] is passed, its package resolution strategy is used to resolve
-/// code in the spawned isolate. It defaults to [PackageResolver.current].
-Future<Isolate> runInIsolate(String code, message,
-    {PackageResolver resolver, bool checked, SendPort onExit}) async {
-  resolver ??= PackageResolver.current;
-  return await Isolate.spawnUri(
-      Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
-      [],
-      message,
-      packageConfig: await resolver.packageConfigUri,
-      checked: checked,
-      onExit: onExit);
-}
+Future<Isolate> runInIsolate(String code, Object message, {SendPort onExit}) =>
+    Isolate.spawnUri(
+        Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
+        [],
+        message,
+        checked: true,
+        onExit: onExit);
 
 /// Takes a span whose source is the value of a string that has been parsed from
 /// a Dart file and returns the corresponding span from within that Dart file.

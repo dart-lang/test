@@ -1,3 +1,7 @@
+## 0.3.1-dev
+
+* Enable asserts in code running through `spawnHybrid` APIs.
+
 ## 0.3.0
 
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.

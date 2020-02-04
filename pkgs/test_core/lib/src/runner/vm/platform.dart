@@ -139,7 +139,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
       var channel = serializeSuite(() => test.main);
       IsolateChannel.connectSend(message).pipe(channel);
     }
-  ''', message, checked: true);
+  ''', message);
 }
 
 Future<Isolate> _spawnPrecompiledIsolate(
