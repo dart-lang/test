@@ -20,8 +20,8 @@
 * [Debugging](#debugging)
 * [Browser/VM Hybrid Tests](#browservm-hybrid-tests)
 * [Support for Other Packages](#support-for-other-packages)
+  * [`build_runner`](#build_runner)
   * [`term_glyph`](#term_glyph)
-  * [`barback`](#barback)
 * [Further Reading](#further-reading)
 
 ## Writing Tests
