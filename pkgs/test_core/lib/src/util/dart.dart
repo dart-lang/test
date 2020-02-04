@@ -18,11 +18,13 @@ import 'string_literal_iterator.dart';
 /// they will be resolved in the same context as the host isolate. [message] is
 /// passed to the [main] method of the code being run; the caller is responsible
 /// for using this to establish communication with the isolate.
-Future<Isolate> runInIsolate(String code, Object message, {SendPort onExit}) =>
+Future<Isolate> runInIsolate(String code, Object message,
+        {SendPort onExit}) async =>
     Isolate.spawnUri(
         Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
         [],
         message,
+        packageConfig: await Isolate.packageConfig,
         checked: true,
         onExit: onExit);
 
