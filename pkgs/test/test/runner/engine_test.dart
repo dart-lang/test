@@ -69,8 +69,8 @@ void main() {
       });
     });
     expect(engine.run(), completion(isFalse));
-    unawaited(engine.close());
     await pumpEventQueue();
+    unawaited(engine.close());
     // We need to complete this so the outer test finishes.
     completer.complete();
   });
