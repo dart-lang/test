@@ -1,3 +1,9 @@
+## 1.13.0-dev
+
+* Enable asserts in code running through `spawnHybrid` APIs.
+* Exit with a non-zero code if no tests were ran, whether due to skips or having
+  no tests defined.
+
 ## 1.12.0
 
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.

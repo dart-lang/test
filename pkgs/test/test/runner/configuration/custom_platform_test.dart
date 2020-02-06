@@ -437,7 +437,7 @@ void main() {
 
           test = await runTest(['-p', 'chrome', 'test.dart']);
           expect(test.stdout, emitsThrough(contains('No tests ran.')));
-          await test.shouldExit(0);
+          await test.shouldExit(1);
         }, tags: 'chrome');
 
         test('that counts as its parent', () async {

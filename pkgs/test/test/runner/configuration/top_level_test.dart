@@ -49,7 +49,7 @@ void main() {
     var test =
         await runTest(['--configuration', 'special_test.yaml', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-    await test.shouldExit(0);
+    await test.shouldExit(1);
   });
 
   test('pauses the test runner after a suite loads with pause_after_load: true',
@@ -223,7 +223,7 @@ void main() {
 
     var test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-    await test.shouldExit(0);
+    await test.shouldExit(1);
   });
 
   test('skips tests with skip: reason', () async {
@@ -242,7 +242,7 @@ void main() {
     var test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('Tests are boring.')));
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-    await test.shouldExit(0);
+    await test.shouldExit(1);
   });
 
   group('test_on', () {
@@ -282,7 +282,7 @@ void main() {
               "Warning: this package doesn't support running tests on the Dart "
               'VM.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('warns about the OS when some OSes are supported', () async {
@@ -302,7 +302,7 @@ void main() {
           emits("Warning: this package doesn't support running tests on "
               '${currentOS.name}.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('warns about browsers in general when no browsers are supported',
@@ -323,7 +323,7 @@ void main() {
           emits(
               "Warning: this package doesn't support running tests on browsers."));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test(
@@ -348,7 +348,7 @@ void main() {
               "Warning: this package doesn't support running tests on Chrome, "
               'Firefox, or PhantomJS.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
   });
 

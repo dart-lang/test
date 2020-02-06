@@ -28,7 +28,7 @@ void main() {
 
       var test = await runTest(['--platform', 'chrome', 'vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     }, tags: 'chrome');
 
     test('runs a test suite on a matching operating system', () async {
@@ -46,7 +46,7 @@ void main() {
 
       var test = await runTest(['os_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('only loads matching files when loading as a group', () async {
@@ -78,7 +78,7 @@ void main() {
 
       var test = await runTest(['browser_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('runs a browser group on a browser', () async {
@@ -94,7 +94,7 @@ void main() {
 
       var test = await runTest(['--platform', 'chrome', 'vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     }, tags: 'chrome');
   });
 
@@ -112,7 +112,7 @@ void main() {
 
       var test = await runTest(['browser_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('runs a browser test on a browser', () async {
@@ -128,7 +128,7 @@ void main() {
 
       var test = await runTest(['--platform', 'chrome', 'vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     }, tags: 'chrome');
   });
 
@@ -148,7 +148,7 @@ void main() {
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test("doesn't runs the test if the group doesn't match", () async {
@@ -157,7 +157,7 @@ void main() {
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test("doesn't runs the test if the test doesn't match", () async {
@@ -166,7 +166,7 @@ void main() {
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
   });
 }

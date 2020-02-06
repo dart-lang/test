@@ -753,7 +753,7 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     }, tags: 'chrome');
 
     test('ignores non-matching Skips', () async {
@@ -837,7 +837,7 @@ void main() {
       expect(test.stdoutStream(), neverEmits(contains('Skip: third')));
       expect(test.stdoutStream(), neverEmits(contains('Skip: fourth')));
       expect(test.stdout, emitsThrough(contains('Skip: fifth')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     }, tags: 'chrome');
   });
 
@@ -857,7 +857,7 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('~1: All tests skipped.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     }, tags: 'chrome');
 
     test('ignores non-matching Skips', () async {

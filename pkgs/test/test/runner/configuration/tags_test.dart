@@ -33,11 +33,11 @@ void main() {
 
     var test = await runTest(['--exclude-tag', 'foo', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('No tests ran.')));
-    await test.shouldExit(0);
+    await test.shouldExit(1);
 
     test = await runTest(['--exclude-tag', 'bar', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('No tests ran.')));
-    await test.shouldExit(0);
+    await test.shouldExit(1);
 
     test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -178,7 +178,7 @@ void main() {
       var test = await runTest(['test.dart']);
       expect(
           test.stdout, containsInOrder(['some reason', 'All tests skipped.']));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
   });
 

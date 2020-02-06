@@ -260,7 +260,7 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('ignores non-matching Skips', () async {
@@ -293,7 +293,7 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test("doesn't match a different OS", () async {
@@ -329,7 +329,7 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('~1: All tests skipped.')));
-      await test.shouldExit(0);
+      await test.shouldExit(1);
     });
 
     test('ignores non-matching Skips', () async {
