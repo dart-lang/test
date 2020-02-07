@@ -19,7 +19,7 @@ TypeMatcher<T> isA<T>() => TypeMatcher<T>();
 /// object.
 ///
 /// ```dart
-/// expect(shouldBeDuration, new TypeMatcher<Duration>());
+/// expect(shouldBeDuration, TypeMatcher<Duration>());
 /// ```
 ///
 /// If you want to further validate attributes of the specified [Type], use the
@@ -27,7 +27,7 @@ TypeMatcher<T> isA<T>() => TypeMatcher<T>();
 ///
 /// ```dart
 /// void shouldThrowRangeError(int value) {
-///   throw new RangeError.range(value, 10, 20);
+///   throw RangeError.range(value, 10, 20);
 /// }
 ///
 /// expect(
