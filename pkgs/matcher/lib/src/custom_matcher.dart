@@ -28,7 +28,7 @@ import 'util.dart';
 /// and then use this for example like:
 ///
 /// ```dart
-/// expect(inventoryItem, new HasPrice(greaterThan(0)));
+/// expect(inventoryItem, HasPrice(greaterThan(0)));
 /// ```
 class CustomMatcher extends Matcher {
   final String _featureDescription;
