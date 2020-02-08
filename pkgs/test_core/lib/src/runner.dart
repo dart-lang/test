@@ -160,7 +160,8 @@ class Runner {
           throw ApplicationException('No tests match $patterns.');
         }
 
-        return _engine.passed.isNotEmpty && (success ?? false);
+        return (success ?? false) &&
+            (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
       });
 
   /// Emits a warning if the user is trying to run on a platform that's
