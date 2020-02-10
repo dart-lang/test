@@ -196,7 +196,7 @@ class NodePlatform extends PlatformPlugin
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           packageResolver: resolver,
-          sdkRoot: p.toUri(sdkDir));
+          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'));
     }
 
     return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
