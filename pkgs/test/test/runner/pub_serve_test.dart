@@ -218,11 +218,8 @@ void main() {
             await runTest([_pubServeArg, '-p', 'chrome', '--verbose-trace']);
         expect(
             test.stdout,
-            containsInOrder([
-              ' main.<fn>',
-              'package:test',
-              'org-dartlang-sdk:///sdk/lib/async/zone.dart'
-            ]));
+            containsInOrder(
+                [' main.<fn>', 'package:test', 'dart:async/zone.dart']));
         await test.shouldExit(1);
         await pub.kill();
       }, tags: 'chrome');
@@ -233,11 +230,8 @@ void main() {
             await runTest([_pubServeArg, '-p', 'node', '--verbose-trace']);
         expect(
             test.stdout,
-            containsInOrder([
-              ' main.<fn>',
-              'package:test',
-              'org-dartlang-sdk:///sdk/lib/async/zone.dart'
-            ]));
+            containsInOrder(
+                [' main.<fn>', 'package:test', 'dart:async/zone.dart']));
         await test.shouldExit(1);
         await pub.kill();
       }, tags: 'node');

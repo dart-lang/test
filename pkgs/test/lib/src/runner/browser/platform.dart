@@ -411,7 +411,7 @@ class BrowserPlatform extends PlatformPlugin
       _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
           packageResolver: await PackageResolver.current.asSync,
-          sdkRoot: p.toUri(sdkDir));
+          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'));
     });
   }
 

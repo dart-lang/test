@@ -700,11 +700,8 @@ void main() {
     var test = await runTest(['-p', 'chrome', '--verbose-trace', 'test.dart']);
     expect(
         test.stdout,
-        containsInOrder([
-          ' main.<fn>',
-          'package:test',
-          'org-dartlang-sdk:///sdk/lib/async/zone.dart'
-        ]));
+        containsInOrder(
+            [' main.<fn>', 'package:test', 'dart:async/zone.dart']));
     await test.shouldExit(1);
   }, tags: 'chrome');
 
@@ -716,8 +713,7 @@ void main() {
         ['-p', 'chrome', '--verbose-trace', '--js-trace', 'test.dart']);
     expect(test.stdoutStream(), neverEmits(endsWith(' main.<fn>')));
     expect(test.stdoutStream(), neverEmits(contains('package:test')));
-    expect(test.stdoutStream(),
-        neverEmits(contains('org-dartlang-sdk:///sdk/lib/async/zone.dart')));
+    expect(test.stdoutStream(), neverEmits(contains('dart:async/zone.dart')));
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   }, tags: 'chrome');
