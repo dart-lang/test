@@ -1,3 +1,7 @@
+## 1.12.1-dev
+
+* Fix the stack trace labels in SDK code for `dart2js` compiled tests.
+
 ## 1.12.0
 
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.

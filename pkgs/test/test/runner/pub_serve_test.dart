@@ -235,7 +235,7 @@ void main() {
         await test.shouldExit(1);
         await pub.kill();
       }, tags: 'node');
-    }, skip: 'Broken by sdk#32633');
+    });
 
     group("doesn't dartify stack traces for JS-compiled tests with --js-trace",
         () {
