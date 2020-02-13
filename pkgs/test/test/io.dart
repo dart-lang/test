@@ -4,8 +4,8 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
-import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -13,7 +13,9 @@ import 'package:test_process/test_process.dart';
 import 'package:test/test.dart';
 
 /// The path to the root directory of the `test` package.
-final Future<String> packageDir = PackageResolver.current.packagePath('test');
+final Future<String> packageDir =
+    Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/'))
+        .then((uri) => uri.path);
 
 /// The path to the `pub` executable in the current Dart SDK.
 final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
@@ -95,7 +97,7 @@ Future<TestProcess> runDart(Iterable<String> args,
   var allArgs = <String>[
     ...Platform.executableArguments.where((arg) =>
         !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
-    await PackageResolver.current.processArgument,
+    '--packages=${await Isolate.packageConfig}',
     ...args
   ];
 

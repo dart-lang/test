@@ -9,7 +9,6 @@ import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
-import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:shelf/shelf.dart' as shelf;
@@ -37,6 +36,7 @@ import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementa
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
+import '../../util/package_map.dart';
 import '../../util/path_handler.dart';
 import '../../util/one_off_handler.dart';
 import 'browser_manager.dart';
@@ -348,8 +348,9 @@ class BrowserPlatform extends PlatformPlugin
         if (getSourceMap && !suiteConfig.jsTrace) {
           _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
               mapUrl: url,
-              packageResolver: SyncPackageResolver.root('packages'),
-              sdkRoot: p.toUri('packages/\$sdk'));
+              sdkRoot: p.toUri('packages/\$sdk'),
+              packageMap:
+                  (await currentPackageConfig).toPackagesDirPackageMap());
           return;
         }
 
@@ -410,8 +411,8 @@ class BrowserPlatform extends PlatformPlugin
       var mapPath = jsPath + '.map';
       _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
-          packageResolver: await PackageResolver.current.asSync,
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'));
+          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+          packageMap: (await currentPackageConfig).toPackageMap());
     });
   }
 

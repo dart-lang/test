@@ -5,9 +5,9 @@
 @TestOn('vm')
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:node_preamble/preamble.dart' as preamble;
-import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -50,7 +50,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
-            await PackageResolver.current.processArgument,
+            '--packages=${await Isolate.packageConfig}',
             'to_precompile.dart',
             '--out=precompiled/test.dart.browser_test.dart.js'
           ],
@@ -107,7 +107,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
-            await PackageResolver.current.processArgument,
+            '--packages=${await Isolate.packageConfig}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',
           ],
@@ -232,10 +232,15 @@ void main() {
 }
 
 Future<Null> _writePackagesFile() async {
-  var currentPackages = await PackageResolver.current.packageConfigMap;
-  var packagesFileContent = StringBuffer();
-  currentPackages.forEach((package, location) {
-    packagesFileContent.writeln('$package:$location');
-  });
-  await d.file('.packages', packagesFileContent.toString()).create();
+  var packagesFile = File('.packages');
+  if (await packagesFile.exists()) {
+    await d.file('.packages', await packagesFile.readAsString()).create();
+  }
+
+  var packageConfigFile = File(p.join('.dart_tool', 'package_config.json'));
+  if (await packageConfigFile.exists()) {
+    await d.dir('.dart_tool', [
+      d.file('package_config.json', await packageConfigFile.readAsString())
+    ]).create();
+  }
 }
