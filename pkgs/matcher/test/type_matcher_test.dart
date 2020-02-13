@@ -8,44 +8,45 @@ import 'package:test/test.dart' show test, group;
 import 'test_utils.dart';
 
 void main() {
-  _test('Map', isMap, {});
-  _test('List', isList, []);
-  _test('ArgumentError', isArgumentError, ArgumentError());
-  _test('CastError', isCastError, CastError());
-  _test('Exception', isException, const FormatException());
-  _test('FormatException', isFormatException, const FormatException());
-  _test('StateError', isStateError, StateError('oops'));
-  _test('RangeError', isRangeError, RangeError('oops'));
-  _test('UnimplementedError', isUnimplementedError, UnimplementedError('oops'));
-  _test('UnsupportedError', isUnsupportedError, UnsupportedError('oops'));
-  _test('ConcurrentModificationError', isConcurrentModificationError,
-      ConcurrentModificationError());
-  _test('CyclicInitializationError', isCyclicInitializationError,
-      CyclicInitializationError());
-  _test('NoSuchMethodError', isNoSuchMethodError, null);
-  _test('NullThrownError', isNullThrownError, NullThrownError());
+  _test(isMap, {}, name: 'Map');
+  _test(isList, [], name: 'List');
+  _test(isArgumentError, ArgumentError());
+  _test(isCastError, CastError());
+  _test<Exception>(isException, const FormatException());
+  _test(isFormatException, const FormatException());
+  _test(isStateError, StateError('oops'));
+  _test(isRangeError, RangeError('oops'));
+  _test(isUnimplementedError, UnimplementedError('oops'));
+  _test(isUnsupportedError, UnsupportedError('oops'));
+  _test(isConcurrentModificationError, ConcurrentModificationError());
+  _test(isCyclicInitializationError, CyclicInitializationError());
+  _test<NoSuchMethodError>(isNoSuchMethodError, null);
+  _test(isNullThrownError, NullThrownError());
 
   group('custom `TypeMatcher`', () {
     // ignore: deprecated_member_use_from_same_package
-    _test('String', const isInstanceOf<String>(), 'hello');
-    _test('String', const _StringMatcher(), 'hello');
-    _test('String', const TypeMatcher<String>(), 'hello');
-    _test('String', isA<String>(), 'hello');
+    _test(const isInstanceOf<String>(), 'hello');
+    _test(const _StringMatcher(), 'hello');
+    _test(const TypeMatcher<String>(), 'hello');
+    _test(isA<String>(), 'hello');
   });
 }
 
-// TODO: drop `name` and use a type argument – once Dart2 semantics are enabled
-void _test(String name, Matcher typeMatcher, Object matchingType) {
+void _test<T>(Matcher typeMatcher, T matchingInstance, {String name}) {
+  name ??= T.toString();
   group('for `$name`', () {
-    if (matchingType != null) {
+    if (matchingInstance != null) {
       test('succeeds', () {
-        shouldPass(matchingType, typeMatcher);
+        shouldPass(matchingInstance, typeMatcher);
       });
     }
 
     test('fails', () {
-      shouldFail(const TestType(), typeMatcher,
-          "Expected: <Instance of '$name'> Actual: <Instance of 'TestType'>");
+      shouldFail(
+        const _TestType(),
+        typeMatcher,
+        "Expected: <Instance of '$name'> Actual: <Instance of '_TestType'>",
+      );
     });
   });
 }
@@ -60,6 +61,6 @@ class _StringMatcher extends TypeMatcher {
   bool matches(item, Map matchState) => item is String;
 }
 
-class TestType {
-  const TestType();
+class _TestType {
+  const _TestType();
 }
