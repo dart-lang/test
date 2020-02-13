@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:package_resolver/package_resolver.dart';
 import 'package:source_map_stack_trace/source_map_stack_trace.dart' as mapper;
 import 'package:source_maps/source_maps.dart';
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
@@ -14,8 +13,8 @@ class JSStackTraceMapper extends StackTraceMapper {
   /// This is initialized lazily in `mapStackTrace()`.
   Mapping _mapping;
 
-  /// The package resolution information passed to dart2js.
-  final SyncPackageResolver _packageResolver;
+  /// The same package resolution information as was passed to dart2js.
+  final Map<String, Uri> _packageMap;
 
   /// The URL of the SDK root from which dart2js loaded its sources.
   final Uri _sdkRoot;
@@ -27,9 +26,9 @@ class JSStackTraceMapper extends StackTraceMapper {
   final Uri _mapUrl;
 
   JSStackTraceMapper(this._mapContents,
-      {Uri mapUrl, SyncPackageResolver packageResolver, Uri sdkRoot})
+      {Uri mapUrl, Map<String, Uri> packageMap, Uri sdkRoot})
       : _mapUrl = mapUrl,
-        _packageResolver = packageResolver,
+        _packageMap = packageMap,
         _sdkRoot = sdkRoot;
 
   /// Converts [trace] into a Dart stack trace.
@@ -37,7 +36,7 @@ class JSStackTraceMapper extends StackTraceMapper {
   StackTrace mapStackTrace(StackTrace trace) {
     _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);
     return mapper.mapStackTrace(_mapping, trace,
-        packageResolver: _packageResolver, sdkRoot: _sdkRoot);
+        packageMap: _packageMap, sdkRoot: _sdkRoot);
   }
 
   /// Returns a Map representation which is suitable for JSON serialization.
@@ -46,9 +45,7 @@ class JSStackTraceMapper extends StackTraceMapper {
     return {
       'mapContents': _mapContents,
       'sdkRoot': _sdkRoot?.toString(),
-      'packageConfigMap':
-          _serializePackageConfigMap(_packageResolver.packageConfigMap),
-      'packageRoot': _packageResolver.packageRoot?.toString(),
+      'packageConfigMap': _serializePackageConfigMap(_packageMap),
       'mapUrl': _mapUrl?.toString(),
     };
   }
@@ -57,15 +54,12 @@ class JSStackTraceMapper extends StackTraceMapper {
   /// representation.
   static StackTraceMapper deserialize(Map serialized) {
     if (serialized == null) return null;
-    var packageRoot = serialized['packageRoot'] as String ?? '';
+    var deserialized = _deserializePackageConfigMap(
+        (serialized['packageConfigMap'] as Map).cast<String, String>());
+
     return JSStackTraceMapper(serialized['mapContents'] as String,
         sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
-        packageResolver: packageRoot.isNotEmpty
-            ? SyncPackageResolver.root(
-                Uri.parse(serialized['packageRoot'] as String))
-            : SyncPackageResolver.config(_deserializePackageConfigMap(
-                (serialized['packageConfigMap'] as Map)
-                    .cast<String, String>())),
+        packageMap: deserialized,
         mapUrl: Uri.parse(serialized['mapUrl'] as String));
   }
 

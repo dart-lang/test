@@ -1,6 +1,7 @@
 ## 0.3.1-dev
 
 * Enable asserts in code running through `spawnHybrid` APIs.
+* Drop the `package_resolver` dependency.
 
 ## 0.3.0
 
