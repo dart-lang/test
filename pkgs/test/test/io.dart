@@ -15,7 +15,7 @@ import 'package:test/test.dart';
 /// The path to the root directory of the `test` package.
 final Future<String> packageDir =
     Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/'))
-        .then((uri) => uri.path);
+        .then((uri) => p.dirname(uri.path));
 
 /// The path to the `pub` executable in the current Dart SDK.
 final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
