@@ -108,10 +108,10 @@ final ArgParser _parser = (() {
       defaultsTo: false,
       negatable: false);
   parser.addOption('test-randomize-ordering-seed',
-      help: 'If positive, use this as a seed to randomize the execution\n'
-          'of test cases (must be a 32bit unsigned integer).\n'
+      help: 'The seed to randomize the execution order of test cases.\n'
+          'Must be a 32bit unsigned integer or "random".\n'
           'If "random", pick a random seed to use.\n'
-          'If 0 or not set, do not randomize test case execution order.\n');
+          'If not passed, do not randomize test case execution order.');
 
   var reporterDescriptions = <String, String>{};
   for (var reporter in allReporters.keys) {
