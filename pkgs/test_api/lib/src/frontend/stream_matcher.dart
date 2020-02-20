@@ -11,9 +11,6 @@ import '../utils.dart';
 import 'async_matcher.dart';
 import 'format_stack_trace.dart';
 
-/// The type for [_StreamMatcher._matchQueue].
-typedef _MatchQueue = Future<String> Function(StreamQueue queue);
-
 /// A matcher that matches events from [Stream]s or [StreamQueue]s.
 ///
 /// Stream matchers are designed to make it straightforward to create complex
@@ -119,7 +116,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   final String description;
 
   /// The callback used to implement [matchQueue].
-  final _MatchQueue _matchQueue;
+  final Future<String> Function(StreamQueue) _matchQueue;
 
   _StreamMatcher(this._matchQueue, this.description);
 
