@@ -347,4 +347,12 @@ void main() {
           throwsA('oh no!'));
     });
   });
+
+  test('A custom StreamController doesn\'t hang on close', () async {
+    var controller = StreamController<void>();
+    var done = expectLater(controller.stream, emits(null));
+    controller.add(null);
+    await done;
+    await controller.close();
+  });
 }
