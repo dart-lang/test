@@ -129,10 +129,12 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   @override
   dynamic /*FutureOr<String>*/ matchAsync(item) {
     StreamQueue queue;
+    var shouldCancelQueue = false;
     if (item is StreamQueue) {
       queue = item;
     } else if (item is Stream) {
       queue = StreamQueue(item);
+      shouldCancelQueue = true;
     } else {
       return 'was not a Stream or a StreamQueue';
     }
@@ -184,6 +186,9 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
     }, onError: (error) {
       transaction.reject();
       throw error;
+    }).then((result) {
+      if (shouldCancelQueue) queue.cancel();
+      return result;
     });
   }
 

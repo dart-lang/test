@@ -1,3 +1,10 @@
+## 0.2.15-dev
+
+* Cancel any StreamQueue that is created as a part of a stream matcher once it
+  is done matching.
+  * This fixes a bug where using a matcher on a custom stream controller and
+    then awaiting the `close()` method on that controller would hang.
+
 ## 0.2.14
 
 * Bump minimum SDK to `2.4.0` for safer usage of for-loop elements.
