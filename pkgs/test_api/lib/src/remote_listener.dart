@@ -121,8 +121,7 @@ class RemoteListener {
 
           if (beforeLoad != null) await beforeLoad();
 
-          // TODO - is this await necessary?
-          await (declarer.declare(main as Function()) as dynamic);
+          await declarer.declare(main as Function());
 
           var suite = Suite(
               declarer.build(), SuitePlatform.deserialize(message['platform']),
