@@ -134,7 +134,7 @@ void main() {
         containsInOrder(
             ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
     await test.shouldExit(1);
-  }, solo: true);
+  });
 
   test('times out after failing test', () async {
     await d.file('test.dart', '''
@@ -159,5 +159,5 @@ void main() {
         containsInOrder(
             ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
     await test.shouldExit(1);
-  }, solo: true);
+  });
 }
