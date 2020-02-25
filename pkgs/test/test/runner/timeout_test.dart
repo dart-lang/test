@@ -110,4 +110,54 @@ void main() {
             ['Test timed out after 0.4 seconds.', '-1: Some tests failed.']));
     await test.shouldExit(1);
   });
+
+  test('times out teardown callbacks', () async {
+    await d.file('test.dart', '''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  tearDown(() async {
+    await Completer<void>().future;
+  });
+
+  test('timeout in teardown', () async {
+    // nothing
+  });
+}
+''').create();
+
+    var test = await runTest(['--timeout=50ms', 'test.dart']);
+    expect(
+        test.stdout,
+        containsInOrder(
+            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+    await test.shouldExit(1);
+  }, solo: true);
+
+  test('times out after failing test', () async {
+    await d.file('test.dart', '''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  tearDown(() async {
+    await Completer<void>().future;
+  });
+
+  test('timeout in teardown', () async {
+    expect(true, false);
+  });
+}
+''').create();
+
+    var test = await runTest(['--timeout=50ms', 'test.dart']);
+    expect(
+        test.stdout,
+        containsInOrder(
+            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+    await test.shouldExit(1);
+  }, solo: true);
 }
