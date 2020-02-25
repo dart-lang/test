@@ -4,6 +4,8 @@
   is done matching.
   * This fixes a bug where using a matcher on a custom stream controller and
     then awaiting the `close()` method on that controller would hang.
+* Avoid causing the test runner to hang if there is a timeout during a
+  `tearDown` callback following a failing test case.
 
 ## 0.2.14
 
