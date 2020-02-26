@@ -284,7 +284,6 @@ class Invoker {
 
     _timeoutTimer = _invokerZone.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
-        if (liveTest.isComplete) return;
         _handleError(Zone.current, TimeoutException(message(), timeout));
       });
     });

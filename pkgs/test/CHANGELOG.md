@@ -3,6 +3,7 @@
 * Enable asserts in code running through `spawnHybrid` APIs.
 * Exit with a non-zero code if no tests were ran, whether due to skips or having
   no tests defined.
+* Fix the stack trace labels in SDK code for `dart2js` compiled tests.
 
 ## 1.12.0
 

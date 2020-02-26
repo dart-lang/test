@@ -127,7 +127,7 @@ class Declarer {
   /// Runs [body] with this declarer as [Declarer.current].
   ///
   /// Returns the return value of [body].
-  void declare(void Function() body) =>
+  T declare<T>(T Function() body) =>
       runZoned(body, zoneValues: {#test.declarer: this});
 
   /// Defines a test case with the given name and body.

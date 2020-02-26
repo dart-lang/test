@@ -703,7 +703,7 @@ void main() {
         containsInOrder(
             [' main.<fn>', 'package:test', 'dart:async/zone.dart']));
     await test.shouldExit(1);
-  }, tags: 'chrome', skip: 'Broken by sdk#32633');
+  }, tags: 'chrome');
 
   test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
       () async {
