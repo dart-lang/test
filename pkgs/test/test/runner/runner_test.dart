@@ -450,7 +450,7 @@ $_usage''');
     test('skips all tests', () async {
       var test = await runTest(['test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('runs all tests with --run-skipped', () async {
@@ -474,7 +474,7 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('ignores non-matching Skips', () async {
@@ -558,7 +558,7 @@ void main() {
       expect(test.stdoutStream(), neverEmits(contains('Skip: third')));
       expect(test.stdoutStream(), neverEmits(contains('Skip: fourth')));
       expect(test.stdout, emitsThrough(contains('Skip: fifth')));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('applies platforms to a group', () async {
@@ -578,7 +578,7 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
   });
 
@@ -598,7 +598,7 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('ignores non-matching Skips', () async {

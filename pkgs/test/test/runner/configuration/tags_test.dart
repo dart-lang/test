@@ -178,7 +178,7 @@ void main() {
       var test = await runTest(['test.dart']);
       expect(
           test.stdout, containsInOrder(['some reason', 'All tests skipped.']));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
   });
 

@@ -23,7 +23,7 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(test.stdout, emitsThrough(contains('~1: All tests skipped.')));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('prints the skip reason if there is one', () async {
@@ -44,7 +44,7 @@ void main() {
             '  Skip expect: is failing',
             '~1: All tests skipped.'
           ]));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test("prints the expect reason if there's no skip reason", () async {
@@ -65,7 +65,7 @@ void main() {
             '  Skip expect (1 is 2).',
             '~1: All tests skipped.'
           ]));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('prints the matcher description if there are no reasons', () async {
@@ -85,7 +85,7 @@ void main() {
             '  Skip expect (<2>).',
             '~1: All tests skipped.'
           ]));
-      await test.shouldExit(1);
+      await test.shouldExit(0);
     });
 
     test('still allows the test to fail', () async {

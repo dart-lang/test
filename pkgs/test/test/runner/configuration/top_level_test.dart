@@ -49,7 +49,7 @@ void main() {
     var test =
         await runTest(['--configuration', 'special_test.yaml', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-    await test.shouldExit(1);
+    await test.shouldExit(0);
   });
 
   test('pauses the test runner after a suite loads with pause_after_load: true',
@@ -223,7 +223,7 @@ void main() {
 
     var test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-    await test.shouldExit(1);
+    await test.shouldExit(0);
   });
 
   test('skips tests with skip: reason', () async {
@@ -242,7 +242,7 @@ void main() {
     var test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('Tests are boring.')));
     expect(test.stdout, emitsThrough(contains('All tests skipped.')));
-    await test.shouldExit(1);
+    await test.shouldExit(0);
   });
 
   group('test_on', () {
