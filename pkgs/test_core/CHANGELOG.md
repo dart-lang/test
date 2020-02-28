@@ -1,6 +1,6 @@
 ## 0.3.1-dev
 
-* Support latest `package:vm_service` and `package:coverage`.
+* Support latest `package:vm_service`.
 * Enable asserts in code running through `spawnHybrid` APIs.
 * Exit with a non-zero code if no tests were ran, whether due to skips or having
   no tests defined.
