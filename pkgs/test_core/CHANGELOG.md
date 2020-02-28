@@ -1,3 +1,6 @@
+## 0.3.2-dev
+* Support latest `package:vm_service` and `package:coverage`.
+
 ## 0.3.1-dev
 
 * Enable asserts in code running through `spawnHybrid` APIs.
