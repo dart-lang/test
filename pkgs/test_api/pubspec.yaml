@@ -35,10 +35,6 @@ dependency_overrides:
     path: ./../test
   test_core:
     path: ./../test_core
-  package_config:
-    git:
-      url: https://github.com/dart-lang/package_config.git
-      ref: '1.9'
   source_map_stack_trace:
     git:
       url: https://github.com/dart-lang/source_map_stack_trace.git
