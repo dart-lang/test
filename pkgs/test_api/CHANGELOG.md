@@ -1,4 +1,4 @@
-## 0.2.15-dev
+## 0.2.15
 
 * Cancel any StreamQueue that is created as a part of a stream matcher once it
   is done matching.

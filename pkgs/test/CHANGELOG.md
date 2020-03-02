@@ -1,4 +1,4 @@
-## 1.13.0-dev
+## 1.13.0
 
 * Enable asserts in code running through `spawnHybrid` APIs.
 * Exit with a non-zero code if no tests were ran, whether due to skips or having

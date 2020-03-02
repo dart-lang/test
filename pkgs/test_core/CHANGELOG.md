@@ -1,4 +1,4 @@
-## 0.3.1-dev
+## 0.3.1
 
 * Support latest `package:vm_service`.
 * Enable asserts in code running through `spawnHybrid` APIs.
