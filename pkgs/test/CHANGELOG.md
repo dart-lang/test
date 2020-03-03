@@ -1,3 +1,7 @@
+## 1.14.1
+
+* Allow the latest shelf_packages_handler.
+
 ## 1.14.0
 
 * Drop the `package_resolver` dependency for the `package_config` dependency
