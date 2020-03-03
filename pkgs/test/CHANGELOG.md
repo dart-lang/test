@@ -23,7 +23,6 @@
   will be removed in version `2.0.0`.
 * Support coverage collection for the Chrome platform. See `README.md` for usage
   details.
-* Drop `package_resolver` dependency for a `package_config` dependency. 
 
 ## 1.11.1
 
