@@ -1,7 +1,13 @@
-## 0.3.1-dev
+## 0.3.2
 
-* Enable asserts in code running through `spawnHybrid` APIs.
 * Drop the `package_resolver` dependency.
+
+## 0.3.1
+
+* Support latest `package:vm_service`.
+* Enable asserts in code running through `spawnHybrid` APIs.
+* Exit with a non-zero code if no tests were ran, whether due to skips or having
+  no tests defined.
 
 ## 0.3.0
 

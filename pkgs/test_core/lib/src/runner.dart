@@ -160,9 +160,8 @@ class Runner {
           throw ApplicationException('No tests match $patterns.');
         }
 
-        // Explicitly check "== true" here because [Engine.run] can return `null`
-        // if the engine was closed prematurely.
-        return success == true;
+        return (success ?? false) &&
+            (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
       });
 
   /// Emits a warning if the user is trying to run on a platform that's

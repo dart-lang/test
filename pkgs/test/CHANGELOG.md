@@ -1,6 +1,20 @@
-## 1.12.1-dev
+## 1.14.0
 
+* Drop the `package_resolver` dependency for the `package_config` dependency
+  which is lower level.
+
+## 1.13.0
+
+* Enable asserts in code running through `spawnHybrid` APIs.
+* Exit with a non-zero code if no tests were ran, whether due to skips or having
+  no tests defined.
 * Fix the stack trace labels in SDK code for `dart2js` compiled tests.
+* Cancel any StreamQueue that is created as a part of a stream matcher once it
+  is done matching.
+  * This fixes a bug where using a matcher on a custom stream controller and
+    then awaiting the `close()` method on that controller would hang.
+* Avoid causing the test runner to hang if there is a timeout during a
+  `tearDown` callback following a failing test case.
 
 ## 1.12.0
 

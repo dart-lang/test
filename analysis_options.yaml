@@ -14,6 +14,7 @@ analyzer:
     deprecated_member_use_from_same_package: ignore
 linter:
   rules:
+    - avoid_private_typedef_functions
     - await_only_futures
     - implementation_imports
     - prefer_generic_function_type_aliases

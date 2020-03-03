@@ -18,20 +18,6 @@ typedef Func4<T, A, B, C, D> = T Function([A a, B b, C c, D d]);
 typedef Func5<T, A, B, C, D, E> = T Function([A a, B b, C c, D d, E e]);
 typedef Func6<T, A, B, C, D, E, F> = T Function([A a, B b, C c, D d, E e, F f]);
 
-// Functions used to check how many arguments a callback takes. We can't use the
-// previous functions for this, because (a) {} is not a subtype of
-// ([dynamic]) -> dynamic.
-
-typedef _Func0 = Function();
-typedef _Func1 = Function(Null a);
-typedef _Func2 = Function(Null a, Null b);
-typedef _Func3 = Function(Null a, Null b, Null c);
-typedef _Func4 = Function(Null a, Null b, Null c, Null d);
-typedef _Func5 = Function(Null a, Null b, Null c, Null d, Null e);
-typedef _Func6 = Function(Null a, Null b, Null c, Null d, Null e, Null f);
-
-typedef _IsDoneCallback = bool Function();
-
 /// A wrapper for a function that ensures that it's called the appropriate
 /// number of times.
 ///
@@ -62,7 +48,7 @@ class _ExpectedFunction<T> {
   ///
   /// This may be `null`. If so, the function is considered to be done after
   /// it's been run once.
-  final _IsDoneCallback _isDone;
+  final bool Function() _isDone;
 
   /// A descriptive name for the function.
   final String _id;
@@ -138,13 +124,13 @@ class _ExpectedFunction<T> {
   /// Returns a function that has the same number of positional arguments as the
   /// wrapped function (up to a total of 6).
   Function get func {
-    if (_callback is _Func6) return max6;
-    if (_callback is _Func5) return max5;
-    if (_callback is _Func4) return max4;
-    if (_callback is _Func3) return max3;
-    if (_callback is _Func2) return max2;
-    if (_callback is _Func1) return max1;
-    if (_callback is _Func0) return max0;
+    if (_callback is Function(Null, Null, Null, Null, Null Nulll)) return max6;
+    if (_callback is Function(Null, Null, Null, Null, Null)) return max5;
+    if (_callback is Function(Null, Null, Null, Null)) return max4;
+    if (_callback is Function(Null, Null, Null)) return max3;
+    if (_callback is Function(Null, Null)) return max2;
+    if (_callback is Function(Null)) return max1;
+    if (_callback is Function()) return max0;
 
     _invoker.removeOutstandingCallback();
     throw ArgumentError(
