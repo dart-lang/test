@@ -35,7 +35,3 @@ dependency_overrides:
     path: ./../test
   test_core:
     path: ./../test_core
-  source_map_stack_trace:
-    git:
-      url: https://github.com/dart-lang/source_map_stack_trace.git
-      ref: drop-package-resolver
