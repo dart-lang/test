@@ -13,8 +13,8 @@ after_failure:
 jobs:
   include:
     - stage: analyze_and_format
-      name: "SDK: 2.4.0; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: `dartanalyzer --fatal-warnings .`"
-      dart: "2.4.0"
+      name: "SDK: 2.7.0; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: `dartanalyzer --fatal-warnings .`"
+      dart: "2.7.0"
       os: linux
       env: PKGS="pkgs/test pkgs/test_api pkgs/test_core"
       script: ./tool/travis.sh dartanalyzer_1

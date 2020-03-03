@@ -5,9 +5,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:async/async.dart';
-import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
@@ -67,7 +67,7 @@ class CompilerPool {
           '--enable-asserts',
           wrapperPath,
           '--out=$jsPath',
-          await PackageResolver.current.processArgument,
+          '--packages=${await Isolate.packageConfig}',
           ..._extraArgs,
           ...suiteConfig.dart2jsArgs
         ];

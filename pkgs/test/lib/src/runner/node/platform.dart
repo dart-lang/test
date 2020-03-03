@@ -7,9 +7,9 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:async/async.dart';
+import 'package:package_config/package_config.dart';
 import 'package:multi_server_socket/multi_server_socket.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
-import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:yaml/yaml.dart';
@@ -32,6 +32,7 @@ import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implem
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
+import '../../util/package_map.dart';
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
@@ -172,8 +173,8 @@ class NodePlatform extends PlatformPlugin
       var mapPath = jsPath + '.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
-          packageResolver: await PackageResolver.current.asSync,
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'));
+          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+          packageMap: (await currentPackageConfig).toPackageMap());
     }
 
     return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
@@ -191,12 +192,11 @@ class NodePlatform extends PlatformPlugin
     var jsPath = p.join(precompiledPath, '$testPath.node_test.dart.js');
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
-      var resolver = await SyncPackageResolver.loadConfig(
-          p.toUri(p.join(precompiledPath, '.packages')));
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
-          packageResolver: resolver,
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'));
+          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+          packageMap: (await findPackageConfig(Directory(precompiledPath)))
+              .toPackageMap());
     }
 
     return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
@@ -220,8 +220,8 @@ class NodePlatform extends PlatformPlugin
       var mapUrl = url.replace(path: url.path + '.map');
       mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
           mapUrl: mapUrl,
-          packageResolver: SyncPackageResolver.root('packages'),
-          sdkRoot: p.toUri('packages/\$sdk'));
+          sdkRoot: p.toUri('packages/\$sdk'),
+          packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
     }
 
     return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);

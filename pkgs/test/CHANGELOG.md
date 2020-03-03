@@ -1,3 +1,8 @@
+## 1.14.0
+
+* Drop the `package_resolver` dependency for the `package_config` dependency
+  which is lower level.
+
 ## 1.13.0
 
 * Enable asserts in code running through `spawnHybrid` APIs.

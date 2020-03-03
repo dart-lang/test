@@ -1,3 +1,7 @@
+## 0.3.2
+
+* Drop the `package_resolver` dependency.
+
 ## 0.3.1
 
 * Support latest `package:vm_service`.
