@@ -1,3 +1,7 @@
+## 1.14.2
+
+* Update `test_core` to `0.3.3`.
+
 ## 1.14.1
 
 * Allow the latest shelf_packages_handler.
