@@ -81,7 +81,7 @@ class VMPlatform extends PlatformPlugin {
       await client.setName(isolateRef.id, path);
       var libraryRef = (await client.getIsolate(isolateRef.id))
           .libraries
-          .firstWhere((library) => library.uri == libraryPath) as LibraryRef;
+          .firstWhere((library) => library.uri == libraryPath);
       var url = _observatoryUrlFor(
           info.serverUri.toString(), isolateRef.id, libraryRef.id);
       environment = VMEnvironment(url, isolateRef, client);
