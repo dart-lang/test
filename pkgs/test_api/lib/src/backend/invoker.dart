@@ -331,7 +331,7 @@ class Invoker {
 
     // Get the chain information from the zone in which the error was thrown.
     zone.run(() {
-      if (stackTrace != null) {
+      if (stackTrace == null) {
         stackTrace = Chain.current();
       } else {
         stackTrace = Chain.forTrace(stackTrace!);
