@@ -193,7 +193,7 @@ class Invoker {
     if (closed) throw ClosedException();
 
     if (_test.isScaffoldAll) {
-      Declarer.current.addTearDownAll(callback);
+      Declarer.current!.addTearDownAll(callback);
     } else {
       _tearDowns.add(callback);
     }
