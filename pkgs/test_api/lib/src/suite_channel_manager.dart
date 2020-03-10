@@ -37,7 +37,7 @@ class SuiteChannelManager {
   /// Creates a connection to the test runnner's channel with the given [name].
   StreamChannel connectOut(String name) {
     if (_incomingConnections.containsKey(name)) {
-      return _incomingConnections[name];
+      return (_incomingConnections[name])!;
     } else if (_names.contains(name)) {
       throw StateError('Duplicate suiteChannel() connection "$name".');
     } else {
@@ -51,7 +51,7 @@ class SuiteChannelManager {
   /// Connects [channel] to this worker's channel with the given [name].
   void connectIn(String name, StreamChannel channel) {
     if (_outgoingConnections.containsKey(name)) {
-      _outgoingConnections.remove(name).setChannel(channel);
+      _outgoingConnections.remove(name)!.setChannel(channel);
     } else if (_incomingConnections.containsKey(name)) {
       throw StateError('Duplicate RunnerSuite.channel() connection "$name".');
     } else {

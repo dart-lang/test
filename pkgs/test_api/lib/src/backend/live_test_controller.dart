@@ -66,8 +66,7 @@ class _LiveTest extends LiveTest {
 /// dispatched in the correct order.
 class LiveTestController {
   /// The [LiveTest] controlled by [this].
-  LiveTest get liveTest => _liveTest;
-  LiveTest _liveTest;
+  late final LiveTest liveTest;
 
   /// The test suite that's running [this].
   final Suite _suite;
@@ -138,12 +137,12 @@ class LiveTestController {
   /// contain this test. Otherwise, `suite.group` is used.
   LiveTestController(
       Suite suite, this._test, void Function() onRun, void Function() onClose,
-      {Iterable<Group> groups})
+      {Iterable<Group>? groups})
       : _suite = suite,
         _onRun = onRun,
         _onClose = onClose,
         _groups = groups == null ? [suite.group] : List.unmodifiable(groups) {
-    _liveTest = _LiveTest(this);
+    liveTest = _LiveTest(this);
   }
 
   /// Adds an error to the [LiveTest].
@@ -151,7 +150,7 @@ class LiveTestController {
   /// This both adds the error to [LiveTest.errors] and emits it via
   /// [LiveTest.onError]. [stackTrace] is automatically converted into a [Chain]
   /// if it's not one already.
-  void addError(error, StackTrace stackTrace) {
+  void addError(Object error, StackTrace stackTrace) {
     if (_isClosed) return;
 
     var asyncError = AsyncError(error, Chain.forTrace(stackTrace));

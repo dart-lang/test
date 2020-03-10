@@ -1,10 +1,10 @@
 name: test_api
-version: 0.2.15
+version: 0.3.0-dev
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.8.0-dev.10 <3.0.0"
 
 dependencies:
   async: ^2.0.0
@@ -35,3 +35,36 @@ dependency_overrides:
     path: ./../test
   test_core:
     path: ./../test_core
+
+  boolean_selector:
+    git:
+      url: git://github.com/dart-lang/boolean_selector.git
+      ref: null_safety
+  charcode:
+    git:
+      url: git://github.com/dart-lang/charcode.git
+      ref: null_safety
+  matcher:
+    git:
+      url: git://github.com/dart-lang/matcher.git
+      ref: null_safety
+  path:
+    git:
+      url: git://github.com/dart-lang/path.git
+      ref: null_safety
+  source_span:
+    git:
+      url: git://github.com/dart-lang/source_span.git
+      ref: null_safety
+  stack_trace:
+    git:
+      url: git://github.com/dart-lang/stack_trace.git
+      ref: null_safety
+  string_scanner:
+    git:
+      url: git://github.com/dart-lang/string_scanner.git
+      ref: null_safety
+  term_glyph:
+    git:
+      url: git://github.com/dart-lang/term_glyph.git
+      ref: null_safety

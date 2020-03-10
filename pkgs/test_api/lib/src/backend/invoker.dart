@@ -25,10 +25,12 @@ import 'test.dart';
 class LocalTest extends Test {
   @override
   final String name;
+
   @override
   final Metadata metadata;
+
   @override
-  final Trace trace;
+  final Trace? trace;
 
   /// Whether this is a test defined using `setUpAll()` or `tearDownAll()`.
   final bool isScaffoldAll;
@@ -54,13 +56,13 @@ class LocalTest extends Test {
 
   /// Loads a single runnable instance of this test.
   @override
-  LiveTest load(Suite suite, {Iterable<Group> groups}) {
+  LiveTest load(Suite suite, {Iterable<Group>? groups}) {
     var invoker = Invoker._(suite, this, groups: groups, guarded: _guarded);
     return invoker.liveTest;
   }
 
   @override
-  Test forPlatform(SuitePlatform platform) {
+  Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
         _guarded, isScaffoldAll);
@@ -77,7 +79,7 @@ class Invoker {
   ///
   /// This provides a view into the state of the test being executed.
   LiveTest get liveTest => _controller.liveTest;
-  LiveTestController _controller;
+  late final LiveTestController _controller;
 
   /// Whether to run this test in its own error zone.
   final bool _guarded;
@@ -112,7 +114,7 @@ class Invoker {
 
   /// The outstanding callback counter for the current zone.
   _AsyncCounter get _outstandingCallbacks {
-    var counter = Zone.current[_counterKey] as _AsyncCounter;
+    var counter = Zone.current[_counterKey] as _AsyncCounter?;
     if (counter != null) return counter;
     throw StateError("Can't add or remove outstanding callbacks outside "
         'of a test body.');
@@ -137,7 +139,7 @@ class Invoker {
   /// The current invoker, or `null` if none is defined.
   ///
   /// An invoker is only set within the zone scope of a running test.
-  static Invoker get current {
+  static Invoker? get current {
     // TODO(nweiz): Use a private symbol when dart2js supports it (issue 17526).
     return Zone.current[#test.invoker] as Invoker;
   }
@@ -152,9 +154,9 @@ class Invoker {
           handleUncaughtError: (self, _, zone, error, stackTrace) {
         var invoker = zone[#test.invoker];
         if (invoker != null) {
-          self.parent.run(() => invoker._handleError(zone, error, stackTrace));
+          self.parent!.run(() => invoker._handleError(zone, error, stackTrace));
         } else {
-          self.parent.handleUncaughtError(error, stackTrace);
+          self.parent!.handleUncaughtError(error, stackTrace);
         }
       }));
 
@@ -162,12 +164,12 @@ class Invoker {
   ///
   /// Tracking this ensures that [_timeoutTimer] isn't created in a
   /// timer-mocking zone created by the test.
-  Zone _invokerZone;
+  Zone? _invokerZone;
 
   /// The timer for tracking timeouts.
   ///
   /// This will be `null` until the test starts running.
-  Timer _timeoutTimer;
+  Timer? _timeoutTimer;
 
   /// The tear-down functions to run when this test finishes.
   final _tearDowns = <Function()>[];
@@ -176,7 +178,7 @@ class Invoker {
   final _printsOnFailure = <String>[];
 
   Invoker._(Suite suite, LocalTest test,
-      {Iterable<Group> groups, bool guarded = true})
+      {Iterable<Group>? groups, bool guarded = true})
       : _guarded = guarded {
     _controller = LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete,
@@ -238,7 +240,7 @@ class Invoker {
   Future<void> waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
-    Zone zone;
+    late final Zone zone;
     var counter = _AsyncCounter();
     runZoned(() async {
       zone = Zone.current;
@@ -269,7 +271,7 @@ class Invoker {
   /// long-running tests that still make progress don't time out.
   void heartbeat() {
     if (liveTest.isComplete) return;
-    if (_timeoutTimer != null) _timeoutTimer.cancel();
+    if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
     const defaultTimeout = Duration(seconds: 30);
     var timeout = liveTest.test.metadata.timeout.apply(defaultTimeout);
@@ -282,7 +284,7 @@ class Invoker {
       return message;
     }
 
-    _timeoutTimer = _invokerZone.createTimer(timeout, () {
+    _timeoutTimer = _invokerZone!.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         _handleError(Zone.current, TimeoutException(message(), timeout));
       });
@@ -295,7 +297,7 @@ class Invoker {
   ///
   /// Note that this *does not* mark the test as complete. That is, it sets
   /// the result to [Result.skipped], but doesn't change the state.
-  void skip([String message]) {
+  void skip([String? message]) {
     if (liveTest.state.shouldBeDone) {
       // Set the state explicitly so we don't get an extra error about the test
       // failing after being complete.
@@ -323,16 +325,16 @@ class Invoker {
   /// Notifies the invoker of an asynchronous error.
   ///
   /// The [zone] is the zone in which the error was thrown.
-  void _handleError(Zone zone, error, [StackTrace stackTrace]) {
+  void _handleError(Zone zone, Object error, [StackTrace? stackTrace]) {
     // Ignore errors propagated from previous test runs
     if (_runCount != zone[#runCount]) return;
 
     // Get the chain information from the zone in which the error was thrown.
     zone.run(() {
-      if (stackTrace == null) {
+      if (stackTrace != null) {
         stackTrace = Chain.current();
       } else {
-        stackTrace = Chain.forTrace(stackTrace);
+        stackTrace = Chain.forTrace(stackTrace!);
       }
     });
 
@@ -345,7 +347,7 @@ class Invoker {
       _controller.setState(const State(Status.complete, Result.failure));
     }
 
-    _controller.addError(error, stackTrace);
+    _controller.addError(error, stackTrace!);
     zone.run(() => _outstandingCallbacks.complete());
 
     if (!liveTest.test.metadata.chainStackTraces) {
@@ -403,7 +405,7 @@ class Invoker {
           }));
 
           await _outstandingCallbacks.onZero;
-          if (_timeoutTimer != null) _timeoutTimer.cancel();
+          if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
           if (liveTest.state.result != Result.success &&
               _runCount < liveTest.test.metadata.retry + 1) {

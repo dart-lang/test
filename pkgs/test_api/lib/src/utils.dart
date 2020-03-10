@@ -106,7 +106,7 @@ String getErrorMessage(error) =>
 ///
 /// If [first] is passed, it's used in place of the first line's indentation and
 /// [size] defaults to `first.length`. Otherwise, [size] defaults to 2.
-String indent(String string, {int size, String first}) {
+String indent(String string, {int? size, String? first}) {
   size ??= first == null ? 2 : first.length;
   return prefixLines(string, ' ' * size, first: first);
 }
@@ -116,19 +116,19 @@ String indent(String string, {int size, String first}) {
 /// This converts each element of [iter] to a string and separates them with
 /// commas and/or [conjunction] where appropriate. The [conjunction] defaults to
 /// "and".
-String toSentence(Iterable iter, {String conjunction}) {
+String toSentence(Iterable iter, {String conjunction = 'and'}) {
   if (iter.length == 1) return iter.first.toString();
 
   var result = iter.take(iter.length - 1).join(', ');
   if (iter.length > 2) result += ',';
-  return "$result ${conjunction ?? 'and'} ${iter.last}";
+  return '$result $conjunction ${iter.last}';
 }
 
 /// Returns [name] if [number] is 1, or the plural of [name] otherwise.
 ///
 /// By default, this just adds "s" to the end of [name] to get the plural. If
 /// [plural] is passed, that's used instead.
-String pluralize(String name, int number, {String plural}) {
+String pluralize(String name, int number, {String? plural}) {
   if (number == 1) return name;
   if (plural != null) return plural;
   return '${name}s';
@@ -149,7 +149,7 @@ String withoutColors(String str) => str.replaceAll(_colorCode, '');
 ///
 /// The return value *may or may not* be unmodifiable.
 Map<K, V> mergeUnmodifiableMaps<K, V>(Map<K, V> map1, Map<K, V> map2,
-    {V Function(V, V) value}) {
+    {V Function(V, V)? value}) {
   if (map1.isEmpty) return map2;
   if (map2.isEmpty) return map1;
   return mergeMaps(map1, map2, value: value);
@@ -244,7 +244,7 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
 /// Returns a random base64 string containing [bytes] bytes of data.
 ///
 /// [seed] is passed to [math.Random].
-String randomBase64(int bytes, {int seed}) {
+String randomBase64(int bytes, {int? seed}) {
   var random = math.Random(seed);
   var data = Uint8List(bytes);
   for (var i = 0; i < bytes; i++) {
@@ -254,7 +254,7 @@ String randomBase64(int bytes, {int seed}) {
 }
 
 /// Throws an [ArgumentError] if [message] isn't recursively JSON-safe.
-void ensureJsonEncodable(Object message) {
+void ensureJsonEncodable(Object? message) {
   if (message == null ||
       message is String ||
       message is num ||
@@ -291,10 +291,10 @@ String bullet(Iterable<String> strings) => strings.map(addBullet).join('\n');
 /// only a single line; otherwise, [first], [last], or [prefix] is used, in that
 /// order of precedence.
 String prefixLines(String text, String prefix,
-    {String first, String last, String single}) {
+    {String? first, String? last, String? single}) {
+  single ??= first ?? last ?? prefix;
   first ??= prefix;
   last ??= prefix;
-  single ??= first ?? last ?? prefix;
 
   var lines = text.split('\n');
   if (lines.length == 1) return '$single$text';

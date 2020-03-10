@@ -26,7 +26,7 @@ class TestFailure {
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
 typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
-    String reason, Map matchState, bool verbose);
+    String? reason, Map matchState, bool verbose);
 
 /// Assert that [actual] matches [matcher].
 ///
@@ -53,10 +53,10 @@ typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
 /// you want to wait for the matcher to complete before continuing the test, you
 /// can call [expectLater] instead and `await` the result.
 void expect(actual, matcher,
-    {String reason,
+    {String? reason,
     skip,
     @Deprecated('Will be removed in 0.13.0.') bool verbose = false,
-    @Deprecated('Will be removed in 0.13.0.') ErrorFormatter formatter}) {
+    @Deprecated('Will be removed in 0.13.0.') ErrorFormatter? formatter}) {
   _expect(actual, matcher,
       reason: reason, skip: skip, verbose: verbose, formatter: formatter);
 }
@@ -72,12 +72,15 @@ void expect(actual, matcher,
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
-Future expectLater(actual, matcher, {String reason, skip}) =>
+Future expectLater(actual, matcher, {String? reason, skip}) =>
     _expect(actual, matcher, reason: reason, skip: skip);
 
 /// The implementation of [expect] and [expectLater].
+///
+// TODO: why is this necessary? Is @alwaysThrows not working in NNBD?
+// ignore: body_might_complete_normally
 Future _expect(actual, matcher,
-    {String reason, skip, bool verbose = false, ErrorFormatter formatter}) {
+    {String? reason, skip, bool verbose = false, ErrorFormatter? formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
@@ -90,7 +93,7 @@ Future _expect(actual, matcher,
     throw StateError('expect() may only be called within a test.');
   }
 
-  if (Invoker.current.closed) throw ClosedException();
+  if (Invoker.current!.closed) throw ClosedException();
 
   if (skip != null && skip is! bool && skip is! String) {
     throw ArgumentError.value(skip, 'skip', 'must be a bool or a String');
@@ -108,7 +111,7 @@ Future _expect(actual, matcher,
       message = 'Skip expect ($description).';
     }
 
-    Invoker.current.skip(message);
+    Invoker.current!.skip(message);
     return Future.sync(() {});
   }
 
@@ -120,9 +123,9 @@ Future _expect(actual, matcher,
         reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is String) {
-      fail(formatFailure(matcher as Matcher, actual, result, reason: reason));
+      fail(formatFailure(matcher, actual, result, reason: reason));
     } else if (result is Future) {
-      Invoker.current.addOutstandingCallback();
+      Invoker.current!.addOutstandingCallback();
       return result.then((realResult) {
         if (realResult == null) return;
         fail(formatFailure(matcher as Matcher, actual, realResult as String,
@@ -130,7 +133,7 @@ Future _expect(actual, matcher,
       }).whenComplete(() {
         // Always remove this, in case the failure is caught and handled
         // gracefully.
-        Invoker.current.removeOutstandingCallback();
+        Invoker.current!.removeOutstandingCallback();
       });
     }
 
@@ -155,7 +158,7 @@ Null fail(String message) => throw TestFailure(message);
 
 // The default error formatter.
 @Deprecated('Will be removed in 0.13.0.')
-String formatFailure(Matcher expected, actual, String which, {String reason}) {
+String formatFailure(Matcher expected, actual, String which, {String? reason}) {
   var buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));

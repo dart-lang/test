@@ -40,9 +40,9 @@ Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 /// Use the [throwsA] function instead.
 @Deprecated('Will be removed in 0.13.0')
 class Throws extends AsyncMatcher {
-  final Matcher _matcher;
+  final Matcher? _matcher;
 
-  const Throws([Matcher matcher]) : _matcher = matcher;
+  const Throws([Matcher? matcher]) : _matcher = matcher;
 
   // Avoid async/await so we synchronously fail if we match a synchronous
   // function.
@@ -83,13 +83,13 @@ class Throws extends AsyncMatcher {
 
   /// Verifies that [error] matches [_matcher] and returns a [String]
   /// description of the failure if it doesn't.
-  String _check(error, StackTrace trace) {
+  String? _check(error, StackTrace? trace) {
     if (_matcher == null) return null;
 
     var matchState = {};
-    if (_matcher.matches(error, matchState)) return null;
+    if (_matcher!.matches(error, matchState)) return null;
 
-    var result = _matcher
+    var result = _matcher!
         .describeMismatch(error, StringDescription(), matchState, false)
         .toString();
 

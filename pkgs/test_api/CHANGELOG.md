@@ -1,3 +1,12 @@
+## 0.3.0-dev
+
+* Migrate to NNBD.
+  * The vast majority of changes are intended to express the pre-existing
+    behavior of the code regarding to handling of nulls.
+  * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
+    group now has the empty string as its name.
+  
+
 ## 0.2.15
 
 * Cancel any StreamQueue that is created as a part of a stream matcher once it

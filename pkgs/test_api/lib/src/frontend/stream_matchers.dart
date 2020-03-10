@@ -100,20 +100,20 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
     // Allocate the failures list ahead of time so that its order matches the
     // order of [matchers], and thus the order the matchers will be listed in
     // the description.
-    var failures = List<String>(matchers.length);
+    var failures = List<String?>(matchers.length);
 
     // The first error thrown. If no matchers match and this exists, we rethrow
     // it.
-    Object firstError;
-    StackTrace firstStackTrace;
+    Object? firstError;
+    StackTrace? firstStackTrace;
 
     var futures = <Future>[];
-    StreamQueue consumedMost;
+    StreamQueue? consumedMost;
     for (var i = 0; i < matchers.length; i++) {
       futures.add(() async {
         var copy = transaction.newQueue();
 
-        String result;
+        String? result;
         try {
           result = await streamMatchers[i].matchQueue(copy);
         } catch (error, stackTrace) {
@@ -127,7 +127,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
         if (result != null) {
           failures[i] = result;
         } else if (consumedMost == null ||
-            consumedMost.eventsDispatched < copy.eventsDispatched) {
+            consumedMost!.eventsDispatched < copy.eventsDispatched) {
           consumedMost = copy;
         }
       }());
@@ -138,13 +138,13 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
     if (consumedMost == null) {
       transaction.reject();
       if (firstError != null) {
-        await Future.error(firstError, firstStackTrace);
+        await Future.error(firstError!, firstStackTrace);
       }
 
       var failureMessages = <String>[];
       for (var i = 0; i < matchers.length; i++) {
         var message = 'failed to ${streamMatchers[i].description}';
-        if (failures[i].isNotEmpty) {
+        if ((failures[i])!.isNotEmpty) {
           message += message.contains('\n') ? '\n' : ' ';
           message += 'because it ${failures[i]}';
         }
@@ -328,12 +328,12 @@ Future<bool> _tryInAnyOrder(
   }
 
   var transaction = queue.startTransaction();
-  StreamQueue consumedMost;
+  StreamQueue? consumedMost;
 
   // The first error thrown. If no matchers match and this exists, we rethrow
   // it.
-  Object firstError;
-  StackTrace firstStackTrace;
+  Object? firstError;
+  StackTrace? firstStackTrace;
 
   await Future.wait(matchers.map((matcher) async {
     var copy = transaction.newQueue();
@@ -361,14 +361,14 @@ Future<bool> _tryInAnyOrder(
     }
 
     if (consumedMost == null ||
-        consumedMost.eventsDispatched < copy.eventsDispatched) {
+        consumedMost!.eventsDispatched < copy.eventsDispatched) {
       consumedMost = copy;
     }
   }));
 
   if (consumedMost == null) {
     transaction.reject();
-    if (firstError != null) await Future.error(firstError, firstStackTrace);
+    if (firstError != null) await Future.error(firstError!, firstStackTrace);
     return false;
   } else {
     transaction.commit(consumedMost);

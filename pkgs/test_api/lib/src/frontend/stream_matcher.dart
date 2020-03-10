@@ -84,9 +84,8 @@ abstract class StreamMatcher extends Matcher {
   /// The [description] should be in the subjunctive mood. This means that it
   /// should be grammatically valid when used after the word "should". For
   /// example, it might be "emit the right events".
-  factory StreamMatcher(
-          Future<String> Function(StreamQueue) matchQueue, String description) =
-      _StreamMatcher;
+  factory StreamMatcher(Future<String?> Function(StreamQueue) matchQueue,
+      String description) = _StreamMatcher;
 
   /// Tries to match events emitted by [queue].
   ///
@@ -104,7 +103,7 @@ abstract class StreamMatcher extends Matcher {
   ///
   /// If the queue emits an error, that error is re-thrown unless otherwise
   /// indicated by the matcher.
-  Future<String> matchQueue(StreamQueue queue);
+  Future<String?> matchQueue(StreamQueue queue);
 }
 
 /// A concrete implementation of [StreamMatcher].
@@ -116,12 +115,12 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   final String description;
 
   /// The callback used to implement [matchQueue].
-  final Future<String> Function(StreamQueue) _matchQueue;
+  final Future<String?> Function(StreamQueue) _matchQueue;
 
   _StreamMatcher(this._matchQueue, this.description);
 
   @override
-  Future<String> matchQueue(StreamQueue queue) => _matchQueue(queue);
+  Future<String?> matchQueue(StreamQueue queue) => _matchQueue(queue);
 
   @override
   dynamic /*FutureOr<String>*/ matchAsync(item) {
@@ -151,7 +150,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
       // Get a list of events emitted by the stream so we can emit them as part
       // of the error message.
       var replay = transaction.newQueue();
-      var events = <Result>[];
+      var events = <Result?>[];
       var subscription = Result.captureStreamTransformer
           .bind(replay.rest)
           .listen(events.add, onDone: () => events.add(null));

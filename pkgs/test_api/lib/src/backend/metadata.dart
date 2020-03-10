@@ -32,25 +32,25 @@ class Metadata {
 
   /// Whether the test or suite should be skipped.
   bool get skip => _skip ?? false;
-  final bool _skip;
+  final bool? _skip;
 
   /// The reason the test or suite should be skipped, if given.
-  final String skipReason;
+  final String? skipReason;
 
   /// Whether to use verbose stack traces.
   bool get verboseTrace => _verboseTrace ?? false;
-  final bool _verboseTrace;
+  final bool? _verboseTrace;
 
   /// Whether to chain stack traces.
   bool get chainStackTraces => _chainStackTraces ?? true;
-  final bool _chainStackTraces;
+  final bool? _chainStackTraces;
 
   /// The user-defined tags attached to the test or suite.
   final Set<String> tags;
 
   /// The number of times to re-run a test before being marked as a failure.
   int get retry => _retry ?? 0;
-  final int _retry;
+  final int? _retry;
 
   /// Platform-specific metadata.
   ///
@@ -70,7 +70,7 @@ class Metadata {
 
   /// Parses a user-provided map into the value for [onPlatform].
   static Map<PlatformSelector, Metadata> _parseOnPlatform(
-      Map<String, dynamic> onPlatform) {
+      Map<String, dynamic>? onPlatform) {
     if (onPlatform == null) return {};
 
     var result = <PlatformSelector, Metadata>{};
@@ -84,7 +84,7 @@ class Metadata {
 
       var selector = PlatformSelector.parse(platform);
 
-      Timeout timeout;
+      Timeout? timeout;
       dynamic skip;
       for (var metadatum in metadata) {
         if (metadatum is Timeout) {
@@ -123,11 +123,11 @@ class Metadata {
           tags, 'tags', 'must be either a String or an Iterable.');
     }
 
-    if ((tags as Iterable).any((tag) => tag is! String)) {
+    if (tags.any((tag) => tag is! String)) {
       throw ArgumentError.value(tags, 'tags', 'must contain only Strings.');
     }
 
-    return Set.from(tags as Iterable);
+    return Set.from(tags);
   }
 
   /// Creates new Metadata.
@@ -138,16 +138,16 @@ class Metadata {
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
   factory Metadata(
-      {PlatformSelector testOn,
-      Timeout timeout,
-      bool skip,
-      bool verboseTrace,
-      bool chainStackTraces,
-      int retry,
-      String skipReason,
-      Iterable<String> tags,
-      Map<PlatformSelector, Metadata> onPlatform,
-      Map<BooleanSelector, Metadata> forTag}) {
+      {PlatformSelector? testOn,
+      Timeout? timeout,
+      bool? skip,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      int? retry,
+      String? skipReason,
+      Iterable<String>? tags,
+      Map<PlatformSelector, Metadata>? onPlatform,
+      Map<BooleanSelector, Metadata>? forTag}) {
     // Returns metadata without forTag resolved at all.
     Metadata _unresolved() => Metadata._(
         testOn: testOn,
@@ -172,8 +172,8 @@ class Metadata {
     // doing it for every test individually.
     var empty = Metadata._();
     var merged = forTag.keys.toList().fold(empty, (Metadata merged, selector) {
-      if (!selector.evaluate(tags.contains)) return merged;
-      return merged.merge(forTag.remove(selector));
+      if (!selector.evaluate(tags!.contains)) return merged;
+      return merged.merge(forTag!.remove(selector)!);
     });
 
     if (merged == empty) return _unresolved();
@@ -184,16 +184,16 @@ class Metadata {
   ///
   /// Unlike [new Metadata], this assumes [forTag] is already resolved.
   Metadata._(
-      {PlatformSelector testOn,
-      Timeout timeout,
-      bool skip,
+      {PlatformSelector? testOn,
+      Timeout? timeout,
+      bool? skip,
       this.skipReason,
-      bool verboseTrace,
-      bool chainStackTraces,
-      int retry,
-      Iterable<String> tags,
-      Map<PlatformSelector, Metadata> onPlatform,
-      Map<BooleanSelector, Metadata> forTag})
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      int? retry,
+      Iterable<String>? tags,
+      Map<PlatformSelector, Metadata>? onPlatform,
+      Map<BooleanSelector, Metadata>? forTag})
       : testOn = testOn ?? PlatformSelector.all,
         timeout = timeout ?? const Timeout.factor(1),
         _skip = skip,
@@ -213,13 +213,13 @@ class Metadata {
   ///
   /// Throws a [FormatException] if any field is invalid.
   Metadata.parse(
-      {String testOn,
-      Timeout timeout,
+      {String? testOn,
+      Timeout? timeout,
       dynamic skip,
-      bool verboseTrace,
-      bool chainStackTraces,
-      int retry,
-      Map<String, dynamic> onPlatform,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      int? retry,
+      Map<String, dynamic>? onPlatform,
       tags})
       : testOn = testOn == null
             ? PlatformSelector.all
@@ -318,16 +318,16 @@ class Metadata {
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change(
-      {PlatformSelector testOn,
-      Timeout timeout,
-      bool skip,
-      bool verboseTrace,
-      bool chainStackTraces,
-      int retry,
-      String skipReason,
-      Map<PlatformSelector, Metadata> onPlatform,
-      Set<String> tags,
-      Map<BooleanSelector, Metadata> forTag}) {
+      {PlatformSelector? testOn,
+      Timeout? timeout,
+      bool? skip,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      int? retry,
+      String? skipReason,
+      Map<PlatformSelector, Metadata>? onPlatform,
+      Set<String>? tags,
+      Map<BooleanSelector, Metadata>? forTag}) {
     testOn ??= this.testOn;
     timeout ??= this.timeout;
     skip ??= _skip;
@@ -392,8 +392,7 @@ class Metadata {
   dynamic _serializeTimeout(Timeout timeout) {
     if (timeout == Timeout.none) return 'none';
     return {
-      'duration':
-          timeout.duration == null ? null : timeout.duration.inMicroseconds,
+      'duration': timeout.duration?.inMicroseconds,
       'scaleFactor': timeout.scaleFactor
     };
   }

@@ -24,13 +24,13 @@ import 'test.dart';
 /// [Declarer.current].
 class Declarer {
   /// The parent declarer, or `null` if this corresponds to the root group.
-  final Declarer _parent;
+  final Declarer? _parent;
 
   /// The name of the current test group, including the name of any parent
   /// groups.
   ///
   /// This is `null` if this is the root group.
-  final String _name;
+  final String? _name;
 
   /// The metadata for this group, including the metadata of any parent groups
   /// and of the test suite.
@@ -41,7 +41,9 @@ class Declarer {
   final Set<String> _platformVariables;
 
   /// The stack trace for this group.
-  final Trace _trace;
+  ///
+  /// This is `null` for the root (implicit) group.
+  final Trace? _trace;
 
   /// Whether to collect stack traces for [GroupEntry]s.
   final bool _collectTraces;
@@ -66,7 +68,7 @@ class Declarer {
   /// All [setUpAll]s are run in a single logical test, so they can only have
   /// one trace. The first trace is most often correct, since the first
   /// [setUpAll] is always run and the rest are only run if that one succeeds.
-  Trace _setUpAllTrace;
+  Trace? _setUpAllTrace;
 
   /// The tear-down functions to run once for this group.
   final _tearDownAlls = <Function()>[];
@@ -75,7 +77,7 @@ class Declarer {
   ///
   /// All [tearDownAll]s are run in a single logical test, so they can only have
   /// one trace. The first trace matches [_setUpAllTrace].
-  Trace _tearDownAllTrace;
+  Trace? _tearDownAllTrace;
 
   /// The children of this group, either tests or sub-groups.
   final _entries = <GroupEntry>[];
@@ -108,8 +110,8 @@ class Declarer {
   ///
   /// If [noRetry] is `true` tests will be run at most once.
   Declarer(
-      {Metadata metadata,
-      Set<String> platformVariables,
+      {Metadata? metadata,
+      Set<String>? platformVariables,
       bool collectTraces = false,
       bool noRetry = false})
       : this._(
@@ -132,12 +134,12 @@ class Declarer {
 
   /// Defines a test case with the given name and body.
   void test(String name, dynamic Function() body,
-      {String testOn,
-      Timeout timeout,
+      {String? testOn,
+      Timeout? timeout,
       skip,
-      Map<String, dynamic> onPlatform,
+      Map<String, dynamic>? onPlatform,
       tags,
-      int retry,
+      int? retry,
       bool solo = false}) {
     _checkNotBuilt('test');
 
@@ -153,7 +155,9 @@ class Declarer {
 
     _entries.add(LocalTest(_prefix(name), metadata, () async {
       var parents = <Declarer>[];
-      for (var declarer = this; declarer != null; declarer = declarer._parent) {
+      for (Declarer? declarer = this;
+          declarer != null;
+          declarer = declarer._parent) {
         parents.add(declarer);
       }
 
@@ -162,12 +166,12 @@ class Declarer {
       // they were declared in source.
       for (var declarer in parents.reversed) {
         for (var tearDown in declarer._tearDowns) {
-          Invoker.current.addTearDown(tearDown);
+          Invoker.current!.addTearDown(tearDown);
         }
       }
 
       await runZoned(
-          () => Invoker.current.waitForOutstandingCallbacks(() async {
+          () => Invoker.current!.waitForOutstandingCallbacks(() async {
                 await _runSetUps();
                 await body();
               }),
@@ -183,12 +187,12 @@ class Declarer {
 
   /// Creates a group of tests.
   void group(String name, void Function() body,
-      {String testOn,
-      Timeout timeout,
+      {String? testOn,
+      Timeout? timeout,
       skip,
-      Map<String, dynamic> onPlatform,
+      Map<String, dynamic>? onPlatform,
       tags,
-      int retry,
+      int? retry,
       bool solo = false}) {
     _checkNotBuilt('group');
 
@@ -267,12 +271,12 @@ class Declarer {
             entry.name,
             entry.metadata
                 .change(skip: true, skipReason: 'does not have "solo"'),
-            null);
+            () {});
       }
       return entry;
     }).toList();
 
-    return Group(_name, entries,
+    return Group(_name ?? '', entries,
         metadata: _metadata,
         trace: _trace,
         setUpAll: _setUpAll,
@@ -292,25 +296,27 @@ class Declarer {
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
   Future _runSetUps() async {
-    if (_parent != null) await _parent._runSetUps();
-    await Future.forEach(_setUps, (setUp) => setUp());
+    if (_parent != null) await _parent!._runSetUps();
+    // TODO: why does type inference not work here?
+    await Future.forEach<Function>(_setUps, (setUp) => setUp());
   }
 
-  /// Returns a [Test] that runs the callbacks in [_setUpAll].
-  Test get _setUpAll {
+  /// Returns a [Test] that runs the callbacks in [_setUpAll], or `null`.
+  Test? get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
     return LocalTest(_prefix('(setUpAll)'), _metadata.change(timeout: _timeout),
         () {
-      return runZoned(() => Future.forEach(_setUpAlls, (setUp) => setUp()),
+      return runZoned(
+          () => Future.forEach<Function>(_setUpAlls, (setUp) => setUp()),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
           zoneValues: {#test.declarer: this});
     }, trace: _setUpAllTrace, guarded: false, isScaffoldAll: true);
   }
 
-  /// Returns a [Test] that runs the callbacks in [_tearDownAll].
-  Test get _tearDownAll {
+  /// Returns a [Test] that runs the callbacks in [_tearDownAll], or `null`.
+  Test? get _tearDownAll {
     // We have to create a tearDownAll if there's a setUpAll, since it might
     // dynamically add tear-down code using [addTearDownAll].
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
@@ -318,7 +324,7 @@ class Declarer {
     return LocalTest(
         _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
       return runZoned(() {
-        return Invoker.current.unclosable(() async {
+        return Invoker.current!.unclosable(() async {
           while (_tearDownAlls.isNotEmpty) {
             await errorsDontStopTest(_tearDownAlls.removeLast());
           }
