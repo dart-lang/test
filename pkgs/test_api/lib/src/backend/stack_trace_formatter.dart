@@ -32,7 +32,7 @@ class StackTraceFormatter {
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
   static StackTraceFormatter? get current =>
-      Zone.current[_currentKey] as StackTraceFormatter;
+      Zone.current[_currentKey] as StackTraceFormatter?;
 
   /// Runs [body] with [this] as [StackTraceFormatter.current].
   ///

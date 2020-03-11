@@ -35,7 +35,6 @@ dependency_overrides:
     path: ./../test
   test_core:
     path: ./../test_core
-
   boolean_selector:
     git:
       url: git://github.com/dart-lang/boolean_selector.git
@@ -51,7 +50,7 @@ dependency_overrides:
   path:
     git:
       url: git://github.com/dart-lang/path.git
-      ref: null_safety
+      ref: null_safety_insert_workaround
   source_span:
     git:
       url: git://github.com/dart-lang/source_span.git

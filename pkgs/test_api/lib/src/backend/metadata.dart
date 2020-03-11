@@ -248,11 +248,11 @@ class Metadata {
             ? PlatformSelector.all
             : PlatformSelector.parse(serialized['testOn'] as String),
         timeout = _deserializeTimeout(serialized['timeout']),
-        _skip = serialized['skip'] as bool,
-        skipReason = serialized['skipReason'] as String,
-        _verboseTrace = serialized['verboseTrace'] as bool,
-        _chainStackTraces = serialized['chainStackTraces'] as bool,
-        _retry = serialized['retry'] as int,
+        _skip = serialized['skip'] as bool?,
+        skipReason = serialized['skipReason'] as String?,
+        _verboseTrace = serialized['verboseTrace'] as bool?,
+        _chainStackTraces = serialized['chainStackTraces'] as bool?,
+        _retry = serialized['retry'] as int?,
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
           for (var pair in serialized['onPlatform'])

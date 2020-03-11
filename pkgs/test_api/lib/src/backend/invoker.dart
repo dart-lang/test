@@ -141,7 +141,7 @@ class Invoker {
   /// An invoker is only set within the zone scope of a running test.
   static Invoker? get current {
     // TODO(nweiz): Use a private symbol when dart2js supports it (issue 17526).
-    return Zone.current[#test.invoker] as Invoker;
+    return Zone.current[#test.invoker] as Invoker?;
   }
 
   /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
