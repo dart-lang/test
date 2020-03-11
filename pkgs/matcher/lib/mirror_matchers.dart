@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@deprecated
+library mirror_matchers;
+
 /// The mirror matchers library provides some additional matchers that
 /// make use of `dart:mirrors`.
 import 'dart:mirrors';

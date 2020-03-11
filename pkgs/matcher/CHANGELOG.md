@@ -1,5 +1,6 @@
-## 0.12.7-dev
+## 0.12.7
 
+- Deprecate the `mirror_matchers.dart` library.
 - Update minimum Dart SDK to `2.4.0`.
 
 ## 0.12.6
