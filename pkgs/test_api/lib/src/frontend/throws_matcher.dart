@@ -53,20 +53,28 @@ class Throws extends AsyncMatcher {
     }
 
     if (item is Future) {
-      return item.then((value) => indent(prettyPrint(value), first: 'emitted '),
-          onError: _check);
+      return _matchFuture(item, 'emitted ');
     }
 
     try {
       var value = item();
       if (value is Future) {
-        return value.then(
-            (value) => indent(prettyPrint(value),
-                first: 'returned a Future that emitted '),
-            onError: _check);
+        return _matchFuture(value, 'returned a Future that emitted ');
       }
 
       return indent(prettyPrint(value), first: 'returned ');
+    } catch (error, trace) {
+      return _check(error, trace);
+    }
+  }
+
+  /// Matches [future], using try/catch since `onError` doesn't seem to work
+  /// properly in nnbd.
+  Future<String?> _matchFuture(
+      Future<dynamic> future, String messagePrefix) async {
+    try {
+      var value = await future;
+      return indent(prettyPrint(value), first: messagePrefix);
     } catch (error, trace) {
       return _check(error, trace);
     }
