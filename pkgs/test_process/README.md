@@ -5,8 +5,8 @@ This exposes a [`TestProcess`][TestProcess] class that wraps `dart:io`'s
 line-by-line. `TestProcess` works the same as `Process` in many ways, but there
 are a few major differences.
 
-[TestProcess]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess-class.html
-[Process]: https://api.dartlang.org/stable/latest/dart-io/Process-class.html
+[TestProcess]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess-class.html
+[Process]: https://api.dart.dev/stable/dart-io/Process-class.html
 
 ## Standard Output
 
@@ -17,9 +17,9 @@ plain text. Instead, [`TestProcess.stdout`][stdout] and
 produces. What's more, they're [`StreamQueue`][StreamQueue]s, which means
 they provide a *pull-based API*. For example:
 
-[stdout]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/stdout.html
-[stderr]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/stderr.html
-[StreamQueue]: https://www.dartdocs.org/documentation/async/latest/async/StreamQueue-class.html
+[stdout]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/stdout.html
+[stderr]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/stderr.html
+[StreamQueue]: https://pub.dev/documentation/async/latest/async/StreamQueue-class.html
 
 ```dart
 import 'package:test/test.dart';
@@ -80,8 +80,8 @@ produces an entirely new stream that replays the corresponding output stream
 from the beginning, regardless of what's already been produced by `stdout`,
 `stderr`, or other calls to the stream method.
 
-[stdoutStream]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/stdoutStream.html
-[stderrStream]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/stderrStream.html
+[stdoutStream]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/stdoutStream.html
+[stderrStream]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/stderrStream.html
 
 ## Signals and Termination
 
@@ -91,16 +91,16 @@ to ensure (as best as possible) that processes die without leaving behind
 zombies. If you want to send a particular signal (which is unsupported on
 Windows), you can do so by explicitly calling [`signal()`][signal].
 
-[kill]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/kill.html
-[signal]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/signal.html
+[kill]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/kill.html
+[signal]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/signal.html
 
 In addition to [`exitCode`][exitCode], which works the same as in `dart:io`,
 `TestProcess` also adds a new method named [`shouldExit()`][shouldExit]. This
 lets tests wait for a process to exit, and (if desired) assert what particular
 exit code it produced.
 
-[exitCode]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/exitCode.html
-[shouldExit]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/shouldExit.html
+[exitCode]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/exitCode.html
+[shouldExit]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/shouldExit.html
 
 ## Debugging Output
 
@@ -110,7 +110,7 @@ The debugging output uses a header based on the process's invocation by
 default, but you can pass in custom `description` parameters to
 [`TestProcess.start()`][start] to control the headers.
 
-[start]: https://www.dartdocs.org/documentation/test_process/latest/test_process/TestProcess/start.html
+[start]: https://pub.dev/documentation/test_process/latest/test_process/TestProcess/start.html
 
 `TestProcess` will also produce debugging output as the test runs if you pass
 `forwardStdio: true` to `TestProcess.start()`. This can be particularly useful
