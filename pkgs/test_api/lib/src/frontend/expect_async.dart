@@ -141,38 +141,38 @@ class _ExpectedFunction<T> {
   // argument count of zero.
   T max0() => max6();
 
-  T max1([Object a0 = placeholder]) => max6(a0);
+  T max1([Object? a0 = placeholder]) => max6(a0);
 
-  T max2([Object a0 = placeholder, Object a1 = placeholder]) => max6(a0, a1);
+  T max2([Object? a0 = placeholder, Object? a1 = placeholder]) => max6(a0, a1);
 
   T max3(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder]) =>
       max6(a0, a1, a2);
 
   T max4(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder,
-          Object a3 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder,
+          Object? a3 = placeholder]) =>
       max6(a0, a1, a2, a3);
 
   T max5(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder,
-          Object a3 = placeholder,
-          Object a4 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder,
+          Object? a3 = placeholder,
+          Object? a4 = placeholder]) =>
       max6(a0, a1, a2, a3, a4);
 
   T max6(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder,
-          Object a3 = placeholder,
-          Object a4 = placeholder,
-          Object a5 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder,
+          Object? a3 = placeholder,
+          Object? a4 = placeholder,
+          Object? a5 = placeholder]) =>
       _run([a0, a1, a2, a3, a4, a5].where((a) => a != placeholder));
 
   /// Runs the wrapped function with [args] and returns its return value.

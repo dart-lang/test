@@ -100,7 +100,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
     // Allocate the failures list ahead of time so that its order matches the
     // order of [matchers], and thus the order the matchers will be listed in
     // the description.
-    var failures = List<String?>(matchers.length);
+    var failures = List<String?>.filled(matchers.length, null);
 
     // The first error thrown. If no matchers match and this exists, we rethrow
     // it.
