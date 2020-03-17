@@ -152,7 +152,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
       var replay = transaction.newQueue();
       var events = <Result?>[];
       var subscription = Result.captureStreamTransformer
-          .bind(replay.rest)
+          .bind(replay.rest.cast())
           .listen(events.add, onDone: () => events.add(null));
 
       // Wait on a timer tick so all buffered events are emitted.
@@ -163,9 +163,9 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
         if (event == null) {
           return 'x Stream closed.';
         } else if (event.isValue) {
-          return addBullet(event.asValue.value.toString());
+          return addBullet(event.asValue!.value.toString());
         } else {
-          var error = event.asError;
+          var error = event.asError!;
           var chain = formatStackTrace(error.stackTrace);
           var text = '${error.error}\n$chain';
           return prefixLines(text, '  ', first: '! ');

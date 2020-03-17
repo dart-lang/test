@@ -154,7 +154,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
 
       return 'failed all options:\n${bullet(failureMessages)}';
     } else {
-      transaction.commit(consumedMost);
+      transaction.commit(consumedMost!);
       return null;
     }
   }, description);
@@ -371,7 +371,7 @@ Future<bool> _tryInAnyOrder(
     if (firstError != null) await Future.error(firstError!, firstStackTrace);
     return false;
   } else {
-    transaction.commit(consumedMost);
+    transaction.commit(consumedMost!);
     return true;
   }
 }

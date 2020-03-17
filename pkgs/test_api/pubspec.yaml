@@ -35,6 +35,10 @@ dependency_overrides:
     path: ./../test
   test_core:
     path: ./../test_core
+  async:
+    git:
+      url: git://github.com/dart-lang/async.git
+      ref: null_safety
   boolean_selector:
     git:
       url: git://github.com/dart-lang/boolean_selector.git
@@ -43,10 +47,19 @@ dependency_overrides:
     git:
       url: git://github.com/dart-lang/charcode.git
       ref: null_safety
+  collection:
+    git:
+      url: git://github.com/dart-lang/collection.git
+      ref: null_safety
   matcher:
     git:
       url: git://github.com/dart-lang/matcher.git
       ref: null_safety
+  meta:
+    git:
+      url: git://github.com/dart-lang/sdk.git
+      ref: null_safety-pkgs
+      path: pkg/meta
   path:
     git:
       url: git://github.com/dart-lang/path.git
