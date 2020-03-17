@@ -101,7 +101,7 @@ class StringLiteralIterator extends Iterator<int> {
   bool moveNext() {
     // If we're at beginning of a [SimpleStringLiteral], move forward until
     // there's actually text to consume.
-    while (_runes == null || _runes.current == null) {
+    while (_runes == null || _runes.current == null || _runes.current < 0) {
       if (_strings.isEmpty) {
         // Move the offset past the end of the text.
         _offset = _nextOffset;
@@ -139,7 +139,7 @@ class StringLiteralIterator extends Iterator<int> {
     if (_isRaw || _runes.current != _backslash) {
       var rune = _runes.current;
       _moveRunesNext();
-      return rune;
+      return (rune < 0) ? null : rune;
     }
 
     if (!_moveRunesNext()) return null;

@@ -1,3 +1,7 @@
+## 0.3.4-dev
+
+* Fix error messages for incorrect string literals in test annotations.
+
 ## 0.3.3
 
 * Support latest `package:vm_service`.
