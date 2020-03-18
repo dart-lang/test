@@ -24,8 +24,8 @@ class SuiteChannelManager {
 
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
-  static SuiteChannelManager get current =>
-      Zone.current[_currentKey] as SuiteChannelManager;
+  static SuiteChannelManager? get current =>
+      Zone.current[_currentKey] as SuiteChannelManager?;
 
   /// Runs [body] with [this] as [SuiteChannelManager.current].
   ///

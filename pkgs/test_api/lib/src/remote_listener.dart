@@ -101,7 +101,7 @@ class RemoteListener {
             }
 
             assert(message['type'] == 'suiteChannel');
-            SuiteChannelManager.current.connectIn(message['name'] as String,
+            SuiteChannelManager.current!.connectIn(message['name'] as String,
                 channel.virtualChannel(message['id'] as int));
           });
 

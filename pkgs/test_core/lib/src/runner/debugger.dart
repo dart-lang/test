@@ -27,7 +27,7 @@ import 'reporter.dart';
 /// any resources it allocated.
 CancelableOperation debug(
     Engine engine, Reporter reporter, LoadSuite loadSuite) {
-  _Debugger debugger;
+  _Debugger? debugger;
   var canceled = false;
   return CancelableOperation.fromFuture(() async {
     // Make the underlying suite null so that the engine doesn't start running
@@ -40,13 +40,12 @@ CancelableOperation debug(
     var suite = await loadSuite.suite;
     if (canceled || suite == null) return;
 
-    debugger = _Debugger(engine, reporter, suite);
-    await debugger.run();
+    await (debugger = _Debugger(engine, reporter, suite)).run();
   }(), onCancel: () {
     canceled = true;
     // Make sure the load test finishes so the engine can close.
     engine.resume();
-    if (debugger != null) debugger.close();
+    if (debugger != null) debugger!.close();
   });
 }
 
@@ -77,10 +76,10 @@ class _Debugger {
   final _pauseCompleter = CancelableCompleter();
 
   /// The subscription to [_suite.onDebugging].
-  StreamSubscription<bool> _onDebuggingSubscription;
+  StreamSubscription<bool>? _onDebuggingSubscription;
 
   /// The subscription to [_suite.environment.onRestart].
-  StreamSubscription _onRestartSubscription;
+  late final StreamSubscription _onRestartSubscription;
 
   /// Whether [close] has been called.
   bool _closed = false;
@@ -124,7 +123,6 @@ class _Debugger {
   /// Prints URLs for the [_suite]'s debugger and waits for the user to tell the
   /// suite to run.
   Future _pause() async {
-    if (_suite.platform == null) return;
     if (!_suite.environment.supportsDebugging) return;
 
     try {

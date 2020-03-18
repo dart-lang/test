@@ -44,11 +44,11 @@ RunnerSuiteController deserializeSuite(
     Environment environment,
     StreamChannel channel,
     Object message,
-    {Future<Map<String, dynamic>> Function() gatherCoverage}) {
+    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
   var disconnector = Disconnector();
   var suiteChannel = MultiChannel(channel.transform(disconnector));
 
-  suiteChannel.sink.add({
+  suiteChannel.sink.add(<String, dynamic>{
     'type': 'initial',
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
@@ -64,7 +64,7 @@ RunnerSuiteController deserializeSuite(
   var completer = Completer<Group>();
 
   var loadSuiteZone = Zone.current;
-  void handleError(error, StackTrace stackTrace) {
+  void handleError(Object error, StackTrace stackTrace) {
     disconnector.disconnect();
 
     if (completer.isCompleted) {
@@ -85,14 +85,16 @@ RunnerSuiteController deserializeSuite(
             break;
 
           case 'loadException':
-            handleError(
-                LoadException(path, response['message']), Trace.current());
+            handleError(LoadException(path, response['message'] as Object),
+                Trace.current());
             break;
 
           case 'error':
             var asyncError = RemoteException.deserialize(response['error']);
             handleError(
-                LoadException(path, asyncError.error), asyncError.stackTrace);
+                LoadException(path, asyncError.error),
+                // TODO: remove once non-nullable stack traces land in the sdk.
+                asyncError.stackTrace ?? StackTrace.fromString(''));
             break;
 
           case 'success':
@@ -132,7 +134,7 @@ class _Deserializer {
         (group['entries'] as List).map((entry) {
           var map = entry as Map;
           if (map['type'] == 'group') return deserializeGroup(map);
-          return _deserializeTest(map);
+          return _deserializeTest(map)!;
         }),
         metadata: metadata,
         trace: group['trace'] == null
@@ -145,7 +147,7 @@ class _Deserializer {
   /// Deserializes [test] into a concrete [Test] class.
   ///
   /// Returns `null` if [test] is `null`.
-  Test _deserializeTest(Map test) {
+  Test? _deserializeTest(Map? test) {
     if (test == null) return null;
 
     var metadata = Metadata.deserialize(test['metadata']);

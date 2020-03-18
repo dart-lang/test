@@ -19,7 +19,7 @@ import 'string_literal_iterator.dart';
 /// passed to the [main] method of the code being run; the caller is responsible
 /// for using this to establish communication with the isolate.
 Future<Isolate> runInIsolate(String code, Object message,
-        {SendPort onExit}) async =>
+        {SendPort? onExit}) async =>
     Isolate.spawnUri(
         Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
         [],
@@ -53,7 +53,7 @@ Future<Isolate> runInIsolate(String code, Object message,
 ///
 /// This will return `null` if [context] contains an invalid string or does not
 /// contain [span].
-SourceSpan contextualizeSpan(
+SourceSpan? contextualizeSpan(
     SourceSpan span, StringLiteral context, SourceFile file) {
   var contextRunes = StringLiteralIterator(context)..moveNext();
 
