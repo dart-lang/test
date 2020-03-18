@@ -150,10 +150,11 @@ class LiveTestController {
   /// This both adds the error to [LiveTest.errors] and emits it via
   /// [LiveTest.onError]. [stackTrace] is automatically converted into a [Chain]
   /// if it's not one already.
-  void addError(Object error, StackTrace stackTrace) {
+  void addError(Object error, StackTrace? stackTrace) {
     if (_isClosed) return;
 
-    var asyncError = AsyncError(error, Chain.forTrace(stackTrace));
+    var asyncError = AsyncError(
+        error, Chain.forTrace(stackTrace ?? StackTrace.fromString('')));
     _errors.add(asyncError);
     _onErrorController.add(asyncError);
   }
