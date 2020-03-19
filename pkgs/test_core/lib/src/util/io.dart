@@ -43,7 +43,7 @@ final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 final OperatingSystem currentOS = (() {
   var name = Platform.operatingSystem;
   var os = OperatingSystem.findByIoName(name);
-  if (os != null) return os;
+  if (os == OperatingSystem.none) return os;
 
   throw UnsupportedError('Unsupported operating system "$name".');
 })();
@@ -68,7 +68,7 @@ bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
 /// This is configurable so that the test code can validate that the runner
 /// cleans up after itself fully.
 final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
-    ? Platform.environment['_UNITTEST_TEMP_DIR']
+    ? Platform.environment['_UNITTEST_TEMP_DIR']!
     : Directory.systemTemp.path;
 
 /// Whether or not the current terminal supports ansi escape codes.
@@ -135,7 +135,7 @@ String wordWrap(String text) {
 ///
 /// If [print] is `true`, this prints the message using [print] to associate it
 /// with the current test. Otherwise, it prints it using [stderr].
-void warn(String message, {bool color, bool print = false}) {
+void warn(String message, {bool? color, bool print = false}) {
   color ??= canUseSpecialChars;
   var header = color ? '\u001b[33mWarning:\u001b[0m' : 'Warning:';
   (print ? core.print : stderr.writeln)(wordWrap('$header $message\n'));
@@ -151,12 +151,12 @@ void warn(String message, {bool color, bool print = false}) {
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
 Future<T> getUnusedPort<T>(FutureOr<T> Function(int port) tryPort) async {
-  T value;
+  T? value;
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());
     return value == null;
   });
-  return value;
+  return value!;
 }
 
 /// Whether this computer supports binding to IPv6 addresses.
@@ -168,7 +168,7 @@ var _maySupportIPv6 = true;
 /// any time after this call has returned. If at all possible, callers should
 /// use [getUnusedPort] instead.
 Future<int> getUnsafeUnusedPort() async {
-  int port;
+  late int port;
   if (_maySupportIPv6) {
     try {
       final socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0,

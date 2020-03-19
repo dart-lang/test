@@ -79,7 +79,7 @@ void listen(Function Function() getMain, List data) {
 }
 
 /// Sends a message over [channel] indicating an error from user code.
-void _sendError(StreamChannel channel, error, [StackTrace stackTrace]) {
+void _sendError(StreamChannel channel, error, [StackTrace? stackTrace]) {
   channel.sink.add({
     'type': 'error',
     'error': RemoteException.serialize(error, stackTrace ?? Chain.current())

@@ -22,7 +22,7 @@ class VMEnvironment implements Environment {
   VMEnvironment(this.observatoryUrl, this._isolate, this._client);
 
   @override
-  Uri get remoteDebuggerUrl => null;
+  Uri? get remoteDebuggerUrl => null;
 
   @override
   Stream get onRestart => StreamController.broadcast().stream;

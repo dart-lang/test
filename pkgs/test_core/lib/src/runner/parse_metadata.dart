@@ -36,10 +36,10 @@ class _Parser {
   final Set<String> _platformVariables;
 
   /// All annotations at the top of the file.
-  List<Annotation> _annotations;
+  late final List<Annotation> _annotations;
 
   /// All prefixes defined by imports in this file.
-  Set<String> _prefixes;
+  late final Set<String> _prefixes;
 
   /// The actual contents of the file.
   final String _contents;
@@ -59,18 +59,18 @@ class _Parser {
             return null;
           }
         })
-        .where((prefix) => prefix != null)
+        .whereType<String>()
         .toSet();
   }
 
   /// Parses the metadata.
   Metadata parse() {
-    Timeout timeout;
-    PlatformSelector testOn;
+    Timeout? timeout;
+    PlatformSelector? testOn;
     dynamic /*String|bool*/ skip;
-    Map<PlatformSelector, Metadata> onPlatform;
-    Set<String> tags;
-    int retry;
+    Map<PlatformSelector, Metadata>? onPlatform;
+    Set<String>? tags;
+    int? retry;
 
     for (var annotation in _annotations) {
       var pair =
@@ -80,21 +80,21 @@ class _Parser {
 
       if (name == 'TestOn') {
         _assertSingle(testOn, 'TestOn', annotation);
-        testOn = _parseTestOn(annotation, constructorName);
+        testOn = _parseTestOn(annotation);
       } else if (name == 'Timeout') {
         _assertSingle(timeout, 'Timeout', annotation);
         timeout = _parseTimeout(annotation, constructorName);
       } else if (name == 'Skip') {
         _assertSingle(skip, 'Skip', annotation);
-        skip = _parseSkip(annotation, constructorName);
+        skip = _parseSkip(annotation);
       } else if (name == 'OnPlatform') {
         _assertSingle(onPlatform, 'OnPlatform', annotation);
-        onPlatform = _parseOnPlatform(annotation, constructorName);
+        onPlatform = _parseOnPlatform(annotation);
       } else if (name == 'Tags') {
         _assertSingle(tags, 'Tags', annotation);
-        tags = _parseTags(annotation, constructorName);
+        tags = _parseTags(annotation);
       } else if (name == 'Retry') {
-        retry = _parseRetry(annotation, constructorName);
+        retry = _parseRetry(annotation);
       }
     }
 
@@ -110,10 +110,8 @@ class _Parser {
 
   /// Parses a `@TestOn` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  PlatformSelector _parseTestOn(
-          Annotation annotation, String constructorName) =>
+  /// [annotation] is the annotation.
+  PlatformSelector _parseTestOn(Annotation annotation) =>
       _parsePlatformSelector(annotation.arguments.arguments.first);
 
   /// Parses an [expression] that should contain a string representing a
@@ -128,16 +126,15 @@ class _Parser {
 
   /// Parses a `@Retry` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  int _parseRetry(Annotation annotation, String constructorName) =>
+  /// [annotation] is the annotation.
+  int _parseRetry(Annotation annotation) =>
       _parseInt(annotation.arguments.arguments.first);
 
   /// Parses a `@Timeout` annotation.
   ///
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
-  Timeout _parseTimeout(Annotation annotation, String constructorName) {
+  Timeout _parseTimeout(Annotation annotation, String? constructorName) {
     if (constructorName == 'none') {
       return Timeout.none;
     }
@@ -158,11 +155,10 @@ class _Parser {
 
   /// Parses a `@Skip` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
+  /// [annotation] is the annotation.
   ///
   /// Returns either `true` or a reason string.
-  dynamic _parseSkip(Annotation annotation, String constructorName) {
+  dynamic _parseSkip(Annotation annotation) {
     var args = annotation.arguments.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
   }
@@ -178,9 +174,8 @@ class _Parser {
 
   /// Parses a `@Tags` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  Set<String> _parseTags(Annotation annotation, String constructorName) {
+  /// [annotation] is the annotation.
+  Set<String> _parseTags(Annotation annotation) {
     return _parseList(annotation.arguments.arguments.first)
         .map((tagExpression) {
       var name = _parseString(tagExpression).stringValue;
@@ -195,10 +190,8 @@ class _Parser {
 
   /// Parses an `@OnPlatform` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  Map<PlatformSelector, Metadata> _parseOnPlatform(
-      Annotation annotation, String constructorName) {
+  /// [annotation] is the annotation.
+  Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
     return _parseMap(annotation.arguments.arguments.first, key: (key) {
       return _parsePlatformSelector(key);
     }, value: (value) {
@@ -214,8 +207,8 @@ class _Parser {
             'Expected a Timeout, Skip, or List of those.', _spanFor(value));
       }
 
-      Timeout timeout;
-      dynamic skip;
+      Timeout? timeout;
+      dynamic? skip;
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
           var className = _resolveConstructor(
@@ -292,7 +285,7 @@ class _Parser {
   ///
   /// [name] is the name of the annotation and [node] is its location, used for
   /// error reporting.
-  void _assertSingle(Object existing, String name, AstNode node) {
+  void _assertSingle(Object? existing, String name, AstNode node) {
     if (existing == null) return;
     throw SourceSpanFormatException(
         'Only a single $name may be used.', _spanFor(node));
@@ -314,15 +307,15 @@ class _Parser {
   ///
   /// Since the parsed file isn't fully resolved, this is necessary to
   /// disambiguate between prefixed names and named constructors.
-  Pair<String, String> _resolveConstructor(
-      Identifier identifier, SimpleIdentifier constructorName) {
+  Pair<String, String?> _resolveConstructor(
+      Identifier identifier, SimpleIdentifier? constructorName) {
     // The syntax is ambiguous between named constructors and prefixed
     // annotations, so we need to resolve that ambiguity using the known
     // prefixes. The analyzer parses "new x.y()" as prefix "x", annotation "y",
     // and named constructor null. It parses "new x.y.z()" as prefix "x",
     // annotation "y", and named constructor "z".
     String className;
-    String namedConstructor;
+    String? namedConstructor;
     if (identifier is PrefixedIdentifier &&
         !_prefixes.contains(identifier.prefix.name) &&
         constructorName == null) {
@@ -342,7 +335,7 @@ class _Parser {
   /// Returns the name of the named constructor used, or null if the default
   /// constructor is used.
   /// If [expression] is not an instantiation of a [className] throws.
-  String _findConstructorName(Expression expression, String className) {
+  String? _findConstructorName(Expression expression, String className) {
     if (expression is InstanceCreationExpression) {
       return _findConstructornameFromInstantiation(expression, className);
     }
@@ -353,7 +346,7 @@ class _Parser {
         'Expected a $className.', _spanFor(expression));
   }
 
-  String _findConstructornameFromInstantiation(
+  String? _findConstructornameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
     var pair = _resolveConstructor(constructor.constructorName.type.name,
         constructor.constructorName.name);
@@ -368,7 +361,7 @@ class _Parser {
     return constructorName;
   }
 
-  String _findConstructorNameFromMethod(
+  String? _findConstructorNameFromMethod(
       MethodInvocation constructor, String className) {
     var target = constructor.target;
     if (target != null) {
@@ -379,7 +372,7 @@ class _Parser {
       if (constructor.methodName.name == className) return null;
       // target is an optionally prefixed class, method is named constructor
       // Examples: `Timeout.factor(2)`, `test.Timeout.factor(2)`
-      String parsedName;
+      String? parsedName;
       if (target is SimpleIdentifier) parsedName = target.name;
       if (target is PrefixedIdentifier) parsedName = target.identifier.name;
       if (parsedName != className) {
@@ -408,7 +401,7 @@ class _Parser {
   /// Similarly `Baz.another` may look like the named constructor invocation of
   /// a `Baz`even though it is a prefixed instantiation of an `another`, or a
   /// method invocation on a variable `Baz`, or ...
-  String _typeNameFromMethodInvocation(
+  String? _typeNameFromMethodInvocation(
       MethodInvocation constructor, List<String> candidates) {
     var methodName = constructor.methodName.name;
     // Examples: `Timeout()`, `test.Timeout()`
@@ -436,7 +429,7 @@ class _Parser {
   /// By default, returns [Expression] keys and values. These can be overridden
   /// with the [key] and [value] parameters.
   Map<K, V> _parseMap<K, V>(Expression expression,
-      {K Function(Expression) key, V Function(Expression) value}) {
+      {K Function(Expression)? key, V Function(Expression)? value}) {
     key ??= (expression) => expression as K;
     value ??= (expression) => expression as V;
 
@@ -445,7 +438,7 @@ class _Parser {
     }
 
     var map = <K, V>{};
-    for (var element in (expression as SetOrMapLiteral).elements) {
+    for (var element in expression.elements) {
       if (element is MapLiteralEntry) {
         map[key(element.key)] = value(element.value);
       } else {
@@ -462,14 +455,14 @@ class _Parser {
       throw SourceSpanFormatException('Expected a List.', _spanFor(expression));
     }
 
-    var list = expression as ListLiteral;
+    var list = expression;
 
     return list.elements.map((e) {
       if (e is! Expression) {
         throw SourceSpanFormatException(
             'Expected only literal elements.', _spanFor(e));
       }
-      return e as Expression;
+      return e;
     }).toList();
   }
 
@@ -511,7 +504,7 @@ class _Parser {
       return fn();
     } on SourceSpanFormatException catch (error) {
       var file = SourceFile.fromString(_contents, url: p.toUri(_path));
-      var span = contextualizeSpan(error.span, literal, file);
+      var span = contextualizeSpan(error.span!, literal, file);
       if (span == null) rethrow;
       throw SourceSpanFormatException(error.message, span);
     }

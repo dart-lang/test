@@ -11,22 +11,22 @@ class JSStackTraceMapper extends StackTraceMapper {
   /// The parsed source map.
   ///
   /// This is initialized lazily in `mapStackTrace()`.
-  Mapping _mapping;
+  Mapping? _mapping;
 
   /// The same package resolution information as was passed to dart2js.
-  final Map<String, Uri> _packageMap;
+  final Map<String, Uri>? _packageMap;
 
   /// The URL of the SDK root from which dart2js loaded its sources.
-  final Uri _sdkRoot;
+  final Uri? _sdkRoot;
 
   /// The contents of the source map.
   final String _mapContents;
 
   /// The URL of the source map.
-  final Uri _mapUrl;
+  final Uri? _mapUrl;
 
   JSStackTraceMapper(this._mapContents,
-      {Uri mapUrl, Map<String, Uri> packageMap, Uri sdkRoot})
+      {Uri? mapUrl, Map<String, Uri>? packageMap, Uri? sdkRoot})
       : _mapUrl = mapUrl,
         _packageMap = packageMap,
         _sdkRoot = sdkRoot;
@@ -52,7 +52,7 @@ class JSStackTraceMapper extends StackTraceMapper {
 
   /// Returns a [StackTraceMapper] contained in the provided serialized
   /// representation.
-  static StackTraceMapper deserialize(Map serialized) {
+  static StackTraceMapper? deserialize(Map? serialized) {
     if (serialized == null) return null;
     var deserialized = _deserializePackageConfigMap(
         (serialized['packageConfigMap'] as Map).cast<String, String>());
@@ -65,16 +65,16 @@ class JSStackTraceMapper extends StackTraceMapper {
 
   /// Converts a [packageConfigMap] into a format suitable for JSON
   /// serialization.
-  static Map<String, String> _serializePackageConfigMap(
-      Map<String, Uri> packageConfigMap) {
+  static Map<String, String>? _serializePackageConfigMap(
+      Map<String, Uri>? packageConfigMap) {
     if (packageConfigMap == null) return null;
     return packageConfigMap.map((key, value) => MapEntry(key, '$value'));
   }
 
   /// Converts a serialized package config map into a format suitable for
   /// the [PackageResolver]
-  static Map<String, Uri> _deserializePackageConfigMap(
-      Map<String, String> serialized) {
+  static Map<String, Uri>? _deserializePackageConfigMap(
+      Map<String, String>? serialized) {
     if (serialized == null) return null;
     return serialized.map((key, value) => MapEntry(key, Uri.parse(value)));
   }

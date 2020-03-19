@@ -42,7 +42,7 @@ class CompilerPool {
   final List<String> _extraArgs;
 
   /// Creates a compiler pool that multiple instances of `dart2js` at once.
-  CompilerPool([Iterable<String> extraArgs])
+  CompilerPool([Iterable<String>? extraArgs])
       : _pool = Pool(Configuration.current.concurrency),
         _extraArgs = extraArgs?.toList() ?? const [];
 

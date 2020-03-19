@@ -14,11 +14,11 @@ abstract class Environment {
 
   /// The URL of the Dart VM Observatory for this environment, or `null` if this
   /// environment doesn't run the Dart VM or the URL couldn't be detected.
-  Uri get observatoryUrl;
+  Uri? get observatoryUrl;
 
   /// The URL of the remote debugger for this environment, or `null` if it isn't
   /// enabled.
-  Uri get remoteDebuggerUrl;
+  Uri? get remoteDebuggerUrl;
 
   /// A broadcast stream that emits a `null` event whenever the user tells the
   /// environment to restart the current test once it's finished.
@@ -44,10 +44,10 @@ class PluginEnvironment implements Environment {
   const PluginEnvironment();
 
   @override
-  Uri get observatoryUrl => null;
+  Uri? get observatoryUrl => null;
 
   @override
-  Uri get remoteDebuggerUrl => null;
+  Uri? get remoteDebuggerUrl => null;
 
   @override
   CancelableOperation displayPause() => throw UnsupportedError(

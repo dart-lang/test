@@ -8,6 +8,7 @@ import 'dart:io' show pid;
 
 import 'package:path/path.dart' as p;
 
+import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
@@ -143,7 +144,7 @@ class JsonReporter implements Reporter {
           },
           liveTest.test,
           liveTest.suite.platform.runtime,
-          liveTest.suite.path)
+          liveTest.suite.path!)
     });
 
     /// Convert the future to a stream so that the subscription can be paused or
@@ -168,7 +169,7 @@ class JsonReporter implements Reporter {
   /// If [suite] doesn't have an ID yet, this assigns one and emits a new event
   /// for that suite.
   int _idForSuite(Suite suite) {
-    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite];
+    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite]!;
 
     var id = _nextID++;
     _suiteIDs[suite] = id;
@@ -177,7 +178,7 @@ class JsonReporter implements Reporter {
     // different metadata.
     if (suite is LoadSuite) {
       suite.suite.then((runnerSuite) {
-        _suiteIDs[runnerSuite] = id;
+        _suiteIDs[runnerSuite!] = id;
         if (!_config.debug) return;
 
         // TODO(nweiz): test this when we have a library for communicating with
@@ -207,11 +208,11 @@ class JsonReporter implements Reporter {
   /// If a group doesn't have an ID yet, this assigns one and emits a new event
   /// for that group.
   List<int> _idsForGroups(Iterable<Group> groups, Suite suite) {
-    int parentID;
+    int? parentID;
     return groups.map((group) {
       if (_groupIDs.containsKey(group)) {
-        parentID = _groupIDs[group];
-        return parentID;
+        parentID = _groupIDs[group]!;
+        return parentID!;
       }
 
       var id = _nextID++;
@@ -231,7 +232,7 @@ class JsonReporter implements Reporter {
             },
             group,
             suite.platform.runtime,
-            suite.path)
+            suite.path!)
       });
       parentID = id;
       return id;
@@ -258,7 +259,9 @@ class JsonReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  //
+  // TODO: make `stackTrace` non-nullable once it's non-nullable in the sdk.
+  void _onError(LiveTest liveTest, error, StackTrace? stackTrace) {
     _emit('error', {
       'testID': _liveTestIDs[liveTest],
       'error': error.toString(),
@@ -271,7 +274,7 @@ class JsonReporter implements Reporter {
   ///
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
-  void _onDone(bool success) {
+  void _onDone(bool? success) {
     cancel();
     _stopwatch.stop();
 
@@ -302,12 +305,16 @@ class JsonReporter implements Reporter {
       GroupEntry entry,
       Runtime runtime,
       String suitePath) {
-    var frame = entry.trace?.frames?.first;
-    var rootFrame = entry.trace?.frames?.firstWhere(
-        (frame) =>
-            frame.uri.scheme == 'file' &&
-            frame.uri.toFilePath() == p.absolute(suitePath),
-        orElse: () => null);
+    var frame = entry.trace?.frames.first;
+    Frame? rootFrame;
+    for (var frame in entry.trace?.frames ?? <Frame>[]) {
+      if (frame.uri.scheme == 'file' &&
+          frame.uri.toFilePath() == p.absolute(suitePath)) {
+        rootFrame = frame;
+        break;
+      }
+    }
+
     if (suiteConfig.jsTrace && runtime.isJS) {
       frame = null;
       rootFrame = null;
@@ -315,7 +322,7 @@ class JsonReporter implements Reporter {
 
     map['line'] = frame?.line;
     map['column'] = frame?.column;
-    map['url'] = frame?.uri?.toString();
+    map['url'] = frame?.uri.toString();
     if (rootFrame != null && rootFrame != frame) {
       map['root_line'] = rootFrame.line;
       map['root_column'] = rootFrame.column;

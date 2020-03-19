@@ -64,13 +64,13 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  Future<RunnerSuite> get suite async => (await _suiteAndZone)?.first;
+  Future<RunnerSuite?> get suite async => (await _suiteAndZone)?.first;
 
   /// A future that completes to a pair of [suite] and the load test's [Zone].
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  final Future<Pair<RunnerSuite, Zone>> _suiteAndZone;
+  final Future<Pair<RunnerSuite, Zone>?> _suiteAndZone;
 
   /// Returns the test that loads the suite.
   ///
@@ -87,12 +87,12 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
   factory LoadSuite(String name, SuiteConfiguration config,
-      SuitePlatform platform, FutureOr<RunnerSuite> Function() body,
-      {String path}) {
+      SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
+      {String? path}) {
     var completer = Completer<Pair<RunnerSuite, Zone>>.sync();
     return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
-      invoker.addOutstandingCallback();
+      invoker!.addOutstandingCallback();
 
       unawaited(() async {
         var suite = await body();
@@ -124,8 +124,8 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// The suite's name will be based on [exception]'s path.
   factory LoadSuite.forLoadException(
-      LoadException exception, SuiteConfiguration config,
-      {SuitePlatform platform, StackTrace stackTrace}) {
+      LoadException exception, SuiteConfiguration? config,
+      {SuitePlatform? platform, StackTrace? stackTrace}) {
     stackTrace ??= Trace.current();
 
     return LoadSuite(
@@ -144,7 +144,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   LoadSuite._(String name, this.config, SuitePlatform platform,
-      void Function() body, this._suiteAndZone, {String path})
+      void Function() body, this._suiteAndZone, {String? path})
       : super(
             Group.root(
                 [LocalTest(name, Metadata(timeout: Timeout(_timeout)), body)]),
@@ -173,11 +173,11 @@ class LoadSuite extends Suite implements RunnerSuite {
       if (pair == null) return null;
 
       var zone = pair.last;
-      RunnerSuite newSuite;
+      RunnerSuite? newSuite;
       zone.runGuarded(() {
         newSuite = change(pair.first);
       });
-      return newSuite == null ? null : Pair(newSuite, zone);
+      return newSuite == null ? null : Pair(newSuite!, zone);
     }));
   }
 
@@ -185,7 +185,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// Rather than emitting errors through a [LiveTest], this just pipes them
   /// through the return value.
-  Future<RunnerSuite> getSuite() async {
+  Future<RunnerSuite?> getSuite() async {
     var liveTest = test.load(this);
     liveTest.onMessage.listen((message) => print(message.text));
     await liveTest.run();
