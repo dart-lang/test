@@ -47,7 +47,8 @@ StreamChannel postMessageChannel() {
   // Send a ready message once we're listening so the host knows it's safe to
   // start sending events.
   // TODO(nweiz): Stop manually adding href here once issue 22554 is fixed.
-  _postParentMessage(jsify({'href': window.location.href, 'ready': true}),
+  _postParentMessage(
+      jsify({'href': window.location.href, 'ready': true}) as Object,
       window.location.origin);
 
   return controller.foreign;
