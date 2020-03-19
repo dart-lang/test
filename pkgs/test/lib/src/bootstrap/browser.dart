@@ -12,9 +12,9 @@ void internalBootstrapBrowserTest(Function Function() getMain) {
   var channel =
       serializeSuite(getMain, hidePrints: false, beforeLoad: () async {
     var serialized =
-        await suiteChannel('test.browser.mapper').stream.first as Map;
+        await suiteChannel('test.browser.mapper').stream.first as Map?;
     if (serialized == null) return;
-    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized));
+    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });
   postMessageChannel().pipe(channel);
 }
