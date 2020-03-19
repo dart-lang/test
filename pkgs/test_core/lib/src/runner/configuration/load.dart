@@ -130,7 +130,7 @@ class _ConfigurationLoader {
               (value) => value is String);
 
           var os = OperatingSystem.find(keyNode.value as String);
-          if (os == OperatingSystem.none) return os;
+          if (os != OperatingSystem.none) return os;
 
           throw SourceSpanFormatException(
               'Invalid on_os key: No such operating system.',
@@ -174,7 +174,7 @@ class _ConfigurationLoader {
     }
 
     var skipRaw = _getValue('skip', 'boolean or string',
-        (value) => value is bool || value is String);
+        (value) => (value is bool?) || value is String?);
     String? skipReason;
     bool skip;
     if (skipRaw is String) {
@@ -231,7 +231,7 @@ class _ConfigurationLoader {
     var runSkipped = _getBool('run_skipped');
 
     var reporter = _getString('reporter');
-    if (!allReporters.keys.contains(reporter)) {
+    if (reporter != null && !allReporters.keys.contains(reporter)) {
       _error('Unknown reporter "$reporter".', 'reporter');
     }
 
@@ -424,14 +424,8 @@ class _ConfigurationLoader {
       var settings = _expect(map, 'settings');
       _validate(settings, 'Must be a map.', (value) => value is Map);
 
-      runtimes[identifier] = CustomRuntime(
-          name,
-          nameNode.span,
-          identifier,
-          (identifierNode as YamlNode).span,
-          parent,
-          parentNode.span,
-          settings as YamlMap);
+      runtimes[identifier] = CustomRuntime(name, nameNode.span, identifier,
+          identifierNode.span, parent, parentNode.span, settings as YamlMap);
     });
     return runtimes;
   }
@@ -447,10 +441,10 @@ class _ConfigurationLoader {
   ///
   /// If [typeTest] returns `false` for that value, instead throws an error
   /// complaining that the field is not a [typeName].
-  dynamic _getValue(
+  Object? _getValue(
       String field, String typeName, bool Function(dynamic) typeTest) {
     var value = _document[field];
-    if (value == null || typeTest(value)) return value;
+    if (typeTest(value)) return value;
     _error('$field must be ${a(typeName)}.', field);
   }
 
@@ -469,20 +463,23 @@ class _ConfigurationLoader {
   }
 
   /// Asserts that [field] is an int and returns its value.
-  int _getInt(String field) =>
-      _getValue(field, 'int', (value) => value is int) as int;
+  int? _getInt(String field) =>
+      _getValue(field, 'int', (value) => value is int?) as int?;
 
   /// Asserts that [field] is a non-negative int and returns its value.
-  int _getNonNegativeInt(String field) => _getValue(
-      field, 'non-negative int', (value) => value is int && value >= 0) as int;
+  int? _getNonNegativeInt(String field) =>
+      _getValue(field, 'non-negative int', (value) {
+        if (value == null) return true;
+        return value is int && value >= 0;
+      }) as int?;
 
   /// Asserts that [field] is a boolean and returns its value.
-  bool _getBool(String field) =>
-      _getValue(field, 'boolean', (value) => value is bool) as bool;
+  bool? _getBool(String field) =>
+      _getValue(field, 'boolean', (value) => value is bool?) as bool?;
 
   /// Asserts that [field] is a string and returns its value.
-  String _getString(String field) =>
-      _getValue(field, 'string', (value) => value is String) as String;
+  String? _getString(String field) =>
+      _getValue(field, 'string', (value) => value is String?) as String?;
 
   /// Asserts that [field] is a list and runs [forElement] for each element it
   /// contains.
