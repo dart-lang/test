@@ -62,18 +62,18 @@ class ExpandedReporter implements Reporter {
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
-  int? _lastProgressPassed;
+  int _lastProgressPassed = 0;
 
   /// The size of `_engine.skipped` last time a progress notification was
   /// printed.
-  int? _lastProgressSkipped;
+  int _lastProgressSkipped = 0;
 
   /// The size of `_engine.failed` last time a progress notification was
   /// printed.
-  int? _lastProgressFailed;
+  int _lastProgressFailed = 0;
 
   /// The message printed for the last progress notification.
-  String? _lastProgressMessage;
+  String _lastProgressMessage = '';
 
   /// The suffix added to the last progress notification.
   String? _lastProgressSuffix;
