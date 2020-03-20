@@ -276,7 +276,8 @@ void tearDownAll(dynamic Function() callback) =>
 void registerException(Object error, [StackTrace? stackTrace]) {
   // This will usually forward directly to [Invoker.current.handleError], but
   // going through the zone API allows other zones to consistently see errors.
-  Zone.current.handleUncaughtError(error, stackTrace);
+  Zone.current
+      .handleUncaughtError(error, stackTrace ?? StackTrace.fromString(''));
 }
 
 /// Prints [message] if and when the current test fails.
