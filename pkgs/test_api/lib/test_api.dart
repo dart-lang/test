@@ -273,7 +273,8 @@ void tearDownAll(dynamic Function() callback) =>
     _declarer.tearDownAll(callback);
 
 /// Registers an exception that was caught for the current test.
-void registerException(Object error, [StackTrace? stackTrace]) {
+void registerException(Object error,
+    [StackTrace stackTrace = StackTrace.empty]) {
   // This will usually forward directly to [Invoker.current.handleError], but
   // going through the zone API allows other zones to consistently see errors.
   Zone.current.handleUncaughtError(error, stackTrace);
