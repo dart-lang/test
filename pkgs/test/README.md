@@ -615,9 +615,12 @@ void main() {
 
 ### Timeouts
 
-By default, tests will time out after 30 seconds of inactivity. However, this
-can be configured on a per-test, -group, or -suite basis. To change the timeout
-for a test suite, put a `@Timeout` annotation at the top of the file:
+By default, tests will time out after 30 seconds of inactivity. The timeout
+applies to deadlocks or cases where the test stops making progress, it does not
+ensure that an overall test case or test suite completes within any set time.
+
+Timeouts can be configured on a per-test, -group, or -suite basis. To change the
+timeout for a test suite, put a `@Timeout` annotation at the top of the file:
 
 ```dart
 @Timeout(const Duration(seconds: 45))
