@@ -63,7 +63,7 @@ dependency_overrides:
   path:
     git:
       url: git://github.com/dart-lang/path.git
-      ref: null_safety_insert_workaround
+      ref: null_safety
   source_span:
     git:
       url: git://github.com/dart-lang/source_span.git

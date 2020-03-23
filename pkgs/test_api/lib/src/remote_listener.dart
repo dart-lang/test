@@ -247,8 +247,7 @@ class RemoteListener {
         'type': 'error',
         'error': RemoteException.serialize(
             asyncError.error,
-            StackTraceFormatter.current!.formatStackTrace(
-                asyncError.stackTrace!,
+            StackTraceFormatter.current!.formatStackTrace(asyncError.stackTrace,
                 verbose: liveTest.test.metadata.verboseTrace))
       });
     });

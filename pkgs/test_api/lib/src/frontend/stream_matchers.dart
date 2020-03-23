@@ -56,7 +56,7 @@ StreamMatcher emitsError(matcher) {
   var throwsMatcher = throwsA(wrapped) as AsyncMatcher;
 
   return StreamMatcher(
-      (queue) => throwsMatcher.matchAsync(queue.next) as Future<String>,
+      (queue) => throwsMatcher.matchAsync(queue.next) as Future<String?>,
       // TODO(nweiz): add "should" once matcher#42 is fixed.
       'emit an error that $matcherDescription');
 }
