@@ -92,9 +92,7 @@ RunnerSuiteController deserializeSuite(
           case 'error':
             var asyncError = RemoteException.deserialize(response['error']);
             handleError(
-                LoadException(path, asyncError.error),
-                // TODO: remove once non-nullable stack traces land in the sdk.
-                asyncError.stackTrace ?? StackTrace.fromString(''));
+                LoadException(path, asyncError.error), asyncError.stackTrace);
             break;
 
           case 'success':
