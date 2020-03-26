@@ -31,7 +31,7 @@ import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 
-final _silentObservatory = const bool.fromEnvironment('SILENT_OBSERVATORY');
+final _silentObservatory = Platform.environment['SILENT_OBSERVATORY'] == true;
 
 /// A class that loads and runs tests based on a [Configuration].
 ///
