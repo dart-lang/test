@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:matcher/matcher.dart';
-import 'package:meta/meta.dart';
 
 import '../backend/closed_exception.dart';
 import '../backend/invoker.dart';
@@ -153,8 +152,7 @@ Future _expect(actual, matcher,
 
 /// Convenience method for throwing a new [TestFailure] with the provided
 /// [message].
-@alwaysThrows
-Null fail(String message) => throw TestFailure(message);
+Never fail(String message) => throw TestFailure(message);
 
 // The default error formatter.
 @Deprecated('Will be removed in 0.13.0.')
