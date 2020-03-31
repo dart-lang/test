@@ -126,9 +126,16 @@ class Chrome extends Browser {
     var path = p.join(
         p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
         sourceUrl);
-    return path.contains('/packages/')
-        ? Uri(scheme: 'package', path: path.split('/packages/').last)
-        : Uri.file(p.absolute(path));
+    if (path.contains('/packages/')) {
+      return Uri(scheme: 'package', path: path.split('/packages/').last);
+    } else {
+      try {
+        return Uri.file(p.absolute(path));
+      } catch (e) {
+        print('Unable to parse path: $path');
+      }
+      return null;
+    }
   }
 
   Future<String> _sourceMapProvider(String scriptId) async {
