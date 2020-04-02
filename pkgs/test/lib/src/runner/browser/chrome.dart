@@ -122,10 +122,10 @@ class Chrome extends Browser {
   Future<Uri> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
-    var uri = Uri.parse(script);
+    // The script is a URL path so it should contain forward slashes.
+    var pathSegments = script.split('/');
     var path = p.join(
-        p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
-        sourceUrl);
+        p.joinAll(pathSegments.sublist(1, pathSegments.length - 1)), sourceUrl);
     if (path.contains('/packages/')) {
       return Uri(scheme: 'package', path: path.split('/packages/').last);
     } else {
@@ -133,6 +133,8 @@ class Chrome extends Browser {
         return Uri.file(p.absolute(path));
       } catch (e) {
         print('Unable to parse path: $path');
+        print('Provided sourceUrl: $sourceUrl');
+        print('Corresponding script: $script');
       }
       return null;
     }
