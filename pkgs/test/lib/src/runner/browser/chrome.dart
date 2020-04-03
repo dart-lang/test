@@ -58,14 +58,17 @@ class Chrome extends Browser {
           '--disable-dev-shm-usage',
         ];
 
-        if (!debug && settings.headless) {
+        if (settings.headless) {
           args.addAll([
             '--headless',
             '--disable-gpu',
-            // We don't actually connect to the remote debugger, but Chrome will
-            // close as soon as the page is loaded if we don't turn it on.
-            '--remote-debugging-port=0'
           ]);
+        }
+
+        if (!debug) {
+          // We don't actually connect to the remote debugger, but Chrome will
+          // close as soon as the page is loaded if we don't turn it on.
+          args.add('--remote-debugging-port=0');
         }
 
         args.addAll(settings.arguments);
