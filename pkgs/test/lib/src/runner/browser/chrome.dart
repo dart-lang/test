@@ -56,29 +56,23 @@ class Chrome extends Browser {
           '--disable-default-apps',
           '--disable-translate',
           '--disable-dev-shm-usage',
-        ];
-
-        if (settings.headless) {
-          args.addAll([
+          if (settings.headless) ...[
             '--headless',
             '--disable-gpu',
-          ]);
-        }
-
-        if (!debug) {
-          // We don't actually connect to the remote debugger, but Chrome will
-          // close as soon as the page is loaded if we don't turn it on.
-          args.add('--remote-debugging-port=0');
-        }
-
-        args.addAll(settings.arguments);
-
-        // Currently, Chrome doesn't provide any way of ensuring that this port
-        // was successfully bound. It produces an error if the binding fails,
-        // but without a reliable and fast way to tell if it succeeded that
-        // doesn't provide us much. It's very unlikely that this port will fail,
-        // though.
-        if (port != null) args.add('--remote-debugging-port=$port');
+          ],
+          if (!debug)
+            // We don't actually connect to the remote debugger, but Chrome will
+            // close as soon as the page is loaded if we don't turn it on.
+            '--remote-debugging-port=0',
+          ...settings.arguments,
+          if (port != null)
+            // Chrome doesn't provide any way of ensuring that this port was
+            // successfully bound. It produces an error if the binding fails,
+            // but without a reliable and fast way to tell if it succeeded that
+            // doesn't provide us much. It's very unlikely that this port will
+            // fail, though.
+            '--remote-debugging-port=$port',
+        ];
 
         var process = await Process.start(settings.executable, args);
 
