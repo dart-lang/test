@@ -61,46 +61,36 @@ Usage: pub run test [files or directories...]
 -n, --name                            A substring of the name of the test to run.
                                       Regular expression syntax is supported.
                                       If passed multiple times, tests must match all substrings.
-
 -N, --plain-name                      A plain-text substring of the name of the test to run.
                                       If passed multiple times, tests must match all substrings.
-
 -t, --tags                            Run only tests with all of the specified tags.
                                       Supports boolean selector syntax.
-
 -x, --exclude-tags                    Don't run tests with any of the specified tags.
                                       Supports boolean selector syntax.
-
     --[no-]run-skipped                Run skipped tests instead of skipping them.
 
 ======== Running Tests
 -p, --platform                        The platform(s) on which to run the tests.
                                       $_browsers
-
 -P, --preset                          The configuration preset(s) to use.
 -j, --concurrency=<threads>           The number of concurrent test suites run.
                                       (defaults to "$_defaultConcurrency")
-
     --total-shards                    The total number of invocations of the test runner being run.
     --shard-index                     The index of this test runner invocation (of --total-shards).
     --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
-
     --pause-after-load                Pauses for debugging before any tests execute.
                                       Implies --concurrency=1, --debug, and --timeout=none.
                                       Currently only supported for browser tests.
-
     --debug                           Runs the VM and Chrome tests in debug mode.
     --coverage=<directory>            Gathers coverage and outputs it to the specified directory.
                                       Implies --debug.
-
     --[no-]chain-stack-traces         Chained stack traces to provide greater exception details
                                       especially for asynchronous code. It may be useful to disable
                                       to provide improved test performance but at the cost of
                                       debuggability.
                                       (defaults to on)
-
     --no-retry                        Don't re-run tests that have retry set.
     --test-randomize-ordering-seed    The seed to randomize the execution order of test cases.
                                       Must be a 32bit unsigned integer or "random".
@@ -116,7 +106,6 @@ Usage: pub run test [files or directories...]
 
     --file-reporter                   The reporter used to write test results to a file.
                                       Should be in the form <reporter>:<filepath>, e.g. "json:reports/tests.json"
-
     --verbose-trace                   Whether to emit stack traces with core library frames.
     --js-trace                        Whether to emit raw JavaScript stack traces for browser tests.
     --[no-]color                      Whether to use terminal colors.

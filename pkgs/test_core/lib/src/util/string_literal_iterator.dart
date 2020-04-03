@@ -139,7 +139,7 @@ class StringLiteralIterator extends Iterator<int> {
     if (_isRaw! || _runes!.current != _backslash) {
       var rune = _runes!.current;
       _moveRunesNext();
-      return rune;
+      return (rune < 0) ? null : rune;
     }
 
     if (!_moveRunesNext()) return null;
