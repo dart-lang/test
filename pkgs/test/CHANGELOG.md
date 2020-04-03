@@ -1,3 +1,7 @@
+## 1.14.3-dev
+
+* Fix an issue where coverage tests could not run in Chrome headless. 
+
 ## 1.14.2
 
 * Update `test_core` to `0.3.3`.
