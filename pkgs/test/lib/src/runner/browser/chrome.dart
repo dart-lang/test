@@ -122,22 +122,16 @@ class Chrome extends Browser {
   Future<Uri> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
-    // The script is a URL path so it should contain forward slashes.
-    var pathSegments = script.split('/');
+    var sourceUri = Uri.parse(sourceUrl);
+    if (sourceUri.scheme == 'file') return sourceUri;
+    // If the provided sourceUrl is relative, determine the package path.
+    var uri = Uri.parse(script);
     var path = p.join(
-        p.joinAll(pathSegments.sublist(1, pathSegments.length - 1)), sourceUrl);
-    if (path.contains('/packages/')) {
-      return Uri(scheme: 'package', path: path.split('/packages/').last);
-    } else {
-      try {
-        return Uri.file(p.absolute(path));
-      } catch (e) {
-        print('Unable to parse path: $path');
-        print('Provided sourceUrl: $sourceUrl');
-        print('Corresponding script: $script');
-      }
-      return null;
-    }
+        p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
+        sourceUrl);
+    return path.contains('/packages/')
+        ? Uri(scheme: 'package', path: path.split('/packages/').last)
+        : null;
   }
 
   Future<String> _sourceMapProvider(String scriptId) async {
