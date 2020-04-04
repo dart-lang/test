@@ -100,6 +100,19 @@ void main() {
 }
 ```
 
+You can also test exceptions with the [`throwsA()`] function or a matcher
+such as [`throwsException`]:
+
+```dart
+import 'package:test/test.dart';
+
+void main() {
+  test('.parse() fails on invalid input', () {
+    expect(() => int.parse('X'), throwsFormatException);
+  });
+}
+```
+
 You can use the [`setUp()`] and [`tearDown()`] functions to share code between
 tests. The `setUp()` callback will run before every test in a group or test
 suite, and `tearDown()` will run after. `tearDown()` will run even if a test
