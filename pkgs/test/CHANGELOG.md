@@ -1,6 +1,8 @@
 ## 1.14.3-dev
 
 * Fix an issue where coverage tests could not run in Chrome headless. 
+* Fix an issue where coverage collection would not work with source
+  maps that contained absolute file URIs.
 
 ## 1.14.2
 
