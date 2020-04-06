@@ -484,6 +484,33 @@ void main() {
         expect(async.nonPeriodicTimerCount, 0);
       });
     });
+
+    test('should report debugging information of pending timers', () {
+      FakeAsync().run((fakeAsync) {
+        expect(fakeAsync.pendingTimers, isEmpty);
+        var nonPeriodic = Timer(const Duration(seconds: 1), () {}) as FakeTimer;
+        var periodic =
+            Timer.periodic(const Duration(seconds: 2), (Timer timer) {})
+                as FakeTimer;
+        final debugInfo = fakeAsync.pendingTimers;
+        expect(debugInfo.length, 2);
+        expect(
+          debugInfo,
+          containsAll([
+            nonPeriodic,
+            periodic,
+          ]),
+        );
+
+        const thisFileName = 'fake_async_test.dart';
+        expect(nonPeriodic.debugString, contains(':01.0'));
+        expect(nonPeriodic.debugString, contains('periodic: false'));
+        expect(nonPeriodic.debugString, contains(thisFileName));
+        expect(periodic.debugString, contains(':02.0'));
+        expect(periodic.debugString, contains('periodic: true'));
+        expect(periodic.debugString, contains(thisFileName));
+      });
+    });
   });
 
   group('timers', () {

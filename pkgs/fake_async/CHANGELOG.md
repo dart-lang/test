@@ -1,3 +1,9 @@
+## 1.1.0
+
+   * Exposed the `FakeTimer` class as a public class.
+   * Added `FakeAsync.pendingTimers` which gives access to all pending timers
+     at the time of the call.
+
 ## 1.0.2
 
 * Update min SDK to 2.2.0
