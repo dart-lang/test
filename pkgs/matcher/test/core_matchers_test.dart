@@ -55,6 +55,15 @@ void main() {
     shouldPass(a, equals(b));
   });
 
+  test('equals with null', () {
+    Object a; // null
+    var b = {};
+    shouldPass(a, equals(a));
+    shouldFail(
+        a, equals(b), 'Expected: {} Actual: <null> Which: expected a map');
+    shouldFail(b, equals(a), 'Expected: <null> Actual: {}');
+  });
+
   test('equals with a set', () {
     var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     var set1 = numbers.toSet();
