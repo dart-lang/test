@@ -1,8 +1,9 @@
-## 1.14.3-dev
+## 1.14.3
 
 * Fix an issue where coverage tests could not run in Chrome headless. 
 * Fix an issue where coverage collection would not work with source
   maps that contained absolute file URIs.
+* Update `test_core` to `0.3.4`.
 
 ## 1.14.2
 
