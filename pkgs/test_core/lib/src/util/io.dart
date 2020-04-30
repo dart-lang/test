@@ -39,14 +39,8 @@ final int lineLength = () {
 /// The root directory of the Dart SDK.
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
-/// Returns the current operating system.
-final OperatingSystem currentOS = (() {
-  var name = Platform.operatingSystem;
-  var os = OperatingSystem.findByIoName(name);
-  if (os != null) return os;
-
-  throw UnsupportedError('Unsupported operating system "$name".');
-})();
+/// The current operating system.
+final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 
 /// Returns a [SuitePlatform] with the given [runtime], and with [os] and
 /// [inGoogle] determined automatically.
