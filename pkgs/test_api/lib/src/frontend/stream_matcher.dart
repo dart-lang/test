@@ -179,7 +179,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
       buffer.writeln(indent(eventsString, first: 'emitted '));
       if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
       return buffer.toString().trimRight();
-    }, onError: (error) {
+    }, onError: (Object error) {
       transaction.reject();
       throw error;
     }).then((result) {

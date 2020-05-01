@@ -289,7 +289,7 @@ class SuiteConfiguration {
         precompiledPath: precompiledPath ?? this.precompiledPath,
         patterns: patterns ?? this.patterns,
         // TODO(https://github.com/dart-lang/sdk/issues/41114): Remove cast
-        runtimes: runtimes ?? (_runtimes as Iterable<RuntimeSelection>?),
+        runtimes: runtimes ?? _runtimes,
         includeTags: includeTags ?? this.includeTags,
         excludeTags: excludeTags ?? this.excludeTags,
         tags: tags ?? this.tags,

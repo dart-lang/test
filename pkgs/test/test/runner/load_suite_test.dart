@@ -66,7 +66,7 @@ void main() {
   test('a load test forwards errors and completes LoadSuite.suite to null',
       () async {
     var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform, () {
-      fail('error');
+      return fail('error');
     });
     expect(suite.group.entries, hasLength(1));
 

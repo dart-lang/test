@@ -269,7 +269,7 @@ class Engine {
             controller = LiveSuiteController(suite);
           }
 
-          _addLiveSuite(controller!.liveSuite);
+          _addLiveSuite(controller.liveSuite);
 
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
