@@ -121,13 +121,16 @@ class Chrome extends Browser {
   Future<Uri> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
+    var sourceUri = Uri.parse(sourceUrl);
+    if (sourceUri.scheme == 'file') return sourceUri;
+    // If the provided sourceUrl is relative, determine the package path.
     var uri = Uri.parse(script);
     var path = p.join(
         p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
         sourceUrl);
     return path.contains('/packages/')
         ? Uri(scheme: 'package', path: path.split('/packages/').last)
-        : Uri.file(p.absolute(path));
+        : null;
   }
 
   Future<String> _sourceMapProvider(String scriptId) async {
