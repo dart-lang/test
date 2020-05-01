@@ -1,9 +1,20 @@
-import 'package:matcher/src/map_matchers.dart';
+import 'package:matcher/matcher.dart'
+    show contains, containsValue, containsPair;
 import 'package:test/test.dart' show test;
 
 import 'test_utils.dart';
 
 void main() {
+  test('contains', () {
+    shouldPass({'a': 1}, contains('a'));
+    shouldFail(
+      {'a': 1},
+      contains(2),
+      'Expected: contains <2> '
+      'Actual: {\'a\': 1}',
+    );
+  });
+
   test('containsValue', () {
     shouldPass({'a': 1, 'null': null}, containsValue(1));
     shouldPass({'a': 1, 'null': null}, containsValue(null));
