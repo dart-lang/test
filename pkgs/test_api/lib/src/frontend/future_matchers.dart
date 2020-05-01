@@ -66,7 +66,7 @@ class _Completes extends AsyncMatcher {
 
       var buffer = StringBuffer();
       buffer.writeln(indent(prettyPrint(value), first: 'emitted '));
-      if (result!.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
+      if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
       return buffer.toString().trimRight();
     });
   }

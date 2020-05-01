@@ -75,10 +75,10 @@ class VMPlatform extends PlatformPlugin {
       var libraryPath = p.toUri(p.absolute(path)).toString();
       client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
       var isolateNumber = int.parse(isolateID.split('/').last);
-      isolateRef = (await client!.getVM())
+      isolateRef = (await client.getVM())
           .isolates
           .firstWhere((isolate) => isolate.number == isolateNumber.toString());
-      await client.setName(isolateRef!.id, path);
+      await client.setName(isolateRef.id, path);
       var libraryRef = (await client.getIsolate(isolateRef.id))
           .libraries
           .firstWhere((library) => library.uri == libraryPath);
@@ -157,7 +157,7 @@ Future<Isolate> _spawnPrecompiledIsolate(
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
   final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
-      .queryParameters['isolateId'];
+      .queryParameters['isolateId']!;
   return await collect(environment.observatoryUrl, false, false, false, {},
       isolateIds: {isolateId});
 }
