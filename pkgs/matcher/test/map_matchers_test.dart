@@ -7,10 +7,17 @@ import 'test_utils.dart';
 void main() {
   test('contains', () {
     shouldPass({'a': 1}, contains('a'));
+    shouldPass({null: 1}, contains(null));
     shouldFail(
       {'a': 1},
       contains(2),
       'Expected: contains <2> '
+      'Actual: {\'a\': 1}',
+    );
+    shouldFail(
+      {'a': 1},
+      contains(null),
+      'Expected: contains <null> '
       'Actual: {\'a\': 1}',
     );
   });
