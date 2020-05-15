@@ -14,111 +14,73 @@ import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
 
-/// An implementation of [LiveTest] that's controlled by a [LiveTestController].
-class _LiveTest extends LiveTest {
-  final LiveTestController _controller;
-
-  @override
-  Suite get suite => _controller._suite;
-
-  @override
-  List<Group> get groups => _controller._groups;
-
-  @override
-  Test get test => _controller._test;
-
-  @override
-  State get state => _controller._state;
-
-  @override
-  Stream<State> get onStateChange =>
-      _controller._onStateChangeController.stream;
-
-  @override
-  List<AsyncError> get errors => UnmodifiableListView(_controller._errors);
-
-  @override
-  Stream<AsyncError> get onError => _controller._onErrorController.stream;
-
-  @override
-  Stream<Message> get onMessage => _controller._onMessageController.stream;
-
-  @override
-  Future<void> get onComplete => _controller.onComplete;
-
-  @override
-  Future<void> run() => _controller._run();
-
-  @override
-  Future<void> close() => _controller._close();
-
-  _LiveTest(this._controller);
-}
-
-/// A controller that drives a [LiveTest].
-///
-/// This is a utility class to make it easier for implementors of [Test] to
-/// create the [LiveTest] returned by [Test.load]. The [LiveTest] is accessible
-/// through [LiveTestController.liveTest].
+/// A concrete [LiveTest] that enforces some lifecycle guarantees.
 ///
 /// This automatically handles some of [LiveTest]'s guarantees, but for the most
 /// part it's the caller's responsibility to make sure everything gets
 /// dispatched in the correct order.
-class LiveTestController {
-  /// The [LiveTest] controlled by [this].
-  LiveTest get liveTest => _liveTest;
-  LiveTest _liveTest;
+class LiveTestController extends LiveTest {
+  @Deprecated('Use this instance instead')
+  LiveTest get liveTest => this;
 
-  /// The test suite that's running [this].
-  final Suite _suite;
+  @override
+  final Suite suite;
 
-  /// The groups containing [this].
-  final List<Group> _groups;
+  @override
+  final List<Group> groups;
 
-  /// The test that's being run.
-  final Test _test;
+  @override
+  final Test test;
 
   /// The function that will actually start the test running.
-  final Function _onRun;
+  final void Function() _onRun;
 
   /// A function to run when the test is closed.
   ///
   /// This may be `null`.
-  final Function _onClose;
+  final void Function() _onClose;
 
   /// The list of errors caught by the test.
   final _errors = <AsyncError>[];
 
+  @override
+  List<AsyncError> get errors => UnmodifiableListView(_errors);
+
   /// The current state of the test.
-  var _state = const State(Status.pending, Result.success);
+  @override
+  var state = const State(Status.pending, Result.success);
 
-  /// The controller for [LiveTest.onStateChange].
+  /// The controller for [onStateChange].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onStateChangeController =
-      StreamController<State>.broadcast(sync: true);
+  final _onStateChange = StreamController<State>.broadcast(sync: true);
+  @override
+  Stream<State> get onStateChange => _onStateChange.stream;
 
-  /// The controller for [LiveTest.onError].
+  /// The controller for [onError].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onErrorController = StreamController<AsyncError>.broadcast(sync: true);
+  final _onError = StreamController<AsyncError>.broadcast(sync: true);
+  @override
+  Stream<AsyncError> get onError => _onError.stream;
 
-  /// The controller for [LiveTest.onMessage].
+  /// The controller for [onMessage].
   ///
   /// This is synchronous to ensure that events are well-ordered across multiple
   /// streams.
-  final _onMessageController = StreamController<Message>.broadcast(sync: true);
+  final _onMessage = StreamController<Message>.broadcast(sync: true);
+  @override
+  Stream<Message> get onMessage => _onMessage.stream;
 
-  /// The completer for [LiveTest.onComplete];
   final completer = Completer<void>();
 
   /// Whether [run] has been called.
   var _runCalled = false;
 
   /// Whether [close] has been called.
-  bool get _isClosed => _onErrorController.isClosed;
+  bool get _isClosed => _onError.isClosed;
 
   /// Creates a new controller for a [LiveTest].
   ///
@@ -136,15 +98,9 @@ class LiveTestController {
   ///
   /// If [groups] is passed, it's used to populate the list of groups that
   /// contain this test. Otherwise, `suite.group` is used.
-  LiveTestController(
-      Suite suite, this._test, void Function() onRun, void Function() onClose,
+  LiveTestController(this.suite, this.test, this._onRun, this._onClose,
       {Iterable<Group> groups})
-      : _suite = suite,
-        _onRun = onRun,
-        _onClose = onClose,
-        _groups = groups == null ? [suite.group] : List.unmodifiable(groups) {
-    _liveTest = _LiveTest(this);
-  }
+      : groups = groups == null ? [suite.group] : List.unmodifiable(groups);
 
   /// Adds an error to the [LiveTest].
   ///
@@ -156,7 +112,7 @@ class LiveTestController {
 
     var asyncError = AsyncError(error, Chain.forTrace(stackTrace));
     _errors.add(asyncError);
-    _onErrorController.add(asyncError);
+    _onError.add(asyncError);
   }
 
   /// Sets the current state of the [LiveTest] to [newState].
@@ -166,16 +122,16 @@ class LiveTestController {
   /// it's not different, this does nothing.
   void setState(State newState) {
     if (_isClosed) return;
-    if (_state == newState) return;
+    if (state == newState) return;
 
-    _state = newState;
-    _onStateChangeController.add(newState);
+    state = newState;
+    _onStateChange.add(newState);
   }
 
   /// Emits message over [LiveTest.onMessage].
   void message(Message message) {
-    if (_onMessageController.hasListener) {
-      _onMessageController.add(message);
+    if (_onMessage.hasListener) {
+      _onMessage.add(message);
     } else {
       // Make sure all messages get surfaced one way or another to aid in
       // debugging.
@@ -183,9 +139,8 @@ class LiveTestController {
     }
   }
 
-  /// A wrapper for [_onRun] that ensures that it follows the guarantees for
-  /// [LiveTest.run].
-  Future<void> _run() {
+  @override
+  Future<void> run() {
     if (_runCalled) {
       throw StateError('LiveTest.run() may not be called more than once.');
     } else if (_isClosed) {
@@ -195,20 +150,21 @@ class LiveTestController {
     _runCalled = true;
 
     _onRun();
-    return liveTest.onComplete;
+    return onComplete;
   }
 
   /// Returns a future that completes when the test is complete.
   ///
   /// We also wait for the state to transition to Status.complete.
+  @override
   Future<void> get onComplete => completer.future;
 
-  /// A wrapper for [_onClose] that ensures that all controllers are closed.
-  Future<void> _close() {
+  @override
+  Future<void> close() {
     if (_isClosed) return onComplete;
 
-    _onStateChangeController.close();
-    _onErrorController.close();
+    _onStateChange.close();
+    _onError.close();
 
     if (_runCalled) {
       _onClose();
