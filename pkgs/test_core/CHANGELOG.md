@@ -1,5 +1,7 @@
 ## 0.3.5-dev
 
+* Printing to stdout when using Runner is configurable
+
 ## 0.3.4
 
 * Fix error messages for incorrect string literals in test annotations.
