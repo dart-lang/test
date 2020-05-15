@@ -72,6 +72,10 @@ dependency_overrides:
     git:
       url: git://github.com/dart-lang/stack_trace.git
       ref: null_safety
+  stream_channel:
+    git:
+      url: git://github.com/dart-lang/stream_channel.git
+      ref: null_safety
   string_scanner:
     git:
       url: git://github.com/dart-lang/string_scanner.git
