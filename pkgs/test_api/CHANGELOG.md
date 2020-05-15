@@ -6,6 +6,7 @@
   * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
     group now has the empty string as its name.
   
+## 0.2.16-dev
 
 ## 0.2.15
 

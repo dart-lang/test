@@ -11,31 +11,29 @@ import 'async_matcher.dart';
 import 'expect.dart';
 import 'utils.dart';
 
-/// Matches a [Future] that completes successfully with a value.
+/// Matches a [Future] that completes successfully with any value.
 ///
-/// Note that this creates an asynchronous expectation. The call to `expect()`
-/// that includes this will return immediately and execution will continue.
-/// Later, when the future completes, the actual expectation will run.
+/// This creates an asynchronous expectation. The call to [expect] will return
+/// immediately and execution will continue. Later, when the future completes,
+/// the expectation against [matcher] will run. To wait for the future to
+/// complete and the expectation to run use [expectLater] and wait on the
+/// returned future.
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
-///
-/// This returns an [AsyncMatcher], so [expect] won't complete until the matched
-/// future does.
 final Matcher completes = const _Completes(null);
 
 /// Matches a [Future] that completes succesfully with a value that matches
 /// [matcher].
 ///
-/// Note that this creates an asynchronous expectation. The call to
-/// `expect()` that includes this will return immediately and execution will
-/// continue. Later, when the future completes, the actual expectation will run.
+/// This creates an asynchronous expectation. The call to [expect] will return
+/// immediately and execution will continue. Later, when the future completes,
+/// the expectation against [matcher] will run. To wait for the future to
+/// complete and the expectation to run use [expectLater] and wait on the
+/// returned future.
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
-///
-/// This returns an [AsyncMatcher], so [expect] won't complete until the matched
-/// future does.
 Matcher completion(matcher, [@deprecated String? description]) =>
     _Completes(wrapMatcher(matcher));
 
