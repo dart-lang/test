@@ -30,10 +30,13 @@ import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementat
 ///
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
-StreamChannel serializeSuite(Function Function() getMain,
+StreamChannel<Object> serializeSuite(Function Function() getMain,
         {bool hidePrints = true, Future Function()? beforeLoad}) =>
-    RemoteListener.start(getMain,
-        hidePrints: hidePrints, beforeLoad: beforeLoad);
+    RemoteListener.start(
+      getMain,
+      hidePrints: hidePrints,
+      beforeLoad: beforeLoad,
+    );
 
 /// Returns a channel that communicates with a plugin in the test runner.
 ///

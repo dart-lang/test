@@ -137,7 +137,7 @@ Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
 
     void main(_, SendPort message) {
       var channel = serializeSuite(() => test.main);
-      IsolateChannel.connectSend(message).pipe(channel);
+      IsolateChannel<Object>.connectSend(message).pipe(channel);
     }
   ''', message);
 }
