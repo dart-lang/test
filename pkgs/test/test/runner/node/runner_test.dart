@@ -197,10 +197,9 @@ void main() {
     await d.file('test.dart', _failure).create();
 
     var test = await runTest(['-p', 'node', '--verbose-trace', 'test.dart']);
-    expect(
-        test.stdout,
-        containsInOrder(
-            [' main.<fn>', 'package:test', 'dart:async/zone.dart']));
+    expect(test.stdout,
+        containsInOrder([' main.<fn>', 'package:test', 'dart:async/zone.dart']),
+        skip: 'https://github.com/dart-lang/sdk/issues/41949');
     await test.shouldExit(1);
   });
 
