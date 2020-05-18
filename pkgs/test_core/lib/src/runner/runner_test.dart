@@ -97,7 +97,7 @@ class RunnerTest extends Test {
         await testChannel.sink.close();
       }());
     }, groups: groups);
-    return controller.liveTest;
+    return controller;
   }
 
   @override
