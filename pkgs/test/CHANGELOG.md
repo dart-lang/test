@@ -1,3 +1,7 @@
+## 1.14.4
+
+* Use non-headless Chrome when provided the flag `--pause-after-load`.
+
 ## 1.14.3
 
 * Fix an issue where coverage tests could not run in Chrome headless. 

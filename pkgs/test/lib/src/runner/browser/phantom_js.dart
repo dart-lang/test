@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/exit_codes.dart' // ignore: implementation_imports
     as exit_codes;
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -46,7 +47,8 @@ class PhantomJS extends Browser {
   @override
   final Future<Uri> remoteDebuggerUrl;
 
-  factory PhantomJS(url, {ExecutableSettings settings, bool debug = false}) {
+  factory PhantomJS(url, Configuration configuration,
+      {ExecutableSettings settings}) {
     settings ??= defaultSettings[Runtime.phantomJS];
     var remoteDebuggerCompleter = Completer<Uri>.sync();
     return PhantomJS._(() async {
@@ -54,10 +56,10 @@ class PhantomJS extends Browser {
       var script = p.join(dir, 'script.js');
       File(script).writeAsStringSync(_script);
 
-      var port = debug ? await getUnsafeUnusedPort() : null;
+      var port = configuration.debug ? await getUnsafeUnusedPort() : null;
 
       var args = settings.arguments.toList();
-      if (debug) {
+      if (configuration.debug) {
         args.addAll(
             ['--remote-debugger-port=$port', '--remote-debugger-autorun=yes']);
       }
