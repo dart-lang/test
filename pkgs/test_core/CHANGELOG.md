@@ -1,5 +1,10 @@
 ## 0.3.5-dev
 
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
+
 ## 0.3.4
 
 * Fix error messages for incorrect string literals in test annotations.

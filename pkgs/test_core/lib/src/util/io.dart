@@ -7,8 +7,10 @@ import 'dart:core' as core;
 import 'dart:core';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:async/async.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
@@ -34,6 +36,12 @@ final int lineLength = () {
   } on StdoutException {
     return _defaultLineLength;
   }
+}();
+
+final Future<String> rootPackageLanguageVersionComment = () async {
+  var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
+  var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
+  return '// @dart=${rootPackage.languageVersion}';
 }();
 
 /// The root directory of the Dart SDK.

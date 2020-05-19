@@ -168,23 +168,6 @@ class BrowserPlatform extends PlatformPlugin
   shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(request.url);
 
-    if (path.endsWith('.browser_test.dart')) {
-      var testPath = p.basename(p.withoutExtension(p.withoutExtension(path)));
-      return shelf.Response.ok('''
-        import "package:stream_channel/stream_channel.dart";
-
-        import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
-        import "package:test/src/runner/browser/post_message_channel.dart";
-
-        import "$testPath" as test;
-
-        void main() {
-          var channel = serializeSuite(() => test.main, hidePrints: false);
-          postMessageChannel().pipe(channel);
-        }
-      ''', headers: {'Content-Type': 'application/dart'});
-    }
-
     if (path.endsWith('.html')) {
       var test = p.withoutExtension(path) + '.dart';
       var scriptBase = htmlEscape.convert(p.basename(test));
@@ -383,8 +366,8 @@ class BrowserPlatform extends PlatformPlugin
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + '.browser_test.dart.js');
-
-      await _compilers.compile('''
+      var bootstrapContent = '''
+        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/browser.dart";
 
         import "${p.toUri(p.absolute(dartPath))}" as test;
@@ -392,8 +375,17 @@ class BrowserPlatform extends PlatformPlugin
         void main() {
           internalBootstrapBrowserTest(() => test.main);
         }
-      ''', jsPath, suiteConfig);
+      ''';
+
+      await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
       if (_closed) return;
+
+      var bootstrapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+          '.browser_test.dart';
+      _jsHandler.add(bootstrapUrl, (request) {
+        return shelf.Response.ok(bootstrapContent,
+            headers: {'Content-Type': 'application/dart'});
+      });
 
       var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
           '.browser_test.dart.js';

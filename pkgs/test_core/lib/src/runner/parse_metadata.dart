@@ -4,6 +4,7 @@
 
 // ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
@@ -44,10 +45,16 @@ class _Parser {
   /// The actual contents of the file.
   final String _contents;
 
+  /// The language version override comment if one was present
+  late final String? _languageVersionComment;
+
   _Parser(this._path, this._contents, this._platformVariables) {
-    // ignore: deprecated_member_use
-    var directives = parseDirectives(_contents, name: _path).directives;
+    var result = parseString(content: _contents, path: _path);
+    var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
+    _languageVersionComment = result.unit.languageVersionToken?.value();
+
+    // var comments = result.unit./
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
@@ -105,7 +112,8 @@ class _Parser {
         skipReason: skip is String ? skip : null,
         onPlatform: onPlatform,
         tags: tags,
-        retry: retry);
+        retry: retry,
+        languageVersionComment: _languageVersionComment);
   }
 
   /// Parses a `@TestOn` annotation.

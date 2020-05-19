@@ -5,8 +5,8 @@
     behavior of the code regarding to handling of nulls.
   * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
     group now has the empty string as its name.
-  
-## 0.2.16-dev
+* Add `languageVersionComment` on the `MetaData` class. This should only be
+  presen for test suites.
 
 ## 0.2.15
 
