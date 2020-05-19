@@ -54,8 +54,6 @@ class _Parser {
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
 
-    // var comments = result.unit./
-
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
     _prefixes = directives
