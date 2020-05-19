@@ -102,7 +102,7 @@ Usage: pub run test [files or directories...]
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
-          [json]                      A machine-readable format (see https://goo.gl/gBsV1a).
+          [json]                      A machine-readable format (see https://bit.ly/2Z7J0OH).
 
     --file-reporter                   The reporter used to write test results to a file.
                                       Should be in the form <reporter>:<filepath>, e.g. "json:reports/tests.json"
