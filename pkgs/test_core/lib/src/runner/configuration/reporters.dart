@@ -39,7 +39,7 @@ final _allReporters = <String, ReporterDetails>{
   'compact': ReporterDetails('A single line, updated continuously.',
       (_, engine, sink) => CompactReporter.watch(engine, sink)),
   'json': ReporterDetails(
-      'A machine-readable format (see https://goo.gl/gBsV1a).',
+      'A machine-readable format (see https://bit.ly/2Z7J0OH).',
       (_, engine, sink) => JsonReporter.watch(engine, sink)),
 };
 

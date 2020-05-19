@@ -5,8 +5,9 @@
     behavior of the code regarding to handling of nulls.
   * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
     group now has the empty string as its name.
-  
-## 0.2.16-dev
+* Deprecate `LiveTestController.liveTest`, the `LiveTestController` instance now
+  implements `LiveTest` and can be used directly.
+
 
 ## 0.2.15
 

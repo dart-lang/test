@@ -30,7 +30,7 @@ dependencies:
   stream_channel: '>=1.7.0 <3.0.0'
   typed_data: ^1.0.0
   web_socket_channel: ^1.0.0
-  webkit_inspection_protocol: ^0.5.0
+  webkit_inspection_protocol: ">=0.5.0 <0.8.0"
   yaml: ^2.0.0
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.2.15
