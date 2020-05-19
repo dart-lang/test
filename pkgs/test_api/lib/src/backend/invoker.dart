@@ -78,7 +78,7 @@ class Invoker {
   /// The live test being driven by the invoker.
   ///
   /// This provides a view into the state of the test being executed.
-  LiveTest get liveTest => _controller.liveTest;
+  LiveTest get liveTest => _controller;
   late final LiveTestController _controller;
 
   /// Whether to run this test in its own error zone.

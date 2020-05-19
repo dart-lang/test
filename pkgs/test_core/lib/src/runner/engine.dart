@@ -414,7 +414,7 @@ class Engine {
       controller.completer.complete();
     }, () {}, groups: parents);
 
-    return await _runLiveTest(suiteController, controller.liveTest);
+    return await _runLiveTest(suiteController, controller);
   }
 
   /// Closes [liveTest] and tells the engine to re-run it once it's done
