@@ -1,3 +1,8 @@
+## 0.2.17
+
+* Add `languageVersionComment` on the `MetaData` class. This should only be
+  presen for test suites.
+
 ## 0.2.16
 
 * Deprecate `LiveTestController.liveTest`, the `LiveTestController` instance now
