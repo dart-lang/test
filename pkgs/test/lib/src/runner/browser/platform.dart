@@ -26,6 +26,7 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports

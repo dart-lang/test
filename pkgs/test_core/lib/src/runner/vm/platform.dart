@@ -25,7 +25,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/dart.dart' as dart;
-import '../../util/io.dart';
+import '../package_version.dart';
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
