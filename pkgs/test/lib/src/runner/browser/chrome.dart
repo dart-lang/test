@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
@@ -39,7 +40,8 @@ class Chrome extends Browser {
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
-  factory Chrome(Uri url, {ExecutableSettings settings, bool debug = false}) {
+  factory Chrome(Uri url, Configuration configuration,
+      {ExecutableSettings settings}) {
     settings ??= defaultSettings[Runtime.chrome];
     var remoteDebuggerCompleter = Completer<Uri>.sync();
     var connectionCompleter = Completer<WipConnection>();
@@ -58,11 +60,11 @@ class Chrome extends Browser {
           '--disable-default-apps',
           '--disable-translate',
           '--disable-dev-shm-usage',
-          if (settings.headless) ...[
+          if (settings.headless && !configuration.pauseAfterLoad) ...[
             '--headless',
             '--disable-gpu',
           ],
-          if (!debug)
+          if (!configuration.debug)
             // We don't actually connect to the remote debugger, but Chrome will
             // close as soon as the page is loaded if we don't turn it on.
             '--remote-debugging-port=0',
@@ -93,7 +95,7 @@ class Chrome extends Browser {
         return process;
       };
 
-      if (!debug) return tryPort();
+      if (!configuration.debug) return tryPort();
       return getUnusedPort<Process>(tryPort);
     }, remoteDebuggerCompleter.future, connectionCompleter.future, idToUrl);
   }

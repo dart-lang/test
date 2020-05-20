@@ -13,6 +13,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
@@ -99,10 +100,13 @@ class BrowserManager {
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
-  static Future<BrowserManager> start(Runtime runtime, Uri url,
-      Future<WebSocketChannel> future, ExecutableSettings settings,
-      {bool debug = false}) {
-    var browser = _newBrowser(url, runtime, settings, debug: debug);
+  static Future<BrowserManager> start(
+      Runtime runtime,
+      Uri url,
+      Future<WebSocketChannel> future,
+      ExecutableSettings settings,
+      Configuration configuration) {
+    var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
 
@@ -134,14 +138,13 @@ class BrowserManager {
   /// Starts the browser identified by [browser] using [settings] and has it load [url].
   ///
   /// If [debug] is true, starts the browser in debug mode.
-  static Browser _newBrowser(
-      Uri url, Runtime browser, ExecutableSettings settings,
-      {bool debug = false}) {
+  static Browser _newBrowser(Uri url, Runtime browser,
+      ExecutableSettings settings, Configuration configuration) {
     switch (browser.root) {
       case Runtime.chrome:
-        return Chrome(url, settings: settings, debug: debug);
+        return Chrome(url, configuration, settings: settings);
       case Runtime.phantomJS:
-        return PhantomJS(url, settings: settings, debug: debug);
+        return PhantomJS(url, configuration, settings: settings);
       case Runtime.firefox:
         return Firefox(url, settings: settings);
       case Runtime.safari:

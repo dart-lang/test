@@ -11,6 +11,9 @@
   implements `LiveTest` and can be used directly.
 
 
+* Deprecate `LiveTestController.liveTest`, the `LiveTestController` instance now
+  implements `LiveTest` and can be used directly.
+
 ## 0.2.15
 
 * Cancel any StreamQueue that is created as a part of a stream matcher once it

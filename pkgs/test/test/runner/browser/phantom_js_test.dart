@@ -7,11 +7,11 @@
 @TestOn('vm')
 @Tags(['phantomjs'])
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/src/runner/browser/phantom_js.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 import '../../utils.dart';
@@ -29,7 +29,7 @@ webSocket.addEventListener("open", function() {
 ''');
     var webSocket = server.handleWebSocket();
 
-    var phantomJS = PhantomJS(server.url);
+    var phantomJS = PhantomJS(server.url, Configuration());
     addTearDown(() => phantomJS.close());
 
     expect(await (await webSocket).stream.first, equals('loaded!'));
@@ -38,12 +38,12 @@ webSocket.addEventListener("open", function() {
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
 
-    var phantomJS = PhantomJS(server.url);
+    var phantomJS = PhantomJS(server.url, Configuration());
     await phantomJS.close();
   });
 
   test('reports an error in onExit', () {
-    var phantomJS = PhantomJS('http://dart-lang.org',
+    var phantomJS = PhantomJS('http://dart-lang.org', Configuration(),
         settings: ExecutableSettings(
             linuxExecutable: '_does_not_exist',
             macOSExecutable: '_does_not_exist',

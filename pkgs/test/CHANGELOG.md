@@ -1,7 +1,11 @@
-## 1.14.4-dev
+## 1.14.5-dev
 
 * Update browser/node bootstrapping logic to ensure the bootstrap library has
   the same language version as the test.
+
+## 1.14.4
+
+* Use non-headless Chrome when provided the flag `--pause-after-load`.
 
 ## 1.14.3
 
