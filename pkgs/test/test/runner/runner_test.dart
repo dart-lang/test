@@ -707,7 +707,7 @@ void main(List<String> args) async {
   group('nnbd', () {
     final _testContents = '''
 import 'package:test/test.dart';
-import 'weak.dart';
+import 'opted_out.dart';
 
 void main() {
   test("success", () {
@@ -716,12 +716,13 @@ void main() {
 }''';
 
     setUp(() async {
-      await d.file('weak.dart', '''
+      await d.file('opted_out.dart', '''
 // @dart=2.8
 final foo = true;''').create();
     });
 
-    test('strong mode is used if the entrypoint opts in explicitly', () async {
+    test('sound null safety is enabled if the entrypoint opts in explicitly',
+        () async {
       await d.file('test.dart', '''
 // @dart=2.9
 $_testContents
@@ -732,12 +733,14 @@ $_testContents
           test.stdout,
           containsInOrder([
             'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
+            'Error: A library can\'t opt out of non-nullable by default, when '
+                'in nnbd-strong mode.'
           ]));
       await test.shouldExit(1);
     });
 
-    test('weak mode is used if the entrypoint opts out explicitly', () async {
+    test('sound null safety is disabled if the entrypoint opts out explicitly',
+        () async {
       await d.file('test.dart', '''
 // @dart=2.8
 $_testContents''').create();
@@ -759,7 +762,7 @@ $_testContents''').create();
         await d.file('test.dart', _testContents).create();
       });
 
-      test('to strong if the package is opted in', () async {
+      test('sound null safety is enabled if the package is opted in', () async {
         var newPackageConfig = PackageConfig([
           ...currentPackageConfig.packages,
           Package('example', Uri.file('${d.sandbox}/'),
@@ -785,7 +788,8 @@ $_testContents''').create();
         await test.shouldExit(1);
       });
 
-      test('to weak if the package is opted out', () async {
+      test('sound null safety is disabled if the package is opted out',
+          () async {
         var newPackageConfig = PackageConfig([
           ...currentPackageConfig.packages,
           Package('example', Uri.file('${d.sandbox}/'),
