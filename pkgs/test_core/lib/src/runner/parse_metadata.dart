@@ -49,7 +49,8 @@ class _Parser {
   late final String? _languageVersionComment;
 
   _Parser(this._path, this._contents, this._platformVariables) {
-    var result = parseString(content: _contents, path: _path);
+    var result =
+        parseString(content: _contents, path: _path, throwIfDiagnostics: false);
     var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
