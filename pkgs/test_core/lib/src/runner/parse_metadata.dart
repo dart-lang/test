@@ -370,7 +370,7 @@ class _Parser {
 
   String? _findConstructorNameFromMethod(
       MethodInvocation constructor, String className) {
-    var target = constructor.target;
+    Expression? target = constructor.target;
     if (target != null) {
       // target could be an import prefix or a different class. Assume that
       // named constructor on a different class won't match the class name we
@@ -413,7 +413,7 @@ class _Parser {
     var methodName = constructor.methodName.name;
     // Examples: `Timeout()`, `test.Timeout()`
     if (candidates.contains(methodName)) return methodName;
-    var target = constructor.target;
+    Expression? target = constructor.target;
     // Example: `SomeOtherClass()`
     if (target == null) return null;
     if (target is SimpleIdentifier) {

@@ -14,7 +14,8 @@ import 'package:path/path.dart' as p;
 /// defaulting to the current sdk version.
 final Future<String> rootPackageLanguageVersionComment = () async {
   var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
-  var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
+  Package? rootPackage =
+      packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
   if (rootPackage == null) return '';
   return '// @dart=${rootPackage.languageVersion}';
 }();
