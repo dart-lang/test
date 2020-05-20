@@ -152,7 +152,7 @@ final List<String> _enabledExperiments = () {
     if (arg == '--enable-experiment') {
       if (!itr.moveNext()) break;
       experiments.add(itr.current);
-    } else if (arg.startsWith('--enable-experiment')) {
+    } else if (arg.startsWith('--enable-experiment=')) {
       var parts = arg.split('=');
       if (parts.length == 2) {
         experiments.addAll(parts[1].split(','));
