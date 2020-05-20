@@ -65,6 +65,14 @@ dependency_overrides:
     git:
       url: git://github.com/dart-lang/path.git
       ref: null_safety
+  pedantic:
+    git:
+      url: git://github.com/dart-lang/pedantic.git
+      ref: null_safety
+  pool:
+    git:
+      url: git://github.com/dart-lang/pool.git
+      ref: null_safety
   source_span:
     git:
       url: git://github.com/dart-lang/source_span.git
