@@ -11,6 +11,7 @@ import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:vm_service/vm_service.dart' hide Isolate;
@@ -24,6 +25,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/dart.dart' as dart;
+import '../../util/io.dart';
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -45,7 +47,8 @@ class VMPlatform extends PlatformPlugin {
     var receivePort = ReceivePort();
     Isolate isolate;
     try {
-      isolate = await _spawnIsolate(path, receivePort.sendPort);
+      isolate =
+          await _spawnIsolate(path, receivePort.sendPort, suiteConfig.metadata);
     } catch (error) {
       receivePort.close();
       rethrow;
@@ -113,20 +116,23 @@ class VMPlatform extends PlatformPlugin {
   ///
   /// This isolate connects an [IsolateChannel] to [message] and sends the
   /// serialized tests over that channel.
-  Future<Isolate> _spawnIsolate(String path, SendPort message) async {
+  Future<Isolate> _spawnIsolate(
+      String path, SendPort message, Metadata suiteMetadata) async {
     var precompiledPath = _config.suiteDefaults.precompiledPath;
     if (precompiledPath != null) {
       return _spawnPrecompiledIsolate(path, message, precompiledPath);
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
     } else {
-      return _spawnDataIsolate(path, message);
+      return _spawnDataIsolate(path, message, suiteMetadata);
     }
   }
 }
 
-Future<Isolate> _spawnDataIsolate(String path, SendPort message) async {
+Future<Isolate> _spawnDataIsolate(
+    String path, SendPort message, Metadata suiteMetadata) async {
   return await dart.runInIsolate('''
+    ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
 
     import "package:stream_channel/isolate_channel.dart";
