@@ -1,6 +1,8 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.8
 
 import 'dart:isolate';
 
@@ -14,8 +16,7 @@ import 'package:path/path.dart' as p;
 /// defaulting to the current sdk version.
 final Future<String> rootPackageLanguageVersionComment = () async {
   var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
-  Package? rootPackage =
-      packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
+  var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
   if (rootPackage == null) return '';
   return '// @dart=${rootPackage.languageVersion}';
 }();

@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.8
 
 // ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart';
@@ -37,16 +39,16 @@ class _Parser {
   final Set<String> _platformVariables;
 
   /// All annotations at the top of the file.
-  late final List<Annotation> _annotations;
+  List<Annotation> _annotations;
 
   /// All prefixes defined by imports in this file.
-  late final Set<String> _prefixes;
+  Set<String> _prefixes;
 
   /// The actual contents of the file.
   final String _contents;
 
-  /// The language version override comment if one was present
-  late final String? _languageVersionComment;
+  /// The language version override comment if one was present, otherwise null.
+  String _languageVersionComment;
 
   _Parser(this._path, this._contents, this._platformVariables) {
     var result =
@@ -71,12 +73,12 @@ class _Parser {
 
   /// Parses the metadata.
   Metadata parse() {
-    Timeout? timeout;
-    PlatformSelector? testOn;
+    Timeout timeout;
+    PlatformSelector testOn;
     dynamic /*String|bool*/ skip;
-    Map<PlatformSelector, Metadata>? onPlatform;
-    Set<String>? tags;
-    int? retry;
+    Map<PlatformSelector, Metadata> onPlatform;
+    Set<String> tags;
+    int retry;
 
     for (var annotation in _annotations) {
       var pair =
@@ -141,7 +143,7 @@ class _Parser {
   ///
   /// [annotation] is the annotation. [constructorName] is the name of the named
   /// constructor for the annotation, if any.
-  Timeout _parseTimeout(Annotation annotation, String? constructorName) {
+  Timeout _parseTimeout(Annotation annotation, String constructorName) {
     if (constructorName == 'none') {
       return Timeout.none;
     }
@@ -214,8 +216,8 @@ class _Parser {
             'Expected a Timeout, Skip, or List of those.', _spanFor(value));
       }
 
-      Timeout? timeout;
-      dynamic? skip;
+      Timeout timeout;
+      dynamic skip;
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
           var className = _resolveConstructor(
@@ -292,7 +294,7 @@ class _Parser {
   ///
   /// [name] is the name of the annotation and [node] is its location, used for
   /// error reporting.
-  void _assertSingle(Object? existing, String name, AstNode node) {
+  void _assertSingle(Object existing, String name, AstNode node) {
     if (existing == null) return;
     throw SourceSpanFormatException(
         'Only a single $name may be used.', _spanFor(node));
@@ -314,15 +316,15 @@ class _Parser {
   ///
   /// Since the parsed file isn't fully resolved, this is necessary to
   /// disambiguate between prefixed names and named constructors.
-  Pair<String, String?> _resolveConstructor(
-      Identifier identifier, SimpleIdentifier? constructorName) {
+  Pair<String, String> _resolveConstructor(
+      Identifier identifier, SimpleIdentifier constructorName) {
     // The syntax is ambiguous between named constructors and prefixed
     // annotations, so we need to resolve that ambiguity using the known
     // prefixes. The analyzer parses "new x.y()" as prefix "x", annotation "y",
     // and named constructor null. It parses "new x.y.z()" as prefix "x",
     // annotation "y", and named constructor "z".
     String className;
-    String? namedConstructor;
+    String namedConstructor;
     if (identifier is PrefixedIdentifier &&
         !_prefixes.contains(identifier.prefix.name) &&
         constructorName == null) {
@@ -342,7 +344,7 @@ class _Parser {
   /// Returns the name of the named constructor used, or null if the default
   /// constructor is used.
   /// If [expression] is not an instantiation of a [className] throws.
-  String? _findConstructorName(Expression expression, String className) {
+  String _findConstructorName(Expression expression, String className) {
     if (expression is InstanceCreationExpression) {
       return _findConstructornameFromInstantiation(expression, className);
     }
@@ -353,7 +355,7 @@ class _Parser {
         'Expected a $className.', _spanFor(expression));
   }
 
-  String? _findConstructornameFromInstantiation(
+  String _findConstructornameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
     var pair = _resolveConstructor(constructor.constructorName.type.name,
         constructor.constructorName.name);
@@ -368,9 +370,9 @@ class _Parser {
     return constructorName;
   }
 
-  String? _findConstructorNameFromMethod(
+  String _findConstructorNameFromMethod(
       MethodInvocation constructor, String className) {
-    Expression? target = constructor.target;
+    var target = constructor.target;
     if (target != null) {
       // target could be an import prefix or a different class. Assume that
       // named constructor on a different class won't match the class name we
@@ -379,7 +381,7 @@ class _Parser {
       if (constructor.methodName.name == className) return null;
       // target is an optionally prefixed class, method is named constructor
       // Examples: `Timeout.factor(2)`, `test.Timeout.factor(2)`
-      String? parsedName;
+      String parsedName;
       if (target is SimpleIdentifier) parsedName = target.name;
       if (target is PrefixedIdentifier) parsedName = target.identifier.name;
       if (parsedName != className) {
@@ -408,12 +410,12 @@ class _Parser {
   /// Similarly `Baz.another` may look like the named constructor invocation of
   /// a `Baz`even though it is a prefixed instantiation of an `another`, or a
   /// method invocation on a variable `Baz`, or ...
-  String? _typeNameFromMethodInvocation(
+  String _typeNameFromMethodInvocation(
       MethodInvocation constructor, List<String> candidates) {
     var methodName = constructor.methodName.name;
     // Examples: `Timeout()`, `test.Timeout()`
     if (candidates.contains(methodName)) return methodName;
-    Expression? target = constructor.target;
+    var target = constructor.target;
     // Example: `SomeOtherClass()`
     if (target == null) return null;
     if (target is SimpleIdentifier) {
@@ -436,7 +438,7 @@ class _Parser {
   /// By default, returns [Expression] keys and values. These can be overridden
   /// with the [key] and [value] parameters.
   Map<K, V> _parseMap<K, V>(Expression expression,
-      {K Function(Expression)? key, V Function(Expression)? value}) {
+      {K Function(Expression) key, V Function(Expression) value}) {
     key ??= (expression) => expression as K;
     value ??= (expression) => expression as V;
 
@@ -445,7 +447,7 @@ class _Parser {
     }
 
     var map = <K, V>{};
-    for (var element in expression.elements) {
+    for (var element in (expression as SetOrMapLiteral).elements) {
       if (element is MapLiteralEntry) {
         map[key(element.key)] = value(element.value);
       } else {
@@ -462,14 +464,14 @@ class _Parser {
       throw SourceSpanFormatException('Expected a List.', _spanFor(expression));
     }
 
-    var list = expression;
+    var list = expression as ListLiteral;
 
     return list.elements.map((e) {
       if (e is! Expression) {
         throw SourceSpanFormatException(
             'Expected only literal elements.', _spanFor(e));
       }
-      return e;
+      return e as Expression;
     }).toList();
   }
 
@@ -511,7 +513,7 @@ class _Parser {
       return fn();
     } on SourceSpanFormatException catch (error) {
       var file = SourceFile.fromString(_contents, url: p.toUri(_path));
-      var span = contextualizeSpan(error.span!, literal, file);
+      var span = contextualizeSpan(error.span, literal, file);
       if (span == null) rethrow;
       throw SourceSpanFormatException(error.message, span);
     }
