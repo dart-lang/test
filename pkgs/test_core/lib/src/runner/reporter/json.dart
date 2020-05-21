@@ -180,6 +180,12 @@ class JsonReporter implements Reporter {
         _suiteIDs[runnerSuite] = id;
         if (!_config.debug) return;
 
+        if (runnerSuite == null) {
+          throw StateError('Recieved a null runnerSuite from platform '
+              '${suite.platform.runtime.name}. Unable to debug.\n'
+              'Test glob: ${_config.filename}');
+        }
+
         // TODO(nweiz): test this when we have a library for communicating with
         // the Chrome remote debugger, or when we have VM debug support.
         _emit('debug', {

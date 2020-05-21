@@ -1,4 +1,4 @@
-## 0.2.16-dev
+## 0.2.16
 
 * Deprecate `LiveTestController.liveTest`, the `LiveTestController` instance now
   implements `LiveTest` and can be used directly.

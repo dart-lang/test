@@ -1,4 +1,7 @@
-## 0.3.5-dev
+## 0.3.5
+
+* Add additional information to an exception when we end up with a null
+  `RunnerSuite`.
 
 ## 0.3.4
 

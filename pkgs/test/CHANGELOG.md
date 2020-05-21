@@ -1,3 +1,8 @@
+## 1.14.5
+
+* Add additional information to an exception when we end up with a null
+  `RunnerSuite`.
+
 ## 1.14.4
 
 * Use non-headless Chrome when provided the flag `--pause-after-load`.
