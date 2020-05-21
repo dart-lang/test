@@ -1,5 +1,8 @@
 ## 0.3.5-dev
 
+* Add additional information to an exception when we end up with a null
+  `RunnerSuite`.
+
 ## 0.3.4
 
 * Fix error messages for incorrect string literals in test annotations.
