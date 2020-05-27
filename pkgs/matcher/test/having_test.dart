@@ -14,17 +14,17 @@ void main() {
 
   test('failure', () {
     shouldFail(
-        RangeError.range(-1, 1, 10),
-        _rangeMatcher,
-        "Expected: <Instance of 'RangeError'> with "
-        "`message`: contains 'details' and `start`: null and `end`: null "
-        'Actual: RangeError:<RangeError: '
-        'Invalid value: Not in range 1..10, inclusive: -1> '
-        "Which: has `message` with value 'Invalid value'");
+      CustomRangeError.range(-1, 1, 10),
+      _rangeMatcher,
+      "Expected: <Instance of 'RangeError'> with "
+      "`message`: contains 'details' and `start`: null and `end`: null "
+      'Actual: CustomRangeError:<RangeError: Invalid value: details> '
+      "Which: has `message` with value 'Invalid value'",
+    );
   });
 
   // This code is used in the [TypeMatcher] doc comments.
-  test('integaration and example', () {
+  test('integration and example', () {
     void shouldThrowRangeError(int value) {
       throw RangeError.range(value, 10, 20);
     }
@@ -42,7 +42,7 @@ void main() {
             .having((e) => e.end, 'end', lessThanOrEqualTo(20))));
   });
 
-  group('CustomMater copy', () {
+  group('CustomMatcher copy', () {
     test('Feature Matcher', () {
       var w = Widget();
       w.price = 10;
@@ -89,3 +89,11 @@ Matcher _hasPrice(matcher) =>
 
 Matcher _badCustomMatcher() => const TypeMatcher<Widget>()
     .having((e) => throw Exception('bang'), 'feature', {1: 'a'});
+
+class CustomRangeError extends RangeError {
+  CustomRangeError.range(num invalidValue, int minValue, int maxValue)
+      : super.range(invalidValue, minValue, maxValue);
+
+  @override
+  String toString() => 'RangeError: Invalid value: details';
+}
