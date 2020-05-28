@@ -53,8 +53,7 @@ Configuration load(String path, {bool global = false}) {
 /// If [sourceUrl] is provided then that will be set as the source url for
 /// the yaml document.
 ///
-/// Throws a [FormatException] if the configuration is invalid, and a
-/// [FileSystemException] if it can't be read.
+/// Throws a [FormatException] if the configuration is invalid.
 Configuration loadFromString(String source,
     {bool global = false, Uri sourceUrl}) {
   var document = loadYamlNode(source, sourceUrl: sourceUrl);

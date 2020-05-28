@@ -1,8 +1,6 @@
 ## 0.3.6
 
-* Expose the `Configuration` class and related classes.
-* Expose the `load` and `loadFromString` methods for loading a `Configuration`
-  from yaml.
+* Expose the `Configuration` class and related classes through `backend.dart`.
 
 ## 0.3.5
 
