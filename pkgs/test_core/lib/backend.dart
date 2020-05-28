@@ -11,3 +11,10 @@ export 'package:test_api/backend.dart'
     show Metadata, PlatformSelector, Runtime, SuitePlatform;
 
 export 'src/runner/parse_metadata.dart' show parseMetadata;
+
+export 'src/runner/configuration/load.dart' show load, loadFromString;
+export 'src/runner/suite.dart' show SuiteConfiguration;
+
+export 'src/runner/configuration.dart' show Configuration;
+export 'src/runner/configuration/custom_runtime.dart' show CustomRuntime;
+export 'src/runner/configuration/runtime_settings.dart' show RuntimeSettings;

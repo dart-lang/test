@@ -1,3 +1,9 @@
+## 0.3.6
+
+* Expose the `Configuration` class and related classes.
+* Expose the `load` and `loadFromString` methods for loading a `Configuration`
+  from yaml.
+
 ## 0.3.5
 
 * Add additional information to an exception when we end up with a null

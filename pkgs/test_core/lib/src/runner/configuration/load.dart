@@ -39,14 +39,25 @@ final _packageName =
 
 /// Loads configuration information from a YAML file at [path].
 ///
+/// See [loadFromString] for further documentation.
+Configuration load(String path, {bool global = false}) {
+  var source = File(path).readAsStringSync();
+  return loadFromString(source, global: global, sourceUrl: p.toUri(path));
+}
+
+/// Loads configuration information from YAML formatted [source].
+///
 /// If [global] is `true`, this restricts the configuration file to only rules
 /// that are supported globally.
 ///
+/// If [sourceUrl] is provided then that will be set as the source url for
+/// the yaml document.
+///
 /// Throws a [FormatException] if the configuration is invalid, and a
 /// [FileSystemException] if it can't be read.
-Configuration load(String path, {bool global = false}) {
-  var source = File(path).readAsStringSync();
-  var document = loadYamlNode(source, sourceUrl: p.toUri(path));
+Configuration loadFromString(String source,
+    {bool global = false, Uri sourceUrl}) {
+  var document = loadYamlNode(source, sourceUrl: sourceUrl);
 
   if (document.value == null) return Configuration.empty;
 
