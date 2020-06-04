@@ -1,3 +1,7 @@
+## 0.3.7
+
+* Support the latest `package:coverage`.
+
 ## 0.3.6
 
 * Expose the `Configuration` class and related classes through `backend.dart`.
