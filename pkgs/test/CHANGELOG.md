@@ -1,3 +1,8 @@
+## 1.14.7
+
+* Support the latest `package:coverage`.
+
+
 ## 1.14.6
 
 * Update `test_core` to `0.3.6`.
