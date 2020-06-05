@@ -34,8 +34,8 @@ class JSStackTraceMapper extends StackTraceMapper {
   /// Converts [trace] into a Dart stack trace.
   @override
   StackTrace mapStackTrace(StackTrace trace) {
-    _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);
-    return mapper.mapStackTrace(_mapping, trace,
+    var mapping = _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);
+    return mapper.mapStackTrace(mapping, trace,
         packageMap: _packageMap, sdkRoot: _sdkRoot);
   }
 
