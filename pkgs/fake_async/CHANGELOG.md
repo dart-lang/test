@@ -19,7 +19,7 @@ This release contains the `FakeAsync` class that was defined in [`quiver`][].
 It's backwards-compatible with both the `quiver` version *and* the old version
 of the `fake_async` package.
 
-[`quiver`]: https://pub.dartlang.org/packages/quiver
+[`quiver`]: https://pub.dev/packages/quiver
 
 ### New Features
 

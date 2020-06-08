@@ -35,14 +35,14 @@ void main() {
 
 ## Integration With `clock`
 
-`FakeAsync` can't control the time reported by [`new DateTime.now()`][] or by
+`FakeAsync` can't control the time reported by [`DateTime.now()`][] or by
 the [`Stopwatch`][] class, since they're not part of `dart:async`. However, if
 you create them using the [`clock`][] package's [`clock.now()`][] or
-[`clock.getStopwatch()`][] functions, `FakeAsync` will automatically override
+[`clock.stopwatch()`][] functions, `FakeAsync` will automatically override
 them to use the same notion of time as `dart:async` classes.
 
-[`new DateTime.now()`]: https://api.dartlang.org/stable/dart-core/DateTime/DateTime.now.html
-[`Stopwatch`]: https://api.dartlang.org/stable/dart-core/Stopwatch-class.html
-[`clock`]: https://pub.dartlang.org/packages/clock
-[`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
-[`clock.getStopwatch()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/getStopwatch.html
+[`DateTime.now()`]: https://api.dart.dev/stable/dart-core/DateTime/DateTime.now.html
+[`Stopwatch`]: https://api.dart.dev/stable/dart-core/Stopwatch-class.html
+[`clock`]: https://pub.dev/packages/clock
+[`clock.now()`]: https://pub.dev/documentation/clock/latest/clock/Clock/now.html
+[`clock.stopwatch()`]: https://pub.dev/documentation/clock/latest/clock/Clock/stopwatch.html
