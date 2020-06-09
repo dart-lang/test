@@ -96,7 +96,7 @@ Map groupJson(int id,
     'type': 'group',
     'group': {
       'id': id,
-      'name': name,
+      'name': name ?? '',
       'suiteID': suiteID ?? 0,
       'parentID': parentID,
       'metadata': metadataJson(skip: skip),
