@@ -134,7 +134,7 @@ class RemoteListener {
               // useful errors when calling `test()` and `group()` within a test,
               // and so they can add to the declarer's `tearDownAll()` list.
               zoneValues: {#test.declarer: declarer});
-        }, (Object error, StackTrace stackTrace) {
+        }, (error, stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
         }, zoneSpecification: spec);
       });
