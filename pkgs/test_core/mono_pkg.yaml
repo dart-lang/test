@@ -2,8 +2,5 @@ stages:
   - analyze_and_format:
     - group:
       - dartfmt: sdk
-      - dartanalyzer: --fatal-infos --fatal-warnings .
+      - dartanalyzer: --enable-experiment=non-nullable --fatal-infos --fatal-warnings .
       dart: dev
-    - group:
-      - dartanalyzer: --fatal-warnings .
-      dart: 2.7.0
