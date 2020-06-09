@@ -84,7 +84,8 @@ class RunnerSuite extends Suite {
   Future<Map<String, dynamic>> gatherCoverage() async {
     // TODO(https://github.com/dart-lang/sdk/issues/41108): Remove cast
     var coverage =
-        (await _controller._gatherCoverage?.call()) as Map<String, dynamic>?;
+        // ignore: unnecessary_cast
+        await _controller._gatherCoverage?.call() as Map<String, dynamic>?;
     return coverage ?? {};
   }
 }
