@@ -25,17 +25,11 @@ void main() {
   group('browser tests', () {
     setUp(() async {
       await d.file('to_precompile.dart', '''
-        import "package:stream_channel/stream_channel.dart";
-
-        import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
-        import "package:test/src/runner/browser/post_message_channel.dart";
+        import "package:test/bootstrap/browser.dart";
         import "package:test/test.dart";
 
-        main(_) async {
-          var channel = serializeSuite(() {
-            return () => test("success", () {});
-          }, hidePrints: false);
-          postMessageChannel().pipe(channel);
+        main(_) {
+          internalBootstrapBrowserTest(() => () => test("success", () {}));
         }
       ''').create();
 
@@ -54,6 +48,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
+            ...Platform.executableArguments,
             '--packages=${await Isolate.packageConfig}',
             'to_precompile.dart',
             '--out=precompiled/test.dart.browser_test.dart.js'
