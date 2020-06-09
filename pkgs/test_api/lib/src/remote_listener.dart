@@ -44,14 +44,14 @@ class RemoteListener {
   ///
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
-  static StreamChannel<Object> start(Function Function() getMain,
+  static StreamChannel<Object?> start(Function Function() getMain,
       {bool hidePrints = true, Future Function()? beforeLoad}) {
     // This has to be synchronous to work around sdk#25745. Otherwise, there'll
     // be an asynchronous pause before a syntax error notification is sent,
     // which will cause the send to fail entirely.
     var controller =
-        StreamChannelController<Object>(allowForeignErrors: false, sync: true);
-    var channel = MultiChannel(controller.local);
+        StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
+    var channel = MultiChannel<Object?>(controller.local);
 
     var verboseChain = true;
 
@@ -91,10 +91,10 @@ class RemoteListener {
           }
 
           var queue = StreamQueue(channel.stream);
-          var message = await queue.next;
+          var message = await queue.next as Map;
           assert(message['type'] == 'initial');
 
-          queue.rest.listen((message) {
+          queue.rest.cast<Map>().listen((message) {
             if (message['type'] == 'close') {
               controller.local.sink.close();
               return;

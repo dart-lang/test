@@ -59,6 +59,11 @@ dependency_overrides:
     git:
       url: git://github.com/dart-lang/fake_async.git
       ref: null_safety
+  js:
+    git:
+      url: git://github.com/dart-lang/sdk.git
+      ref: null_safety-pkgs
+      path: pkg/js
   matcher:
     git:
       url: git://github.com/dart-lang/matcher.git
@@ -79,6 +84,14 @@ dependency_overrides:
   pool:
     git:
       url: git://github.com/dart-lang/pool.git
+      ref: null_safety
+  source_maps:
+    git:
+      url: git://github.com/dart-lang/source_maps.git
+      ref: null_safety
+  source_map_stack_trace:
+    git:
+      url: git://github.com/dart-lang/source_map_stack_trace.git
       ref: null_safety
   source_span:
     git:
