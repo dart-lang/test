@@ -47,9 +47,17 @@ dependency_overrides:
     git:
       url: git://github.com/dart-lang/charcode.git
       ref: null_safety
+  clock:
+    git:
+      url: git://github.com/dart-lang/clock.git
+      ref: null_safety
   collection:
     git:
       url: git://github.com/dart-lang/collection.git
+      ref: null_safety
+  fake_async:
+    git:
+      url: git://github.com/dart-lang/fake_async.git
       ref: null_safety
   matcher:
     git:
