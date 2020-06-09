@@ -135,15 +135,12 @@ Future<Isolate> _spawnDataIsolate(
     ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
 
-    import "package:stream_channel/isolate_channel.dart";
-
-    import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
+    import "package:test_core/src/bootstrap/vm.dart";
 
     import "${p.toUri(p.absolute(path))}" as test;
 
-    void main(_, SendPort message) {
-      var channel = serializeSuite(() => test.main);
-      IsolateChannel<Object>.connectSend(message).pipe(channel);
+    void main(_, SendPort sendPort) {
+      internalBootstrapVmTest(() => test.main, sendPort);
     }
   ''', message);
 }
