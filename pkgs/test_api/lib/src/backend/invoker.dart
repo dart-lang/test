@@ -146,8 +146,8 @@ class Invoker {
 
   /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
   /// caught and dispatched to the appropriate [Invoker].
-  static T guard<T>(T Function() callback) =>
-      runZoned(callback, zoneSpecification: ZoneSpecification(
+  static T? guard<T>(T Function() callback) =>
+      runZoned<T?>(callback, zoneSpecification: ZoneSpecification(
           // Use [handleUncaughtError] rather than [onError] so we can
           // capture [zone] and with it the outstanding callback counter for
           // the zone in which [error] was thrown.
@@ -240,17 +240,17 @@ class Invoker {
   Future<void> waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
-    late final Zone zone;
+    Zone? zone;
     var counter = _AsyncCounter();
     runZoned(() async {
       zone = Zone.current;
-      _outstandingCallbackZones.add(zone);
+      _outstandingCallbackZones.add(zone!);
       await fn();
       counter.decrement();
     }, zoneValues: {_counterKey: counter});
 
     return counter.onZero.whenComplete(() {
-      _outstandingCallbackZones.remove(zone);
+      _outstandingCallbackZones.remove(zone!);
     });
   }
 

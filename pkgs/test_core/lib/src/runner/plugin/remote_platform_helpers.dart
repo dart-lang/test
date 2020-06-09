@@ -47,7 +47,7 @@ StreamChannel<Object?> serializeSuite(Function Function() getMain,
 /// Throws a [StateError] if [name] has already been used for a channel, or if
 /// this is called outside a worker context (such as within a running test or
 /// `serializeSuite()`'s `onLoad()` function).
-StreamChannel suiteChannel(String name) {
+StreamChannel<Object?> suiteChannel(String name) {
   var manager = SuiteChannelManager.current;
   if (manager == null) {
     throw StateError('suiteChannel() may only be called within a test worker.');

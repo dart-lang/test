@@ -67,7 +67,7 @@ class RemoteListener {
 
     SuiteChannelManager().asCurrent(() {
       StackTraceFormatter().asCurrent(() {
-        runZoned(() async {
+        runZonedGuarded(() async {
           Function? main;
           try {
             main = getMain();
@@ -114,7 +114,6 @@ class RemoteListener {
                   Set.from(message['platformVariables'] as Iterable),
               collectTraces: message['collectTraces'] as bool,
               noRetry: message['noRetry'] as bool);
-
           StackTraceFormatter.current!.configure(
               except: _deserializeSet(message['foldTraceExcept'] as List),
               only: _deserializeSet(message['foldTraceOnly'] as List));
@@ -135,7 +134,7 @@ class RemoteListener {
               // useful errors when calling `test()` and `group()` within a test,
               // and so they can add to the declarer's `tearDownAll()` list.
               zoneValues: {#test.declarer: declarer});
-        }, onError: (error, StackTrace stackTrace) {
+        }, (Object error, StackTrace stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
         }, zoneSpecification: spec);
       });
@@ -160,8 +159,8 @@ class RemoteListener {
   }
 
   /// Sends a message over [channel] indicating an error from user code.
-  static void _sendError(
-      StreamChannel channel, error, StackTrace stackTrace, bool verboseChain) {
+  static void _sendError(StreamChannel channel, Object error,
+      StackTrace stackTrace, bool verboseChain) {
     channel.sink.add({
       'type': 'error',
       'error': RemoteException.serialize(
