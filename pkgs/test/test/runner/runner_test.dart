@@ -674,6 +674,7 @@ void main() {
     test('defined in a single file', () async {
       await d.file('test.dart', _success).create();
       await d.file('runner.dart', '''
+// @dart=2.8
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
@@ -732,7 +733,6 @@ $_testContents
       expect(
           test.stdout,
           containsInOrder([
-            'Unable to spawn isolate:',
             'Error: A library can\'t opt out of non-nullable by default, when '
                 'in nnbd-strong mode.'
           ]));
@@ -782,7 +782,6 @@ $_testContents''').create();
         expect(
             test.stdout,
             containsInOrder([
-              'Unable to spawn isolate:',
               'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
             ]));
         await test.shouldExit(1);
