@@ -543,7 +543,7 @@ import 'package:test/test.dart';
 void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 ''',
           });
-    }, solo: true);
+    });
   });
 
   test(
