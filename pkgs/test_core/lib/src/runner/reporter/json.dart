@@ -178,7 +178,8 @@ class JsonReporter implements Reporter {
     // different metadata.
     if (suite is LoadSuite) {
       suite.suite.then((runnerSuite) {
-        _suiteIDs[runnerSuite!] = id;
+        if (runnerSuite == null) return;
+        _suiteIDs[runnerSuite] = id;
         if (!_config.debug) return;
 
         // TODO(nweiz): test this when we have a library for communicating with

@@ -106,6 +106,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
+            ...Platform.executableArguments,
             '--packages=${await Isolate.packageConfig}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',
