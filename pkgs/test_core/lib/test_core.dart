@@ -13,6 +13,7 @@ import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_api/src/frontend/expect.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
@@ -285,3 +286,33 @@ void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 /// prohibitively slow.
 void tearDownAll(dynamic Function() callback) =>
     _declarer.tearDownAll(callback);
+
+/// Base class that may be used by a test to create a mock object that should
+/// never be used.  For example:
+///
+///     class FakeFoo extends Fake implements Foo {}
+///
+/// The behavior of a fake object is similar to `null`, except that:
+/// - It may be passed into a non-nullable API.
+/// - It satisfies `is` checks for the type it is mocking.
+/// - It throws an exception for any method invocation, whereas `null` supports
+///   toString(), hashCode, etc.
+class Fake {
+  const Fake();
+
+  @override
+  bool operator ==(Object other) =>
+      noSuchMethod(Invocation.method(#==, [other]));
+
+  @override
+  int get hashCode => noSuchMethod(Invocation.getter(#hashCode));
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    fail('${invocation.memberName} invoked on fake object of type '
+        '${super.runtimeType}');
+  }
+
+  @override
+  Type get runtimeType => noSuchMethod(Invocation.getter(#runtimeType));
+}
