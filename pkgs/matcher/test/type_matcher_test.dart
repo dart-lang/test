@@ -46,7 +46,8 @@ void _test<T>(Matcher typeMatcher, T matchingInstance, {String name}) {
       shouldFail(
         const _TestType(),
         typeMatcher,
-        "Expected: <Instance of '$name'> Actual: <Instance of '_TestType'>",
+        "Expected: <Instance of '$name'> Actual: <Instance of '_TestType'>"
+        " Which: is not an instance of '$name'",
       );
     });
   });

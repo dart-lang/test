@@ -1,3 +1,7 @@
+## 0.12.8
+
+- Add a mismatch description to `TypeMatcher`.
+
 ## 0.12.7
 
 - Deprecate the `mirror_matchers.dart` library.

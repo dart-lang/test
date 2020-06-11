@@ -90,6 +90,13 @@ class TypeMatcher<T> extends Matcher {
   }
 
   @override
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
+    var name = _name ?? _stripDynamic(T);
+    return mismatchDescription.add("is not an instance of '$name'");
+  }
+
+  @override
   bool matches(Object item, Map matchState) => item is T;
 }
 
