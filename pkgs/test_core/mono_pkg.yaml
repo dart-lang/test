@@ -1,6 +1,8 @@
+dart:
+  - be/raw/latest
+
 stages:
   - analyze_and_format:
     - group:
       - dartfmt: sdk
       - dartanalyzer: --enable-experiment=non-nullable --fatal-infos --fatal-warnings .
-      dart: dev
