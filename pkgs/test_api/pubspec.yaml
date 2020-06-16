@@ -20,7 +20,7 @@ dependencies:
 
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
-  matcher: ">=0.12.6 <0.12.7"
+  matcher: ">=0.12.6 <0.12.9"
 
 dev_dependencies:
   fake_async: ^1.0.0
