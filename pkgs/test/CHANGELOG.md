@@ -1,7 +1,9 @@
-## 1.14.8
+## 1.15.0
 
-* Update browser/node bootstrapping logic to ensure the bootstrap library has
+* Update bootstrapping logic to ensure the bootstrap library has
   the same language version as the test.
+* Add `languageVersionComment` on the `MetaData` class. This should only be
+  present for test suites.
 
 ## 1.14.7
 
