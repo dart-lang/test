@@ -69,10 +69,13 @@ Future<TestProcess> runTest(Iterable<String> args,
     String fileReporter,
     int concurrency,
     Map<String, String> environment,
-    bool forwardStdio = false}) async {
+    bool forwardStdio = false,
+    String packageConfig,
+    Iterable<String> vmArgs}) async {
   concurrency ??= 1;
 
   var allArgs = [
+    ...?vmArgs,
     p.absolute(p.join(await packageDir, 'bin/test.dart')),
     '--concurrency=$concurrency',
     if (reporter != null) '--reporter=$reporter',
@@ -86,18 +89,23 @@ Future<TestProcess> runTest(Iterable<String> args,
   return await runDart(allArgs,
       environment: environment,
       description: 'dart bin/test.dart',
-      forwardStdio: forwardStdio);
+      forwardStdio: forwardStdio,
+      packageConfig: packageConfig);
 }
 
 /// Runs Dart.
+///
+/// If [packageConfig] is provided then that is passed for the `--packages`
+/// arg, otherwise the current isolate config is passed.
 Future<TestProcess> runDart(Iterable<String> args,
     {Map<String, String> environment,
     String description,
-    bool forwardStdio = false}) async {
+    bool forwardStdio = false,
+    String packageConfig}) async {
   var allArgs = <String>[
     ...Platform.executableArguments.where((arg) =>
         !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
-    '--packages=${await Isolate.packageConfig}',
+    '--packages=${packageConfig ?? await Isolate.packageConfig}',
     ...args
   ];
 

@@ -4,8 +4,13 @@
 
 @TestOn('vm')
 
+import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math' as math;
+
+import 'package:package_config/package_config.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
@@ -694,6 +699,84 @@ void main(List<String> args) async {
             '+1: All tests passed!',
           ])));
       await test.shouldExit(0);
+    });
+  });
+
+  group('nnbd', () {
+    final _testContents = '''
+import 'package:test/test.dart';
+import 'opted_in.dart';
+
+void main() {
+  test("success", () {
+    foo = true;
+    expect(foo, true);
+  });
+}''';
+
+    setUp(() async {
+      await d.file('opted_in.dart', '''
+// @dart=2.9
+bool? foo;''').create();
+    });
+
+    test('nnbd can be enabled in deps', () async {
+      await d.file('test.dart', '''
+// @dart=2.8
+$_testContents''').create();
+      var test = await runTest(['test.dart'],
+          packageConfig: (await Isolate.packageConfig).path,
+          vmArgs: ['--enable-experiment=non-nullable']);
+
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('sound null safety is enabled if the entrypoint opts in', () async {
+      await d.file('test.dart', '''
+// @dart=2.9
+$_testContents''').create();
+      var test = await runTest(['test.dart'],
+          packageConfig: (await Isolate.packageConfig).path,
+          vmArgs: ['--enable-experiment=non-nullable']);
+
+      expect(
+          test.stdout,
+          containsInOrder([
+            'Unable to spawn isolate:',
+            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
+          ]));
+      await test.shouldExit(1);
+    });
+
+    test('sound null safety is enabled if the package is opted in', () async {
+      var currentPackageConfig =
+          await loadPackageConfigUri(await Isolate.packageConfig);
+      var newPackageConfig = PackageConfig([
+        ...currentPackageConfig.packages,
+        Package('example', Uri.file('${d.sandbox}/'),
+            languageVersion: LanguageVersion(2, 9),
+            // TODO: https://github.com/dart-lang/package_config/issues/81
+            packageUriRoot: Uri.file('${d.sandbox}/')),
+      ]);
+
+      await d.file('test.dart', _testContents).create();
+      await d
+          .file('package_config.json',
+              jsonEncode(PackageConfig.toJson(newPackageConfig)))
+          .create();
+
+      var test = await runTest(['test.dart'],
+          packageConfig: p.join(d.sandbox, 'package_config.json'),
+          vmArgs: ['--enable-experiment=non-nullable']);
+
+      expect(
+          test.stdout,
+          containsInOrder([
+            'Unable to spawn isolate:',
+            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
+          ]));
+      await test.shouldExit(1);
     });
   });
 }
