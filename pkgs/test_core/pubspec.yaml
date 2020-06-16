@@ -29,7 +29,7 @@ dependencies:
   yaml: ^2.0.0
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
-  matcher: ">=0.12.6 <0.12.7"
+  matcher: ">=0.12.6 <0.12.9"
   # Use an exact version until the test_api package is stable.
   test_api: 0.2.17
 
