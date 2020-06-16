@@ -236,7 +236,7 @@ Future<Null> _writePackagesFile() async {
   // TODO: remove try/catch when this issue is resolved:
   // https://github.com/dart-lang/package_config/issues/66
   try {
-    await Directory(p.join(d.sandbox, '.dart_tool')).create();
+    await d.dir('.dart_tool').create();
     await savePackageConfig(config, Directory(d.sandbox));
   } catch (_) {
     // If it fails, just write a `.packages` file.
