@@ -153,6 +153,7 @@ class NodePlatform extends PlatformPlugin
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
     await _compilers.compile('''
+        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/node.dart";
 
         import "${p.toUri(p.absolute(testPath))}" as test;

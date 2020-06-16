@@ -1,3 +1,10 @@
+## 0.3.8
+
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
+
 ## 0.3.7
 
 * Support the latest `package:coverage`.
