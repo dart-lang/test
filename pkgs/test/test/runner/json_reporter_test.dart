@@ -525,7 +525,7 @@ void main() {
               groupJson(2, testCount: 2),
               testStartJson(3, 'success 1',
                   line: 3,
-                  column: 50,
+                  column: 60,
                   url: p.toUri(p.join(d.sandbox, 'common.dart')).toString(),
                   root_column: 7,
                   root_line: 7,
@@ -540,7 +540,7 @@ void main() {
             'common.dart': '''
 import 'package:test/test.dart';
 
-void customTest(String name, Function testFn) => test(name, testFn);
+void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 ''',
           });
     });

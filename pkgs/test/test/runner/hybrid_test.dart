@@ -357,8 +357,8 @@ void main() {
         import "package:test/test.dart";
 
         void main() {
-          StreamQueue queue;
-          StreamSink sink;
+          late StreamQueue queue;
+          late StreamSink sink;
           setUpAll(() {
             var channel = spawnHybridCode("""
               import "package:stream_channel/stream_channel.dart";

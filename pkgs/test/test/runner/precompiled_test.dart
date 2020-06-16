@@ -106,6 +106,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
+            ...Platform.executableArguments,
             '--packages=${await Isolate.packageConfig}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',
@@ -235,6 +236,7 @@ Future<Null> _writePackagesFile() async {
   // TODO: remove try/catch when this issue is resolved:
   // https://github.com/dart-lang/package_config/issues/66
   try {
+    await d.dir('.dart_tool').create();
     await savePackageConfig(config, Directory(d.sandbox));
   } catch (_) {
     // If it fails, just write a `.packages` file.
