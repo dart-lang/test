@@ -2,6 +2,7 @@
 
 * Update bootstrapping logic to ensure the bootstrap library has
   the same language version as the test.
+* The Node platform will now communicate over only IPv6 if it is available.
 
 ## 1.14.7
 
