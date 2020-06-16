@@ -1,3 +1,7 @@
+## 1.14.8-dev
+
+* The Node platform will now communicate over only IPv6 if it is available.
+
 ## 1.14.7
 
 * Support the latest `package:coverage`.

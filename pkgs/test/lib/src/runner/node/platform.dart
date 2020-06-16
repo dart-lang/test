@@ -8,7 +8,6 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:package_config/package_config.dart';
-import 'package:multi_server_socket/multi_server_socket.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
@@ -100,7 +99,12 @@ class NodePlatform extends PlatformPlugin
   /// source map for the compiled suite.
   Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(
       String path, Runtime runtime, SuiteConfiguration suiteConfig) async {
-    var server = await MultiServerSocket.loopback(0);
+    ServerSocket server;
+    try {
+      server = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0);
+    } on SocketException {
+      server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    }
 
     try {
       var pair = await _spawnProcess(path, runtime, suiteConfig, server.port);
