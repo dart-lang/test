@@ -1,3 +1,8 @@
+## 1.15.1-dev
+
+* Avoid a confusing stack trace when there is a problem loading a platform when
+  using the JSON reporter and enabling debugging.
+
 ## 1.15.0
 
 * Update bootstrapping logic to ensure the bootstrap library has
