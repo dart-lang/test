@@ -166,11 +166,10 @@ class Declarer {
         }
       }
 
-      await runZoned(
-          () => Invoker.current.waitForOutstandingCallbacks(() async {
-                await _runSetUps();
-                await body();
-              }),
+      await runZoned(() async {
+        await _runSetUps();
+        await body();
+      },
           // Make the declarer visible to running tests so that they'll throw
           // useful errors when calling `test()` and `group()` within a test.
           zoneValues: {#test.declarer: this});
