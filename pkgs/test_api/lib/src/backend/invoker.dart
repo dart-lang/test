@@ -379,8 +379,6 @@ class Invoker {
   void _onRun() {
     _controller.setState(const State(Status.running, Result.success));
 
-    var outstandingCallbacksForBody = _AsyncCounter();
-
     _runCount++;
     Chain.capture(() {
       _guardIfGuarded(() {
@@ -396,13 +394,11 @@ class Invoker {
           // guarantees.
           //
           // Use the event loop over the microtask queue to avoid starvation.
-          unawaited(Future(() async {
-            await _test._body();
-            await unclosable(_runTearDowns);
-            removeOutstandingCallback();
-          }));
+          await Future(() {});
 
-          await _outstandingCallbacks.onZero;
+          await waitForOutstandingCallbacks(_test._body);
+          await waitForOutstandingCallbacks(() => unclosable(_runTearDowns));
+
           if (_timeoutTimer != null) _timeoutTimer.cancel();
 
           if (liveTest.state.result != Result.success &&
@@ -418,9 +414,6 @@ class Invoker {
         },
             zoneValues: {
               #test.invoker: this,
-              // Use the invoker as a key so that multiple invokers can have
-              // different outstanding callback counters at once.
-              _counterKey: outstandingCallbacksForBody,
               _closableKey: true,
               #runCount: _runCount,
             },
