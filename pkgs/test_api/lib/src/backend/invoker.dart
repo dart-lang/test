@@ -219,22 +219,11 @@ class Invoker {
     _outstandingCallbacks.decrement();
   }
 
-  /// Runs [fn] and returns once all (registered) outstanding callbacks it
-  /// transitively invokes have completed.
+  /// Runs [fn] and completes once [fn] and all outstanding callbacks registered
+  /// within [fn] have completed.
   ///
-  /// If [fn] itself returns a future, this will automatically wait until that
-  /// future completes as well. Note that outstanding callbacks registered
-  /// within [fn] will *not* be registered as outstanding callback outside of
-  /// [fn].
-  ///
-  /// If [fn] produces an unhandled error, this marks the current test as
-  /// failed, removes all outstanding callbacks registered within [fn], and
-  /// completes the returned future. It does not remove any outstanding
-  /// callbacks registered outside of [fn].
-  ///
-  /// If the test times out, the *most recent* call to
-  /// [waitForOutstandingCallbacks] will treat that error as occurring within
-  /// [fn]—that is, it will complete immediately.
+  /// Outstanding callbacks registered within [fn] will *not* be registered as
+  /// outstanding callback outside of [fn].
   Future<void> waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
