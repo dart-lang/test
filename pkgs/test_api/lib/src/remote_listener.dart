@@ -255,8 +255,7 @@ class RemoteListener {
       });
     });
 
-    runZoned(() {
-      liveTest.run().then((_) => channel.sink.add({'type': 'complete'}));
-    }, zoneValues: {#test.runner.test_channel: channel});
+    liveTest.run({#test.runner.test_channel: channel}).then(
+        (_) => channel.sink.add({'type': 'complete'}));
   }
 }

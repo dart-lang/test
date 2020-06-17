@@ -39,6 +39,9 @@ class LocalTest extends Test {
   /// Whether the test is run in its own error zone.
   final bool _guarded;
 
+  /// The Zone that the [_body] callback was defined in.
+  final Zone _declaringZone;
+
   /// Creates a new [LocalTest].
   ///
   /// If [guarded] is `true`, the test is run in its own error zone, and any
@@ -47,15 +50,17 @@ class LocalTest extends Test {
   /// call to [Invoker.guard].
   LocalTest(this.name, this.metadata, this._body,
       {this.trace, bool guarded = true, this.isScaffoldAll = false})
-      : _guarded = guarded;
+      : _guarded = guarded,
+        _declaringZone = Zone.current;
 
   LocalTest._(this.name, this.metadata, this._body, this.trace, this._guarded,
-      this.isScaffoldAll);
+      this.isScaffoldAll, this._declaringZone);
 
   /// Loads a single runnable instance of this test.
   @override
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
-    var invoker = Invoker._(suite, this, groups: groups, guarded: _guarded);
+    var invoker = Invoker._(suite, this,
+        groups: groups, guarded: _guarded, declaringZone: _declaringZone);
     return invoker.liveTest;
   }
 
@@ -63,7 +68,7 @@ class LocalTest extends Test {
   Test forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
-        _guarded, isScaffoldAll);
+        _guarded, isScaffoldAll, _declaringZone);
   }
 }
 
@@ -158,11 +163,23 @@ class Invoker {
         }
       }));
 
-  /// The zone that the top level of [_test.body] is running in.
+  /// The zone where the test callback was declared.
   ///
-  /// Tracking this ensures that [_timeoutTimer] isn't created in a
-  /// timer-mocking zone created by the test.
-  Zone _invokerZone;
+  /// Set up calbacks, test case bodies, and teardown callbacks are run in
+  /// a descendant of this zone. In between this zone and the zone running user
+  /// code there is:
+  ///
+  /// - Optionally a zone for [Chain.capture].
+  /// - Optionall a zone using [Invoker.guard].
+  /// - A zone capturing [print] calls as well as setting zone values including
+  /// `#test.invoker`.
+  /// - A separate [waitForOutstandingCallbacks] zone for each of the test body
+  /// and the teardown callbacks.
+  ///
+  /// Since the test "body" here is also executed in zone defined by [Declarer]
+  /// the actual user code for setup and the test case have an additional layer
+  /// of zone that is not used for teardown callbacks.
+  final Zone _declaringZone;
 
   /// The timer for tracking timeouts.
   ///
@@ -176,8 +193,9 @@ class Invoker {
   final _printsOnFailure = <String>[];
 
   Invoker._(Suite suite, LocalTest test,
-      {Iterable<Group> groups, bool guarded = true})
-      : _guarded = guarded {
+      {Iterable<Group> groups, bool guarded = true, Zone declaringZone})
+      : _guarded = guarded,
+        _declaringZone = declaringZone {
     _controller = LiveTestController(
         suite, test, _onRun, _onCloseCompleter.complete,
         groups: groups);
@@ -271,7 +289,7 @@ class Invoker {
       return message;
     }
 
-    _timeoutTimer = _invokerZone.createTimer(timeout, () {
+    _timeoutTimer = Zone.root.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         _handleError(Zone.current, TimeoutException(message(), timeout));
       });
@@ -365,51 +383,54 @@ class Invoker {
   }
 
   /// The method that's run when the test is started.
-  void _onRun() {
+  void _onRun(Map<Object, Object> additionalZoneVariables) {
     _controller.setState(const State(Status.running, Result.success));
 
     _runCount++;
-    Chain.capture(() {
-      _guardIfGuarded(() {
-        runZoned(() async {
-          _invokerZone = Zone.current;
-          _outstandingCallbackZones.add(Zone.current);
+    _declaringZone.run(() {
+      Chain.capture(() {
+        Invoker.guard(() {
+          runZoned(() async {
+            _outstandingCallbackZones.add(Zone.current);
 
-          // Run the test asynchronously so that the "running" state change
-          // has a chance to hit its event handler(s) before the test produces
-          // an error. If an error is emitted before the first state change is
-          // handled, we can end up with [onError] callbacks firing before the
-          // corresponding [onStateChange], which violates the timing
-          // guarantees.
-          //
-          // Use the event loop over the microtask queue to avoid starvation.
-          await Future(() {});
+            // Run the test asynchronously so that the "running" state change
+            // has a chance to hit its event handler(s) before the test produces
+            // an error. If an error is emitted before the first state change is
+            // handled, we can end up with [onError] callbacks firing before the
+            // corresponding [onStateChange], which violates the timing
+            // guarantees.
+            //
+            // Use the event loop over the microtask queue to avoid starvation.
+            await Future(() {});
 
-          await waitForOutstandingCallbacks(_test._body);
-          await waitForOutstandingCallbacks(() => unclosable(_runTearDowns));
+            await waitForOutstandingCallbacks(_test._body);
+            await waitForOutstandingCallbacks(() => unclosable(_runTearDowns));
 
-          if (_timeoutTimer != null) _timeoutTimer.cancel();
+            if (_timeoutTimer != null) _timeoutTimer.cancel();
 
-          if (liveTest.state.result != Result.success &&
-              _runCount < liveTest.test.metadata.retry + 1) {
-            _controller.message(Message.print('Retry: ${liveTest.test.name}'));
-            _onRun();
-            return;
-          }
+            if (liveTest.state.result != Result.success &&
+                _runCount < liveTest.test.metadata.retry + 1) {
+              _controller
+                  .message(Message.print('Retry: ${liveTest.test.name}'));
+              _onRun(additionalZoneVariables);
+              return;
+            }
 
-          _controller.setState(State(Status.complete, liveTest.state.result));
+            _controller.setState(State(Status.complete, liveTest.state.result));
 
-          _controller.completer.complete();
-        },
-            zoneValues: {
-              #test.invoker: this,
-              _closableKey: true,
-              #runCount: _runCount,
-            },
-            zoneSpecification:
-                ZoneSpecification(print: (_, __, ___, line) => _print(line)));
-      });
-    }, when: liveTest.test.metadata.chainStackTraces, errorZone: false);
+            _controller.completer.complete();
+          },
+              zoneValues: {
+                #test.invoker: this,
+                _closableKey: true,
+                #runCount: _runCount,
+                ...?additionalZoneVariables,
+              },
+              zoneSpecification:
+                  ZoneSpecification(print: (_, __, ___, line) => _print(line)));
+        });
+      }, when: liveTest.test.metadata.chainStackTraces, errorZone: false);
+    });
   }
 
   /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.

@@ -399,7 +399,7 @@ class Engine {
 
     LiveTestController controller;
     controller =
-        LiveTestController(suiteController.liveSuite.suite, skipped, () {
+        LiveTestController(suiteController.liveSuite.suite, skipped, (_) {
       controller.setState(const State(Status.running, Result.success));
       controller.setState(const State(Status.running, Result.skipped));
 

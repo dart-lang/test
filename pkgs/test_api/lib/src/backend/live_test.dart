@@ -125,7 +125,7 @@ abstract class LiveTest {
   ///
   /// This returns the same [Future] as [onComplete]. It may not be called more
   /// than once.
-  Future run();
+  Future run([Map<Object, Object> additionalZoneVariables]);
 
   /// Signals that this test should stop emitting events and release any
   /// resources it may have allocated.

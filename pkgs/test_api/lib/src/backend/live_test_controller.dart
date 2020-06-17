@@ -33,7 +33,7 @@ class LiveTestController extends LiveTest {
   final Test test;
 
   /// The function that will actually start the test running.
-  final void Function() _onRun;
+  final void Function(Map<Object, Object> additionZoneVariables) _onRun;
 
   /// A function to run when the test is closed.
   ///
@@ -140,7 +140,7 @@ class LiveTestController extends LiveTest {
   }
 
   @override
-  Future<void> run() {
+  Future<void> run([Map<Object, Object> additionalZoneVariables]) {
     if (_runCalled) {
       throw StateError('LiveTest.run() may not be called more than once.');
     } else if (_isClosed) {
@@ -149,7 +149,7 @@ class LiveTestController extends LiveTest {
     }
     _runCalled = true;
 
-    _onRun();
+    _onRun(additionalZoneVariables);
     return onComplete;
   }
 
