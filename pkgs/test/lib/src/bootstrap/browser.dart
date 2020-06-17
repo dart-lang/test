@@ -9,10 +9,12 @@ import '../runner/browser/post_message_channel.dart';
 
 /// Bootstraps a browser test to communicate with the test runner.
 void internalBootstrapBrowserTest(Function Function() getMain) {
-  var channel =
-      serializeSuite(getMain, hidePrints: false, beforeLoad: () async {
-    var serialized =
-        await suiteChannel('test.browser.mapper').stream.first as Map;
+  var channel = serializeSuite(getMain, hidePrints: false,
+      beforeLoad: (suiteChannelManager) async {
+    var serialized = await suiteChannelManager
+        .connectOut('test.browser.mapper')
+        .stream
+        .first as Map;
     if (serialized == null) return;
     setStackTraceMapper(JSStackTraceMapper.deserialize(serialized));
   });

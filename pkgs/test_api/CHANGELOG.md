@@ -1,3 +1,9 @@
+## 0.3.0-dev
+
+* Add `SuiteChannelManager` argument to the `beforeLoad` callback of
+  `RmoteListener.start`. This is now used in place of using zones to
+  communicate the value.
+
 ## 0.2.17
 
 * Add `languageVersionComment` on the `MetaData` class. This should only be

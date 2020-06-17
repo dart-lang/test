@@ -1,3 +1,9 @@
+## 0.4.0-dev
+
+* Remove `suiteChannel` and `setStackTraceMapper` utilities. These are now
+  handled by additional arguments to the `beforeLoad` callback in
+  `serializeSuite`.
+
 ## 0.3.8
 
 * Update vm bootstrapping logic to ensure the bootstrap library has the same
