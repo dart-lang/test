@@ -1,3 +1,7 @@
+## 0.3.9-dev
+
+* Ignore a null `RunnerSuite` rather than throw an error.
+
 ## 0.3.8
 
 * Update vm bootstrapping logic to ensure the bootstrap library has the same
