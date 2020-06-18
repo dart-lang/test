@@ -117,15 +117,20 @@ class RemoteListener {
 
           if (beforeLoad != null) await beforeLoad();
 
-          await declarer.declare(main as Function());
+          Zone invokerGuardedZone;
+          Invoker.guard(() {
+            invokerGuardedZone = Zone.current;
+          });
+          await invokerGuardedZone.runUnary(
+              declarer.declare, main as Function());
 
           var suite = Suite(
               declarer.build(), SuitePlatform.deserialize(message['platform']),
               path: message['path'] as String);
 
           runZoned(() {
-            Invoker.guard(
-                () => RemoteListener._(suite, printZone)._listen(channel));
+            invokerGuardedZone
+                .run(() => RemoteListener._(suite, printZone)._listen(channel));
           },
               // Make the declarer visible to running tests so that they'll throw
               // useful errors when calling `test()` and `group()` within a test,

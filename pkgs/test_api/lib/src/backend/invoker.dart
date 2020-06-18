@@ -170,7 +170,7 @@ class Invoker {
   /// code there is:
   ///
   /// - Optionally a zone for [Chain.capture].
-  /// - A zone using [Invoker.guard].
+  /// - Optionally a zone using [Invoker.guard].
   /// - A zone capturing [print] calls as well as setting zone values including
   /// `#test.invoker`.
   /// - A separate [waitForOutstandingCallbacks] zone for each of the test body
@@ -389,7 +389,7 @@ class Invoker {
     _runCount++;
     _declaringZone.run(() {
       Chain.capture(() {
-        Invoker.guard(() {
+        _guardIfGuarded(() {
           runZoned(() async {
             _outstandingCallbackZones.add(Zone.current);
 
@@ -431,6 +431,15 @@ class Invoker {
         });
       }, when: liveTest.test.metadata.chainStackTraces, errorZone: false);
     });
+  }
+
+  /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.
+  void _guardIfGuarded(void Function() callback) {
+    if (_guarded) {
+      Invoker.guard(callback);
+    } else {
+      callback();
+    }
   }
 
   /// Prints [text] as a message to [_controller].
