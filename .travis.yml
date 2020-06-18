@@ -62,7 +62,6 @@ jobs:
       script: ./tool/travis.sh test
 
 stages:
-  - analyze_and_format
   - unit_test
 
 # Only building master means that we don't run two builds for each pull request.
