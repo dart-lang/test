@@ -286,16 +286,17 @@ void main() {
 
     test('runs in the same error zone as the test', () {
       return expectTestsPass(() {
-        Future future;
+        Zone testBodyZone;
+
         tearDown(() {
-          // If the tear-down is in a different error zone than the test, the
-          // error will try to cross the zone boundary and get top-leveled.
-          expect(future, throwsA('oh no'));
+          final tearDownZone = Zone.current;
+          expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
+              reason: 'The tear down callback is in a different error zone '
+                  'than the test body.');
         });
 
         test('test', () {
-          future = Future.error('oh no');
-          expect(future, throwsA('oh no'));
+          testBodyZone = Zone.current;
         });
       });
     });
