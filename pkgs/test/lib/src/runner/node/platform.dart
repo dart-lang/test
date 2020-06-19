@@ -124,9 +124,8 @@ class NodePlatform extends PlatformPlugin
       }));
 
       return Pair(channel, pair.last);
-    } catch (_) {
+    } finally {
       unawaited(Future.wait(servers.map((s) => s.close().catchError((_) {}))));
-      rethrow;
     }
   }
 
