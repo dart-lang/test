@@ -99,15 +99,11 @@ class NodePlatform extends PlatformPlugin
   /// source map for the compiled suite.
   Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(
       String path, Runtime runtime, SuiteConfiguration suiteConfig) async {
-    ServerSocket server;
-    try {
-      server = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0);
-    } on SocketException {
-      server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-    }
+    final servers = await _loopback();
 
     try {
-      var pair = await _spawnProcess(path, runtime, suiteConfig, server.port);
+      var pair =
+          await _spawnProcess(path, runtime, suiteConfig, servers.first.port);
       var process = pair.first;
 
       // Forward Node's standard IO to the print handler so it's associated with
@@ -117,7 +113,7 @@ class NodePlatform extends PlatformPlugin
       process.stdout.transform(lineSplitter).listen(print);
       process.stderr.transform(lineSplitter).listen(print);
 
-      var socket = await server.first;
+      var socket = await StreamGroup.merge(servers).first;
       var channel = StreamChannel(socket.cast<List<int>>(), socket)
           .transform(StreamChannelTransformer.fromCodec(utf8))
           .transform(chunksToLines)
@@ -128,9 +124,8 @@ class NodePlatform extends PlatformPlugin
       }));
 
       return Pair(channel, pair.last);
-    } catch (_) {
-      unawaited(server.close().catchError((_) {}));
-      rethrow;
+    } finally {
+      unawaited(Future.wait(servers.map((s) => s.close().catchError((_) {}))));
     }
   }
 
@@ -300,3 +295,59 @@ class NodePlatform extends PlatformPlugin
       });
   final _closeMemo = AsyncMemoizer();
 }
+
+Future<List<ServerSocket>> _loopback({int remainingRetries = 5}) async {
+  if (!await _supportsIPv4) {
+    return [await ServerSocket.bind(InternetAddress.loopbackIPv6, 0)];
+  }
+
+  var v4Server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  if (!await _supportsIPv6) return [v4Server];
+
+  try {
+    // Reuse the IPv4 server's port so that if [port] is 0, both servers use
+    // the same ephemeral port.
+    var v6Server =
+        await ServerSocket.bind(InternetAddress.loopbackIPv6, v4Server.port);
+    return [v4Server, v6Server];
+  } on SocketException catch (error) {
+    if (error.osError.errorCode != _addressInUseErrno) rethrow;
+    if (remainingRetries == 0) rethrow;
+
+    // A port being available on IPv4 doesn't necessarily mean that the same
+    // port is available on IPv6. If it's not (which is rare in practice),
+    // we try again until we find one that's available on both.
+    unawaited(v4Server.close());
+    return await _loopback(remainingRetries: remainingRetries - 1);
+  }
+}
+
+/// Whether this computer supports binding to IPv6 addresses.
+final Future<bool> _supportsIPv6 = () async {
+  try {
+    var socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0);
+    unawaited(socket.close());
+    return true;
+  } on SocketException catch (_) {
+    return false;
+  }
+}();
+
+/// Whether this computer supports binding to IPv4 addresses.
+final Future<bool> _supportsIPv4 = () async {
+  try {
+    var socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    unawaited(socket.close());
+    return true;
+  } on SocketException catch (_) {
+    return false;
+  }
+}();
+
+/// The error code for an error caused by a port already being in use.
+final int _addressInUseErrno = () {
+  if (Platform.isWindows) return 10048;
+  if (Platform.isMacOS) return 48;
+  assert(Platform.isLinux);
+  return 98;
+}();

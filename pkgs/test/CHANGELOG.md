@@ -2,6 +2,8 @@
 
 * Avoid a confusing stack trace when there is a problem loading a platform when
   using the JSON reporter and enabling debugging.
+* Restore behavior of listening for both `IPv6` and `IPv4` sockets for the node
+  platform.
 
 ## 1.15.0
 
