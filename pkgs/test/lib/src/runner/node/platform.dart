@@ -113,7 +113,7 @@ class NodePlatform extends PlatformPlugin
       process.stdout.transform(lineSplitter).listen(print);
       process.stderr.transform(lineSplitter).listen(print);
 
-      var socket = await Future.any(servers.map((s) => s.first));
+      var socket = await StreamGroup.merge(servers).first;
       var channel = StreamChannel(socket.cast<List<int>>(), socket)
           .transform(StreamChannelTransformer.fromCodec(utf8))
           .transform(chunksToLines)
