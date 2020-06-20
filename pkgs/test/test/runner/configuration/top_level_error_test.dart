@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+@Skip()
 import 'dart:convert';
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
