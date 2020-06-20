@@ -1,4 +1,4 @@
-## 1.15.1-dev
+## 1.15.1
 
 * Avoid a confusing stack trace when there is a problem loading a platform when
   using the JSON reporter and enabling debugging.
