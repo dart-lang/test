@@ -4,7 +4,6 @@
 
 @TestOn('vm')
 @Tags(['chrome'])
-@Skip()
 import 'dart:io';
 
 import 'package:path/path.dart' as p;

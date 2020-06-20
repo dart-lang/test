@@ -4,7 +4,6 @@
 
 // Windows doesn't support sending signals.
 @TestOn('vm && !windows')
-@Skip() // Is this test causing the flakes in Travis?
 
 import 'dart:async';
 import 'dart:io';
