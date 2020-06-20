@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['phantomjs'])
+@Skip()
 
 import 'package:test/src/runner/browser/phantom_js.dart';
 import 'package:test/src/runner/executable_settings.dart';
