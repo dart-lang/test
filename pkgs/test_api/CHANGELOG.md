@@ -5,11 +5,13 @@
     behavior of the code regarding to handling of nulls.
   * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
     group now has the empty string as its name.
-* Add `languageVersionComment` on the `MetaData` class. This should only be
-  presen for test suites.
-* Deprecate `LiveTestController.liveTest`, the `LiveTestController` instance now
-  implements `LiveTest` and can be used directly.
 
+## 0.2.17
+
+* Add `languageVersionComment` on the `MetaData` class. This should only be
+  present for test suites.
+
+## 0.2.16
 
 * Deprecate `LiveTestController.liveTest`, the `LiveTestController` instance now
   implements `LiveTest` and can be used directly.

@@ -1,7 +1,33 @@
-## 1.14.5-dev
+## 1.16.0-dev
 
-* Update browser/node bootstrapping logic to ensure the bootstrap library has
+* Support running tests with null safety.
+
+## 1.15.1
+
+* Avoid a confusing stack trace when there is a problem loading a platform when
+  using the JSON reporter and enabling debugging.
+* Restore behavior of listening for both `IPv6` and `IPv4` sockets for the node
+  platform.
+
+## 1.15.0
+
+* Update bootstrapping logic to ensure the bootstrap library has
   the same language version as the test.
+* The Node platform will now communicate over only IPv6 if it is available.
+
+## 1.14.7
+
+* Support the latest `package:coverage`.
+
+
+## 1.14.6
+
+* Update `test_core` to `0.3.6`.
+
+## 1.14.5
+
+* Add additional information to an exception when we end up with a null
+  `RunnerSuite`.
 
 ## 1.14.4
 

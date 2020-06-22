@@ -152,7 +152,7 @@ class Invoker {
           // capture [zone] and with it the outstanding callback counter for
           // the zone in which [error] was thrown.
           handleUncaughtError: (self, _, zone, error, stackTrace) {
-        var invoker = zone[#test.invoker];
+        var invoker = zone[#test.invoker] as Invoker;
         if (invoker != null) {
           self.parent!.run(() => invoker._handleError(zone, error, stackTrace));
         } else {
@@ -221,22 +221,11 @@ class Invoker {
     _outstandingCallbacks.decrement();
   }
 
-  /// Runs [fn] and returns once all (registered) outstanding callbacks it
-  /// transitively invokes have completed.
+  /// Runs [fn] and completes once [fn] and all outstanding callbacks registered
+  /// within [fn] have completed.
   ///
-  /// If [fn] itself returns a future, this will automatically wait until that
-  /// future completes as well. Note that outstanding callbacks registered
-  /// within [fn] will *not* be registered as outstanding callback outside of
-  /// [fn].
-  ///
-  /// If [fn] produces an unhandled error, this marks the current test as
-  /// failed, removes all outstanding callbacks registered within [fn], and
-  /// completes the returned future. It does not remove any outstanding
-  /// callbacks registered outside of [fn].
-  ///
-  /// If the test times out, the *most recent* call to
-  /// [waitForOutstandingCallbacks] will treat that error as occurring within
-  /// [fn]—that is, it will complete immediately.
+  /// Outstanding callbacks registered within [fn] will *not* be registered as
+  /// outstanding callback outside of [fn].
   Future<void> waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
@@ -381,8 +370,6 @@ class Invoker {
   void _onRun() {
     _controller.setState(const State(Status.running, Result.success));
 
-    var outstandingCallbacksForBody = _AsyncCounter();
-
     _runCount++;
     Chain.capture(() {
       _guardIfGuarded(() {
@@ -398,13 +385,11 @@ class Invoker {
           // guarantees.
           //
           // Use the event loop over the microtask queue to avoid starvation.
-          unawaited(Future(() async {
-            await _test._body();
-            await unclosable(_runTearDowns);
-            removeOutstandingCallback();
-          }));
+          await Future(() {});
 
-          await _outstandingCallbacks.onZero;
+          await waitForOutstandingCallbacks(_test._body);
+          await waitForOutstandingCallbacks(() => unclosable(_runTearDowns));
+
           if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
           if (liveTest.state.result != Result.success &&
@@ -420,9 +405,6 @@ class Invoker {
         },
             zoneValues: {
               #test.invoker: this,
-              // Use the invoker as a key so that multiple invokers can have
-              // different outstanding callback counters at once.
-              _counterKey: outstandingCallbacksForBody,
               _closableKey: true,
               #runCount: _runCount,
             },

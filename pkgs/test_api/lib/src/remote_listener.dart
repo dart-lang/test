@@ -61,10 +61,6 @@ class RemoteListener {
       channel.sink.add({'type': 'print', 'line': line});
     });
 
-    // Work-around for https://github.com/dart-lang/sdk/issues/32556. Remove
-    // once fixed.
-    Stream.fromIterable([]).listen((_) {}).cancel();
-
     SuiteChannelManager().asCurrent(() {
       StackTraceFormatter().asCurrent(() {
         runZonedGuarded(() async {

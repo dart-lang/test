@@ -1,4 +1,26 @@
-## 0.3.5-dev
+## 0.3.9
+
+* Ignore a null `RunnerSuite` rather than throw an error.
+
+## 0.3.8
+
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
+
+## 0.3.7
+
+* Support the latest `package:coverage`.
+
+## 0.3.6
+
+* Expose the `Configuration` class and related classes through `backend.dart`.
+
+## 0.3.5
+
+* Add additional information to an exception when we end up with a null
+  `RunnerSuite`.
 
 * Update vm bootstrapping logic to ensure the bootstrap library has the same
   language version as the test.

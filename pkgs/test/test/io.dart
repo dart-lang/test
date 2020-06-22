@@ -72,10 +72,12 @@ Future<TestProcess> runTest(Iterable<String> args,
     int concurrency,
     Map<String, String> environment,
     bool forwardStdio = false,
-    String packageConfig}) async {
+    String packageConfig,
+    Iterable<String> vmArgs}) async {
   concurrency ??= 1;
 
   var allArgs = [
+    ...?vmArgs,
     p.absolute(p.join(await packageDir, 'bin/test.dart')),
     '--concurrency=$concurrency',
     if (reporter != null) '--reporter=$reporter',

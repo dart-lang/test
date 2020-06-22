@@ -48,7 +48,7 @@ class _Parser {
   final String _contents;
 
   /// The language version override comment if one was present, otherwise null.
-  String _languageVersionComment;
+  String? _languageVersionComment;
 
   _Parser(this._path, this._contents, this._platformVariables) {
     var result =
