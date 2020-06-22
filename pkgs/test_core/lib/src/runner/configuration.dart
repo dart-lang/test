@@ -229,7 +229,7 @@ class Configuration {
   ///
   /// Throws a [FormatException] if its contents are invalid.
   factory Configuration.loadFromString(String source,
-          {bool global = false, Uri sourceUrl}) =>
+          {bool global = false, Uri? sourceUrl}) =>
       loadFromString(source, global: global, sourceUrl: sourceUrl);
 
   factory Configuration(
