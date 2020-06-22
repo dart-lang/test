@@ -152,7 +152,7 @@ class Invoker {
           // capture [zone] and with it the outstanding callback counter for
           // the zone in which [error] was thrown.
           handleUncaughtError: (self, _, zone, error, stackTrace) {
-        var invoker = zone[#test.invoker] as Invoker;
+        var invoker = zone[#test.invoker] as Invoker?;
         if (invoker != null) {
           self.parent!.run(() => invoker._handleError(zone, error, stackTrace));
         } else {
