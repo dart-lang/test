@@ -315,6 +315,7 @@ void main() {
 
     test('closes the channel when the test finishes by default', () async {
       await d.file('test.dart', '''
+        // @dart=2.7
         import "package:stream_channel/stream_channel.dart";
         import "package:test/test.dart";
 
