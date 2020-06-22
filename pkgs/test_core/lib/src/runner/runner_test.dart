@@ -38,7 +38,7 @@ class RunnerTest extends Test {
   LiveTest load(Suite suite, {Iterable<Group> groups}) {
     LiveTestController controller;
     VirtualChannel testChannel;
-    controller = LiveTestController(suite, this, () {
+    controller = LiveTestController(suite, this, (_) {
       controller.setState(const State(Status.running, Result.success));
 
       testChannel = _channel.virtualChannel();
