@@ -61,7 +61,7 @@ class _LiveSuite extends LiveSuite {
 /// suite, [noMoreLiveTests] should be called. Once the suite should be torn
 /// down, [close] should be called.
 class LiveSuiteController {
-  /// The [LiveSuite] controlled by [this].
+  /// The [LiveSuite] being controlled.
   LiveSuite get liveSuite => _liveSuite;
   LiveSuite _liveSuite;
 
