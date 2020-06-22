@@ -194,7 +194,7 @@ class JsonReporter implements Reporter {
     }
 
     _emit('suite', {
-      'suite': {
+      'suite': <String, Object?>{
         'id': id,
         'platform': suite.platform.runtime.identifier,
         'path': suite.path

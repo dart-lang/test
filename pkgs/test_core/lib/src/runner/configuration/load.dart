@@ -55,7 +55,7 @@ Configuration load(String path, {bool global = false}) {
 ///
 /// Throws a [FormatException] if the configuration is invalid.
 Configuration loadFromString(String source,
-    {bool global = false, Uri sourceUrl}) {
+    {bool global = false, Uri? sourceUrl}) {
   var document = loadYamlNode(source, sourceUrl: sourceUrl);
 
   if (document.value == null) return Configuration.empty;
