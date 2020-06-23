@@ -75,7 +75,7 @@ void main() {
           containsInOrder(
               ['+0: hybrid loads dart:io', '+1: All tests passed!']));
       await test.shouldExit(0);
-    }, tags: ['chrome']);
+    }, tags: ['chrome'], skip: 'browser?');
 
     test('forwards data from the test to the hybrid isolate', () async {
       var channel = spawnHybridCode('''
@@ -205,7 +205,7 @@ void main() {
           containsInOrder(
               ['+0: invalid message to hybrid', '+1: All tests passed!']));
       await test.shouldExit(0);
-    }, tags: ['chrome']);
+    }, tags: ['chrome'], skip: 'browser?');
 
     test('gracefully handles an unserializable message in the hybrid isolate',
         () {
