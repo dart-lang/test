@@ -19,7 +19,7 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// This connects the main isolate to the hybrid isolate, whereas
 /// `lib/src/frontend/spawn_hybrid.dart` connects the test isolate to the main
 /// isolate.
-StreamChannel spawnHybridUri(String url, Object message) {
+StreamChannel spawnHybridUri(int id, String url, Object message) {
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();
     var onExitPort = ReceivePort();
@@ -32,12 +32,14 @@ StreamChannel spawnHybridUri(String url, Object message) {
         void main(_, List data) => listen(() => lib.hybridMain, data);
       ''';
 
+      print('Starting isolate for: $id');
       var isolate = await dart.runInIsolate(code, [port.sendPort, message],
           onExit: onExitPort.sendPort);
 
       // Ensure that we close [port] and [channel] when the isolate exits.
       var disconnector = Disconnector();
       onExitPort.listen((_) {
+        print('Isolate exited for: $id');
         disconnector.disconnect();
         onExitPort.close();
       });
@@ -46,11 +48,13 @@ StreamChannel spawnHybridUri(String url, Object message) {
           .transform(disconnector)
           .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
         // If the user closes the stream channel, kill the isolate.
+        print('Killing Isolate for: $id');
         isolate.kill();
         onExitPort.close();
         sink.close();
       }));
     } catch (error, stackTrace) {
+      print('Error in Isolate for: $id');
       port.close();
       onExitPort.close();
 

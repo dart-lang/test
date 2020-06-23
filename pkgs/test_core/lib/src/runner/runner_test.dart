@@ -71,7 +71,8 @@ class RunnerTest extends Test {
             // When we kill the isolate that the test lives in, that will close
             // this virtual channel and cause the spawned isolate to close as
             // well.
-            spawnHybridUri(message['url'] as String, message['message'])
+            spawnHybridUri(message['channel'] as int, message['url'] as String,
+                    message['message'])
                 .pipe(testChannel.virtualChannel(message['channel'] as int));
             break;
         }
