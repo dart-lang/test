@@ -3,8 +3,8 @@ dart:
 
 stages:
     - unit_test:
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5
+      - command: dart test/diagnose_exit.dart -fake1
+      - command: dart test/diagnose_exit.dart -fake2
+      - command: dart test/diagnose_exit.dart -fake3
+      - command: dart test/diagnose_exit.dart -fake4
+      - command: dart test/diagnose_exit.dart -fake5
