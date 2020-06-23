@@ -19,7 +19,7 @@ jobs:
       env: PKGS="pkgs/test"
       script: ./tool/travis.sh command_0
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 1`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 1`"t
       dart: dev
       os: linux
       env: PKGS="pkgs/test"
@@ -42,12 +42,6 @@ jobs:
       os: linux
       env: PKGS="pkgs/test"
       script: ./tool/travis.sh command_4
-    - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test_api; TASKS: `pub run test --preset travis`"
-      dart: dev
-      os: linux
-      env: PKGS="pkgs/test_api"
-      script: ./tool/travis.sh test
 
 stages:
   - unit_test
