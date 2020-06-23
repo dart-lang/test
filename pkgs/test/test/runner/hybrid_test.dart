@@ -45,7 +45,7 @@ void main() {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
       ''').stream.toList(), completion(equals([1, 2, 3])));
-    });
+    }, skip: 'only serialization error');
 
     test('can use dart:io even when run from a browser', () async {
       var path = p.join(d.sandbox, 'test.dart');
@@ -75,7 +75,7 @@ void main() {
           containsInOrder(
               ['+0: hybrid loads dart:io', '+1: All tests passed!']));
       await test.shouldExit(0);
-    }, tags: ['chrome']);
+    }, tags: ['chrome'], skip: 'only serialization error');
 
     test('forwards data from the test to the hybrid isolate', () async {
       var channel = spawnHybridCode('''
@@ -179,7 +179,7 @@ void main() {
       ''');
 
       expect(() => channel.sink.add([].iterator), throwsArgumentError);
-    }, skip: 'Non-browser?');
+    });
 
     test('gracefully handles an unserializable message in the browser',
         () async {
