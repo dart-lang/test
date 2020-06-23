@@ -54,9 +54,25 @@ for PKG in ${PKGS}; do
     echo
     echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
     case ${TASK} in
-    command)
-      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart'
-      xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart || EXIT_CODE=$?
+    command_0)
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 0'
+      xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 0 || EXIT_CODE=$?
+      ;;
+    command_1)
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 1'
+      xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 1 || EXIT_CODE=$?
+      ;;
+    command_2)
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 2'
+      xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 2 || EXIT_CODE=$?
+      ;;
+    command_3)
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3'
+      xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 || EXIT_CODE=$?
+      ;;
+    command_4)
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 4'
+      xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 4 || EXIT_CODE=$?
       ;;
     dartanalyzer_0)
       echo 'dartanalyzer --fatal-infos --fatal-warnings .'
