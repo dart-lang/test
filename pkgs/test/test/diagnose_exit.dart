@@ -34,13 +34,20 @@ void main(List<String> args) async {
   process.kill();
 }
 
-Future<Uri> _findObservatoryUrl(StreamQueue<List<int>> stdout) async {
+Future<Uri> _findObservatoryUrl(StreamQueue<List<int>> testOut) async {
   final newline = '\n'.codeUnitAt(0);
-  final line = <List<int>>[];
-  while (line.isEmpty || line.last.last != newline) {
-    line.add(await stdout.next);
+  while (true) {
+    final line = <List<int>>[];
+    while (line.isEmpty || line.last.last != newline) {
+      line.add(await testOut.next);
+    }
+    final decoded = utf8.decode([for (var part in line) ...part]);
+    if (decoded.startsWith('Observatory listening on')) {
+      return Uri.parse(decoded.split(' ').last);
+    } else {
+      stdout.writeAll(line);
+    }
   }
-  return Uri.parse(utf8.decode(line.expand((l) => l).toList()).split(' ').last);
 }
 
 Future<void> _showInfo(Uri serviceProtocolUrl) async {
