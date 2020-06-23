@@ -2,14 +2,6 @@ dart:
   - dev
 
 stages:
-    - analyze_and_format:
-      - group:
-        - dartfmt: sdk
-        - dartanalyzer: --fatal-infos --fatal-warnings .
-        dart: dev
-      - group:
-        - dartanalyzer: --fatal-warnings .
-        dart: 2.7.0
     - unit_test:
       - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1
       - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2
