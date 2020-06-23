@@ -75,7 +75,7 @@ void main() {
           containsInOrder(
               ['+0: hybrid loads dart:io', '+1: All tests passed!']));
       await test.shouldExit(0);
-    }, tags: ['chrome'], skip: 'browser?');
+    }, tags: ['chrome']);
 
     test('forwards data from the test to the hybrid isolate', () async {
       var channel = spawnHybridCode('''
@@ -89,7 +89,7 @@ void main() {
       ''');
       channel.sink..add(1)..add(2)..add(3);
       expect(channel.stream.take(3).toList(), completion(equals([2, 3, 4])));
-    });
+    }, skip: 'Non-browser?');
 
     test('passes an initial message to the hybrid isolate', () {
       var code = '''
@@ -104,7 +104,7 @@ void main() {
           completion(equals([1, 2, 3])));
       expect(spawnHybridCode(code, message: {'a': 'b'}).stream.first,
           completion(equals({'a': 'b'})));
-    });
+    }, skip: 'Non-browser?');
 
     test('allows the hybrid isolate to send errors across the stream channel',
         () {
@@ -121,7 +121,7 @@ void main() {
         expect(error.toString(), equals('oh no!'));
         expect(stackTrace.toString(), contains('hybridMain'));
       }));
-    });
+    }, skip: 'Non-browser?');
 
     test('sends an unhandled synchronous error across the stream channel', () {
       var channel = spawnHybridCode('''
@@ -136,7 +136,7 @@ void main() {
         expect(error.toString(), equals('oh no!'));
         expect(stackTrace.toString(), contains('hybridMain'));
       }));
-    });
+    }, skip: 'Non-browser?');
 
     test('sends an unhandled asynchronous error across the stream channel', () {
       var channel = spawnHybridCode('''
@@ -155,7 +155,7 @@ void main() {
         expect(error.toString(), equals('oh no!'));
         expect(stackTrace.toString(), contains('hybridMain'));
       }));
-    });
+    }, skip: 'Non-browser?');
 
     test('deserializes TestFailures as TestFailures', () {
       var channel = spawnHybridCode('''
@@ -169,7 +169,7 @@ void main() {
       ''');
 
       expect(channel.stream.first, throwsA(TypeMatcher<TestFailure>()));
-    });
+    }, skip: 'Non-browser?');
 
     test('gracefully handles an unserializable message in the VM', () {
       var channel = spawnHybridCode('''
@@ -179,7 +179,7 @@ void main() {
       ''');
 
       expect(() => channel.sink.add([].iterator), throwsArgumentError);
-    });
+    }, skip: 'Non-browser?');
 
     test('gracefully handles an unserializable message in the browser',
         () async {
@@ -205,7 +205,7 @@ void main() {
           containsInOrder(
               ['+0: invalid message to hybrid', '+1: All tests passed!']));
       await test.shouldExit(0);
-    }, tags: ['chrome'], skip: 'browser?');
+    }, tags: ['chrome']);
 
     test('gracefully handles an unserializable message in the hybrid isolate',
         () {
