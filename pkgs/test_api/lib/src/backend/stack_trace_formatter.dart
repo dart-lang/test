@@ -34,9 +34,9 @@ class StackTraceFormatter {
   static StackTraceFormatter get current =>
       Zone.current[_currentKey] as StackTraceFormatter;
 
-  /// Runs [body] with [this] as [StackTraceFormatter.current].
+  /// Runs [body] with this as [StackTraceFormatter.current].
   ///
-  /// This is zone-scoped, so [this] will be the current configuration in any
+  /// This is zone-scoped, so this will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
   T asCurrent<T>(T Function() body) =>
       runZoned(body, zoneValues: {_currentKey: this});

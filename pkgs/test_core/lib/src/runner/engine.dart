@@ -73,14 +73,14 @@ class Engine {
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
 
-  /// A completer that will complete when [this] is unpaused.
+  /// A completer that will complete when this engine is unpaused.
   ///
-  /// If [this] isn't paused, [_pauseCompleter] is `null`.
+  /// `null` if this engine is not paused.
   Completer _pauseCompleter;
 
-  /// A future that completes once [this] is unpaused.
+  /// A future that completes once this is unpaused.
   ///
-  /// If [this] isn't paused, this completes immediately.
+  /// If this engine isn't paused, this future completes immediately.
   Future get _onUnpaused =>
       _pauseCompleter == null ? Future.value() : _pauseCompleter.future;
 
