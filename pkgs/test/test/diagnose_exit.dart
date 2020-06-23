@@ -45,7 +45,11 @@ Future<Uri> _findObservatoryUrl(StreamQueue<List<int>> testOut) async {
     if (decoded.startsWith('Observatory listening on')) {
       return Uri.parse(decoded.split(' ').last);
     } else {
-      stdout.writeAll(line);
+      for (final part in line) {
+        for (final char in part) {
+          stdout.writeCharCode(char);
+        }
+      }
     }
   }
 }
