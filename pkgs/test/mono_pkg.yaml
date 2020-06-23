@@ -11,8 +11,8 @@ stages:
         - dartanalyzer: --fatal-warnings .
         dart: 2.7.0
     - unit_test:
-      - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1
-      - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2
-      - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3
-      - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4
-      - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5
+      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1
+      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2
+      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3
+      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4
+      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5
