@@ -444,14 +444,14 @@ class Configuration {
     return Map.unmodifiable(input);
   }
 
-  /// Runs [body] with [this] as [Configuration.current].
+  /// Runs [body] with this as [Configuration.current].
   ///
-  /// This is zone-scoped, so [this] will be the current configuration in any
+  /// This is zone-scoped, so this will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
   T asCurrent<T>(T Function() body) =>
       runZoned(body, zoneValues: {_currentKey: this});
 
-  /// Throws a [FormatException] if [this] refers to any undefined runtimes.
+  /// Throws a [FormatException] if this refers to any undefined runtimes.
   void validateRuntimes(List<Runtime> allRuntimes) {
     // We don't need to verify [customRuntimes] here because those runtimes
     // already need to be verified and resolved to create [allRuntimes].

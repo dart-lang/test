@@ -122,8 +122,7 @@ class SuiteConfiguration {
 
   Set<String>? _knownTags;
 
-  /// All child configurations of [this] that may be selected under various
-  /// circumstances.
+  /// All child configurations that may be selected under various circumstances.
   Iterable<SuiteConfiguration> get _children sync* {
     yield* tags.values;
     yield* onPlatform.values;
@@ -308,7 +307,7 @@ class SuiteConfiguration {
     return config._resolveTags();
   }
 
-  /// Throws a [FormatException] if [this] refers to any undefined runtimes.
+  /// Throws a [FormatException] if this refers to any undefined runtimes.
   void validateRuntimes(List<Runtime> allRuntimes) {
     var validVariables =
         allRuntimes.map((runtime) => runtime.identifier).toSet();
@@ -335,7 +334,7 @@ class SuiteConfiguration {
     });
   }
 
-  /// Returns a copy of [this] with all platform-specific configuration from
+  /// Returns a copy of this with all platform-specific configuration from
   /// [onPlatform] resolved.
   SuiteConfiguration forPlatform(SuitePlatform platform) {
     if (onPlatform.isEmpty) return this;
