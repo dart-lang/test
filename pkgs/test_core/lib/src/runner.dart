@@ -66,9 +66,7 @@ class Runner {
   /// This is stored so that we can cancel it when the runner is closed.
   CancelableOperation _debugOperation;
 
-  /// The memoizer for ensuring [close] only runs once.
-  final _closeMemo = AsyncMemoizer();
-  bool get _closed => _closeMemo.hasRun;
+  bool _closed = false;
 
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
@@ -221,40 +219,51 @@ class Runner {
   /// This stops any future test suites from running. It will wait for any
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
-  Future close() => _closeMemo.runOnce(() async {
-        Timer timer;
-        if (!_engine.isIdle) {
-          // Wait a bit to print this message, since printing it eagerly looks weird
-          // if the tests then finish immediately.
-          timer = Timer(Duration(seconds: 1), () {
-            // Pause the reporter while we print to ensure that we don't interfere
-            // with its output.
-            _reporter.pause();
-            print('Waiting for current test(s) to finish.');
-            print('Press Control-C again to terminate immediately.');
-            _reporter.resume();
-          });
-        }
-
-        if (_debugOperation != null) await _debugOperation.cancel();
-
-        if (_suiteSubscription != null) await _suiteSubscription.cancel();
-        _suiteSubscription = null;
-
-        // Make sure we close the engine *before* the loader. Otherwise,
-        // LoadSuites provided by the loader may get into bad states.
-        //
-        // We close the loader's browsers while we're closing the engine because
-        // browser tests don't store any state we care about and we want them to
-        // shut down without waiting for their tear-downs.
-        await Future.wait([_loader.closeEphemeral(), _engine.close()]);
-        if (timer != null) timer.cancel();
-        await _loader.close();
-
-        // Flush any IOSinks created for file reporters.
-        await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
-        _sinks.clear();
+  Future close() {
+    if (_closed) return Future.value(null);
+    _closed = true;
+    Timer timer;
+    if (!_engine.isIdle) {
+      // Wait a bit to print this message, since printing it eagerly looks weird
+      // if the tests then finish immediately.
+      timer = Timer(Duration(seconds: 1), () {
+        // Pause the reporter while we print to ensure that we don't interfere
+        // with its output.
+        _reporter.pause();
+        print('Waiting for current test(s) to finish.');
+        print('Press Control-C again to terminate immediately.');
+        _reporter.resume();
       });
+    }
+
+    var done = Future<dynamic>.value(null);
+
+    if (_debugOperation != null) {
+      done = done.then((_) => _debugOperation.cancel());
+    }
+
+    if (_suiteSubscription != null) {
+      done = done.then((_) =>
+          _suiteSubscription.cancel().then((_) => _suiteSubscription = null));
+    }
+
+    // Make sure we close the engine *before* the loader. Otherwise,
+    // LoadSuites provided by the loader may get into bad states.
+    //
+    // We close the loader's browsers while we're closing the engine because
+    // browser tests don't store any state we care about and we want them to
+    // shut down without waiting for their tear-downs.
+    done = done
+        .then((_) => Future.wait([_loader.closeEphemeral(), _engine.close()]));
+    if (timer != null) timer.cancel();
+    done = done.then((_) => _loader.close());
+
+    // Flush any IOSinks created for file reporters.
+    done = done.then((_) =>
+        Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())))
+            .then((_) => _sinks.clear()));
+    return done;
+  }
 
   /// Return a stream of [LoadSuite]s in [_config.paths].
   ///

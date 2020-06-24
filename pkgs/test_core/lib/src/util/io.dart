@@ -43,12 +43,21 @@ final int lineLength = () {
 ///
 /// If the cwd is not a package, this returns an empty string which ends up
 /// defaulting to the current sdk version.
-final Future<String> rootPackageLanguageVersionComment = () async {
-  var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
-  var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
-  if (rootPackage == null) return '';
-  return '// @dart=${rootPackage.languageVersion}';
-}();
+String _languageComment;
+Future<String> _languageCommentWork;
+Future<String> get rootPackageLanguageVersionComment {
+  if (_languageComment != null) return Future.value(_languageComment);
+  return _languageCommentWork ??= () async {
+    var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
+    var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
+    if (rootPackage == null) return '';
+    return '// @dart=${rootPackage.languageVersion}';
+  }()
+    ..then((c) {
+      _languageComment = c;
+      _languageCommentWork = null;
+    });
+}
 
 /// The root directory of the Dart SDK.
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));

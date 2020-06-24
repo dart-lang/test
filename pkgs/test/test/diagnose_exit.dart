@@ -42,15 +42,14 @@ Future<Uri> _findObservatoryUrl(StreamQueue<List<int>> testOut) async {
     while (line.isEmpty || line.last.last != newline) {
       line.add(await testOut.next);
     }
-    final decoded = utf8.decode([for (var part in line) ...part]);
+    final decoded = utf8
+        .decode([for (var part in line) ...part])
+        .split('\n')
+        .firstWhere((l) => l.isNotEmpty);
     if (decoded.startsWith('Observatory listening on')) {
       return Uri.parse(decoded.split(' ').last);
     } else {
-      for (final part in line) {
-        for (final char in part) {
-          stdout.writeCharCode(char);
-        }
-      }
+      line.forEach(stdout.add);
     }
   }
 }
