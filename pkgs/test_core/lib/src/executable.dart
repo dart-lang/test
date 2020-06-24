@@ -33,8 +33,14 @@ final String _globalConfigPath = () {
 }();
 
 Future<void> main(List<String> args) async {
+  var fakeLongExit = false;
+  if (args.first == '--fake-long-exit') {
+    args = args.skip(1).toList();
+    fakeLongExit = true;
+  }
   await _execute(args);
   completeShutdown();
+  if (fakeLongExit) await Future.delayed(const Duration(minutes: 2));
 }
 
 Future<void> runTests(List<String> args) async {

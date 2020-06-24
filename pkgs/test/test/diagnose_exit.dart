@@ -11,6 +11,7 @@ void main(List<String> args) async {
   final process = await Process.start('dart', [
     '--enable-vm-service',
     'bin/test.dart',
+    '--fake-long-exit',
     'test/runner/hybrid_test.dart',
     '--total-shards',
     '5',
