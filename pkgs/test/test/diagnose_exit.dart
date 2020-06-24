@@ -77,9 +77,13 @@ Future<void> _showInfo(Uri serviceProtocolUrl) async {
           for (final o in retainingPath.elements) {
             final value = o.value;
             if (value is InstanceRef) {
-              print('-> ${value.classRef.name} in ${o.parentField}');
+              print(
+                  '-> ${value.classRef.name} in ${o.parentField} {map: ${o.parentMapKey}, list: ${o.parentListIndex}}');
+            } else if (value is ContextRef) {
+              print('-> Context ${value.id}');
             } else {
-              print('-> in ${o.parentField}');
+              print(
+                  '-> Non-Instance: ${value.runtimeType} in ${o.parentField} {map: ${o.parentMapKey}, list: ${o.parentListIndex}');
             }
           }
         }
