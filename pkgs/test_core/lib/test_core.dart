@@ -287,7 +287,7 @@ void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 void tearDownAll(dynamic Function() callback) =>
     _declarer.tearDownAll(callback);
 
-/// Base class that may be used by a test to create a mock object that should
+/// Base class that may be used by a test to create a fake object that should
 /// never be used.  For example:
 ///
 ///     class FakeFoo extends Fake implements Foo {}
