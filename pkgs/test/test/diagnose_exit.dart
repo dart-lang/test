@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 
@@ -55,40 +56,82 @@ Future<Uri> _findObservatoryUrl(StreamQueue<List<int>> testOut) async {
 }
 
 Future<void> _showInfo(Uri serviceProtocolUrl) async {
-  final service = await vmServiceConnectUri(
-      convertToWebSocketUrl(serviceProtocolUrl: serviceProtocolUrl).toString());
+  final skips = StreamController.broadcast();
+  var skipCount = 0;
+  final service = await runZonedGuarded(
+      () => vmServiceConnectUri(
+          convertToWebSocketUrl(serviceProtocolUrl: serviceProtocolUrl)
+              .toString()), (error, st) {
+    skipCount++;
+    skips.add(null);
+  });
   final vm = await service.getVM();
   final isolates = vm.isolates;
   print(isolates);
 
-  for (final isolate in isolates) {
-    final classList = await service.getClassList(isolate.id);
+  for (final isolateRef in isolates) {
+    final classList = await service.getClassList(isolateRef.id);
+    final isolate = await service.getIsolate(isolateRef.id);
+    final rootRefs = <InstanceRef>[];
     for (final c in classList.classes) {
       if (c?.name?.endsWith('Subscription') ?? false) {
         final instances =
-            (await service.getInstances(isolate.id, c.id, 100)).instances;
+            (await service.getInstances(isolateRef.id, c.id, 100)).instances;
         if (instances.isEmpty) continue;
         print('${c.name}: ${instances.length} instances');
         for (final instance in instances) {
           final retainingPath =
-              await service.getRetainingPath(isolate.id, instance.id, 100);
+              await service.getRetainingPath(isolateRef.id, instance.id, 100);
           print('Retained type: ${retainingPath.gcRootType}');
+          InstanceRef lastRetained;
           for (final o in retainingPath.elements) {
             final value = o.value;
             if (value is InstanceRef) {
+              lastRetained = value;
               print(
                   '-> ${value.classRef.name} in ${o.parentField} {map: ${o.parentMapKey}, list: ${o.parentListIndex}}');
             } else if (value is ContextRef) {
               print('-> Context ${value.id}');
             } else {
               print(
-                  '-> Non-Instance: ${value.runtimeType} in ${o.parentField} {map: ${o.parentMapKey}, list: ${o.parentListIndex}');
+                  '-> Non-Instance: ${value.runtimeType} in ${o.parentField} {map: ${o.parentMapKey}, list: ${o.parentListIndex}}');
             }
+          }
+          if (lastRetained != null) {
+            rootRefs.add(lastRetained);
           }
         }
       }
     }
+    print('Roots: ');
+    for (final libraryRef in isolate.libraries) {
+      final library =
+          await service.getObject(isolateRef.id, libraryRef.id) as Library;
+      if (library.name.startsWith('dart.') ||
+          library.name.startsWith('builtin')) {
+        continue;
+      }
+      for (final variableRef in library.variables) {
+        try {
+          final variableOrSkip = await Future.any([
+            service.getObject(isolateRef.id, variableRef.id),
+            skips.stream.first
+          ]);
+          if (variableOrSkip == null) continue;
+          final variable = variableOrSkip as Field;
+          for (final root in rootRefs.toList()) {
+            if (root.classRef.id == variable.staticValue.classRef.id) {
+              print(
+                  'Potential Root: ${root.classRef.name} at ${variableRef.name} in library "${library.name}" at ${variable.location.script.uri}');
+            }
+          }
+        } catch (_) {
+          skipCount++;
+        }
+      }
+    }
   }
+  print('Errors reading $skipCount variables');
 
   service.dispose();
 }
