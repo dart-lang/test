@@ -48,11 +48,7 @@ void completeShutdown() {
     signalSubscription = null;
   }
   isShutdown = true;
-
-  // Applications can't access stdin on Fuchsia.
-  if (!Platform.isFuchsia) {
-    stdinLines.cancel(immediate: true);
-  }
+  stdinLines.cancel(immediate: true);
 }
 
 Future<void> _execute(List<String> args) async {

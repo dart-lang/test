@@ -65,7 +65,11 @@ SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
     inGoogle: inGoogle);
 
 /// A queue of lines of standard input.
-final stdinLines = StreamQueue(lineSplitter.bind(stdin));
+///
+/// Also returns an empty stream for Fuchsia since Fuchsia components can't
+/// access stdin.
+final stdinLines = StreamQueue(
+    Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
 
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
