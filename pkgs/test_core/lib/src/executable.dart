@@ -60,8 +60,10 @@ Future<void> _execute(List<String> args) async {
   /// terminates the program immediately.
   final _signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
-      : StreamGroup.merge(
-          [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+      : Platform.isFuchsia // Signals don't exist on Fuchsia.
+          ? Stream.empty()
+          : StreamGroup.merge(
+              [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
   Configuration configuration;
   try {
