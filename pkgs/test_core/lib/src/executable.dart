@@ -61,9 +61,9 @@ Future<void> _execute(List<String> args) async {
   final _signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
       : Platform.isFuchsia // Signals don't exist on Fuchsia.
-      ? Stream.empty()
-      : StreamGroup.merge(
-          [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+          ? Stream.empty()
+          : StreamGroup.merge(
+              [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
   Configuration configuration;
   try {
