@@ -8,7 +8,7 @@ library test_core;
 
 import 'dart:async';
 
-import 'package:meta/meta.dart';
+import 'package:meta/meta.dart' show isTest, isTestGroup;
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
