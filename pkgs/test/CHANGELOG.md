@@ -1,3 +1,8 @@
+## 1.15.2
+
+* Use the latest `test_core` which resolves an issue with the latest
+  `package:meta`.
+
 ## 1.15.1
 
 * Avoid a confusing stack trace when there is a problem loading a platform when
