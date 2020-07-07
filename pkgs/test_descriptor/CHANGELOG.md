@@ -1,5 +1,6 @@
-## 1.2.1
+## 1.2.1-dev
 
+* Update minimum Dart SDK to `2.7.0`.
 * Fix outdated URLs in `README.md`.
 
 ## 1.2.0
