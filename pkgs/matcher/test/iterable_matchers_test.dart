@@ -39,7 +39,8 @@ void main() {
         equals(['foo', endsWith('ba')]),
         "Expected: ['foo', <a string ending with 'ba'>] "
         "Actual: ['foo', 'bar'] "
-        "Which: does not match a string ending with 'ba' at location [1]");
+        "Which: at location [1] is 'bar' which "
+        "does not match a string ending with 'ba'");
   });
 
   test('isIn', () {
@@ -140,7 +141,7 @@ void main() {
         orderedEquals([2, 1]),
         'Expected: equals [2, 1] ordered '
         'Actual: [1, 2] '
-        'Which: was <1> instead of <2> at location [0]');
+        'Which: at location [0] is <1> instead of <2>');
     shouldFail('not an iterable', orderedEquals([1]),
         endsWith('not an <Instance of \'Iterable\'>'));
   });

@@ -42,6 +42,30 @@ void main() {
             .having((e) => e.end, 'end', lessThanOrEqualTo(20))));
   });
 
+  test('having inside deep matcher', () {
+    shouldFail(
+        [RangeError.range(-1, 1, 10)],
+        equals([_rangeMatcher]),
+        anyOf([
+          equalsIgnoringWhitespace(
+              "Expected: [ <<Instance of 'RangeError'> with "
+              "`message`: contains 'details' and `start`: null and `end`: null> ] "
+              'Actual: [RangeError:RangeError: '
+              'Invalid value: Not in inclusive range 1..10: -1] '
+              'Which: at location [0] is RangeError:<RangeError: '
+              'Invalid value: Not in inclusive range 1..10: -1> '
+              "which has `message` with value 'Invalid value'"),
+          equalsIgnoringWhitespace(// Older SDKs
+              "Expected: [ <<Instance of 'RangeError'> with "
+              "`message`: contains 'details' and `start`: null and `end`: null> ] "
+              'Actual: [RangeError:RangeError: '
+              'Invalid value: Not in range 1..10, inclusive: -1] '
+              'Which: at location [0] is RangeError:<RangeError: '
+              'Invalid value: Not in range 1..10, inclusive: -1> '
+              "which has `message` with value 'Invalid value'")
+        ]));
+  });
+
   group('CustomMatcher copy', () {
     test('Feature Matcher', () {
       var w = Widget();

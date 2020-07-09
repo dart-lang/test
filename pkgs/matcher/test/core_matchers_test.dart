@@ -77,7 +77,7 @@ void main() {
         equals(set1),
         matches(r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
             r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9\]'
-            r'   Which: does not contain 10'));
+            r'   Which: does not contain <10>'));
     shouldFail(
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
         equals(set1),
@@ -152,7 +152,7 @@ void main() {
         equals([5.1]),
         'Expected: [5.1] '
         "Actual: ['error'] "
-        "Which: was 'error' instead of <5.1> at location [0]");
+        "Which: at location [0] is 'error' instead of <5.1>");
   });
 
   test('doubly-nested type mismatch', () {
@@ -165,7 +165,7 @@ void main() {
         ]),
         'Expected: [[5.1]] '
         "Actual: [['error']] "
-        "Which: was 'error' instead of <5.1> at location [0][0]");
+        "Which: at location [0][0] is 'error' instead of <5.1>");
   });
 
   test('doubly nested inequality', () {
@@ -183,7 +183,7 @@ void main() {
     ];
     var reason1 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'bar'], ['foo'], 3, []] "
-        'Which: was <3> instead of <4> at location [2]';
+        'Which: at location [2] is <3> instead of <4>';
 
     var actual2 = [
       ['foo', 'barry'],
@@ -199,7 +199,7 @@ void main() {
     ];
     var reason2 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'barry'], ['foo'], 4, []] "
-        "Which: was 'barry' instead of 'bar' at location [0][1]";
+        "Which: at location [0][1] is 'barry' instead of 'bar'";
 
     var actual3 = [
       ['foo', 'bar'],
@@ -215,7 +215,7 @@ void main() {
     ];
     var reason3 = "Expected: [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}] "
         "Actual: [['foo', 'bar'], ['foo'], 4, {'foo': 'bar'}] "
-        "Which: was 'bar' instead of 'barry' at location [3]['foo']";
+        "Which: at location [3]['foo'] is 'bar' instead of 'barry'";
 
     shouldFail(actual1, equals(expected1), reason1);
     shouldFail(actual2, equals(expected2), reason2);

@@ -1,3 +1,10 @@
+## 0.12.9
+
+- Improve mismatch descriptions for deep matches.  Previously, if the user tried
+  to do a deep match where the expectation included a complex matcher (such as a
+  "having" matcher), the failure message would just say "failed to match ...";
+  it wouldn't call on the expectation's matcher to explain why the match failed.
+
 ## 0.12.8
 
 - Add a mismatch description to `TypeMatcher`.

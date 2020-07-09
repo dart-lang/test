@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'description.dart';
 import 'feature_matcher.dart';
 import 'interfaces.dart';
 import 'util.dart';
@@ -20,8 +19,7 @@ Matcher equals(expected, [int limit = 100]) => expected is String
     ? _StringEqualsMatcher(expected)
     : _DeepMatcher(expected, limit);
 
-typedef _RecursiveMatcher = List<String> Function(
-    dynamic, dynamic, String, int);
+typedef _RecursiveMatcher = _Mismatch Function(dynamic, dynamic, String, int);
 
 /// A special equality matcher for strings.
 class _StringEqualsMatcher extends FeatureMatcher<String> {
@@ -104,8 +102,7 @@ class _DeepMatcher extends Matcher {
 
   _DeepMatcher(this._expected, [int limit = 1000]) : _limit = limit;
 
-  // Returns a pair (reason, location)
-  List<String> _compareIterables(Iterable expected, Object actual,
+  _Mismatch _compareIterables(Iterable expected, Object actual,
       _RecursiveMatcher matcher, int depth, String location) {
     if (actual is Iterable) {
       var expectedIterator = expected.iterator;
@@ -120,8 +117,12 @@ class _DeepMatcher extends Matcher {
 
         // Fail if their lengths are different.
         var newLocation = '$location[$index]';
-        if (!expectedNext) return ['longer than expected', newLocation];
-        if (!actualNext) return ['shorter than expected', newLocation];
+        if (!expectedNext) {
+          return _Mismatch.simple(newLocation, actual, 'longer than expected');
+        }
+        if (!actualNext) {
+          return _Mismatch.simple(newLocation, actual, 'shorter than expected');
+        }
 
         // Match the elements.
         var rp = matcher(expectedIterator.current, actualIterator.current,
@@ -129,55 +130,71 @@ class _DeepMatcher extends Matcher {
         if (rp != null) return rp;
       }
     } else {
-      return ['is not Iterable', location];
+      return _Mismatch.simple(location, actual, 'is not Iterable');
     }
   }
 
-  List<String> _compareSets(Set expected, Object actual,
-      _RecursiveMatcher matcher, int depth, String location) {
+  _Mismatch _compareSets(Set expected, Object actual, _RecursiveMatcher matcher,
+      int depth, String location) {
     if (actual is Iterable) {
       var other = actual.toSet();
 
       for (var expectedElement in expected) {
         if (other.every((actualElement) =>
             matcher(expectedElement, actualElement, location, depth) != null)) {
-          return ['does not contain $expectedElement', location];
+          return _Mismatch(
+              location,
+              actual,
+              (description, verbose) => description
+                  .add('does not contain ')
+                  .addDescriptionOf(expectedElement));
         }
       }
 
       if (other.length > expected.length) {
-        return ['larger than expected', location];
+        return _Mismatch.simple(location, actual, 'larger than expected');
       } else if (other.length < expected.length) {
-        return ['smaller than expected', location];
+        return _Mismatch.simple(location, actual, 'smaller than expected');
       } else {
         return null;
       }
     } else {
-      return ['is not Iterable', location];
+      return _Mismatch.simple(location, actual, 'is not Iterable');
     }
   }
 
-  List<String> _recursiveMatch(
+  _Mismatch _recursiveMatch(
       Object expected, Object actual, String location, int depth) {
     // If the expected value is a matcher, try to match it.
     if (expected is Matcher) {
       var matchState = {};
       if (expected.matches(actual, matchState)) return null;
-
-      var description = StringDescription();
-      expected.describe(description);
-      return ['does not match $description', location];
+      return _Mismatch(location, actual, (description, verbose) {
+        var oldLength = description.length;
+        expected.describeMismatch(actual, description, matchState, verbose);
+        if (depth > 0 && description.length == oldLength) {
+          description.add('does not match ');
+          expected.describe(description);
+        }
+      });
     } else {
       // Otherwise, test for equality.
       try {
         if (expected == actual) return null;
       } catch (e) {
         // TODO(gram): Add a test for this case.
-        return ['== threw "$e"', location];
+        return _Mismatch(
+            location,
+            actual,
+            (description, verbose) =>
+                description.add('== threw ').addDescriptionOf(e));
       }
     }
 
-    if (depth > _limit) return ['recursion depth limit exceeded', location];
+    if (depth > _limit) {
+      return _Mismatch.simple(
+          location, actual, 'recursion depth limit exceeded');
+    }
 
     // If _limit is 1 we can only recurse one level into object.
     if (depth == 0 || _limit > 1) {
@@ -188,19 +205,31 @@ class _DeepMatcher extends Matcher {
         return _compareIterables(
             expected, actual, _recursiveMatch, depth + 1, location);
       } else if (expected is Map) {
-        if (actual is! Map) return ['expected a map', location];
+        if (actual is! Map) {
+          return _Mismatch.simple(location, actual, 'expected a map');
+        }
         var map = actual as Map;
         var err =
             (expected.length == map.length) ? '' : 'has different length and ';
         for (var key in expected.keys) {
           if (!map.containsKey(key)) {
-            return ["${err}is missing map key '$key'", location];
+            return _Mismatch(
+                location,
+                actual,
+                (description, verbose) => description
+                    .add('${err}is missing map key ')
+                    .addDescriptionOf(key));
           }
         }
 
         for (var key in map.keys) {
           if (!expected.containsKey(key)) {
-            return ["${err}has extra map key '$key'", location];
+            return _Mismatch(
+                location,
+                actual,
+                (description, verbose) => description
+                    .add('${err}has extra map key ')
+                    .addDescriptionOf(key));
           }
         }
 
@@ -214,44 +243,24 @@ class _DeepMatcher extends Matcher {
       }
     }
 
-    var description = StringDescription();
-
     // If we have recursed, show the expected value too; if not, expect() will
     // show it for us.
     if (depth > 0) {
-      description
-          .add('was ')
-          .addDescriptionOf(actual)
-          .add(' instead of ')
-          .addDescriptionOf(expected);
-      return [description.toString(), location];
-    }
-
-    // We're not adding any value to the actual value.
-    return ['', location];
-  }
-
-  String _match(expected, actual, Map matchState) {
-    var rp = _recursiveMatch(expected, actual, '', 0);
-    if (rp == null) return null;
-    String reason;
-    if (rp[0].isNotEmpty) {
-      if (rp[1].isNotEmpty) {
-        reason = '${rp[0]} at location ${rp[1]}';
-      } else {
-        reason = rp[0];
-      }
+      return _Mismatch(location, actual,
+          (description, verbose) => description.addDescriptionOf(expected),
+          instead: true);
     } else {
-      reason = '';
+      return _Mismatch(location, actual, null);
     }
-    // Cache the failure reason in the matchState.
-    addStateInfo(matchState, {'reason': reason});
-    return reason;
   }
 
   @override
-  bool matches(item, Map matchState) =>
-      _match(_expected, item, matchState) == null;
+  bool matches(Object actual, Map matchState) {
+    var mismatch = _recursiveMatch(_expected, actual, '', 0);
+    if (mismatch == null) return true;
+    addStateInfo(matchState, {'mismatch': mismatch});
+    return false;
+  }
 
   @override
   Description describe(Description description) =>
@@ -260,16 +269,58 @@ class _DeepMatcher extends Matcher {
   @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
-    var reason = matchState['reason'] as String ?? '';
-    // If we didn't get a good reason, that would normally be a
-    // simple 'is <value>' message. We only add that if the mismatch
-    // description is non empty (so we are supplementing the mismatch
-    // description).
-    if (reason.isEmpty && mismatchDescription.length > 0) {
-      mismatchDescription.add('is ').addDescriptionOf(item);
+    var mismatch = matchState['mismatch'] as _Mismatch;
+    if (mismatch.location.isNotEmpty) {
+      mismatchDescription
+          .add('at location ')
+          .add(mismatch.location)
+          .add(' is ')
+          .addDescriptionOf(mismatch.actual);
+      if (mismatch.describeProblem != null) {
+        mismatchDescription
+            .add(' ${mismatch.instead ? 'instead of' : 'which'} ');
+        mismatch.describeProblem(mismatchDescription, verbose);
+      }
     } else {
-      mismatchDescription.add(reason);
+      // If we didn't get a good reason, that would normally be a
+      // simple 'is <value>' message. We only add that if the mismatch
+      // description is non empty (so we are supplementing the mismatch
+      // description).
+      if (mismatch.describeProblem == null) {
+        if (mismatchDescription.length > 0) {
+          mismatchDescription.add('is ').addDescriptionOf(item);
+        }
+      } else {
+        mismatch.describeProblem(mismatchDescription, verbose);
+      }
     }
     return mismatchDescription;
   }
+}
+
+class _Mismatch {
+  /// A human-readable description of the location within the collection where
+  /// the mismatch occurred.
+  final String location;
+
+  /// The actual value found at [location].
+  final Object actual;
+
+  /// Callback that can create a detailed description of the problem.
+  final void Function(Description, bool verbose) describeProblem;
+
+  /// If `true`, [describeProblem] describes the expected value, so when the
+  /// final mismatch description is pieced together, it will be preceded by
+  /// `instead of` (e.g. `at location [2] is <3> instead of <4>`).  If `false`,
+  /// [describeProblem] is a problem description from a sub-matcher, so when the
+  /// final mismatch description is pieced together, it will be preceded by
+  /// `which` (e.g. `at location [2] is <foo> which has length of 3`).
+  final bool instead;
+
+  _Mismatch(this.location, this.actual, this.describeProblem,
+      {this.instead = false});
+
+  _Mismatch.simple(this.location, this.actual, String problem,
+      {this.instead = false})
+      : describeProblem = ((description, verbose) => description.add(problem));
 }
