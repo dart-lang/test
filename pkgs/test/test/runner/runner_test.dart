@@ -744,7 +744,8 @@ $_testContents''').create();
           test.stdout,
           containsInOrder([
             'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
+            'Error: A library can\'t opt out of null safety by default, '
+                'when using sound null safety.'
           ]));
       await test.shouldExit(1);
     });
@@ -774,7 +775,8 @@ $_testContents''').create();
           test.stdout,
           containsInOrder([
             'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
+            'Error: A library can\'t opt out of null safety by default, '
+                'when using sound null safety.'
           ]));
       await test.shouldExit(1);
     });
