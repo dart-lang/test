@@ -783,9 +783,9 @@ $_testContents''').create();
         expect(
             test.stdout,
             containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'
+              'Unable to spawn isolate:',
+              'Error: A library can\'t opt out of null safety by default, '
+                  'when using sound null safety.'
             ]));
         await test.shouldExit(1);
       });
