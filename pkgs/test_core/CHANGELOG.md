@@ -1,4 +1,6 @@
-## 0.3.10-dev
+## 0.3.10
+
+* Prepare for `unawaited` from `package:meta`.
 
 ## 0.3.9
 

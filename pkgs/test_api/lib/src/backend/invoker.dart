@@ -160,12 +160,6 @@ class Invoker {
         }
       }));
 
-  /// The zone that the top level of [_test.body] is running in.
-  ///
-  /// Tracking this ensures that [_timeoutTimer] isn't created in a
-  /// timer-mocking zone created by the test.
-  Zone? _invokerZone;
-
   /// The timer for tracking timeouts.
   ///
   /// This will be `null` until the test starts running.
@@ -273,7 +267,7 @@ class Invoker {
       return message;
     }
 
-    _timeoutTimer = _invokerZone!.createTimer(timeout, () {
+    _timeoutTimer = Zone.root.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         _handleError(Zone.current, TimeoutException(message(), timeout));
       });
@@ -374,7 +368,6 @@ class Invoker {
     Chain.capture(() {
       _guardIfGuarded(() {
         runZoned(() async {
-          _invokerZone = Zone.current;
           _outstandingCallbackZones.add(Zone.current);
 
           // Run the test asynchronously so that the "running" state change
