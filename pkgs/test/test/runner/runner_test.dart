@@ -259,7 +259,7 @@ $_usage''');
     });
 
     test('a test file has a non-function main', () async {
-      await d.file('test.dart', 'int main;').create();
+      await d.file('test.dart', 'int main = 0;').create();
       var test = await runTest(['test.dart']);
 
       expect(
