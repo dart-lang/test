@@ -1,3 +1,9 @@
+## 0.12.10-nullsafety
+
+- Migrate to NNBD.
+  - Apis have been updated to express intent of the existing code and how it
+    handled nulls.
+
 ## 0.12.9
 
 - Improve mismatch descriptions for deep matches.  Previously, if the user tried
@@ -12,7 +18,6 @@
 ## 0.12.7
 
 - Deprecate the `mirror_matchers.dart` library.
-- Update minimum Dart SDK to `2.4.0`.
 
 ## 0.12.6
 

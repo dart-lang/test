@@ -19,7 +19,7 @@ Matcher hasProperty(String name, [matcher]) =>
 
 class _HasProperty extends Matcher {
   final String _name;
-  final Matcher _matcher;
+  final Matcher? _matcher;
 
   const _HasProperty(this._name, [this._matcher]);
 
@@ -43,9 +43,10 @@ class _HasProperty extends Matcher {
       });
       return false;
     }
-    if (_matcher == null) return true;
+    var matcher = _matcher;
+    if (matcher == null) return true;
     var result = mirror.getField(symbol);
-    var resultMatches = _matcher.matches(result.reflectee, matchState);
+    var resultMatches = matcher.matches(result.reflectee, matchState);
     if (!resultMatches) {
       addStateInfo(matchState, {'value': result.reflectee});
     }
@@ -64,7 +65,7 @@ class _HasProperty extends Matcher {
   @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
-    var reason = matchState == null ? null : matchState['reason'];
+    var reason = matchState['reason'];
     if (reason != null) {
       mismatchDescription.add(reason as String);
     } else {
@@ -72,7 +73,8 @@ class _HasProperty extends Matcher {
           .add('has property "$_name" with value ')
           .addDescriptionOf(matchState['value']);
       var innerDescription = StringDescription();
-      _matcher.describeMismatch(matchState['value'], innerDescription,
+      matchState['state'] ??= {};
+      _matcher?.describeMismatch(matchState['value'], innerDescription,
           matchState['state'] as Map, verbose);
       if (innerDescription.length > 0) {
         mismatchDescription.add(' which ').add(innerDescription.toString());

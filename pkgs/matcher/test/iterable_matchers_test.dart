@@ -194,7 +194,7 @@ void main() {
           equals(2), // 2
           allOf([lessThan(3), isNot(0)]), // 1
           equals(0), // 0
-          predicate((v) => v % 2 == 1), // 3
+          predicate((int v) => v % 2 == 1), // 3
           equals(5), // 5
         ]));
     shouldFail(
@@ -313,16 +313,17 @@ void main() {
         'Expected: pairwise less than [1, 4, 9] '
         'Actual: [1, 2, 3] '
         'Which: has <1> which is not less than <1> at index 0');
-    shouldPass(d, pairwiseCompare(e, (e, a) => a * a == e, 'square root of'));
+    shouldPass(
+        d, pairwiseCompare(e, (int e, int a) => a * a == e, 'square root of'));
     shouldFail(
         d,
-        pairwiseCompare(e, (e, a) => a + a == e, 'double'),
+        pairwiseCompare(e, (int e, int a) => a + a == e, 'double'),
         'Expected: pairwise double [1, 4, 9] '
         'Actual: [1, 2, 3] '
         'Which: has <1> which is not double <1> at index 0');
     shouldFail(
         'not an iterable',
-        pairwiseCompare(e, (e, a) => a + a == e, 'double'),
+        pairwiseCompare(e, (int e, int a) => a + a == e, 'double'),
         endsWith('not an <Instance of \'Iterable\'>'));
   });
 

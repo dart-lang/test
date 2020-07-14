@@ -15,8 +15,8 @@ import 'util.dart';
 ///
 /// If [maxItems] is passed, [Iterable]s and [Map]s will only print their first
 /// [maxItems] members or key/value pairs, respectively.
-String prettyPrint(object, {int maxLineLength, int maxItems}) {
-  String _prettyPrint(object, int indent, Set seen, bool top) {
+String prettyPrint(object, {int? maxLineLength, int? maxItems}) {
+  String _prettyPrint(object, int indent, Set<Object?> seen, bool top) {
     // If the object is a matcher, use its description.
     if (object is Matcher) {
       var description = StringDescription();
@@ -116,7 +116,7 @@ String prettyPrint(object, {int maxLineLength, int maxItems}) {
     }
   }
 
-  return _prettyPrint(object, 0, <Object>{}, true);
+  return _prettyPrint(object, 0, <Object?>{}, true);
 }
 
 String _indent(int length) => List.filled(length, ' ').join('');

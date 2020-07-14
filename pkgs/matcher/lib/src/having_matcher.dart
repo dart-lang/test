@@ -14,8 +14,8 @@ class HavingMatcher<T> implements TypeMatcher<T> {
   final List<_FunctionMatcher<T>> _functionMatchers;
 
   HavingMatcher(TypeMatcher<T> parent, String description,
-      Object Function(T) feature, Object matcher,
-      [Iterable<_FunctionMatcher<T>> existing])
+      Object? Function(T) feature, dynamic matcher,
+      [Iterable<_FunctionMatcher<T>>? existing])
       : _parent = parent,
         _functionMatchers = [
           ...?existing,
@@ -24,7 +24,7 @@ class HavingMatcher<T> implements TypeMatcher<T> {
 
   @override
   TypeMatcher<T> having(
-          Object Function(T) feature, String description, Object matcher) =>
+          Object? Function(T) feature, String description, dynamic matcher) =>
       HavingMatcher(_parent, description, feature, matcher, _functionMatchers);
 
   @override
@@ -62,5 +62,5 @@ class _FunctionMatcher<T> extends CustomMatcher {
       : super('`$name`:', '`$name`', matcher);
 
   @override
-  Object featureValueOf(covariant T actual) => _feature(actual);
+  Object? featureValueOf(covariant T actual) => _feature(actual);
 }

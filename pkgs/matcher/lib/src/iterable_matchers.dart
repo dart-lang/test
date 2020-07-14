@@ -145,11 +145,11 @@ class _UnorderedMatches extends _IterableMatcher {
   final List<Matcher> _expected;
   final bool _allowUnmatchedValues;
 
-  _UnorderedMatches(Iterable expected, {bool allowUnmatchedValues})
+  _UnorderedMatches(Iterable expected, {bool allowUnmatchedValues = false})
       : _expected = expected.map(wrapMatcher).toList(),
-        _allowUnmatchedValues = allowUnmatchedValues ?? false;
+        _allowUnmatchedValues = allowUnmatchedValues;
 
-  String _test(List values) {
+  String? _test(List values) {
     // Check the lengths are the same.
     if (_expected.length > values.length) {
       return 'has too few elements (${values.length} < ${_expected.length})';
@@ -167,7 +167,7 @@ class _UnorderedMatches extends _IterableMatcher {
     }
     // The index into `values` matched with each matcher or `null` if no value
     // has been matched yet.
-    var matched = List<int>(_expected.length);
+    var matched = List<int?>.filled(_expected.length, null);
     for (var valueIndex = 0; valueIndex < values.length; valueIndex++) {
       _findPairing(edges, valueIndex, matched);
     }
@@ -204,17 +204,21 @@ class _UnorderedMatches extends _IterableMatcher {
   @override
   Description describeTypedMismatch(item, Description mismatchDescription,
           Map matchState, bool verbose) =>
-      mismatchDescription.add(_test(item.toList()));
+      mismatchDescription.add(_test(item.toList())!);
 
   /// Returns `true` if the value at [valueIndex] can be paired with some
   /// unmatched matcher and updates the state of [matched].
   ///
   /// If there is a conflict where multiple values may match the same matcher
-  /// recursively looks for a new place to match the old value. [reserved]
-  /// tracks the matchers that have been used _during_ this search.
-  bool _findPairing(List<List<int>> edges, int valueIndex, List<int> matched,
-      [Set<int> reserved]) {
-    reserved ??= <int>{};
+  /// recursively looks for a new place to match the old value.
+  bool _findPairing(
+          List<List<int>> edges, int valueIndex, List<int?> matched) =>
+      _findPairingInner(edges, valueIndex, matched, <int>{});
+
+  /// Implementation of [_findPairing], tracks [reserved] which are the
+  /// matchers that have been used _during_ this search.
+  bool _findPairingInner(List<List<int>> edges, int valueIndex,
+      List<int?> matched, Set<int> reserved) {
     final possiblePairings =
         edges[valueIndex].where((m) => !reserved.contains(m));
     for (final matcherIndex in possiblePairings) {
@@ -223,7 +227,7 @@ class _UnorderedMatches extends _IterableMatcher {
       if (previouslyMatched == null ||
           // If the matcher isn't already free, check whether the existing value
           // occupying the matcher can be bumped to another one.
-          _findPairing(edges, matched[matcherIndex], matched, reserved)) {
+          _findPairingInner(edges, matched[matcherIndex]!, matched, reserved)) {
         matched[matcherIndex] = valueIndex;
         return true;
       }
@@ -333,7 +337,7 @@ class _ContainsAllInOrder extends _IterableMatcher {
 
   _ContainsAllInOrder(this._expected);
 
-  String _test(Iterable item, Map matchState) {
+  String? _test(Iterable item, Map matchState) {
     var matchers = _expected.map(wrapMatcher).toList();
     var matcherIndex = 0;
     for (var value in item) {
@@ -360,5 +364,5 @@ class _ContainsAllInOrder extends _IterableMatcher {
   @override
   Description describeTypedMismatch(Iterable item,
           Description mismatchDescription, Map matchState, bool verbose) =>
-      mismatchDescription.add(_test(item, matchState));
+      mismatchDescription.add(_test(item, matchState)!);
 }

@@ -19,7 +19,7 @@ Matcher equals(expected, [int limit = 100]) => expected is String
     ? _StringEqualsMatcher(expected)
     : _DeepMatcher(expected, limit);
 
-typedef _RecursiveMatcher = _Mismatch Function(dynamic, dynamic, String, int);
+typedef _RecursiveMatcher = _Mismatch? Function(Object?, Object?, String, int);
 
 /// A special equality matcher for strings.
 class _StringEqualsMatcher extends FeatureMatcher<String> {
@@ -97,12 +97,12 @@ class _StringEqualsMatcher extends FeatureMatcher<String> {
 }
 
 class _DeepMatcher extends Matcher {
-  final Object _expected;
+  final Object? _expected;
   final int _limit;
 
   _DeepMatcher(this._expected, [int limit = 1000]) : _limit = limit;
 
-  _Mismatch _compareIterables(Iterable expected, Object actual,
+  _Mismatch? _compareIterables(Iterable expected, Object? actual,
       _RecursiveMatcher matcher, int depth, String location) {
     if (actual is Iterable) {
       var expectedIterator = expected.iterator;
@@ -134,8 +134,8 @@ class _DeepMatcher extends Matcher {
     }
   }
 
-  _Mismatch _compareSets(Set expected, Object actual, _RecursiveMatcher matcher,
-      int depth, String location) {
+  _Mismatch? _compareSets(Set expected, Object? actual,
+      _RecursiveMatcher matcher, int depth, String location) {
     if (actual is Iterable) {
       var other = actual.toSet();
 
@@ -163,8 +163,8 @@ class _DeepMatcher extends Matcher {
     }
   }
 
-  _Mismatch _recursiveMatch(
-      Object expected, Object actual, String location, int depth) {
+  _Mismatch? _recursiveMatch(
+      Object? expected, Object? actual, String location, int depth) {
     // If the expected value is a matcher, try to match it.
     if (expected is Matcher) {
       var matchState = {};
@@ -208,11 +208,11 @@ class _DeepMatcher extends Matcher {
         if (actual is! Map) {
           return _Mismatch.simple(location, actual, 'expected a map');
         }
-        var map = actual as Map;
-        var err =
-            (expected.length == map.length) ? '' : 'has different length and ';
+        var err = (expected.length == actual.length)
+            ? ''
+            : 'has different length and ';
         for (var key in expected.keys) {
-          if (!map.containsKey(key)) {
+          if (!actual.containsKey(key)) {
             return _Mismatch(
                 location,
                 actual,
@@ -222,7 +222,7 @@ class _DeepMatcher extends Matcher {
           }
         }
 
-        for (var key in map.keys) {
+        for (var key in actual.keys) {
           if (!expected.containsKey(key)) {
             return _Mismatch(
                 location,
@@ -235,7 +235,7 @@ class _DeepMatcher extends Matcher {
 
         for (var key in expected.keys) {
           var rp = _recursiveMatch(
-              expected[key], map[key], "$location['$key']", depth + 1);
+              expected[key], actual[key], "$location['$key']", depth + 1);
           if (rp != null) return rp;
         }
 
@@ -255,7 +255,7 @@ class _DeepMatcher extends Matcher {
   }
 
   @override
-  bool matches(Object actual, Map matchState) {
+  bool matches(Object? actual, Map matchState) {
     var mismatch = _recursiveMatch(_expected, actual, '', 0);
     if (mismatch == null) return true;
     addStateInfo(matchState, {'mismatch': mismatch});
@@ -270,28 +270,29 @@ class _DeepMatcher extends Matcher {
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var mismatch = matchState['mismatch'] as _Mismatch;
+    var describeProblem = mismatch.describeProblem;
     if (mismatch.location.isNotEmpty) {
       mismatchDescription
           .add('at location ')
           .add(mismatch.location)
           .add(' is ')
           .addDescriptionOf(mismatch.actual);
-      if (mismatch.describeProblem != null) {
+      if (describeProblem != null) {
         mismatchDescription
             .add(' ${mismatch.instead ? 'instead of' : 'which'} ');
-        mismatch.describeProblem(mismatchDescription, verbose);
+        describeProblem(mismatchDescription, verbose);
       }
     } else {
       // If we didn't get a good reason, that would normally be a
       // simple 'is <value>' message. We only add that if the mismatch
       // description is non empty (so we are supplementing the mismatch
       // description).
-      if (mismatch.describeProblem == null) {
+      if (describeProblem == null) {
         if (mismatchDescription.length > 0) {
           mismatchDescription.add('is ').addDescriptionOf(item);
         }
       } else {
-        mismatch.describeProblem(mismatchDescription, verbose);
+        describeProblem(mismatchDescription, verbose);
       }
     }
     return mismatchDescription;
@@ -304,10 +305,10 @@ class _Mismatch {
   final String location;
 
   /// The actual value found at [location].
-  final Object actual;
+  final Object? actual;
 
   /// Callback that can create a detailed description of the problem.
-  final void Function(Description, bool verbose) describeProblem;
+  final void Function(Description, bool verbose)? describeProblem;
 
   /// If `true`, [describeProblem] describes the expected value, so when the
   /// final mismatch description is pieced together, it will be preceded by

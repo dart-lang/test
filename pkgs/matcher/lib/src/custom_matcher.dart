@@ -39,7 +39,7 @@ class CustomMatcher extends Matcher {
       : _matcher = wrapMatcher(matcher);
 
   /// Override this to extract the interesting feature.
-  Object featureValueOf(actual) => actual;
+  Object? featureValueOf(actual) => actual;
 
   @override
   bool matches(item, Map matchState) {

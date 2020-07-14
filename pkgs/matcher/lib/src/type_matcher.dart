@@ -52,7 +52,7 @@ TypeMatcher<T> isA<T>() => TypeMatcher<T>();
 ///         .having((e) => e.end, 'end', lessThanOrEqualTo(20))));
 /// ```
 class TypeMatcher<T> extends Matcher {
-  final String _name;
+  final String? _name;
 
   /// Create a matcher matches instances of type [T].
   ///
@@ -60,7 +60,7 @@ class TypeMatcher<T> extends Matcher {
   const TypeMatcher(
       [@Deprecated('Provide a type argument to TypeMatcher and omit the name. '
           'This argument will be removed in the next release.')
-          String name])
+          String? name])
       : _name =
             // ignore: deprecated_member_use_from_same_package
             name;
@@ -80,7 +80,7 @@ class TypeMatcher<T> extends Matcher {
   ///    .having((e) => e.end, 'end', isNull);
   /// ```
   TypeMatcher<T> having(
-          Object Function(T) feature, String description, Object matcher) =>
+          Object? Function(T) feature, String description, dynamic matcher) =>
       HavingMatcher(this, description, feature, matcher);
 
   @override
@@ -90,14 +90,14 @@ class TypeMatcher<T> extends Matcher {
   }
 
   @override
+  bool matches(Object? item, Map matchState) => item is T;
+
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     var name = _name ?? _stripDynamic(T);
     return mismatchDescription.add("is not an instance of '$name'");
   }
-
-  @override
-  bool matches(Object item, Map matchState) => item is T;
 }
 
 final _dart2DynamicArgs = RegExp('<dynamic(, dynamic)*>');

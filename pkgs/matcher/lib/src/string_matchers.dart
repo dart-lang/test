@@ -141,17 +141,14 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
 Matcher matches(re) => _MatchesRegExp(re);
 
 class _MatchesRegExp extends FeatureMatcher<String> {
-  RegExp _regexp;
+  final RegExp _regexp;
 
-  _MatchesRegExp(re) {
-    if (re is String) {
-      _regexp = RegExp(re);
-    } else if (re is RegExp) {
-      _regexp = re;
-    } else {
-      throw ArgumentError('matches requires a regexp or string');
-    }
-  }
+  _MatchesRegExp(re)
+      : _regexp = (re is String)
+            ? RegExp(re)
+            : (re is RegExp)
+                ? re
+                : throw ArgumentError('matches requires a regexp or string');
 
   @override
   bool typedMatches(item, Map matchState) => _regexp.hasMatch(item);

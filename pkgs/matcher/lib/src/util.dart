@@ -61,7 +61,7 @@ String escape(String str) {
   return str.replaceAllMapped(_escapeRegExp, (match) {
     var mapped = _escapeMap[match[0]];
     if (mapped != null) return mapped;
-    return _getHexLiteral(match[0]);
+    return _getHexLiteral(match[0]!);
   });
 }
 

@@ -21,7 +21,8 @@ void main() {
   _test(isUnsupportedError, UnsupportedError('oops'));
   _test(isConcurrentModificationError, ConcurrentModificationError());
   _test(isCyclicInitializationError, CyclicInitializationError());
-  _test<NoSuchMethodError>(isNoSuchMethodError, null);
+  _test<NoSuchMethodError?>(isNoSuchMethodError, null,
+      name: 'NoSuchMethodError');
   _test(isNullThrownError, NullThrownError());
 
   group('custom `TypeMatcher`', () {
@@ -33,7 +34,7 @@ void main() {
   });
 }
 
-void _test<T>(Matcher typeMatcher, T matchingInstance, {String name}) {
+void _test<T>(Matcher typeMatcher, T matchingInstance, {String? name}) {
   name ??= T.toString();
   group('for `$name`', () {
     if (matchingInstance != null) {

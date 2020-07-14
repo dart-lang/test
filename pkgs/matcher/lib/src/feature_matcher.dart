@@ -13,7 +13,7 @@ abstract class FeatureMatcher<T> extends TypeMatcher<T> {
 
   @override
   bool matches(item, Map matchState) =>
-      super.matches(item, matchState) && typedMatches(item, matchState);
+      super.matches(item, matchState) && typedMatches(item as T, matchState);
 
   bool typedMatches(T item, Map matchState);
 
