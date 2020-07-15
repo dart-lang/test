@@ -1,4 +1,6 @@
-## 0.2.18-dev
+## 0.2.18
+
+* Update to `matcher` version `0.12.9`.
 
 ## 0.2.17
 
