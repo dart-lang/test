@@ -1,6 +1,7 @@
-## 1.16.0-dev
+## 1.16.0-nullsafety
 
 * Support running tests with null safety.
+  * Note that the test runner itself is not fully migrated yet.
 
 ## 1.15.3
 
