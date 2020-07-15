@@ -1,3 +1,7 @@
+## 0.3.11
+
+* Update to `matcher` version `0.12.9`.
+
 ## 0.3.10
 
 * Prepare for `unawaited` from `package:meta`.

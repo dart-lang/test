@@ -1,3 +1,8 @@
+## 1.15.3
+
+* Update to `matcher` version `0.12.9` which improves the mismatch description
+  for deep collection equality matchers and TypeMatcher.
+
 ## 1.15.2
 
 * Use the latest `test_core` which resolves an issue with the latest
