@@ -266,8 +266,8 @@ $_usage''');
           test.stdout,
           containsInOrder([
             '-1: loading test.dart [E]',
-            "A value of type 'int' can't be assigned to a "
-                "variable of type 'Function'",
+            "A value of type 'int' can't be returned from a function "
+                "with return type 'Function'",
           ]));
 
       await test.shouldExit(1);
@@ -732,11 +732,8 @@ $_testContents
 
       expect(
           test.stdout,
-          containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'
-          ]));
+          contains('Error: A library can\'t opt out of null safety by default, '
+              'when using sound null safety.'));
       await test.shouldExit(1);
     });
 
@@ -782,11 +779,9 @@ $_testContents''').create();
 
         expect(
             test.stdout,
-            containsInOrder([
-              'Unable to spawn isolate:',
-              'Error: A library can\'t opt out of null safety by default, '
-                  'when using sound null safety.'
-            ]));
+            contains(
+                'Error: A library can\'t opt out of null safety by default, '
+                'when using sound null safety.'));
         await test.shouldExit(1);
       });
 
