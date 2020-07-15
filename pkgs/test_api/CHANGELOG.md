@@ -6,6 +6,10 @@
   * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
     group now has the empty string as its name.
 
+## 0.2.18
+
+* Update to `matcher` version `0.12.9`.
+
 ## 0.2.17
 
 * Add `languageVersionComment` on the `MetaData` class. This should only be
