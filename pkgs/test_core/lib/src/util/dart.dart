@@ -6,8 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
-// ignore: deprecated_member_use
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:source_span/source_span.dart';
 
 import 'string_literal_iterator.dart';
