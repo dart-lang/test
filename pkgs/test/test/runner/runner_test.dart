@@ -262,13 +262,19 @@ $_usage''');
       await d.file('test.dart', 'int main = 0;').create();
       var test = await runTest(['test.dart']);
 
+      expect(test.stdout, emitsThrough(contains('-1: loading test.dart [E]')));
       expect(
           test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            "A value of type 'int' can't be returned from a function "
-                "with return type 'Function'",
-          ]));
+          emitsThrough(anyOf([
+            contains(
+              "A value of type 'int' can't be assigned to a variable of type "
+              "'Function'",
+            ),
+            contains(
+              "A value of type 'int' can't be returned from a function with "
+              "return type 'Function'",
+            ),
+          ])));
 
       await test.shouldExit(1);
     });
