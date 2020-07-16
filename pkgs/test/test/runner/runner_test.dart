@@ -259,15 +259,15 @@ $_usage''');
     });
 
     test('a test file has a non-function main', () async {
-      await d.file('test.dart', 'int main;').create();
+      await d.file('test.dart', 'int main = 0;').create();
       var test = await runTest(['test.dart']);
 
       expect(
           test.stdout,
           containsInOrder([
             '-1: loading test.dart [E]',
-            "A value of type 'int' can't be assigned to a "
-                "variable of type 'Function'",
+            "A value of type 'int' can't be returned from a function "
+                "with return type 'Function'",
           ]));
 
       await test.shouldExit(1);
@@ -732,11 +732,9 @@ $_testContents
 
       expect(
           test.stdout,
-          containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'
-          ]));
+          emitsThrough(contains(
+              'Error: A library can\'t opt out of null safety by default, '
+              'when using sound null safety.')));
       await test.shouldExit(1);
     });
 
@@ -782,11 +780,9 @@ $_testContents''').create();
 
         expect(
             test.stdout,
-            containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'
-            ]));
+            emitsThrough(contains(
+                'Error: A library can\'t opt out of null safety by default, '
+                'when using sound null safety.')));
         await test.shouldExit(1);
       });
 
