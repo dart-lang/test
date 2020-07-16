@@ -732,8 +732,9 @@ $_testContents
 
       expect(
           test.stdout,
-          contains('Error: A library can\'t opt out of null safety by default, '
-              'when using sound null safety.'));
+          emitsThrough(contains(
+              'Error: A library can\'t opt out of null safety by default, '
+              'when using sound null safety.')));
       await test.shouldExit(1);
     });
 
@@ -779,9 +780,9 @@ $_testContents''').create();
 
         expect(
             test.stdout,
-            contains(
+            emitsThrough(contains(
                 'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'));
+                'when using sound null safety.')));
         await test.shouldExit(1);
       });
 
