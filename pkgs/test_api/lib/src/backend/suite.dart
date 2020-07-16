@@ -16,7 +16,7 @@ class Suite {
   final SuitePlatform platform;
 
   /// The path to the Dart test suite, or `null` if that path is unknown.
-  final String path;
+  final String? path;
 
   /// The metadata associated with this test suite.
   ///

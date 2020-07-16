@@ -24,7 +24,7 @@ abstract class Test implements GroupEntry {
   Metadata get metadata;
 
   @override
-  Trace get trace;
+  Trace? get trace;
 
   /// Loads a live version of this test, which can be used to run it a single
   /// time.
@@ -32,11 +32,11 @@ abstract class Test implements GroupEntry {
   /// [suite] is the suite within which this test is being run. If [groups] is
   /// passed, it's the list of groups containing this test; otherwise, it
   /// defaults to just containing `suite.group`.
-  LiveTest load(Suite suite, {Iterable<Group> groups});
+  LiveTest load(Suite suite, {Iterable<Group>? groups});
 
   @override
-  Test forPlatform(SuitePlatform platform);
+  Test? forPlatform(SuitePlatform platform);
 
   @override
-  Test filter(bool Function(Test) callback) => callback(this) ? this : null;
+  Test? filter(bool Function(Test) callback) => callback(this) ? this : null;
 }

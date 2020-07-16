@@ -30,7 +30,7 @@ class Timeout {
   ///
   /// If set, this overrides the default duration entirely. It's `null` for
   /// timeouts with a non-null [scaleFactor] and for [Timeout.none].
-  final Duration duration;
+  final Duration? duration;
 
   /// The timeout factor.
   ///
@@ -40,7 +40,7 @@ class Timeout {
   ///
   /// This is `null` for timeouts with a non-null [duration] and for
   /// [Timeout.none].
-  final num scaleFactor;
+  final num? scaleFactor;
 
   /// Declares an absolute timeout that overrides the default.
   const Timeout(this.duration) : scaleFactor = null;
@@ -77,7 +77,7 @@ class Timeout {
 
     // Scan a number. This will be either a time unit or a scale factor.
     scanner.expect(_untilUnit, name: 'number');
-    var number = double.parse(scanner.lastMatch[0]);
+    var number = double.parse((scanner.lastMatch![0])!);
 
     // A number followed by "x" is a scale factor.
     if (scanner.scan('x') || scanner.scan('X')) {
@@ -90,13 +90,13 @@ class Timeout {
     var microseconds = 0.0;
     while (true) {
       scanner.expect(_unit, name: 'unit');
-      microseconds += _microsecondsFor(number, scanner.lastMatch[0]);
+      microseconds += _microsecondsFor(number, (scanner.lastMatch![0])!);
 
       scanner.scan(_whitespace);
 
       // Scan the next number, if it's avaialble.
       if (!scanner.scan(_untilUnit)) break;
-      number = double.parse(scanner.lastMatch[0]);
+      number = double.parse((scanner.lastMatch![0])!);
     }
 
     scanner.expectDone();
@@ -132,16 +132,16 @@ class Timeout {
   Timeout merge(Timeout other) {
     if (this == none || other == none) return none;
     if (other.duration != null) return Timeout(other.duration);
-    if (duration != null) return Timeout(duration * other.scaleFactor);
-    return Timeout.factor(scaleFactor * other.scaleFactor);
+    if (duration != null) return Timeout(duration! * other.scaleFactor!);
+    return Timeout.factor(scaleFactor! * other.scaleFactor!);
   }
 
   /// Returns a new [Duration] from applying [this] to [base].
   ///
   /// If this is [none], returns `null`.
-  Duration apply(Duration base) {
+  Duration? apply(Duration base) {
     if (this == none) return null;
-    return duration ?? base * scaleFactor;
+    return duration ?? base * scaleFactor!;
   }
 
   @override

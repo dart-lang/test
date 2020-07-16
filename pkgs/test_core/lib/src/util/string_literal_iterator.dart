@@ -38,23 +38,23 @@ const _verticalTab = 0xB;
 /// exposes the offset of the current rune in the Dart source file.
 class StringLiteralIterator extends Iterator<int> {
   @override
-  int get current => _current;
-  int _current;
+  int get current => _current!;
+  int? _current;
 
   /// The offset of the beginning of [current] in the Dart source file that
   /// contains the string literal.
   ///
   /// Before iteration begins, this points to the character before the first
   /// rune.
-  int get offset => _offset;
-  int _offset;
+  int get offset => _offset!;
+  int? _offset;
 
   /// The offset of the next rune.
   ///
   /// This isn't necessarily just `offset + 1`, since a single rune may be
   /// represented by multiple characters in the source file, or a string literal
   /// may be composed of several adjacent string literals.
-  int _nextOffset;
+  int? _nextOffset;
 
   /// All [SimpleStringLiteral]s that compose the input literal.
   ///
@@ -66,13 +66,13 @@ class StringLiteralIterator extends Iterator<int> {
   /// Whether this is a raw string that begins with `r`.
   ///
   /// This is necessary for knowing how to parse escape sequences.
-  bool _isRaw;
+  bool? _isRaw;
 
   /// The iterator over the runes in the Dart source file.
   ///
   /// When switching to a new string in [_strings], this is updated to point to
   /// that string's component runes.
-  Iterator<int> _runes;
+  Iterator<int>? _runes;
 
   /// Creates a new [StringLiteralIterator] iterating over the contents of
   /// [literal].
@@ -101,7 +101,7 @@ class StringLiteralIterator extends Iterator<int> {
   bool moveNext() {
     // If we're at beginning of a [SimpleStringLiteral], move forward until
     // there's actually text to consume.
-    while (_runes == null || _runes.current == null || _runes.current < 0) {
+    while (_runes == null || _runes!.current == -1) {
       if (_strings.isEmpty) {
         // Move the offset past the end of the text.
         _offset = _nextOffset;
@@ -122,7 +122,7 @@ class StringLiteralIterator extends Iterator<int> {
       _nextOffset = string.contentsOffset;
       _isRaw = string.isRaw;
       _runes = text.runes.iterator;
-      _runes.moveNext();
+      _runes!.moveNext();
     }
 
     _offset = _nextOffset;
@@ -135,9 +135,9 @@ class StringLiteralIterator extends Iterator<int> {
   }
 
   /// Consume and return the next rune.
-  int _nextRune() {
-    if (_isRaw || _runes.current != _backslash) {
-      var rune = _runes.current;
+  int? _nextRune() {
+    if (_isRaw! || _runes!.current != _backslash) {
+      var rune = _runes!.current;
       _moveRunesNext();
       return (rune < 0) ? null : rune;
     }
@@ -150,8 +150,8 @@ class StringLiteralIterator extends Iterator<int> {
   ///
   /// This assumes that a backslash has already been consumed. It leaves the
   /// [_runes] cursor on the first character after the escape sequence.
-  int _parseEscapeSequence() {
-    switch (_runes.current) {
+  int? _parseEscapeSequence() {
+    switch (_runes!.current) {
       case _n:
         _moveRunesNext();
         return _newline;
@@ -175,15 +175,15 @@ class StringLiteralIterator extends Iterator<int> {
         return _parseHex(2);
       case _u:
         if (!_moveRunesNext()) return null;
-        if (_runes.current != _openCurly) return _parseHex(4);
+        if (_runes!.current != _openCurly) return _parseHex(4);
         if (!_moveRunesNext()) return null;
 
         var number = _parseHexSequence();
-        if (_runes.current != _closeCurly) return null;
+        if (_runes!.current != _closeCurly) return null;
         if (!_moveRunesNext()) return null;
         return number;
       default:
-        var rune = _runes.current;
+        var rune = _runes!.current;
         _moveRunesNext();
         return rune;
     }
@@ -194,15 +194,15 @@ class StringLiteralIterator extends Iterator<int> {
   ///
   /// This parses digits as they appear in a unicode escape sequence: one to six
   /// hex digits.
-  int _parseHexSequence() {
-    var number = _parseHexDigit(_runes.current);
+  int? _parseHexSequence() {
+    var number = _parseHexDigit(_runes!.current);
     if (number == null) return null;
     if (!_moveRunesNext()) return null;
 
     for (var i = 0; i < 5; i++) {
-      var digit = _parseHexDigit(_runes.current);
+      var digit = _parseHexDigit(_runes!.current);
       if (digit == null) break;
-      number = number * 16 + digit;
+      number = number! * 16 + digit;
       if (!_moveRunesNext()) return null;
     }
 
@@ -210,11 +210,11 @@ class StringLiteralIterator extends Iterator<int> {
   }
 
   /// Parses [digits] hexadecimal digits and returns their value as an [int].
-  int _parseHex(int digits) {
+  int? _parseHex(int digits) {
     var number = 0;
     for (var i = 0; i < digits; i++) {
-      if (_runes.current == null) return null;
-      var digit = _parseHexDigit(_runes.current);
+      if (_runes!.current == -1) return null;
+      var digit = _parseHexDigit(_runes!.current);
       if (digit == null) return null;
       number = number * 16 + digit;
       _moveRunesNext();
@@ -223,7 +223,7 @@ class StringLiteralIterator extends Iterator<int> {
   }
 
   /// Parses a single hexadecimal digit.
-  int _parseHexDigit(int rune) {
+  int? _parseHexDigit(int rune) {
     if (rune < _zero) return null;
     if (rune <= _nine) return rune - _zero;
     if (rune < _capitalA) return null;
@@ -235,8 +235,8 @@ class StringLiteralIterator extends Iterator<int> {
 
   /// Move [_runes] to the next rune and update [_nextOffset].
   bool _moveRunesNext() {
-    var result = _runes.moveNext();
-    _nextOffset++;
+    var result = _runes!.moveNext();
+    _nextOffset = _nextOffset! + 1;
     return result;
   }
 }

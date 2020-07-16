@@ -1,3 +1,8 @@
+## 1.16.0-nullsafety
+
+* Support running tests with null safety.
+  * Note that the test runner itself is not fully migrated yet.
+
 ## 1.15.3
 
 * Update to `matcher` version `0.12.9` which improves the mismatch description

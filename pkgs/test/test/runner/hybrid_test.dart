@@ -1,6 +1,8 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.7
 
 @TestOn('vm')
 
@@ -8,9 +10,8 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -314,6 +315,7 @@ void main() {
 
     test('closes the channel when the test finishes by default', () async {
       await d.file('test.dart', '''
+        // @dart=2.7
         import "package:stream_channel/stream_channel.dart";
         import "package:test/test.dart";
 
@@ -356,8 +358,8 @@ void main() {
         import "package:test/test.dart";
 
         void main() {
-          StreamQueue queue;
-          StreamSink sink;
+          late StreamQueue queue;
+          late StreamSink sink;
           setUpAll(() {
             var channel = spawnHybridCode("""
               import "package:stream_channel/stream_channel.dart";

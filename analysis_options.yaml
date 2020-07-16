@@ -12,6 +12,8 @@ analyzer:
     dead_code: error
     # There are a number of deprecated members used through this package
     deprecated_member_use_from_same_package: ignore
+  enable-experiment:
+    - non-nullable
 linter:
   rules:
     - avoid_private_typedef_functions

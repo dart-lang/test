@@ -43,7 +43,7 @@ class OperatingSystem {
   /// If no operating system is found, returns [none].
   static OperatingSystem find(String identifier) =>
       all.firstWhere((platform) => platform.identifier == identifier,
-          orElse: () => null);
+          orElse: () => none);
 
   /// Finds an operating system by the return value from `dart:io`'s
   /// `Platform.operatingSystem`.

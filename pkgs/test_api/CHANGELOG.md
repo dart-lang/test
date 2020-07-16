@@ -1,3 +1,11 @@
+## 0.2.19-nullsafety
+
+* Migrate to NNBD.
+  * The vast majority of changes are intended to express the pre-existing
+    behavior of the code regarding to handling of nulls.
+  * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
+    group now has the empty string as its name.
+
 ## 0.2.18
 
 * Update to `matcher` version `0.12.9`.
@@ -5,7 +13,7 @@
 ## 0.2.17
 
 * Add `languageVersionComment` on the `MetaData` class. This should only be
-  presen for test suites.
+  present for test suites.
 
 ## 0.2.16
 

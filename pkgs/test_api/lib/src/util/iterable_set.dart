@@ -29,11 +29,14 @@ class IterableSet<E> extends SetMixin<E> with UnmodifiableSetMixin<E> {
   IterableSet(this._base);
 
   @override
-  bool contains(Object element) => _base.contains(element);
+  bool contains(Object? element) => _base.contains(element);
 
   @override
-  E lookup(Object needle) =>
-      _base.firstWhere((element) => element == needle, orElse: () => null);
+  E? lookup(Object? needle) {
+    for (var e in _base) {
+      if (e == needle) return e;
+    }
+  }
 
   @override
   Set<E> toSet() => _base.toSet();

@@ -41,40 +41,40 @@ class Configuration {
 
   /// Whether `--help` was passed.
   bool get help => _help ?? false;
-  final bool _help;
+  final bool? _help;
 
   /// Custom HTML template file.
-  final String customHtmlTemplatePath;
+  final String? customHtmlTemplatePath;
 
   /// Whether `--version` was passed.
   bool get version => _version ?? false;
-  final bool _version;
+  final bool? _version;
 
   /// Whether to pause for debugging after loading each test suite.
   bool get pauseAfterLoad => _pauseAfterLoad ?? false;
-  final bool _pauseAfterLoad;
+  final bool? _pauseAfterLoad;
 
   /// Whether to run browsers in their respective debug modes
   bool get debug => pauseAfterLoad || (_debug ?? false) || _coverage != null;
-  final bool _debug;
+  final bool? _debug;
 
   /// The output folder for coverage gathering
-  String get coverage => _coverage;
-  final String _coverage;
+  String? get coverage => _coverage;
+  final String? _coverage;
 
   /// The path to the file from which to load more configuration information.
   ///
   /// This is *not* resolved automatically.
   String get configurationPath => _configurationPath ?? 'dart_test.yaml';
-  final String _configurationPath;
+  final String? _configurationPath;
 
   /// The path to dart2js.
   String get dart2jsPath => _dart2jsPath ?? p.join(sdkDir, 'bin', 'dart2js');
-  final String _dart2jsPath;
+  final String? _dart2jsPath;
 
   /// The name of the reporter to use to display results.
   String get reporter => _reporter ?? defaultReporter;
-  final String _reporter;
+  final String? _reporter;
 
   /// The map of file reporters where the key is the name of the reporter and
   /// the value is the filepath to which its output should be written.
@@ -82,20 +82,20 @@ class Configuration {
 
   /// Whether to disable retries of tests.
   bool get noRetry => _noRetry ?? false;
-  final bool _noRetry;
+  final bool? _noRetry;
 
   /// The URL for the `pub serve` instance from which to load tests, or `null`
   /// if tests should be loaded from the filesystem.
-  final Uri pubServeUrl;
+  final Uri? pubServeUrl;
 
   /// Whether to use command-line color escapes.
   bool get color => _color ?? canUseSpecialChars;
-  final bool _color;
+  final bool? _color;
 
   /// How many tests to run concurrently.
   int get concurrency =>
       pauseAfterLoad ? 1 : (_concurrency ?? defaultConcurrency);
-  final int _concurrency;
+  final int? _concurrency;
 
   /// The index of the current shard, if sharding is in use, or `null` if it's
   /// not.
@@ -111,25 +111,25 @@ class Configuration {
   /// * Across all shards, each test must be run exactly once.
   ///
   /// In addition, tests should be balanced across shards as much as possible.
-  final int shardIndex;
+  final int? shardIndex;
 
   /// The total number of shards, if sharding is in use, or `null` if it's not.
   ///
   /// See [shardIndex] for details.
-  final int totalShards;
+  final int? totalShards;
 
   /// The list of packages to fold when producing [StackTrace]s.
   Set<String> get foldTraceExcept => _foldTraceExcept ?? {};
-  final Set<String> _foldTraceExcept;
+  final Set<String>? _foldTraceExcept;
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// [StackTrace]s.
   Set<String> get foldTraceOnly => _foldTraceOnly ?? {};
-  final Set<String> _foldTraceOnly;
+  final Set<String>? _foldTraceOnly;
 
   /// The paths from which to load tests.
   List<String> get paths => _paths ?? ['test'];
-  final List<String> _paths;
+  final List<String>? _paths;
 
   /// Whether the load paths were passed explicitly or the default was used.
   bool get explicitPaths => _paths != null;
@@ -138,7 +138,7 @@ class Configuration {
   ///
   /// This is used to find tests within a directory.
   Glob get filename => _filename ?? defaultFilename;
-  final Glob _filename;
+  final Glob? _filename;
 
   /// The set of presets to use.
   ///
@@ -150,18 +150,17 @@ class Configuration {
 
   /// The set of tags that have been declared in any way in this configuration.
   Set<String> get knownTags {
-    if (_knownTags != null) return _knownTags;
+    if (_knownTags != null) return _knownTags!;
 
     var known = suiteDefaults.knownTags.toSet();
     for (var configuration in presets.values) {
       known.addAll(configuration.knownTags);
     }
 
-    _knownTags = UnmodifiableSetView(known);
-    return _knownTags;
+    return _knownTags = UnmodifiableSetView(known);
   }
 
-  Set<String> _knownTags;
+  Set<String>? _knownTags;
 
   /// Configuration presets.
   ///
@@ -177,18 +176,17 @@ class Configuration {
   ///
   /// This includes presets that have already been resolved.
   Set<String> get knownPresets {
-    if (_knownPresets != null) return _knownPresets;
+    if (_knownPresets != null) return _knownPresets!;
 
     var known = presets.keys.toSet();
     for (var configuration in presets.values) {
       known.addAll(configuration.knownPresets);
     }
 
-    _knownPresets = UnmodifiableSetView(known);
-    return _knownPresets;
+    return _knownPresets = UnmodifiableSetView(known);
   }
 
-  Set<String> _knownPresets;
+  Set<String>? _knownPresets;
 
   /// Built-in runtimes whose settings are overridden by the user.
   final Map<String, RuntimeSettings> overrideRuntimes;
@@ -204,7 +202,7 @@ class Configuration {
   ///
   /// The current configuration is set using [asCurrent].
   static Configuration get current =>
-      Zone.current[_currentKey] as Configuration ?? Configuration();
+      Zone.current[_currentKey] as Configuration? ?? Configuration();
 
   /// Parses the configuration from [args].
   ///
@@ -231,57 +229,57 @@ class Configuration {
   ///
   /// Throws a [FormatException] if its contents are invalid.
   factory Configuration.loadFromString(String source,
-          {bool global = false, Uri sourceUrl}) =>
+          {bool global = false, Uri? sourceUrl}) =>
       loadFromString(source, global: global, sourceUrl: sourceUrl);
 
   factory Configuration(
-      {bool help,
-      String customHtmlTemplatePath,
-      bool version,
-      bool pauseAfterLoad,
-      bool debug,
-      bool color,
-      String configurationPath,
-      String dart2jsPath,
-      String reporter,
-      Map<String, String> fileReporters,
-      String coverage,
-      int pubServePort,
-      int concurrency,
-      int shardIndex,
-      int totalShards,
-      Iterable<String> paths,
-      Iterable<String> foldTraceExcept,
-      Iterable<String> foldTraceOnly,
-      Glob filename,
-      Iterable<String> chosenPresets,
-      Map<String, Configuration> presets,
-      Map<String, RuntimeSettings> overrideRuntimes,
-      Map<String, CustomRuntime> defineRuntimes,
-      bool noRetry,
+      {bool? help,
+      String? customHtmlTemplatePath,
+      bool? version,
+      bool? pauseAfterLoad,
+      bool? debug,
+      bool? color,
+      String? configurationPath,
+      String? dart2jsPath,
+      String? reporter,
+      Map<String, String>? fileReporters,
+      String? coverage,
+      int? pubServePort,
+      int? concurrency,
+      int? shardIndex,
+      int? totalShards,
+      Iterable<String>? paths,
+      Iterable<String>? foldTraceExcept,
+      Iterable<String>? foldTraceOnly,
+      Glob? filename,
+      Iterable<String>? chosenPresets,
+      Map<String, Configuration>? presets,
+      Map<String, RuntimeSettings>? overrideRuntimes,
+      Map<String, CustomRuntime>? defineRuntimes,
+      bool? noRetry,
 
       // Suite-level configuration
-      bool jsTrace,
-      bool runSkipped,
-      Iterable<String> dart2jsArgs,
-      String precompiledPath,
-      Iterable<Pattern> patterns,
-      Iterable<RuntimeSelection> runtimes,
-      BooleanSelector includeTags,
-      BooleanSelector excludeTags,
-      Map<BooleanSelector, SuiteConfiguration> tags,
-      Map<PlatformSelector, SuiteConfiguration> onPlatform,
-      int testRandomizeOrderingSeed,
+      bool? jsTrace,
+      bool? runSkipped,
+      Iterable<String>? dart2jsArgs,
+      String? precompiledPath,
+      Iterable<Pattern>? patterns,
+      Iterable<RuntimeSelection>? runtimes,
+      BooleanSelector? includeTags,
+      BooleanSelector? excludeTags,
+      Map<BooleanSelector, SuiteConfiguration>? tags,
+      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
-      Timeout timeout,
-      bool verboseTrace,
-      bool chainStackTraces,
-      bool skip,
-      int retry,
-      String skipReason,
-      PlatformSelector testOn,
-      Iterable<String> addTags}) {
+      Timeout? timeout,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      bool? skip,
+      int? retry,
+      String? skipReason,
+      PlatformSelector? testOn,
+      Iterable<String>? addTags}) {
     var chosenPresetSet = chosenPresets?.toSet();
     var configuration = Configuration._(
         help: help,
@@ -333,8 +331,8 @@ class Configuration {
     return configuration._resolvePresets();
   }
 
-  static Map<String, Configuration> _withChosenPresets(
-      Map<String, Configuration> map, Set<String> chosenPresets) {
+  static Map<String, Configuration>? _withChosenPresets(
+      Map<String, Configuration>? map, Set<String>? chosenPresets) {
     if (map == null || chosenPresets == null) return map;
     return map.map((key, config) => MapEntry(
         key,
@@ -346,31 +344,31 @@ class Configuration {
   ///
   /// Unlike [new Configuration], this assumes [presets] is already resolved.
   Configuration._(
-      {bool help,
-      String customHtmlTemplatePath,
-      bool version,
-      bool pauseAfterLoad,
-      bool debug,
-      bool color,
-      String configurationPath,
-      String dart2jsPath,
-      String reporter,
-      Map<String, String> fileReporters,
-      String coverage,
-      int pubServePort,
-      int concurrency,
+      {bool? help,
+      String? customHtmlTemplatePath,
+      bool? version,
+      bool? pauseAfterLoad,
+      bool? debug,
+      bool? color,
+      String? configurationPath,
+      String? dart2jsPath,
+      String? reporter,
+      Map<String, String>? fileReporters,
+      String? coverage,
+      int? pubServePort,
+      int? concurrency,
       this.shardIndex,
       this.totalShards,
-      Iterable<String> paths,
-      Iterable<String> foldTraceExcept,
-      Iterable<String> foldTraceOnly,
-      Glob filename,
-      Iterable<String> chosenPresets,
-      Map<String, Configuration> presets,
-      Map<String, RuntimeSettings> overrideRuntimes,
-      Map<String, CustomRuntime> defineRuntimes,
-      bool noRetry,
-      SuiteConfiguration suiteDefaults})
+      Iterable<String>? paths,
+      Iterable<String>? foldTraceExcept,
+      Iterable<String>? foldTraceOnly,
+      Glob? filename,
+      Iterable<String>? chosenPresets,
+      Map<String, Configuration>? presets,
+      Map<String, RuntimeSettings>? overrideRuntimes,
+      Map<String, CustomRuntime>? defineRuntimes,
+      bool? noRetry,
+      SuiteConfiguration? suiteDefaults})
       : _help = help,
         customHtmlTemplatePath = customHtmlTemplatePath,
         _version = version,
@@ -399,10 +397,10 @@ class Configuration {
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 SuiteConfiguration(timeout: Timeout.none)
             : suiteDefaults ?? SuiteConfiguration.empty {
-    if (_filename != null && _filename.context.style != p.style) {
+    if (_filename != null && _filename!.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
-          '${_filename.context.style}.');
+          '${_filename!.context.style}.');
     }
 
     if ((shardIndex == null) != (totalShards == null)) {
@@ -410,7 +408,7 @@ class Configuration {
           'shardIndex and totalShards may only be passed together.');
     } else if (shardIndex != null) {
       RangeError.checkValueInInterval(
-          shardIndex, 0, totalShards - 1, 'shardIndex');
+          shardIndex!, 0, totalShards! - 1, 'shardIndex');
     }
   }
 
@@ -423,7 +421,7 @@ class Configuration {
   /// Returns an unmodifiable copy of [input].
   ///
   /// If [input] is `null` or empty, this returns `null`.
-  static List<T> _list<T>(Iterable<T> input) {
+  static List<T>? _list<T>(Iterable<T>? input) {
     if (input == null) return null;
     var list = List<T>.unmodifiable(input);
     if (list.isEmpty) return null;
@@ -431,7 +429,9 @@ class Configuration {
   }
 
   /// Returns a set from [input].
-  static Set<T> _set<T>(Iterable<T> input) {
+  ///
+  /// If [input] is `null` or empty, this returns `null`.
+  static Set<T>? _set<T>(Iterable<T>? input) {
     if (input == null) return null;
     var set = Set<T>.from(input);
     if (set.isEmpty) return null;
@@ -439,7 +439,7 @@ class Configuration {
   }
 
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
-  static Map<K, V> _map<K, V>(Map<K, V> input) {
+  static Map<K, V> _map<K, V>(Map<K, V>? input) {
     input ??= {};
     return Map.unmodifiable(input);
   }
@@ -484,15 +484,15 @@ class Configuration {
     var foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
     if (_foldTraceOnly != null) {
       if (other._foldTraceExcept != null) {
-        foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
+        foldTraceOnly = _foldTraceOnly!.difference(other._foldTraceExcept!);
       } else if (other._foldTraceOnly != null) {
-        foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
+        foldTraceOnly = other._foldTraceOnly!.intersection(_foldTraceOnly!);
       }
     } else if (_foldTraceExcept != null) {
       if (other._foldTraceOnly != null) {
-        foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
+        foldTraceOnly = other._foldTraceOnly!.difference(_foldTraceExcept!);
       } else if (other._foldTraceExcept != null) {
-        foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
+        foldTraceExcept = other._foldTraceExcept!.union(_foldTraceExcept!);
       }
     }
 
@@ -541,50 +541,50 @@ class Configuration {
   /// Note that unlike [merge], this has no merging behavior—the old value is
   /// always replaced by the new one.
   Configuration change(
-      {bool help,
-      String customHtmlTemplatePath,
-      bool version,
-      bool pauseAfterLoad,
-      bool color,
-      String configurationPath,
-      String dart2jsPath,
-      String reporter,
-      Map<String, String> fileReporters,
-      int pubServePort,
-      int concurrency,
-      int shardIndex,
-      int totalShards,
-      Iterable<String> paths,
-      Iterable<String> exceptPackages,
-      Iterable<String> onlyPackages,
-      Glob filename,
-      Iterable<String> chosenPresets,
-      Map<String, Configuration> presets,
-      Map<String, RuntimeSettings> overrideRuntimes,
-      Map<String, CustomRuntime> defineRuntimes,
-      bool noRetry,
+      {bool? help,
+      String? customHtmlTemplatePath,
+      bool? version,
+      bool? pauseAfterLoad,
+      bool? color,
+      String? configurationPath,
+      String? dart2jsPath,
+      String? reporter,
+      Map<String, String>? fileReporters,
+      int? pubServePort,
+      int? concurrency,
+      int? shardIndex,
+      int? totalShards,
+      Iterable<String>? paths,
+      Iterable<String>? exceptPackages,
+      Iterable<String>? onlyPackages,
+      Glob? filename,
+      Iterable<String>? chosenPresets,
+      Map<String, Configuration>? presets,
+      Map<String, RuntimeSettings>? overrideRuntimes,
+      Map<String, CustomRuntime>? defineRuntimes,
+      bool? noRetry,
 
       // Suite-level configuration
-      bool jsTrace,
-      bool runSkipped,
-      Iterable<String> dart2jsArgs,
-      String precompiledPath,
-      Iterable<Pattern> patterns,
-      Iterable<RuntimeSelection> runtimes,
-      BooleanSelector includeTags,
-      BooleanSelector excludeTags,
-      Map<BooleanSelector, SuiteConfiguration> tags,
-      Map<PlatformSelector, SuiteConfiguration> onPlatform,
-      int testRandomizeOrderingSeed,
+      bool? jsTrace,
+      bool? runSkipped,
+      Iterable<String>? dart2jsArgs,
+      String? precompiledPath,
+      Iterable<Pattern>? patterns,
+      Iterable<RuntimeSelection>? runtimes,
+      BooleanSelector? includeTags,
+      BooleanSelector? excludeTags,
+      Map<BooleanSelector, SuiteConfiguration>? tags,
+      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
-      Timeout timeout,
-      bool verboseTrace,
-      bool chainStackTraces,
-      bool skip,
-      String skipReason,
-      PlatformSelector testOn,
-      Iterable<String> addTags}) {
+      Timeout? timeout,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      bool? skip,
+      String? skipReason,
+      PlatformSelector? testOn,
+      Iterable<String>? addTags}) {
     var config = Configuration._(
         help: help ?? _help,
         customHtmlTemplatePath:

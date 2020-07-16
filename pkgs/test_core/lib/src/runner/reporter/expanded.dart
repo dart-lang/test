@@ -62,21 +62,21 @@ class ExpandedReporter implements Reporter {
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
-  int _lastProgressPassed;
+  int _lastProgressPassed = 0;
 
   /// The size of `_engine.skipped` last time a progress notification was
   /// printed.
-  int _lastProgressSkipped;
+  int _lastProgressSkipped = 0;
 
   /// The size of `_engine.failed` last time a progress notification was
   /// printed.
-  int _lastProgressFailed;
+  int _lastProgressFailed = 0;
 
   /// The message printed for the last progress notification.
-  String _lastProgressMessage;
+  String _lastProgressMessage = '';
 
   /// The suffix added to the last progress notification.
-  String _lastProgressSuffix;
+  String? _lastProgressSuffix;
 
   /// Whether the reporter is paused.
   var _paused = false;
@@ -194,7 +194,9 @@ class ExpandedReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  //
+  // TODO: Make `stackTrace` non-nullable once it's non-nullable in the sdk.
+  void _onError(LiveTest liveTest, error, StackTrace? stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
@@ -217,7 +219,7 @@ class ExpandedReporter implements Reporter {
   ///
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
-  void _onDone(bool success) {
+  void _onDone(bool? success) {
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user, in
     // which case we shouldn't print summary information.
@@ -243,7 +245,7 @@ class ExpandedReporter implements Reporter {
   /// [message] goes after the progress report. If [color] is passed, it's used
   /// as the color for [message]. If [suffix] is passed, it's added to the end
   /// of [message].
-  void _progressLine(String message, {String color, String suffix}) {
+  void _progressLine(String message, {String? color, String? suffix}) {
     // Print nothing if nothing has changed since the last progress line.
     if (_engine.passed.length == _lastProgressPassed &&
         _engine.skipped.length == _lastProgressSkipped &&

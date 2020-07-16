@@ -95,12 +95,12 @@ Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 /// filter tests by name.
 @isTest
 void test(description, dynamic Function() body,
-    {String testOn,
-    Timeout timeout,
+    {String? testOn,
+    Timeout? timeout,
     skip,
     tags,
-    Map<String, dynamic> onPlatform,
-    int retry,
+    Map<String, dynamic>? onPlatform,
+    int? retry,
     @deprecated bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
@@ -173,12 +173,12 @@ void test(description, dynamic Function() body,
 /// filter tests by name.
 @isTestGroup
 void group(description, dynamic Function() body,
-    {String testOn,
-    Timeout timeout,
+    {String? testOn,
+    Timeout? timeout,
     skip,
     tags,
-    Map<String, dynamic> onPlatform,
-    int retry,
+    Map<String, dynamic>? onPlatform,
+    int? retry,
     @deprecated bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
@@ -240,7 +240,7 @@ void addTearDown(dynamic Function() callback) {
     throw StateError('addTearDown() may only be called within a test.');
   }
 
-  Invoker.current.addTearDown(callback);
+  Invoker.current!.addTearDown(callback);
 }
 
 /// Registers a function to be run once before all tests.
@@ -273,7 +273,8 @@ void tearDownAll(dynamic Function() callback) =>
     _declarer.tearDownAll(callback);
 
 /// Registers an exception that was caught for the current test.
-void registerException(error, [StackTrace stackTrace]) {
+void registerException(Object error,
+    [StackTrace stackTrace = StackTrace.empty]) {
   // This will usually forward directly to [Invoker.current.handleError], but
   // going through the zone API allows other zones to consistently see errors.
   Zone.current.handleUncaughtError(error, stackTrace);
@@ -285,4 +286,4 @@ void registerException(error, [StackTrace stackTrace]) {
 /// without cluttering the output for successful tests. Note that unlike
 /// [print], each individual message passed to [printOnFailure] will be
 /// separated by a blank line.
-void printOnFailure(String message) => Invoker.current.printOnFailure(message);
+void printOnFailure(String message) => Invoker.current!.printOnFailure(message);

@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.8
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -43,7 +45,7 @@ class _Parser {
   /// The actual contents of the file.
   final String _contents;
 
-  /// The language version override comment if one was present
+  /// The language version override comment if one was present, otherwise null.
   String _languageVersionComment;
 
   _Parser(this._path, this._contents, this._platformVariables) {
@@ -63,7 +65,7 @@ class _Parser {
             return null;
           }
         })
-        .where((prefix) => prefix != null)
+        .whereType<String>()
         .toSet();
   }
 
@@ -84,21 +86,21 @@ class _Parser {
 
       if (name == 'TestOn') {
         _assertSingle(testOn, 'TestOn', annotation);
-        testOn = _parseTestOn(annotation, constructorName);
+        testOn = _parseTestOn(annotation);
       } else if (name == 'Timeout') {
         _assertSingle(timeout, 'Timeout', annotation);
         timeout = _parseTimeout(annotation, constructorName);
       } else if (name == 'Skip') {
         _assertSingle(skip, 'Skip', annotation);
-        skip = _parseSkip(annotation, constructorName);
+        skip = _parseSkip(annotation);
       } else if (name == 'OnPlatform') {
         _assertSingle(onPlatform, 'OnPlatform', annotation);
-        onPlatform = _parseOnPlatform(annotation, constructorName);
+        onPlatform = _parseOnPlatform(annotation);
       } else if (name == 'Tags') {
         _assertSingle(tags, 'Tags', annotation);
-        tags = _parseTags(annotation, constructorName);
+        tags = _parseTags(annotation);
       } else if (name == 'Retry') {
-        retry = _parseRetry(annotation, constructorName);
+        retry = _parseRetry(annotation);
       }
     }
 
@@ -115,10 +117,8 @@ class _Parser {
 
   /// Parses a `@TestOn` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  PlatformSelector _parseTestOn(
-          Annotation annotation, String constructorName) =>
+  /// [annotation] is the annotation.
+  PlatformSelector _parseTestOn(Annotation annotation) =>
       _parsePlatformSelector(annotation.arguments.arguments.first);
 
   /// Parses an [expression] that should contain a string representing a
@@ -133,9 +133,8 @@ class _Parser {
 
   /// Parses a `@Retry` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  int _parseRetry(Annotation annotation, String constructorName) =>
+  /// [annotation] is the annotation.
+  int _parseRetry(Annotation annotation) =>
       _parseInt(annotation.arguments.arguments.first);
 
   /// Parses a `@Timeout` annotation.
@@ -163,11 +162,10 @@ class _Parser {
 
   /// Parses a `@Skip` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
+  /// [annotation] is the annotation.
   ///
   /// Returns either `true` or a reason string.
-  dynamic _parseSkip(Annotation annotation, String constructorName) {
+  dynamic _parseSkip(Annotation annotation) {
     var args = annotation.arguments.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
   }
@@ -183,9 +181,8 @@ class _Parser {
 
   /// Parses a `@Tags` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  Set<String> _parseTags(Annotation annotation, String constructorName) {
+  /// [annotation] is the annotation.
+  Set<String> _parseTags(Annotation annotation) {
     return _parseList(annotation.arguments.arguments.first)
         .map((tagExpression) {
       var name = _parseString(tagExpression).stringValue;
@@ -200,10 +197,8 @@ class _Parser {
 
   /// Parses an `@OnPlatform` annotation.
   ///
-  /// [annotation] is the annotation. [constructorName] is the name of the named
-  /// constructor for the annotation, if any.
-  Map<PlatformSelector, Metadata> _parseOnPlatform(
-      Annotation annotation, String constructorName) {
+  /// [annotation] is the annotation.
+  Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
     return _parseMap(annotation.arguments.arguments.first, key: (key) {
       return _parsePlatformSelector(key);
     }, value: (value) {

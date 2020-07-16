@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety
+
+* Migrate to null safety.
+
 ## 0.3.11
 
 * Update to `matcher` version `0.12.9`.
@@ -29,6 +33,11 @@
 
 * Add additional information to an exception when we end up with a null
   `RunnerSuite`.
+
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
 
 ## 0.3.4
 
