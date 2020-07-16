@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety
+
+* Migrate to null safety.
+
 ## 0.3.11
 
 * Update to `matcher` version `0.12.9`.

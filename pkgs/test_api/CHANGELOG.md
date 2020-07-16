@@ -1,4 +1,4 @@
-## 0.3.0-dev
+## 0.2.19-nullsafety
 
 * Migrate to NNBD.
   * The vast majority of changes are intended to express the pre-existing
