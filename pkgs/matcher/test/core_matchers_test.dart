@@ -238,5 +238,10 @@ void main() {
       final matcher = wrapMatcher((_) => true);
       shouldPass(null, matcher);
     });
+
+    test('wraps a predicate which has a typed argument check', () {
+      final matcher = wrapMatcher((int _) => true);
+      shouldPass(1, matcher);
+    });
   });
 }
