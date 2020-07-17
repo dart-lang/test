@@ -39,7 +39,7 @@ void addStateInfo(Map matchState, Map values) {
 Matcher wrapMatcher(x) {
   if (x is Matcher) {
     return x;
-  } else if (x is _Predicate<Object>) {
+  } else if (x is _Predicate<Object?>) {
     // x is already a predicate that can handle anything
     return predicate(x);
   } else if (x is _Predicate<Null>) {

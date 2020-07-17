@@ -237,4 +237,11 @@ void main() {
       }
     });
   });
+
+  group('wrapMatcher', () {
+    test('wraps a predicate which allows a nullable argument', () {
+      final matcher = wrapMatcher((_) => true);
+      shouldPass(null, matcher);
+    });
+  });
 }
