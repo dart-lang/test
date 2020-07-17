@@ -8,8 +8,6 @@ import 'package:matcher/matcher.dart';
 import 'package:matcher/src/pretty_print.dart';
 import 'package:test/test.dart' show group, test, expect;
 
-import 'test_utils.dart';
-
 class DefaultToString {}
 
 class CustomToString {
@@ -249,11 +247,8 @@ void main() {
 
   group('with an iterable', () {
     test("that's not a list", () {
-      expect(
-          prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
-          equals(isDart2
-              ? 'MappedListIterable<int, int>:[2, 4, 6, 8]'
-              : 'MappedListIterable:[2, 4, 6, 8]'));
+      expect(prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
+          equals('MappedListIterable<int, int>:[2, 4, 6, 8]'));
     });
 
     test("that's not a list and has a private name", () {

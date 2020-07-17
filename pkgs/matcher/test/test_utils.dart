@@ -4,11 +4,6 @@
 
 import 'package:test/test.dart';
 
-final bool isDart2 = () {
-  Type checkType<T>() => T;
-  return checkType<String>() == String;
-}();
-
 void shouldFail(value, Matcher matcher, expected) {
   var failed = false;
   try {

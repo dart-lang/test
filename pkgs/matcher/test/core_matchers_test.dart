@@ -228,13 +228,8 @@ void main() {
           'Expected: an instance of String Actual: <0>');
       shouldPass('cow', predicate((x) => x is String, 'an instance of String'));
 
-      if (isDart2) {
-        // With Dart2 semantics, predicate picks up a type argument of `bool`
-        // and we get nice type checking.
-        // Without Dart2 semantics a gnarly type error is thrown.
-        shouldFail(0, predicate((bool x) => x, 'bool value is true'),
-            endsWith("not an <Instance of \'bool\'>"));
-      }
+      shouldFail(0, predicate((bool x) => x, 'bool value is true'),
+          endsWith("not an <Instance of \'bool\'>"));
     });
   });
 
