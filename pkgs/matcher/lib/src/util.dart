@@ -6,8 +6,6 @@ import 'core_matchers.dart';
 import 'equals_matcher.dart';
 import 'interfaces.dart';
 
-typedef _Predicate<T> = bool Function(T value);
-
 /// A [Map] between whitespace characters and their escape sequences.
 const _escapeMap = {
   '\n': r'\n',
@@ -39,10 +37,10 @@ void addStateInfo(Map matchState, Map values) {
 Matcher wrapMatcher(x) {
   if (x is Matcher) {
     return x;
-  } else if (x is _Predicate<Object?>) {
+  } else if (x is bool Function(Object?)) {
     // x is already a predicate that can handle anything
     return predicate(x);
-  } else if (x is _Predicate<Never>) {
+  } else if (x is bool Function(Never)) {
     // x is a unary predicate, but expects a specific type
     // so wrap it.
     // ignore: unnecessary_lambdas

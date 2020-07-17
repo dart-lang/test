@@ -5,6 +5,7 @@ analyzer:
 linter:
   rules:
     - avoid_function_literals_in_foreach_calls
+    - avoid_private_typedef_functions
     - avoid_renaming_method_parameters
     - avoid_returning_null
     - avoid_returning_null_for_future
