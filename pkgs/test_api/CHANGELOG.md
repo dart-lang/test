@@ -1,3 +1,12 @@
+## 0.2.20-nullsafety
+
+* Add the `Fake` class, available through `package:test_api/fake.dart`.  This
+  was previously part of the Mockito package, but with null safety it is useful
+  enough that we decided to make it available through `package:test`.  In a
+  future release it will be made available directly through
+  `package:test_api/test_api.dart` (and hence through
+  `package:test_core/test_core.dart` and `package:test/test.dart`).
+
 ## 0.2.19-nullsafety
 
 * Migrate to NNBD.
