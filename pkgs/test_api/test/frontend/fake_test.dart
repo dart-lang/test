@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import 'package:test_api/fake.dart' as test_api;
 
 void main() {
-  _FakeSample fake;
+  late _FakeSample fake;
   setUp(() {
     fake = _FakeSample();
   });
@@ -29,7 +29,7 @@ class _Sample {
 
   int get x => 0;
 
-  void set x(int value) {}
+  set x(int value) {}
 
   int operator +(int other) => 0;
 }
