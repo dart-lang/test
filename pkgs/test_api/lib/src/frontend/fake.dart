@@ -2,7 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Extend or mixin this class to mark the implementation as a [Fake].
+/// A stand-in for another object which cannot be used except for specifically
+/// overridden methods.
 ///
 /// A fake has a default behavior for every field and method of throwing
 /// [UnimplementedError]. Fields and methods that are excersized by the code
