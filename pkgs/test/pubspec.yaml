@@ -4,7 +4,8 @@ description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 
 environment:
-  sdk: '>=2.9.0-18.0 <2.9.0'
+  # This must remain a tight constraint until nnbd is stable
+  sdk: '>=2.10.0-0 <2.10.0'
 
 dependencies:
   analyzer: '>=0.36.0 <0.40.0'
@@ -47,72 +48,44 @@ dependency_overrides:
   test_core:
     path: ../test_core
   async:
-    git:
-      url: git://github.com/dart-lang/async.git
-      ref: null_safety
+    git: git://github.com/dart-lang/async.git
   boolean_selector:
-    git:
-      url: git://github.com/dart-lang/boolean_selector.git
-      ref: null_safety
+    git: git://github.com/dart-lang/boolean_selector.git
   charcode:
-    git:
-      url: git://github.com/dart-lang/charcode.git
-      ref: null_safety
+    git: git://github.com/dart-lang/charcode.git
   collection:
-    git:
-      url: git://github.com/dart-lang/collection.git
-      ref: null_safety
+    git: git://github.com/dart-lang/collection.git
   js:
     git:
       url: git://github.com/dart-lang/sdk.git
-      ref: null_safety-pkgs
       path: pkg/js
+      ref: 2-10-pkgs
   matcher:
-    git:
-      url: git://github.com/dart-lang/matcher.git
-      ref: null_safety
+    git: git://github.com/dart-lang/matcher.git
   meta:
     git:
       url: git://github.com/dart-lang/sdk.git
-      ref: null_safety-pkgs
       path: pkg/meta
+      ref: 2-10-pkgs
   path:
-    git:
-      url: git://github.com/dart-lang/path.git
-      ref: null_safety
+    git: git://github.com/dart-lang/path.git
   pedantic:
-    git:
-      url: git://github.com/dart-lang/pedantic.git
-      ref: null_safety
+    git: git://github.com/dart-lang/pedantic.git
   pool:
-    git:
-      url: git://github.com/dart-lang/pool.git
-      ref: null_safety
+    git: git://github.com/dart-lang/pool.git
   source_maps:
-    git:
-      url: git://github.com/dart-lang/source_maps.git
-      ref: null_safety
+    git: git://github.com/dart-lang/source_maps.git
   source_map_stack_trace:
-    git:
-      url: git://github.com/dart-lang/source_map_stack_trace.git
-      ref: null_safety
+    git: git://github.com/dart-lang/source_map_stack_trace.git
   source_span:
-    git:
-      url: git://github.com/dart-lang/source_span.git
-      ref: null_safety
+    git: git://github.com/dart-lang/source_span.git
   stack_trace:
-    git:
-      url: git://github.com/dart-lang/stack_trace.git
-      ref: null_safety
+    git: git://github.com/dart-lang/stack_trace.git
   stream_channel:
-    git:
-      url: git://github.com/dart-lang/stream_channel.git
-      ref: null_safety
+    git: git://github.com/dart-lang/stream_channel.git
   string_scanner:
-    git:
-      url: git://github.com/dart-lang/string_scanner.git
-      ref: null_safety
+    git: git://github.com/dart-lang/string_scanner.git
   term_glyph:
-    git:
-      url: git://github.com/dart-lang/term_glyph.git
-      ref: null_safety
+    git: git://github.com/dart-lang/term_glyph.git
+  typed_data:
+    git: git://github.com/dart-lang/typed_data.git
