@@ -2,6 +2,12 @@
 
 * Support running tests with null safety.
   * Note that the test runner itself is not fully migrated yet.
+* Add the `Fake` class, available through `package:test_api/fake.dart`.  This
+  was previously part of the Mockito package, but with null safety it is useful
+  enough that we decided to make it available through `package:test`.  In a
+  future release it will be made available directly through
+  `package:test_api/test_api.dart` (and hence through
+  `package:test_core/test_core.dart` and `package:test/test.dart`).
 
 ## 1.15.3
 
