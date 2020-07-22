@@ -76,11 +76,7 @@ class RemoteListener {
             return;
           }
 
-          if (main is! Function) {
-            _sendLoadException(
-                channel, 'Top-level main getter is not a function.');
-            return;
-          } else if (main is! Function()) {
+          if (main is! Function()) {
             _sendLoadException(
                 channel, 'Top-level main() function takes arguments.');
             return;
