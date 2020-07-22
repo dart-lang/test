@@ -1,28 +1,28 @@
 language: dart
 
 dart:
-  - dev
+  - preview/raw/2.10.0-0.2-dev
 
 jobs:
   include:
     - stage: analyze_and_format
       name: "Analyze"
-      dart: dev
+      dart: preview/raw/2.10.0-0.2-dev
       os: linux
       script: dartanalyzer --enable-experiment=non-nullable --fatal-warnings --fatal-infos .
     - stage: analyze_and_format
       name: "Format"
-      dart: dev
+      dart: preview/raw/2.10.0-0.2-dev
       os: linux
       script: dartfmt -n --set-exit-if-changed .
     - stage: test
       name: "Vm Tests"
-      dart: dev
+      dart: preview/raw/2.10.0-0.2-dev
       os: linux
       script: pub run --enable-experiment=non-nullable test -p vm 
     - stage: test
       name: "Web Tests"
-      dart: dev
+      dart: preview/raw/2.10.0-0.2-dev
       os: linux
       script: pub run --enable-experiment=non-nullable test -p chrome
 
@@ -32,7 +32,7 @@ stages:
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
-  only: [master, null_safety]
+  only: [master]
 
 cache:
   directories:
