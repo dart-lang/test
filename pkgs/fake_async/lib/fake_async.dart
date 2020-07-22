@@ -37,7 +37,7 @@ typedef _Microtask = void Function();
 /// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
 ///
 /// Returns the result of [callback].
-T fakeAsync<T>(T Function(FakeAsync async) callback, {DateTime initialTime}) =>
+T fakeAsync<T>(T Function(FakeAsync async) callback, {DateTime? initialTime}) =>
     FakeAsync(initialTime: initialTime).run(callback);
 
 /// A class that mocks out the passage of time within a [Zone].
@@ -50,7 +50,7 @@ T fakeAsync<T>(T Function(FakeAsync async) callback, {DateTime initialTime}) =>
 /// also be simulated using [elapseBlocking].
 class FakeAsync {
   /// The value of [clock] within [run].
-  Clock _clock;
+  late final Clock _clock;
 
   /// The amount of fake time that's elapsed since this [FakeAsync] was
   /// created.
@@ -60,7 +60,7 @@ class FakeAsync {
   /// The fake time at which the current call to [elapse] will finish running.
   ///
   /// This is `null` if there's no current call to [elapse].
-  Duration _elapsingTo;
+  Duration? _elapsingTo;
 
   /// Tasks that are scheduled to run when fake time progresses.
   final _microtasks = Queue<_Microtask>();
@@ -98,9 +98,9 @@ class FakeAsync {
   ///
   /// Note: it's usually more convenient to use [fakeAsync] rather than creating
   /// a [FakeAsync] object and calling [run] manually.
-  FakeAsync({DateTime initialTime}) {
-    initialTime ??= clock.now();
-    _clock = Clock(() => initialTime.add(elapsed));
+  FakeAsync({DateTime? initialTime}) {
+    var nonNullInitialTime = initialTime ?? clock.now();
+    _clock = Clock(() => nonNullInitialTime.add(elapsed));
   }
 
   /// Returns a fake [Clock] whose time can is elapsed by calls to [elapse] and
@@ -134,8 +134,8 @@ class FakeAsync {
     }
 
     _elapsingTo = _elapsed + duration;
-    _fireTimersWhile((next) => next._nextCall <= _elapsingTo);
-    _elapseTo(_elapsingTo);
+    _fireTimersWhile((next) => next._nextCall <= _elapsingTo!);
+    _elapseTo(_elapsingTo!);
     _elapsingTo = null;
   }
 
@@ -152,7 +152,8 @@ class FakeAsync {
     }
 
     _elapsed += duration;
-    if (_elapsingTo != null && _elapsed > _elapsingTo) _elapsingTo = _elapsed;
+    var elapsingTo = _elapsingTo;
+    if (elapsingTo != null && _elapsed > elapsingTo) _elapsingTo = _elapsed;
   }
 
   /// Runs [callback] in a [Zone] where all asynchrony is controlled by `this`.
@@ -202,9 +203,9 @@ class FakeAsync {
   /// The [timeout] controls how much fake time may elapse before a [StateError]
   /// is thrown. This ensures that a periodic timer doesn't cause this method to
   /// deadlock. It defaults to one hour.
-  void flushTimers({Duration timeout, bool flushPeriodicTimers = true}) {
-    timeout ??= const Duration(hours: 1);
-
+  void flushTimers(
+      {Duration timeout = const Duration(hours: 1),
+      bool flushPeriodicTimers = true}) {
     var absoluteTimeout = _elapsed + timeout;
     _fireTimersWhile((timer) {
       if (timer._nextCall > absoluteTimeout) {
@@ -232,7 +233,7 @@ class FakeAsync {
     for (;;) {
       if (_timers.isEmpty) break;
 
-      var timer = minBy(_timers, (timer) => timer._nextCall);
+      var timer = minBy(_timers, (FakeTimer timer) => timer._nextCall)!;
       if (!predicate(timer)) break;
 
       _elapseTo(timer._nextCall);
@@ -277,7 +278,7 @@ class FakeTimer implements Timer {
 
   /// The value of [FakeAsync._elapsed] at (or after) which this timer should be
   /// fired.
-  Duration _nextCall;
+  late Duration _nextCall;
 
   /// The current stack trace when this timer was created.
   final creationStackTrace = StackTrace.current;

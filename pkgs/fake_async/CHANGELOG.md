@@ -1,3 +1,7 @@
+## 1.1.0-nullsafety
+
+* Update to null safety.
+
 ## 1.1.0
 
    * Exposed the `FakeTimer` class as a public class.
