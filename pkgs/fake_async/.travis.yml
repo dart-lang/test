@@ -1,7 +1,7 @@
 language: dart
 
 dart:
-  - preview/raw/2.10.0-0.2-dev
+  - dev
 
 dart_task:
   - test: --platform vm,chrome
