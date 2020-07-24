@@ -4,7 +4,7 @@ description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 
 environment:
-  sdk: '>=2.9.0-18.0 <2.9.0'
+  sdk: '>=2.10.0-0 <2.10.0'
 
 dependencies:
   analyzer: '>=0.36.0 <0.40.0'

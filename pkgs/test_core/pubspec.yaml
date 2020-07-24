@@ -4,7 +4,7 @@ description: A basic library for writing tests and running them on the VM.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_core
 
 environment:
-  sdk: ">=2.9.0-18.0 <2.9.0"
+  sdk: '>=2.10.0-0 <2.10.0'
 
 dependencies:
   analyzer: ">=0.39.5 <0.40.0"
