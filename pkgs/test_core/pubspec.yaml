@@ -22,7 +22,7 @@ dependencies:
   pedantic: '>=1.10.0-nullsafety <1.10.0'
   pool: '>=1.5.0-nullsafety <1.5.0'
   source_map_stack_trace: '>=2.1.0-nullsafety <2.1.0'
-  source_maps: '>=0.10.1-nullsafety <0.10.1'
+  source_maps: '>=0.10.10-nullsafety <0.10.10'
   source_span: '>=1.8.0-nullsafety <1.8.0'
   stack_trace: '>=1.10.0-nullsafety <1.10.0'
   stream_channel: ">=2.1.0-nullsafety <2.1.0"
