@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.1
+
+* Depend on the latest test_core.
+
 ## 1.16.0-nullsafety
 
 * Support running tests with null safety.
