@@ -51,7 +51,7 @@ Declarer get _declarer {
   // [_globalDeclarer], and schedule a microtask to run the tests once they're
   // finished being defined.
   _globalDeclarer = Declarer();
-  scheduleMicrotask(() async {
+  Future(() async {
     var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
         _globalDeclarer!.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
