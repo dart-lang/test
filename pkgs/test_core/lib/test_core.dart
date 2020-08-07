@@ -14,6 +14,7 @@ import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
+import 'package:test_api/src/frontend/utils.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'src/runner/engine.dart';
@@ -48,10 +49,13 @@ Declarer get _declarer {
 
   // Since there's no Zone-scoped declarer, the test file is being run directly.
   // In order to run the tests, we set up our own Declarer via
-  // [_globalDeclarer], and schedule a microtask to run the tests once they're
-  // finished being defined.
+  // [_globalDeclarer], and pump the event queue as a best effort to wait for
+  // all tests to be defined before starting them.
   _globalDeclarer = Declarer();
-  Future(() async {
+
+  () async {
+    await pumpEventQueue();
+
     var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
         _globalDeclarer!.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
@@ -67,7 +71,8 @@ Declarer get _declarer {
     if (success == true) return null;
     print('');
     unawaited(Future.error('Dummy exception to set exit code.'));
-  });
+  }();
+
   return _globalDeclarer!;
 }
 

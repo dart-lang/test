@@ -30,6 +30,22 @@ void main() {
 }
 ''';
 
+final _successWithAsync = '''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() async {
+  test("success 1", () {});
+
+  await otherSetUp();
+
+  test("success 2", () {});
+}
+
+Future<void> otherSetUp() {}
+''';
+
 final _failure = '''
 import 'dart:async';
 
@@ -358,6 +374,23 @@ $_usage''');
 
       var test = await runTest(['dir/test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+  });
+
+  group('runs successful tests with async setup', () {
+    test('defined in a single file', () async {
+      await d.file('test.dart', _successWithAsync).create();
+      var test = await runTest(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('directly', () async {
+      await d.file('test.dart', _successWithAsync).create();
+      var test = await runDart(['test.dart']);
+
+      expect(test.stdout, emitsThrough(contains('All tests passed!')));
       await test.shouldExit(0);
     });
   });
