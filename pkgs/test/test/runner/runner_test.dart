@@ -362,6 +362,34 @@ $_usage''');
     });
   });
 
+  group('runs successful tests with async setup', () {
+    setUp(() async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() async {
+          test("success 1", () {});
+
+          await () async {};
+
+          test("success 2", () {});
+        }
+      ''').create();
+    });
+
+    test('defined in a single file', () async {
+      var test = await runTest(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('directly', () async {
+      var test = await runDart(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('All tests passed!')));
+      await test.shouldExit(0);
+    });
+  });
+
   group('runs failing tests', () {
     test('defaults to chaining stack traces', () async {
       await d.file('test.dart', _asyncFailure).create();
