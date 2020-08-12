@@ -1,3 +1,5 @@
+## 0.3.12-nullsafety.2-dev
+
 ## 0.3.12-nullsafety.1
 
 * Update source_maps constraint.
