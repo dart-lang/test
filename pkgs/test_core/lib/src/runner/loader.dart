@@ -140,14 +140,10 @@ class Loader {
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
     return StreamGroup.merge(
         Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File) return Stream.fromIterable([]);
-
-      if (!_config.filename.matches(p.basename(entry.path))) {
-        return Stream.fromIterable([]);
-      }
-
-      if (p.split(entry.path).contains('packages')) {
-        return Stream.fromIterable([]);
+      if (entry is! File ||
+          !_config.filename.matches(p.basename(entry.path)) ||
+          p.split(entry.path).contains('packages')) {
+        return Stream.empty();
       }
 
       return loadFile(entry.path, suiteConfig);
