@@ -14,11 +14,11 @@
 /// In the case of a future that resolves to an error the original future is
 /// retained.
 class DetachingFuture<T> {
-  T _value;
-  Future<T> _inProgress;
+  late T _value;
+  Future<T>? _inProgress;
 
-  DetachingFuture(this._inProgress) {
-    _inProgress.then((result) {
+  DetachingFuture(Future<T> inProgress) : _inProgress = inProgress {
+    inProgress.then((result) {
       _value = result;
       _inProgress = null;
     });
