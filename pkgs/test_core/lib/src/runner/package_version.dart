@@ -9,14 +9,18 @@ import 'dart:isolate';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 
+import '../util/detaching_future.dart';
+
 /// A comment which forces the language version to be that of the current
 /// packages default.
 ///
 /// If the cwd is not a package, this returns an empty string which ends up
 /// defaulting to the current sdk version.
-final Future<String> rootPackageLanguageVersionComment = () async {
+Future<String> get rootPackageLanguageVersionComment =>
+    _rootPackageLanguageVersionComment.asFuture;
+final _rootPackageLanguageVersionComment = DetachingFuture(() async {
   var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
   var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
   if (rootPackage == null) return '';
   return '// @dart=${rootPackage.languageVersion}';
-}();
+}());
