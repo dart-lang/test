@@ -1,5 +1,5 @@
 name: fake_async
-version: 1.1.0-nullsafety
+version: 1.2.0-nullsafety
 description: >-
   Fake asynchronous events such as timers and microtasks for deterministic
   testing.

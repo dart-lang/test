@@ -1,12 +1,18 @@
-## 1.1.0-nullsafety
+## 1.2.0-nullsafety
 
-* Update to null safety.
+Pre-release for the null safety migration of this package.
+
+Note that `1.2.0` may not be the final stable null safety release version,
+we reserve the right to release it as a `2.0.0` breaking change.
+
+This release will be pinned to only allow pre-release sdk versions starting
+from `2.10.0-0`.
 
 ## 1.1.0
 
-   * Exposed the `FakeTimer` class as a public class.
-   * Added `FakeAsync.pendingTimers` which gives access to all pending timers
-     at the time of the call.
+* Exposed the `FakeTimer` class as a public class.
+* Added `FakeAsync.pendingTimers` which gives access to all pending timers at
+  the time of the call.
 
 ## 1.0.2
 
