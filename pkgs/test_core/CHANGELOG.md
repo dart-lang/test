@@ -1,5 +1,7 @@
 ## 0.3.12-nullsafety.2-dev
 
+* Allow version `0.40.x` of `analyzer`.
+
 ## 0.3.12-nullsafety.1
 
 * Update source_maps constraint.

@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.2-dev
+
+* Allow version `0.40.x` of `analyzer`.
+
 ## 1.16.0-nullsafety.1
 
 * Depend on the latest test_core.
@@ -56,7 +60,7 @@
 
 ## 1.14.3
 
-* Fix an issue where coverage tests could not run in Chrome headless. 
+* Fix an issue where coverage tests could not run in Chrome headless.
 * Fix an issue where coverage collection would not work with source
   maps that contained absolute file URIs.
 * Fix error messages for incorrect string literals in test annotations.
