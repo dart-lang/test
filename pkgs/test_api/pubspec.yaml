@@ -1,30 +1,30 @@
 name: test_api
-version: 0.2.18-dev
+version: 0.2.19-nullsafety
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  # This must remain a tight constraint until nnbd is stable
+  sdk: '>=2.10.0-0 <2.10.0'
 
 dependencies:
-  async: ^2.0.0
-  boolean_selector: ">=1.0.0 <3.0.0"
-  collection: ^1.8.0
-  meta: ^1.1.5
-  path: ^1.2.0
-  source_span: ^1.4.0
-  stack_trace: ^1.9.0
-  stream_channel: ">=1.7.0 <3.0.0"
-  string_scanner: ^1.0.0
-  term_glyph: ^1.0.0
+  async: '>=2.5.0-nullsafety <2.5.0'
+  boolean_selector: ">=2.1.0-nullsafety <2.1.0"
+  collection: '>=1.15.0-nullsafety <1.15.0'
+  meta: '>=1.3.0-nullsafety <1.3.0'
+  path: '>=1.8.0-nullsafety <1.8.0'
+  source_span: '>=1.8.0-nullsafety <1.8.0'
+  stack_trace: '>=1.10.0-nullsafety <1.10.0'
+  stream_channel: '>=2.1.0-nullsafety <2.1.0'
+  string_scanner: '>=1.1.0-nullsafety <1.1.0'
+  term_glyph: '>=1.2.0-nullsafety <1.2.0'
 
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
-  matcher: ">=0.12.6 <0.12.9"
+  matcher: '>=0.12.10-nullsafety <0.12.10'
 
 dev_dependencies:
-  fake_async: ^1.0.0
-  pedantic: ^1.0.0
+  pedantic: '>=1.10.0-nullsafety <1.10.0'
   test_descriptor: ^1.0.0
   test_process: ^1.0.0
   test: any
@@ -35,3 +35,45 @@ dependency_overrides:
     path: ./../test
   test_core:
     path: ./../test_core
+  async:
+    git: git://github.com/dart-lang/async.git
+  boolean_selector:
+    git: git://github.com/dart-lang/boolean_selector.git
+  charcode:
+    git: git://github.com/dart-lang/charcode.git
+  collection:
+    git: git://github.com/dart-lang/collection.git
+  js:
+    git:
+      url: git://github.com/dart-lang/sdk.git
+      path: pkg/js
+      ref: 2-10-pkgs
+  matcher:
+    git: git://github.com/dart-lang/matcher.git
+  meta:
+    git:
+      url: git://github.com/dart-lang/sdk.git
+      path: pkg/meta
+      ref: 2-10-pkgs
+  path:
+    git: git://github.com/dart-lang/path.git
+  pedantic:
+    git: git://github.com/dart-lang/pedantic.git
+  pool:
+    git: git://github.com/dart-lang/pool.git
+  source_maps:
+    git: git://github.com/dart-lang/source_maps.git
+  source_map_stack_trace:
+    git: git://github.com/dart-lang/source_map_stack_trace.git
+  source_span:
+    git: git://github.com/dart-lang/source_span.git
+  stack_trace:
+    git: git://github.com/dart-lang/stack_trace.git
+  stream_channel:
+    git: git://github.com/dart-lang/stream_channel.git
+  string_scanner:
+    git: git://github.com/dart-lang/string_scanner.git
+  term_glyph:
+    git: git://github.com/dart-lang/term_glyph.git
+  typed_data:
+    git: git://github.com/dart-lang/typed_data.git

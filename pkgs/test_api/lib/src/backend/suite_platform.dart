@@ -24,9 +24,9 @@ class SuitePlatform {
   ///
   /// Throws an [ArgumentError] if [runtime] is a browser and [os] is not
   /// `null` or [OperatingSystem.none].
-  SuitePlatform(this.runtime, {OperatingSystem os, this.inGoogle = false})
-      : os = os ?? OperatingSystem.none {
-    if (runtime.isBrowser && this.os != OperatingSystem.none) {
+  SuitePlatform(this.runtime,
+      {this.os = OperatingSystem.none, this.inGoogle = false}) {
+    if (runtime.isBrowser && os != OperatingSystem.none) {
       throw ArgumentError('No OS should be passed for runtime "$runtime".');
     }
   }
@@ -35,7 +35,7 @@ class SuitePlatform {
   /// [SuitePlatform].
   factory SuitePlatform.deserialize(Object serialized) {
     var map = serialized as Map;
-    return SuitePlatform(Runtime.deserialize(map['runtime']),
+    return SuitePlatform(Runtime.deserialize(map['runtime'] as Object),
         os: OperatingSystem.find(map['os'] as String),
         inGoogle: map['inGoogle'] as bool);
   }

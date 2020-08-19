@@ -69,28 +69,28 @@ class CompactReporter implements Reporter {
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
-  int _lastProgressPassed;
+  int? _lastProgressPassed;
 
   /// The size of `_engine.skipped` last time a progress notification was printed.
-  int _lastProgressSkipped;
+  int? _lastProgressSkipped;
 
   /// The size of `_engine.failed` last time a progress notification was
   /// printed.
-  int _lastProgressFailed;
+  int? _lastProgressFailed;
 
   /// The duration of the test run in seconds last time a progress notification
   /// was printed.
-  int _lastProgressElapsed;
+  int? _lastProgressElapsed;
 
   /// The message printed for the last progress notification.
-  String _lastProgressMessage;
+  String? _lastProgressMessage;
 
   /// The suffix added to the last progress notification.
-  String _lastProgressSuffix;
+  String? _lastProgressSuffix;
 
   /// Whether the message printed for the last progress notification was
   /// truncated.
-  bool _lastProgressTruncated;
+  bool? _lastProgressTruncated;
 
   // Whether a newline has been printed since the last progress line.
   var _printedNewline = true;
@@ -161,7 +161,7 @@ class CompactReporter implements Reporter {
 
       /// Keep updating the time even when nothing else is happening.
       _subscriptions.add(Stream.periodic(Duration(seconds: 1))
-          .listen((_) => _progressLine(_lastProgressMessage)));
+          .listen((_) => _progressLine(_lastProgressMessage!)));
     }
 
     // If this is the first test to start, print a progress line so the user
@@ -206,7 +206,9 @@ class CompactReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  //
+  // TODO: make `stackTrace` non-nullable once they are non-nullable in the sdk
+  void _onError(LiveTest liveTest, error, StackTrace? stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest),
@@ -221,7 +223,7 @@ class CompactReporter implements Reporter {
     }
 
     // TODO - what type is this?
-    _sink.writeln(indent(error.toString(color: _config.color) as String));
+    _sink.writeln(indent(error.toString(color: _config.color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IOException &&
@@ -236,7 +238,7 @@ class CompactReporter implements Reporter {
   ///
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
-  void _onDone(bool success) {
+  void _onDone(bool? success) {
     cancel();
     _stopwatch.stop();
 
@@ -283,7 +285,7 @@ class CompactReporter implements Reporter {
   /// color for [message]. If [suffix] is passed, it's added to the end of
   /// [message].
   bool _progressLine(String message,
-      {String color, bool truncate = true, String suffix}) {
+      {String? color, bool truncate = true, String? suffix}) {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.
@@ -295,7 +297,7 @@ class CompactReporter implements Reporter {
         (suffix == null || suffix == _lastProgressSuffix) &&
         // Don't re-print just because the message became re-truncated, because
         // that doesn't add information.
-        (truncate || !_lastProgressTruncated) &&
+        (truncate || !_lastProgressTruncated!) &&
         // If we printed a newline, that means the last line *wasn't* a progress
         // line. In that case, we don't want to print a new progress line just
         // because the elapsed time changed.
@@ -375,8 +377,7 @@ class CompactReporter implements Reporter {
       name = '${liveTest.suite.path}: $name';
     }
 
-    if (_config.suiteDefaults.runtimes.length > 1 &&
-        liveTest.suite.platform != null) {
+    if (_config.suiteDefaults.runtimes.length > 1) {
       name = '[${liveTest.suite.platform.runtime.name}] $name';
     }
 

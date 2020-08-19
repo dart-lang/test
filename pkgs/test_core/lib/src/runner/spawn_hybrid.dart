@@ -19,7 +19,7 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// This connects the main isolate to the hybrid isolate, whereas
 /// `lib/src/frontend/spawn_hybrid.dart` connects the test isolate to the main
 /// isolate.
-StreamChannel spawnHybridUri(int id, String url, Object message) {
+StreamChannel spawnHybridUri(int id, String url, Object? message) {
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();
     var onExitPort = ReceivePort();

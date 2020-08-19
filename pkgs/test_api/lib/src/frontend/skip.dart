@@ -5,7 +5,7 @@
 /// An annotation for marking a test suite as skipped.
 class Skip {
   /// The reason the test suite is skipped, or `null` if no reason is given.
-  final String reason;
+  final String? reason;
 
   /// Marks a suite as skipped.
   ///

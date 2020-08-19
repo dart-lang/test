@@ -25,7 +25,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/dart.dart' as dart;
-import '../../util/io.dart';
+import '../package_version.dart';
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -54,8 +54,8 @@ class VMPlatform extends PlatformPlugin {
       rethrow;
     }
 
-    VmService client;
-    StreamSubscription<Event> eventSub;
+    VmService? client;
+    StreamSubscription<Event>? eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
       isolate.kill();
@@ -64,8 +64,8 @@ class VMPlatform extends PlatformPlugin {
       sink.close();
     }));
 
-    Environment environment;
-    IsolateRef isolateRef;
+    Environment? environment;
+    IsolateRef? isolateRef;
     if (_config.debug) {
       // Print an empty line because the VM prints an "Observatory listening on"
       // line and we don't want that to end up on the same line as the reporter
@@ -73,7 +73,7 @@ class VMPlatform extends PlatformPlugin {
       if (_config.reporter == 'compact') stdout.writeln();
 
       var info = await Service.controlWebServer(enable: true);
-      var isolateID = Service.getIsolateID(isolate);
+      var isolateID = Service.getIsolateID(isolate)!;
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
       client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
@@ -94,10 +94,10 @@ class VMPlatform extends PlatformPlugin {
 
     var controller = deserializeSuite(
         path, platform, suiteConfig, environment, channel, message,
-        gatherCoverage: () => _gatherCoverage(environment));
+        gatherCoverage: () => _gatherCoverage(environment!));
 
     if (isolateRef != null) {
-      await client.streamListen('Debug');
+      await client!.streamListen('Debug');
       eventSub = client.onDebugEvent.listen((event) {
         if (event.kind == EventKind.kResume) {
           controller.setDebugging(false);
@@ -122,7 +122,7 @@ class VMPlatform extends PlatformPlugin {
     if (precompiledPath != null) {
       return _spawnPrecompiledIsolate(path, message, precompiledPath);
     } else if (_config.pubServeUrl != null) {
-      return _spawnPubServeIsolate(path, message, _config.pubServeUrl);
+      return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
     } else {
       return _spawnDataIsolate(path, message, suiteMetadata);
     }
@@ -135,15 +135,12 @@ Future<Isolate> _spawnDataIsolate(
     ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
 
-    import "package:stream_channel/isolate_channel.dart";
-
-    import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
+    import "package:test_core/src/bootstrap/vm.dart";
 
     import "${p.toUri(p.absolute(path))}" as test;
 
-    void main(_, SendPort message) {
-      var channel = serializeSuite(() => test.main);
-      IsolateChannel.connectSend(message).pipe(channel);
+    void main(_, SendPort sendPort) {
+      internalBootstrapVmTest(() => test.main, sendPort);
     }
   ''', message);
 }
@@ -162,8 +159,8 @@ Future<Isolate> _spawnPrecompiledIsolate(
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
-  final isolateId = Uri.parse(environment.observatoryUrl.fragment)
-      .queryParameters['isolateId'];
+  final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
+      .queryParameters['isolateId']!;
   return await collect(environment.observatoryUrl, false, false, false, {},
       isolateIds: {isolateId});
 }

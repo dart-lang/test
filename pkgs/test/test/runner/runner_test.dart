@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.7
 
 @TestOn('vm')
 
@@ -257,16 +259,22 @@ $_usage''');
     });
 
     test('a test file has a non-function main', () async {
-      await d.file('test.dart', 'int main;').create();
+      await d.file('test.dart', 'int main = 0;').create();
       var test = await runTest(['test.dart']);
 
+      expect(test.stdout, emitsThrough(contains('-1: loading test.dart [E]')));
       expect(
           test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            "A value of type 'int' can't be assigned to a "
-                "variable of type 'Function'",
-          ]));
+          emitsThrough(anyOf([
+            contains(
+              "A value of type 'int' can't be assigned to a variable of type "
+              "'Function'",
+            ),
+            contains(
+              "A value of type 'int' can't be returned from a function with "
+              "return type 'Function'",
+            ),
+          ])));
 
       await test.shouldExit(1);
     });
@@ -350,6 +358,34 @@ $_usage''');
 
       var test = await runTest(['dir/test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+  });
+
+  group('runs successful tests with async setup', () {
+    setUp(() async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() async {
+          test("success 1", () {});
+
+          await () async {};
+
+          test("success 2", () {});
+        }
+      ''').create();
+    });
+
+    test('defined in a single file', () async {
+      var test = await runTest(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('directly', () async {
+      var test = await runDart(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('All tests passed!')));
       await test.shouldExit(0);
     });
   });
@@ -672,6 +708,7 @@ void main() {
     test('defined in a single file', () async {
       await d.file('test.dart', _success).create();
       await d.file('runner.dart', '''
+// @dart=2.8
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
@@ -705,78 +742,105 @@ void main(List<String> args) async {
   group('nnbd', () {
     final _testContents = '''
 import 'package:test/test.dart';
-import 'opted_in.dart';
+import 'opted_out.dart';
 
 void main() {
   test("success", () {
-    foo = true;
     expect(foo, true);
   });
 }''';
 
     setUp(() async {
-      await d.file('opted_in.dart', '''
-// @dart=2.9
-bool? foo;''').create();
+      await d.file('opted_out.dart', '''
+// @dart=2.8
+final foo = true;''').create();
     });
 
-    test('nnbd can be enabled in deps', () async {
+    test('sound null safety is enabled if the entrypoint opts in explicitly',
+        () async {
+      await d.file('test.dart', '''
+// @dart=2.10
+$_testContents
+''').create();
+      var test = await runTest(['test.dart']);
+
+      expect(
+          test.stdout,
+          emitsThrough(contains(
+              'Error: A library can\'t opt out of null safety by default, '
+              'when using sound null safety.')));
+      await test.shouldExit(1);
+    });
+
+    test('sound null safety is disabled if the entrypoint opts out explicitly',
+        () async {
       await d.file('test.dart', '''
 // @dart=2.8
 $_testContents''').create();
-      var test = await runTest(['test.dart'],
-          packageConfig: (await Isolate.packageConfig).path,
-          vmArgs: ['--enable-experiment=non-nullable']);
+      var test = await runTest(['test.dart']);
 
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
 
-    test('sound null safety is enabled if the entrypoint opts in', () async {
-      await d.file('test.dart', '''
-// @dart=2.9
-$_testContents''').create();
-      var test = await runTest(['test.dart'],
-          packageConfig: (await Isolate.packageConfig).path,
-          vmArgs: ['--enable-experiment=non-nullable']);
+    group('defaults', () {
+      PackageConfig currentPackageConfig;
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
-          ]));
-      await test.shouldExit(1);
-    });
+      setUpAll(() async {
+        currentPackageConfig =
+            await loadPackageConfigUri(await Isolate.packageConfig);
+      });
 
-    test('sound null safety is enabled if the package is opted in', () async {
-      var currentPackageConfig =
-          await loadPackageConfigUri(await Isolate.packageConfig);
-      var newPackageConfig = PackageConfig([
-        ...currentPackageConfig.packages,
-        Package('example', Uri.file('${d.sandbox}/'),
-            languageVersion: LanguageVersion(2, 9),
-            // TODO: https://github.com/dart-lang/package_config/issues/81
-            packageUriRoot: Uri.file('${d.sandbox}/')),
-      ]);
+      setUp(() async {
+        await d.file('test.dart', _testContents).create();
+      });
 
-      await d.file('test.dart', _testContents).create();
-      await d
-          .file('package_config.json',
-              jsonEncode(PackageConfig.toJson(newPackageConfig)))
-          .create();
+      test('sound null safety is enabled if the package is opted in', () async {
+        var newPackageConfig = PackageConfig([
+          ...currentPackageConfig.packages,
+          Package('example', Uri.file('${d.sandbox}/'),
+              languageVersion: LanguageVersion(2, 10),
+              // TODO: https://github.com/dart-lang/package_config/issues/81
+              packageUriRoot: Uri.file('${d.sandbox}/')),
+        ]);
 
-      var test = await runTest(['test.dart'],
-          packageConfig: p.join(d.sandbox, 'package_config.json'),
-          vmArgs: ['--enable-experiment=non-nullable']);
+        await d
+            .file('package_config.json',
+                jsonEncode(PackageConfig.toJson(newPackageConfig)))
+            .create();
 
-      expect(
-          test.stdout,
-          containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of non-nullable by default, when in nnbd-strong mode.'
-          ]));
-      await test.shouldExit(1);
+        var test = await runTest(['test.dart'],
+            packageConfig: p.join(d.sandbox, 'package_config.json'));
+
+        expect(
+            test.stdout,
+            emitsThrough(contains(
+                'Error: A library can\'t opt out of null safety by default, '
+                'when using sound null safety.')));
+        await test.shouldExit(1);
+      });
+
+      test('sound null safety is disabled if the package is opted out',
+          () async {
+        var newPackageConfig = PackageConfig([
+          ...currentPackageConfig.packages,
+          Package('example', Uri.file('${d.sandbox}/'),
+              languageVersion: LanguageVersion(2, 8),
+              // TODO: https://github.com/dart-lang/package_config/issues/81
+              packageUriRoot: Uri.file('${d.sandbox}/')),
+        ]);
+
+        await d
+            .file('package_config.json',
+                jsonEncode(PackageConfig.toJson(newPackageConfig)))
+            .create();
+
+        var test = await runTest(['test.dart'],
+            packageConfig: p.join(d.sandbox, 'package_config.json'));
+
+        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+        await test.shouldExit(0);
+      });
     });
   });
 }

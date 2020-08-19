@@ -1,6 +1,8 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.7
 
 @TestOn('vm')
 import 'dart:async';
@@ -23,17 +25,11 @@ void main() {
   group('browser tests', () {
     setUp(() async {
       await d.file('to_precompile.dart', '''
-        import "package:stream_channel/stream_channel.dart";
-
-        import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
-        import "package:test/src/runner/browser/post_message_channel.dart";
+        import "package:test/bootstrap/browser.dart";
         import "package:test/test.dart";
 
-        main(_) async {
-          var channel = serializeSuite(() {
-            return () => test("success", () {});
-          }, hidePrints: false);
-          postMessageChannel().pipe(channel);
+        main(_) {
+          internalBootstrapBrowserTest(() => () => test("success", () {}));
         }
       ''').create();
 
@@ -52,6 +48,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
+            ...Platform.executableArguments,
             '--packages=${await Isolate.packageConfig}',
             'to_precompile.dart',
             '--out=precompiled/test.dart.browser_test.dart.js'
@@ -109,6 +106,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
+            ...Platform.executableArguments,
             '--packages=${await Isolate.packageConfig}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',
@@ -238,6 +236,7 @@ Future<Null> _writePackagesFile() async {
   // TODO: remove try/catch when this issue is resolved:
   // https://github.com/dart-lang/package_config/issues/66
   try {
+    await d.dir('.dart_tool').create();
     await savePackageConfig(config, Directory(d.sandbox));
   } catch (_) {
     // If it fails, just write a `.packages` file.

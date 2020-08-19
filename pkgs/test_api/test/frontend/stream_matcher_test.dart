@@ -15,10 +15,10 @@ void main() {
     glyph.ascii = true;
   });
 
-  Stream stream;
-  StreamQueue queue;
-  Stream errorStream;
-  StreamQueue errorQueue;
+  late Stream stream;
+  late StreamQueue queue;
+  late Stream errorStream;
+  late StreamQueue errorQueue;
   setUp(() {
     stream = Stream.fromIterable([1, 2, 3, 4, 5]);
     queue = StreamQueue(Stream.fromIterable([1, 2, 3, 4, 5]));

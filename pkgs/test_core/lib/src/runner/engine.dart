@@ -65,33 +65,33 @@ class Engine {
   /// This is `null` if close hasn't been called and the tests are still
   /// running, `true` if close was called before the tests finished running, and
   /// `false` if the tests finished running before close was called.
-  bool _closedBeforeDone;
+  bool? _closedBeforeDone;
 
   /// The coverage output directory.
-  String _coverage;
+  String? _coverage;
 
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
 
-  /// A completer that will complete when [this] is unpaused.
+  /// A completer that will complete when this engine is unpaused.
   ///
-  /// If [this] isn't paused, [_pauseCompleter] is `null`.
-  Completer _pauseCompleter;
+  /// `null` if this engine is not paused.
+  Completer? _pauseCompleter;
 
-  /// A future that completes once [this] is unpaused.
+  /// A future that completes once this is unpaused.
   ///
-  /// If [this] isn't paused, this completes immediately.
+  /// If this engine isn't paused, this future completes immediately.
   Future get _onUnpaused =>
-      _pauseCompleter == null ? Future.value() : _pauseCompleter.future;
+      _pauseCompleter == null ? Future.value() : _pauseCompleter!.future;
 
   /// Whether all tests passed or were skipped.
   ///
   /// This fires once all tests have completed and [suiteSink] has been closed.
   /// This will be `null` if [close] was called before all the tests finished
   /// running.
-  Future<bool> get success async {
+  Future<bool?> get success async {
     await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
-    if (_closedBeforeDone) return null;
+    if (_closedBeforeDone!) return null;
     return liveTests.every((liveTest) =>
         liveTest.state.result.isPassing &&
         liveTest.state.status == Status.complete);
@@ -210,7 +210,7 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
   /// defaults to 1.
-  Engine({int concurrency, String coverage})
+  Engine({int? concurrency, String? coverage})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage {
     _group.future.then((_) {
@@ -230,7 +230,7 @@ class Engine {
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
   factory Engine.withSuites(List<RunnerSuite> suites,
-      {int concurrency, String coverage}) {
+      {int? concurrency, String? coverage}) {
     var engine = Engine(concurrency: concurrency, coverage: coverage);
     for (var suite in suites) {
       engine.suiteSink.add(suite);
@@ -244,20 +244,22 @@ class Engine {
   /// This returns `true` if all tests succeed, and `false` otherwise. It will
   /// only return once all tests have finished running and [suiteSink] has been
   /// closed.
-  Future<bool> run() {
+  ///
+  /// If [success] completes with `null` this will complete with `null`.
+  Future<bool?> run() {
     if (_runCalled) {
       throw StateError('Engine.run() may not be called more than once.');
     }
     _runCalled = true;
 
-    StreamSubscription subscription;
+    late StreamSubscription subscription;
     subscription = _suiteController.stream.listen((suite) {
       _addedSuites.add(suite);
       _onSuiteAddedController.add(suite);
 
       _group.add(() async {
         var resource = await _runPool.request();
-        LiveSuiteController controller;
+        LiveSuiteController? controller;
         try {
           if (suite is LoadSuite) {
             await _onUnpaused;
@@ -272,7 +274,7 @@ class Engine {
           if (_closed) return;
           await _runGroup(controller, controller.liveSuite.suite.group, []);
           controller.noMoreLiveTests();
-          if (_coverage != null) await writeCoverage(_coverage, controller);
+          if (_coverage != null) await writeCoverage(_coverage!, controller);
         } finally {
           resource.allowRelease(() => controller?.close());
         }
@@ -302,7 +304,7 @@ class Engine {
       var skipGroup = !suiteConfig.runSkipped && group.metadata.skip;
       var setUpAllSucceeded = true;
       if (!skipGroup && group.setUpAll != null) {
-        var liveTest = group.setUpAll
+        var liveTest = group.setUpAll!
             .load(suiteController.liveSuite.suite, groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
         setUpAllSucceeded = liveTest.state.result.isPassing;
@@ -312,7 +314,7 @@ class Engine {
         // shuffle the group entries
         var entries = group.entries.toList();
         if (suiteConfig.testRandomizeOrderingSeed != null &&
-            suiteConfig.testRandomizeOrderingSeed > 0) {
+            suiteConfig.testRandomizeOrderingSeed! > 0) {
           entries.shuffle(Random(suiteConfig.testRandomizeOrderingSeed));
         }
 
@@ -334,7 +336,7 @@ class Engine {
       // Even if we're closed or setUpAll failed, we want to run all the
       // teardowns to ensure that any state is properly cleaned up.
       if (!skipGroup && group.tearDownAll != null) {
-        var liveTest = group.tearDownAll
+        var liveTest = group.tearDownAll!
             .load(suiteController.liveSuite.suite, groups: parents);
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
         if (_closed) await liveTest.close();
@@ -358,7 +360,7 @@ class Engine {
     // non-load test to add.
     if (_active.first.suite is LoadSuite) _active.removeFirst();
 
-    StreamSubscription subscription;
+    late StreamSubscription subscription;
     subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _active.remove(liveTest);
@@ -397,7 +399,7 @@ class Engine {
     await _onUnpaused;
     var skipped = LocalTest(test.name, test.metadata, () {}, trace: test.trace);
 
-    LiveTestController controller;
+    late LiveTestController controller;
     controller =
         LiveTestController(suiteController.liveSuite.suite, skipped, () {
       controller.setState(const State(Status.running, Result.success));
@@ -437,7 +439,7 @@ class Engine {
   /// Runs [suite] and returns the [LiveSuiteController] for the suite it loads.
   ///
   /// Returns `null` if the suite fails to load.
-  Future<LiveSuiteController> _addLoadSuite(LoadSuite suite) async {
+  Future<LiveSuiteController?> _addLoadSuite(LoadSuite suite) async {
     var controller = LiveSuiteController(suite);
     _addLiveSuite(controller.liveSuite);
 
@@ -447,7 +449,7 @@ class Engine {
     // Only surface the load test if there are no other tests currently running.
     if (_active.isEmpty) _active.add(liveTest);
 
-    StreamSubscription subscription;
+    late StreamSubscription subscription;
     subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _activeLoadTests.remove(liveTest);
@@ -516,7 +518,7 @@ class Engine {
 
   void resume() {
     if (_pauseCompleter == null) return;
-    _pauseCompleter.complete();
+    _pauseCompleter!.complete();
     _pauseCompleter = null;
     for (var subscription in _subscriptions) {
       subscription.resume();

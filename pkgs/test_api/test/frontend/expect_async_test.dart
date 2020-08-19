@@ -168,8 +168,8 @@ void main() {
     test(
         "won't allow the test to complete until it's called at least that "
         'many times', () async {
-      LiveTest liveTest;
-      Future future;
+      late LiveTest liveTest;
+      late Future future;
       liveTest = createTest(() {
         var callback = expectAsync0(() {}, count: 3);
 
@@ -267,8 +267,8 @@ void main() {
   group('expectAsyncUntil()', () {
     test("won't allow the test to complete until isDone returns true",
         () async {
-      LiveTest liveTest;
-      Future future;
+      late LiveTest liveTest;
+      late Future future;
       liveTest = createTest(() {
         var done = false;
         var callback = expectAsyncUntil0(() {}, () => done);
