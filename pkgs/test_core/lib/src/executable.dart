@@ -34,18 +34,8 @@ final String _globalConfigPath = () {
 }();
 
 Future<void> main(List<String> args) async {
-  // Eager resolve of values that would capture a zone.
-  print(await rootPackageLanguageVersionComment);
-  var fakeLongExit = false;
-  if (args.first == '--fake-long-exit') {
-    args = args.skip(1).toList();
-    fakeLongExit = true;
-  }
   await _execute(args);
   completeShutdown();
-  await Future.delayed(const Duration(seconds: 5));
-  print('Shutdown complete');
-  if (fakeLongExit) await Future.delayed(const Duration(minutes: 2));
 }
 
 Future<void> runTests(List<String> args) async {

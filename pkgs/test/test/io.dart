@@ -105,8 +105,8 @@ Future<TestProcess> runDart(Iterable<String> args,
     bool forwardStdio = false,
     String packageConfig}) async {
   var allArgs = <String>[
-    // ...Platform.executableArguments.where((arg) =>
-    //     !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
+    ...Platform.executableArguments.where((arg) =>
+        !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
     '--packages=${packageConfig ?? await Isolate.packageConfig}',
     ...args
   ];

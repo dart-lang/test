@@ -41,7 +41,6 @@ dev_dependencies:
   shelf_test_handler: ^1.0.0
   test_descriptor: ^1.0.0
   test_process: ^1.0.0
-  vm_service: '>=1.0.0 <5.0.0'
 
 dependency_overrides:
   test_api:
