@@ -141,8 +141,7 @@ class ExpandedReporter implements Reporter {
     }
   }
 
-  @override
-  void cancel() {
+  void _cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();
     }
@@ -220,6 +219,7 @@ class ExpandedReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
+    _cancel();
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user, in
     // which case we shouldn't print summary information.

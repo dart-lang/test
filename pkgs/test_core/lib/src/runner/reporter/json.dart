@@ -106,8 +106,7 @@ class JsonReporter implements Reporter {
     }
   }
 
-  @override
-  void cancel() {
+  void _cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();
     }
@@ -276,7 +275,7 @@ class JsonReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    cancel();
+    _cancel();
     _stopwatch.stop();
 
     _emit('done', {'success': success});
