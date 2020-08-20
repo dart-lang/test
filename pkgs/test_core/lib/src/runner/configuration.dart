@@ -149,17 +149,10 @@ class Configuration {
   final Set<String> chosenPresets;
 
   /// The set of tags that have been declared in any way in this configuration.
-  Set<String> get knownTags {
-    if (_knownTags != null) return _knownTags!;
-
-    var known = suiteDefaults.knownTags.toSet();
-    for (var configuration in presets.values) {
-      known.addAll(configuration.knownTags);
-    }
-
-    return _knownTags = UnmodifiableSetView(known);
-  }
-
+  Set<String> get knownTags => _knownTags ??= UnmodifiableSetView({
+        ...suiteDefaults.knownTags,
+        for (var configuration in presets.values) ...configuration.knownTags
+      });
   Set<String>? _knownTags;
 
   /// Configuration presets.
@@ -175,17 +168,10 @@ class Configuration {
   /// All preset names that are known to be valid.
   ///
   /// This includes presets that have already been resolved.
-  Set<String> get knownPresets {
-    if (_knownPresets != null) return _knownPresets!;
-
-    var known = presets.keys.toSet();
-    for (var configuration in presets.values) {
-      known.addAll(configuration.knownPresets);
-    }
-
-    return _knownPresets = UnmodifiableSetView(known);
-  }
-
+  Set<String> get knownPresets => _knownPresets ??= UnmodifiableSetView({
+        ...presets.keys,
+        for (var configuration in presets.values) ...configuration.knownPresets
+      });
   Set<String>? _knownPresets;
 
   /// Built-in runtimes whose settings are overridden by the user.
@@ -523,7 +509,7 @@ class Configuration {
             value: (settings1, settings2) => RuntimeSettings(
                 settings1.identifier,
                 settings1.identifierSpan,
-                settings1.settings.toList()..addAll(settings2.settings))),
+                [...settings1.settings, ...settings2.settings])),
         defineRuntimes:
             mergeUnmodifiableMaps(defineRuntimes, other.defineRuntimes),
         noRetry: other._noRetry ?? _noRetry,
@@ -657,7 +643,7 @@ class Configuration {
     // Make sure the configuration knows about presets that were selected and
     // thus removed from [newPresets].
     result._knownPresets =
-        UnmodifiableSetView(result.knownPresets.toSet()..addAll(presets.keys));
+        UnmodifiableSetView({...result.knownPresets, ...presets.keys});
 
     return result;
   }
