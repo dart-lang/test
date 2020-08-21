@@ -86,8 +86,6 @@ class ExpandedReporter implements Reporter {
 
   final StringSink _sink;
 
-  // TODO(nweiz): Get configuration from [Configuration.current] once we have
-  // cross-platform imports.
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   ///
@@ -96,13 +94,16 @@ class ExpandedReporter implements Reporter {
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
   static ExpandedReporter watch(Engine engine, StringSink sink,
-      {bool color = true, bool printPath = true, bool printPlatform = true}) {
-    return ExpandedReporter._(engine, sink,
-        color: color, printPath: printPath, printPlatform: printPlatform);
-  }
+          {required bool color,
+          required bool printPath,
+          required bool printPlatform}) =>
+      ExpandedReporter._(engine, sink,
+          color: color, printPath: printPath, printPlatform: printPlatform);
 
   ExpandedReporter._(this._engine, this._sink,
-      {bool color = true, bool printPath = true, bool printPlatform = true})
+      {required bool color,
+      required bool printPath,
+      required bool printPlatform})
       : _printPath = printPath,
         _printPlatform = printPlatform,
         _color = color,
@@ -114,8 +115,8 @@ class ExpandedReporter implements Reporter {
         _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
-    /// Convert the future to a stream so that the subscription can be paused or
-    /// canceled.
+    // Convert the future to a stream so that the subscription can be paused or
+    // canceled.
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
@@ -134,6 +135,7 @@ class ExpandedReporter implements Reporter {
   @override
   void resume() {
     if (!_paused) return;
+
     _stopwatch.start();
 
     for (var subscription in _subscriptions) {
@@ -206,7 +208,7 @@ class ExpandedReporter implements Reporter {
     }
 
     // TODO - what type is this?
-    _sink.writeln(indent((error as dynamic).toString(color: _color) as String));
+    _sink.writeln(indent(error.toString(color: _color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! FormatException && error.innerError is! String) {
