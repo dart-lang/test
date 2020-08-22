@@ -36,8 +36,13 @@ final _allReporters = <String, ReporterDetails>{
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
-  'compact': ReporterDetails('A single line, updated continuously.',
-      (_, engine, sink) => CompactReporter.watch(engine, sink)),
+  'compact': ReporterDetails(
+      'A single line, updated continuously.',
+      (config, engine, sink) => CompactReporter.watch(engine, sink,
+          color: config.color,
+          printPath: config.paths.length > 1 ||
+              Directory(config.paths.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
       'A machine-readable format (see https://bit.ly/2Z7J0OH).',
       (_, engine, sink) => JsonReporter.watch(engine, sink)),

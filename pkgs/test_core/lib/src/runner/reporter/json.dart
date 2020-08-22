@@ -34,8 +34,6 @@ class JsonReporter implements Reporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
-  final StringSink _sink;
-
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
 
@@ -44,12 +42,6 @@ class JsonReporter implements Reporter {
   /// We can't just use `_stopwatch.isRunning` because the stopwatch is stopped
   /// when the reporter is paused.
   var _stopwatchStarted = false;
-
-  /// Whether the reporter is paused.
-  var _paused = false;
-
-  /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
 
   /// An expando that associates unique IDs with [LiveTest]s.
   final _liveTestIDs = <LiveTest, int>{};
@@ -63,6 +55,14 @@ class JsonReporter implements Reporter {
   /// The next ID to associate with a [LiveTest].
   var _nextID = 0;
 
+  /// Whether the reporter is paused.
+  var _paused = false;
+
+  /// The set of all subscriptions to various streams.
+  final _subscriptions = <StreamSubscription>{};
+
+  final StringSink _sink;
+
   /// Watches the tests run by [engine] and prints their results as JSON.
   static JsonReporter watch(Engine engine, StringSink sink) =>
       JsonReporter._(engine, sink);
@@ -70,8 +70,8 @@ class JsonReporter implements Reporter {
   JsonReporter._(this._engine, this._sink) : _config = Configuration.current {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
-    /// Convert the future to a stream so that the subscription can be paused or
-    /// canceled.
+    // Convert the future to a stream so that the subscription can be paused or
+    // canceled.
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
     _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
@@ -146,8 +146,8 @@ class JsonReporter implements Reporter {
           liveTest.suite.path!)
     });
 
-    /// Convert the future to a stream so that the subscription can be paused or
-    /// canceled.
+    // Convert the future to a stream so that the subscription can be paused or
+    // canceled.
     _subscriptions.add(
         liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)));
 
