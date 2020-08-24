@@ -259,9 +259,7 @@ class JsonReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  //
-  // TODO: make `stackTrace` non-nullable once it's non-nullable in the sdk.
-  void _onError(LiveTest liveTest, error, StackTrace? stackTrace) {
+  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     _emit('error', {
       'testID': _liveTestIDs[liveTest],
       'error': error.toString(),

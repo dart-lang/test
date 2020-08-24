@@ -195,9 +195,7 @@ class ExpandedReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  //
-  // TODO: Make `stackTrace` non-nullable once it's non-nullable in the sdk.
-  void _onError(LiveTest liveTest, error, StackTrace? stackTrace) {
+  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
