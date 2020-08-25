@@ -1,4 +1,4 @@
-## 1.16.0-nullsafety.2-dev
+## 1.16.0-nullsafety.2
 
 * Allow version `0.40.x` of `analyzer`.
 
