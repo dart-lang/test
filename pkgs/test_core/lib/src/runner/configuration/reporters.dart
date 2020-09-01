@@ -44,7 +44,8 @@ final _allReporters = <String, ReporterDetails>{
               Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
-      'A machine-readable format (see https://bit.ly/2Z7J0OH).',
+      'A machine-readable format (see '
+      'https://dart.dev/go/test-docs/json_reporter.md).',
       (_, engine, sink) => JsonReporter.watch(engine, sink)),
 };
 

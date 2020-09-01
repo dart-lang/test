@@ -106,7 +106,7 @@ Output:
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
-          [json]                      A machine-readable format (see https://bit.ly/2Z7J0OH).
+          [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
 
     --file-reporter                   Set the reporter used to write test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
