@@ -13,7 +13,6 @@ import 'dart:math' as math;
 
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -60,9 +59,9 @@ final _usage = '''
 Usage: pub run test [files or directories...]
 
 -h, --help                            Shows this usage information.
-    --version                         Shows the package's version.
+    --version                         Show the package:test version.
 
-======== Selecting Tests
+Selecting Tests:
 -n, --name                            A substring of the name of the test to run.
                                       Regular expression syntax is supported.
                                       If passed multiple times, tests must match all substrings.
@@ -74,7 +73,7 @@ Usage: pub run test [files or directories...]
                                       Supports boolean selector syntax.
     --[no-]run-skipped                Run skipped tests instead of skipping them.
 
-======== Running Tests
+Running Tests:
 -p, --platform                        The platform(s) on which to run the tests.
                                       $_browsers
 -P, --preset                          The configuration preset(s) to use.
@@ -85,36 +84,37 @@ Usage: pub run test [files or directories...]
     --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
-    --pause-after-load                Pauses for debugging before any tests execute.
+    --pause-after-load                Pause for debugging before any tests execute.
                                       Implies --concurrency=1, --debug, and --timeout=none.
                                       Currently only supported for browser tests.
-    --debug                           Runs the VM and Chrome tests in debug mode.
-    --coverage=<directory>            Gathers coverage and outputs it to the specified directory.
+    --debug                           Run the VM and Chrome tests in debug mode.
+    --coverage=<directory>            Gather coverage and output it to the specified directory.
                                       Implies --debug.
-    --[no-]chain-stack-traces         Chained stack traces to provide greater exception details
+    --[no-]chain-stack-traces         Use chained stack traces to provide greater exception details
                                       especially for asynchronous code. It may be useful to disable
                                       to provide improved test performance but at the cost of
                                       debuggability.
                                       (defaults to on)
-    --no-retry                        Don't re-run tests that have retry set.
-    --test-randomize-ordering-seed    The seed to randomize the execution order of test cases.
+    --no-retry                        Don't rerun tests that have retry set.
+    --test-randomize-ordering-seed    Use the specified seed to randomize the execution order of test cases.
                                       Must be a 32bit unsigned integer or "random".
                                       If "random", pick a random seed to use.
                                       If not passed, do not randomize test case execution order.
 
-======== Output
--r, --reporter                        The runner used to print test results.
+Output:
+-r, --reporter                        Set how to print test results.
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
           [json]                      A machine-readable format (see https://bit.ly/2Z7J0OH).
 
-    --file-reporter                   The reporter used to write test results to a file.
-                                      Should be in the form <reporter>:<filepath>, e.g. "json:reports/tests.json"
-    --verbose-trace                   Whether to emit stack traces with core library frames.
-    --js-trace                        Whether to emit raw JavaScript stack traces for browser tests.
-    --[no-]color                      Whether to use terminal colors.
+    --file-reporter                   Set the reporter used to write test results to a file.
+                                      Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
+    --verbose-trace                   Emit stack traces with core library frames.
+    --js-trace                        Emit raw JavaScript stack traces for browser tests.
+    --[no-]color                      Use terminal colors.
                                       (auto-detected by default)
+
 ''';
 
 final _browsers = '[vm (default), chrome, phantomjs, firefox' +
