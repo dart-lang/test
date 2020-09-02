@@ -19,7 +19,7 @@ import 'src/util/print_sink.dart';
 Future<bool> directRunTests(FutureOr<void> Function() testMain,
     {Reporter Function(Engine)? reporter}) async {
   reporter ??= (engine) => ExpandedReporter.watch(engine, PrintSink(),
-      color: Configuration.empty.color);
+      color: Configuration.empty.color, printPath: false, printPlatform: false);
   final declarer = Declarer();
   await declarer.declare(testMain);
 
