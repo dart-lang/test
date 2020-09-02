@@ -58,7 +58,7 @@ final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 final _usage = '''
 Usage: pub run test [files or directories...]
 
--h, --help                            Shows this usage information.
+-h, --help                            Show this usage information.
     --version                         Show the package:test version.
 
 Selecting Tests:

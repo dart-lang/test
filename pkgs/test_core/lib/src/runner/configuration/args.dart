@@ -25,7 +25,7 @@ final ArgParser _parser = (() {
   if (!Platform.isWindows) allRuntimes.remove(Runtime.internetExplorer);
 
   parser.addFlag('help',
-      abbr: 'h', negatable: false, help: 'Shows this usage information.');
+      abbr: 'h', negatable: false, help: 'Show this usage information.');
   parser.addFlag('version',
       negatable: false, help: 'Show the package:test version.');
 
