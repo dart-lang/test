@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.3
+
+* Clean up `--help` output.
+
 ## 0.3.12-nullsafety.2
 
 * Allow version `0.40.x` of `analyzer`.
