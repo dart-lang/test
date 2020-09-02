@@ -1,3 +1,8 @@
+## 1.16.0-nullsafety.5-dev
+
+* Annotate the classes used as annotations to restrict their usage to library
+  level.
+
 ## 1.16.0-nullsafety.4
 
 * Depend on the latest test_core.

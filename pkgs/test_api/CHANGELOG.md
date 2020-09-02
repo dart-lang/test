@@ -1,3 +1,8 @@
+## 0.2.19-nullsafety.2-dev
+
+* Annotate the classes used as annotations to restrict their usage to library
+  level.
+
 ## 0.2.19-nullsafety
 
 * Migrate to NNBD.
