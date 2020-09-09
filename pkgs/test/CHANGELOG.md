@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.4
+
+* Depend on the latest test_core.
+
 ## 1.16.0-nullsafety.3
 
 * Clean up `--help` output.
