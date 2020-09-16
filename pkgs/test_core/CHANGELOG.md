@@ -1,5 +1,8 @@
 ## 0.3.12-nullsafety.5-dev
 
+* Add `src/platform.dart` library to consolidate the necessary imports required
+  to write a custom platform.
+
 ## 0.3.12-nullsafety.4
 
 * Support latest `package:vm_service`.
