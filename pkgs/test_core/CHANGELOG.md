@@ -1,3 +1,7 @@
+## 0.3.12
+
+* Allow analyzer 0.40.x.
+
 ## 0.3.11
 
 * Update to `matcher` version `0.12.9`.
