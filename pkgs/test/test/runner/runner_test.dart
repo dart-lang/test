@@ -716,7 +716,7 @@ void main() {
 
     setUp(() async {
       await d.file('opted_in.dart', '''
-// @dart=2.9
+// @dart=2.10
 bool? foo;''').create();
     });
 
@@ -734,7 +734,7 @@ $_testContents''').create();
 
     test('sound null safety is enabled if the entrypoint opts in', () async {
       await d.file('test.dart', '''
-// @dart=2.9
+// @dart=2.10
 $_testContents''').create();
       var test = await runTest(['test.dart'],
           packageConfig: (await Isolate.packageConfig).path,
