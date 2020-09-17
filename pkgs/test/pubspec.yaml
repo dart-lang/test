@@ -33,7 +33,7 @@ dependencies:
   yaml: ^2.0.0
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.2.18
-  test_core: 0.3.12
+  test_core: 0.3.11+1
 
 dev_dependencies:
   fake_async: ^1.0.0
