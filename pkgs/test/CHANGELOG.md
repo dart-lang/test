@@ -25,6 +25,10 @@
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
 
+## 1.15.4
+
+* Allow analyzer 0.40.x.
+
 ## 1.15.3
 
 * Update to `matcher` version `0.12.9` which improves the mismatch description
