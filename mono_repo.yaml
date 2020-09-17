@@ -9,5 +9,9 @@ travis:
   after_failure:
   - tool/report_failure.sh
 
+  branches:
+  - pre-nnbd
+  - master
+
 merge_stages:
 - analyze_and_format

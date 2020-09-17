@@ -9,6 +9,9 @@ env:
   global: FORCE_TEST_EXIT=true
 after_failure:
   - tool/report_failure.sh
+branches:
+  - "pre-nnbd"
+  - master
 
 jobs:
   include:
@@ -64,11 +67,6 @@ jobs:
 stages:
   - analyze_and_format
   - unit_test
-
-# Only building master means that we don't run two builds for each pull request.
-branches:
-  only:
-    - master
 
 cache:
   directories:
