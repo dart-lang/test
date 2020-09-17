@@ -52,7 +52,7 @@ class Runner {
   final Reporter _reporter;
 
   /// The subscription to the stream returned by [_loadSuites].
-  StreamSubscription _suiteSubscription;
+  StreamSubscription? _suiteSubscription;
 
   /// The set of suite paths for which [_warnForUnknownTags] has already been
   /// called.
@@ -64,7 +64,7 @@ class Runner {
   /// The current debug operation, if any.
   ///
   /// This is stored so that we can cancel it when the runner is closed.
-  CancelableOperation _debugOperation;
+  CancelableOperation? _debugOperation;
 
   /// The memoizer for ensuring [close] only runs once.
   final _closeMemo = AsyncMemoizer();
@@ -83,17 +83,17 @@ class Runner {
           final sink =
               (File(filepath)..createSync(recursive: true)).openWrite();
           sinks.add(sink);
-          return allReporters[reporterName].factory(config, engine, sink);
+          return allReporters[reporterName]!.factory(config, engine, sink);
         }
 
         return Runner._(
           engine,
           MultiplexReporter([
             // Standard reporter.
-            allReporters[config.reporter].factory(config, engine, stdout),
+            allReporters[config.reporter]!.factory(config, engine, stdout),
             // File reporters.
             for (var reporter in config.fileReporters.keys)
-              createFileReporter(reporter, config.fileReporters[reporter]),
+              createFileReporter(reporter, config.fileReporters[reporter]!),
           ]),
           sinks,
         );
@@ -129,21 +129,21 @@ class Runner {
         }
 
         if (_config.coverage != null) {
-          await Directory(_config.coverage).create(recursive: true);
+          await Directory(_config.coverage!).create(recursive: true);
         }
 
-        bool success;
+        bool? success;
         if (_config.pauseAfterLoad) {
           success = await _loadThenPause(suites);
         } else {
           _suiteSubscription = suites.listen(_engine.suiteSink.add);
           var results = await Future.wait(<Future>[
-            _suiteSubscription
+            _suiteSubscription!
                 .asFuture()
                 .then((_) => _engine.suiteSink.close()),
             _engine.run()
           ], eagerError: true);
-          success = results.last as bool;
+          success = results.last as bool?;
         }
 
         if (_closed) return false;
@@ -172,8 +172,8 @@ class Runner {
 
     var unsupportedRuntimes = _config.suiteDefaults.runtimes
         .map(_loader.findRuntime)
-        .where((runtime) =>
-            runtime != null && !testOn.evaluate(currentPlatform(runtime)))
+        .whereType<Runtime>()
+        .where((runtime) => !testOn.evaluate(currentPlatform(runtime)))
         .toList();
     if (unsupportedRuntimes.isEmpty) return;
 
@@ -222,7 +222,7 @@ class Runner {
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
   Future close() => _closeMemo.runOnce(() async {
-        Timer timer;
+        Timer? timer;
         if (!_engine.isIdle) {
           // Wait a bit to print this message, since printing it eagerly looks weird
           // if the tests then finish immediately.
@@ -236,9 +236,9 @@ class Runner {
           });
         }
 
-        if (_debugOperation != null) await _debugOperation.cancel();
+        await _debugOperation?.cancel();
+        await _suiteSubscription?.cancel();
 
-        if (_suiteSubscription != null) await _suiteSubscription.cancel();
         _suiteSubscription = null;
 
         // Make sure we close the engine *before* the loader. Otherwise,
@@ -248,7 +248,7 @@ class Runner {
         // browser tests don't store any state we care about and we want them to
         // shut down without waiting for their tear-downs.
         await Future.wait([_loader.closeEphemeral(), _engine.close()]);
-        if (timer != null) timer.cancel();
+        timer?.cancel();
         await _loader.close();
 
         // Flush any IOSinks created for file reporters.
@@ -303,7 +303,7 @@ class Runner {
   /// children.
   void _warnForUnknownTags(Suite suite) {
     if (_tagWarningSuites.contains(suite.path)) return;
-    _tagWarningSuites.add(suite.path);
+    _tagWarningSuites.add(suite.path!);
 
     var unknownTags = _collectUnknownTags(suite);
     if (unknownTags.isEmpty) return;
@@ -355,7 +355,7 @@ class Runner {
       }
 
       if (entry is! Group) return;
-      var group = entry as Group;
+      var group = entry;
 
       currentTags.addAll(newTags);
       for (var child in group.entries) {
@@ -371,7 +371,7 @@ class Runner {
   /// Returns a human-readable description of [entry], including its type.
   String _entryDescription(GroupEntry entry) {
     if (entry is Test) return 'the test "${entry.name}"';
-    if (entry.name != null) return 'the group "${entry.name}"';
+    if (entry.name.isNotEmpty) return 'the group "${entry.name}"';
     return 'the suite itself';
   }
 
@@ -385,9 +385,10 @@ class Runner {
   T _shardSuite<T extends Suite>(T suite) {
     if (_config.totalShards == null) return suite;
 
-    var shardSize = suite.group.testCount / _config.totalShards;
-    var shardStart = (shardSize * _config.shardIndex).round();
-    var shardEnd = (shardSize * (_config.shardIndex + 1)).round();
+    var shardSize = suite.group.testCount / _config.totalShards!;
+    var shardIndex = _config.shardIndex!;
+    var shardStart = (shardSize * shardIndex).round();
+    var shardEnd = (shardSize * (shardIndex + 1)).round();
 
     var count = -1;
     var filtered = suite.filter((test) {
@@ -403,11 +404,11 @@ class Runner {
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
     _suiteSubscription = suites.asyncMap((loadSuite) async {
       _debugOperation = debug(_engine, _reporter, loadSuite);
-      await _debugOperation.valueOrCancellation();
+      await _debugOperation!.valueOrCancellation();
     }).listen(null);
 
     var results = await Future.wait(<Future>[
-      _suiteSubscription.asFuture().then((_) => _engine.suiteSink.close()),
+      _suiteSubscription!.asFuture().then((_) => _engine.suiteSink.close()),
       _engine.run()
     ], eagerError: true);
     return results.last as bool;

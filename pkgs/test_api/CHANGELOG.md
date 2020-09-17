@@ -1,3 +1,17 @@
+## 0.2.19-nullsafety
+
+* Migrate to NNBD.
+  * The vast majority of changes are intended to express the pre-existing
+    behavior of the code regarding to handling of nulls.
+  * **Breaking Change**: `GroupEntry.name` is no longer nullable, the root
+    group now has the empty string as its name.
+* Add the `Fake` class, available through `package:test_api/fake.dart`.  This
+  was previously part of the Mockito package, but with null safety it is useful
+  enough that we decided to make it available through `package:test`.  In a
+  future release it will be made available directly through
+  `package:test_api/test_api.dart` (and hence through
+  `package:test_core/test_core.dart` and `package:test/test.dart`).
+
 ## 0.2.18
 
 * Update to `matcher` version `0.12.9`.
@@ -5,7 +19,7 @@
 ## 0.2.17
 
 * Add `languageVersionComment` on the `MetaData` class. This should only be
-  presen for test suites.
+  present for test suites.
 
 ## 0.2.16
 

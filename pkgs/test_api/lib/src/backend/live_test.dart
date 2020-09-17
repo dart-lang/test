@@ -104,7 +104,7 @@ abstract class LiveTest {
   /// The name of this live test without any group prefixes.
   String get individualName {
     var group = groups.last;
-    if (group.name == null) return test.name;
+    if (group.name.isEmpty) return test.name;
     if (!test.name.startsWith(group.name)) return test.name;
 
     // The test will have the same name as the group for virtual tests created

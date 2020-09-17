@@ -40,9 +40,9 @@ Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 /// Use the [throwsA] function instead.
 @Deprecated('Will be removed in 0.13.0')
 class Throws extends AsyncMatcher {
-  final Matcher _matcher;
+  final Matcher? _matcher;
 
-  const Throws([Matcher matcher]) : _matcher = matcher;
+  const Throws([Matcher? matcher]) : _matcher = matcher;
 
   // Avoid async/await so we synchronously fail if we match a synchronous
   // function.
@@ -53,20 +53,28 @@ class Throws extends AsyncMatcher {
     }
 
     if (item is Future) {
-      return item.then((value) => indent(prettyPrint(value), first: 'emitted '),
-          onError: _check);
+      return _matchFuture(item, 'emitted ');
     }
 
     try {
       var value = item();
       if (value is Future) {
-        return value.then(
-            (value) => indent(prettyPrint(value),
-                first: 'returned a Future that emitted '),
-            onError: _check);
+        return _matchFuture(value, 'returned a Future that emitted ');
       }
 
       return indent(prettyPrint(value), first: 'returned ');
+    } catch (error, trace) {
+      return _check(error, trace);
+    }
+  }
+
+  /// Matches [future], using try/catch since `onError` doesn't seem to work
+  /// properly in nnbd.
+  Future<String?> _matchFuture(
+      Future<dynamic> future, String messagePrefix) async {
+    try {
+      var value = await future;
+      return indent(prettyPrint(value), first: messagePrefix);
     } catch (error, trace) {
       return _check(error, trace);
     }
@@ -83,13 +91,13 @@ class Throws extends AsyncMatcher {
 
   /// Verifies that [error] matches [_matcher] and returns a [String]
   /// description of the failure if it doesn't.
-  String _check(error, StackTrace trace) {
+  String? _check(error, StackTrace? trace) {
     if (_matcher == null) return null;
 
     var matchState = {};
-    if (_matcher.matches(error, matchState)) return null;
+    if (_matcher!.matches(error, matchState)) return null;
 
-    var result = _matcher
+    var result = _matcher!
         .describeMismatch(error, StringDescription(), matchState, false)
         .toString();
 

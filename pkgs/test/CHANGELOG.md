@@ -1,3 +1,30 @@
+## 1.16.0-nullsafety.4
+
+* Depend on the latest test_core.
+
+## 1.16.0-nullsafety.3
+
+* Clean up `--help` output.
+
+## 1.16.0-nullsafety.2
+
+* Allow version `0.40.x` of `analyzer`.
+
+## 1.16.0-nullsafety.1
+
+* Depend on the latest test_core.
+
+## 1.16.0-nullsafety
+
+* Support running tests with null safety.
+  * Note that the test runner itself is not fully migrated yet.
+* Add the `Fake` class, available through `package:test_api/fake.dart`.  This
+  was previously part of the Mockito package, but with null safety it is useful
+  enough that we decided to make it available through `package:test`.  In a
+  future release it will be made available directly through
+  `package:test_api/test_api.dart` (and hence through
+  `package:test_core/test_core.dart` and `package:test/test.dart`).
+
 ## 1.15.4
 
 * Allow analyzer 0.40.x.
@@ -45,7 +72,7 @@
 
 ## 1.14.3
 
-* Fix an issue where coverage tests could not run in Chrome headless. 
+* Fix an issue where coverage tests could not run in Chrome headless.
 * Fix an issue where coverage collection would not work with source
   maps that contained absolute file URIs.
 * Fix error messages for incorrect string literals in test annotations.

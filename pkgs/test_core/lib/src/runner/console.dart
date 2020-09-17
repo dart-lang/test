@@ -16,7 +16,7 @@ class Console {
   final _commands = <String, _Command>{};
 
   /// The pending next line of standard input, if we're waiting on one.
-  CancelableOperation _nextLine;
+  CancelableOperation? _nextLine;
 
   /// Whether the console is currently running.
   bool _running = false;
@@ -66,7 +66,7 @@ class Console {
       while (_running) {
         stdout.write('> ');
         _nextLine = stdinLines.cancelable((queue) => queue.next);
-        var commandName = await _nextLine.value;
+        var commandName = await _nextLine!.value;
         _nextLine = null;
 
         var command = _commands[commandName];
@@ -86,7 +86,7 @@ class Console {
     _running = false;
     if (_nextLine != null) {
       stdout.writeln();
-      _nextLine.cancel();
+      _nextLine!.cancel();
     }
   }
 

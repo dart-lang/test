@@ -63,7 +63,7 @@ abstract class LiveSuite {
         passed,
         skipped,
         failed,
-        if (active != null) {active}
+        if (active != null) {active!}
       ]);
 
   /// A stream that emits each [LiveTest] in this suite as it's about to start
@@ -86,5 +86,5 @@ abstract class LiveSuite {
   Set<LiveTest> get failed;
 
   /// The currently running test in this suite, or `null` if no test is running.
-  LiveTest get active;
+  LiveTest? get active;
 }

@@ -18,15 +18,16 @@ import 'runner.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-StreamSubscription signalSubscription;
+StreamSubscription? signalSubscription;
 bool isShutdown = false;
 
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
-    return Platform.environment['DART_TEST_CONFIG'];
+    return Platform.environment['DART_TEST_CONFIG'] as String;
   } else if (Platform.operatingSystem == 'windows') {
-    return p.join(Platform.environment['LOCALAPPDATA'], 'DartTest.yaml');
+    return p.join(
+        Platform.environment['LOCALAPPDATA'] as String, 'DartTest.yaml');
   } else {
     return '${Platform.environment['HOME']}/.dart_test.yaml';
   }
@@ -44,7 +45,7 @@ Future<void> runTests(List<String> args) async {
 void completeShutdown() {
   if (isShutdown) return;
   if (signalSubscription != null) {
-    signalSubscription.cancel();
+    signalSubscription!.cancel();
     signalSubscription = null;
   }
   isShutdown = true;
@@ -135,7 +136,7 @@ Future<void> _execute(List<String> args) async {
     return;
   }
 
-  Runner runner;
+  Runner? runner;
 
   signalSubscription ??= _signals.listen((signal) async {
     completeShutdown();
@@ -178,7 +179,7 @@ Future<void> _execute(List<String> args) async {
 ///
 /// If [error] is passed, it's used in place of the usage message and the whole
 /// thing is printed to stderr instead of stdout.
-void _printUsage([String error]) {
+void _printUsage([String? error]) {
   var output = stdout;
 
   var message = 'Runs tests in this package.';

@@ -1,3 +1,28 @@
+## 0.3.12-nullsafety.5-dev
+
+* Add `src/platform.dart` library to consolidate the necessary imports required
+  to write a custom platform.
+
+## 0.3.12-nullsafety.4
+
+* Support latest `package:vm_service`.
+
+## 0.3.12-nullsafety.3
+
+* Clean up `--help` output.
+
+## 0.3.12-nullsafety.2
+
+* Allow version `0.40.x` of `analyzer`.
+
+## 0.3.12-nullsafety.1
+
+* Update source_maps constraint.
+
+## 0.3.12-nullsafety
+
+* Migrate to null safety.
+
 ## 0.3.11+1
 
 * Allow analyzer 0.40.x.
@@ -33,6 +58,11 @@
 
 * Add additional information to an exception when we end up with a null
   `RunnerSuite`.
+
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
 
 ## 0.3.4
 

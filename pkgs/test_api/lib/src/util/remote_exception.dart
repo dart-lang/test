@@ -30,7 +30,7 @@ class RemoteException implements Exception {
   /// Other than JSON- and isolate-safety, no guarantees are made about the
   /// serialized format.
   static Map<String, dynamic> serialize(error, StackTrace stackTrace) {
-    String message;
+    String? message;
     if (error is String) {
       message = error;
     } else {

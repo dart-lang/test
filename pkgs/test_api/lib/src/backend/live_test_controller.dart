@@ -99,7 +99,7 @@ class LiveTestController extends LiveTest {
   /// If [groups] is passed, it's used to populate the list of groups that
   /// contain this test. Otherwise, `suite.group` is used.
   LiveTestController(this.suite, this.test, this._onRun, this._onClose,
-      {Iterable<Group> groups})
+      {Iterable<Group>? groups})
       : groups = groups == null ? [suite.group] : List.unmodifiable(groups);
 
   /// Adds an error to the [LiveTest].
@@ -107,10 +107,11 @@ class LiveTestController extends LiveTest {
   /// This both adds the error to [LiveTest.errors] and emits it via
   /// [LiveTest.onError]. [stackTrace] is automatically converted into a [Chain]
   /// if it's not one already.
-  void addError(error, StackTrace stackTrace) {
+  void addError(Object error, StackTrace? stackTrace) {
     if (_isClosed) return;
 
-    var asyncError = AsyncError(error, Chain.forTrace(stackTrace));
+    var asyncError = AsyncError(
+        error, Chain.forTrace(stackTrace ?? StackTrace.fromString('')));
     _errors.add(asyncError);
     _onError.add(asyncError);
   }

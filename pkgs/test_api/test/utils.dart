@@ -26,7 +26,7 @@ import 'package:test/test.dart';
 final suitePlatform = SuitePlatform(Runtime.vm);
 
 // The last state change detected via [expectStates].
-State lastState;
+State? lastState;
 
 /// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
 ///
@@ -57,7 +57,7 @@ void expectSingleFailure(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState?.status, equals(Status.complete));
       expect(error, isTestFailure('oh no'));
     }
   ]);
@@ -72,7 +72,7 @@ void expectSingleError(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState?.status, equals(Status.complete));
       expect(error, equals('oh no'));
     }
   ]);
@@ -146,8 +146,8 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// [stopBlocking] is passed the return value of [test].
 Future expectTestBlocks(
     dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
-  LiveTest liveTest;
-  Future future;
+  late LiveTest liveTest;
+  late Future future;
   liveTest = createTest(() {
     var value = test();
     future = pumpEventQueue().then((_) {

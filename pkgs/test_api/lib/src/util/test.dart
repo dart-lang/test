@@ -16,10 +16,10 @@ import '../backend/invoker.dart';
 Future errorsDontStopTest(dynamic Function() body) {
   var completer = Completer();
 
-  Invoker.current.addOutstandingCallback();
-  Invoker.current.waitForOutstandingCallbacks(() {
+  Invoker.current!.addOutstandingCallback();
+  Invoker.current!.waitForOutstandingCallbacks(() {
     Future.sync(body).whenComplete(completer.complete);
-  }).then((_) => Invoker.current.removeOutstandingCallback());
+  }).then((_) => Invoker.current!.removeOutstandingCallback());
 
   return completer.future;
 }
