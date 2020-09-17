@@ -743,8 +743,9 @@ $_testContents''').create();
       expect(
           test.stdout,
           containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: Cannot run with sound null safety'
+            'Unable to spawn isolate: Error: Cannot run with sound null '
+                'safety as one or more dependencies do not',
+            'support null safety:',
           ]));
       await test.shouldExit(1);
     });
@@ -773,8 +774,9 @@ $_testContents''').create();
       expect(
           test.stdout,
           containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: Cannot run with sound null safety'
+            'Unable to spawn isolate: Error: Cannot run with sound null '
+                'safety as one or more dependencies do not',
+            'support null safety:',
           ]));
       await test.shouldExit(1);
     });
