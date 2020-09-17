@@ -716,7 +716,7 @@ void main() {
 
     setUp(() async {
       await d.file('opted_in.dart', '''
-// @dart=2.9
+// @dart=2.10
 bool? foo;''').create();
     });
 
@@ -734,7 +734,7 @@ $_testContents''').create();
 
     test('sound null safety is enabled if the entrypoint opts in', () async {
       await d.file('test.dart', '''
-// @dart=2.9
+// @dart=2.10
 $_testContents''').create();
       var test = await runTest(['test.dart'],
           packageConfig: (await Isolate.packageConfig).path,
@@ -743,9 +743,9 @@ $_testContents''').create();
       expect(
           test.stdout,
           containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'
+            'Unable to spawn isolate: Error: Cannot run with sound null '
+                'safety as one or more dependencies do not',
+            'support null safety:',
           ]));
       await test.shouldExit(1);
     });
@@ -756,7 +756,7 @@ $_testContents''').create();
       var newPackageConfig = PackageConfig([
         ...currentPackageConfig.packages,
         Package('example', Uri.file('${d.sandbox}/'),
-            languageVersion: LanguageVersion(2, 9),
+            languageVersion: LanguageVersion(2, 10),
             // TODO: https://github.com/dart-lang/package_config/issues/81
             packageUriRoot: Uri.file('${d.sandbox}/')),
       ]);
@@ -774,9 +774,9 @@ $_testContents''').create();
       expect(
           test.stdout,
           containsInOrder([
-            'Unable to spawn isolate:',
-            'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.'
+            'Unable to spawn isolate: Error: Cannot run with sound null '
+                'safety as one or more dependencies do not',
+            'support null safety:',
           ]));
       await test.shouldExit(1);
     });
