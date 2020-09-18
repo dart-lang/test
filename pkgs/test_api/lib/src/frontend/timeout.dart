@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:string_scanner/string_scanner.dart';
+import 'package:meta/meta_meta.dart';
 
 /// A regular expression that matches text until a letter or whitespace.
 ///
@@ -22,6 +23,7 @@ final _whitespace = RegExp(r'\s+');
 /// By default, a test will time out after 30 seconds. With [new Timeout], that
 /// can be overridden entirely; with [Timeout.factor], it can be scaled
 /// relative to the default.
+@Target({TargetKind.library})
 class Timeout {
   /// A constant indicating that a test should never time out.
   static const none = Timeout._none();
