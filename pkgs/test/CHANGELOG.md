@@ -1,5 +1,6 @@
-## 1.16.0-nullsafety.5-dev
+## 1.16.0-nullsafety.5
 
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
 * Annotate the classes used as annotations to restrict their usage to library
   level.
 

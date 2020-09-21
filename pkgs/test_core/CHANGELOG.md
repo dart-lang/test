@@ -1,5 +1,6 @@
-## 0.3.12-nullsafety.5-dev
+## 0.3.12-nullsafety.5
 
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
 * Add `src/platform.dart` library to consolidate the necessary imports required
   to write a custom platform.
 
