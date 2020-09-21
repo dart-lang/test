@@ -31,8 +31,6 @@ import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 
-final _silentObservatory = const bool.fromEnvironment('SILENT_OBSERVATORY');
-
 /// A class that loads and runs tests based on a [Configuration].
 ///
 /// This maintains a [Loader] and an [Engine] and passes test suites from one to
@@ -113,20 +111,6 @@ class Runner {
         _warnForUnsupportedPlatforms();
 
         var suites = _loadSuites();
-
-        var runTimes = _config.suiteDefaults.runtimes.map(_loader.findRuntime);
-
-        // TODO(grouma) - Remove this check when
-        // https://github.com/dart-lang/sdk/issues/31308 is resolved.
-        if (!_silentObservatory &&
-            runTimes.contains(Runtime.vm) &&
-            _config.debug) {
-          warn('You should set `SILENT_OBSERVATORY` to true when debugging the '
-              'VM as it will output the observatory URL by '
-              'default.\nThis breaks the various reporter contracts.'
-              '\nTo set the value define '
-              '`DART_VM_OPTIONS=-DSILENT_OBSERVATORY=true`.');
-        }
 
         if (_config.coverage != null) {
           await Directory(_config.coverage!).create(recursive: true);
