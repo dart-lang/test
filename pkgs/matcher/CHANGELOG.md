@@ -1,3 +1,7 @@
+## 0.12.10-nullsafety.1
+
+- Allow 2.10 stable and 2.11.0 dev SDK versions.
+
 ## 0.12.10-nullsafety
 
 - Migrate to NNBD.
