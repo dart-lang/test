@@ -1,5 +1,5 @@
 name: fake_async
-version: 1.2.0-nullsafety
+version: 1.2.0-nullsafety.1
 description: >-
   Fake asynchronous events such as timers and microtasks for deterministic
   testing.
@@ -7,7 +7,7 @@ homepage: https://github.com/dart-lang/fake_async
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-0 <2.11.0'
 
 dependencies:
   clock: '>=1.1.0-nullsafety <1.1.0'
