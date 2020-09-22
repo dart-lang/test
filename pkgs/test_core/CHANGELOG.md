@@ -2,6 +2,8 @@
 
 * Add `src/platform.dart` library to consolidate the necessary imports required
   to write a custom platform.
+* Stop required a `SILENT_OBSERVATORY` environment variable to run with
+  debugging and the JSON reporter.
 
 ## 0.3.12-nullsafety.4
 
