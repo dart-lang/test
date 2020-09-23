@@ -1,3 +1,19 @@
+## 0.3.12-nullsafety.5
+
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
+* Add `src/platform.dart` library to consolidate the necessary imports required
+  to write a custom platform.
+* Stop required a `SILENT_OBSERVATORY` environment variable to run with
+  debugging and the JSON reporter.
+
+## 0.3.12-nullsafety.4
+
+* Support latest `package:vm_service`.
+
+## 0.3.12-nullsafety.3
+
+* Clean up `--help` output.
+
 ## 0.3.12-nullsafety.2
 
 * Allow version `0.40.x` of `analyzer`.
@@ -9,6 +25,10 @@
 ## 0.3.12-nullsafety
 
 * Migrate to null safety.
+
+## 0.3.11+1
+
+* Allow analyzer 0.40.x.
 
 ## 0.3.11
 

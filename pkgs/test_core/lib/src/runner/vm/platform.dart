@@ -67,12 +67,8 @@ class VMPlatform extends PlatformPlugin {
     Environment? environment;
     IsolateRef? isolateRef;
     if (_config.debug) {
-      // Print an empty line because the VM prints an "Observatory listening on"
-      // line and we don't want that to end up on the same line as the reporter
-      // info.
-      if (_config.reporter == 'compact') stdout.writeln();
-
-      var info = await Service.controlWebServer(enable: true);
+      var info =
+          await Service.controlWebServer(enable: true, silenceOutput: true);
       var isolateID = Service.getIsolateID(isolate)!;
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
