@@ -1,3 +1,9 @@
+## 0.3.12-nullsafety.6-dev
+
+* Add experimental `directRunTests`, `directRunSingle`, and `enumerateTestCases`
+  APIs to enable test runners written around a single executable that can report
+  and run any single test case.
+
 ## 0.3.12-nullsafety.5
 
 * Allow `2.10` stable and `2.11.0-dev` SDKs.

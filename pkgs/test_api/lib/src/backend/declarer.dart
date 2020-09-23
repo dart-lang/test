@@ -93,8 +93,7 @@ class Declarer {
 
   /// A full test name to match when running in single test mode.
   ///
-  /// Groups which are not a strict prefix of `filterToSingleTestName` will be
-  /// skipped.
+  /// Groups which are not a strict prefix of this name will be ignored.
   final String? _filterToSingleTestName;
 
   /// The current zone-scoped declarer.

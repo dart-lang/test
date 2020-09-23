@@ -1,7 +1,5 @@
 ## 0.2.19-nullsafety.3
 
-* Add capability for ensuring unique test names and collecting all test names to
-  `Declarer.`
 * Add capability to filter to a single unique test name in `Declarer`.
 
 ## 0.2.19-nullsafety.2
