@@ -15,14 +15,14 @@ import 'package:test_api/src/backend/test.dart'; //ignore: implementation_import
 import 'package:test_api/src/frontend/utils.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import 'src/runner/configuration.dart';
-import 'src/runner/engine.dart';
-import 'src/runner/plugin/environment.dart';
-import 'src/runner/reporter.dart';
-import 'src/runner/reporter/expanded.dart';
-import 'src/runner/runner_suite.dart';
-import 'src/runner/suite.dart';
-import 'src/util/print_sink.dart';
+import 'runner/configuration.dart';
+import 'runner/engine.dart';
+import 'runner/plugin/environment.dart';
+import 'runner/reporter.dart';
+import 'runner/reporter/expanded.dart';
+import 'runner/runner_suite.dart';
+import 'runner/suite.dart';
+import 'util/print_sink.dart';
 
 /// Run all test cases declared in [testMain].
 ///
