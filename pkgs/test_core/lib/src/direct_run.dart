@@ -23,22 +23,28 @@ import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/print_sink.dart';
 
-/// Run all test cases declared in [testMain].
+/// Runs all unskipped test cases declared in [testMain].
 ///
 /// Test suite level metadata defined in annotations is not read. No filtering
 /// is applied except for the filtering defined by `solo` or `skip` arguments to
-/// `group` and `test`.
+/// `group` and `test`. Returns [true] if all tests passed.
 Future<bool> directRunTests(FutureOr<void> Function() testMain,
         {Reporter Function(Engine)? reporterFactory}) =>
     _directRunTests(testMain, reporterFactory: reporterFactory);
 
-/// Run a single test declared in [testMain].
+/// Runs a single test declared in [testMain] matched by it's full test name.
 ///
 /// There must be exactly one test defined with the name [fullTestName]. Note
-/// that not all tests and groups are checked, so a test case that may not be
+/// that not all tests and groups are checked, so a test case that is not be
 /// intended to be run (due to a `solo` on a different test) may still be run
 /// with this API. Only the test names returned by [enumerateTestCases] should
-/// be used.
+/// be used to prevent running skipped tests.
+///
+/// Return [true] if the test passes.
+///
+/// If there are no tests matching [fullTestName] a [MissingTestException] is
+/// thrown. If there is more than one test with the name [fullTestName] they
+/// will both be run, then a [DuplicateTestnameException] will be thrown.
 Future<bool> directRunSingleTest(
         FutureOr<void> Function() testMain, String fullTestName,
         {Reporter Function(Engine)? reporterFactory}) =>
@@ -77,10 +83,11 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
   return success!;
 }
 
-/// Return the names of all tests declared by [testMain].
+/// Runs [testMain] and returns the names of all declared tests.
 ///
-/// Test names declared must be unique. If any test repeats the name of a prior
-/// test a [DuplicateTestNameException] will be thrown.
+/// Test names declared must be unique. If any test repeats the full name,
+/// including group prefixes, of a prior test a [DuplicateTestNameException]
+/// will be thrown.
 ///
 /// Skipped tests are ignored.
 Future<Set<String>> enumerateTestCases(
@@ -90,20 +97,22 @@ Future<Set<String>> enumerateTestCases(
 
   final toVisit = Queue<GroupEntry>.of([declarer.build()]);
   final allTestNames = <String>{};
+  final unskippedTestNames = <String>{};
   while (toVisit.isNotEmpty) {
     final current = toVisit.removeLast();
     if (current is Group) {
       toVisit.addAll(current.entries.reversed);
     } else if (current is Test) {
-      if (current.metadata.skip) continue;
       if (!allTestNames.add(current.name)) {
         throw DuplicateTestNameException(current.name);
       }
+      if (current.metadata.skip) continue;
+      unskippedTestNames.add(current.name);
     } else {
       throw StateError('Unandled Group Entry: ${current.runtimeType}');
     }
   }
-  return allTestNames;
+  return unskippedTestNames;
 }
 
 /// An exception thrown when two test cases in the same test suite (same `main`)
