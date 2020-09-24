@@ -34,23 +34,22 @@ Future<bool> directRunTests(FutureOr<void> Function() testMain,
 
 /// Run a single test declared in [testMain].
 ///
-/// There must be exactly one test defined with the name [testName]. Note that
-/// not all tests and groups are checked, so a test case that may not be
+/// There must be exactly one test defined with the name [fullTestName]. Note
+/// that not all tests and groups are checked, so a test case that may not be
 /// intended to be run (due to a `solo` on a different test) may still be run
 /// with this API. Only the test names returned by [enumerateTestCases] should
 /// be used.
 Future<bool> directRunSingleTest(
-        FutureOr<void> Function() testMain, String testName,
+        FutureOr<void> Function() testMain, String fullTestName,
         {Reporter Function(Engine)? reporterFactory}) =>
     _directRunTests(testMain,
-        reporterFactory: reporterFactory, runSingleTestByName: testName);
+        reporterFactory: reporterFactory, fullTestName: fullTestName);
 
 Future<bool> _directRunTests(FutureOr<void> Function() testMain,
-    {Reporter Function(Engine)? reporterFactory,
-    String? runSingleTestByName}) async {
+    {Reporter Function(Engine)? reporterFactory, String? fullTestName}) async {
   reporterFactory ??= (engine) => ExpandedReporter.watch(engine, PrintSink(),
       color: Configuration.empty.color, printPath: false, printPlatform: false);
-  final declarer = Declarer(filterToSingleTestName: runSingleTestByName);
+  final declarer = Declarer(fullTestName: fullTestName);
   await declarer.declare(testMain);
 
   final suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
@@ -66,13 +65,13 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
   final success = await runZoned(() => Invoker.guard(engine.run),
       zoneValues: {#test.declarer: declarer});
 
-  if (runSingleTestByName != null) {
+  if (fullTestName != null) {
     final testCount = engine.liveTests.length;
     if (testCount > 1) {
-      throw DuplicateTestNameException(runSingleTestByName);
+      throw DuplicateTestNameException(fullTestName);
     }
     if (testCount == 0) {
-      throw MissingTestException(runSingleTestByName);
+      throw MissingTestException(fullTestName);
     }
   }
   return success!;
@@ -84,7 +83,7 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
 /// test a [DuplicateTestNameException] will be thrown.
 ///
 /// Skipped tests are ignored.
-Future<Iterable<String>> enumerateTestCases(
+Future<Set<String>> enumerateTestCases(
     FutureOr<void> Function() testMain) async {
   final declarer = Declarer();
   await declarer.declare(testMain);

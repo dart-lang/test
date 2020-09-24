@@ -91,10 +91,16 @@ class Declarer {
   /// Whether any tests and/or groups have been flagged as solo.
   bool get _solo => _soloEntries.isNotEmpty;
 
-  /// A full test name to match when running in single test mode.
+  /// An exact full test name to match.
+  ///
+  /// When non-null only tests with exactly this name will be considered. The
+  /// full test name is the combination of the test case name with all group
+  /// prefixes. All other tests, including their metadata like `solo`, is
+  /// ignored. Uniqueness is not guaranteed so this may match more than one
+  /// test.
   ///
   /// Groups which are not a strict prefix of this name will be ignored.
-  final String? _filterToSingleTestName;
+  final String? _fullTestName;
 
   /// The current zone-scoped declarer.
   static Declarer? get current => Zone.current[#test.declarer] as Declarer?;
@@ -119,7 +125,7 @@ class Declarer {
       Set<String>? platformVariables,
       bool collectTraces = false,
       bool noRetry = false,
-      String? filterToSingleTestName})
+      String? fullTestName})
       : this._(
             null,
             null,
@@ -128,7 +134,7 @@ class Declarer {
             collectTraces,
             null,
             noRetry,
-            filterToSingleTestName);
+            fullTestName);
 
   Declarer._(
     this._parent,
@@ -138,7 +144,7 @@ class Declarer {
     this._collectTraces,
     this._trace,
     this._noRetry,
-    this._filterToSingleTestName,
+    this._fullTestName,
   );
 
   /// Runs [body] with this declarer as [Declarer.current].
@@ -159,8 +165,7 @@ class Declarer {
     _checkNotBuilt('test');
 
     final fullName = _prefix(name);
-    if (_filterToSingleTestName != null &&
-        fullName != _filterToSingleTestName) {
+    if (_fullTestName != null && fullName != _fullTestName) {
       return;
     }
 
@@ -215,8 +220,8 @@ class Declarer {
       bool solo = false}) {
     _checkNotBuilt('group');
 
-    final fullName = _prefix(name);
-    if (!(_filterToSingleTestName?.startsWith(fullName) ?? true)) {
+    final fullTestPrefix = _prefix(name);
+    if (_fullTestName != null && !_fullTestName!.startsWith(fullTestPrefix)) {
       return;
     }
 
@@ -231,8 +236,8 @@ class Declarer {
     var metadata = _metadata.merge(newMetadata);
     var trace = _collectTraces ? Trace.current(2) : null;
 
-    var declarer = Declarer._(this, _prefix(name), metadata, _platformVariables,
-        _collectTraces, trace, _noRetry, _filterToSingleTestName);
+    var declarer = Declarer._(this, fullTestPrefix, metadata,
+        _platformVariables, _collectTraces, trace, _noRetry, _fullTestName);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
