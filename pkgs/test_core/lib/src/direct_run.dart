@@ -12,7 +12,6 @@ import 'package:test_api/src/backend/group.dart'; //ignore: implementation_impor
 import 'package:test_api/src/backend/group_entry.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; //ignore: implementation_imports
-import 'package:test_api/src/frontend/utils.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'runner/configuration.dart';
@@ -54,8 +53,6 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
   final declarer = Declarer(filterToSingleTestName: runSingleTestByName);
   await declarer.declare(testMain);
 
-  await pumpEventQueue();
-
   final suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
       declarer.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
       path: p.prettyUri(Uri.base));
@@ -91,8 +88,6 @@ Future<Iterable<String>> enumerateTestCases(
     FutureOr<void> Function() testMain) async {
   final declarer = Declarer();
   await declarer.declare(testMain);
-
-  await pumpEventQueue();
 
   final toVisit = Queue<GroupEntry>.of([declarer.build()]);
   final allTestNames = <String>{};
