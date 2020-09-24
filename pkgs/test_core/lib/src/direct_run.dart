@@ -120,7 +120,7 @@ class DuplicateTestNameException implements Exception {
 
   @override
   String toString() => 'A test with the name "$name" was already declared. '
-      'Test cases much have unique names.';
+      'Test cases must have unique names.';
 }
 
 /// An exception thrown when a specific test was requested by name that does not
