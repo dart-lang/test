@@ -1,4 +1,4 @@
-## 0.2.19-nullsafety.3
+## 0.2.19-nullsafety.3-dev
 
 * Add capability to filter to a single unique test name in `Declarer`.
 
