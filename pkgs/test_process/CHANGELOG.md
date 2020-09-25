@@ -1,3 +1,7 @@
+## 1.0.6
+
+* Require Dart >=2.1
+
 ## 1.0.5
 
 * Don't allow the test to time out as long as the process is emitting output.
