@@ -759,7 +759,7 @@ final foo = true;''').create();
     test('sound null safety is enabled if the entrypoint opts in explicitly',
         () async {
       await d.file('test.dart', '''
-// @dart=2.10
+// @dart=2.11
 $_testContents
 ''').create();
       var test = await runTest(['test.dart']);
@@ -799,7 +799,7 @@ $_testContents''').create();
         var newPackageConfig = PackageConfig([
           ...currentPackageConfig.packages,
           Package('example', Uri.file('${d.sandbox}/'),
-              languageVersion: LanguageVersion(2, 10),
+              languageVersion: LanguageVersion(2, 11),
               // TODO: https://github.com/dart-lang/package_config/issues/81
               packageUriRoot: Uri.file('${d.sandbox}/')),
         ]);
