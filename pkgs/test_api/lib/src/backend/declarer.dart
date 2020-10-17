@@ -91,6 +91,17 @@ class Declarer {
   /// Whether any tests and/or groups have been flagged as solo.
   bool get _solo => _soloEntries.isNotEmpty;
 
+  /// An exact full test name to match.
+  ///
+  /// When non-null only tests with exactly this name will be considered. The
+  /// full test name is the combination of the test case name with all group
+  /// prefixes. All other tests, including their metadata like `solo`, is
+  /// ignored. Uniqueness is not guaranteed so this may match more than one
+  /// test.
+  ///
+  /// Groups which are not a strict prefix of this name will be ignored.
+  final String? _fullTestName;
+
   /// The current zone-scoped declarer.
   static Declarer? get current => Zone.current[#test.declarer] as Declarer?;
 
@@ -113,7 +124,8 @@ class Declarer {
       {Metadata? metadata,
       Set<String>? platformVariables,
       bool collectTraces = false,
-      bool noRetry = false})
+      bool noRetry = false,
+      String? fullTestName})
       : this._(
             null,
             null,
@@ -121,10 +133,19 @@ class Declarer {
             platformVariables ?? const UnmodifiableSetView.empty(),
             collectTraces,
             null,
-            noRetry);
+            noRetry,
+            fullTestName);
 
-  Declarer._(this._parent, this._name, this._metadata, this._platformVariables,
-      this._collectTraces, this._trace, this._noRetry);
+  Declarer._(
+    this._parent,
+    this._name,
+    this._metadata,
+    this._platformVariables,
+    this._collectTraces,
+    this._trace,
+    this._noRetry,
+    this._fullTestName,
+  );
 
   /// Runs [body] with this declarer as [Declarer.current].
   ///
@@ -143,6 +164,11 @@ class Declarer {
       bool solo = false}) {
     _checkNotBuilt('test');
 
+    final fullName = _prefix(name);
+    if (_fullTestName != null && fullName != _fullTestName) {
+      return;
+    }
+
     var newMetadata = Metadata.parse(
         testOn: testOn,
         timeout: timeout,
@@ -152,8 +178,7 @@ class Declarer {
         retry: _noRetry ? 0 : retry);
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
-
-    _entries.add(LocalTest(_prefix(name), metadata, () async {
+    _entries.add(LocalTest(fullName, metadata, () async {
       var parents = <Declarer>[];
       for (Declarer? declarer = this;
           declarer != null;
@@ -195,6 +220,11 @@ class Declarer {
       bool solo = false}) {
     _checkNotBuilt('group');
 
+    final fullTestPrefix = _prefix(name);
+    if (_fullTestName != null && !_fullTestName!.startsWith(fullTestPrefix)) {
+      return;
+    }
+
     var newMetadata = Metadata.parse(
         testOn: testOn,
         timeout: timeout,
@@ -206,8 +236,8 @@ class Declarer {
     var metadata = _metadata.merge(newMetadata);
     var trace = _collectTraces ? Trace.current(2) : null;
 
-    var declarer = Declarer._(this, _prefix(name), metadata, _platformVariables,
-        _collectTraces, trace, _noRetry);
+    var declarer = Declarer._(this, fullTestPrefix, metadata,
+        _platformVariables, _collectTraces, trace, _noRetry, _fullTestName);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.

@@ -1,3 +1,13 @@
+## 0.2.19-nullsafety.3-dev
+
+* Add capability to filter to a single exact test name in `Declarer`.
+
+## 0.2.19-nullsafety.2
+
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
+* Annotate the classes used as annotations to restrict their usage to library
+  level.
+
 ## 0.2.19-nullsafety
 
 * Migrate to NNBD.

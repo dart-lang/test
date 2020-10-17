@@ -1,8 +1,7 @@
-# Created with package:mono_repo v2.3.0
+# Created with package:mono_repo v2.5.0
 language: dart
 
 # Custom configuration
-sudo: required
 addons:
   chrome: stable
 env:
@@ -10,35 +9,16 @@ env:
 
 jobs:
   include:
-    - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1`"
+    - stage: mono_repo_self_validate
+      name: mono_repo self validate
+      os: linux
+      script: tool/mono_repo_self_validate.sh
+    - stage: analyze_and_format
+      name: "SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: [`dartfmt -n --set-exit-if-changed .`, `dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .`]"
       dart: dev
       os: linux
-      env: PKGS="pkgs/test"
-      script: ./tool/travis.sh command_0
-    - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2`"
-      dart: dev
-      os: linux
-      env: PKGS="pkgs/test"
-      script: ./tool/travis.sh command_1
-    - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3`"
-      dart: dev
-      os: linux
-      env: PKGS="pkgs/test"
-      script: ./tool/travis.sh command_2
-    - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4`"
-      dart: dev
-      os: linux
-      env: PKGS="pkgs/test"
-      script: ./tool/travis.sh command_3
-    - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5`"
-      dart: dev
-      os: linux
-      env: PKGS="pkgs/test"
+      env: PKGS="pkgs/test pkgs/test_api pkgs/test_core"
+      script: tool/travis.sh dartfmt dartanalyzer
       script: ./tool/travis.sh command_4
 
 stages:

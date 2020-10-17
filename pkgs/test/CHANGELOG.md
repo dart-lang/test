@@ -1,4 +1,20 @@
-## 1.16.0-nullsafety.2-dev
+## 1.16.0-nullsafety.5
+
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
+* Annotate the classes used as annotations to restrict their usage to library
+  level.
+* Stop required a `SILENT_OBSERVATORY` environment variable to run with
+  debugging and the JSON reporter.
+
+## 1.16.0-nullsafety.4
+
+* Depend on the latest test_core.
+
+## 1.16.0-nullsafety.3
+
+* Clean up `--help` output.
+
+## 1.16.0-nullsafety.2
 
 * Allow version `0.40.x` of `analyzer`.
 
@@ -16,6 +32,10 @@
   future release it will be made available directly through
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
+
+## 1.15.4
+
+* Allow analyzer 0.40.x.
 
 ## 1.15.3
 

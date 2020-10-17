@@ -36,15 +36,24 @@ final _allReporters = <String, ReporterDetails>{
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
-  'compact': ReporterDetails('A single line, updated continuously.',
-      (_, engine, sink) => CompactReporter.watch(engine, sink)),
+  'compact': ReporterDetails(
+      'A single line, updated continuously.',
+      (config, engine, sink) => CompactReporter.watch(engine, sink,
+          color: config.color,
+          printPath: config.paths.length > 1 ||
+              Directory(config.paths.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
-      'A machine-readable format (see https://bit.ly/2Z7J0OH).',
+      'A machine-readable format (see '
+      'https://dart.dev/go/test-docs/json_reporter.md).',
       (_, engine, sink) => JsonReporter.watch(engine, sink)),
 };
 
-final defaultReporter =
-    inTestTests ? 'expanded' : canUseSpecialChars ? 'compact' : 'expanded';
+final defaultReporter = inTestTests
+    ? 'expanded'
+    : canUseSpecialChars
+        ? 'compact'
+        : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.

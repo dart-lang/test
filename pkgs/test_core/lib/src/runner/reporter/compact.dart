@@ -14,7 +14,6 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart' as utils;
 
 import '../../util/io.dart';
-import '../configuration.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
@@ -23,40 +22,41 @@ import '../reporter.dart';
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
 class CompactReporter implements Reporter {
-  final _config = Configuration.current;
+  /// Whether the reporter should emit terminal color escapes.
+  final bool _color;
 
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  String get _green => _config.color ? '\u001b[32m' : '';
+  final String _green;
 
   /// The terminal escape for red text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  String get _red => _config.color ? '\u001b[31m' : '';
+  final String _red;
 
   /// The terminal escape for yellow text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  String get _yellow => _config.color ? '\u001b[33m' : '';
+  final String _yellow;
 
   /// The terminal escape for gray text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  String get _gray => _config.color ? '\u001b[1;30m' : '';
+  final String _gray;
 
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  String get _bold => _config.color ? '\u001b[1m' : '';
+  final String _bold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
-  String get _noColor => _config.color ? '\u001b[0m' : '';
-
-  /// Whether the path to each test's suite should be printed.
-  final bool _printPath = Configuration.current.paths.length > 1 ||
-      Directory(Configuration.current.paths.single).existsSync();
+  final String _noColor;
 
   /// The engine used to run the tests.
   final Engine _engine;
 
-  final StringSink _sink;
+  /// Whether the path to each test's suite should be printed.
+  final bool _printPath;
+
+  /// Whether the platform each test is running on should be printed.
+  final bool _printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -69,9 +69,10 @@ class CompactReporter implements Reporter {
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
-  int? _lastProgressPassed;
+  int _lastProgressPassed = 0;
 
-  /// The size of `_engine.skipped` last time a progress notification was printed.
+  /// The size of `_engine.skipped` last time a progress notification was
+  /// printed.
   int? _lastProgressSkipped;
 
   /// The size of `_engine.failed` last time a progress notification was
@@ -101,16 +102,39 @@ class CompactReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
 
+  final StringSink _sink;
+
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
-  static CompactReporter watch(Engine engine, StringSink sink) =>
-      CompactReporter._(engine, sink);
+  ///
+  /// If [color] is `true`, this will use terminal colors; if it's `false`, it
+  /// won't. If [printPath] is `true`, this will print the path name as part of
+  /// the test description. Likewise, if [printPlatform] is `true`, this will
+  /// print the platform as part of the test description.
+  static CompactReporter watch(Engine engine, StringSink sink,
+          {required bool color,
+          required bool printPath,
+          required bool printPlatform}) =>
+      CompactReporter._(engine, sink,
+          color: color, printPath: printPath, printPlatform: printPlatform);
 
-  CompactReporter._(this._engine, this._sink) {
+  CompactReporter._(this._engine, this._sink,
+      {required bool color,
+      required bool printPath,
+      required bool printPlatform})
+      : _printPath = printPath,
+        _printPlatform = printPlatform,
+        _color = color,
+        _green = color ? '\u001b[32m' : '',
+        _red = color ? '\u001b[31m' : '',
+        _yellow = color ? '\u001b[33m' : '',
+        _gray = color ? '\u001b[1;30m' : '',
+        _bold = color ? '\u001b[1m' : '',
+        _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
-    /// Convert the future to a stream so that the subscription can be paused or
-    /// canceled.
+    // Convert the future to a stream so that the subscription can be paused or
+    // canceled.
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
@@ -145,8 +169,7 @@ class CompactReporter implements Reporter {
     }
   }
 
-  @override
-  void cancel() {
+  void _cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();
     }
@@ -159,7 +182,7 @@ class CompactReporter implements Reporter {
       _stopwatchStarted = true;
       _stopwatch.start();
 
-      /// Keep updating the time even when nothing else is happening.
+      // Keep updating the time even when nothing else is happening.
       _subscriptions.add(Stream.periodic(Duration(seconds: 1))
           .listen((_) => _progressLine(_lastProgressMessage!)));
     }
@@ -206,9 +229,7 @@ class CompactReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  //
-  // TODO: make `stackTrace` non-nullable once they are non-nullable in the sdk
-  void _onError(LiveTest liveTest, error, StackTrace? stackTrace) {
+  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest),
@@ -223,7 +244,7 @@ class CompactReporter implements Reporter {
     }
 
     // TODO - what type is this?
-    _sink.writeln(indent(error.toString(color: _config.color)));
+    _sink.writeln(indent(error.toString(color: _color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IOException &&
@@ -239,7 +260,7 @@ class CompactReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    cancel();
+    _cancel();
     _stopwatch.stop();
 
     // A null success value indicates that the engine was closed before the
@@ -377,7 +398,7 @@ class CompactReporter implements Reporter {
       name = '${liveTest.suite.path}: $name';
     }
 
-    if (_config.suiteDefaults.runtimes.length > 1) {
+    if (_printPlatform) {
       name = '[${liveTest.suite.platform.runtime.name}] $name';
     }
 

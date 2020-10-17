@@ -1,11 +1,11 @@
 name: test_core
-version: 0.3.12-nullsafety.2-dev
+version: 0.3.12-nullsafety.6-dev
 description: A basic library for writing tests and running them on the VM.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_core
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-59.0.dev <2.11.0'
 
 dependencies:
   analyzer: ">=0.39.5 <0.41.0"
@@ -13,7 +13,7 @@ dependencies:
   args: ^1.4.0
   boolean_selector: ">=2.1.0-nullsafety <2.1.0"
   collection: '>=1.15.0-nullsafety <1.15.0'
-  coverage: ">=0.13.3 < 0.15.0"
+  coverage: ">=0.13.3 <0.15.0"
   glob: ^1.0.0
   io: ^0.3.0
   meta: '>=1.3.0-nullsafety <1.3.0'
@@ -26,55 +26,13 @@ dependencies:
   source_span: '>=1.8.0-nullsafety <1.8.0'
   stack_trace: '>=1.10.0-nullsafety <1.10.0'
   stream_channel: ">=2.1.0-nullsafety <2.1.0"
-  vm_service: '>=1.0.0 <5.0.0'
+  vm_service: '>=1.0.0 <6.0.0'
   yaml: ^2.0.0
   # matcher is tightly constrained by test_api
   matcher: any
   # Use an exact version until the test_api package is stable.
-  test_api: 0.2.19-nullsafety
+  test_api: 0.2.19-nullsafety.3
 
 dependency_overrides:
   test_api:
     path: ../test_api
-  async:
-    git: git://github.com/dart-lang/async.git
-  boolean_selector:
-    git: git://github.com/dart-lang/boolean_selector.git
-  charcode:
-    git: git://github.com/dart-lang/charcode.git
-  collection:
-    git: git://github.com/dart-lang/collection.git
-  js:
-    git:
-      url: git://github.com/dart-lang/sdk.git
-      path: pkg/js
-      ref: 2-10-pkgs
-  matcher:
-    git: git://github.com/dart-lang/matcher.git
-  meta:
-    git:
-      url: git://github.com/dart-lang/sdk.git
-      path: pkg/meta
-      ref: 2-10-pkgs
-  path:
-    git: git://github.com/dart-lang/path.git
-  pedantic:
-    git: git://github.com/dart-lang/pedantic.git
-  pool:
-    git: git://github.com/dart-lang/pool.git
-  source_maps:
-    git: git://github.com/dart-lang/source_maps.git
-  source_map_stack_trace:
-    git: git://github.com/dart-lang/source_map_stack_trace.git
-  source_span:
-    git: git://github.com/dart-lang/source_span.git
-  stack_trace:
-    git: git://github.com/dart-lang/stack_trace.git
-  stream_channel:
-    git: git://github.com/dart-lang/stream_channel.git
-  string_scanner:
-    git: git://github.com/dart-lang/string_scanner.git
-  term_glyph:
-    git: git://github.com/dart-lang/term_glyph.git
-  typed_data:
-    git: git://github.com/dart-lang/typed_data.git
