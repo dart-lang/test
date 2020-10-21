@@ -287,3 +287,10 @@ void registerException(Object error,
 /// [print], each individual message passed to [printOnFailure] will be
 /// separated by a blank line.
 void printOnFailure(String message) => Invoker.current!.printOnFailure(message);
+
+/// Marks the current test as skipped.
+///
+/// A skipped test may still fail if any exception is thrown, including uncaught
+/// asynchronous errors. If the entire test should be skipped `return` from the
+/// test body after marking it as skipped.
+void markTestSkipped(String message) => Invoker.current!.skip(message);

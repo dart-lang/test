@@ -1,4 +1,4 @@
-## 0.3.12-nullsafety.6-dev
+## 0.3.12-nullsafety.6
 
 * Add experimental `directRunTests`, `directRunSingle`, and `enumerateTestCases`
   APIs to enable test runners written around a single executable that can report
