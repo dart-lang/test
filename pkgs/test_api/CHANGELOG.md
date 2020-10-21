@@ -1,6 +1,7 @@
-## 0.2.19-nullsafety.3-dev
+## 0.2.19-nullsafety.3
 
 * Add capability to filter to a single exact test name in `Declarer`.
+* Add `markTestSkipped` API.
 
 ## 0.2.19-nullsafety.2
 

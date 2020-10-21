@@ -1,4 +1,6 @@
-## 1.16.0-nullsafety.6-dev
+## 1.16.0-nullsafety.6
+
+* Add `markTestSkipped` API.
 
 ## 1.16.0-nullsafety.5
 
