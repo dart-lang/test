@@ -135,7 +135,7 @@ void main() {
           containsInOrder([
             '+0: skipped',
             '  some reason',
-            '~1: All tests skipped.'
+            '~1: All tests skipped.',
           ]));
       await test.shouldExit(0);
     });
