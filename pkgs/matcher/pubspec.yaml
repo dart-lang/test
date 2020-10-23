@@ -1,5 +1,5 @@
 name: matcher
-version: 0.12.10-nullsafety.1
+version: 0.12.10-nullsafety.2
 
 description: >-
   Support for specifying test expectations via an extensible Matcher class.
@@ -8,67 +8,13 @@ homepage: https://github.com/dart-lang/matcher
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.11.0'
+  sdk: '>=2.10.0-0 <2.12.0'
 
 dependencies:
   stack_trace: '>=1.10.0-nullsafety <1.10.0'
 
 dev_dependencies:
-  pedantic: ^1.4.0
+  pedantic: ^1.10.0-nullsafety
   test: any
   test_api: any
   test_core: any
-
-dependency_overrides:
-  async:
-    git: git://github.com/dart-lang/async.git
-  boolean_selector:
-    git: git://github.com/dart-lang/boolean_selector.git
-  charcode:
-    git: git://github.com/dart-lang/charcode.git
-  collection:
-    git: git://github.com/dart-lang/collection.git
-  js:
-    git:
-      url: git://github.com/dart-lang/sdk.git
-      path: pkg/js
-      ref: 2-10-pkgs
-  meta:
-    git:
-      url: git://github.com/dart-lang/sdk.git
-      path: pkg/meta
-      ref: 2-10-pkgs
-  path:
-    git: git://github.com/dart-lang/path.git
-  pedantic:
-    git: git://github.com/dart-lang/pedantic.git
-  pool:
-    git: git://github.com/dart-lang/pool.git
-  source_maps:
-    git: git://github.com/dart-lang/source_maps.git
-  source_map_stack_trace:
-    git: git://github.com/dart-lang/source_map_stack_trace.git
-  source_span:
-    git: git://github.com/dart-lang/source_span.git
-  stack_trace:
-    git: git://github.com/dart-lang/stack_trace.git
-  stream_channel:
-    git: git://github.com/dart-lang/stream_channel.git
-  string_scanner:
-    git: git://github.com/dart-lang/string_scanner.git
-  term_glyph:
-    git: git://github.com/dart-lang/term_glyph.git
-  test_api:
-    git:
-      url: git://github.com/dart-lang/test.git
-      path: pkgs/test_api
-  test_core:
-    git:
-      url: git://github.com/dart-lang/test.git
-      path: pkgs/test_core
-  test:
-    git:
-      url: git://github.com/dart-lang/test.git
-      path: pkgs/test
-  typed_data:
-    git: git://github.com/dart-lang/typed_data.git
