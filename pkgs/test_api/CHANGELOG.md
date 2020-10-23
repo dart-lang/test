@@ -1,3 +1,7 @@
+## 0.2.19-nullsafety.4
+
+* Allow prerelease versions of the 2.12 sdk.
+
 ## 0.2.19-nullsafety.3
 
 * Add capability to filter to a single exact test name in `Declarer`.

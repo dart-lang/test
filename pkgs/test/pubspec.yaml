@@ -1,11 +1,11 @@
 name: test
-version: 1.16.0-nullsafety.6
+version: 1.16.0-nullsafety.7
 description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.11.0'
+  sdk: '>=2.10.0-0 <2.12.0'
 
 dependencies:
   analyzer: '>=0.36.0 <0.41.0'
@@ -32,8 +32,8 @@ dependencies:
   webkit_inspection_protocol: ">=0.5.0 <0.8.0"
   yaml: ^2.0.0
   # Use an exact version until the test_api and test_core package are stable.
-  test_api: 0.2.19-nullsafety.3
-  test_core: 0.3.12-nullsafety.6
+  test_api: 0.2.19-nullsafety.4
+  test_core: 0.3.12-nullsafety.7
 
 dev_dependencies:
   fake_async: ^1.0.0
