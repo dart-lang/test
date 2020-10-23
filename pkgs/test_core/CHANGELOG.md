@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
 ## 0.3.12-nullsafety.6
 
 * Add experimental `directRunTests`, `directRunSingle`, and `enumerateTestCases`

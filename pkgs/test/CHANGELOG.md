@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
 ## 1.16.0-nullsafety.6
 
 * Add `markTestSkipped` API.
