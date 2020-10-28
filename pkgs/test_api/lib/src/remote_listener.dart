@@ -46,11 +46,8 @@ class RemoteListener {
   /// for this worker.
   static StreamChannel<Object?> start(Function Function() getMain,
       {bool hidePrints = true, Future Function()? beforeLoad}) {
-    // This has to be synchronous to work around sdk#25745. Otherwise, there'll
-    // be an asynchronous pause before a syntax error notification is sent,
-    // which will cause the send to fail entirely.
     var controller =
-        StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
+        StreamChannelController<Object?>(allowForeignErrors: false);
     var channel = MultiChannel<Object?>(controller.local);
 
     var verboseChain = true;
