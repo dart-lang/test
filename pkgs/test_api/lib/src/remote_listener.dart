@@ -46,8 +46,10 @@ class RemoteListener {
   /// for this worker.
   static StreamChannel<Object?> start(Function Function() getMain,
       {bool hidePrints = true, Future Function()? beforeLoad}) {
+    // Synchronous in order to allow `print` output to show up immediately, even
+    // if they are followed by long running synchronous work.
     var controller =
-        StreamChannelController<Object?>(allowForeignErrors: false);
+        StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
     var channel = MultiChannel<Object?>(controller.local);
 
     var verboseChain = true;
