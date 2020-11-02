@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.8-dev
+
+* Fix a bug where the test runner could crash when printing the elapsed time.
+
 ## 0.3.12-nullsafety.7
 
 * Allow prerelease versions of the 2.12 sdk.

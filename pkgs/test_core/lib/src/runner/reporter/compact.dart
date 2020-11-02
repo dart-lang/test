@@ -184,7 +184,7 @@ class CompactReporter implements Reporter {
 
       // Keep updating the time even when nothing else is happening.
       _subscriptions.add(Stream.periodic(Duration(seconds: 1))
-          .listen((_) => _progressLine(_lastProgressMessage!)));
+          .listen((_) => _progressLine(_lastProgressMessage ?? '')));
     }
 
     // If this is the first test to start, print a progress line so the user
