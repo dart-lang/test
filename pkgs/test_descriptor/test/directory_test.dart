@@ -103,7 +103,7 @@ void main() {
 
       var errors = 0;
       var controller = StreamController<String>();
-      runZoned(() {
+      runZonedGuarded(() {
         d.dir('dir', [
           d.dir('subdir', [
             d.file('subfile1.txt', 'subcontents1'),
@@ -113,7 +113,7 @@ void main() {
           d.file('file2.txt', 'contents2')
         ]).validate();
       },
-          onError: expectAsync1((error) {
+          expectAsync2((error, _) {
             errors++;
             controller.add(error.toString());
             if (errors == 3) controller.close();

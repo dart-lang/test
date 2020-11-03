@@ -59,12 +59,12 @@ class PatternDescriptor extends Descriptor {
 
     var results = await Future.wait(matchingEntries.map((entry) {
       var basename = p.basename(entry);
-      return runZoned(() {
+      return runZonedGuarded(() {
         return Result.capture(Future.sync(() async {
           await _fn(basename).validate(parent);
           return basename;
         }));
-      }, onError: (_) {
+      }, (_, __) {
         // Validate may produce multiple errors, but we ignore all but the first
         // to avoid cluttering the user with many different errors from many
         // different un-matched entries.
