@@ -1,6 +1,9 @@
-## 0.3.12-nullsafety.8-dev
+## 0.3.12-nullsafety.8
 
 * Fix a bug where the test runner could crash when printing the elapsed time.
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
 
 ## 0.3.12-nullsafety.7
 
