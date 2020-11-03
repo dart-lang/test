@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:stack_trace/stack_trace.dart';
 import 'package:typed_data/typed_data.dart';
 
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
@@ -66,7 +65,7 @@ abstract class Browser {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
-    runZoned(() async {
+    runZonedGuarded(() async {
       var process = await startBrowser();
       _processCompleter.complete(process);
 
@@ -109,14 +108,13 @@ abstract class Browser {
       }
 
       _onExitCompleter.complete();
-    }, onError: (error, StackTrace stackTrace) {
+    }, (error, stackTrace) {
       // Ignore any errors after the browser has been closed.
       if (_closed) return;
 
       // Make sure the process dies even if the error wasn't fatal.
       _process.then((process) => process.kill());
 
-      stackTrace ??= Trace.current();
       if (_onExitCompleter.isCompleted) return;
       _onExitCompleter.completeError(
           ApplicationException(
