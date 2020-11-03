@@ -1,5 +1,5 @@
 name: matcher
-version: 0.12.10-nullsafety.2
+version: 0.12.10-nullsafety.3
 
 description: >-
   Support for specifying test expectations via an extensible Matcher class.
@@ -7,8 +7,7 @@ description: >-
 homepage: https://github.com/dart-lang/matcher
 
 environment:
-  # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.12.0'
+  sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
   stack_trace: '>=1.10.0-nullsafety <1.10.0'
