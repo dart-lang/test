@@ -6,11 +6,13 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../util/dart.dart' as dart;
 
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 /// Spawns a hybrid isolate from [url] with the given [message], and returns a
@@ -19,7 +21,8 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// This connects the main isolate to the hybrid isolate, whereas
 /// `lib/src/frontend/spawn_hybrid.dart` connects the test isolate to the main
 /// isolate.
-StreamChannel spawnHybridUri(String url, Object? message) {
+StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
+  url = _normalizeUrl(url, suite);
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();
     var onExitPort = ReceivePort();
@@ -63,4 +66,29 @@ StreamChannel spawnHybridUri(String url, Object? message) {
           NullStreamSink());
     }
   }());
+}
+
+String _normalizeUrl(String uri, Suite suite) {
+  final parsedUrl = Uri.parse(uri);
+
+  String absoluteUri;
+  if (parsedUrl.scheme.isEmpty) {
+    var isRootRelative = parsedUrl.path.startsWith('/');
+
+    if (isRootRelative) {
+      // We assume that the current path is the package root. `pub run`
+      // enforces this currently, but at some point it would probably be good
+      // to pass in an explicit root.
+      absoluteUri = p.url
+          .join(p.toUri(p.current).toString(), parsedUrl.path.substring(1));
+    } else {
+      var suitePath = suite.path!;
+      absoluteUri = p.url.join(
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUrl.toString());
+    }
+  } else {
+    absoluteUri = uri.toString();
+  }
+  return absoluteUri;
 }
