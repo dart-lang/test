@@ -1,6 +1,8 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 import 'dart:isolate';
@@ -19,7 +21,7 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// This connects the main isolate to the hybrid isolate, whereas
 /// `lib/src/frontend/spawn_hybrid.dart` connects the test isolate to the main
 /// isolate.
-StreamChannel spawnHybridUri(String url, Object? message) {
+StreamChannel spawnHybridUri(String url, Object /*?*/ message) {
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();
     var onExitPort = ReceivePort();
