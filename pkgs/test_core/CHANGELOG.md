@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
 ## 0.3.12-nullsafety.8
 
 * Fix a bug where the test runner could crash when printing the elapsed time.
