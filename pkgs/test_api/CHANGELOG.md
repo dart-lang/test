@@ -1,3 +1,7 @@
+## 0.2.18+1 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
 ## 0.2.18
 
 * Update to `matcher` version `0.12.9`.

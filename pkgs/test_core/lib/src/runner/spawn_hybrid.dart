@@ -3,14 +3,19 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:isolate';
 
+import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../util/dart.dart' as dart;
+import '../util/package_config.dart';
 
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 /// Spawns a hybrid isolate from [url] with the given [message], and returns a
@@ -19,12 +24,23 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// This connects the main isolate to the hybrid isolate, whereas
 /// `lib/src/frontend/spawn_hybrid.dart` connects the test isolate to the main
 /// isolate.
-StreamChannel spawnHybridUri(String url, Object message) {
+///
+/// If [uri] is relative, it will be interpreted relative to the `file:` URL
+/// for [suite]. If it's root-relative (that is, if it begins with `/`) it will
+/// be interpreted relative to the root of the package (the directory that
+/// contains `pubspec.yaml`, *not* the `test/` directory). If it's a `package:`
+/// URL, it will be resolved using the current package's dependency
+/// constellation.
+StreamChannel /*!*/ spawnHybridUri(
+    String url, Object /*?*/ message, Suite suite) {
+  url = _normalizeUrl(url, suite);
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();
     var onExitPort = ReceivePort();
     try {
       var code = '''
+        ${await _languageVersionCommentFor(url)}
+
         import "package:test_core/src/runner/hybrid_listener.dart";
 
         import "${url.replaceAll(r'$', '%24')}" as lib;
@@ -63,4 +79,76 @@ StreamChannel spawnHybridUri(String url, Object message) {
           NullStreamSink());
     }
   }());
+}
+
+/// Normalizes [url] to an absolute url, or returns it as is if it has a
+/// scheme.
+///
+/// Follows the rules for relatives/absolute paths outlit
+String _normalizeUrl(String url, Suite suite) {
+  final parsedUri = Uri.parse(url);
+
+  if (parsedUri.scheme.isEmpty) {
+    var isRootRelative = parsedUri.path.startsWith('/');
+
+    if (isRootRelative) {
+      // We assume that the current path is the package root. `pub run`
+      // enforces this currently, but at some point it would probably be good
+      // to pass in an explicit root.
+      return p.url
+          .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
+    } else {
+      var suitePath = suite.path;
+      return p.url.join(
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUri.toString());
+    }
+  } else {
+    return url;
+  }
+}
+
+/// Computes the a language version comment for the library at [uri].
+///
+/// If there is a language version comment in the file, that is returned.
+///
+/// Otherwise a comment representing the default version from the
+/// [currentPackageConfig] is returned.
+///
+/// If no default language version is known (data: uri for instance), then
+/// an empty string is returned.
+Future<String> _languageVersionCommentFor(String url) async {
+  var parsedUri = Uri.parse(url);
+
+  // Returns the explicit language version comment if one exists.
+  var result = parseString(
+      content: await _readUri(parsedUri),
+      path: parsedUri.path,
+      throwIfDiagnostics: false);
+  var languageVersionComment = result.unit.languageVersionToken?.value();
+  if (languageVersionComment != null) return languageVersionComment.toString();
+
+  // Returns the default language version for the package if one exists.
+  if (parsedUri.scheme.isEmpty || parsedUri.scheme == 'file') {
+    var packageConfig = await currentPackageConfig;
+    var package = packageConfig.packageOf(parsedUri);
+    var version = package?.languageVersion;
+    if (version != null) return '// @dart=${version}';
+  }
+
+  // Fall back on no language comment.
+  return '';
+}
+
+Future<String> _readUri(Uri uri) async {
+  switch (uri.scheme) {
+    case '':
+    case 'file':
+      return File.fromUri(uri).readAsString();
+    case 'data':
+      return uri.data.contentAsString();
+    default:
+      throw ArgumentError.value(uri, 'uri',
+          'Only data and file uris (as well as relative paths) are supported');
+  }
 }
