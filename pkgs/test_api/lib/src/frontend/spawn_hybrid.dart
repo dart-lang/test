@@ -146,8 +146,7 @@ StreamChannel spawnHybridCode(String dartCode,
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 
-/// Like [spawnHybridUri], but doesn't take [Uri] objects and doesn't handle
-/// relative URLs.
+/// Like [spawnHybridUri], but doesn't take [Uri] objects.
 StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {

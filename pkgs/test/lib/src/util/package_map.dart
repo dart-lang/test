@@ -4,14 +4,7 @@
 //
 // @dart=2.7
 
-import 'dart:isolate';
-
 import 'package:package_config/package_config.dart';
-
-/// The [PackageConfig] parsed from the current isolates package config file.
-final Future<PackageConfig> currentPackageConfig = () async {
-  return loadPackageConfigUri(await Isolate.packageConfig);
-}();
 
 /// Adds methods to convert to a package map on [PackageConfig].
 extension PackageMap on PackageConfig {
