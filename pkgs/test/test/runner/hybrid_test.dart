@@ -708,9 +708,11 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
       ...originalPackageConfig.packages,
       extraPackage,
     ], extraData: originalPackageConfig.extraData);
+    await d.dir('.dart_tool').create();
     await savePackageConfig(newConfig, Directory(d.sandbox));
 
-    var test = await runTest(['test.dart', ...arguments]);
+    var test = await runTest(['test.dart', ...arguments],
+        packageConfig: p.join(d.sandbox, '.dart_tool', 'package_config.json'));
     expect(test.stdout,
         containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
     await test.shouldExit(0);
