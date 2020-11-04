@@ -702,7 +702,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
     // opting it out.
     var originalPackageConfig =
         await loadPackageConfigUri(await Isolate.packageConfig);
-    var extraPackage = Package('_test', Uri.file(d.sandbox),
+    var extraPackage = Package('_test', Uri.file('${d.sandbox}/'),
         languageVersion: LanguageVersion(2, 9));
     var newConfig = PackageConfig([
       ...originalPackageConfig.packages,
