@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
 ## 1.16.0-nullsafety.8
 
 * Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
