@@ -457,7 +457,7 @@ class _ConfigurationLoader {
   Object /*?*/ _getValue(
       String field, String typeName, bool Function(dynamic) typeTest) {
     var value = _document[field];
-    if (typeTest(value)) return value;
+    if (value == null || typeTest(value)) return value;
     _error('$field must be ${a(typeName)}.', field);
   }
 
