@@ -90,6 +90,12 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
 StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
+  if (uri is String) {
+    // Ensure that it can be parsed as a uri.
+    Uri.parse(uri);
+  } else if (uri is! Uri) {
+    throw ArgumentError.value(uri, 'uri', 'must be a Uri or a String.');
+  }
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 
