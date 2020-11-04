@@ -7,7 +7,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
@@ -52,12 +51,13 @@ class BrowserPlatform extends PlatformPlugin
   /// the working directory.
   static Future<BrowserPlatform> start({String root}) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
+    var packageConfig = await currentPackageConfig;
     return BrowserPlatform._(
         server,
         Configuration.current,
-        p.fromUri(await Isolate.resolvePackageUri(
+        p.fromUri(packageConfig.resolve(
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
-        p.fromUri(await Isolate.resolvePackageUri(Uri.parse(
+        p.fromUri(packageConfig.resolve(Uri.parse(
             'package:test/src/runner/browser/static/default.html.tpl'))),
         root: root);
   }
