@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.10
+
+* Allow to inject a test channel for browser tests.
+
 ## 1.16.0-nullsafety.9
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
