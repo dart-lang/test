@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 import 'dart:convert';
@@ -143,7 +145,7 @@ class JsonReporter implements Reporter {
           },
           liveTest.test,
           liveTest.suite.platform.runtime,
-          liveTest.suite.path!)
+          liveTest.suite.path)
     });
 
     // Convert the future to a stream so that the subscription can be paused or
@@ -168,7 +170,7 @@ class JsonReporter implements Reporter {
   /// If [suite] doesn't have an ID yet, this assigns one and emits a new event
   /// for that suite.
   int _idForSuite(Suite suite) {
-    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite]!;
+    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite];
 
     var id = _nextID++;
     _suiteIDs[suite] = id;
@@ -193,7 +195,7 @@ class JsonReporter implements Reporter {
     }
 
     _emit('suite', {
-      'suite': <String, Object?>{
+      'suite': <String, Object /*?*/ >{
         'id': id,
         'platform': suite.platform.runtime.identifier,
         'path': suite.path
@@ -208,11 +210,11 @@ class JsonReporter implements Reporter {
   /// If a group doesn't have an ID yet, this assigns one and emits a new event
   /// for that group.
   List<int> _idsForGroups(Iterable<Group> groups, Suite suite) {
-    int? parentID;
+    int /*?*/ parentID;
     return groups.map((group) {
       if (_groupIDs.containsKey(group)) {
-        parentID = _groupIDs[group]!;
-        return parentID!;
+        parentID = _groupIDs[group];
+        return parentID;
       }
 
       var id = _nextID++;
@@ -232,7 +234,7 @@ class JsonReporter implements Reporter {
             },
             group,
             suite.platform.runtime,
-            suite.path!)
+            suite.path)
       });
       parentID = id;
       return id;
@@ -272,7 +274,7 @@ class JsonReporter implements Reporter {
   ///
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
-  void _onDone(bool? success) {
+  void _onDone(bool /*?*/ success) {
     _cancel();
     _stopwatch.stop();
 
@@ -303,8 +305,8 @@ class JsonReporter implements Reporter {
       GroupEntry entry,
       Runtime runtime,
       String suitePath) {
-    var frame = entry.trace?.frames.first;
-    Frame? rootFrame;
+    var frame = entry.trace?.frames?.first;
+    Frame /*?*/ rootFrame;
     for (var frame in entry.trace?.frames ?? <Frame>[]) {
       if (frame.uri.scheme == 'file' &&
           frame.uri.toFilePath() == p.absolute(suitePath)) {
@@ -320,7 +322,7 @@ class JsonReporter implements Reporter {
 
     map['line'] = frame?.line;
     map['column'] = frame?.column;
-    map['url'] = frame?.uri.toString();
+    map['url'] = frame?.uri?.toString();
     if (rootFrame != null && rootFrame != frame) {
       map['root_line'] = rootFrame.line;
       map['root_column'] = rootFrame.column;

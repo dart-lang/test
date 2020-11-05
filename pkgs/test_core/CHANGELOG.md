@@ -1,6 +1,8 @@
 ## 0.3.12-nullsafety.9
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+* Pre-emptively fix legacy library import lint violations, and unmigrate some
+  libraries as necessary.
 
 ## 0.3.12-nullsafety.8
 
