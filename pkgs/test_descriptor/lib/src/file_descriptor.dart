@@ -35,7 +35,7 @@ abstract class FileDescriptor extends Descriptor {
   ///
   /// To match a [Matcher] against a file's binary contents, use [new
   /// FileDescriptor.binaryMatcher] instead.
-  factory FileDescriptor(String name, contents) {
+  factory FileDescriptor(String name, Object? contents) {
     if (contents is String) return _StringFileDescriptor(name, contents);
     if (contents is List) {
       return _BinaryFileDescriptor(name, contents.cast<int>());

@@ -3,6 +3,10 @@
 * Migrate to null safety.
 * Fix outdated URLs in `README.md`.
 * BREAKING: Removed archive support.
+* BREAKING: `DirectoryDescriptor.load` only supports a `String` path instead of
+  also accepting relative `Uri` objects.
+* BREAKING: `DirectoryDescriptor.load` no longer has an optional `parents`
+  parameter - this was intended for internal use only.
 
 ## 1.2.0
 
