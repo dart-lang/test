@@ -41,7 +41,7 @@ class PatternDescriptor extends Descriptor {
   /// in the constructor and validates the result. If exactly one succeeds,
   /// `this` is considered valid.
   @override
-  Future validate([String parent]) async {
+  Future<void> validate([String? parent]) async {
     var inSandbox = parent == null;
     parent ??= sandbox;
     var matchingEntries = await Directory(parent)
@@ -57,19 +57,22 @@ class PatternDescriptor extends Descriptor {
       fail('No entries found in $location matching $_patternDescription.');
     }
 
-    var results = await Future.wait(matchingEntries.map((entry) {
-      var basename = p.basename(entry);
-      return runZonedGuarded(() {
-        return Result.capture(Future.sync(() async {
-          await _fn(basename).validate(parent);
-          return basename;
-        }));
-      }, (_, __) {
-        // Validate may produce multiple errors, but we ignore all but the first
-        // to avoid cluttering the user with many different errors from many
-        // different un-matched entries.
-      });
-    }).toList());
+    var results = await Future.wait(matchingEntries
+        .map((entry) {
+          var basename = p.basename(entry);
+          return runZonedGuarded(() {
+            return Result.capture(Future.sync(() async {
+              await _fn(basename).validate(parent);
+              return basename;
+            }));
+          }, (_, __) {
+            // Validate may produce multiple errors, but we ignore all but the first
+            // to avoid cluttering the user with many different errors from many
+            // different un-matched entries.
+          });
+        })
+        .whereType<Future<Result<String>>>()
+        .toList());
 
     var successes = results.where((result) => result.isValue).toList();
     if (successes.isEmpty) {
@@ -77,7 +80,7 @@ class PatternDescriptor extends Descriptor {
     } else if (successes.length > 1) {
       fail('Multiple valid entries found in $location matching '
           '$_patternDescription:\n'
-          '${bullet(successes.map((result) => result.asValue.value))}');
+          '${bullet(successes.map((result) => result.asValue!.value))}');
     }
   }
 
@@ -96,7 +99,7 @@ class PatternDescriptor extends Descriptor {
   }
 
   @override
-  Future create([String parent]) {
+  Future<void> create([String? parent]) {
     throw UnsupportedError("Pattern descriptors don't support create().");
   }
 }

@@ -5,7 +5,6 @@
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
-import 'src/archive_descriptor.dart';
 import 'src/descriptor.dart';
 import 'src/directory_descriptor.dart';
 import 'src/file_descriptor.dart';
@@ -13,7 +12,6 @@ import 'src/nothing_descriptor.dart';
 import 'src/pattern_descriptor.dart';
 import 'src/sandbox.dart';
 
-export 'src/archive_descriptor.dart';
 export 'src/descriptor.dart';
 export 'src/directory_descriptor.dart';
 export 'src/file_descriptor.dart';
@@ -42,7 +40,7 @@ FileDescriptor file(String name, [contents]) => FileDescriptor(name, contents);
 /// children of the physical diretory, but it *doesn't* require that no other
 /// children exist. To ensure that a particular child doesn't exist, use
 /// [nothing].
-DirectoryDescriptor dir(String name, [Iterable<Descriptor> contents]) =>
+DirectoryDescriptor dir(String name, [Iterable<Descriptor>? contents]) =>
     DirectoryDescriptor(name, contents ?? <Descriptor>[]);
 
 /// Creates a new [NothingDescriptor] descriptor that asserts that no entry
@@ -72,21 +70,8 @@ PatternDescriptor filePattern(Pattern name, [contents]) =>
 
 /// A convenience method for creating a [PatternDescriptor] descriptor that
 /// constructs a [DirectoryDescriptor] descriptor.
-PatternDescriptor dirPattern(Pattern name, [Iterable<Descriptor> contents]) =>
+PatternDescriptor dirPattern(Pattern name, [Iterable<Descriptor>? contents]) =>
     pattern(name, (realName) => dir(realName, contents));
-
-/// Creates a new [ArchiveDescriptor] with [name] and [contents].
-///
-/// [Descriptor.create] creates an archive with the given files and directories
-/// within it, and [Descriptor.validate] validates that the archive contains the
-/// given contents. It *doesn't* require that no other children exist. To ensure
-/// that a particular child doesn't exist, use [nothing].
-///
-/// The type of the archive is determined by [name]'s file extension. It
-/// supports `.zip`, `.tar`, `.tar.gz`/`.tar.gzip`/`.tgz`, and
-/// `.tar.bz2`/`.tar.bzip2` files.
-ArchiveDescriptor archive(String name, [Iterable<Descriptor> contents]) =>
-    ArchiveDescriptor(name, contents ?? []);
 
 /// Returns [path] within the [sandbox] directory.
 String path(String path) => p.join(sandbox, path);

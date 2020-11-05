@@ -13,23 +13,23 @@ import 'package:test/test.dart';
 /// created the first time [sandbox] is accessed for each test case, and
 /// automatically deleted after the test finishes running.
 String get sandbox {
-  if (_sandbox != null) return _sandbox;
+  if (_sandbox != null) return _sandbox!;
   // Resolve symlinks so we don't end up with inconsistent paths on Mac OS where
   // /tmp is symlinked.
-  _sandbox = Directory.systemTemp
+  var sandbox = _sandbox = Directory.systemTemp
       .createTempSync('dart_test_')
       .resolveSymbolicLinksSync();
 
   addTearDown(() async {
-    var sandbox = _sandbox;
+    var sandbox = _sandbox!;
     _sandbox = null;
     await Directory(sandbox).delete(recursive: true);
   });
 
-  return _sandbox;
+  return sandbox;
 }
 
-String _sandbox;
+String? _sandbox;
 
 /// Whether [sandbox] has been created.
 bool get sandboxExists => _sandbox != null;

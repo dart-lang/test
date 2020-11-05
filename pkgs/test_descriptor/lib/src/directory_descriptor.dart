@@ -52,18 +52,18 @@ class DirectoryDescriptor extends Descriptor {
           }
           // Ignore broken symlinks.
           return null;
-        }).where((path) => path != null));
+        }).whereType<Descriptor>());
   }
 
   @override
-  Future create([String parent]) async {
+  Future<void> create([String? parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     await Directory(fullPath).create(recursive: true);
     await Future.wait(contents.map((entry) => entry.create(fullPath)));
   }
 
   @override
-  Future validate([String parent]) async {
+  Future<void> validate([String? parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     if (!(await Directory(fullPath).exists())) {
       fail('Directory not found: "${prettyPath(fullPath)}".');
@@ -80,7 +80,7 @@ class DirectoryDescriptor extends Descriptor {
   /// The [parents] parameter should only be passed by subclasses of
   /// [DirectoryDescriptor] that are recursively calling [load]. It's the
   /// URL-format path of the directories that have been loaded so far.
-  Stream<List<int>> load(url, [String parents]) {
+  Stream<List<int>> load(url, [String? parents]) {
     String path;
     if (url is String) {
       path = url;

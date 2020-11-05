@@ -60,7 +60,7 @@ abstract class FileDescriptor extends Descriptor {
   FileDescriptor.protected(String name) : super(name);
 
   @override
-  Future create([String parent]) async {
+  Future<void> create([String? parent]) async {
     // Create the stream before we call [File.openWrite] because it may fail
     // fast (e.g. if this is a matcher file).
     var file = File(p.join(parent ?? sandbox, name)).openWrite();
@@ -72,7 +72,7 @@ abstract class FileDescriptor extends Descriptor {
   }
 
   @override
-  Future validate([String parent]) async {
+  Future<void> validate([String? parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     var pretty = prettyPath(fullPath);
     if (!(await File(fullPath).exists())) {
@@ -87,7 +87,7 @@ abstract class FileDescriptor extends Descriptor {
   ///
   /// The [prettyPath] is a human-friendly representation of the path to the
   /// descriptor.
-  Future _validate(String prettyPath, List<int> binaryContents);
+  FutureOr<void> _validate(String prettyPath, List<int> binaryContents);
 
   /// Reads and decodes the contents of this descriptor as a UTF-8 string.
   ///
@@ -113,8 +113,8 @@ class _BinaryFileDescriptor extends FileDescriptor {
   Stream<List<int>> readAsBytes() => Stream.fromIterable([_contents]);
 
   @override
-  Future _validate(String prettPath, List<int> actualContents) async {
-    if (const IterableEquality().equals(_contents, actualContents)) return null;
+  Future<void> _validate(String prettPath, List<int> actualContents) async {
+    if (const IterableEquality().equals(_contents, actualContents)) return;
     // TODO(nweiz): show a hex dump here if the data is small enough.
     fail('File "$prettPath" didn\'t contain the expected binary data.');
   }
@@ -134,9 +134,9 @@ class _StringFileDescriptor extends FileDescriptor {
       Stream.fromIterable([utf8.encode(_contents)]);
 
   @override
-  Future _validate(String prettyPath, List<int> actualContents) {
+  void _validate(String prettyPath, List<int> actualContents) {
     var actualContentsText = utf8.decode(actualContents);
-    if (_contents == actualContentsText) return null;
+    if (_contents == actualContentsText) return;
     fail(_textMismatchMessage(prettyPath, _contents, actualContentsText));
   }
 
@@ -194,7 +194,7 @@ class _MatcherFileDescriptor extends FileDescriptor {
       throw UnsupportedError("Matcher files can't be created or read.");
 
   @override
-  Future _validate(String prettyPath, List<int> actualContents) async {
+  Future<void> _validate(String prettyPath, List<int> actualContents) async {
     try {
       expect(
           _isBinary ? actualContents : utf8.decode(actualContents), _matcher);

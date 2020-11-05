@@ -2,7 +2,6 @@ language: dart
 
 dart:
   - dev
-  - 2.8.1
 
 dart_task:
   - test
@@ -14,9 +13,6 @@ matrix:
   - dart: dev
     dart_task:
       dartanalyzer: --fatal-infos --fatal-warnings .
-  - dart: 2.8.1
-    dart_task:
-      dartanalyzer: --fatal-warnings .
 
 branches:
   only: [master]

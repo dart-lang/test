@@ -18,10 +18,10 @@ class NothingDescriptor extends Descriptor {
   NothingDescriptor(String name) : super(name);
 
   @override
-  Future create([String parent]) async {}
+  Future<void> create([String? parent]) async {}
 
   @override
-  Future validate([String parent]) async {
+  Future<void> validate([String? parent]) async {
     var fullPath = p.join(parent ?? sandbox, name);
     var pretty = prettyPath(fullPath);
     if (File(fullPath).existsSync()) {

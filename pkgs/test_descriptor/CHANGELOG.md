@@ -1,7 +1,8 @@
-## 1.2.1-dev
+## 2.0.0-nullsafety
 
-* Update minimum Dart SDK to `2.7.0`.
+* Migrate to null safety.
 * Fix outdated URLs in `README.md`.
+* BREAKING: Removed archive support.
 
 ## 1.2.0
 

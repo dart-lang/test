@@ -211,7 +211,7 @@ void main() {
   });
 
   group('describe()', () {
-    bool oldAscii;
+    late bool oldAscii;
     setUpAll(() {
       oldAscii = term_glyph.ascii;
       term_glyph.ascii = true;

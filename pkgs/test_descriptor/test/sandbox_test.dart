@@ -17,7 +17,7 @@ void main() {
   });
 
   test('the directory is deleted after the test', () {
-    String sandbox;
+    late String sandbox;
     addTearDown(() {
       expect(Directory(sandbox).existsSync(), isFalse);
     });

@@ -15,11 +15,11 @@ abstract class Descriptor {
 
   /// Creates this entry within the [parent] directory, which defaults to
   /// [sandbox].
-  Future create([String parent]);
+  Future<void> create([String? parent]);
 
   /// Validates that the physical file system under [parent] (which defaults to
   /// [sandbox]) contains an entry that matches this descriptor.
-  Future validate([String parent]);
+  Future<void> validate([String? parent]);
 
   /// Returns a human-friendly tree-style description of this descriptor.
   String describe();

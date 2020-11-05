@@ -54,10 +54,10 @@ String describeDirectory(String name, List<Descriptor> contents) {
 /// only a single line; otherwise, [first], [last], or [prefix] is used, in that
 /// order of precedence.
 String prefixLines(String text, String prefix,
-    {String first, String last, String single}) {
+    {String? first, String? last, String? single}) {
+  single ??= first ?? last ?? prefix;
   first ??= prefix;
   last ??= prefix;
-  single ??= first ?? last ?? prefix;
 
   var lines = text.split('\n');
   if (lines.length == 1) return '$single$text';
@@ -94,10 +94,10 @@ Future<List<T>> waitAndReportErrors<T>(Iterable<Future<T>> futures) {
   return Future.wait(futures.map((future) {
     // Avoid async/await so that we synchronously add error handlers for the
     // futures to keep them from top-leveling.
-    return future.catchError((error, StackTrace stackTrace) {
+    return future.catchError((Object error, StackTrace stackTrace) {
       if (!errored) {
         errored = true;
-        throw error;
+        throw error; // ignore: only_throw_errors
       } else {
         registerException(error, stackTrace);
       }
