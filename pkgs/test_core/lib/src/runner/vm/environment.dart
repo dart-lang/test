@@ -1,6 +1,8 @@
 // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 
@@ -22,7 +24,7 @@ class VMEnvironment implements Environment {
   VMEnvironment(this.observatoryUrl, this._isolate, this._client);
 
   @override
-  Uri get remoteDebuggerUrl => null;
+  Uri /*?*/ get remoteDebuggerUrl => null;
 
   @override
   Stream get onRestart => StreamController.broadcast().stream;

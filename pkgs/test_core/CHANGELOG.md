@@ -1,3 +1,54 @@
+## 0.3.12-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+* Pre-emptively fix legacy library import lint violations, and unmigrate some
+  libraries as necessary.
+
+## 0.3.12-nullsafety.8
+
+* Fix a bug where the test runner could crash when printing the elapsed time.
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
+
+## 0.3.12-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
+## 0.3.12-nullsafety.6
+
+* Add experimental `directRunTests`, `directRunSingle`, and `enumerateTestCases`
+  APIs to enable test runners written around a single executable that can report
+  and run any single test case.
+
+## 0.3.12-nullsafety.5
+
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
+* Add `src/platform.dart` library to consolidate the necessary imports required
+  to write a custom platform.
+* Stop required a `SILENT_OBSERVATORY` environment variable to run with
+  debugging and the JSON reporter.
+
+## 0.3.12-nullsafety.4
+
+* Support latest `package:vm_service`.
+
+## 0.3.12-nullsafety.3
+
+* Clean up `--help` output.
+
+## 0.3.12-nullsafety.2
+
+* Allow version `0.40.x` of `analyzer`.
+
+## 0.3.12-nullsafety.1
+
+* Update source_maps constraint.
+
+## 0.3.12-nullsafety
+
+* Migrate to null safety.
+
 ## 0.3.11+2 (Backport)
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
@@ -37,6 +88,11 @@
 
 * Add additional information to an exception when we end up with a null
   `RunnerSuite`.
+
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
 
 ## 0.3.4
 

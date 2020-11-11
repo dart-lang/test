@@ -29,14 +29,14 @@ class _Socket {
 
 /// Returns a [StreamChannel] of JSON-encodable objects that communicates over a
 /// socket whose port is given by `process.argv[2]`.
-StreamChannel<Object> socketChannel() {
+StreamChannel<Object?> socketChannel() {
   var controller =
-      StreamChannelController<String>(allowForeignErrors: false, sync: true);
+      StreamChannelController<String?>(allowForeignErrors: false, sync: true);
   var net = _require('net');
   var socket = net.connect(int.parse(_args[2]));
   socket.setEncoding('utf8');
 
-  controller.local.stream.listen((chunk) => socket.write(chunk));
+  controller.local.stream.listen((chunk) => socket.write(chunk!));
   socket.on('data', allowInterop(controller.local.sink.add));
 
   return controller.foreign.transform(chunksToLines).transform(jsonDocument);

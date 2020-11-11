@@ -35,7 +35,7 @@ class _Prints extends AsyncMatcher {
     if (item is! Function()) return 'was not a unary Function';
 
     var buffer = StringBuffer();
-    var result = runZoned(item as Function(),
+    var result = runZoned(item,
         zoneSpecification: ZoneSpecification(print: (_, __, ____, line) {
       buffer.writeln(line);
     }));
@@ -51,7 +51,7 @@ class _Prints extends AsyncMatcher {
 
   /// Verifies that [actual] matches [_matcher] and returns a [String]
   /// description of the failure if it doesn't.
-  String _check(String actual) {
+  String? _check(String actual) {
     var matchState = {};
     if (_matcher.matches(actual, matchState)) return null;
 

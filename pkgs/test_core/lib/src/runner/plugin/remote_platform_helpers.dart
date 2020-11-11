@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:stream_channel/stream_channel.dart';
 
 import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
@@ -30,10 +28,13 @@ import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementat
 ///
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
-StreamChannel serializeSuite(Function Function() getMain,
-        {bool hidePrints = true, Future Function() beforeLoad}) =>
-    RemoteListener.start(getMain,
-        hidePrints: hidePrints, beforeLoad: beforeLoad);
+StreamChannel<Object?> serializeSuite(Function Function() getMain,
+        {bool hidePrints = true, Future Function()? beforeLoad}) =>
+    RemoteListener.start(
+      getMain,
+      hidePrints: hidePrints,
+      beforeLoad: beforeLoad,
+    );
 
 /// Returns a channel that communicates with a plugin in the test runner.
 ///
@@ -44,7 +45,7 @@ StreamChannel serializeSuite(Function Function() getMain,
 /// Throws a [StateError] if [name] has already been used for a channel, or if
 /// this is called outside a worker context (such as within a running test or
 /// `serializeSuite()`'s `onLoad()` function).
-StreamChannel suiteChannel(String name) {
+StreamChannel<Object?> suiteChannel(String name) {
   var manager = SuiteChannelManager.current;
   if (manager == null) {
     throw StateError('suiteChannel() may only be called within a test worker.');

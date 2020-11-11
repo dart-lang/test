@@ -107,7 +107,9 @@ void main() {
 
   group('[throwsNullThrownError]', () {
     test('passes when a NullThrownError is thrown', () {
-      expect(() => throw null, throwsNullThrownError);
+      // Throwing null is no longer allowed with NNBD, but we do want to allow
+      // it from legacy code and should be able to catch those errors.
+      expect(() => throw NullThrownError(), throwsNullThrownError);
     });
 
     test('fails when a non-NullThrownError is thrown', () async {

@@ -1,13 +1,13 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
-// ignore: deprecated_member_use
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:source_span/source_span.dart';
 
 import 'string_literal_iterator.dart';
@@ -19,7 +19,7 @@ import 'string_literal_iterator.dart';
 /// passed to the [main] method of the code being run; the caller is responsible
 /// for using this to establish communication with the isolate.
 Future<Isolate> runInIsolate(String code, Object message,
-        {SendPort onExit}) async =>
+        {SendPort /*?*/ onExit}) async =>
     Isolate.spawnUri(
         Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
         [],
@@ -53,7 +53,7 @@ Future<Isolate> runInIsolate(String code, Object message,
 ///
 /// This will return `null` if [context] contains an invalid string or does not
 /// contain [span].
-SourceSpan contextualizeSpan(
+SourceSpan /*?*/ contextualizeSpan(
     SourceSpan span, StringLiteral context, SourceFile file) {
   var contextRunes = StringLiteralIterator(context)..moveNext();
 

@@ -19,7 +19,4 @@ abstract class Reporter {
   /// Subclasses should ensure that this does nothing if the reporter isn't
   /// paused.
   void resume();
-
-  /// Cancels the reporter's output.
-  void cancel();
 }

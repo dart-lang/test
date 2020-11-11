@@ -1,6 +1,6 @@
 # See with https://github.com/dart-lang/mono_repo for details on this file
+self_validate: true
 travis:
-  sudo: required
   addons:
     chrome: stable
   env:
@@ -8,10 +8,6 @@ travis:
 
   after_failure:
   - tool/report_failure.sh
-
-  branches:
-  - pre-nnbd
-  - master
 
 merge_stages:
 - analyze_and_format

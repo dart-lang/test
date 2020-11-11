@@ -53,7 +53,7 @@ void listen(Function Function() getMain, List data) {
         _sendError(channel, 'Top-level hybridMain is not a function.');
         return;
       } else if (main is! Function(StreamChannel) &&
-          main is! Function(StreamChannel, Null)) {
+          main is! Function(StreamChannel, Never)) {
         _sendError(channel,
             'Top-level hybridMain() function must take one or two arguments.');
         return;
@@ -79,7 +79,7 @@ void listen(Function Function() getMain, List data) {
 }
 
 /// Sends a message over [channel] indicating an error from user code.
-void _sendError(StreamChannel channel, error, [StackTrace stackTrace]) {
+void _sendError(StreamChannel channel, error, [StackTrace? stackTrace]) {
   channel.sink.add({
     'type': 'error',
     'error': RemoteException.serialize(error, stackTrace ?? Chain.current())
