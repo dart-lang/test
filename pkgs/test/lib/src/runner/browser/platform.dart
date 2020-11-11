@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
@@ -29,6 +28,7 @@ import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // igno
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
@@ -48,12 +48,13 @@ class BrowserPlatform extends PlatformPlugin
   /// the working directory.
   static Future<BrowserPlatform> start({String root}) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
+    var packageConfig = await currentPackageConfig;
     return BrowserPlatform._(
         server,
         Configuration.current,
-        p.fromUri(await Isolate.resolvePackageUri(
+        p.fromUri(packageConfig.resolve(
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
-        p.fromUri(await Isolate.resolvePackageUri(Uri.parse(
+        p.fromUri(packageConfig.resolve(Uri.parse(
             'package:test/src/runner/browser/static/default.html.tpl'))),
         root: root);
   }

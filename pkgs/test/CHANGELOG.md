@@ -1,3 +1,7 @@
+## 1.15.5 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
 ## 1.15.4
 
 * Allow analyzer 0.40.x.
