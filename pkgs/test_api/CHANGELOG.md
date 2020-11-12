@@ -36,6 +36,10 @@
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
 
+## 0.2.18+1 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
 ## 0.2.18
 
 * Update to `matcher` version `0.12.9`.

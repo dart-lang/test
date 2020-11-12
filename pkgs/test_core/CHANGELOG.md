@@ -49,6 +49,10 @@
 
 * Migrate to null safety.
 
+## 0.3.11+2 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
 ## 0.3.11+1
 
 * Allow analyzer 0.40.x.
