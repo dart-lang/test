@@ -1,6 +1,7 @@
 ## 1.16.0-nullsafety.10
 
-* Allow to inject a test channel for browser tests.
+* Allow injecting a test channel for browser tests.
+* Allow `package:analyzer` version `0.41.x`.
 
 ## 1.16.0-nullsafety.9
 

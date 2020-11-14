@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.10
+
+* Allow `package:analyzer` version `0.41.x`.
+
 ## 0.3.12-nullsafety.9
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
