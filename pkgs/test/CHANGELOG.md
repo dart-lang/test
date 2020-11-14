@@ -1,3 +1,24 @@
+## 1.16.0-nullsafety.10
+
+* Allow to inject a test channel for browser tests.
+
+## 1.16.0-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
+## 1.16.0-nullsafety.8
+
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
+## 1.16.0-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
+## 1.16.0-nullsafety.6
+
+* Add `markTestSkipped` API.
+
 ## 1.16.0-nullsafety.5
 
 * Allow `2.10` stable and `2.11.0-dev` SDKs.
@@ -32,6 +53,10 @@
   future release it will be made available directly through
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
+
+## 1.15.5 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
 
 ## 1.15.4
 

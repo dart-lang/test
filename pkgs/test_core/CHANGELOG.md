@@ -1,4 +1,21 @@
-## 0.3.12-nullsafety.6-dev
+## 0.3.12-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+* Pre-emptively fix legacy library import lint violations, and unmigrate some
+  libraries as necessary.
+
+## 0.3.12-nullsafety.8
+
+* Fix a bug where the test runner could crash when printing the elapsed time.
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
+
+## 0.3.12-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
+## 0.3.12-nullsafety.6
 
 * Add experimental `directRunTests`, `directRunSingle`, and `enumerateTestCases`
   APIs to enable test runners written around a single executable that can report
@@ -31,6 +48,10 @@
 ## 0.3.12-nullsafety
 
 * Migrate to null safety.
+
+## 0.3.11+2 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
 
 ## 0.3.11+1
 

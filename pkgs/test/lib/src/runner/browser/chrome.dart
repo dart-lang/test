@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
@@ -107,12 +106,14 @@ class Chrome extends Browser {
     var response = await tabConnection.debugger.connection
         .sendCommand('Profiler.takePreciseCoverage', {});
     var result = response.result['result'];
+    var httpClient = HttpClient();
     var coverage = await parseChromeCoverage(
       (result as List).cast(),
-      _sourceProvider,
-      _sourceMapProvider,
+      (scriptId) => _sourceProvider(scriptId, httpClient),
+      (scriptId) => _sourceMapProvider(scriptId, httpClient),
       _sourceUriProvider,
     );
+    httpClient.close();
     return coverage;
   }
 
@@ -135,20 +136,17 @@ class Chrome extends Browser {
         : null;
   }
 
-  Future<String> _sourceMapProvider(String scriptId) async {
+  Future<String> _sourceMapProvider(
+      String scriptId, HttpClient httpClient) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
-    var mapResponse = await http.get('$script.map');
-    if (mapResponse.statusCode != HttpStatus.ok) return null;
-    return mapResponse.body;
+    return await httpClient.getString('$script.map');
   }
 
-  Future<String> _sourceProvider(String scriptId) async {
+  Future<String> _sourceProvider(String scriptId, HttpClient httpClient) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
-    var scriptResponse = await http.get(script);
-    if (scriptResponse.statusCode != HttpStatus.ok) return null;
-    return scriptResponse.body;
+    return await httpClient.getString(script);
   }
 }
 
@@ -192,4 +190,14 @@ Future<WipConnection> _connect(
       'Profiler.startPreciseCoverage', {'detailed': true, 'callCount': false});
 
   return tabConnection;
+}
+
+extension on HttpClient {
+  Future<String> getString(String url) async {
+    final request = await getUrl(Uri.parse(url));
+    final response = await request.close();
+    if (response.statusCode != HttpStatus.ok) return null;
+    var bytes = [await for (var chunk in response) ...chunk];
+    return utf8.decode(bytes);
+  }
 }
