@@ -55,24 +55,36 @@ for PKG in ${PKGS}; do
     echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
     case ${TASK} in
     command_0)
-      echo 'dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1'
-      dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1 || EXIT_CODE=$?
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 0'
+      xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 0 || EXIT_CODE=$?
       ;;
     command_1)
-      echo 'dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2'
-      dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2 || EXIT_CODE=$?
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 1'
+      xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 1 || EXIT_CODE=$?
       ;;
     command_2)
-      echo 'dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3'
-      dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3 || EXIT_CODE=$?
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 2'
+      xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 2 || EXIT_CODE=$?
       ;;
     command_3)
-      echo 'dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4'
-      dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4 || EXIT_CODE=$?
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 3'
+      xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 3 || EXIT_CODE=$?
       ;;
     command_4)
-      echo 'dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5'
-      dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5 || EXIT_CODE=$?
+      echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 4'
+      xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 4 || EXIT_CODE=$?
+      ;;
+    command_5)
+      echo 'pub run --enable-experiment=non-nullable test --preset travis -x browser'
+      pub run --enable-experiment=non-nullable test --preset travis -x browser || EXIT_CODE=$?
+      ;;
+    dartanalyzer)
+      echo 'dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .'
+      dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings . || EXIT_CODE=$?
+      ;;
+    dartfmt)
+      echo 'dartfmt -n --set-exit-if-changed .'
+      dartfmt -n --set-exit-if-changed . || EXIT_CODE=$?
       ;;
     *)
       echo -e "\033[31mNot expecting TASK '${TASK}'. Error!\033[0m"

@@ -2,9 +2,13 @@ dart:
   - dev
 
 stages:
+    - analyze_and_format:
+      - group:
+        - dartfmt: sdk
+        - dartanalyzer: --enable-experiment=non-nullable --fatal-infos --fatal-warnings .
     - unit_test:
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t1
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t2
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t3
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t4
-      - command: dart bin/test.dart --preset travis test/runner/hybrid_test.dart --total-shards 5 --shard-index 3 -r expanded -x t5
+      - command: xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 0
+      - command: xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 1
+      - command: xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 2
+      - command: xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 3
+      - command: xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs -x node --total-shards 5 --shard-index 4
