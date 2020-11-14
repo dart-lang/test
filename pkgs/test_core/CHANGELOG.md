@@ -1,3 +1,5 @@
+## 0.3.12-nullsafety.10-dev
+
 ## 0.3.12-nullsafety.9
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
