@@ -259,6 +259,8 @@ class BrowserPlatform extends PlatformPlugin
       if (browser.isJS) {
         if (suiteConfig.precompiledPath == null) {
           await _compileSuite(path, suiteConfig);
+        } else {
+          await _addPrecompiledStackTraceMapper(path, suiteConfig);
         }
       }
 
@@ -408,6 +410,20 @@ class BrowserPlatform extends PlatformPlugin
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
           packageMap: (await currentPackageConfig).toPackageMap());
     });
+  }
+
+  Future<void> _addPrecompiledStackTraceMapper(
+      String dartPath, SuiteConfiguration suiteConfig) async {
+    if (suiteConfig.jsTrace) return;
+    var mapPath = p.join(
+        suiteConfig.precompiledPath, dartPath + '.browser_test.dart.js.map');
+    var mapFile = File(mapPath);
+    if (mapFile.existsSync()) {
+      _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),
+          mapUrl: p.toUri(mapPath),
+          sdkRoot: Uri.parse(r'/packages/$sdk'),
+          packageMap: (await currentPackageConfig).toPackageMap());
+    }
   }
 
   /// Returns the [BrowserManager] for [runtime], which should be a browser.
