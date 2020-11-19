@@ -1,3 +1,7 @@
+## 1.15.6 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
+
 ## 1.15.5 (Backport)
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
