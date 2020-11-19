@@ -1,3 +1,9 @@
+## 1.16.0-nullsafety.11
+
+* Set up a stack trace mapper in precompiled mode if source maps exist. If
+  the stack traces are already mapped then this has no effect, otherwise it
+  will try to map any JS lines it sees.
+
 ## 1.16.0-nullsafety.10
 
 * Allow injecting a test channel for browser tests.
