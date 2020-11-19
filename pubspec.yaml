@@ -1,0 +1,6 @@
+name: _for_mono_repo_only
+environment:
+  sdk: '>=2.10.0 <3.0.0'
+publish_to: none
+dependencies:
+  mono_repo: 2.5.0
