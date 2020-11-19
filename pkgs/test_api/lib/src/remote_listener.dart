@@ -131,6 +131,7 @@ class RemoteListener {
               // useful errors when calling `test()` and `group()` within a test,
               // and so they can add to the declarer's `tearDownAll()` list.
               zoneValues: {#test.declarer: declarer});
+          // ignore: deprecated_member_use
         }, onError: (error, StackTrace stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
         }, zoneSpecification: spec);

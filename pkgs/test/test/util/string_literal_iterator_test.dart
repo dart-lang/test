@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore: deprecated_member_use
 @TestOn('vm')
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/string_literal_iterator.dart';
 
@@ -239,8 +239,8 @@ Matcher _isRune(String char) {
 /// Parses [dart], which should be a string literal, into a
 /// [StringLiteralIterator].
 StringLiteralIterator _parse(String dart) {
-  // ignore: deprecated_member_use
-  var declaration = parseCompilationUnit('final str = $dart;')
+  var declaration = parseString(content: 'final str = $dart;')
+      .unit
       .declarations
       .single as TopLevelVariableDeclaration;
   var literal = declaration.variables.variables.single.initializer;

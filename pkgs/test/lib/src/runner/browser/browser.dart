@@ -107,6 +107,7 @@ abstract class Browser {
       }
 
       _onExitCompleter.complete();
+      // ignore: deprecated_member_use
     }, onError: (error, StackTrace stackTrace) {
       // Ignore any errors after the browser has been closed.
       if (_closed) return;

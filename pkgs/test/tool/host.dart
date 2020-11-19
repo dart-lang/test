@@ -155,6 +155,7 @@ void main() {
     }), restartCurrent: allowInterop(() {
       serverChannel.sink.add({'command': 'restart'});
     }));
+    // ignore: deprecated_member_use
   }, onError: (error, StackTrace stackTrace) {
     print('$error\n${Trace.from(stackTrace).terse}');
   });
