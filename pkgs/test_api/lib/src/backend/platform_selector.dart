@@ -35,13 +35,13 @@ class PlatformSelector {
   final BooleanSelector _inner;
 
   /// The source span from which this selector was parsed.
-  final SourceSpan _span;
+  final SourceSpan? _span;
 
   /// Parses [selector].
   ///
   /// If [span] is passed, it indicates the location of the text for [selector]
   /// in a larger document. It's used for error reporting.
-  PlatformSelector.parse(String selector, [SourceSpan span])
+  PlatformSelector.parse(String selector, [SourceSpan? span])
       : _inner =
             _wrapFormatException(() => BooleanSelector.parse(selector), span),
         _span = span;
@@ -52,7 +52,7 @@ class PlatformSelector {
   /// [SourceSpanFormatException] using [span].
   ///
   /// If [span] is `null`, runs [body] as-is.
-  static T _wrapFormatException<T>(T Function() body, SourceSpan span) {
+  static T _wrapFormatException<T>(T Function() body, [SourceSpan? span]) {
     if (span == null) return body();
 
     try {

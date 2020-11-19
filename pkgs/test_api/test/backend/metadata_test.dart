@@ -60,7 +60,7 @@ void main() {
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
       expect(metadata.forTag, contains(BooleanSelector.parse('foo')));
-      expect(metadata.forTag[BooleanSelector.parse('foo')].skip, isTrue);
+      expect(metadata.forTag[BooleanSelector.parse('foo')]?.skip, isTrue);
     });
 
     test("returns the normal metadata if forTag doesn't match tags", () {
@@ -73,7 +73,7 @@ void main() {
       expect(metadata.skip, isFalse);
       expect(metadata.tags, unorderedEquals(['bar', 'baz']));
       expect(metadata.forTag, contains(BooleanSelector.parse('foo')));
-      expect(metadata.forTag[BooleanSelector.parse('foo')].skip, isTrue);
+      expect(metadata.forTag[BooleanSelector.parse('foo')]?.skip, isTrue);
     });
 
     test('resolves forTags that match tags', () {

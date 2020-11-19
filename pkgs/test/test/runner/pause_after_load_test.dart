@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.7
 
 @TestOn('vm')
 
@@ -171,28 +173,6 @@ void main() {
         test.stdout, emitsThrough(contains('+3: All tests passed!')));
     await test.shouldExit(0);
   }, tags: ['firefox', 'chrome', 'vm']);
-
-  test("warns if SILENT_OBSERVATORY isn't set when trying to debug the vm",
-      () async {
-    await d.file('test.dart', '''
-import 'package:test/test.dart';
-
-void main() {
-  test("success", () {});
-}
-''').create();
-
-    var test = await runTest(['--pause-after-load', '-p', 'vm', 'test.dart']);
-    await expectLater(
-        test.stderr,
-        emits('Warning: You should set `SILENT_OBSERVATORY` to true when '
-            'debugging the VM as it will output the observatory URL by '
-            'default.'));
-    test.stdin.writeln();
-    await expectLater(
-        test.stdout, emitsThrough(contains('+1: All tests passed!')));
-    await test.shouldExit(0);
-  });
 
   test('stops immediately if killed while paused', () async {
     await d.file('test.dart', '''

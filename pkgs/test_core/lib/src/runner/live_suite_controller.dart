@@ -47,7 +47,7 @@ class _LiveSuite extends LiveSuite {
   Set<LiveTest> get failed => UnmodifiableSetView(_controller._failed);
 
   @override
-  LiveTest get active => _controller._active;
+  LiveTest? get active => _controller._active;
 
   _LiveSuite(this._controller);
 }
@@ -63,7 +63,7 @@ class _LiveSuite extends LiveSuite {
 class LiveSuiteController {
   /// The [LiveSuite] being controlled.
   LiveSuite get liveSuite => _liveSuite;
-  LiveSuite _liveSuite;
+  late final LiveSuite _liveSuite;
 
   /// The suite that's being run.
   final RunnerSuite _suite;
@@ -95,7 +95,7 @@ class LiveSuiteController {
   final _failed = <LiveTest>{};
 
   /// The test exposed through [LiveTest.active].
-  LiveTest _active;
+  LiveTest? _active;
 
   /// Creates a controller for a live suite representing running the tests in
   /// [suite].

@@ -27,18 +27,18 @@ class SuiteConfiguration {
   /// Whether JavaScript stack traces should be left as-is or converted to
   /// Dart-like traces.
   bool get jsTrace => _jsTrace ?? false;
-  final bool _jsTrace;
+  final bool? _jsTrace;
 
   /// Whether skipped tests should be run.
   bool get runSkipped => _runSkipped ?? false;
-  final bool _runSkipped;
+  final bool? _runSkipped;
 
   /// The path to a mirror of this package containing HTML that points to
   /// precompiled JS.
   ///
   /// This is used by the internal Google test runner so that test compilation
   /// can more effectively make use of Google's build tools.
-  final String precompiledPath;
+  final String? precompiledPath;
 
   /// Additional arguments to pass to dart2js.
   ///
@@ -47,17 +47,18 @@ class SuiteConfiguration {
   /// suite's arguments will be used.
   final List<String> dart2jsArgs;
 
-  /// The patterns to match against test names to decide which to run, or `null`
-  /// if all tests should be run.
+  /// The patterns to match against test names to decide which to run.
   ///
   /// All patterns must match in order for a test to be run.
+  ///
+  /// If empty, all tests should be run.
   final Set<Pattern> patterns;
 
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
       ? const ['vm']
-      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
-  final List<RuntimeSelection> _runtimes;
+      : List.unmodifiable(_runtimes!.map((runtime) => runtime.name));
+  final List<RuntimeSelection>? _runtimes;
 
   /// Only run tests whose tags match this selector.
   ///
@@ -87,7 +88,7 @@ class SuiteConfiguration {
   /// The seed with which to shuffle the test order.
   /// Default value is null if not provided and will not change the test order.
   /// The same seed will shuffle the tests in the same way every time.
-  final int testRandomizeOrderingSeed;
+  final int? testRandomizeOrderingSeed;
 
   /// The global test metadata derived from this configuration.
   Metadata get metadata {
@@ -102,7 +103,7 @@ class SuiteConfiguration {
 
   /// The set of tags that have been declared in any way in this configuration.
   Set<String> get knownTags {
-    if (_knownTags != null) return _knownTags;
+    if (_knownTags != null) return _knownTags!;
 
     var known = includeTags.variables.toSet()
       ..addAll(excludeTags.variables)
@@ -116,11 +117,10 @@ class SuiteConfiguration {
       known.addAll(configuration.knownTags);
     }
 
-    _knownTags = UnmodifiableSetView(known);
-    return _knownTags;
+    return _knownTags = UnmodifiableSetView(known);
   }
 
-  Set<String> _knownTags;
+  Set<String>? _knownTags;
 
   /// All child configurations that may be selected under various circumstances.
   Iterable<SuiteConfiguration> get _children sync* {
@@ -129,27 +129,27 @@ class SuiteConfiguration {
   }
 
   factory SuiteConfiguration(
-      {bool jsTrace,
-      bool runSkipped,
-      Iterable<String> dart2jsArgs,
-      String precompiledPath,
-      Iterable<Pattern> patterns,
-      Iterable<RuntimeSelection> runtimes,
-      BooleanSelector includeTags,
-      BooleanSelector excludeTags,
-      Map<BooleanSelector, SuiteConfiguration> tags,
-      Map<PlatformSelector, SuiteConfiguration> onPlatform,
-      int testRandomizeOrderingSeed,
+      {bool? jsTrace,
+      bool? runSkipped,
+      Iterable<String>? dart2jsArgs,
+      String? precompiledPath,
+      Iterable<Pattern>? patterns,
+      Iterable<RuntimeSelection>? runtimes,
+      BooleanSelector? includeTags,
+      BooleanSelector? excludeTags,
+      Map<BooleanSelector, SuiteConfiguration>? tags,
+      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
-      Timeout timeout,
-      bool verboseTrace,
-      bool chainStackTraces,
-      bool skip,
-      int retry,
-      String skipReason,
-      PlatformSelector testOn,
-      Iterable<String> addTags}) {
+      Timeout? timeout,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      bool? skip,
+      int? retry,
+      String? skipReason,
+      PlatformSelector? testOn,
+      Iterable<String>? addTags}) {
     var config = SuiteConfiguration._(
         jsTrace: jsTrace,
         runSkipped: runSkipped,
@@ -179,18 +179,18 @@ class SuiteConfiguration {
   /// Unlike [new SuiteConfiguration], this assumes [tags] is already
   /// resolved.
   SuiteConfiguration._(
-      {bool jsTrace,
-      bool runSkipped,
-      Iterable<String> dart2jsArgs,
+      {bool? jsTrace,
+      bool? runSkipped,
+      Iterable<String>? dart2jsArgs,
       this.precompiledPath,
-      Iterable<Pattern> patterns,
-      Iterable<RuntimeSelection> runtimes,
-      BooleanSelector includeTags,
-      BooleanSelector excludeTags,
-      Map<BooleanSelector, SuiteConfiguration> tags,
-      Map<PlatformSelector, SuiteConfiguration> onPlatform,
-      int testRandomizeOrderingSeed,
-      Metadata metadata})
+      Iterable<Pattern>? patterns,
+      Iterable<RuntimeSelection>? runtimes,
+      BooleanSelector? includeTags,
+      BooleanSelector? excludeTags,
+      Map<BooleanSelector, SuiteConfiguration>? tags,
+      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      int? testRandomizeOrderingSeed,
+      Metadata? metadata})
       : _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
@@ -216,7 +216,7 @@ class SuiteConfiguration {
   /// Returns an unmodifiable copy of [input].
   ///
   /// If [input] is `null` or empty, this returns `null`.
-  static List<T> _list<T>(Iterable<T> input) {
+  static List<T>? _list<T>(Iterable<T>? input) {
     if (input == null) return null;
     var list = List<T>.unmodifiable(input);
     if (list.isEmpty) return null;
@@ -224,8 +224,8 @@ class SuiteConfiguration {
   }
 
   /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
-  static Map<K, V> _map<K, V>(Map<K, V> input) {
-    if (input == null || input.isEmpty) return const {};
+  static Map<K, V> _map<K, V>(Map<K, V>? input) {
+    if (input == null || input.isEmpty) return const <Never, Never>{};
     return Map.unmodifiable(input);
   }
 
@@ -260,33 +260,34 @@ class SuiteConfiguration {
   /// Note that unlike [merge], this has no merging behavior—the old value is
   /// always replaced by the new one.
   SuiteConfiguration change(
-      {bool jsTrace,
-      bool runSkipped,
-      Iterable<String> dart2jsArgs,
-      String precompiledPath,
-      Iterable<Pattern> patterns,
-      Iterable<RuntimeSelection> runtimes,
-      BooleanSelector includeTags,
-      BooleanSelector excludeTags,
-      Map<BooleanSelector, SuiteConfiguration> tags,
-      Map<PlatformSelector, SuiteConfiguration> onPlatform,
-      int testRandomizeOrderingSeed,
+      {bool? jsTrace,
+      bool? runSkipped,
+      Iterable<String>? dart2jsArgs,
+      String? precompiledPath,
+      Iterable<Pattern>? patterns,
+      Iterable<RuntimeSelection>? runtimes,
+      BooleanSelector? includeTags,
+      BooleanSelector? excludeTags,
+      Map<BooleanSelector, SuiteConfiguration>? tags,
+      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
-      Timeout timeout,
-      bool verboseTrace,
-      bool chainStackTraces,
-      bool skip,
-      int retry,
-      String skipReason,
-      PlatformSelector testOn,
-      Iterable<String> addTags}) {
+      Timeout? timeout,
+      bool? verboseTrace,
+      bool? chainStackTraces,
+      bool? skip,
+      int? retry,
+      String? skipReason,
+      PlatformSelector? testOn,
+      Iterable<String>? addTags}) {
     var config = SuiteConfiguration._(
         jsTrace: jsTrace ?? _jsTrace,
         runSkipped: runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         precompiledPath: precompiledPath ?? this.precompiledPath,
         patterns: patterns ?? this.patterns,
+        // TODO(https://github.com/dart-lang/sdk/issues/41114): Remove cast
         runtimes: runtimes ?? _runtimes,
         includeTags: includeTags ?? this.includeTags,
         excludeTags: excludeTags ?? this.excludeTags,
@@ -312,8 +313,9 @@ class SuiteConfiguration {
         allRuntimes.map((runtime) => runtime.identifier).toSet();
     _metadata.validatePlatformSelectors(validVariables);
 
-    if (_runtimes != null) {
-      for (var selection in _runtimes) {
+    var runtimes = _runtimes;
+    if (runtimes != null) {
+      for (var selection in runtimes) {
         if (!allRuntimes
             .any((runtime) => runtime.identifier == selection.name)) {
           if (selection.span != null) {
@@ -363,7 +365,7 @@ class SuiteConfiguration {
     var newTags = Map<BooleanSelector, SuiteConfiguration>.from(tags);
     var merged = tags.keys.fold(empty, (SuiteConfiguration merged, selector) {
       if (!selector.evaluate(_metadata.tags.contains)) return merged;
-      return merged.merge(newTags.remove(selector));
+      return merged.merge(newTags.remove(selector)!);
     });
 
     if (merged == empty) return this;

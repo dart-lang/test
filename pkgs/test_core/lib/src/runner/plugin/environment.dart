@@ -18,10 +18,10 @@ class PluginEnvironment implements Environment {
   const PluginEnvironment();
 
   @override
-  Uri get observatoryUrl => null;
+  Uri? get observatoryUrl => null;
 
   @override
-  Uri get remoteDebuggerUrl => null;
+  Uri? get remoteDebuggerUrl => null;
 
   @override
   CancelableOperation displayPause() => throw UnsupportedError(

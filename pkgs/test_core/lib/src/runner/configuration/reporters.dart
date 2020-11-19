@@ -1,6 +1,8 @@
 // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:collection';
 import 'dart:io';
@@ -36,10 +38,16 @@ final _allReporters = <String, ReporterDetails>{
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
-  'compact': ReporterDetails('A single line, updated continuously.',
-      (_, engine, sink) => CompactReporter.watch(engine, sink)),
+  'compact': ReporterDetails(
+      'A single line, updated continuously.',
+      (config, engine, sink) => CompactReporter.watch(engine, sink,
+          color: config.color,
+          printPath: config.paths.length > 1 ||
+              Directory(config.paths.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
-      'A machine-readable format (see https://bit.ly/2Z7J0OH).',
+      'A machine-readable format (see '
+      'https://dart.dev/go/test-docs/json_reporter.md).',
       (_, engine, sink) => JsonReporter.watch(engine, sink)),
 };
 

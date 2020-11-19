@@ -25,16 +25,16 @@ import 'utils.dart';
 /// This also ensures that the test doesn't complete until a call to
 /// [pumpEventQueue] finishes, so that the callback has a chance to be called.
 Null Function(
-    [Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object]) get neverCalled {
+    [Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?]) get neverCalled {
   // Make sure the test stays alive long enough to call the function if it's
   // going to.
   expect(pumpEventQueue(), completes);

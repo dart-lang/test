@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:collection/collection.dart';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
@@ -63,7 +61,7 @@ abstract class LiveSuite {
         passed,
         skipped,
         failed,
-        if (active != null) {active}
+        if (active != null) {active!}
       ]);
 
   /// A stream that emits each [LiveTest] in this suite as it's about to start
@@ -86,5 +84,5 @@ abstract class LiveSuite {
   Set<LiveTest> get failed;
 
   /// The currently running test in this suite, or `null` if no test is running.
-  LiveTest get active;
+  LiveTest? get active;
 }
