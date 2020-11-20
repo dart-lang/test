@@ -1,6 +1,6 @@
 ## 1.16.0-nullsafety.12
 
-* Update to the latest `test_core`.
+* Fix `spawnHybridUri` on windows.
 
 ## 1.16.0-nullsafety.11
 
