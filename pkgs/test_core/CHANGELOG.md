@@ -1,6 +1,7 @@
 ## 0.3.12-nullsafety.11
 
 * Fix `spawnHybridUri` on windows.
+* Allow `package:yaml` version `3.x.x`.
 
 ## 0.3.12-nullsafety.10
 
