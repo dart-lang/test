@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.12
+
+* Update to the latest `test_core`.
+
 ## 1.16.0-nullsafety.11
 
 * Set up a stack trace mapper in precompiled mode if source maps exist. If
