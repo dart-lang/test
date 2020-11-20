@@ -20,11 +20,12 @@ import '../utils.dart';
 /// messages are printed using `print()`.
 // package:test will only send a `Map` across this channel, but users of
 // `hybridMain` can send any json encodeable type.
-final _transformer = StreamChannelTransformer<dynamic, dynamic>(
-    StreamTransformer.fromHandlers(handleData: (message, sink) {
+final _transformer = StreamChannelTransformer<Object, Object>(
+    StreamTransformer.fromHandlers(handleData: (event, sink) {
+  final message = event as Map<dynamic, dynamic>;
   switch (message['type'] as String) {
     case 'data':
-      sink.add(message['data']);
+      sink.add(message['data'] as Object);
       break;
 
     case 'print':
@@ -148,7 +149,8 @@ StreamChannel spawnHybridCode(String dartCode,
 
 /// Like [spawnHybridUri], but doesn't take [Uri] objects.
 StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
-  var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
+  var channel =
+      Zone.current[#test.runner.test_channel] as MultiChannel<Object>?;
   if (channel == null) {
     throw UnsupportedError("Can't connect to the test runner.\n"
         'spawnHybridUri() is currently only supported within "pub run test".');
@@ -157,7 +159,7 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   ensureJsonEncodable(message);
 
   var virtualChannel = channel.virtualChannel();
-  StreamChannel isolateChannel = virtualChannel;
+  StreamChannel<Object> isolateChannel = virtualChannel;
   channel.sink.add({
     'type': 'spawn-hybrid-uri',
     'url': uri,
@@ -166,7 +168,7 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   });
 
   if (!stayAlive) {
-    var disconnector = Disconnector();
+    var disconnector = Disconnector<Object>();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }
