@@ -1,3 +1,7 @@
+## 1.15.7 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
 ## 1.15.6 (Backport)
 
 * Support `package:analyzer` version `0.41.x`.
