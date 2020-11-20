@@ -57,6 +57,10 @@
 
 * Migrate to null safety.
 
+## 0.3.11+3 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
+
 ## 0.3.11+2 (Backport)
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
