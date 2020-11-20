@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.11
+
+* Make the `StreamChannel` returned by `serializeSuite` use non-nullable events.
+
 ## 0.3.12-nullsafety.10
 
 * Allow `package:analyzer` version `0.41.x`.

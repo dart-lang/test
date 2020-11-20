@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.12-dev
+
+* Fix failures trying to run tests on the `node` platform.
+
 ## 1.16.0-nullsafety.11
 
 * Set up a stack trace mapper in precompiled mode if source maps exist. If

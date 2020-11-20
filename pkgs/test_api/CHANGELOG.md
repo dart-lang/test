@@ -1,3 +1,8 @@
+## 0.2.19-nullsafety.7-dev
+
+* Make the `StreamChannel` returned by `RemoteListener.start` use non-nullable
+  events.
+
 ## 0.2.19-nullsafety.6
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
