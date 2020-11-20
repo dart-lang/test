@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.11
+
+* Fix `spawnHybridUri` on windows.
+
 ## 0.3.12-nullsafety.10
 
 * Allow `package:analyzer` version `0.41.x`.
