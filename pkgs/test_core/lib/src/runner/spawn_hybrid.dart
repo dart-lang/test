@@ -86,7 +86,7 @@ StreamChannel /*!*/ spawnHybridUri(
 /// Normalizes [url] to an absolute url, or returns it as is if it has a
 /// scheme.
 ///
-/// Follows the rules for relatives/absolute paths outlit
+/// Follows the rules for relative/absolute paths outlined in [spawnHybridUri].
 String _normalizeUrl(String url, Suite suite) {
   final parsedUri = Uri.parse(url);
 
@@ -125,7 +125,7 @@ Future<String> _languageVersionCommentFor(String url) async {
   // Returns the explicit language version comment if one exists.
   var result = parseString(
       content: await _readUri(parsedUri),
-      path: parsedUri.path,
+      path: parsedUri.scheme == 'data' ? null : p.fromUri(parsedUri),
       throwIfDiagnostics: false);
   var languageVersionComment = result.unit.languageVersionToken?.value();
   if (languageVersionComment != null) return languageVersionComment.toString();

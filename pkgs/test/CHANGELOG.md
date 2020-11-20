@@ -1,5 +1,6 @@
-## 1.16.0-nullsafety.12-dev
+## 1.16.0-nullsafety.12
 
+* Fix `spawnHybridUri` on windows.
 * Fix failures running tests on the `node` platform.
 
 ## 1.16.0-nullsafety.11
