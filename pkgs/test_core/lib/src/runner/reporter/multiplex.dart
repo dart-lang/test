@@ -10,13 +10,6 @@ class MultiplexReporter implements Reporter {
   MultiplexReporter(this.delegates);
 
   @override
-  void cancel() {
-    for (var d in delegates) {
-      d.cancel();
-    }
-  }
-
-  @override
   void pause() {
     for (var d in delegates) {
       d.pause();

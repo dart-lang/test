@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 import 'dart:io';
@@ -119,17 +121,14 @@ class Loader {
   void _registerRuntimeOverrides() {
     for (var settings in _config.overrideRuntimes.values) {
       var runtime = _runtimesByIdentifier[settings.identifier];
-
-      // This is officially validated in [Configuration.validateRuntimes].
-      assert(runtime != null);
-
       _runtimeSettings.putIfAbsent(runtime, () => []).addAll(settings.settings);
     }
   }
 
   /// Returns the [Runtime] registered with this loader that's identified
   /// by [identifier], or `null` if none can be found.
-  Runtime findRuntime(String identifier) => _runtimesByIdentifier[identifier];
+  Runtime /*?*/ findRuntime(String identifier) =>
+      _runtimesByIdentifier[identifier];
 
   /// Loads all test suites in [dir] according to [suiteConfig].
   ///
@@ -142,14 +141,10 @@ class Loader {
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
     return StreamGroup.merge(
         Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File) return Stream.fromIterable([]);
-
-      if (!_config.filename.matches(p.basename(entry.path))) {
-        return Stream.fromIterable([]);
-      }
-
-      if (p.split(entry.path).contains('packages')) {
-        return Stream.fromIterable([]);
+      if (entry is! File ||
+          !_config.filename.matches(p.basename(entry.path)) ||
+          p.split(entry.path).contains('packages')) {
+        return Stream.empty();
       }
 
       return loadFile(entry.path, suiteConfig);
@@ -231,7 +226,7 @@ class Loader {
                 {'platformVariables': _runtimeVariables.toList()});
             if (suite != null) _suites.add(suite);
             return suite;
-          } catch (error, stackTrace) {
+          } on Object catch (error, stackTrace) {
             if (retriesLeft > 0) {
               retriesLeft--;
               print('Retrying load of $path in 1s ($retriesLeft remaining)');

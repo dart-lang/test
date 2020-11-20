@@ -1,6 +1,8 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
@@ -23,6 +25,7 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
@@ -256,6 +259,8 @@ class BrowserPlatform extends PlatformPlugin
       if (browser.isJS) {
         if (suiteConfig.precompiledPath == null) {
           await _compileSuite(path, suiteConfig);
+        } else {
+          await _addPrecompiledStackTraceMapper(path, suiteConfig);
         }
       }
 
@@ -405,6 +410,20 @@ class BrowserPlatform extends PlatformPlugin
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
           packageMap: (await currentPackageConfig).toPackageMap());
     });
+  }
+
+  Future<void> _addPrecompiledStackTraceMapper(
+      String dartPath, SuiteConfiguration suiteConfig) async {
+    if (suiteConfig.jsTrace) return;
+    var mapPath = p.join(
+        suiteConfig.precompiledPath, dartPath + '.browser_test.dart.js.map');
+    var mapFile = File(mapPath);
+    if (mapFile.existsSync()) {
+      _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),
+          mapUrl: p.toUri(mapPath),
+          sdkRoot: Uri.parse(r'/packages/$sdk'),
+          packageMap: (await currentPackageConfig).toPackageMap());
+    }
   }
 
   /// Returns the [BrowserManager] for [runtime], which should be a browser.
