@@ -17,8 +17,8 @@ external void _postParentMessage(Object message, String targetOrigin);
 
 /// Constructs a [StreamChannel] wrapping [MessageChannel] communication with
 /// the host page.
-StreamChannel<Object?> postMessageChannel() {
-  var controller = StreamChannelController<Object?>(sync: true);
+StreamChannel<Object> postMessageChannel() {
+  var controller = StreamChannelController<Object>(sync: true);
 
   // Listen for a message from the host that transfers a message port. Using
   // `firstWhere` automatically unsubscribes from further messages. This is
@@ -33,7 +33,10 @@ StreamChannel<Object?> postMessageChannel() {
   }).then((message) {
     var port = message.ports.first;
     var portSubscription = port.onMessage.listen((message) {
-      controller.local.sink.add(message.data);
+      var data = message.data;
+      if (data is Object) {
+        controller.local.sink.add(data);
+      }
     });
 
     controller.local.stream.listen((data) {
