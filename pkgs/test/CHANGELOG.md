@@ -2,6 +2,7 @@
 
 * Fix `spawnHybridUri` on windows.
 * Fix failures running tests on the `node` platform.
+* Allow `package:yaml` version `3.x.x`.
 
 ## 1.16.0-nullsafety.11
 
