@@ -125,7 +125,7 @@ Future<String> _languageVersionCommentFor(String url) async {
   // Returns the explicit language version comment if one exists.
   var result = parseString(
       content: await _readUri(parsedUri),
-      path: p.fromUri(parsedUri),
+      path: parsedUri.scheme == 'data' ? null : p.fromUri(parsedUri),
       throwIfDiagnostics: false);
   var languageVersionComment = result.unit.languageVersionToken?.value();
   if (languageVersionComment != null) return languageVersionComment.toString();
