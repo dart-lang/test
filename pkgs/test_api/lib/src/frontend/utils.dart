@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 /// Returns a [Future] that completes after the [event loop][] has run the given
 /// number of [times] (20 by default).
 ///
