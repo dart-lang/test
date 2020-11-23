@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -96,16 +97,41 @@ Future<TestProcess> runTest(Iterable<String> args,
 /// Runs Dart.
 ///
 /// If [packageConfig] is provided then that is passed for the `--packages`
-/// arg, otherwise the current isolate config is passed.
+/// arg, otherwise the package config from the test descriptor dir is used.
+///
+/// If no package config exists in the sandbox dir, one is created based off
+/// of the current config, with an extra package entry added for the sandbox
+/// dir. The language version for that package will match the package:test
+/// language version.
 Future<TestProcess> runDart(Iterable<String> args,
     {Map<String, String> environment,
     String description,
     bool forwardStdio = false,
     String packageConfig}) async {
+  if (packageConfig == null) {
+    var sandboxConfig =
+        File(p.join(d.sandbox, '.dart_tool', 'package_config.json'));
+    if (!await sandboxConfig.exists()) {
+      var isolateConfig =
+          await loadPackageConfigUri(await Isolate.packageConfig);
+      var newConfig = PackageConfig([
+        ...isolateConfig.packages,
+        Package('_test_pkg', Uri.file('${d.sandbox}/'),
+            packageUriRoot: Uri(path: 'lib/'),
+            languageVersion: isolateConfig.packages
+                .firstWhere((p) => p.name == 'test')
+                .languageVersion),
+      ]);
+      await Directory(p.join(d.sandbox, '.dart_tool')).create();
+      await savePackageConfig(newConfig, Directory(d.sandbox));
+    }
+    packageConfig = sandboxConfig.path;
+  }
+
   var allArgs = <String>[
     ...Platform.executableArguments.where((arg) =>
         !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
-    '--packages=${packageConfig ?? await Isolate.packageConfig}',
+    '--packages=${packageConfig}',
     ...args
   ];
 
