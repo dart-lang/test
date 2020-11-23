@@ -2,6 +2,9 @@
 self_validate: analyze_and_format
 
 github:
+  env:
+    FORCE_TEST_EXIT: true
+
 travis:
   addons:
     chrome: stable

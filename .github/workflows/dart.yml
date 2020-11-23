@@ -1,4 +1,4 @@
-# Created with package:mono_repo v3.1.0-beta.4
+# Created with package:mono_repo v3.1.0-beta.5-dev
 name: Dart CI
 on:
   push:
@@ -11,6 +11,7 @@ defaults:
     shell: bash
 env:
   PUB_ENVIRONMENT: bot.github
+  FORCE_TEST_EXIT: true
 
 jobs:
   job_001:
@@ -23,7 +24,7 @@ jobs:
           version: latest
       - run: dart --version
       - uses: actions/checkout@v2
-      - run: pub global activate mono_repo 3.1.0-beta.4
+      - run: pub global activate mono_repo 3.1.0-beta.5-dev
       - run: pub global run mono_repo generate --validate
   job_002:
     name: "OS: linux; SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: [`dartfmt -n --set-exit-if-changed .`, `dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .`]"
