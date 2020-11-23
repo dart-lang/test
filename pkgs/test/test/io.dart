@@ -108,25 +108,7 @@ Future<TestProcess> runDart(Iterable<String> args,
     String description,
     bool forwardStdio = false,
     String packageConfig}) async {
-  if (packageConfig == null) {
-    var sandboxConfig =
-        File(p.join(d.sandbox, '.dart_tool', 'package_config.json'));
-    if (!await sandboxConfig.exists()) {
-      var isolateConfig =
-          await loadPackageConfigUri(await Isolate.packageConfig);
-      var newConfig = PackageConfig([
-        ...isolateConfig.packages,
-        Package('_test_pkg', Uri.file('${d.sandbox}/'),
-            packageUriRoot: Uri(path: 'lib/'),
-            languageVersion: isolateConfig.packages
-                .firstWhere((p) => p.name == 'test')
-                .languageVersion),
-      ]);
-      await Directory(p.join(d.sandbox, '.dart_tool')).create();
-      await savePackageConfig(newConfig, Directory(d.sandbox));
-    }
-    packageConfig = sandboxConfig.path;
-  }
+  packageConfig ??= await ensureSandboxPackageConfig();
 
   var allArgs = <String>[
     ...Platform.executableArguments.where((arg) =>
@@ -172,4 +154,28 @@ Future<TestProcess> runPubServe(
   _pubServePort = int.parse(match[1]);
 
   return pub;
+}
+
+/// Returns the path to the package config under the test descriptor sandbox
+/// directory, creating one if it does not exist.
+///
+/// Generated configs will have an extra entry for the sandbox dir, which has a
+/// language version equal to that of package:test.
+Future<String> ensureSandboxPackageConfig() async {
+  var sandboxConfig =
+      File(p.join(d.sandbox, '.dart_tool', 'package_config.json'));
+  if (!await sandboxConfig.exists()) {
+    var isolateConfig = await loadPackageConfigUri(await Isolate.packageConfig);
+    var newConfig = PackageConfig([
+      ...isolateConfig.packages,
+      Package('_test_pkg', Uri.file('${d.sandbox}/'),
+          packageUriRoot: Uri(path: 'lib/'),
+          languageVersion: isolateConfig.packages
+              .firstWhere((p) => p.name == 'test')
+              .languageVersion),
+    ]);
+    await Directory(p.join(d.sandbox, '.dart_tool')).create();
+    await savePackageConfig(newConfig, Directory(d.sandbox));
+  }
+  return sandboxConfig.path;
 }

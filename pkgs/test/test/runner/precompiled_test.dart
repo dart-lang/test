@@ -3,19 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
 import 'package:node_preamble/preamble.dart' as preamble;
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
 import 'package:test_core/src/util/io.dart';
 import 'package:test/test.dart';
-import 'package:test/src/util/package_map.dart';
 
 import '../io.dart';
 
@@ -52,7 +49,7 @@ void main() {
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
-            '--packages=${await Isolate.packageConfig}',
+            '--packages=${await ensureSandboxPackageConfig()}',
             'to_precompile.dart',
             '--out=precompiled/test.dart.browser_test.dart.js'
           ],
@@ -103,13 +100,12 @@ void main() {
             }));
           }''')
       ]).create();
-      await _writePackagesFile();
 
       var jsPath = p.join(d.sandbox, 'test', 'test.dart.node_test.dart.js');
       var dart2js = await TestProcess.start(
           p.join(sdkDir, 'bin', 'dart2js'),
           [
-            '--packages=${await Isolate.packageConfig}',
+            '--packages=${await ensureSandboxPackageConfig()}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',
           ],
@@ -177,7 +173,6 @@ void main() {
           }
         '''),
       ]).create();
-      await _writePackagesFile();
     });
 
     test('run in the precompiled directory', () async {
@@ -231,21 +226,4 @@ void main() {
       await test.shouldExit(0);
     });
   });
-}
-
-Future<Null> _writePackagesFile() async {
-  var config = await findPackageConfig(Directory.current);
-  // TODO: remove try/catch when this issue is resolved:
-  // https://github.com/dart-lang/package_config/issues/66
-  try {
-    await savePackageConfig(config, Directory(d.sandbox));
-  } catch (_) {
-    // If it fails, just write a `.packages` file.
-    var packageMap = config.toPackageMap();
-    var packagesFileContent = StringBuffer();
-    packageMap.forEach((package, location) {
-      packagesFileContent.writeln('$package:$location');
-    });
-    await d.file('.packages', '$packagesFileContent').create();
-  }
 }
