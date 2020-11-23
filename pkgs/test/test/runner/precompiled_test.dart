@@ -4,7 +4,6 @@
 
 @TestOn('vm')
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:path/path.dart' as p;
