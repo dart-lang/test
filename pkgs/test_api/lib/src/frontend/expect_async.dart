@@ -48,7 +48,7 @@ class _ExpectedFunction<T> {
   ///
   /// This may be `null`. If so, the function is considered to be done after
   /// it's been run once.
-  final bool Function() _isDone;
+  final bool Function()? _isDone;
 
   /// A descriptive name for the function.
   final String _id;
@@ -62,13 +62,13 @@ class _ExpectedFunction<T> {
   int _actualCalls = 0;
 
   /// The test invoker in which this function was wrapped.
-  Invoker get _invoker => _zone[#test.invoker] as Invoker;
+  Invoker? get _invoker => _zone[#test.invoker] as Invoker?;
 
   /// The zone in which this function was wrapped.
   final Zone _zone;
 
   /// Whether this function has been called the requisite number of times.
-  bool _complete;
+  late bool _complete;
 
   /// Wraps [callback] in a function that asserts that it's called at least
   /// [minExpected] times and no more than [maxExpected] times.
@@ -77,7 +77,7 @@ class _ExpectedFunction<T> {
   /// as a reason it's expected to be called. If [isDone] is passed, the test
   /// won't be allowed to complete until it returns `true`.
   _ExpectedFunction(Function callback, int minExpected, int maxExpected,
-      {String id, String reason, bool Function() isDone})
+      {String? id, String? reason, bool Function()? isDone})
       : _callback = callback,
         _minExpectedCalls = minExpected,
         _maxExpectedCalls =
@@ -94,7 +94,7 @@ class _ExpectedFunction<T> {
     }
 
     if (isDone != null || minExpected > 0) {
-      _invoker.addOutstandingCallback();
+      _invoker!.addOutstandingCallback();
       _complete = false;
     } else {
       _complete = true;
@@ -105,7 +105,7 @@ class _ExpectedFunction<T> {
   ///
   /// If [id] is passed, uses that. Otherwise, tries to determine a name from
   /// calling `toString`. If no name can be found, returns the empty string.
-  static String _makeCallbackId(String id, Function callback) {
+  static String _makeCallbackId(String? id, Function callback) {
     if (id != null) return '$id ';
 
     // If the callback is not an anonymous closure, try to get the
@@ -132,7 +132,7 @@ class _ExpectedFunction<T> {
     if (_callback is Function(Null)) return max1;
     if (_callback is Function()) return max0;
 
-    _invoker.removeOutstandingCallback();
+    _invoker!.removeOutstandingCallback();
     throw ArgumentError(
         'The wrapped function has more than 6 required arguments');
   }
@@ -141,38 +141,38 @@ class _ExpectedFunction<T> {
   // argument count of zero.
   T max0() => max6();
 
-  T max1([Object a0 = placeholder]) => max6(a0);
+  T max1([Object? a0 = placeholder]) => max6(a0);
 
-  T max2([Object a0 = placeholder, Object a1 = placeholder]) => max6(a0, a1);
+  T max2([Object? a0 = placeholder, Object? a1 = placeholder]) => max6(a0, a1);
 
   T max3(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder]) =>
       max6(a0, a1, a2);
 
   T max4(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder,
-          Object a3 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder,
+          Object? a3 = placeholder]) =>
       max6(a0, a1, a2, a3);
 
   T max5(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder,
-          Object a3 = placeholder,
-          Object a4 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder,
+          Object? a3 = placeholder,
+          Object? a4 = placeholder]) =>
       max6(a0, a1, a2, a3, a4);
 
   T max6(
-          [Object a0 = placeholder,
-          Object a1 = placeholder,
-          Object a2 = placeholder,
-          Object a3 = placeholder,
-          Object a4 = placeholder,
-          Object a5 = placeholder]) =>
+          [Object? a0 = placeholder,
+          Object? a1 = placeholder,
+          Object? a2 = placeholder,
+          Object? a3 = placeholder,
+          Object? a4 = placeholder,
+          Object? a5 = placeholder]) =>
       _run([a0, a1, a2, a3, a4, a5].where((a) => a != placeholder));
 
   /// Runs the wrapped function with [args] and returns its return value.
@@ -182,9 +182,9 @@ class _ExpectedFunction<T> {
     // pass it to the invoker anyway.
     try {
       _actualCalls++;
-      if (_invoker.liveTest.state.shouldBeDone) {
+      if (_invoker!.liveTest.state.shouldBeDone) {
         throw 'Callback ${_id}called ($_actualCalls) after test case '
-            '${_invoker.liveTest.test.name} had already completed.$_reason';
+            '${_invoker!.liveTest.test.name} had already completed.$_reason';
       } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {
         throw TestFailure('Callback ${_id}called more times than expected '
             '($_maxExpectedCalls).$_reason');
@@ -200,12 +200,12 @@ class _ExpectedFunction<T> {
   void _afterRun() {
     if (_complete) return;
     if (_minExpectedCalls > 0 && _actualCalls < _minExpectedCalls) return;
-    if (_isDone != null && !_isDone()) return;
+    if (_isDone != null && !_isDone!()) return;
 
     // Mark this callback as complete and remove it from the test case's
     // oustanding callback count; if that hits zero the test is done.
     _complete = true;
-    _invoker.removeOutstandingCallback();
+    _invoker!.removeOutstandingCallback();
   }
 }
 
@@ -215,7 +215,7 @@ class _ExpectedFunction<T> {
 /// [expectAsync6] instead.
 @Deprecated('Will be removed in 0.13.0')
 Function expectAsync(Function callback,
-    {int count = 1, int max = 0, String id, String reason}) {
+    {int count = 1, int max = 0, String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync() may only be called within a test.');
   }
@@ -245,7 +245,7 @@ Function expectAsync(Function callback,
 /// [expectAsync1], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func0<T> expectAsync0<T>(T Function() callback,
-    {int count = 1, int max = 0, String id, String reason}) {
+    {int count = 1, int max = 0, String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync0() may only be called within a test.');
   }
@@ -276,7 +276,7 @@ Func0<T> expectAsync0<T>(T Function() callback,
 /// [expectAsync0], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func1<T, A> expectAsync1<T, A>(T Function(A) callback,
-    {int count = 1, int max = 0, String id, String reason}) {
+    {int count = 1, int max = 0, String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync1() may only be called within a test.');
   }
@@ -307,7 +307,7 @@ Func1<T, A> expectAsync1<T, A>(T Function(A) callback,
 /// [expectAsync0], [expectAsync1], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func2<T, A, B> expectAsync2<T, A, B>(T Function(A, B) callback,
-    {int count = 1, int max = 0, String id, String reason}) {
+    {int count = 1, int max = 0, String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync2() may only be called within a test.');
   }
@@ -338,7 +338,7 @@ Func2<T, A, B> expectAsync2<T, A, B>(T Function(A, B) callback,
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func3<T, A, B, C> expectAsync3<T, A, B, C>(T Function(A, B, C) callback,
-    {int count = 1, int max = 0, String id, String reason}) {
+    {int count = 1, int max = 0, String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync3() may only be called within a test.');
   }
@@ -372,8 +372,8 @@ Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(
     T Function(A, B, C, D) callback,
     {int count = 1,
     int max = 0,
-    String id,
-    String reason}) {
+    String? id,
+    String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync4() may only be called within a test.');
   }
@@ -407,8 +407,8 @@ Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
     T Function(A, B, C, D, E) callback,
     {int count = 1,
     int max = 0,
-    String id,
-    String reason}) {
+    String? id,
+    String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync5() may only be called within a test.');
   }
@@ -442,8 +442,8 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
     T Function(A, B, C, D, E, F) callback,
     {int count = 1,
     int max = 0,
-    String id,
-    String reason}) {
+    String? id,
+    String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsync6() may only be called within a test.');
   }
@@ -458,7 +458,7 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
 /// [expectAsyncUntil5], or [expectAsyncUntil6] instead.
 @Deprecated('Will be removed in 0.13.0')
 Function expectAsyncUntil(Function callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil() may only be called within a test.');
   }
@@ -486,7 +486,7 @@ Function expectAsyncUntil(Function callback, bool Function() isDone,
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func0<T> expectAsyncUntil0<T>(T Function() callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil0() may only be called within a test.');
   }
@@ -515,7 +515,7 @@ Func0<T> expectAsyncUntil0<T>(T Function() callback, bool Function() isDone,
 /// callbacks with different arity.
 Func1<T, A> expectAsyncUntil1<T, A>(
     T Function(A) callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil1() may only be called within a test.');
   }
@@ -544,7 +544,7 @@ Func1<T, A> expectAsyncUntil1<T, A>(
 /// callbacks with different arity.
 Func2<T, A, B> expectAsyncUntil2<T, A, B>(
     T Function(A, B) callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil2() may only be called within a test.');
   }
@@ -573,7 +573,7 @@ Func2<T, A, B> expectAsyncUntil2<T, A, B>(
 /// callbacks with different arity.
 Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
     T Function(A, B, C) callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil3() may only be called within a test.');
   }
@@ -602,7 +602,7 @@ Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
 /// callbacks with different arity.
 Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
     T Function(A, B, C, D) callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil4() may only be called within a test.');
   }
@@ -631,7 +631,7 @@ Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
 /// callbacks with different arity.
 Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
     T Function(A, B, C, D, E) callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil5() may only be called within a test.');
   }
@@ -660,7 +660,7 @@ Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
 /// callbacks with different arity.
 Func6<T, A, B, C, D, E, F> expectAsyncUntil6<T, A, B, C, D, E, F>(
     T Function(A, B, C, D, E, F) callback, bool Function() isDone,
-    {String id, String reason}) {
+    {String? id, String? reason}) {
   if (Invoker.current == null) {
     throw StateError('expectAsyncUntil() may only be called within a test.');
   }

@@ -17,6 +17,6 @@ final _defaultFormatter = StackTraceFormatter();
 ///
 /// If [verbose] is `true`, this doesn't fold out irrelevant stack frames. It
 /// defaults to the current test's `verbose_trace` configuration.
-Chain formatStackTrace(StackTrace stackTrace, {bool verbose}) =>
+Chain formatStackTrace(StackTrace stackTrace, {bool? verbose}) =>
     (StackTraceFormatter.current ?? _defaultFormatter)
         .formatStackTrace(stackTrace, verbose: verbose);

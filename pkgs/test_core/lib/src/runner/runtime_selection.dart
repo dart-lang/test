@@ -12,7 +12,7 @@ class RuntimeSelection {
   /// The location in the configuration file of this runtime string, or `null`
   /// if it was defined outside a configuration file (for example, on the
   /// command line).
-  final SourceSpan span;
+  final SourceSpan? span;
 
   RuntimeSelection(this.name, [this.span]);
 

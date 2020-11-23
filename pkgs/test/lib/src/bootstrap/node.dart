@@ -11,8 +11,8 @@ import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implemen
 void internalBootstrapNodeTest(Function Function() getMain) {
   var channel = serializeSuite(getMain, beforeLoad: () async {
     var serialized = await suiteChannel('test.node.mapper').stream.first;
-    if (serialized == null || serialized is! Map) return;
-    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized as Map));
+    if (serialized is! Map) return;
+    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });
   socketChannel().pipe(channel);
 }

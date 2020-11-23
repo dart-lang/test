@@ -1,6 +1,8 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 import 'dart:developer';
@@ -25,7 +27,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/dart.dart' as dart;
-import '../../util/io.dart';
+import '../package_version.dart';
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -54,8 +56,8 @@ class VMPlatform extends PlatformPlugin {
       rethrow;
     }
 
-    VmService client;
-    StreamSubscription<Event> eventSub;
+    VmService /*?*/ client;
+    StreamSubscription<Event> /*?*/ eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
       isolate.kill();
@@ -64,15 +66,11 @@ class VMPlatform extends PlatformPlugin {
       sink.close();
     }));
 
-    Environment environment;
-    IsolateRef isolateRef;
+    Environment /*?*/ environment;
+    IsolateRef /*?*/ isolateRef;
     if (_config.debug) {
-      // Print an empty line because the VM prints an "Observatory listening on"
-      // line and we don't want that to end up on the same line as the reporter
-      // info.
-      if (_config.reporter == 'compact') stdout.writeln();
-
-      var info = await Service.controlWebServer(enable: true);
+      var info =
+          await Service.controlWebServer(enable: true, silenceOutput: true);
       var isolateID = Service.getIsolateID(isolate);
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
@@ -135,15 +133,12 @@ Future<Isolate> _spawnDataIsolate(
     ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
 
-    import "package:stream_channel/isolate_channel.dart";
-
-    import "package:test_core/src/runner/plugin/remote_platform_helpers.dart";
+    import "package:test_core/src/bootstrap/vm.dart";
 
     import "${p.toUri(p.absolute(path))}" as test;
 
-    void main(_, SendPort message) {
-      var channel = serializeSuite(() => test.main);
-      IsolateChannel.connectSend(message).pipe(channel);
+    void main(_, SendPort sendPort) {
+      internalBootstrapVmTest(() => test.main, sendPort);
     }
   ''', message);
 }

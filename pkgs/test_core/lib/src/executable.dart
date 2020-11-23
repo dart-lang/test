@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 import 'dart:io';
@@ -18,7 +20,7 @@ import 'runner.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-StreamSubscription signalSubscription;
+StreamSubscription /*?*/ signalSubscription;
 bool isShutdown = false;
 
 /// Returns the path to the global test configuration file.
@@ -135,7 +137,7 @@ Future<void> _execute(List<String> args) async {
     return;
   }
 
-  Runner runner;
+  Runner /*?*/ runner;
 
   signalSubscription ??= _signals.listen((signal) async {
     completeShutdown();
@@ -178,7 +180,7 @@ Future<void> _execute(List<String> args) async {
 ///
 /// If [error] is passed, it's used in place of the usage message and the whole
 /// thing is printed to stderr instead of stdout.
-void _printUsage([String error]) {
+void _printUsage([String /*?*/ error]) {
   var output = stdout;
 
   var message = 'Runs tests in this package.';

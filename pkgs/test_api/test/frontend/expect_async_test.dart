@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test/test.dart';
@@ -168,8 +166,8 @@ void main() {
     test(
         "won't allow the test to complete until it's called at least that "
         'many times', () async {
-      LiveTest liveTest;
-      Future future;
+      late LiveTest liveTest;
+      late Future future;
       liveTest = createTest(() {
         var callback = expectAsync0(() {}, count: 3);
 
@@ -267,8 +265,8 @@ void main() {
   group('expectAsyncUntil()', () {
     test("won't allow the test to complete until isDone returns true",
         () async {
-      LiveTest liveTest;
-      Future future;
+      late LiveTest liveTest;
+      late Future future;
       liveTest = createTest(() {
         var done = false;
         var callback = expectAsyncUntil0(() {}, () => done);

@@ -55,23 +55,23 @@ class RunnerSuite extends Suite {
   /// debugging mode and doesn't support suite channels.
   factory RunnerSuite(Environment environment, SuiteConfiguration config,
       Group group, SuitePlatform platform,
-      {String path, Function() onClose}) {
+      {String? path, Function()? onClose}) {
     var controller =
         RunnerSuiteController._local(environment, config, onClose: onClose);
-    var suite = RunnerSuite._(controller, group, path, platform);
+    var suite = RunnerSuite._(controller, group, platform, path: path);
     controller._suite = Future.value(suite);
     return suite;
   }
 
-  RunnerSuite._(
-      this._controller, Group group, String path, SuitePlatform platform)
+  RunnerSuite._(this._controller, Group group, SuitePlatform platform,
+      {String? path})
       : super(group, platform, path: path);
 
   @override
   RunnerSuite filter(bool Function(Test) callback) {
     var filtered = group.filter(callback);
     filtered ??= Group.root([], metadata: metadata);
-    return RunnerSuite._(_controller, filtered, path, platform);
+    return RunnerSuite._(_controller, filtered, platform, path: path);
   }
 
   /// Closes the suite and releases any resources associated with it.
@@ -81,15 +81,20 @@ class RunnerSuite extends Suite {
   ///
   /// Result is suitable for input to the coverage formatters provided by
   /// `package:coverage`.
-  Future<Map<String, dynamic>> gatherCoverage() async =>
-      (await _controller._gatherCoverage?.call()) ?? {};
+  Future<Map<String, dynamic>> gatherCoverage() async {
+    // TODO(https://github.com/dart-lang/sdk/issues/41108): Remove cast
+    var coverage =
+        // ignore: unnecessary_cast
+        await _controller._gatherCoverage?.call() as Map<String, dynamic>?;
+    return coverage ?? {};
+  }
 }
 
 /// A class that exposes and controls a [RunnerSuite].
 class RunnerSuiteController {
   /// The suite controlled by this controller.
   Future<RunnerSuite> get suite => _suite;
-  Future<RunnerSuite> _suite;
+  late final Future<RunnerSuite> _suite;
 
   /// The backing value for [suite.environment].
   final Environment _environment;
@@ -98,10 +103,10 @@ class RunnerSuiteController {
   final SuiteConfiguration _config;
 
   /// A channel that communicates with the remote suite.
-  final MultiChannel _suiteChannel;
+  final MultiChannel? _suiteChannel;
 
   /// The function to call when the suite is closed.
-  final Function() _onClose;
+  final Function()? _onClose;
 
   /// The backing value for [suite.isDebugging].
   bool _isDebugging = false;
@@ -113,24 +118,24 @@ class RunnerSuiteController {
   final _channelNames = <String>{};
 
   /// Collects a hit-map containing merged coverage.
-  final Future<Map<String, dynamic>> Function() _gatherCoverage;
+  final Future<Map<String, dynamic>> Function()? _gatherCoverage;
 
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
       Future<Group> groupFuture, SuitePlatform platform,
-      {String path,
-      Function() onClose,
-      Future<Map<String, dynamic>> Function() gatherCoverage})
+      {String? path,
+      Function()? onClose,
+      Future<Map<String, dynamic>> Function()? gatherCoverage})
       : _onClose = onClose,
         _gatherCoverage = gatherCoverage {
-    _suite =
-        groupFuture.then((group) => RunnerSuite._(this, group, path, platform));
+    _suite = groupFuture
+        .then((group) => RunnerSuite._(this, group, platform, path: path));
   }
 
   /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
   /// an external source.
   RunnerSuiteController._local(this._environment, this._config,
-      {Function() onClose,
-      Future<Map<String, dynamic>> Function() gatherCoverage})
+      {Function()? onClose,
+      Future<Map<String, dynamic>> Function()? gatherCoverage})
       : _suiteChannel = null,
         _onClose = onClose,
         _gatherCoverage = gatherCoverage;
@@ -159,8 +164,13 @@ class RunnerSuiteController {
       throw StateError('Duplicate RunnerSuite.channel() connection "$name".');
     }
 
-    var channel = _suiteChannel.virtualChannel();
-    _suiteChannel.sink
+    var suiteChannel = _suiteChannel;
+    if (suiteChannel == null) {
+      throw StateError('No suite channel set up but one was requested.');
+    }
+
+    var channel = suiteChannel.virtualChannel();
+    suiteChannel.sink
         .add({'type': 'suiteChannel', 'name': name, 'id': channel.id});
     return channel;
   }
@@ -168,7 +178,8 @@ class RunnerSuiteController {
   /// The backing function for [suite.close].
   Future _close() => _closeMemo.runOnce(() async {
         await _onDebuggingController.close();
-        if (_onClose != null) await _onClose();
+        var onClose = _onClose;
+        if (onClose != null) await onClose();
       });
   final _closeMemo = AsyncMemoizer();
 }

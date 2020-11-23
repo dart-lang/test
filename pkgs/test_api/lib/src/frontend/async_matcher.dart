@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:matcher/matcher.dart';
 
 import '../backend/invoker.dart';
@@ -37,12 +35,12 @@ abstract class AsyncMatcher extends Matcher {
         reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is Future) {
-      Invoker.current.addOutstandingCallback();
+      Invoker.current!.addOutstandingCallback();
       result.then((realResult) {
         if (realResult != null) {
           fail(formatFailure(this, item, realResult as String));
         }
-        Invoker.current.removeOutstandingCallback();
+        Invoker.current!.removeOutstandingCallback();
       });
     } else if (result is String) {
       matchState[this] = result;

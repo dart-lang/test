@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:stream_channel/stream_channel.dart';
 
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
@@ -56,7 +54,7 @@ abstract class PlatformPlugin {
   /// Subclasses overriding this method must call [deserializeSuite] in
   /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
   /// pass the opaque [message] parameter to the [deserializeSuite] call.
-  Future<RunnerSuite> load(String path, SuitePlatform platform,
+  Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message);
 
   Future closeEphemeral() async {}

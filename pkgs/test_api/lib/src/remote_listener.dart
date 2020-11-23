@@ -26,7 +26,7 @@ class RemoteListener {
   final Suite _suite;
 
   /// The zone to forward prints to, or `null` if prints shouldn't be forwarded.
-  final Zone _printZone;
+  final Zone? _printZone;
 
   /// Extracts metadata about all the tests in the function returned by
   /// [getMain] and returns a channel that will send information about them.
@@ -44,14 +44,13 @@ class RemoteListener {
   ///
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
-  static StreamChannel start(Function Function() getMain,
-      {bool hidePrints = true, Future Function() beforeLoad}) {
-    // This has to be synchronous to work around sdk#25745. Otherwise, there'll
-    // be an asynchronous pause before a syntax error notification is sent,
-    // which will cause the send to fail entirely.
+  static StreamChannel<Object?> start(Function Function() getMain,
+      {bool hidePrints = true, Future Function()? beforeLoad}) {
+    // Synchronous in order to allow `print` output to show up immediately, even
+    // if they are followed by long running synchronous work.
     var controller =
-        StreamChannelController<Object>(allowForeignErrors: false, sync: true);
-    var channel = MultiChannel(controller.local);
+        StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
+    var channel = MultiChannel<Object?>(controller.local);
 
     var verboseChain = true;
 
@@ -63,8 +62,8 @@ class RemoteListener {
 
     SuiteChannelManager().asCurrent(() {
       StackTraceFormatter().asCurrent(() {
-        runZoned(() async {
-          dynamic main;
+        runZonedGuarded(() async {
+          Function? main;
           try {
             main = getMain();
           } on NoSuchMethodError catch (_) {
@@ -76,32 +75,28 @@ class RemoteListener {
             return;
           }
 
-          if (main is! Function) {
-            _sendLoadException(
-                channel, 'Top-level main getter is not a function.');
-            return;
-          } else if (main is! Function()) {
+          if (main is! Function()) {
             _sendLoadException(
                 channel, 'Top-level main() function takes arguments.');
             return;
           }
 
           var queue = StreamQueue(channel.stream);
-          var message = await queue.next;
+          var message = await queue.next as Map;
           assert(message['type'] == 'initial');
 
-          queue.rest.listen((message) {
+          queue.rest.cast<Map>().listen((message) {
             if (message['type'] == 'close') {
               controller.local.sink.close();
               return;
             }
 
             assert(message['type'] == 'suiteChannel');
-            SuiteChannelManager.current.connectIn(message['name'] as String,
+            SuiteChannelManager.current!.connectIn(message['name'] as String,
                 channel.virtualChannel(message['id'] as int));
           });
 
-          if ((message['asciiGlyphs'] as bool) ?? false) glyph.ascii = true;
+          if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
           var metadata = Metadata.deserialize(message['metadata']);
           verboseChain = metadata.verboseTrace;
           var declarer = Declarer(
@@ -110,17 +105,16 @@ class RemoteListener {
                   Set.from(message['platformVariables'] as Iterable),
               collectTraces: message['collectTraces'] as bool,
               noRetry: message['noRetry'] as bool);
-
-          StackTraceFormatter.current.configure(
+          StackTraceFormatter.current!.configure(
               except: _deserializeSet(message['foldTraceExcept'] as List),
               only: _deserializeSet(message['foldTraceOnly'] as List));
 
           if (beforeLoad != null) await beforeLoad();
 
-          await declarer.declare(main as Function());
+          await declarer.declare(main);
 
-          var suite = Suite(
-              declarer.build(), SuitePlatform.deserialize(message['platform']),
+          var suite = Suite(declarer.build(),
+              SuitePlatform.deserialize(message['platform'] as Object),
               path: message['path'] as String);
 
           runZoned(() {
@@ -131,8 +125,7 @@ class RemoteListener {
               // useful errors when calling `test()` and `group()` within a test,
               // and so they can add to the declarer's `tearDownAll()` list.
               zoneValues: {#test.declarer: declarer});
-          // ignore: deprecated_member_use
-        }, onError: (error, StackTrace stackTrace) {
+        }, (error, stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
         }, zoneSpecification: spec);
       });
@@ -141,8 +134,9 @@ class RemoteListener {
     return controller.foreign;
   }
 
-  /// Returns a [Set] from a JSON serialized list of strings.
-  static Set<String> _deserializeSet(List list) {
+  /// Returns a [Set] from a JSON serialized list of strings, or `null` if the
+  /// list is empty or `null`.
+  static Set<String>? _deserializeSet(List? list) {
     if (list == null) return null;
     if (list.isEmpty) return null;
     return Set.from(list);
@@ -156,13 +150,13 @@ class RemoteListener {
   }
 
   /// Sends a message over [channel] indicating an error from user code.
-  static void _sendError(
-      StreamChannel channel, error, StackTrace stackTrace, bool verboseChain) {
+  static void _sendError(StreamChannel channel, Object error,
+      StackTrace stackTrace, bool verboseChain) {
     channel.sink.add({
       'type': 'error',
       'error': RemoteException.serialize(
           error,
-          StackTraceFormatter.current
+          StackTraceFormatter.current!
               .formatStackTrace(stackTrace, verbose: verboseChain))
     });
   }
@@ -203,7 +197,8 @@ class RemoteListener {
   ///
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
-  Map _serializeTest(MultiChannel channel, Test test, Iterable<Group> groups) {
+  Map? _serializeTest(
+      MultiChannel channel, Test? test, Iterable<Group>? groups) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
@@ -242,13 +237,13 @@ class RemoteListener {
         'type': 'error',
         'error': RemoteException.serialize(
             asyncError.error,
-            StackTraceFormatter.current.formatStackTrace(asyncError.stackTrace,
+            StackTraceFormatter.current!.formatStackTrace(asyncError.stackTrace,
                 verbose: liveTest.test.metadata.verboseTrace))
       });
     });
 
     liveTest.onMessage.listen((message) {
-      if (_printZone != null) _printZone.print(message.text);
+      if (_printZone != null) _printZone!.print(message.text);
       channel.sink.add({
         'type': 'message',
         'message-type': message.type.name,

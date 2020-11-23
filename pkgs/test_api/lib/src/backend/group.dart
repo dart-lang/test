@@ -20,42 +20,42 @@ class Group implements GroupEntry {
   final Metadata metadata;
 
   @override
-  final Trace trace;
+  final Trace? trace;
 
   /// The children of this group.
   final List<GroupEntry> entries;
 
   /// Returns a new root-level group.
-  Group.root(Iterable<GroupEntry> entries, {Metadata metadata})
-      : this(null, entries, metadata: metadata);
+  Group.root(Iterable<GroupEntry> entries, {Metadata? metadata})
+      : this('', entries, metadata: metadata);
 
   /// A test to run before all tests in the group.
   ///
   /// This is `null` if no `setUpAll` callbacks were declared.
-  final Test setUpAll;
+  final Test? setUpAll;
 
   /// A test to run after all tests in the group.
   ///
   /// This is `null` if no `tearDown` callbacks were declared.
-  final Test tearDownAll;
+  final Test? tearDownAll;
 
   /// The number of tests (recursively) in this group.
   int get testCount {
-    if (_testCount != null) return _testCount;
-    _testCount = entries.fold(
+    if (_testCount != null) return _testCount!;
+    _testCount = entries.fold<int>(
         0, (count, entry) => count + (entry is Group ? entry.testCount : 1));
-    return _testCount;
+    return _testCount!;
   }
 
-  int _testCount;
+  int? _testCount;
 
   Group(this.name, Iterable<GroupEntry> entries,
-      {Metadata metadata, this.trace, this.setUpAll, this.tearDownAll})
+      {Metadata? metadata, this.trace, this.setUpAll, this.tearDownAll})
       : entries = List<GroupEntry>.unmodifiable(entries),
         metadata = metadata ?? Metadata();
 
   @override
-  Group forPlatform(SuitePlatform platform) {
+  Group? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     var newMetadata = metadata.forPlatform(platform);
     var filtered = _map((entry) => entry.forPlatform(platform));
@@ -68,7 +68,7 @@ class Group implements GroupEntry {
   }
 
   @override
-  Group filter(bool Function(Test) callback) {
+  Group? filter(bool Function(Test) callback) {
     var filtered = _map((entry) => entry.filter(callback));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
     return Group(name, filtered,
@@ -81,10 +81,10 @@ class Group implements GroupEntry {
   /// Returns the entries of this group mapped using [callback].
   ///
   /// Any `null` values returned by [callback] will be removed.
-  List<GroupEntry> _map(GroupEntry Function(GroupEntry) callback) {
+  List<GroupEntry> _map(GroupEntry? Function(GroupEntry) callback) {
     return entries
         .map((entry) => callback(entry))
-        .where((entry) => entry != null)
+        .whereType<GroupEntry>()
         .toList();
   }
 }
