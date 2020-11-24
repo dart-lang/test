@@ -19,14 +19,5 @@ github:
           env:
             CHAT_WEBHOOK_URL: ${{ secrets.BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL }}
 
-travis:
-  addons:
-    chrome: stable
-  env:
-    global: FORCE_TEST_EXIT=true
-
-  after_failure:
-  - tool/report_failure.sh
-
 merge_stages:
 - analyze_and_format
