@@ -1,5 +1,10 @@
 # See with https://github.com/dart-lang/mono_repo for details on this file
-self_validate: true
+self_validate: analyze_and_format
+
+github:
+  env:
+    FORCE_TEST_EXIT: true
+
 travis:
   addons:
     chrome: stable
