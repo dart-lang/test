@@ -58,6 +58,10 @@
 
 * Migrate to null safety.
 
+## 0.3.11+4 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
 ## 0.3.11+3 (Backport)
 
 * Support `package:analyzer` version `0.41.x`.
