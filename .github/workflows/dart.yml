@@ -1,4 +1,4 @@
-# Created with package:mono_repo v3.1.0
+# Created with package:mono_repo v3.2.0
 name: Dart CI
 on:
   push:
@@ -6,6 +6,8 @@ on:
       - main
       - master
   pull_request:
+  schedule:
+    - cron: "0 0 * * 0"
 defaults:
   run:
     shell: bash
@@ -32,7 +34,7 @@ jobs:
           version: latest
       - run: dart --version
       - uses: actions/checkout@v2
-      - run: pub global activate mono_repo 3.1.0
+      - run: pub global activate mono_repo 3.2.0
       - run: pub global run mono_repo generate --validate
   job_002:
     name: "OS: linux; SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: [`dartfmt -n --set-exit-if-changed .`, `dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .`]"
@@ -195,3 +197,23 @@ jobs:
           PKGS: pkgs/test_api
           TRAVIS_OS_NAME: linux
         run: tool/ci.sh command_5
+  job_009:
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+      - job_007
+      - job_008
+    name: Notify failure
+    runs-on: ubuntu-latest
+    if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
+    steps:
+      - run: |
+          curl -H "Content-Type: application/json" -X POST -d \
+            "{'text':'Build failed! ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'}" \
+            "${BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL}"
+        env:
+          CHAT_WEBHOOK_URL: "${{ secrets.BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL }}"
