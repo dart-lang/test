@@ -214,6 +214,6 @@ jobs:
       - run: |
           curl -H "Content-Type: application/json" -X POST -d \
             "{'text':'Build failed! ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'}" \
-            "${BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL}"
+            "${CHAT_WEBHOOK_URL}"
         env:
           CHAT_WEBHOOK_URL: "${{ secrets.BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL }}"
