@@ -28,61 +28,61 @@ jobs:
       env: PKGS="pkgs/test pkgs/test_api"
       script: tool/ci.sh dartfmt dartanalyzer
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0`"
       dart: dev
       os: linux
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_0
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0`"
       dart: dev
       os: windows
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_0
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1`"
       dart: dev
       os: linux
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_1
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1`"
       dart: dev
       os: windows
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_1
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2`"
       dart: dev
       os: linux
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_2
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2`"
       dart: dev
       os: windows
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_2
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3`"
       dart: dev
       os: linux
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_3
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3`"
       dart: dev
       os: windows
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_3
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4`"
       dart: dev
       os: linux
       env: PKGS="pkgs/test"
       script: tool/ci.sh command_4
     - stage: unit_test
-      name: "SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4`"
+      name: "SDK: dev; PKG: pkgs/test; TASKS: `pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4`"
       dart: dev
       os: windows
       env: PKGS="pkgs/test"
