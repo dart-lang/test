@@ -117,7 +117,7 @@ void main() {
     document.body.classes.add('debug');
   }
 
-  runZoned(() {
+  runZonedGuarded(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
       if (message['command'] == 'loadSuite') {
@@ -157,7 +157,7 @@ void main() {
     }), restartCurrent: allowInterop(() {
       serverChannel.sink.add({'command': 'restart'});
     }));
-  }, onError: (error, StackTrace stackTrace) {
+  }, (error, stackTrace) {
     print('$error\n${Trace.from(stackTrace).terse}');
   });
 }

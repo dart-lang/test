@@ -17,7 +17,11 @@ import 'package:test/test.dart';
 /// The path to the root directory of the `test` package.
 final Future<String> packageDir =
     Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/'))
-        .then((uri) => p.dirname(uri.path));
+        .then((uri) {
+  var dir = p.dirname(uri.path);
+  if (dir.startsWith('/C:')) dir = dir.substring(1);
+  return dir;
+});
 
 /// The path to the `pub` executable in the current Dart SDK.
 final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
@@ -78,7 +82,7 @@ Future<TestProcess> runTest(Iterable<String> args,
 
   var allArgs = [
     ...?vmArgs,
-    p.absolute(p.join(await packageDir, 'bin/test.dart')),
+    Uri.file(p.url.join(await packageDir, 'bin', 'test.dart')).toString(),
     '--concurrency=$concurrency',
     if (reporter != null) '--reporter=$reporter',
     if (fileReporter != null) '--file-reporter=$fileReporter',

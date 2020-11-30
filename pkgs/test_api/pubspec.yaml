@@ -1,11 +1,10 @@
 name: test_api
-version: 0.2.19-nullsafety.5-dev
+version: 0.2.19-nullsafety.6
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 
 environment:
-  # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.12.0'
+  sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
   async: '>=2.5.0-nullsafety <2.5.0'

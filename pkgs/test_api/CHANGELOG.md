@@ -1,4 +1,11 @@
-## 0.2.19-nullsafety.5-dev
+## 0.2.19-nullsafety.6
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
+## 0.2.19-nullsafety.5
+
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
 
 ## 0.2.19-nullsafety.4
 
@@ -28,6 +35,10 @@
   future release it will be made available directly through
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
+
+## 0.2.18+1 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
 
 ## 0.2.18
 

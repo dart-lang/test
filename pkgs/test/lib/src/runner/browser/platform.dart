@@ -7,7 +7,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
@@ -32,6 +31,7 @@ import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // igno
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
@@ -51,12 +51,13 @@ class BrowserPlatform extends PlatformPlugin
   /// the working directory.
   static Future<BrowserPlatform> start({String root}) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
+    var packageConfig = await currentPackageConfig;
     return BrowserPlatform._(
         server,
         Configuration.current,
-        p.fromUri(await Isolate.resolvePackageUri(
+        p.fromUri(packageConfig.resolve(
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
-        p.fromUri(await Isolate.resolvePackageUri(Uri.parse(
+        p.fromUri(packageConfig.resolve(Uri.parse(
             'package:test/src/runner/browser/static/default.html.tpl'))),
         root: root);
   }
@@ -258,6 +259,8 @@ class BrowserPlatform extends PlatformPlugin
       if (browser.isJS) {
         if (suiteConfig.precompiledPath == null) {
           await _compileSuite(path, suiteConfig);
+        } else {
+          await _addPrecompiledStackTraceMapper(path, suiteConfig);
         }
       }
 
@@ -407,6 +410,20 @@ class BrowserPlatform extends PlatformPlugin
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
           packageMap: (await currentPackageConfig).toPackageMap());
     });
+  }
+
+  Future<void> _addPrecompiledStackTraceMapper(
+      String dartPath, SuiteConfiguration suiteConfig) async {
+    if (suiteConfig.jsTrace) return;
+    var mapPath = p.join(
+        suiteConfig.precompiledPath, dartPath + '.browser_test.dart.js.map');
+    var mapFile = File(mapPath);
+    if (mapFile.existsSync()) {
+      _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),
+          mapUrl: p.toUri(mapPath),
+          sdkRoot: Uri.parse(r'/packages/$sdk'),
+          packageMap: (await currentPackageConfig).toPackageMap());
+    }
   }
 
   /// Returns the [BrowserManager] for [runtime], which should be a browser.

@@ -6,11 +6,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
-import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 
 import '../../test_api.dart';
-import '../backend/invoker.dart';
 import '../util/remote_exception.dart';
 import '../utils.dart';
 
@@ -92,52 +90,13 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
 StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
-  Uri parsedUrl;
-  if (uri is Uri) {
-    parsedUrl = uri;
-  } else if (uri is String) {
-    parsedUrl = Uri.parse(uri);
-  } else {
+  if (uri is String) {
+    // Ensure that it can be parsed as a uri.
+    Uri.parse(uri);
+  } else if (uri is! Uri) {
     throw ArgumentError.value(uri, 'uri', 'must be a Uri or a String.');
   }
-
-  String absoluteUri;
-  if (parsedUrl.scheme.isEmpty) {
-    var isRootRelative = parsedUrl.path.startsWith('/');
-
-    // If we're running in a browser context, the working directory is already
-    // relative to the test file, whereas on the VM the working directory is the
-    // root of the package.
-    if (p.style == p.Style.url) {
-      if (isRootRelative) {
-        // A root-relative URL is interpreted as relative to the package root,
-        // which means placing it beneath the URL secret.
-        var secret = Uri.encodeComponent(Uri.base.pathSegments[0]);
-        absoluteUri = p.absolute('/$secret$parsedUrl');
-        print('Uri.base: ${Uri.base}');
-        print('absoluteUri: ${absoluteUri}');
-      } else {
-        absoluteUri = p.absolute(parsedUrl.toString());
-      }
-    } else {
-      if (isRootRelative) {
-        // We assume that the current path is the package root. `pub run`
-        // enforces this currently, but at some point it would probably be good
-        // to pass in an explicit root.
-        absoluteUri = p.url
-            .join(p.toUri(p.current).toString(), parsedUrl.path.substring(1));
-      } else {
-        var suitePath = Invoker.current!.liveTest.suite.path!;
-        absoluteUri = p.url.join(
-            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-            parsedUrl.toString());
-      }
-    }
-  } else {
-    absoluteUri = uri.toString();
-  }
-
-  return _spawn(absoluteUri, message, stayAlive: stayAlive);
+  return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 
 /// Spawns a VM isolate that runs the given [dartCode], which is loaded as the
@@ -187,8 +146,7 @@ StreamChannel spawnHybridCode(String dartCode,
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 
-/// Like [spawnHybridUri], but doesn't take [Uri] objects and doesn't handle
-/// relative URLs.
+/// Like [spawnHybridUri], but doesn't take [Uri] objects.
 StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {

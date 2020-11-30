@@ -1,8 +1,9 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -42,7 +43,7 @@ class CompilerPool {
   final List<String> _extraArgs;
 
   /// Creates a compiler pool that multiple instances of `dart2js` at once.
-  CompilerPool([Iterable<String>? extraArgs])
+  CompilerPool([Iterable<String> /*?*/ extraArgs])
       : _pool = Pool(Configuration.current.concurrency),
         _extraArgs = extraArgs?.toList() ?? const [];
 

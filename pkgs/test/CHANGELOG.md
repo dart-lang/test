@@ -1,3 +1,29 @@
+## 1.16.0-nullsafety.12
+
+* Fix `spawnHybridUri` on windows.
+* Fix failures running tests on the `node` platform.
+* Allow `package:yaml` version `3.x.x`.
+
+## 1.16.0-nullsafety.11
+
+* Set up a stack trace mapper in precompiled mode if source maps exist. If
+  the stack traces are already mapped then this has no effect, otherwise it
+  will try to map any JS lines it sees.
+
+## 1.16.0-nullsafety.10
+
+* Allow injecting a test channel for browser tests.
+* Allow `package:analyzer` version `0.41.x`.
+
+## 1.16.0-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
+## 1.16.0-nullsafety.8
+
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
 ## 1.16.0-nullsafety.7
 
 * Allow prerelease versions of the 2.12 sdk.
@@ -40,6 +66,18 @@
   future release it will be made available directly through
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
+
+## 1.15.7 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
+## 1.15.6 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
+
+## 1.15.5 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
 
 ## 1.15.4
 

@@ -1,3 +1,25 @@
+## 0.3.12-nullsafety.11
+
+* Fix `spawnHybridUri` on windows.
+* Allow `package:yaml` version `3.x.x`.
+
+## 0.3.12-nullsafety.10
+
+* Allow `package:analyzer` version `0.41.x`.
+
+## 0.3.12-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+* Pre-emptively fix legacy library import lint violations, and unmigrate some
+  libraries as necessary.
+
+## 0.3.12-nullsafety.8
+
+* Fix a bug where the test runner could crash when printing the elapsed time.
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
+
 ## 0.3.12-nullsafety.7
 
 * Allow prerelease versions of the 2.12 sdk.
@@ -35,6 +57,18 @@
 ## 0.3.12-nullsafety
 
 * Migrate to null safety.
+
+## 0.3.11+4 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
+## 0.3.11+3 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
+
+## 0.3.11+2 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
 
 ## 0.3.11+1
 

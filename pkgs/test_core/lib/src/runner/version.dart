@@ -1,6 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:io';
 
@@ -10,7 +12,7 @@ import 'package:yaml/yaml.dart';
 ///
 /// This is a semantic version, optionally followed by a space and additional
 /// data about its source.
-final String? testVersion = (() {
+final String /*?*/ testVersion = (() {
   dynamic lockfile;
   try {
     lockfile = loadYaml(File('pubspec.lock').readAsStringSync());
@@ -29,7 +31,7 @@ final String? testVersion = (() {
   var source = package['source'];
   if (source is! String) return null;
 
-  switch (source) {
+  switch (source as String) {
     case 'hosted':
       var version = package['version'];
       return (version is String) ? version : null;
