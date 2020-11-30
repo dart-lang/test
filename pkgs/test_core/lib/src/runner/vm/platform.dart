@@ -130,7 +130,10 @@ class VMPlatform extends PlatformPlugin {
     } else {
       final compiledDill =
           await _compiler.compile(File(path).absolute.uri, suiteMetadata);
-      return await Isolate.spawnUri(p.toUri(compiledDill!), [], message,
+      if (compiledDill == null) {
+        throw Exception('Failed to compile $path');
+      }
+      return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
           checked: true);
     }
   }

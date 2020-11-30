@@ -1,6 +1,8 @@
 // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+//
+// @dart=2.9
 
 import 'dart:async';
 import 'dart:convert';
@@ -8,7 +10,6 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
@@ -38,11 +39,11 @@ class TestCompiler {
   final _compilationQueue = <_CompilationRequest>[];
   final _stdoutHandler = _StdoutHandler();
 
-  File? _outputDill;
-  Process? _compiler;
-  PackageConfig? _packageConfig;
+  File _outputDill;
+  Process _compiler;
+  PackageConfig _packageConfig;
 
-  Future<String?> compile(Uri mainDart, Metadata metadata) {
+  Future<String> compile(Uri mainDart, Metadata metadata) {
     final completer = Completer<String>();
     if (_compilerController.isClosed) {
       return Future.value(null);
@@ -53,7 +54,7 @@ class TestCompiler {
 
   Future<void> _shutdown() async {
     if (_compiler != null) {
-      _compiler!.kill();
+      _compiler.kill();
       _compiler = null;
     }
   }
@@ -67,7 +68,7 @@ class TestCompiler {
     var localPackageConfig = _packageConfig ??= await loadPackageConfig(File(
         path.join(
             Directory.current.path, '.dart_tool', 'package_config.json')));
-    var package = localPackageConfig.packageOf(testUri) as Package?;
+    var package = localPackageConfig.packageOf(testUri);
     if (package == null) {
       return '';
     }
@@ -100,7 +101,7 @@ class TestCompiler {
     while (_compilationQueue.isNotEmpty) {
       final request = _compilationQueue.first;
       var firstCompile = false;
-      _CompilerOutput? compilerOutput;
+      _CompilerOutput compilerOutput;
       final contents =
           await _generateEntrypoint(request.mainUri, request.metadata);
       final tempFile = File(path.join(_outputDillDirectory.path, 'test.dart'))
@@ -115,7 +116,7 @@ class TestCompiler {
         );
       }
       final outputPath = compilerOutput?.outputFilename;
-      if (outputPath == null || compilerOutput!.errorCount > 0) {
+      if (outputPath == null || compilerOutput.errorCount > 0) {
         request.result.complete(null);
         await _shutdown();
       } else {
@@ -148,25 +149,25 @@ class TestCompiler {
     return String.fromCharCodes(bytes);
   }
 
-  Future<_CompilerOutput?> _recompile(Uri mainUri) {
+  Future<_CompilerOutput> _recompile(Uri mainUri) {
     _stdoutHandler.reset();
     final inputKey = _generateInputKey(math.Random());
-    _compiler!.stdin.writeln('recompile $mainUri $inputKey');
-    _compiler!.stdin.writeln('$mainUri');
-    _compiler!.stdin.writeln('$inputKey');
+    _compiler.stdin.writeln('recompile $mainUri $inputKey');
+    _compiler.stdin.writeln('$mainUri');
+    _compiler.stdin.writeln('$inputKey');
     return _stdoutHandler.compilerOutput.future;
   }
 
   void _accept() {
-    _compiler!.stdin.writeln('accept');
+    _compiler.stdin.writeln('accept');
   }
 
   void _reset() {
-    _compiler!.stdin.writeln('reset');
+    _compiler.stdin.writeln('reset');
     _stdoutHandler.reset(expectSources: false);
   }
 
-  Future<_CompilerOutput?> _createCompiler(Uri testUri) async {
+  Future<_CompilerOutput> _createCompiler(Uri testUri) async {
     final frontendServer = path.normalize(path.join(Platform.resolvedExecutable,
         '..', 'snapshots', 'frontend_server.dart.snapshot'));
     final sdkRoot = Directory(
@@ -180,7 +181,7 @@ class TestCompiler {
       '--sdk-root=$sdkRoot',
       '--no-print-incremental-dependencies',
       '--target=vm',
-      '--output-dill=${_outputDill!.path}',
+      '--output-dill=${_outputDill.path}',
       '--initialize-from-dill=$_dillCachePath',
       '--platform=$platformDill',
       '--packages=${path.join(Directory.current.path, '.packages')}'
@@ -204,13 +205,13 @@ enum _StdoutState { CollectDiagnostic, CollectDependencies }
 class _CompilerOutput {
   const _CompilerOutput(this.outputFilename, this.errorCount, this.sources);
 
-  final String? outputFilename;
+  final String outputFilename;
   final int errorCount;
   final List<Uri> sources;
 }
 
 class _StdoutHandler {
-  String? boundaryKey;
+  String boundaryKey;
   _StdoutState state = _StdoutState.CollectDiagnostic;
   Completer<_CompilerOutput> compilerOutput = Completer<_CompilerOutput>();
   final sources = <Uri>[];
@@ -224,20 +225,20 @@ class _StdoutHandler {
       boundaryKey = message.substring(kResultPrefix.length);
       return;
     }
-    if (message.startsWith(boundaryKey!)) {
+    if (message.startsWith(boundaryKey)) {
       if (_expectSources) {
         if (state == _StdoutState.CollectDiagnostic) {
           state = _StdoutState.CollectDependencies;
           return;
         }
       }
-      if (message.length <= boundaryKey!.length) {
+      if (message.length <= boundaryKey.length) {
         compilerOutput.complete(null);
         return;
       }
       final spaceDelimiter = message.lastIndexOf(' ');
       compilerOutput.complete(_CompilerOutput(
-          message.substring(boundaryKey!.length + 1, spaceDelimiter),
+          message.substring(boundaryKey.length + 1, spaceDelimiter),
           int.parse(message.substring(spaceDelimiter + 1).trim()),
           sources));
       return;
