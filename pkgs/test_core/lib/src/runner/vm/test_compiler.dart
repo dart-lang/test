@@ -7,10 +7,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:frontend_server_client/frontend_server_client.dart';
+
+import '../package_version.dart';
 
 /// A request to the [TestCompiler] for recompilation.
 class _CompilationRequest {
@@ -35,7 +36,6 @@ class TestCompiler {
   final _compilationQueue = <_CompilationRequest>[];
 
   File _outputDill;
-  PackageConfig _packageConfig;
   FrontendServerClient _frontendServerClient;
 
   Future<String> compile(Uri mainDart, Metadata metadata) {
@@ -54,20 +54,10 @@ class TestCompiler {
     _outputDillDirectory.deleteSync(recursive: true);
   }
 
-  Future<String> _languageVersionComment(Uri testUri) async {
-    var localPackageConfig = _packageConfig ??= await loadPackageConfig(
-        File(p.join(p.current, '.dart_tool', 'package_config.json')));
-    var package = localPackageConfig.packageOf(testUri);
-    if (package == null) {
-      return '';
-    }
-    return '// @dart=${package.languageVersion.major}.${package.languageVersion.minor}';
-  }
-
   Future<String> _generateEntrypoint(
       Uri testUri, Metadata suiteMetadata) async {
     return '''
-        ${suiteMetadata.languageVersionComment ?? await _languageVersionComment(testUri)}
+        ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
 
     import "package:test_core/src/bootstrap/vm.dart";
