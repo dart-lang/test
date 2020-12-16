@@ -106,7 +106,7 @@ class _IsNotNaN extends FeatureMatcher<num> {
 Matcher same(expected) => _IsSameAs(expected);
 
 class _IsSameAs extends Matcher {
-  final Object _expected;
+  final Object? _expected;
   const _IsSameAs(this._expected);
   @override
   bool matches(item, Map matchState) => identical(item, _expected);
