@@ -14,7 +14,7 @@ class _Empty extends Matcher {
   const _Empty();
 
   @override
-  bool matches(item, Map matchState) => item.isEmpty;
+  bool matches(Object? item, Map matchState) => (item as dynamic).isEmpty;
 
   @override
   Description describe(Description description) => description.add('empty');
@@ -27,7 +27,7 @@ class _NotEmpty extends Matcher {
   const _NotEmpty();
 
   @override
-  bool matches(item, Map matchState) => item.isNotEmpty;
+  bool matches(Object? item, Map matchState) => (item as dynamic).isNotEmpty;
 
   @override
   Description describe(Description description) => description.add('non-empty');
@@ -42,7 +42,7 @@ const Matcher isNotNull = _IsNotNull();
 class _IsNull extends Matcher {
   const _IsNull();
   @override
-  bool matches(item, Map matchState) => item == null;
+  bool matches(Object? item, Map matchState) => item == null;
   @override
   Description describe(Description description) => description.add('null');
 }
@@ -50,7 +50,7 @@ class _IsNull extends Matcher {
 class _IsNotNull extends Matcher {
   const _IsNotNull();
   @override
-  bool matches(item, Map matchState) => item != null;
+  bool matches(Object? item, Map matchState) => item != null;
   @override
   Description describe(Description description) => description.add('not null');
 }
@@ -64,7 +64,7 @@ const Matcher isFalse = _IsFalse();
 class _IsTrue extends Matcher {
   const _IsTrue();
   @override
-  bool matches(item, Map matchState) => item == true;
+  bool matches(Object? item, Map matchState) => item == true;
   @override
   Description describe(Description description) => description.add('true');
 }
@@ -72,7 +72,7 @@ class _IsTrue extends Matcher {
 class _IsFalse extends Matcher {
   const _IsFalse();
   @override
-  bool matches(item, Map matchState) => item == false;
+  bool matches(Object? item, Map matchState) => item == false;
   @override
   Description describe(Description description) => description.add('false');
 }
@@ -103,13 +103,13 @@ class _IsNotNaN extends FeatureMatcher<num> {
 
 /// Returns a matches that matches if the value is the same instance
 /// as [expected], using [identical].
-Matcher same(expected) => _IsSameAs(expected);
+Matcher same(Object? expected) => _IsSameAs(expected);
 
 class _IsSameAs extends Matcher {
   final Object? _expected;
   const _IsSameAs(this._expected);
   @override
-  bool matches(item, Map matchState) => identical(item, _expected);
+  bool matches(Object? item, Map matchState) => identical(item, _expected);
   // If all types were hashable we could show a hash here.
   @override
   Description describe(Description description) =>
@@ -122,7 +122,7 @@ const Matcher anything = _IsAnything();
 class _IsAnything extends Matcher {
   const _IsAnything();
   @override
-  bool matches(item, Map matchState) => true;
+  bool matches(Object? item, Map matchState) => true;
   @override
   Description describe(Description description) => description.add('anything');
 }
@@ -181,24 +181,20 @@ const isList = TypeMatcher<List>();
 
 /// Returns a matcher that matches if an object has a length property
 /// that matches [matcher].
-Matcher hasLength(matcher) => _HasLength(wrapMatcher(matcher));
+Matcher hasLength(Object? matcher) => _HasLength(wrapMatcher(matcher));
 
 class _HasLength extends Matcher {
   final Matcher _matcher;
   const _HasLength(this._matcher);
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(Object? item, Map matchState) {
     try {
-      // This is harmless code that will throw if no length property
-      // but subtle enough that an optimizer shouldn't strip it out.
-      if (item.length * item.length >= 0) {
-        return _matcher.matches(item.length, matchState);
-      }
+      final length = (item as dynamic).length;
+      return _matcher.matches(length, matchState);
     } catch (e) {
       return false;
     }
-    throw UnsupportedError('Should never get here');
   }
 
   @override
@@ -206,20 +202,14 @@ class _HasLength extends Matcher {
       description.add('an object with length of ').addDescriptionOf(_matcher);
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(Object? item, Description mismatchDescription,
+      Map matchState, bool verbose) {
     try {
-      // We want to generate a different description if there is no length
-      // property; we use the same trick as in matches().
-      if (item.length * item.length >= 0) {
-        return mismatchDescription
-            .add('has length of ')
-            .addDescriptionOf(item.length);
-      }
+      final length = (item as dynamic).length;
+      return mismatchDescription.add('has length of ').addDescriptionOf(length);
     } catch (e) {
       return mismatchDescription.add('has no length property');
     }
-    throw UnsupportedError('Should never get here');
   }
 }
 
@@ -230,7 +220,7 @@ class _HasLength extends Matcher {
 /// for [Map]s it means the map has the key, and for [Iterable]s
 /// it means the iterable has a matching element. In the case of iterables,
 /// [expected] can itself be a matcher.
-Matcher contains(expected) => _Contains(expected);
+Matcher contains(Object? expected) => _Contains(expected);
 
 class _Contains extends Matcher {
   final Object? _expected;
@@ -238,7 +228,7 @@ class _Contains extends Matcher {
   const _Contains(this._expected);
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(Object? item, Map matchState) {
     var expected = _expected;
     if (item is String) {
       return expected is Pattern && item.contains(expected);
@@ -259,8 +249,8 @@ class _Contains extends Matcher {
       description.add('contains ').addDescriptionOf(_expected);
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(Object? item, Description mismatchDescription,
+      Map matchState, bool verbose) {
     if (item is String || item is Iterable || item is Map) {
       return super
           .describeMismatch(item, mismatchDescription, matchState, verbose);
@@ -272,7 +262,7 @@ class _Contains extends Matcher {
 
 /// Returns a matcher that matches if the match argument is in
 /// the expected value. This is the converse of [contains].
-Matcher isIn(expected) {
+Matcher isIn(Object? expected) {
   if (expected is Iterable) {
     return _In(expected, expected.contains);
   } else if (expected is String) {
