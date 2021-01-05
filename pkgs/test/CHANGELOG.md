@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.14
+
+* Allow the latest args release (`2.x`).
+
 ## 1.16.0-nullsafety.13
 
 * Allow the latest glob release (`2.x`).
