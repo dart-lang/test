@@ -25,7 +25,7 @@ dependencies:
   source_span: '>=1.8.0-nullsafety <1.8.0'
   stack_trace: '>=1.10.0-nullsafety <1.10.0'
   stream_channel: ">=2.1.0-nullsafety <2.1.0"
-  vm_service: '>=1.0.0 <6.0.0'
+  vm_service: '>=6.0.0-nullsafety-dev <6.0.0'
   yaml: ">=2.0.0 <4.0.0"
   # matcher is tightly constrained by test_api
   matcher: any
