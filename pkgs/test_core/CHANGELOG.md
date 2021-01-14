@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.14
+
+* Support the latest coverage release (`0.15.x`).
+
 ## 0.3.12-nullsafety.13
 
 * Allow the latest args release (`2.x`).
