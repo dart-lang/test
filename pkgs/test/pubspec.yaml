@@ -1,5 +1,5 @@
 name: test
-version: 1.16.0-nullsafety.15
+version: 1.16.0-nullsafety.16
 description: A full featured library for writing and running Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test
 
@@ -32,7 +32,7 @@ dependencies:
   yaml: ">=2.0.0 <4.0.0"
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.2.19-nullsafety.6
-  test_core: 0.3.12-nullsafety.14
+  test_core: 0.3.12-nullsafety.15
 
 dev_dependencies:
   fake_async: ^1.0.0
