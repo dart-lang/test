@@ -759,7 +759,7 @@ final foo = true;''').create();
     test('sound null safety is enabled if the entrypoint opts in explicitly',
         () async {
       await d.file('test.dart', '''
-// @dart=2.11
+// @dart=2.12
 $_testContents
 ''').create();
       var test = await runTest(['test.dart']);
