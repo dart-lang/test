@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created with package:mono_repo v3.2.0
+# Created with package:mono_repo v3.4.6
 
 # Support built in commands on windows out of the box.
 function pub() {
@@ -59,32 +59,32 @@ for PKG in ${PKGS}; do
       echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
       case ${TASK} in
       command_0)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 0'
-        xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 0 || EXIT_CODE=$?
+        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0'
+        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
       command_1)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 1'
-        xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 1 || EXIT_CODE=$?
+        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1'
+        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
       command_2)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 2'
-        xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 2 || EXIT_CODE=$?
+        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2'
+        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
       command_3)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 3'
-        xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 3 || EXIT_CODE=$?
+        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3'
+        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
       command_4)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 4'
-        xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 4 || EXIT_CODE=$?
+        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4'
+        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
       command_5)
-        echo 'pub run --enable-experiment=non-nullable test --preset travis -x browser'
-        pub run --enable-experiment=non-nullable test --preset travis -x browser || EXIT_CODE=$?
+        echo 'pub run test --preset travis -x browser'
+        pub run test --preset travis -x browser || EXIT_CODE=$?
         ;;
       dartanalyzer)
-        echo 'dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .'
-        dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings . || EXIT_CODE=$?
+        echo 'dartanalyzer --fatal-infos --fatal-warnings .'
+        dartanalyzer --fatal-infos --fatal-warnings . || EXIT_CODE=$?
         ;;
       dartfmt)
         echo 'dartfmt -n --set-exit-if-changed .'

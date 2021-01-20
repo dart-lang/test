@@ -1,4 +1,4 @@
-# Created with package:mono_repo v3.2.0
+# Created with package:mono_repo v3.4.6
 name: Dart CI
 on:
   push:
@@ -28,16 +28,17 @@ jobs:
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: stable
-          version: latest
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - run: pub global activate mono_repo 3.2.0
-      - run: pub global run mono_repo generate --validate
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@v2
+      - name: mono_repo self validate
+        run: pub global activate mono_repo 3.4.6
+      - name: mono_repo self validate
+        run: pub global run mono_repo generate --validate
   job_002:
-    name: "OS: linux; SDK: dev; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; TASKS: [`dartfmt -n --set-exit-if-changed .`, `dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .`]"
+    name: "analyze_and_format; PKGS: pkgs/test, pkgs/test_api, pkgs/test_core; `dartfmt -n --set-exit-if-changed .`, `dartanalyzer --fatal-infos --fatal-warnings .`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -50,17 +51,52 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test pkgs/test_api pkgs/test_core
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh dartfmt dartanalyzer
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_pub_upgrade
+        name: "pkgs/test; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test; dartfmt -n --set-exit-if-changed ."
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dartfmt -n --set-exit-if-changed .
+      - name: "pkgs/test; dartanalyzer --fatal-infos --fatal-warnings ."
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dartanalyzer --fatal-infos --fatal-warnings .
+      - id: pkgs_test_api_pub_upgrade
+        name: "pkgs/test_api; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test_api; dartfmt -n --set-exit-if-changed ."
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: dartfmt -n --set-exit-if-changed .
+      - name: "pkgs/test_api; dartanalyzer --fatal-infos --fatal-warnings ."
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: dartanalyzer --fatal-infos --fatal-warnings .
+      - id: pkgs_test_core_pub_upgrade
+        name: "pkgs/test_core; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test_core
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test_core; dartfmt -n --set-exit-if-changed ."
+        if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test_core
+        run: dartfmt -n --set-exit-if-changed .
+      - name: "pkgs/test_core; dartanalyzer --fatal-infos --fatal-warnings ."
+        if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test_core
+        run: dartanalyzer --fatal-infos --fatal-warnings .
   job_003:
-    name: "OS: linux; SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 0`"
+    name: "unit_test; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -73,17 +109,25 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh command_0
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_pub_upgrade
+        name: "pkgs/test; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0"
+    needs:
+      - job_001
+      - job_002
   job_004:
-    name: "OS: linux; SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 1`"
+    name: "unit_test; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -96,17 +140,25 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh command_1
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_pub_upgrade
+        name: "pkgs/test; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1"
+    needs:
+      - job_001
+      - job_002
   job_005:
-    name: "OS: linux; SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 2`"
+    name: "unit_test; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -119,17 +171,25 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh command_2
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_pub_upgrade
+        name: "pkgs/test; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 2"
+    needs:
+      - job_001
+      - job_002
   job_006:
-    name: "OS: linux; SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 3`"
+    name: "unit_test; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -142,17 +202,25 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh command_3
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_pub_upgrade
+        name: "pkgs/test; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 3"
+    needs:
+      - job_001
+      - job_002
   job_007:
-    name: "OS: linux; SDK: dev; PKG: pkgs/test; TASKS: `xvfb-run -s \"-screen 0 1024x768x24\" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 4`"
+    name: "unit_test; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -165,17 +233,25 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh command_4
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_pub_upgrade
+        name: "pkgs/test; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 4"
+    needs:
+      - job_001
+      - job_002
   job_008:
-    name: "OS: linux; SDK: dev; PKG: pkgs/test_api; TASKS: `pub run --enable-experiment=non-nullable test --preset travis -x browser`"
+    name: "unit_test; PKG: pkgs/test_api; `pub run test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -188,25 +264,24 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;dart:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v0.3
         with:
-          release-channel: dev
-      - run: dart --version
-      - uses: actions/checkout@v2
-      - env:
-          PKGS: pkgs/test_api
-          TRAVIS_OS_NAME: linux
-        run: tool/ci.sh command_5
-  job_009:
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: pkgs_test_api_pub_upgrade
+        name: "pkgs/test_api; pub upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: pub upgrade --no-precompile
+      - name: "pkgs/test_api; pub run test --preset travis -x browser"
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: pub run test --preset travis -x browser
     needs:
       - job_001
       - job_002
-      - job_003
-      - job_004
-      - job_005
-      - job_006
-      - job_007
-      - job_008
+  job_009:
     name: Notify failure
     runs-on: ubuntu-latest
     if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
@@ -217,3 +292,12 @@ jobs:
             "${CHAT_WEBHOOK_URL}"
         env:
           CHAT_WEBHOOK_URL: "${{ secrets.BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL }}"
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+      - job_007
+      - job_008
