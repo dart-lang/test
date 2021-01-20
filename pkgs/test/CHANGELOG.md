@@ -1,3 +1,8 @@
+## 1.16.0-nullsafety.16
+
+* Support the latest vm_service release (`6.x.x`).
+
+
 ## 1.16.0-nullsafety.15
 
 * Support the latest coverage release (`0.15.x`).
