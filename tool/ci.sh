@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created with package:mono_repo v3.2.0
+# Created with package:mono_repo v3.4.0
 
 # Support built in commands on windows out of the box.
 function pub() {
@@ -79,12 +79,16 @@ for PKG in ${PKGS}; do
         xvfb-run -s "-screen 0 1024x768x24" pub run --enable-experiment=non-nullable test --preset travis -x phantomjs --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
       command_5)
-        echo 'pub run --enable-experiment=non-nullable test --preset travis -x browser'
-        pub run --enable-experiment=non-nullable test --preset travis -x browser || EXIT_CODE=$?
+        echo 'pub run test --preset travis -x browser'
+        pub run test --preset travis -x browser || EXIT_CODE=$?
         ;;
-      dartanalyzer)
+      dartanalyzer_0)
         echo 'dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings .'
         dartanalyzer --enable-experiment=non-nullable --fatal-infos --fatal-warnings . || EXIT_CODE=$?
+        ;;
+      dartanalyzer_1)
+        echo 'dartanalyzer --fatal-infos --fatal-warnings .'
+        dartanalyzer --fatal-infos --fatal-warnings . || EXIT_CODE=$?
         ;;
       dartfmt)
         echo 'dartfmt -n --set-exit-if-changed .'
