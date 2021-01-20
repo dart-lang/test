@@ -799,7 +799,7 @@ $_testContents''').create();
         var newPackageConfig = PackageConfig([
           ...currentPackageConfig.packages,
           Package('example', Uri.file('${d.sandbox}/'),
-              languageVersion: LanguageVersion(2, 11),
+              languageVersion: LanguageVersion(2, 12),
               // TODO: https://github.com/dart-lang/package_config/issues/81
               packageUriRoot: Uri.file('${d.sandbox}/')),
         ]);
