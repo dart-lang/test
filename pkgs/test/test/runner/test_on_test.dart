@@ -178,7 +178,7 @@ void main() {
 /// Each of [suiteTestOn], [groupTestOn], and [testTestOn] is a platform
 /// selector that's suite-, group-, and test-level respectively. If [loadable]
 /// is `false`, the test file will be made unloadable on the Dart VM.
-Future _writeTestFile(String filename,
+Future<void> _writeTestFile(String filename,
     {String suiteTestOn,
     String groupTestOn,
     String testTestOn,

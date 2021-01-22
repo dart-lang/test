@@ -415,7 +415,8 @@ void main() {
   });
 }
 
-Future _expectReport(String tests, String expected, {List<String> args}) async {
+Future<void> _expectReport(String tests, String expected,
+    {List<String> args}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 

@@ -52,7 +52,7 @@ external set _jsApi(_JSApi api);
 final _iframes = <int, IFrameElement>{};
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = <int, List<StreamSubscription>>{};
+final _subscriptions = <int, List<StreamSubscription<void>>>{};
 
 /// The URL for the current page.
 final _currentUrl = Uri.parse(window.location.href);
@@ -164,7 +164,7 @@ void main() {
 
 /// Creates a [MultiChannel] connection to the server, using a [WebSocket] as
 /// the underlying protocol.
-MultiChannel _connectToServer() {
+MultiChannel<dynamic> _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
   var webSocket = WebSocket(_currentUrl.queryParameters['managerUrl']);
@@ -184,7 +184,7 @@ MultiChannel _connectToServer() {
 /// a [MessageChannel].
 ///
 /// [id] identifies the suite loaded in this iframe.
-StreamChannel _connectToIframe(String url, int id) {
+StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var iframe = IFrameElement();
   _iframes[id] = iframe;
   iframe.src = url;
@@ -198,7 +198,7 @@ StreamChannel _connectToIframe(String url, int id) {
   // message to us. This ensures that no messages get dropped on the floor.
   var readyCompleter = Completer();
 
-  var subscriptions = <StreamSubscription>[];
+  var subscriptions = <StreamSubscription<void>>[];
   _subscriptions[id] = subscriptions;
 
   subscriptions.add(window.onMessage.listen((message) {
