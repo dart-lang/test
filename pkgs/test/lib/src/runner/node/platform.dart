@@ -82,7 +82,7 @@ class NodePlatform extends PlatformPlugin
   }
 
   @override
-  StreamChannel loadChannel(String path, SuitePlatform platform) =>
+  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
       throw UnimplementedError();
 
   @override
@@ -101,7 +101,7 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<StreamChannel, StackTraceMapper>> _loadChannel(
+  Future<Pair<StreamChannel<Object>, StackTraceMapper>> _loadChannel(
       String path, Runtime runtime, SuiteConfiguration suiteConfig) async {
     final servers = await _loopback();
 
@@ -288,7 +288,7 @@ class NodePlatform extends PlatformPlugin
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() async {
+  Future<void> close() => _closeMemo.runOnce(() async {
         await _compilers.close();
 
         if (_config.pubServeUrl == null) {
@@ -297,7 +297,7 @@ class NodePlatform extends PlatformPlugin
           _http.close();
         }
       });
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
 }
 
 Future<List<ServerSocket>> _loopback({int remainingRetries = 5}) async {

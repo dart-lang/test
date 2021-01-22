@@ -577,8 +577,8 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 /// If [externalLibraries] are provided it should be a map of relative file
 /// paths to contents. All libraries will be added as imports to the test, and
 /// files will be created for them.
-Future _expectReport(
-    String tests, List<List<dynamic /*Map|Matcher*/ >> expected, Map done,
+Future<void> _expectReport(String tests,
+    List<List<dynamic /*Map|Matcher*/ >> expected, Map<Object, Object> done,
     {List<String> args, Map<String, String> externalLibraries}) async {
   args ??= [];
   externalLibraries ??= {};

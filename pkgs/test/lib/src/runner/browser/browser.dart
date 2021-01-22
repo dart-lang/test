@@ -49,11 +49,11 @@ abstract class Browser {
   ///
   /// If there's a problem starting or running the browser, this will complete
   /// with an error.
-  Future get onExit => _onExitCompleter.future;
-  final _onExitCompleter = Completer();
+  Future<void> get onExit => _onExitCompleter.future;
+  final _onExitCompleter = Completer<void>();
 
   /// Standard IO streams for the underlying browser process.
-  final _ioSubscriptions = <StreamSubscription>[];
+  final _ioSubscriptions = <StreamSubscription<List<int>>>[];
 
   /// Creates a new browser.
   ///
@@ -127,7 +127,7 @@ abstract class Browser {
   ///
   /// Returns the same [Future] as [onExit], except that it won't emit
   /// exceptions.
-  Future close() async {
+  Future<void> close() async {
     _closed = true;
 
     // If we don't manually close the stream the test runner can hang.

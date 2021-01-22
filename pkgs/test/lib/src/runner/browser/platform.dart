@@ -125,7 +125,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// This is used to make sure that a given test suite is only compiled once
   /// per run, rather than once per browser per run.
-  final _compileFutures = <String, Future>{};
+  final _compileFutures = <String, Future<void>>{};
 
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = <String, StackTraceMapper>{};
@@ -291,14 +291,14 @@ class BrowserPlatform extends PlatformPlugin
   }
 
   @override
-  StreamChannel loadChannel(String path, SuitePlatform platform) =>
+  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
       throw UnimplementedError();
 
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
-  Future _pubServeSuite(String path, Uri dartUrl, Runtime browser,
+  Future<void> _pubServeSuite(String path, Uri dartUrl, Runtime browser,
       SuiteConfiguration suiteConfig) {
     return _pubServePool.withResource(() async {
       var timer = Timer(Duration(seconds: 1), () {
@@ -364,7 +364,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
   /// served.
-  Future _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
+  Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + '.browser_test.dart.js');
@@ -458,7 +458,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Note that this doesn't close the server itself. Browser tests can still be
   /// loaded, they'll just spawn new browsers.
   @override
-  Future closeEphemeral() {
+  Future<List<void>> closeEphemeral() {
     var managers = _browserManagers.values.toList();
     _browserManagers.clear();
     return Future.wait(managers.map((manager) async {
@@ -473,7 +473,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   @override
-  Future close() => _closeMemo.runOnce(() async {
+  Future<void> close() => _closeMemo.runOnce(() async {
         var futures =
             _browserManagers.values.map<Future<dynamic>>((future) async {
           var result = await future;
@@ -493,5 +493,5 @@ class BrowserPlatform extends PlatformPlugin
           _http.close();
         }
       });
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
 }

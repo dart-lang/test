@@ -45,7 +45,7 @@ class BrowserManager {
   /// The channel used to communicate with the browser.
   ///
   /// This is connected to a page running `static/host.dart`.
-  MultiChannel _channel;
+  MultiChannel<Object> _channel;
 
   /// A pool that ensures that limits the number of initial connections the
   /// manager will wait for at once.
@@ -69,10 +69,10 @@ class BrowserManager {
   ///
   /// This will be `null` as long as the browser isn't displaying a pause
   /// screen.
-  CancelableCompleter _pauseCompleter;
+  CancelableCompleter<void> _pauseCompleter;
 
   /// The controller for [_BrowserEnvironment.onRestart].
-  final _onRestartController = StreamController.broadcast();
+  final _onRestartController = StreamController<Null>.broadcast();
 
   /// The environment to attach to each suite.
   Future<_BrowserEnvironment> _environment;
@@ -265,7 +265,7 @@ class BrowserManager {
   }
 
   /// An implementation of [Environment.displayPause].
-  CancelableOperation _displayPause() {
+  CancelableOperation<void> _displayPause() {
     if (_pauseCompleter != null) return _pauseCompleter.operation;
 
     _pauseCompleter = CancelableCompleter(onCancel: () {
@@ -283,7 +283,7 @@ class BrowserManager {
   }
 
   /// The callback for handling messages received from the host page.
-  void _onMessage(Map message) {
+  void _onMessage(Map<Object, Object> message) {
     switch (message['command'] as String) {
       case 'ping':
         break;
@@ -305,7 +305,7 @@ class BrowserManager {
 
   /// Closes the manager and releases any resources it owns, including closing
   /// the browser.
-  Future close() => _closeMemoizer.runOnce(() {
+  Future<void> close() => _closeMemoizer.runOnce(() {
         _closed = true;
         _timer.cancel();
         if (_pauseCompleter != null) _pauseCompleter.complete();
@@ -332,11 +332,11 @@ class _BrowserEnvironment implements Environment {
   final Uri remoteDebuggerUrl;
 
   @override
-  final Stream onRestart;
+  final Stream<Null> onRestart;
 
   _BrowserEnvironment(this._manager, this.observatoryUrl,
       this.remoteDebuggerUrl, this.onRestart);
 
   @override
-  CancelableOperation displayPause() => _manager._displayPause();
+  CancelableOperation<void> displayPause() => _manager._displayPause();
 }

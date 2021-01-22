@@ -17,8 +17,11 @@ import 'package:test_core/src/runner/version.dart';
 ///
 /// Verifies that [outputLines] matches each set of matchers in [expected],
 /// includes the [testPid] from the test process, and ends with [done].
-Future expectJsonReport(List<String> outputLines, int testPid,
-    List<List<dynamic /*Map|Matcher*/ >> expected, Map done) async {
+Future<void> expectJsonReport(
+    List<String> outputLines,
+    int testPid,
+    List<List<dynamic /*Map|Matcher*/ >> expected,
+    Map<Object, Object> done) async {
   // Ensure the output is of the same length, including start, done and all
   // suites messages.
   expect(outputLines.length, equals(expected.fold(3, (a, m) => a + m.length)),
@@ -51,7 +54,7 @@ Future expectJsonReport(List<String> outputLines, int testPid,
 /// all suites.
 ///
 /// The [count] defaults to 1.
-Map allSuitesJson({int count}) {
+Map<String, Object> allSuitesJson({int count}) {
   return {'type': 'allSuites', 'count': count ?? 1};
 }
 
@@ -59,7 +62,7 @@ Map allSuitesJson({int count}) {
 /// begun running.
 ///
 /// The [platform] defaults to `"vm"`, the [path] defaults to `"test.dart"`.
-Map suiteJson(int id, {String platform, String path}) {
+Map<String, Object> suiteJson(int id, {String platform, String path}) {
   return {
     'type': 'suite',
     'suite': {
@@ -79,7 +82,7 @@ Map suiteJson(int id, {String platform, String path}) {
 ///
 /// The [testCount] parameter indicates the number of tests in the group. It
 /// defaults to 1.
-Map groupJson(int id,
+Map<String, Object> groupJson(int id,
     {String name,
     int suiteID,
     int parentID,
@@ -117,7 +120,7 @@ Map groupJson(int id,
 /// [skip] is `true`, the test is expected to be marked as skipped without a
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
-Map testStartJson(int id, String name,
+Map<String, Object> testStartJson(int id, String name,
     {int suiteID,
     Iterable<int> groupIDs,
     int line,
@@ -177,7 +180,7 @@ Matcher printJson(int id, dynamic /*String|Matcher*/ message, {String type}) {
 ///
 /// The [isFailure] parameter indicates whether the error was a [TestFailure] or
 /// not.
-Map errorJson(int id, String error, {bool isFailure = false}) {
+Map<String, Object> errorJson(int id, String error, {bool isFailure = false}) {
   return {
     'type': 'error',
     'testID': id,
@@ -195,7 +198,7 @@ Map errorJson(int id, String error, {bool isFailure = false}) {
 /// The [hidden] parameter indicates whether the test should not be displayed
 /// after finishing. The [skipped] parameter indicates whether the test was
 /// skipped.
-Map testDoneJson(int id,
+Map<String, Object> testDoneJson(int id,
     {String result, bool hidden = false, bool skipped = false}) {
   result ??= 'success';
   return {
@@ -209,10 +212,11 @@ Map testDoneJson(int id,
 
 /// Returns the event emitted by the JSON reporter indicating that the entire
 /// run finished.
-Map doneJson({bool success = true}) => {'type': 'done', 'success': success};
+Map<String, Object> doneJson({bool success = true}) =>
+    {'type': 'done', 'success': success};
 
 /// Returns the serialized metadata corresponding to [skip].
-Map metadataJson({skip}) {
+Map<String, Object> metadataJson({skip}) {
   if (skip == true) {
     return {'skip': true, 'skipReason': null};
   } else if (skip is String) {
