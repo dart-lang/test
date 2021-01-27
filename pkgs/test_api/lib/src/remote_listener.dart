@@ -50,7 +50,7 @@ class RemoteListener {
     // if they are followed by long running synchronous work.
     var controller =
         StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
-    var channel = MultiChannel<Map<dynamic, dynamic>>(controller.local);
+    var channel = MultiChannel<Object?>(controller.local);
 
     var verboseChain = true;
 
@@ -82,7 +82,7 @@ class RemoteListener {
           }
 
           var queue = StreamQueue(channel.stream);
-          var message = await queue.next;
+          var message = await queue.next as Map;
           assert(message['type'] == 'initial');
 
           queue.rest.cast<Map<dynamic, dynamic>>().listen((message) {
@@ -168,7 +168,7 @@ class RemoteListener {
 
   /// Send information about [_suite] across [channel] and start listening for
   /// commands to run the tests.
-  void _listen(MultiChannel<Map<dynamic, dynamic>> channel) {
+  void _listen(MultiChannel<dynamic> channel) {
     channel.sink.add({
       'type': 'success',
       'root': _serializeGroup(channel, _suite.group, [])
@@ -179,9 +179,7 @@ class RemoteListener {
   ///
   /// [parents] lists the groups that contain [group].
   Map<dynamic, dynamic> _serializeGroup(
-      MultiChannel<Map<dynamic, dynamic>> channel,
-      Group group,
-      Iterable<Group> parents) {
+      MultiChannel<dynamic> channel, Group group, Iterable<Group> parents) {
     parents = parents.toList()..add(group);
     return {
       'type': 'group',
@@ -203,9 +201,7 @@ class RemoteListener {
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
   Map<dynamic, dynamic>? _serializeTest(
-      MultiChannel<Map<dynamic, dynamic>> channel,
-      Test? test,
-      Iterable<Group>? groups) {
+      MultiChannel<dynamic> channel, Test? test, Iterable<Group>? groups) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
@@ -225,8 +221,7 @@ class RemoteListener {
   }
 
   /// Runs [liveTest] and sends the results across [channel].
-  void _runLiveTest(
-      LiveTest liveTest, MultiChannel<Map<dynamic, dynamic>> channel) {
+  void _runLiveTest(LiveTest liveTest, MultiChannel<dynamic> channel) {
     channel.stream.listen((message) {
       assert(message['command'] == 'close');
       liveTest.close();

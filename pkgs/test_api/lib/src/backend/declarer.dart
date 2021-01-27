@@ -324,7 +324,7 @@ class Declarer {
   ///
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
-  Future _runSetUps() async {
+  Future<void> _runSetUps() async {
     if (_parent != null) await _parent!._runSetUps();
     // TODO: why does type inference not work here?
     await Future.forEach<Function>(_setUps, (setUp) => setUp());

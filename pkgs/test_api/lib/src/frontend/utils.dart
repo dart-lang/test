@@ -9,7 +9,7 @@
 ///
 /// Awaiting this approximates waiting until all asynchronous work (other than
 /// work that's waiting for external resources) completes.
-Future pumpEventQueue({int times = 20}) {
+Future<dynamic> pumpEventQueue({int times = 20}) {
   if (times == 0) return Future.value();
   // Use the event loop to allow the microtask queue to finish.
   return Future(() => pumpEventQueue(times: times - 1));

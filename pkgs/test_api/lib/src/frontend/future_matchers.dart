@@ -95,7 +95,7 @@ class _DoesNotComplete extends Matcher {
   }
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(item, Map<dynamic, dynamic> matchState) {
     if (item is! Future) return false;
     item.then((value) {
       fail('Future was not expected to complete but completed with a value of '
@@ -106,8 +106,8 @@ class _DoesNotComplete extends Matcher {
   }
 
   @override
-  Description describeMismatch(
-      item, Description description, Map matchState, bool verbose) {
+  Description describeMismatch(item, Description description,
+      Map<dynamic, dynamic> matchState, bool verbose) {
     if (item is! Future) return description.add('$item is not a Future');
     return description;
   }

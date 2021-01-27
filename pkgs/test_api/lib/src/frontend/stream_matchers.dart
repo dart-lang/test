@@ -82,7 +82,7 @@ StreamMatcher mayEmit(matcher) {
 /// If any matchers match the stream, no errors from other matchers are thrown.
 /// If no matchers match and multiple matchers threw errors, the first error is
 /// re-thrown.
-StreamMatcher emitsAnyOf(Iterable matchers) {
+StreamMatcher emitsAnyOf(Iterable<dynamic> matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.isEmpty) {
     throw ArgumentError('matcher may not be empty');
@@ -105,8 +105,8 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
     Object? firstError;
     StackTrace? firstStackTrace;
 
-    var futures = <Future>[];
-    StreamQueue? consumedMost;
+    var futures = <Future<void>>[];
+    StreamQueue<dynamic>? consumedMost;
     for (var i = 0; i < matchers.length; i++) {
       futures.add(() async {
         var copy = transaction.newQueue();
@@ -162,7 +162,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
 /// [matchers] matches, one after another.
 ///
 /// If any matcher fails to match, this fails and consumes no events.
-StreamMatcher emitsInOrder(Iterable matchers) {
+StreamMatcher emitsInOrder(Iterable<dynamic> matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.length == 1) return streamMatchers.first;
 
@@ -284,7 +284,7 @@ StreamMatcher neverEmits(matcher) {
 /// Returns whether [matcher] matches [queue] at its current position.
 ///
 /// This treats errors as failures to match.
-Future<bool> _tryMatch(StreamQueue queue, StreamMatcher matcher) {
+Future<bool> _tryMatch(StreamQueue<dynamic> queue, StreamMatcher matcher) {
   return queue.withTransaction((copy) async {
     try {
       return (await matcher.matchQueue(copy)) == null;
@@ -307,7 +307,7 @@ Future<bool> _tryMatch(StreamQueue queue, StreamMatcher matcher) {
 ///
 /// Note that checking every ordering of [matchers] is O(n!) in the worst case,
 /// so this should only be called when there are very few [matchers].
-StreamMatcher emitsInAnyOrder(Iterable matchers) {
+StreamMatcher emitsInAnyOrder(Iterable<dynamic> matchers) {
   var streamMatchers = matchers.map(emits).toSet();
   if (streamMatchers.length == 1) return streamMatchers.first;
   var description = 'do the following in any order:\n' +
@@ -320,13 +320,13 @@ StreamMatcher emitsInAnyOrder(Iterable matchers) {
 
 /// Returns whether [queue] matches [matchers] in any order.
 Future<bool> _tryInAnyOrder(
-    StreamQueue queue, Set<StreamMatcher> matchers) async {
+    StreamQueue<dynamic> queue, Set<StreamMatcher> matchers) async {
   if (matchers.length == 1) {
     return await matchers.first.matchQueue(queue) == null;
   }
 
   var transaction = queue.startTransaction();
-  StreamQueue? consumedMost;
+  StreamQueue<dynamic>? consumedMost;
 
   // The first error thrown. If no matchers match and this exists, we rethrow
   // it.

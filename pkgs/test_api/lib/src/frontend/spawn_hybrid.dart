@@ -159,7 +159,7 @@ StreamChannel<dynamic> _spawn(String uri, Object? message,
   ensureJsonEncodable(message);
 
   var virtualChannel = channel.virtualChannel();
-  StreamChannel isolateChannel = virtualChannel;
+  StreamChannel<dynamic> isolateChannel = virtualChannel;
   channel.sink.add({
     'type': 'spawn-hybrid-uri',
     'url': uri,
@@ -168,7 +168,7 @@ StreamChannel<dynamic> _spawn(String uri, Object? message,
   });
 
   if (!stayAlive) {
-    var disconnector = Disconnector();
+    var disconnector = Disconnector<dynamic>();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }

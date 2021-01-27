@@ -114,16 +114,16 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   final String description;
 
   /// The callback used to implement [matchQueue].
-  final Future<String?> Function(StreamQueue) _matchQueue;
+  final Future<String?> Function(StreamQueue<dynamic>) _matchQueue;
 
   _StreamMatcher(this._matchQueue, this.description);
 
   @override
-  Future<String?> matchQueue(StreamQueue queue) => _matchQueue(queue);
+  Future<String?> matchQueue(StreamQueue<dynamic> queue) => _matchQueue(queue);
 
   @override
   dynamic /*FutureOr<String>*/ matchAsync(item) {
-    StreamQueue queue;
+    StreamQueue<dynamic> queue;
     var shouldCancelQueue = false;
     if (item is StreamQueue) {
       queue = item;
@@ -149,7 +149,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
       // Get a list of events emitted by the stream so we can emit them as part
       // of the error message.
       var replay = transaction.newQueue();
-      var events = <Result?>[];
+      var events = <Result<Object>?>[];
       var subscription = Result.captureStreamTransformer
           .bind(replay.rest.cast())
           .listen(events.add, onDone: () => events.add(null));
