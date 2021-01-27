@@ -28,10 +28,15 @@ abstract class AsyncMatcher extends Matcher {
   dynamic /*FutureOr<String>*/ matchAsync(item);
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(item, Map<dynamic, dynamic> matchState) {
     var result = matchAsync(item);
-    expect(result,
-        anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
+    expect(
+        result,
+        anyOf([
+          equals(null),
+          TypeMatcher<Future<dynamic>>(),
+          TypeMatcher<String>()
+        ]),
         reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is Future) {
@@ -51,7 +56,7 @@ abstract class AsyncMatcher extends Matcher {
   }
 
   @override
-  Description describeMismatch(
-          item, Description description, Map matchState, bool verbose) =>
+  Description describeMismatch(dynamic item, Description description,
+          Map<dynamic, dynamic> matchState, bool verbose) =>
       StringDescription(matchState[this] as String);
 }
