@@ -1,7 +1,10 @@
+## 1.16.0-nullsafety.17
+
+* Support the latest shelf release (`1.x.x`).
+
 ## 1.16.0-nullsafety.16
 
 * Support the latest vm_service release (`6.x.x`).
-
 
 ## 1.16.0-nullsafety.15
 
