@@ -44,7 +44,3 @@ dependency_overrides:
   # validating null safe version - will remove after publish
   shelf:
     git: https://github.com/dart-lang/shelf
-  test_api:
-    path: ../test_api
-  test_core:
-    path: ../test_core
