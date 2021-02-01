@@ -15,8 +15,8 @@ import 'util.dart';
 ///
 /// If [maxItems] is passed, [Iterable]s and [Map]s will only print their first
 /// [maxItems] members or key/value pairs, respectively.
-String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
-  String _prettyPrint(Object? object, int indent, Set<Object?> seen, bool top) {
+String prettyPrint(object, {int? maxLineLength, int? maxItems}) {
+  String _prettyPrint(object, int indent, Set<Object?> seen, bool top) {
     // If the object is a matcher, use its description.
     if (object is Matcher) {
       var description = StringDescription();
@@ -27,7 +27,7 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
     // Avoid looping infinitely on recursively-nested data structures.
     if (seen.contains(object)) return '(recursive)';
     seen = seen.union({object});
-    String pp(Object? child) => _prettyPrint(child, indent + 2, seen, false);
+    String pp(child) => _prettyPrint(child, indent + 2, seen, false);
 
     if (object is Iterable) {
       // Print the type name for non-List iterables.
@@ -123,7 +123,7 @@ String _indent(int length) => List.filled(length, ' ').join('');
 
 /// Returns the name of the type of [x] with fallbacks for core types with
 /// private implementations.
-String _typeName(Object x) {
+String _typeName(x) {
   if (x is Type) return 'Type';
   if (x is Uri) return 'Uri';
   if (x is Set) return 'Set';

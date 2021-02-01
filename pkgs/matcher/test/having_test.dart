@@ -108,7 +108,7 @@ final _rangeMatcher = isRangeError
     .having((e) => e.start, 'start', isNull)
     .having((e) => e.end, 'end', isNull);
 
-Matcher _hasPrice(Object matcher) =>
+Matcher _hasPrice(matcher) =>
     const TypeMatcher<Widget>().having((e) => e.price, 'price', matcher);
 
 Matcher _badCustomMatcher() => const TypeMatcher<Widget>()

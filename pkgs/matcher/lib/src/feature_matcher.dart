@@ -18,8 +18,8 @@ abstract class FeatureMatcher<T> extends TypeMatcher<T> {
   bool typedMatches(T item, Map matchState);
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is T) {
       return describeTypedMismatch(
           item, mismatchDescription, matchState, verbose);

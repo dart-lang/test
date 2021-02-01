@@ -15,7 +15,7 @@ import 'util.dart';
 /// For [Iterable]s and [Map]s, this will recursively match the elements. To
 /// handle cyclic structures a recursion depth [limit] can be provided. The
 /// default limit is 100. [Set]s will be compared order-independently.
-Matcher equals(Object? expected, [int limit = 100]) => expected is String
+Matcher equals(expected, [int limit = 100]) => expected is String
     ? _StringEqualsMatcher(expected)
     : _DeepMatcher(expected, limit);
 
@@ -267,8 +267,8 @@ class _DeepMatcher extends Matcher {
       description.addDescriptionOf(_expected);
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     var mismatch = matchState['mismatch'] as _Mismatch;
     var describeProblem = mismatch.describeProblem;
     if (mismatch.location.isNotEmpty) {

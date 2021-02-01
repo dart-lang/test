@@ -14,7 +14,7 @@ import 'matcher.dart';
 /// Returns a matcher that checks if a class instance has a property
 /// with name [name], and optionally, if that property in turn satisfies
 /// a [matcher].
-Matcher hasProperty(String name, [Object? matcher]) =>
+Matcher hasProperty(String name, [matcher]) =>
     _HasProperty(name, matcher == null ? null : wrapMatcher(matcher));
 
 class _HasProperty extends Matcher {
@@ -24,7 +24,7 @@ class _HasProperty extends Matcher {
   const _HasProperty(this._name, [this._matcher]);
 
   @override
-  bool matches(Object? item, Map matchState) {
+  bool matches(item, Map matchState) {
     var mirror = reflect(item);
     var classMirror = mirror.type;
     var symbol = Symbol(_name);
@@ -63,8 +63,8 @@ class _HasProperty extends Matcher {
   }
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     var reason = matchState['reason'];
     if (reason != null) {
       mismatchDescription.add(reason as String);

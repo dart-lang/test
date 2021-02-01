@@ -39,8 +39,8 @@ class HavingMatcher<T> implements TypeMatcher<T> {
   }
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     var matcher = matchState['matcher'] as Matcher;
     matcher.describeMismatch(
         item, mismatchDescription, matchState['state'] as Map, verbose);
@@ -56,9 +56,9 @@ class HavingMatcher<T> implements TypeMatcher<T> {
 }
 
 class _FunctionMatcher<T> extends CustomMatcher {
-  final Object? Function(T value) _feature;
+  final dynamic Function(T value) _feature;
 
-  _FunctionMatcher(String name, this._feature, Object? matcher)
+  _FunctionMatcher(String name, this._feature, matcher)
       : super('`$name`:', '`$name`', matcher);
 
   @override

@@ -6,22 +6,22 @@ import 'interfaces.dart';
 
 /// Returns a matcher which matches if the match argument is greater
 /// than the given [value].
-Matcher greaterThan(Object value) =>
+Matcher greaterThan(value) =>
     _OrderingMatcher(value, false, false, true, 'a value greater than');
 
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to the given [value].
-Matcher greaterThanOrEqualTo(Object value) => _OrderingMatcher(
+Matcher greaterThanOrEqualTo(value) => _OrderingMatcher(
     value, true, false, true, 'a value greater than or equal to');
 
 /// Returns a matcher which matches if the match argument is less
 /// than the given [value].
-Matcher lessThan(Object value) =>
+Matcher lessThan(value) =>
     _OrderingMatcher(value, false, true, false, 'a value less than');
 
 /// Returns a matcher which matches if the match argument is less
 /// than or equal to the given [value].
-Matcher lessThanOrEqualTo(Object value) =>
+Matcher lessThanOrEqualTo(value) =>
     _OrderingMatcher(value, true, true, false, 'a value less than or equal to');
 
 /// A matcher which matches if the match argument is zero.
@@ -75,10 +75,10 @@ class _OrderingMatcher extends Matcher {
       : _valueInDescription = valueInDescription;
 
   @override
-  bool matches(Object? item, Map matchState) {
+  bool matches(item, Map matchState) {
     if (item == _value) {
       return _equalValue;
-    } else if ((item as dynamic) < _value) {
+    } else if (item < _value) {
       return _lessThanValue;
     } else if (item > _value) {
       return _greaterThanValue;
