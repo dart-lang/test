@@ -1,5 +1,5 @@
 name: fake_async
-version: 1.2.0-nullsafety.3
+version: 1.2.0
 description: >-
   Fake asynchronous events such as timers and microtasks for deterministic
   testing.
@@ -9,8 +9,8 @@ environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  clock: '>=1.1.0-nullsafety <1.1.0'
-  collection: '>=1.15.0-nullsafety <1.15.0'
+  clock: ^1.1.0
+  collection: ^1.15.0
 
 dev_dependencies:
   async: ^2.5.0-nullsafety
