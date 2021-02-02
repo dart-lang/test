@@ -1,3 +1,7 @@
+## 0.2.19-nullsafety.7
+
+* Expand upper bound constraints for some null safe migrated packages.
+
 ## 0.2.19-nullsafety.6
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.

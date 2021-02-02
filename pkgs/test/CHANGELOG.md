@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.18
+
+* Expand upper bound constraints for some null safe migrated packages.
+
 ## 1.16.0-nullsafety.17
 
 * Support the latest shelf release (`1.x.x`).

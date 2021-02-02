@@ -1,3 +1,7 @@
+## 0.3.12-nullsafety.16
+
+* Expand upper bound constraints for some null safe migrated packages.
+
 ## 0.3.12-nullsafety.15
 
 * Support the latest vm_service release (`6.x.x`).
