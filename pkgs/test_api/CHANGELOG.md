@@ -1,3 +1,19 @@
+## 0.2.19-nullsafety.7
+
+* Improve typing of a lot of internal APIs and a few public APIs:
+  * **Breaking Change**: `LiveTest.onComplete`, `LiveTest.run()`, and
+    `LiveTest.close()` each now return a `Future<void>` instead of a
+    `Future<dynamic>`. They never returned meaningful values, so it would be
+    very unusual to depend on using them.
+  * **Breaking Change**: `expectLater` now returns a `Future<void>` instead of
+    a `Future<dynamic>`. This future always contained `null`, so it would be
+    unusual to depend on using the value.
+  * **Breaking Change**: `RemoteListener.start`'s `beforeLoad` named parameter
+    must be a function which returns `Future<void>` (previously it needed to
+    return `Future<dynamic>`).
+  * **Breaking Change**: `errorsDontStopTest` now returns a `Future<void>`
+    instead of a `Future<dynamic>`.
+
 ## 0.2.19-nullsafety.6
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.
