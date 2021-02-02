@@ -1,3 +1,7 @@
+## 0.12.10
+
+* Stable release for null safety.
+
 ## 0.12.10-nullsafety.3
 
 * Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
@@ -59,7 +63,7 @@
 
 - Many improvements to `TypeMatcher`
   - Can now be used directly as `const TypeMatcher<MyType>()`.
-  - Added a type parameter to specify the target `Type`. 
+  - Added a type parameter to specify the target `Type`.
     - Made the `name` constructor parameter optional and marked it deprecated.
       It's redundant to the type parameter.
   - Migrated all `isType` matchers to `TypeMatcher`.
@@ -217,7 +221,7 @@
 
 ## 0.10.0+3
 
-* Removed `@deprecated` annotation on matchers due to 
+* Removed `@deprecated` annotation on matchers due to
 [Issue 19173](https://code.google.com/p/dart/issues/detail?id=19173)
 
 ## 0.10.0+2
