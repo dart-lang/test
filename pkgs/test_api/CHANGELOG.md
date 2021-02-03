@@ -1,3 +1,7 @@
+## 0.2.19
+
+* Stable release for null safety.
+
 ## 0.2.19-nullsafety.7
 
 * Expand upper bound constraints for some null safe migrated packages.

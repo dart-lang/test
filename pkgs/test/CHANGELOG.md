@@ -1,3 +1,7 @@
+## 1.16.0-nullsafety.19
+
+* Use the `test_api` for stable null safety.
+
 ## 1.16.0-nullsafety.18
 
 * Expand upper bound constraints for some null safe migrated packages.
