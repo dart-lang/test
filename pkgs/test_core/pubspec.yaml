@@ -1,5 +1,5 @@
 name: test_core
-version: 0.3.12-nullsafety.16
+version: 0.3.12-nullsafety.17
 description: A basic library for writing tests and running them on the VM.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_core
 
@@ -8,29 +8,29 @@ environment:
 
 dependencies:
   analyzer: ">=0.39.5 <0.42.0"
-  async: ^2.5.0-nullsafety
+  async: ^2.5.0
   args: ">=1.4.0 <3.0.0"
-  boolean_selector: ^2.1.0-nullsafety
-  collection: ^1.15.0-nullsafety
+  boolean_selector: ^2.1.0
+  collection: ^1.15.0
   coverage: ">=0.13.3 <0.16.0"
   glob: ">=1.0.0 <3.0.0"
   io: ^0.3.0
-  meta: ^1.3.0-nullsafety
+  meta: ^1.3.0
   package_config: ">=1.9.2 <3.0.0"
-  path: ^1.8.0-nullsafety
+  path: ^1.8.0
   pedantic: ^1.10.0-nullsafety
   pool: ^1.5.0-nullsafety
   source_map_stack_trace: ^2.1.0-nullsafety
   source_maps: ^0.10.10-nullsafety
-  source_span: ^1.8.0-nullsafety
-  stack_trace: ^1.10.0-nullsafety
+  source_span: ^1.8.0
+  stack_trace: ^1.10.0
   stream_channel: ^2.1.0-nullsafety
   vm_service: '>=1.0.0 <7.0.0'
   yaml: ">=2.0.0 <4.0.0"
   # matcher is tightly constrained by test_api
   matcher: any
   # Use an exact version until the test_api package is stable.
-  test_api: 0.2.19-nullsafety.7
+  test_api: 0.2.19
 
 dependency_overrides:
   test_api:
