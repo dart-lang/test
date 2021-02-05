@@ -1,3 +1,7 @@
+## 0.3.12
+
+* Stable null safety release.
+
 ## 0.3.12-nullsafety.17
 
 * Use the `test_api` for stable null safety.
