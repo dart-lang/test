@@ -287,7 +287,6 @@ class SuiteConfiguration {
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         precompiledPath: precompiledPath ?? this.precompiledPath,
         patterns: patterns ?? this.patterns,
-        // TODO(https://github.com/dart-lang/sdk/issues/41114): Remove cast
         runtimes: runtimes ?? _runtimes,
         includeTags: includeTags ?? this.includeTags,
         excludeTags: excludeTags ?? this.excludeTags,

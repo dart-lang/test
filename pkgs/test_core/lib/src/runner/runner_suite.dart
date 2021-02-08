@@ -81,13 +81,8 @@ class RunnerSuite extends Suite {
   ///
   /// Result is suitable for input to the coverage formatters provided by
   /// `package:coverage`.
-  Future<Map<String, dynamic>> gatherCoverage() async {
-    // TODO(https://github.com/dart-lang/sdk/issues/41108): Remove cast
-    var coverage =
-        // ignore: unnecessary_cast
-        await _controller._gatherCoverage?.call() as Map<String, dynamic>?;
-    return coverage ?? {};
-  }
+  Future<Map<String, dynamic>> gatherCoverage() async =>
+      (await _controller._gatherCoverage?.call()) ?? {};
 }
 
 /// A class that exposes and controls a [RunnerSuite].
