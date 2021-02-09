@@ -1,4 +1,7 @@
-## 2.0.0-nullsafety.1-dev
+## 2.0.0
+
+* Null safety stable release.
+* See breaking changes in the `2.0.0-nullsafety` version.
 
 ## 2.0.0-nullsafety
 
