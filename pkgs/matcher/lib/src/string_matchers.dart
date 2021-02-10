@@ -138,12 +138,12 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
 ///
 /// [re] can be a [RegExp] instance or a [String]; in the latter case it will be
 /// used to create a RegExp instance.
-Matcher matches(re) => _MatchesRegExp(re);
+Matcher matches(Pattern re) => _MatchesRegExp(re);
 
 class _MatchesRegExp extends FeatureMatcher<String> {
   final RegExp _regexp;
 
-  _MatchesRegExp(re)
+  _MatchesRegExp(Pattern re)
       : _regexp = (re is String)
             ? RegExp(re)
             : (re is RegExp)

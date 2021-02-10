@@ -6,7 +6,7 @@ import 'interfaces.dart';
 import 'util.dart';
 
 /// Returns a matcher which matches maps containing the given [value].
-Matcher containsValue(value) => _ContainsValue(value);
+Matcher containsValue(Object? value) => _ContainsValue(value);
 
 class _ContainsValue extends Matcher {
   final Object? _value;
@@ -14,15 +14,17 @@ class _ContainsValue extends Matcher {
   const _ContainsValue(this._value);
 
   @override
-  bool matches(item, Map matchState) => item.containsValue(_value);
+  bool matches(Object? item, Map matchState) =>
+      (item as dynamic).containsValue(_value);
   @override
   Description describe(Description description) =>
       description.add('contains value ').addDescriptionOf(_value);
 }
 
 /// Returns a matcher which matches maps containing the key-value pair
-/// with [key] => [value].
-Matcher containsPair(key, value) => _ContainsMapping(key, wrapMatcher(value));
+/// with [key] => [valueOrMatcher].
+Matcher containsPair(Object? key, Object? valueOrMatcher) =>
+    _ContainsMapping(key, wrapMatcher(valueOrMatcher));
 
 class _ContainsMapping extends Matcher {
   final Object? _key;
@@ -31,8 +33,9 @@ class _ContainsMapping extends Matcher {
   const _ContainsMapping(this._key, this._valueMatcher);
 
   @override
-  bool matches(item, Map matchState) =>
-      item.containsKey(_key) && _valueMatcher.matches(item[_key], matchState);
+  bool matches(Object? item, Map matchState) =>
+      (item as dynamic).containsKey(_key) &&
+      _valueMatcher.matches(item[_key], matchState);
 
   @override
   Description describe(Description description) {
@@ -44,9 +47,9 @@ class _ContainsMapping extends Matcher {
   }
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
-    if (!item.containsKey(_key)) {
+  Description describeMismatch(Object? item, Description mismatchDescription,
+      Map matchState, bool verbose) {
+    if (!(item as dynamic).containsKey(_key)) {
       return mismatchDescription
           .add(" doesn't contain key ")
           .addDescriptionOf(_key);

@@ -18,7 +18,7 @@ abstract class Description {
   Description add(String text);
 
   /// This is used to add a meaningful description of a value.
-  Description addDescriptionOf(value);
+  Description addDescriptionOf(Object? value);
 
   /// This is used to add a description of an [Iterable] [list],
   /// with appropriate [start] and [end] markers and inter-element [separator].
@@ -39,7 +39,7 @@ abstract class Matcher {
   /// [item] is the actual value. [matchState] can be supplied
   /// and may be used to add details about the mismatch that are too
   /// costly to determine in [describeMismatch].
-  bool matches(item, Map matchState);
+  bool matches(dynamic item, Map matchState);
 
   /// Builds a textual description of the matcher.
   Description describe(Description description);
@@ -54,7 +54,7 @@ abstract class Matcher {
   /// A few matchers make use of the [verbose] flag to provide detailed
   /// information that is not typically included but can be of help in
   /// diagnosing failures, such as stack traces.
-  Description describeMismatch(item, Description mismatchDescription,
+  Description describeMismatch(dynamic item, Description mismatchDescription,
           Map matchState, bool verbose) =>
       mismatchDescription;
 }

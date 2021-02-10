@@ -42,7 +42,7 @@ class StringDescription implements Description {
   /// escaping any embedded control characters; otherwise use its
   /// toString() value and wrap it in angular "quotes".
   @override
-  Description addDescriptionOf(value) {
+  Description addDescriptionOf(Object? value) {
     if (value is Matcher) {
       value.describe(this);
     } else {

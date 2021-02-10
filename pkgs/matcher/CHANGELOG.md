@@ -1,3 +1,7 @@
+## 0.12.11-dev
+
+* Change many argument types from `dynamic` to `Object?`.
+
 ## 0.12.10
 
 * Stable release for null safety.

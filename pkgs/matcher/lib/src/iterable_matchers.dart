@@ -9,8 +9,9 @@ import 'interfaces.dart';
 import 'util.dart';
 
 /// Returns a matcher which matches [Iterable]s in which all elements
-/// match the given [matcher].
-Matcher everyElement(matcher) => _EveryElement(wrapMatcher(matcher));
+/// match the given [valueOrMatcher].
+Matcher everyElement(Object? valueOrMatcher) =>
+    _EveryElement(wrapMatcher(valueOrMatcher));
 
 class _EveryElement extends _IterableMatcher {
   final Matcher _matcher;
@@ -62,8 +63,9 @@ class _EveryElement extends _IterableMatcher {
 }
 
 /// Returns a matcher which matches [Iterable]s in which at least one
-/// element matches the given [matcher].
-Matcher anyElement(matcher) => _AnyElement(wrapMatcher(matcher));
+/// element matches the given [valueOrMatcher].
+Matcher anyElement(Object? valueOrMatcher) =>
+    _AnyElement(wrapMatcher(valueOrMatcher));
 
 class _AnyElement extends _IterableMatcher {
   final Matcher _matcher;

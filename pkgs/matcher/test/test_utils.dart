@@ -4,7 +4,7 @@
 
 import 'package:test/test.dart';
 
-void shouldFail(value, Matcher matcher, expected) {
+void shouldFail(Object? value, Matcher matcher, Object? expected) {
   var failed = false;
   try {
     expect(value, matcher);
@@ -23,7 +23,7 @@ void shouldFail(value, Matcher matcher, expected) {
   expect(failed, isTrue, reason: 'Expected to fail.');
 }
 
-void shouldPass(value, Matcher matcher) {
+void shouldPass(Object? value, Matcher matcher) {
   expect(value, matcher);
 }
 

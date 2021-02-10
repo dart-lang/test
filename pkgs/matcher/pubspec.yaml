@@ -1,5 +1,5 @@
 name: matcher
-version: 0.12.10
+version: 0.12.11-dev
 
 description: >-
   Support for specifying test expectations via an extensible Matcher class.
@@ -17,3 +17,6 @@ dev_dependencies:
   test: any
   test_api: any
   test_core: any
+
+dependency_overrides:
+  test_api: any
