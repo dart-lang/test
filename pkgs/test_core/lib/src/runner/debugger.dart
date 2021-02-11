@@ -140,8 +140,7 @@ class _Debugger {
         if (runtime.isDartVM) {
           var url = _suite.environment.observatoryUrl;
           if (url == null) {
-            print("${yellow}Observatory URL not found. Make sure you're using "
-                '${runtime.name} 1.11 or later.$noColor');
+            print('${yellow}Observatory URL not found.$noColor');
           } else {
             print('Observatory URL: $bold$url$noColor');
           }
