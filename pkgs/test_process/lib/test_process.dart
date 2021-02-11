@@ -28,15 +28,13 @@ class TestProcess {
 
   /// A [StreamQueue] that emits each line of stdout from the process.
   ///
-  /// A copy of the underlying stream can be retreived using [stdoutStream].
-  StreamQueue<String> get stdout => _stdout;
-  StreamQueue<String> _stdout;
+  /// A copy of the underlying stream can be retrieved using [stdoutStream].
+  late final StreamQueue<String> stdout = StreamQueue(stdoutStream());
 
   /// A [StreamQueue] that emits each line of stderr from the process.
   ///
-  /// A copy of the underlying stream can be retreived using [stderrStream].
-  StreamQueue<String> get stderr => _stderr;
-  StreamQueue<String> _stderr;
+  /// A copy of the underlying stream can be retrieved using [stderrStream].
+  late final StreamQueue<String> stderr = StreamQueue(stderrStream());
 
   /// A splitter that can emit new copies of [stdout].
   final StreamSplitter<String> _stdoutSplitter;
@@ -48,7 +46,7 @@ class TestProcess {
   IOSink get stdin => _process.stdin;
 
   /// A buffer of mixed stdout and stderr lines.
-  final _log = <String>[];
+  final List<String> _log = <String>[];
 
   /// Whether [_log] has been passed to [printOnFailure] yet.
   bool _loggedOutput = false;
@@ -62,8 +60,9 @@ class TestProcess {
 
   /// Completes to [_process]'s exit code if it's exited, otherwise completes to
   /// `null` immediately.
-  Future<int> get _exitCodeOrNull async =>
-      await exitCode.timeout(Duration.zero, onTimeout: () => null);
+  Future<int?> get _exitCodeOrNull async => await exitCode
+      .then<int?>((value) => value)
+      .timeout(Duration.zero, onTimeout: () => null);
 
   /// Starts a process.
   ///
@@ -79,12 +78,12 @@ class TestProcess {
   /// temporarily to help when debugging test failures.
   static Future<TestProcess> start(
       String executable, Iterable<String> arguments,
-      {String workingDirectory,
-      Map<String, String> environment,
+      {String? workingDirectory,
+      Map<String, String>? environment,
       bool includeParentEnvironment = true,
       bool runInShell = false,
-      String description,
-      Encoding encoding,
+      String? description,
+      Encoding encoding = utf8,
       bool forwardStdio = false}) async {
     var process = await Process.start(executable, arguments.toList(),
         workingDirectory: workingDirectory,
@@ -99,7 +98,6 @@ class TestProcess {
       description = "$humanExecutable ${arguments.join(" ")}";
     }
 
-    encoding ??= utf8;
     return TestProcess(process, description,
         encoding: encoding, forwardStdio: forwardStdio);
   }
@@ -112,7 +110,7 @@ class TestProcess {
   /// This is protected, which means it should only be called by subclasses.
   @protected
   TestProcess(Process process, this.description,
-      {Encoding encoding, bool forwardStdio = false})
+      {Encoding encoding= utf8, bool forwardStdio = false})
       : _process = process,
         _stdoutSplitter = StreamSplitter(process.stdout
             .transform(encoding.decoder)
@@ -123,9 +121,6 @@ class TestProcess {
     addTearDown(_tearDown);
     expect(_process.exitCode.then((_) => _logOutput()), completes,
         reason: 'Process `$description` never exited.');
-
-    _stdout = StreamQueue(stdoutStream());
-    _stderr = StreamQueue(stderrStream());
 
     // Listen eagerly so that the lines are interleaved properly between the two
     // streams.
