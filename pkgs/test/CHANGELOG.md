@@ -1,3 +1,7 @@
+## 1.16.2
+
+* Update `test_core` dependency to `0.3.13`.
+
 ## 1.16.1
 
 * Allow the latest analyzer `1.0.0`.
