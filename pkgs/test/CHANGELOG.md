@@ -1,3 +1,7 @@
+## 1.16.1
+
+* Allow the latest analyzer `1.0.0`.
+
 ## 1.16.0
 
 * Stable null safety release.

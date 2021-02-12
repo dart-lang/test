@@ -1,4 +1,6 @@
-## 0.3.13-dev
+## 0.3.13
+
+* Allow the latest analyzer `1.0.0`.
 
 ## 0.3.12
 
