@@ -34,6 +34,7 @@ linter:
     - prefer_typing_uninitialized_variables
     - test_types_in_equals
     - throw_in_finally
+    - type_annotate_public_apis
     - unnecessary_await_in_return
     - unnecessary_brace_in_string_interps
     - unnecessary_getters_setters

@@ -61,8 +61,8 @@ class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
       description.addDescriptionOf(_matchValue).add(' ignoring whitespace');
 
   @override
-  Description describeTypedMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(dynamic item,
+      Description mismatchDescription, Map matchState, bool verbose) {
     return mismatchDescription
         .add('is ')
         .addDescriptionOf(collapseWhitespace(item))
@@ -80,7 +80,7 @@ class _StringStartsWith extends FeatureMatcher<String> {
   const _StringStartsWith(this._prefix);
 
   @override
-  bool typedMatches(item, Map matchState) => item.startsWith(_prefix);
+  bool typedMatches(dynamic item, Map matchState) => item.startsWith(_prefix);
 
   @override
   Description describe(Description description) =>
@@ -97,7 +97,7 @@ class _StringEndsWith extends FeatureMatcher<String> {
   const _StringEndsWith(this._suffix);
 
   @override
-  bool typedMatches(item, Map matchState) => item.endsWith(_suffix);
+  bool typedMatches(dynamic item, Map matchState) => item.endsWith(_suffix);
 
   @override
   Description describe(Description description) =>
@@ -119,7 +119,7 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
   const _StringContainsInOrder(this._substrings);
 
   @override
-  bool typedMatches(item, Map matchState) {
+  bool typedMatches(dynamic item, Map matchState) {
     var fromIndex = 0;
     for (var s in _substrings) {
       fromIndex = item.indexOf(s, fromIndex);
@@ -151,7 +151,7 @@ class _MatchesRegExp extends FeatureMatcher<String> {
                 : throw ArgumentError('matches requires a regexp or string');
 
   @override
-  bool typedMatches(item, Map matchState) => _regexp.hasMatch(item);
+  bool typedMatches(dynamic item, Map matchState) => _regexp.hasMatch(item);
 
   @override
   Description describe(Description description) =>

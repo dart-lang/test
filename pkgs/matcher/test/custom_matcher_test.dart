@@ -10,7 +10,7 @@ import 'test_utils.dart';
 class _BadCustomMatcher extends CustomMatcher {
   _BadCustomMatcher() : super('feature', 'description', {1: 'a'});
   @override
-  Object? featureValueOf(actual) => throw Exception('bang');
+  Object? featureValueOf(dynamic actual) => throw Exception('bang');
 }
 
 class _HasPrice extends CustomMatcher {

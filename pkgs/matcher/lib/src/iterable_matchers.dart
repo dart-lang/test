@@ -36,8 +36,8 @@ class _EveryElement extends _IterableMatcher {
       description.add('every element(').addDescriptionOf(_matcher).add(')');
 
   @override
-  Description describeTypedMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(dynamic item,
+      Description mismatchDescription, Map matchState, bool verbose) {
     if (matchState['index'] != null) {
       var index = matchState['index'];
       var element = matchState['element'];
@@ -204,8 +204,8 @@ class _UnorderedMatches extends _IterableMatcher {
       .add(' unordered');
 
   @override
-  Description describeTypedMismatch(item, Description mismatchDescription,
-          Map matchState, bool verbose) =>
+  Description describeTypedMismatch(dynamic item,
+          Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item.toList())!);
 
   /// Returns `true` if the value at [valueIndex] can be paired with some

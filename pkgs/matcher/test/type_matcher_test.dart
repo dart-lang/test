@@ -61,7 +61,7 @@ class _StringMatcher extends TypeMatcher {
             'String');
 
   @override
-  bool matches(item, Map matchState) => item is String;
+  bool matches(dynamic item, Map matchState) => item is String;
 }
 
 class _TestType {

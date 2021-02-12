@@ -28,7 +28,7 @@ class HavingMatcher<T> implements TypeMatcher<T> {
       HavingMatcher(_parent, description, feature, matcher, _functionMatchers);
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(dynamic item, Map matchState) {
     for (var matcher in <Matcher>[_parent].followedBy(_functionMatchers)) {
       if (!matcher.matches(item, matchState)) {
         addStateInfo(matchState, {'matcher': matcher});

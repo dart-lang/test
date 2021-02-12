@@ -12,9 +12,9 @@ import 'package:test/test.dart';
 import 'test_utils.dart';
 
 class C {
-  var instanceField = 1;
+  int instanceField = 1;
   int get instanceGetter => 2;
-  static var staticField = 3;
+  static int staticField = 3;
   static int get staticGetter => 4;
 }
 

@@ -18,7 +18,7 @@ class _IsCloseTo extends FeatureMatcher<num> {
   const _IsCloseTo(this._value, this._delta);
 
   @override
-  bool typedMatches(item, Map matchState) {
+  bool typedMatches(dynamic item, Map matchState) {
     var diff = item - _value;
     if (diff < 0) diff = -diff;
     return diff <= _delta;
@@ -32,8 +32,8 @@ class _IsCloseTo extends FeatureMatcher<num> {
       .addDescriptionOf(_value);
 
   @override
-  Description describeTypedMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(dynamic item,
+      Description mismatchDescription, Map matchState, bool verbose) {
     var diff = item - _value;
     if (diff < 0) diff = -diff;
     return mismatchDescription.add(' differs by ').addDescriptionOf(diff);
@@ -67,7 +67,7 @@ class _InRange extends FeatureMatcher<num> {
       this._low, this._high, this._lowMatchValue, this._highMatchValue);
 
   @override
-  bool typedMatches(value, Map matchState) {
+  bool typedMatches(dynamic value, Map matchState) {
     if (value < _low || value > _high) {
       return false;
     }
