@@ -1,4 +1,6 @@
-## 1.16.3-dev
+## 1.16.3
+
+* Update `web_socket_channel` dependency to support latest.
 
 ## 1.16.2
 
