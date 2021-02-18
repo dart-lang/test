@@ -34,5 +34,3 @@ dependency_overrides:
     path: ../test
   test_core:
     path: ../test_core
-  web_socket_channel:
-    git: https://github.com/dart-lang/web_socket_channel

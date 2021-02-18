@@ -45,6 +45,3 @@ dependency_overrides:
     path: ../test_core
   test_api:
     path: ../test_api
-  # Will remove after CI passes
-  web_socket_channel:
-    git: https://github.com/dart-lang/web_socket_channel
