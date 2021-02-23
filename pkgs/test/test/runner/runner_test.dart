@@ -709,12 +709,24 @@ void main() {
       await d.file('test.dart', _success).create();
       await d.file('runner.dart', '''
 // @dart=2.8
+import 'dart:async';
+import 'dart:io';
+
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
-  await test.runTests(args);
-  await test.runTests(args);
+  // TODO(jiahaog): Simplify this to use [stdin.asBroadcastStream()] once 
+  // https://github.com/dart-lang/sdk/issues/45098 is fixed.
+  final controller = StreamController<List<int>>.broadcast();
+  final stream = controller.stream;
+  final subscription = stdin.listen(controller.add);
+
+  await test.runTests(args, stdin: stream);
+  await test.runTests(args, stdin: stream);
   test.completeShutdown();
+
+  await controller.close();
+  await subscription.cancel();
 }''').create();
       var test = await runDart(['runner.dart', '--no-color', '--', 'test.dart'],
           description: 'dart runner.dart -- test.dart',

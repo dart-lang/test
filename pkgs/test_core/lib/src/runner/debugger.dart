@@ -28,7 +28,11 @@ import 'reporter.dart';
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
 CancelableOperation debug(
-    Engine engine, Reporter reporter, LoadSuite loadSuite) {
+  StreamQueue<String> stdin,
+  Engine engine,
+  Reporter reporter,
+  LoadSuite loadSuite,
+) {
   _Debugger /*?*/ debugger;
   var canceled = false;
   return CancelableOperation.fromFuture(() async {
@@ -42,7 +46,7 @@ CancelableOperation debug(
     var suite = await loadSuite.suite;
     if (canceled || suite == null) return;
 
-    await (debugger = _Debugger(engine, reporter, suite)).run();
+    await (debugger = _Debugger(stdin, engine, reporter, suite)).run();
   }(), onCancel: () {
     canceled = true;
     // Make sure the load test finishes so the engine can close.
@@ -57,6 +61,9 @@ CancelableOperation debug(
 class _Debugger {
   /// The test runner configuration.
   final _config = Configuration.current;
+
+  /// A queue of lines of standard input.
+  final StreamQueue<String> _stdin;
 
   /// The engine that will run the suite.
   final Engine _engine;
@@ -81,15 +88,16 @@ class _Debugger {
   StreamSubscription<bool> /*?*/ _onDebuggingSubscription;
 
   /// The subscription to [_suite.environment.onRestart].
-  /*late final*/ StreamSubscription _onRestartSubscription;
+  /*late final*/
+  StreamSubscription _onRestartSubscription;
 
   /// Whether [close] has been called.
   bool _closed = false;
 
   bool get _json => _config.reporter == 'json';
 
-  _Debugger(this._engine, this._reporter, this._suite)
-      : _console = Console(color: Configuration.current.color) {
+  _Debugger(this._stdin, this._engine, this._reporter, this._suite)
+      : _console = Console(stdin: _stdin, color: Configuration.current.color) {
     _console.registerCommand('restart',
         'Restart the current test after it finishes running.', _restartTest);
 
@@ -175,7 +183,7 @@ class _Debugger {
 
       await inCompletionOrder([
         _suite.environment.displayPause(),
-        stdinLines.cancelable((queue) => queue.next),
+        _stdin.cancelable((queue) => queue.next),
         _pauseCompleter.operation
       ]).first;
     } finally {

@@ -6,6 +6,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
@@ -34,13 +35,18 @@ final String _globalConfigPath = () {
   }
 }();
 
-Future<void> main(List<String> args) async {
-  await _execute(args);
+/// Entrypoint to the test executable.
+///
+/// [stdin] should be provided as a broadcast stream if this function is
+/// intended to be called multiple times in the same process, or if there are
+/// other accesses to `stdin` from `dart:io` outside this method.
+Future<void> main(List<String> args, {Stream<List<int>> stdin}) async {
+  await _execute(stdin ?? io.stdin, args);
   completeShutdown();
 }
 
-Future<void> runTests(List<String> args) async {
-  await _execute(args);
+Future<void> runTests(List<String> args, {Stream<List<int>> stdin}) async {
+  await _execute(stdin ?? io.stdin, args);
 }
 
 void completeShutdown() {
@@ -50,10 +56,9 @@ void completeShutdown() {
     signalSubscription = null;
   }
   isShutdown = true;
-  cancelStdinLines();
 }
 
-Future<void> _execute(List<String> args) async {
+Future<void> _execute(Stream<List<int>> stdin, List<String> args) async {
   /// A merged stream of all signals that tell the test runner to shut down
   /// gracefully.
   ///
@@ -144,8 +149,13 @@ Future<void> _execute(List<String> args) async {
     await runner?.close();
   });
 
+  // Use an empty stream for Fuchsia since Fuchsia components can't access
+  // stdin.
+  final stdinLines = StreamQueue<String>(
+      Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
+
   try {
-    runner = Runner(configuration);
+    runner = Runner(stdinLines, configuration);
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);

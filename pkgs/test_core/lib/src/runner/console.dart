@@ -8,12 +8,13 @@ import 'dart:math' as math;
 import 'package:async/async.dart';
 import 'package:pedantic/pedantic.dart';
 
-import '../util/io.dart';
-
 /// An interactive console for taking user commands.
 class Console {
   /// The registered commands.
   final _commands = <String, _Command>{};
+
+  /// A queue of lines of standard input.
+  final StreamQueue<String> _stdin;
 
   /// The pending next line of standard input, if we're waiting on one.
   CancelableOperation? _nextLine;
@@ -36,8 +37,11 @@ class Console {
   /// Creates a new [Console].
   ///
   /// If [color] is true, this uses Unix terminal colors.
-  Console({bool color = true})
-      : _red = color ? '\u001b[31m' : '',
+  Console({
+    required StreamQueue<String> stdin,
+    bool color = true,
+  })  : _stdin = stdin,
+        _red = color ? '\u001b[31m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     registerCommand('help', 'Displays this help information.', _displayHelp);
@@ -65,7 +69,7 @@ class Console {
     unawaited(() async {
       while (_running) {
         stdout.write('> ');
-        _nextLine = stdinLines.cancelable((queue) => queue.next);
+        _nextLine = _stdin.cancelable((queue) => queue.next);
         var commandName = await _nextLine!.value;
         _nextLine = null;
 

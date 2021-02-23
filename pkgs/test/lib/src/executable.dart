@@ -11,7 +11,12 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'runner/node/platform.dart';
 import 'runner/browser/platform.dart';
 
-void main(List<String> args) async {
+/// Entrypoint to the test executable.
+///
+/// [stdin] should be provided as a broadcast stream if this function is
+/// intended to be called multiple times in the same process, or if there are
+/// other accesses to `stdin` from `dart:io` outside this method.
+Future<void> main(List<String> args, {Stream<List<int>> stdin}) async {
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
   registerPlatformPlugin([
     Runtime.chrome,
@@ -21,5 +26,5 @@ void main(List<String> args) async {
     Runtime.internetExplorer
   ], () => BrowserPlatform.start());
 
-  await executable.main(args);
+  await executable.main(args, stdin: stdin);
 }

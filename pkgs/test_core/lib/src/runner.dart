@@ -45,6 +45,9 @@ class Runner {
   /// The loader that loads the test suites from the filesystem.
   final _loader = Loader();
 
+  /// A queue of lines of standard input.
+  final StreamQueue<String> _stdin;
+
   /// The engine that runs the test suites.
   final Engine _engine;
 
@@ -68,13 +71,15 @@ class Runner {
 
   /// The memoizer for ensuring [close] only runs once.
   final _closeMemo = AsyncMemoizer();
+
   bool get _closed => _closeMemo.hasRun;
 
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
 
   /// Creates a new runner based on [configuration].
-  factory Runner(Configuration config) => config.asCurrent(() {
+  factory Runner(StreamQueue<String> stdin, Configuration config) =>
+      config.asCurrent(() {
         var engine =
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
@@ -87,6 +92,7 @@ class Runner {
         }
 
         return Runner._(
+          stdin,
           engine,
           MultiplexReporter([
             // Standard reporter.
@@ -99,7 +105,7 @@ class Runner {
         );
       });
 
-  Runner._(this._engine, this._reporter, this._sinks);
+  Runner._(this._stdin, this._engine, this._reporter, this._sinks);
 
   /// Starts the runner.
   ///
@@ -240,6 +246,8 @@ class Runner {
         // Flush any IOSinks created for file reporters.
         await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
         _sinks.clear();
+
+        await _stdin.cancel(immediate: true);
       });
 
   /// Return a stream of [LoadSuite]s in [_config.paths].
@@ -389,7 +397,7 @@ class Runner {
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
     _suiteSubscription = suites.asyncMap((loadSuite) async {
-      _debugOperation = debug(_engine, _reporter, loadSuite);
+      _debugOperation = debug(_stdin, _engine, _reporter, loadSuite);
       await _debugOperation.valueOrCancellation();
     }).listen(null);
 
