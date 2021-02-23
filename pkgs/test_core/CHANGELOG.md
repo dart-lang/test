@@ -1,3 +1,7 @@
+## 0.3.11+5 (Backport)
+
+* Handle issue closing `stdin` during shutdown.
+
 ## 0.3.11+4 (Backport)
 
 * Fix `spawnHybridUri` on windows.

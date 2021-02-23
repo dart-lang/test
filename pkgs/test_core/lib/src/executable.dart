@@ -48,7 +48,7 @@ void completeShutdown() {
     signalSubscription = null;
   }
   isShutdown = true;
-  stdinLines.cancel(immediate: true);
+  cancelStdinLines();
 }
 
 Future<void> _execute(List<String> args) async {

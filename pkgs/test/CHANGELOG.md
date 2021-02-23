@@ -1,3 +1,7 @@
+## 1.15.8 (Backport)
+
+* Update `test_core` dependency to `0.3.11+5`.
+
 ## 1.15.7 (Backport)
 
 * Fix `spawnHybridUri` on windows.
