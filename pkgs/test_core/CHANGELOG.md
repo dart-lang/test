@@ -1,3 +1,7 @@
+## 0.3.14
+
+* Handle issue closing `stdin` during shutdown.
+
 ## 0.3.13
 
 * Allow the latest analyzer `1.0.0`.

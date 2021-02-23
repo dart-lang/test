@@ -1,3 +1,7 @@
+## 1.16.4
+
+* Update `test_core` dependency to `0.3.14`.
+
 ## 1.16.3
 
 * Update `web_socket_channel` dependency to support latest.
