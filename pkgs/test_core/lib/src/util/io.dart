@@ -3,14 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:core' as core;
 import 'dart:core';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
@@ -54,8 +53,13 @@ SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
 ///
 /// Also returns an empty stream for Fuchsia since Fuchsia components can't
 /// access stdin.
-final stdinLines = StreamQueue(
+StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
     Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
+
+StreamQueue<String>? _stdinLines;
+
+/// Call cancel on [stdinLines], but only if it's been accessed previously.
+void cancelStdinLines() => _stdinLines?.cancel(immediate: true);
 
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
