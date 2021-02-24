@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
@@ -20,7 +19,6 @@ import 'package:test_api/src/backend/test.dart'; // ignore: implementation_impor
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/reporter/multiplex.dart';
 
-import 'util/io.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
@@ -32,6 +30,8 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
+import 'runner/runner_suite.dart';
+import 'util/io.dart';
 
 /// A class that loads and runs tests based on a [Configuration].
 ///
@@ -368,7 +368,7 @@ class Runner {
   /// index. This makes the tests pretty tests across shards, and since the
   /// tests are continuous, makes us more likely to be able to re-use
   /// `setUpAll()` logic.
-  T _shardSuite<T extends Suite>(T suite) {
+  RunnerSuite _shardSuite(RunnerSuite suite) {
     if (_config.totalShards == null) return suite;
 
     var shardSize = suite.group.testCount / _config.totalShards;
@@ -382,7 +382,7 @@ class Runner {
       return count >= shardStart && count < shardEnd;
     });
 
-    return filtered as T;
+    return filtered;
   }
 
   /// Loads each suite in [suites] in order, pausing after load for runtimes
