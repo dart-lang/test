@@ -59,11 +59,7 @@ StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
 StreamQueue<String>? _stdinLines;
 
 /// Call cancel on [stdinLines], but only if it's been accessed previously.
-void cancelStdinLines() {
-  if (_stdinLines != null) {
-    _stdinLines!.cancel(immediate: true);
-  }
-}
+void cancelStdinLines() => _stdinLines?.cancel(immediate: true);
 
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
