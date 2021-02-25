@@ -73,8 +73,14 @@ class Runner {
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
 
-  /// Creates a new runner based on [configuration].
-  factory Runner(Configuration config) => config.asCurrent(() {
+  /// Creates a new runner based on [configuration] with stdout as the standard reporter.
+  factory Runner(Configuration config) =>
+      Runner.withCustomOutputStream(config, stdout);
+
+  /// Creates a new runner based on [configuration] with a custom standard reporter.
+  factory Runner.withCustomOutputStream(
+          Configuration config, IOSink outputStream) =>
+      config.asCurrent(() {
         var engine =
             Engine(concurrency: config.concurrency, coverage: config.coverage);
 
@@ -90,7 +96,7 @@ class Runner {
           engine,
           MultiplexReporter([
             // Standard reporter.
-            allReporters[config.reporter].factory(config, engine, stdout),
+            allReporters[config.reporter].factory(config, engine, outputStream),
             // File reporters.
             for (var reporter in config.fileReporters.keys)
               createFileReporter(reporter, config.fileReporters[reporter]),
