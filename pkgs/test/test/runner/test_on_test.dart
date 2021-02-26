@@ -7,7 +7,10 @@
 @TestOn('vm')
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:isolate';
 
+import 'package:package_config/package_config.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test_core/src/util/io.dart';
@@ -16,6 +19,20 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  PackageConfig currentPackageConfig;
+
+  setUpAll(() async {
+    currentPackageConfig =
+        await loadPackageConfigUri(await Isolate.packageConfig);
+  });
+
+  setUp(() async {
+    await d
+        .file('package_config.json',
+            jsonEncode(PackageConfig.toJson(currentPackageConfig)))
+        .create();
+  });
+
   group('for suite', () {
     test('runs a test suite on a matching platform', () async {
       await _writeTestFile('vm_test.dart', suiteTestOn: 'vm');

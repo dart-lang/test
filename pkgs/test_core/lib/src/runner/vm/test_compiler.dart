@@ -100,11 +100,13 @@ class TestCompiler {
         final outputFile = File(outputPath);
         final kernelReadyToRun = await outputFile.copy('${tempFile.path}.dill');
         final testCache = File(_dillCachePath);
+        // Keep the cache file up-to-date and use the size of the kernel file
+        // as an approximation for how many packages are included. Larger files
+        // are prefered, since re-using more packages will reduce the number of
+        // files the frontend server needs to load and parse.
         if (firstCompile ||
             !testCache.existsSync() ||
             (testCache.lengthSync() < outputFile.lengthSync())) {
-          // Keep the cache file up-to-date and include as many packages as possible,
-          // using the kernel size as an approximation.
           if (!testCache.parent.existsSync()) {
             testCache.parent.createSync(recursive: true);
           }
