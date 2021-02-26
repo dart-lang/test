@@ -1,3 +1,41 @@
+## 0.3.15-dev
+
+## 0.3.14
+
+* Handle issue closing `stdin` during shutdown.
+
+## 0.3.13
+
+* Allow the latest analyzer `1.0.0`.
+
+## 0.3.12
+
+* Stable null safety release.
+
+## 0.3.12-nullsafety.17
+
+* Use the `test_api` for stable null safety.
+
+## 0.3.12-nullsafety.16
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 0.3.12-nullsafety.15
+
+* Support the latest vm_service release (`6.x.x`).
+
+## 0.3.12-nullsafety.14
+
+* Support the latest coverage release (`0.15.x`).
+
+## 0.3.12-nullsafety.13
+
+* Allow the latest args release (`2.x`).
+
+## 0.3.12-nullsafety.12
+
+* Allow the latest glob release (`2.x`).
+
 ## 0.3.12-nullsafety.11
 
 * Fix `spawnHybridUri` on windows.

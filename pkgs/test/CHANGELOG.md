@@ -1,3 +1,51 @@
+## 1.16.4
+
+* Update `test_core` dependency to `0.3.14`.
+
+## 1.16.3
+
+* Update `web_socket_channel` dependency to support latest.
+
+## 1.16.2
+
+* Update `test_core` dependency to `0.3.13`.
+
+## 1.16.1
+
+* Allow the latest analyzer `1.0.0`.
+
+## 1.16.0
+
+* Stable null safety release.
+
+## 1.16.0-nullsafety.19
+
+* Use the `test_api` for stable null safety.
+
+## 1.16.0-nullsafety.18
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 1.16.0-nullsafety.17
+
+* Support the latest shelf release (`1.x.x`).
+
+## 1.16.0-nullsafety.16
+
+* Support the latest vm_service release (`6.x.x`).
+
+## 1.16.0-nullsafety.15
+
+* Support the latest coverage release (`0.15.x`).
+
+## 1.16.0-nullsafety.14
+
+* Allow the latest args release (`2.x`).
+
+## 1.16.0-nullsafety.13
+
+* Allow the latest glob release (`2.x`).
+
 ## 1.16.0-nullsafety.12
 
 * Fix `spawnHybridUri` on windows.

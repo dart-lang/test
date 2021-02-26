@@ -636,7 +636,7 @@ Timeouts can be configured on a per-test, -group, or -suite basis. To change the
 timeout for a test suite, put a `@Timeout` annotation at the top of the file:
 
 ```dart
-@Timeout(const Duration(seconds: 45))
+@Timeout(Duration(seconds: 45))
 
 import 'package:test/test.dart';
 
@@ -679,9 +679,9 @@ the `@OnPlatform` annotation and the `onPlatform` named parameter to `test()`
 and `group()`. For example:
 
 ```dart
-@OnPlatform(const {
+@OnPlatform({
   // Give Windows some extra wiggle-room before timing out.
-  'windows': const Timeout.factor(2)
+  'windows': Timeout.factor(2)
 })
 
 import 'package:test/test.dart';
@@ -721,7 +721,7 @@ Tags are defined using the `@Tags` annotation for suites and the `tags` named
 parameter to `test()` and `group()`. For example:
 
 ```dart
-@Tags(const ['browser'])
+@Tags(['browser'])
 
 import 'package:test/test.dart';
 

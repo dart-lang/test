@@ -106,8 +106,11 @@ void main() {
   });
 }
 
-Future _expectReports(String tests, String stdoutExpected,
-    List<List<dynamic /*Map|Matcher*/ >> jsonFileExpected, Map jsonFileDone,
+Future<void> _expectReports(
+    String tests,
+    String stdoutExpected,
+    List<List<dynamic /*Map|Matcher*/ >> jsonFileExpected,
+    Map<Object, Object> jsonFileDone,
     {List<String> args}) async {
   await d.file('test.dart', '''
     import 'dart:async';

@@ -39,7 +39,7 @@ class VMPlatform extends PlatformPlugin {
   VMPlatform();
 
   @override
-  StreamChannel loadChannel(String path, SuitePlatform platform) =>
+  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
       throw UnimplementedError();
 
   @override
