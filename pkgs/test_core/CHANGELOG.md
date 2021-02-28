@@ -1,5 +1,7 @@
 ## 0.3.15-dev
 
+* Allow package:io version 1.0.0.
+
 ## 0.3.14
 
 * Handle issue closing `stdin` during shutdown.
