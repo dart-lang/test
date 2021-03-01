@@ -1,3 +1,7 @@
+## 1.16.5
+
+* Expand several deps to allow the latest versions.
+
 ## 1.16.4
 
 * Update `test_core` dependency to `0.3.14`.

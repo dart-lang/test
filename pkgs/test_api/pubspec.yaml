@@ -23,9 +23,7 @@ dependencies:
   matcher: '>=0.12.10 <0.12.11'
 
 dev_dependencies:
-  pedantic: ^1.10.0-nullsafety
-  test_descriptor: ^1.0.0
-  test_process: ^1.0.0
+  pedantic: ^1.10.0
   test: any
   test_core: any
 
