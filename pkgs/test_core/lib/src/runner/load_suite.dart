@@ -167,7 +167,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If [suite] completes to `null`, [change] won't be run. [change] is run
   /// within the load test's zone, so any errors or prints it emits will be
   /// associated with that test.
-  LoadSuite changeSuite(RunnerSuite Function(RunnerSuite) change) {
+  LoadSuite changeSuite(RunnerSuite? Function(RunnerSuite) change) {
     return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 

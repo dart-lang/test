@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:collection';
@@ -29,7 +27,7 @@ import 'package:test/test.dart';
 final suitePlatform = SuitePlatform(Runtime.vm);
 
 // The last state change detected via [expectStates].
-State lastState;
+State? lastState;
 
 /// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
 ///
@@ -60,7 +58,7 @@ void expectSingleFailure(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState!.status, equals(Status.complete));
       expect(error, isTestFailure('oh no'));
     }
   ]);
@@ -75,7 +73,7 @@ void expectSingleError(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState!.status, equals(Status.complete));
       expect(error, equals('oh no'));
     }
   ]);
@@ -149,8 +147,8 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// [stopBlocking] is passed the return value of [test].
 Future<void> expectTestBlocks(
     dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
-  LiveTest liveTest;
-  Future<void> future;
+  late LiveTest liveTest;
+  late Future<void> future;
   liveTest = createTest(() {
     var value = test();
     future = pumpEventQueue().then((_) {
@@ -190,7 +188,7 @@ List<GroupEntry> declare(void Function() body) {
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
 Engine declareEngine(void Function() body,
-    {bool runSkipped = false, String coverage}) {
+    {bool runSkipped = false, String? coverage}) {
   var declarer = Declarer()..declare(body);
   return Engine.withSuites([
     RunnerSuite(
