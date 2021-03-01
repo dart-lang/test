@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:async';
 import 'dart:io';
@@ -46,7 +44,7 @@ RunnerSuiteController deserializeSuite(
     Environment environment,
     StreamChannel channel,
     Object message,
-    {Future<Map<String, dynamic>> Function() /*?*/ gatherCoverage}) {
+    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
   var disconnector = Disconnector();
   var suiteChannel = MultiChannel(channel.transform(disconnector));
 
@@ -134,20 +132,20 @@ class _Deserializer {
         (group['entries'] as List).map((entry) {
           var map = entry as Map;
           if (map['type'] == 'group') return deserializeGroup(map);
-          return _deserializeTest(map);
+          return _deserializeTest(map)!;
         }),
         metadata: metadata,
         trace: group['trace'] == null
             ? null
             : Trace.parse(group['trace'] as String),
-        setUpAll: _deserializeTest(group['setUpAll'] as Map),
-        tearDownAll: _deserializeTest(group['tearDownAll'] as Map));
+        setUpAll: _deserializeTest(group['setUpAll'] as Map?),
+        tearDownAll: _deserializeTest(group['tearDownAll'] as Map?));
   }
 
   /// Deserializes [test] into a concrete [Test] class.
   ///
   /// Returns `null` if [test] is `null`.
-  Test /*?*/ _deserializeTest(Map /*?*/ test) {
+  Test? _deserializeTest(Map? test) {
     if (test == null) return null;
 
     var metadata = Metadata.deserialize(test['metadata']);

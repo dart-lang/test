@@ -1,8 +1,6 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:async';
 import 'dart:collection';
@@ -31,7 +29,7 @@ import 'util/print_sink.dart';
 /// is applied except for the filtering defined by `solo` or `skip` arguments to
 /// `group` and `test`. Returns [true] if all tests passed.
 Future<bool> directRunTests(FutureOr<void> Function() testMain,
-        {Reporter Function(Engine) /*?*/ reporterFactory}) =>
+        {Reporter Function(Engine)? reporterFactory}) =>
     _directRunTests(testMain, reporterFactory: reporterFactory);
 
 /// Runs a single test declared in [testMain] matched by it's full test name.
@@ -49,13 +47,12 @@ Future<bool> directRunTests(FutureOr<void> Function() testMain,
 /// will both be run, then a [DuplicateTestnameException] will be thrown.
 Future<bool> directRunSingleTest(
         FutureOr<void> Function() testMain, String fullTestName,
-        {Reporter Function(Engine) /*?*/ reporterFactory}) =>
+        {Reporter Function(Engine)? reporterFactory}) =>
     _directRunTests(testMain,
         reporterFactory: reporterFactory, fullTestName: fullTestName);
 
 Future<bool> _directRunTests(FutureOr<void> Function() testMain,
-    {Reporter Function(Engine) /*?*/ reporterFactory,
-    String /*?*/ fullTestName}) async {
+    {Reporter Function(Engine)? reporterFactory, String? fullTestName}) async {
   reporterFactory ??= (engine) => ExpandedReporter.watch(engine, PrintSink(),
       color: Configuration.empty.color, printPath: false, printPlatform: false);
   final declarer = Declarer(fullTestName: fullTestName);
@@ -72,7 +69,8 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
   reporterFactory(engine);
 
   final success = await runZoned(() => Invoker.guard(engine.run),
-      zoneValues: {#test.declarer: declarer});
+          zoneValues: {#test.declarer: declarer}) ??
+      false;
 
   if (fullTestName != null) {
     final testCount = engine.liveTests.length;

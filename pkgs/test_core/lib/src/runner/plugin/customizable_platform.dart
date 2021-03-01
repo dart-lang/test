@@ -1,8 +1,6 @@
 // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'package:yaml/yaml.dart';
 
@@ -23,7 +21,7 @@ import './../platform.dart';
 ///
 /// Plugins that implement this **must** support children of recognized runtimes
 /// (created by [Runtime.extend]) in their [loadChannel] or [load] methods.
-abstract class CustomizablePlatform<T> extends PlatformPlugin {
+abstract class CustomizablePlatform<T extends Object> extends PlatformPlugin {
   /// Parses user-provided [settings] for a custom platform into a
   /// plugin-defined format.
   ///

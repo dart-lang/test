@@ -1,8 +1,6 @@
 // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:async';
 
@@ -24,7 +22,7 @@ class VMEnvironment implements Environment {
   VMEnvironment(this.observatoryUrl, this._isolate, this._client);
 
   @override
-  Uri /*?*/ get remoteDebuggerUrl => null;
+  Uri? get remoteDebuggerUrl => null;
 
   @override
   Stream get onRestart => StreamController.broadcast().stream;
@@ -32,9 +30,9 @@ class VMEnvironment implements Environment {
   @override
   CancelableOperation displayPause() {
     var completer =
-        CancelableCompleter(onCancel: () => _client.resume(_isolate.id));
+        CancelableCompleter(onCancel: () => _client.resume(_isolate.id!));
 
-    completer.complete(_client.pause(_isolate.id).then((_) => _client
+    completer.complete(_client.pause(_isolate.id!).then((_) => _client
         .onDebugEvent
         .firstWhere((event) => event.kind == EventKind.kResume)));
 

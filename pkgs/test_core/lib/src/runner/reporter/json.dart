@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:async';
 import 'dart:convert';
@@ -140,7 +138,7 @@ class JsonReporter implements Reporter {
         'groupIDs': groupIDs,
         'metadata': _serializeMetadata(suiteConfig, liveTest.test.metadata),
         ..._frameInfo(suiteConfig, liveTest.test.trace,
-            liveTest.suite.platform.runtime, liveTest.suite.path),
+            liveTest.suite.platform.runtime, liveTest.suite.path!),
       }
     });
 
@@ -166,7 +164,7 @@ class JsonReporter implements Reporter {
   /// If [suite] doesn't have an ID yet, this assigns one and emits a new event
   /// for that suite.
   int _idForSuite(Suite suite) {
-    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite];
+    if (_suiteIDs.containsKey(suite)) return _suiteIDs[suite]!;
 
     var id = _nextID++;
     _suiteIDs[suite] = id;
@@ -191,7 +189,7 @@ class JsonReporter implements Reporter {
     }
 
     _emit('suite', {
-      'suite': <String, Object /*?*/ >{
+      'suite': <String, Object?>{
         'id': id,
         'platform': suite.platform.runtime.identifier,
         'path': suite.path
@@ -206,11 +204,10 @@ class JsonReporter implements Reporter {
   /// If a group doesn't have an ID yet, this assigns one and emits a new event
   /// for that group.
   List<int> _idsForGroups(Iterable<Group> groups, Suite suite) {
-    int /*?*/ parentID;
+    int? parentID;
     return groups.map((group) {
       if (_groupIDs.containsKey(group)) {
-        parentID = _groupIDs[group];
-        return parentID;
+        return parentID = _groupIDs[group]!;
       }
 
       var id = _nextID++;
@@ -226,7 +223,7 @@ class JsonReporter implements Reporter {
           'metadata': _serializeMetadata(suiteConfig, group.metadata),
           'testCount': group.testCount,
           ..._frameInfo(
-              suiteConfig, group.trace, suite.platform.runtime, suite.path)
+              suiteConfig, group.trace, suite.platform.runtime, suite.path!)
         }
       });
       parentID = id;
@@ -267,7 +264,7 @@ class JsonReporter implements Reporter {
   ///
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
-  void _onDone(bool /*?*/ success) {
+  void _onDone(bool? success) {
     _cancel();
     _stopwatch.stop();
 
@@ -294,15 +291,15 @@ class JsonReporter implements Reporter {
   /// If javascript traces are enabled and the test is on a javascript platform,
   /// or if the [trace] is null or empty, then the line, column, and url will
   /// all be `null`.
-  Map<String, dynamic> _frameInfo(SuiteConfiguration suiteConfig,
-      Trace /*?*/ trace, Runtime runtime, String suitePath) {
+  Map<String, dynamic> _frameInfo(SuiteConfiguration suiteConfig, Trace? trace,
+      Runtime runtime, String suitePath) {
     var absoluteSuitePath = p.absolute(suitePath);
-    var frame = trace?.frames?.first;
+    var frame = trace?.frames.first;
     if (frame == null || (suiteConfig.jsTrace && runtime.isJS)) {
       return {'line': null, 'column': null, 'url': null};
     }
 
-    var rootFrame = trace?.frames?.firstWhereOrNull((frame) =>
+    var rootFrame = trace?.frames.firstWhereOrNull((frame) =>
         frame.uri.scheme == 'file' &&
         frame.uri.toFilePath() == absoluteSuitePath);
     return {

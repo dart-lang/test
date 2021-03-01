@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:io';
 import 'dart:math';
@@ -118,7 +116,7 @@ final ArgParser _parser = (() {
 
   var reporterDescriptions = <String, String>{};
   for (var reporter in allReporters.keys) {
-    reporterDescriptions[reporter] = allReporters[reporter].description;
+    reporterDescriptions[reporter] = allReporters[reporter]!.description;
   }
 
   parser.addSeparator('Output:');
@@ -185,8 +183,8 @@ class _Parser {
         .toList()
           ..addAll(_options['plain-name'] as List<String>);
 
-    var includeTagSet = Set.from(_options['tags'] as Iterable /*?*/ ?? [])
-      ..addAll(_options['tag'] as Iterable /*?*/ ?? []);
+    var includeTagSet = Set.from(_options['tags'] as Iterable? ?? [])
+      ..addAll(_options['tag'] as Iterable? ?? []);
 
     var includeTags = includeTagSet.fold(BooleanSelector.all,
         (BooleanSelector selector, tag) {
@@ -194,9 +192,8 @@ class _Parser {
       return selector.intersection(tagSelector);
     });
 
-    var excludeTagSet =
-        Set.from(_options['exclude-tags'] as Iterable /*?*/ ?? [])
-          ..addAll(_options['exclude-tag'] as Iterable /*?*/ ?? []);
+    var excludeTagSet = Set.from(_options['exclude-tags'] as Iterable? ?? [])
+      ..addAll(_options['exclude-tag'] as Iterable? ?? []);
 
     var excludeTags = excludeTagSet.fold(BooleanSelector.none,
         (BooleanSelector selector, tag) {
@@ -212,7 +209,7 @@ class _Parser {
     } else if (shardIndex != null) {
       if (shardIndex < 0) {
         throw FormatException('--shard-index may not be negative.');
-      } else if (shardIndex >= totalShards) {
+      } else if (shardIndex >= totalShards!) {
         throw FormatException(
             '--shard-index must be less than --total-shards.');
       }
@@ -232,7 +229,7 @@ class _Parser {
 
     var platform = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
-        ?.toList();
+        .toList();
     if (platform
             ?.any((runtime) => runtime.name == Runtime.phantomJS.identifier) ??
         false) {
@@ -279,12 +276,12 @@ class _Parser {
   /// If the user hasn't explicitly chosen a value, we want to pass null values
   /// to [new Configuration] so that it considers those fields unset when
   /// merging with configuration from the config file.
-  T /*?*/ _ifParsed<T>(String name) =>
+  T? _ifParsed<T>(String name) =>
       _options.wasParsed(name) ? _options[name] as T : null;
 
   /// Runs [parse] on the value of the option [name], and wraps any
   /// [FormatException] it throws with additional information.
-  T /*?*/ _parseOption<T>(String name, T Function(String) parse) {
+  T? _parseOption<T>(String name, T Function(String) parse) {
     if (!_options.wasParsed(name)) return null;
 
     var value = _options[name];
@@ -293,7 +290,7 @@ class _Parser {
     return _wrapFormatException(name, () => parse(value as String));
   }
 
-  Map<String, String> /*?*/ _parseFileReporterOption() =>
+  Map<String, String>? _parseFileReporterOption() =>
       _parseOption('file-reporter', (value) {
         if (!value.contains(':')) {
           throw FormatException(
