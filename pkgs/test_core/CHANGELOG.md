@@ -1,4 +1,4 @@
-## 0.3.15-dev
+## 0.3.15
 
 * Allow package:io version 1.0.0.
 
