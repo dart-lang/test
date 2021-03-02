@@ -1,5 +1,7 @@
 ## 1.16.6-dev
 
+* Complete the migration of all but the node platform to null safety.
+
 ## 1.16.5
 
 * Expand several deps to allow the latest versions.
