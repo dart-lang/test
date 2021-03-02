@@ -187,12 +187,12 @@ class _ConfigurationLoader {
     var skipRaw = _getValue('skip', 'boolean or string',
         (value) => (value is bool?) || value is String?);
     String? skipReason;
-    bool skip;
+    bool? skip;
     if (skipRaw is String) {
       skipReason = skipRaw;
       skip = true;
     } else {
-      skip = skipRaw as bool;
+      skip = skipRaw as bool?;
     }
 
     var testOn = _parsePlatformSelector('test_on');

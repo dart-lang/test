@@ -30,7 +30,7 @@ dependencies:
   # matcher is tightly constrained by test_api
   matcher: any
   # Use an exact version until the test_api package is stable.
-  test_api: 0.2.19
+  test_api: 0.2.20
 
 dependency_overrides:
   test_api:

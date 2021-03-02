@@ -30,7 +30,7 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// contains `pubspec.yaml`, *not* the `test/` directory). If it's a `package:`
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
-StreamChannel /*!*/ spawnHybridUri(String url, Object? message, Suite suite) {
+StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
   url = _normalizeUrl(url, suite);
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();

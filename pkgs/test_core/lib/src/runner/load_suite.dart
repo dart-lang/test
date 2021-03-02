@@ -88,7 +88,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite(String name, SuiteConfiguration config,
       SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
       {String? path}) {
-    var completer = Completer<Pair<RunnerSuite, Zone>>.sync();
+    var completer = Completer<Pair<RunnerSuite, Zone>?>.sync();
     return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker!.addOutstandingCallback();
