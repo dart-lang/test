@@ -24,15 +24,15 @@ abstract class Browser {
 
   /// The Observatory URL for this browser.
   ///
-  /// This will return `null` for browsers that aren't running the Dart VM, or
-  /// if the Observatory URL can't be found.
-  Future<Uri>? get observatoryUrl => null;
+  /// This will complete to `null` for browsers that aren't running the Dart VM,
+  /// or if the Observatory URL can't be found.
+  Future<Uri?> get observatoryUrl async => null;
 
   /// The remote debugger URL for this browser.
   ///
-  /// This will return `null` for browsers that don't support remote debugging,
-  /// or if the remote debugging URL can't be found.
-  Future<Uri>? get remoteDebuggerUrl => null;
+  /// This will  complete to `null` for browsers that don't support remote
+  /// debugging, or if the remote debugging URL can't be found.
+  Future<Uri?> get remoteDebuggerUrl async => null;
 
   /// The underlying process.
   ///

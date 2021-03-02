@@ -31,7 +31,7 @@ class Chrome extends Browser {
   final name = 'Chrome';
 
   @override
-  final Future<Uri> remoteDebuggerUrl;
+  final Future<Uri?> remoteDebuggerUrl;
 
   final Future<WipConnection> _tabConnection;
   final Map<String, String> _idToUrl;
@@ -41,7 +41,7 @@ class Chrome extends Browser {
   factory Chrome(Uri url, Configuration configuration,
       {ExecutableSettings? settings}) {
     settings ??= defaultSettings[Runtime.chrome]!;
-    var remoteDebuggerCompleter = Completer<Uri>.sync();
+    var remoteDebuggerCompleter = Completer<Uri?>.sync();
     var connectionCompleter = Completer<WipConnection>();
     var idToUrl = <String, String>{};
     return Chrome._(() async {
