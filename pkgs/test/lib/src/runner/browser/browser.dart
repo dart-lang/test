@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
@@ -28,13 +26,13 @@ abstract class Browser {
   ///
   /// This will return `null` for browsers that aren't running the Dart VM, or
   /// if the Observatory URL can't be found.
-  Future<Uri> get observatoryUrl => null;
+  Future<Uri>? get observatoryUrl => null;
 
   /// The remote debugger URL for this browser.
   ///
   /// This will return `null` for browsers that don't support remote debugging,
   /// or if the remote debugging URL can't be found.
-  Future<Uri> get remoteDebuggerUrl => null;
+  Future<Uri>? get remoteDebuggerUrl => null;
 
   /// The underlying process.
   ///

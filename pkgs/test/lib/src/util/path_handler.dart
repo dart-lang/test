@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'package:path/path.dart' as p;
@@ -38,12 +36,12 @@ class PathHandler {
   }
 
   FutureOr<shelf.Response> _onRequest(shelf.Request request) {
-    shelf.Handler handler;
-    int handlerIndex;
-    var node = _paths;
+    shelf.Handler? handler;
+    int? handlerIndex;
+    _Node? node = _paths;
     var components = p.url.split(request.url.path);
     for (var i = 0; i < components.length; i++) {
-      node = node.children[components[i]];
+      node = node!.children[components[i]];
       if (node == null) break;
       if (node.handler == null) continue;
       handler = node.handler;
@@ -52,13 +50,13 @@ class PathHandler {
 
     if (handler == null) return shelf.Response.notFound('Not found.');
 
-    return handler(
-        request.change(path: p.url.joinAll(components.take(handlerIndex + 1))));
+    return handler(request.change(
+        path: p.url.joinAll(components.take(handlerIndex! + 1))));
   }
 }
 
 /// A trie node.
 class _Node {
-  shelf.Handler handler;
+  shelf.Handler? handler;
   final children = <String, _Node>{};
 }
