@@ -138,6 +138,6 @@ abstract class Browser {
     (await _process).kill();
 
     // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.catchError((_) {});
+    return onExit.onError((_, __) {});
   }
 }

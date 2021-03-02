@@ -113,7 +113,7 @@ RunnerSuiteController deserializeSuite(
   return RunnerSuiteController(
       environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
-      onClose: () => disconnector.disconnect().catchError(handleError),
+      onClose: () => disconnector.disconnect().onError(handleError),
       gatherCoverage: gatherCoverage);
 }
 

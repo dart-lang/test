@@ -231,7 +231,7 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
   for (var operation in operationSet) {
     operation.value
         .then((value) => controller.add(value))
-        .catchError(controller.addError)
+        .onError(controller.addError)
         .whenComplete(() {
       operationSet.remove(operation);
       if (operationSet.isEmpty) controller.close();
