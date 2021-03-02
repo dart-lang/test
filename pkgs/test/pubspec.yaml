@@ -1,5 +1,5 @@
 name: test
-version: 1.16.5
+version: 1.16.6-dev
 description: A full featured library for writing and running Dart tests.
 repository: https://github.com/dart-lang/test/blob/master/pkgs/test
 
@@ -31,7 +31,7 @@ dependencies:
   webkit_inspection_protocol: '>=0.5.0 <2.0.0'
   yaml: '>=2.0.0 <4.0.0'
   # Use an exact version until the test_api and test_core package are stable.
-  test_api: 0.2.19
+  test_api: 0.2.20
   test_core: 0.3.15
 
 dev_dependencies:

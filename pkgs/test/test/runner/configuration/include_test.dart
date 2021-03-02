@@ -1,8 +1,6 @@
 // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 import 'package:path/path.dart' as p;
@@ -108,7 +106,7 @@ void main() {
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
     var config = Configuration.load(path);
-    var presetBar = config.presets['bar'];
+    var presetBar = config.presets['bar']!;
     expect(presetBar.pauseAfterLoad, isTrue);
     expect(presetBar.reporter, 'expanded');
   });

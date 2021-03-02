@@ -1,5 +1,7 @@
 ## 0.2.20-dev
 
+* Fix some strong null safety mode errors in the original migration.
+
 ## 0.2.19
 
 * Stable release for null safety.

@@ -1,15 +1,12 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.8
-
-import 'dart:isolate';
 
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 
 import '../util/detaching_future.dart';
+import '../util/package_config.dart';
 
 /// A comment which forces the language version to be that of the current
 /// packages default.
@@ -19,7 +16,7 @@ import '../util/detaching_future.dart';
 Future<String> get rootPackageLanguageVersionComment =>
     _rootPackageLanguageVersionComment.asFuture;
 final _rootPackageLanguageVersionComment = DetachingFuture(() async {
-  var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
+  var packageConfig = await loadPackageConfigUri(await packageConfigUri);
   var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
   if (rootPackage == null) return '';
   return '// @dart=${rootPackage.languageVersion}';

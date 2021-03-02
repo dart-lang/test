@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:async';
 import 'dart:developer';
@@ -56,8 +54,8 @@ class VMPlatform extends PlatformPlugin {
       rethrow;
     }
 
-    VmService /*?*/ client;
-    StreamSubscription<Event> /*?*/ eventSub;
+    VmService? client;
+    StreamSubscription<Event>? eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
       isolate.kill();
@@ -66,25 +64,25 @@ class VMPlatform extends PlatformPlugin {
       sink.close();
     }));
 
-    Environment /*?*/ environment;
-    IsolateRef /*?*/ isolateRef;
+    Environment? environment;
+    IsolateRef? isolateRef;
     if (_config.debug) {
       var info =
           await Service.controlWebServer(enable: true, silenceOutput: true);
-      var isolateID = Service.getIsolateID(isolate);
+      var isolateID = Service.getIsolateID(isolate)!;
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
       client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
-          .isolates
+          .isolates!
           .firstWhere((isolate) => isolate.number == isolateNumber.toString());
-      await client.setName(isolateRef.id, path);
-      var libraryRef = (await client.getIsolate(isolateRef.id))
-          .libraries
+      await client.setName(isolateRef.id!, path);
+      var libraryRef = (await client.getIsolate(isolateRef.id!))
+          .libraries!
           .firstWhere((library) => library.uri == libraryPath);
       var url = _observatoryUrlFor(
-          info.serverUri.toString(), isolateRef.id, libraryRef.id);
+          info.serverUri.toString(), isolateRef.id!, libraryRef.id!);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -92,10 +90,10 @@ class VMPlatform extends PlatformPlugin {
 
     var controller = deserializeSuite(
         path, platform, suiteConfig, environment, channel, message,
-        gatherCoverage: () => _gatherCoverage(environment));
+        gatherCoverage: () => _gatherCoverage(environment!));
 
     if (isolateRef != null) {
-      await client.streamListen('Debug');
+      await client!.streamListen('Debug');
       eventSub = client.onDebugEvent.listen((event) {
         if (event.kind == EventKind.kResume) {
           controller.setDebugging(false);
@@ -120,7 +118,7 @@ class VMPlatform extends PlatformPlugin {
     if (precompiledPath != null) {
       return _spawnPrecompiledIsolate(path, message, precompiledPath);
     } else if (_config.pubServeUrl != null) {
-      return _spawnPubServeIsolate(path, message, _config.pubServeUrl);
+      return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
     } else {
       return _spawnDataIsolate(path, message, suiteMetadata);
     }
@@ -157,10 +155,10 @@ Future<Isolate> _spawnPrecompiledIsolate(
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
-  final isolateId = Uri.parse(environment.observatoryUrl.fragment)
+  final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
       .queryParameters['isolateId'];
-  return await collect(environment.observatoryUrl, false, false, false, {},
-      isolateIds: {isolateId});
+  return await collect(environment.observatoryUrl!, false, false, false, {},
+      isolateIds: {isolateId!});
 }
 
 Future<Isolate> _spawnPubServeIsolate(

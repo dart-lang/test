@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 
@@ -416,7 +414,7 @@ void main() {
 }
 
 Future<void> _expectReport(String tests, String expected,
-    {List<String> args}) async {
+    {List<String>? args}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -435,7 +433,7 @@ $tests
 
   // Skip the first CR, remove excess trailing whitespace, and trim off
   // timestamps.
-  String lastLine;
+  String? lastLine;
   var actual = stdoutLines.skip(1).map((line) {
     if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
 
