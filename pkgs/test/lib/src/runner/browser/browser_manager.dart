@@ -110,9 +110,9 @@ class BrowserManager {
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
-    browser.onExit.then((_) {
+    browser.onExit.then<void>((_) {
       throw ApplicationException('${runtime.name} exited before connecting.');
-    }).catchError((Object error, StackTrace stackTrace) {
+    }).onError<Object>((error, stackTrace) {
       if (!completer.isCompleted) {
         completer.completeError(error, stackTrace);
       }
@@ -121,7 +121,7 @@ class BrowserManager {
     future.then((webSocket) {
       if (completer.isCompleted) return;
       completer.complete(BrowserManager._(browser, runtime, webSocket));
-    }).catchError((Object error, StackTrace stackTrace) {
+    }).onError((Object error, StackTrace stackTrace) {
       browser.close();
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);

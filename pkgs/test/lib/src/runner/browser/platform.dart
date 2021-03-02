@@ -447,7 +447,7 @@ class BrowserPlatform extends PlatformPlugin
     // Store null values for browsers that error out so we know not to load them
     // again.
     _browserManagers[browser] =
-        future.then<BrowserManager?>((value) => value, onError: (_) => null);
+        future.then<BrowserManager?>((value) => value).onError((_, __) => null);
 
     return future;
   }

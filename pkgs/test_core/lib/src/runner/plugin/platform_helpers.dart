@@ -45,7 +45,7 @@ RunnerSuiteController deserializeSuite(
     StreamChannel channel,
     Object message,
     {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
-  var disconnector = Disconnector();
+  var disconnector = Disconnector<Object>();
   var suiteChannel = MultiChannel(channel.transform(disconnector));
 
   suiteChannel.sink.add(<String, dynamic>{
