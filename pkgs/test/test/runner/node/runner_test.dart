@@ -302,7 +302,7 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          test("success", () {}, onPlatform: {"${otherOS}": Skip()});
+          test("success", () {}, onPlatform: {"$otherOS": Skip()});
         }
       ''').create();
 
