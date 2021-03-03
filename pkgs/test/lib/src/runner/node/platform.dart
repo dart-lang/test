@@ -1,8 +1,6 @@
 // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:io';
@@ -50,7 +48,7 @@ class NodePlatform extends PlatformPlugin
   final _compiledDir = createTempDir();
 
   /// The HTTP client to use when fetching JS files for `pub serve`.
-  final HttpClient _http;
+  final HttpClient? _http;
 
   /// Executable settings for [Runtime.nodeJS] and runtimes that extend
   /// it.
@@ -89,8 +87,8 @@ class NodePlatform extends PlatformPlugin
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);
-    var controller = deserializeSuite(path, platform, suiteConfig,
-        PluginEnvironment(), pair.first.cast(), message);
+    var controller = deserializeSuite(
+        path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
 
     controller.channel('test.node.mapper').sink.add(pair.last?.serialize());
 
@@ -101,7 +99,7 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<StreamChannel<Object>, StackTraceMapper>> _loadChannel(
+  Future<Pair<StreamChannel<Object?>, StackTraceMapper?>> _loadChannel(
       String path, Runtime runtime, SuiteConfiguration suiteConfig) async {
     final servers = await _loopback();
 
@@ -123,16 +121,14 @@ class NodePlatform extends PlatformPlugin
           .transform(chunksToLines)
           .transform(jsonDocument)
           .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
-        if (process != null) process.kill();
+        process.kill();
         sink.close();
       }));
 
       return Pair(channel, pair.last);
     } finally {
-      unawaited(Future.wait<void>(servers.map((s) => s
-          .close()
-          .then<ServerSocket /*?*/ >((v) => v)
-          .onError((_, __) => null))));
+      unawaited(Future.wait<void>(servers.map((s) =>
+          s.close().then<ServerSocket?>((v) => v).onError((_, __) => null))));
     }
   }
 
@@ -140,11 +136,11 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<Process, StackTraceMapper>> _spawnProcess(String path,
+  Future<Pair<Process, StackTraceMapper?>> _spawnProcess(String path,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       return _spawnPrecompiledProcess(path, runtime, suiteConfig, socketPort,
-          _config.suiteDefaults.precompiledPath);
+          _config.suiteDefaults.precompiledPath!);
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeProcess(path, runtime, suiteConfig, socketPort);
     } else {
@@ -154,7 +150,7 @@ class NodePlatform extends PlatformPlugin
 
   /// Compiles [testPath] with dart2js, adds the node preamble, and then spawns
   /// a Node.js process that loads that Dart test suite.
-  Future<Pair<Process, StackTraceMapper>> _spawnNormalProcess(String testPath,
+  Future<Pair<Process, StackTraceMapper?>> _spawnNormalProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
@@ -175,7 +171,7 @@ class NodePlatform extends PlatformPlugin
     await jsFile.writeAsString(
         preamble.getPreamble(minified: true) + await jsFile.readAsString());
 
-    StackTraceMapper mapper;
+    StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
@@ -189,20 +185,20 @@ class NodePlatform extends PlatformPlugin
 
   /// Spawns a Node.js process that loads the Dart test suite at [testPath]
   /// under [precompiledPath].
-  Future<Pair<Process, StackTraceMapper>> _spawnPrecompiledProcess(
+  Future<Pair<Process, StackTraceMapper?>> _spawnPrecompiledProcess(
       String testPath,
       Runtime runtime,
       SuiteConfiguration suiteConfig,
       int socketPort,
       String precompiledPath) async {
-    StackTraceMapper mapper;
+    StackTraceMapper? mapper;
     var jsPath = p.join(precompiledPath, '$testPath.node_test.dart.js');
     if (!suiteConfig.jsTrace) {
       var mapPath = jsPath + '.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-          packageMap: (await findPackageConfig(Directory(precompiledPath)))
+          packageMap: (await findPackageConfig(Directory(precompiledPath)))!
               .toPackageMap());
     }
 
@@ -212,17 +208,20 @@ class NodePlatform extends PlatformPlugin
   /// Requests the compiled js for [testPath] from the pub serve url, prepends
   /// the node preamble, and then spawns a Node.js process that loads that Dart
   /// test suite.
-  Future<Pair<Process, StackTraceMapper>> _spawnPubServeProcess(String testPath,
-      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
+  Future<Pair<Process, StackTraceMapper?>> _spawnPubServeProcess(
+      String testPath,
+      Runtime runtime,
+      SuiteConfiguration suiteConfig,
+      int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
-    var url = _config.pubServeUrl.resolveUri(
+    var url = _config.pubServeUrl!.resolveUri(
         p.toUri(p.relative(testPath, from: 'test') + '.node_test.dart.js'));
 
     var js = await _get(url, testPath);
     await File(jsPath).writeAsString(preamble.getPreamble(minified: true) + js);
 
-    StackTraceMapper mapper;
+    StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
       var mapUrl = url.replace(path: url.path + '.map');
       mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
@@ -237,7 +236,7 @@ class NodePlatform extends PlatformPlugin
   /// Starts the Node.js process for [runtime] with [jsPath].
   Future<Process> _startProcess(
       Runtime runtime, String jsPath, int socketPort) async {
-    var settings = _settings[runtime];
+    var settings = _settings[runtime]!;
 
     var nodeModules = p.absolute('node_modules');
     var nodePath = Platform.environment['NODE_PATH'];
@@ -248,11 +247,10 @@ class NodePlatform extends PlatformPlugin
           settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
           environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
-      await Future.error(
+      await Future<Never>.error(
           ApplicationException(
               'Failed to run ${runtime.name}: ${getErrorMessage(error)}'),
           stackTrace);
-      return null;
     }
   }
 
@@ -261,7 +259,7 @@ class NodePlatform extends PlatformPlugin
   /// If this fails, throws a [LoadException] for [suitePath].
   Future<String> _get(Uri url, String suitePath) async {
     try {
-      var response = await (await _http.getUrl(url)).close();
+      var response = await (await _http!.getUrl(url)).close();
 
       if (response.statusCode != 200) {
         // We don't care about the response body, but we have to drain it or
@@ -279,8 +277,8 @@ class NodePlatform extends PlatformPlugin
     } on IOException catch (error) {
       var message = getErrorMessage(error);
       if (error is SocketException) {
-        message = '${error.osError.message} '
-            '(errno ${error.osError.errorCode})';
+        message = '${error.osError?.message} '
+            '(errno ${error.osError?.errorCode})';
       }
 
       throw LoadException(
@@ -297,7 +295,7 @@ class NodePlatform extends PlatformPlugin
         if (_config.pubServeUrl == null) {
           Directory(_compiledDir).deleteSync(recursive: true);
         } else {
-          _http.close();
+          _http!.close();
         }
       });
   final _closeMemo = AsyncMemoizer<void>();
@@ -318,7 +316,7 @@ Future<List<ServerSocket>> _loopback({int remainingRetries = 5}) async {
         await ServerSocket.bind(InternetAddress.loopbackIPv6, v4Server.port);
     return [v4Server, v6Server];
   } on SocketException catch (error) {
-    if (error.osError.errorCode != _addressInUseErrno) rethrow;
+    if (error.osError?.errorCode != _addressInUseErrno) rethrow;
     if (remainingRetries == 0) rethrow;
 
     // A port being available on IPv4 doesn't necessarily mean that the same
