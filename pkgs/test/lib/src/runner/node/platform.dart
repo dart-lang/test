@@ -129,8 +129,10 @@ class NodePlatform extends PlatformPlugin
 
       return Pair(channel, pair.last);
     } finally {
-      unawaited(
-          Future.wait<void>(servers.map((s) => s.close().catchError((_) {}))));
+      unawaited(Future.wait<void>(servers.map((s) => s
+          .close()
+          .then<ServerSocket /*?*/ >((v) => v)
+          .onError((_, __) => null))));
     }
   }
 
