@@ -246,7 +246,7 @@ class BrowserManager {
             currentPlatform(_runtime),
             suiteConfig,
             await _environment,
-            suiteChannel,
+            suiteChannel.cast(),
             message, gatherCoverage: () async {
           var browser = _browser;
           if (browser is Chrome) return browser.gatherCoverage();
