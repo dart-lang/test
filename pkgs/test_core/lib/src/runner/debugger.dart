@@ -153,8 +153,7 @@ class _Debugger {
           }
         }
 
-        var buffer =
-            StringBuffer('${bold}The test runner is paused.${noColor} ');
+        var buffer = StringBuffer('${bold}The test runner is paused.$noColor ');
         if (runtime.isDartVM) {
           buffer.write('Open the Observatory ');
         } else {

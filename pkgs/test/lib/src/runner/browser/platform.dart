@@ -230,13 +230,13 @@ class BrowserPlatform extends PlatformPlugin
       var htmlTemplatePath = _config.customHtmlTemplatePath!;
       if (!File(htmlTemplatePath).existsSync()) {
         throw LoadException(
-            path, '"${htmlTemplatePath}" does not exist or is not readable');
+            path, '"$htmlTemplatePath" does not exist or is not readable');
       }
 
       final templateFileContents = File(htmlTemplatePath).readAsStringSync();
       if ('{{testScript}}'.allMatches(templateFileContents).length != 1) {
         throw LoadException(path,
-            '"${htmlTemplatePath}" must contain exactly one {{testScript}} placeholder');
+            '"$htmlTemplatePath" must contain exactly one {{testScript}} placeholder');
       }
       _checkHtmlCorrectness(htmlTemplatePath, path);
     }
@@ -283,7 +283,7 @@ class BrowserPlatform extends PlatformPlugin
     if (!File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
       throw LoadException(
           path,
-          '"${htmlPath}" must contain <script src="packages/test/dart.js">'
+          '"$htmlPath" must contain <script src="packages/test/dart.js">'
           '</script>.');
     }
   }
