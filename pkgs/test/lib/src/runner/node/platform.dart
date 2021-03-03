@@ -247,11 +247,10 @@ class NodePlatform extends PlatformPlugin
           settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
           environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
-      await Future.error(
+      await Future<Never>.error(
           ApplicationException(
               'Failed to run ${runtime.name}: ${getErrorMessage(error)}'),
           stackTrace);
-      throw StateError('unreachable');
     }
   }
 
