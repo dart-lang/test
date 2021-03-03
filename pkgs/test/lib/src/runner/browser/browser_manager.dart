@@ -187,7 +187,7 @@ class BrowserManager {
 
     _environment = _loadBrowserEnvironment();
     _channel.stream.listen(
-        (message) => _onMessage(message as Map<Object, Object>),
+        (message) => _onMessage(message as Map<Object, Object?>),
         onDone: close);
   }
 
@@ -286,7 +286,7 @@ class BrowserManager {
   }
 
   /// The callback for handling messages received from the host page.
-  void _onMessage(Map<Object, Object> message) {
+  void _onMessage(Map<Object, Object?> message) {
     switch (message['command'] as String) {
       case 'ping':
         break;
