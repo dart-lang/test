@@ -87,8 +87,8 @@ class NodePlatform extends PlatformPlugin
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);
-    var controller = deserializeSuite(path, platform, suiteConfig,
-        PluginEnvironment(), pair.first.cast(), message);
+    var controller = deserializeSuite(
+        path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
 
     controller.channel('test.node.mapper').sink.add(pair.last?.serialize());
 
