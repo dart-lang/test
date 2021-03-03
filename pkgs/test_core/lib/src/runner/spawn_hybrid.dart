@@ -131,7 +131,7 @@ Future<String> _languageVersionCommentFor(String url) async {
     var packageConfig = await currentPackageConfig;
     var package = packageConfig.packageOf(parsedUri);
     var version = package?.languageVersion;
-    if (version != null) return '// @dart=${version}';
+    if (version != null) return '// @dart=$version';
   }
 
   // Fall back on no language comment.
