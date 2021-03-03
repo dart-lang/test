@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
@@ -24,13 +22,13 @@ class Safari extends Browser {
   @override
   final name = 'Safari';
 
-  Safari(url, {ExecutableSettings settings})
-      : super(() => _startBrowser(url, settings));
+  Safari(url, {ExecutableSettings? settings})
+      : super(() =>
+            _startBrowser(url, settings ?? defaultSettings[Runtime.safari]!));
 
   /// Starts a new instance of Safari open to the given [url], which may be a
   /// [Uri] or a [String].
   static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
-    settings ??= defaultSettings[Runtime.safari];
     var dir = createTempDir();
 
     // Safari will only open files (not general URLs) via the command-line

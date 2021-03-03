@@ -1,13 +1,12 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
@@ -32,7 +31,7 @@ class Chrome extends Browser {
   final name = 'Chrome';
 
   @override
-  final Future<Uri> remoteDebuggerUrl;
+  final Future<Uri?> remoteDebuggerUrl;
 
   final Future<WipConnection> _tabConnection;
   final Map<String, String> _idToUrl;
@@ -40,13 +39,13 @@ class Chrome extends Browser {
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
   factory Chrome(Uri url, Configuration configuration,
-      {ExecutableSettings settings}) {
-    settings ??= defaultSettings[Runtime.chrome];
-    var remoteDebuggerCompleter = Completer<Uri>.sync();
+      {ExecutableSettings? settings}) {
+    settings ??= defaultSettings[Runtime.chrome]!;
+    var remoteDebuggerCompleter = Completer<Uri?>.sync();
     var connectionCompleter = Completer<WipConnection>();
     var idToUrl = <String, String>{};
     return Chrome._(() async {
-      var tryPort = ([int port]) async {
+      var tryPort = ([int? port]) async {
         var dir = createTempDir();
         var args = [
           '--user-data-dir=$dir',
@@ -59,7 +58,7 @@ class Chrome extends Browser {
           '--disable-default-apps',
           '--disable-translate',
           '--disable-dev-shm-usage',
-          if (settings.headless && !configuration.pauseAfterLoad) ...[
+          if (settings!.headless && !configuration.pauseAfterLoad) ...[
             '--headless',
             '--disable-gpu',
           ],
@@ -105,10 +104,11 @@ class Chrome extends Browser {
     var tabConnection = await _tabConnection;
     var response = await tabConnection.debugger.connection
         .sendCommand('Profiler.takePreciseCoverage', {});
-    var result = response.result['result'];
+    var result =
+        (response.result!['result'] as List).cast<Map<String, dynamic>>();
     var httpClient = HttpClient();
     var coverage = await parseChromeCoverage(
-      (result as List).cast(),
+      result,
       (scriptId) => _sourceProvider(scriptId, httpClient),
       (scriptId) => _sourceMapProvider(scriptId, httpClient),
       _sourceUriProvider,
@@ -121,7 +121,7 @@ class Chrome extends Browser {
       this._tabConnection, this._idToUrl)
       : super(startBrowser);
 
-  Future<Uri> _sourceUriProvider(String sourceUrl, String scriptId) async {
+  Future<Uri?> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
     var sourceUri = Uri.parse(sourceUrl);
@@ -136,14 +136,15 @@ class Chrome extends Browser {
         : null;
   }
 
-  Future<String> _sourceMapProvider(
+  Future<String?> _sourceMapProvider(
       String scriptId, HttpClient httpClient) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
     return await httpClient.getString('$script.map');
   }
 
-  Future<String> _sourceProvider(String scriptId, HttpClient httpClient) async {
+  Future<String?> _sourceProvider(
+      String scriptId, HttpClient httpClient) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
     return await httpClient.getString(script);
@@ -159,13 +160,12 @@ Future<WipConnection> _connect(
       .firstWhere((line) => line.startsWith('DevTools listening'));
 
   var chromeConnection = ChromeConnection('localhost', port);
-  ChromeTab tab;
+  ChromeTab? tab;
   var attempt = 0;
   while (tab == null) {
     attempt++;
     var tabs = await chromeConnection.getTabs();
-    tab =
-        tabs.firstWhere((tab) => tab.url == url.toString(), orElse: () => null);
+    tab = tabs.firstWhereOrNull((tab) => tab.url == url.toString());
     if (tab == null) {
       await Future.delayed(Duration(milliseconds: 100));
       if (attempt > 5) {
@@ -193,7 +193,7 @@ Future<WipConnection> _connect(
 }
 
 extension on HttpClient {
-  Future<String> getString(String url) async {
+  Future<String?> getString(String url) async {
     final request = await getUrl(Uri.parse(url));
     final response = await request.close();
     if (response.statusCode != HttpStatus.ok) return null;

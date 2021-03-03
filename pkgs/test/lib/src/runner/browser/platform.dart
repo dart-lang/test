@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
@@ -49,7 +47,7 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
-  static Future<BrowserPlatform> start({String root}) async {
+  static Future<BrowserPlatform> start({String? root}) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     var packageConfig = await currentPackageConfig;
     return BrowserPlatform._(
@@ -91,7 +89,7 @@ class BrowserPlatform extends PlatformPlugin
   final _compilers = CompilerPool();
 
   /// The temporary directory in which compiled JS is emitted.
-  final String _compiledDir;
+  final String? _compiledDir;
 
   /// The root directory served statically by this server.
   final String _root;
@@ -103,7 +101,7 @@ class BrowserPlatform extends PlatformPlugin
   final _pubServePool = Pool(1);
 
   /// The HTTP client to use when caching JS files in `pub serve`.
-  final HttpClient _http;
+  final HttpClient? _http;
 
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
@@ -112,7 +110,7 @@ class BrowserPlatform extends PlatformPlugin
   /// [BrowserManager]s for those browsers, or `null` if they failed to load.
   ///
   /// This should only be accessed through [_browserManagerFor].
-  final _browserManagers = <Runtime, Future<BrowserManager>>{};
+  final _browserManagers = <Runtime, Future<BrowserManager?>>{};
 
   /// Settings for invoking each browser.
   ///
@@ -135,7 +133,7 @@ class BrowserPlatform extends PlatformPlugin
 
   BrowserPlatform._(this._server, Configuration config, String faviconPath,
       this._defaultTemplatePath,
-      {String root})
+      {String? root})
       : _config = config,
         _root = root ?? p.current,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
@@ -208,7 +206,7 @@ class BrowserPlatform extends PlatformPlugin
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
   @override
-  Future<RunnerSuite> load(String path, SuitePlatform platform,
+  Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
@@ -221,15 +219,15 @@ class BrowserPlatform extends PlatformPlugin
     if (File(htmlPathFromTestPath).existsSync()) {
       if (_config.customHtmlTemplatePath != null &&
           p.basename(htmlPathFromTestPath) ==
-              p.basename(_config.customHtmlTemplatePath)) {
+              p.basename(_config.customHtmlTemplatePath!)) {
         throw LoadException(
             path,
-            'template file "${p.basename(_config.customHtmlTemplatePath)}" cannot be named '
+            'template file "${p.basename(_config.customHtmlTemplatePath!)}" cannot be named '
             'like the test file.');
       }
       _checkHtmlCorrectness(htmlPathFromTestPath, path);
     } else if (_config.customHtmlTemplatePath != null) {
-      var htmlTemplatePath = _config.customHtmlTemplatePath;
+      var htmlTemplatePath = _config.customHtmlTemplatePath!;
       if (!File(htmlTemplatePath).existsSync()) {
         throw LoadException(
             path, '"${htmlTemplatePath}" does not exist or is not readable');
@@ -251,10 +249,10 @@ class BrowserPlatform extends PlatformPlugin
           .path;
 
       var dartUrl =
-          _config.pubServeUrl.resolve('$suitePrefix.dart.browser_test.dart');
+          _config.pubServeUrl!.resolve('$suitePrefix.dart.browser_test.dart');
 
       await _pubServeSuite(path, dartUrl, browser, suiteConfig);
-      suiteUrl = _config.pubServeUrl.resolveUri(p.toUri('$suitePrefix.html'));
+      suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (browser.isJS) {
         if (suiteConfig.precompiledPath == null) {
@@ -317,7 +315,7 @@ class BrowserPlatform extends PlatformPlugin
 
       HttpClientResponse response;
       try {
-        var request = await _http.getUrl(url);
+        var request = await _http!.getUrl(url);
         response = await request.close();
 
         if (response.statusCode != 200) {
@@ -346,8 +344,8 @@ class BrowserPlatform extends PlatformPlugin
       } on IOException catch (error) {
         var message = getErrorMessage(error);
         if (error is SocketException) {
-          message = '${error.osError.message} '
-              '(errno ${error.osError.errorCode})';
+          message = '${error.osError?.message} '
+              '(errno ${error.osError?.errorCode})';
         }
 
         throw LoadException(
@@ -366,7 +364,7 @@ class BrowserPlatform extends PlatformPlugin
   /// served.
   Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = Directory(_compiledDir).createTempSync('test_').path;
+      var dir = Directory(_compiledDir!).createTempSync('test_').path;
       var jsPath = p.join(dir, p.basename(dartPath) + '.browser_test.dart.js');
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
@@ -416,7 +414,7 @@ class BrowserPlatform extends PlatformPlugin
       String dartPath, SuiteConfiguration suiteConfig) async {
     if (suiteConfig.jsTrace) return;
     var mapPath = p.join(
-        suiteConfig.precompiledPath, dartPath + '.browser_test.dart.js.map');
+        suiteConfig.precompiledPath!, dartPath + '.browser_test.dart.js.map');
     var mapFile = File(mapPath);
     if (mapFile.existsSync()) {
       _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),
@@ -429,7 +427,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Returns the [BrowserManager] for [runtime], which should be a browser.
   ///
   /// If no browser manager is running yet, starts one.
-  Future<BrowserManager> _browserManagerFor(Runtime browser) {
+  Future<BrowserManager?> _browserManagerFor(Runtime browser) {
     var managerFuture = _browserManagers[browser];
     if (managerFuture != null) return managerFuture;
 
@@ -443,12 +441,13 @@ class BrowserPlatform extends PlatformPlugin
       'debug': _config.debug.toString()
     });
 
-    var future = BrowserManager.start(
-        browser, hostUrl, completer.future, _browserSettings[browser], _config);
+    var future = BrowserManager.start(browser, hostUrl, completer.future,
+        _browserSettings[browser]!, _config);
 
     // Store null values for browsers that error out so we know not to load them
     // again.
-    _browserManagers[browser] = future.catchError((_) => null);
+    _browserManagers[browser] =
+        future.then<BrowserManager?>((value) => value).onError((_, __) => null);
 
     return future;
   }
@@ -488,9 +487,9 @@ class BrowserPlatform extends PlatformPlugin
         await Future.wait(futures);
 
         if (_config.pubServeUrl == null) {
-          Directory(_compiledDir).deleteSync(recursive: true);
+          Directory(_compiledDir!).deleteSync(recursive: true);
         } else {
-          _http.close();
+          _http!.close();
         }
       });
   final _closeMemo = AsyncMemoizer<void>();

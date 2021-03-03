@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 @Tags(['chrome'])
@@ -25,7 +23,7 @@ import 'package:test/test.dart';
 
 import '../../utils.dart';
 
-Loader _loader;
+late Loader _loader;
 
 /// A configuration that loads suites on Chrome.
 final _chrome =
@@ -56,7 +54,7 @@ void main() {
   tearDown(() => _loader.close());
 
   group('.loadFile()', () {
-    RunnerSuite suite;
+    late RunnerSuite suite;
     setUp(() async {
       var suites = await _loader
           .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
@@ -64,7 +62,7 @@ void main() {
 
       expect(suites, hasLength(1));
       var loadSuite = suites.first;
-      suite = await loadSuite.getSuite();
+      suite = (await loadSuite.getSuite())!;
     });
 
     test('returns a suite with the file path and platform', () {
@@ -124,7 +122,7 @@ Future main() {
         .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
-    var suite = await loadSuite.getSuite();
+    var suite = (await loadSuite.getSuite())!;
     expect(suite.group.entries, hasLength(3));
     expect(suite.group.entries[0].name, equals('success'));
     expect(suite.group.entries[1].name, equals('failure'));
@@ -142,6 +140,7 @@ Future main() {
               RuntimeSelection(Runtime.chrome.identifier)
             ]))
         .asyncMap((loadSuite) => loadSuite.getSuite())
+        .cast<RunnerSuite>()
         .toList();
     expect(suites[0].platform.runtime, equals(Runtime.vm));
     expect(suites[0].path, equals(path));

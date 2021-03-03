@@ -89,7 +89,7 @@ class VMPlatform extends PlatformPlugin {
     environment ??= PluginEnvironment();
 
     var controller = deserializeSuite(
-        path, platform, suiteConfig, environment, channel, message,
+        path, platform, suiteConfig, environment, channel.cast(), message,
         gatherCoverage: () => _gatherCoverage(environment!));
 
     if (isolateRef != null) {

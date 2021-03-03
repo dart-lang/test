@@ -42,13 +42,13 @@ RunnerSuiteController deserializeSuite(
     SuitePlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
-    StreamChannel channel,
+    StreamChannel<Object?> channel,
     Object message,
     {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
-  var disconnector = Disconnector();
-  var suiteChannel = MultiChannel(channel.transform(disconnector));
+  var disconnector = Disconnector<Object?>();
+  var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
 
-  suiteChannel.sink.add(<String, dynamic>{
+  suiteChannel.sink.add(<String, Object?>{
     'type': 'initial',
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
@@ -77,7 +77,7 @@ RunnerSuiteController deserializeSuite(
     }
   }
 
-  suiteChannel.stream.listen(
+  suiteChannel.stream.cast<Map<String, Object?>>().listen(
       (response) {
         switch (response['type'] as String) {
           case 'print':
@@ -113,7 +113,7 @@ RunnerSuiteController deserializeSuite(
   return RunnerSuiteController(
       environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
-      onClose: () => disconnector.disconnect().catchError(handleError),
+      onClose: () => disconnector.disconnect().onError(handleError),
       gatherCoverage: gatherCoverage);
 }
 

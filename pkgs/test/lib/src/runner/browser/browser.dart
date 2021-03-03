@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
@@ -26,15 +24,15 @@ abstract class Browser {
 
   /// The Observatory URL for this browser.
   ///
-  /// This will return `null` for browsers that aren't running the Dart VM, or
-  /// if the Observatory URL can't be found.
-  Future<Uri> get observatoryUrl => null;
+  /// This will complete to `null` for browsers that aren't running the Dart VM,
+  /// or if the Observatory URL can't be found.
+  Future<Uri?> get observatoryUrl async => null;
 
   /// The remote debugger URL for this browser.
   ///
-  /// This will return `null` for browsers that don't support remote debugging,
-  /// or if the remote debugging URL can't be found.
-  Future<Uri> get remoteDebuggerUrl => null;
+  /// This will  complete to `null` for browsers that don't support remote
+  /// debugging, or if the remote debugging URL can't be found.
+  Future<Uri?> get remoteDebuggerUrl async => null;
 
   /// The underlying process.
   ///
@@ -140,6 +138,6 @@ abstract class Browser {
     (await _process).kill();
 
     // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.catchError((_) {});
+    return onExit.onError((_, __) {});
   }
 }
