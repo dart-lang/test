@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
+
 ## 0.3.0
 
 * **Breaking** `TestException.message` is now nullable.

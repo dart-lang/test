@@ -33,6 +33,30 @@ const Matcher throws = Throws();
 /// In all three cases, when an exception is thrown, this will test that the
 /// exception object matches [matcher]. If [matcher] is not an instance of
 /// [Matcher], it will implicitly be treated as `equals(matcher)`.
+///
+/// Examples:
+/// ```dart
+/// void functionThatThrows() => throw UnsupportedError('Unsupported');
+///
+/// void functionWithArgument(bool shouldThrow) {
+///   if (shouldThrow) {
+///     throw UnsupportedError('Unsupported');
+///   }
+/// }
+///
+/// Future<void> asyncFunctionThatThrows() async =>
+///     throw UnsupportedError('Unsupported');
+///
+/// expect(functionThatThrows, throwsA(isA<UnsupportedError>()));
+///
+/// expect(() => functionWithArgument(true), throwsA(isA<UnsupportedError>()));
+///
+/// var future = asyncFunctionThatThrows();
+/// await expectLater(future, throwsA(isA<UnsupportedError>()));
+///
+/// await expectLater(
+///     asyncFunctionThatThrows, throwsA(isA<UnsupportedError>()));
+/// ```
 Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 
 /// Use the [throwsA] function instead.
