@@ -1,11 +1,14 @@
 dart:
   - dev
+  - stable
 
 stages:
     - analyze_and_format:
       - group:
         - dartfmt: sdk
         - dartanalyzer: --fatal-infos --fatal-warnings .
+        dart:
+        - dev
     - unit_test:
       - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 0
       - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis -x phantomjs --total-shards 5 --shard-index 1
