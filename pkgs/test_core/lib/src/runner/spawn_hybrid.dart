@@ -127,7 +127,9 @@ Future<String> _languageVersionCommentFor(String url) async {
   if (languageVersionComment != null) return languageVersionComment.toString();
 
   // Returns the default language version for the package if one exists.
-  if (parsedUri.scheme.isEmpty || parsedUri.scheme == 'file') {
+  if (parsedUri.scheme.isEmpty ||
+      parsedUri.scheme == 'file' ||
+      parsedUri.scheme == 'data') {
     var packageConfig = await currentPackageConfig;
     var package = packageConfig.packageOf(parsedUri);
     var version = package?.languageVersion;
