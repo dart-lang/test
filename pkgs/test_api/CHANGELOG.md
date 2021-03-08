@@ -1,3 +1,8 @@
+## 0.3.0-dev
+
+* **Breaking** `TestException.message` is now nullable.
+  * Fixes handling of `null` messages in remote exceptions.
+
 ## 0.2.20
 
 * Fix some strong null safety mode errors in the original migration.

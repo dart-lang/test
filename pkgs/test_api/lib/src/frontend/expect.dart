@@ -11,12 +11,12 @@ import 'async_matcher.dart';
 
 /// An exception thrown when a test assertion fails.
 class TestFailure {
-  final String message;
+  final String? message;
 
   TestFailure(this.message);
 
   @override
-  String toString() => message;
+  String toString() => message.toString();
 }
 
 /// The type used for functions that can be used to build up error reports
