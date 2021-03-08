@@ -1,6 +1,6 @@
-## 1.16.6-dev
+## 1.16.6
 
-* Complete the migration of all but the node platform to null safety.
+* Complete the migration to null safety.
 
 ## 1.16.5
 
