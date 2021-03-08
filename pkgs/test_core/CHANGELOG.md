@@ -1,6 +1,6 @@
-## 0.3.17-dev
+## 0.3.17
 
-* Complete the null safety migration for backend libs.
+* Complete the null safety migration.
 
 ## 0.3.16
 

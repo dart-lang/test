@@ -1,4 +1,4 @@
-## 0.2.20-dev
+## 0.2.20
 
 * Fix some strong null safety mode errors in the original migration.
 
