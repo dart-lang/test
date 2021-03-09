@@ -1,3 +1,7 @@
+## 0.3.18-dev
+
+* Update `spawnHybridCode` to default to the current packages language version.
+
 ## 0.3.17
 
 * Complete the null safety migration.

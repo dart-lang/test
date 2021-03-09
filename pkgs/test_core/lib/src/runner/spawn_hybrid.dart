@@ -13,6 +13,7 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '../util/dart.dart' as dart;
 import '../util/package_config.dart';
+import 'package_version.dart';
 
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
@@ -110,11 +111,14 @@ String _normalizeUrl(String url, Suite suite) {
 ///
 /// If there is a language version comment in the file, that is returned.
 ///
+/// If the URI has a `data` scheme, a comment representing the language version of
+/// the current package is returned.
+///
 /// Otherwise a comment representing the default version from the
 /// [currentPackageConfig] is returned.
 ///
-/// If no default language version is known (data: uri for instance), then
-/// an empty string is returned.
+/// If no default language version is known (the URI scheme is not recognized
+/// for instance), then an empty string is returned.
 Future<String> _languageVersionCommentFor(String url) async {
   var parsedUri = Uri.parse(url);
 
@@ -132,6 +136,12 @@ Future<String> _languageVersionCommentFor(String url) async {
     var package = packageConfig.packageOf(parsedUri);
     var version = package?.languageVersion;
     if (version != null) return '// @dart=$version';
+  }
+
+  // Returns the root package language version for `data` URIs. These are
+  // assumed to be from `spawnHybridCode` calls.
+  if (parsedUri.scheme == 'data') {
+    return await rootPackageLanguageVersionComment;
   }
 
   // Fall back on no language comment.
