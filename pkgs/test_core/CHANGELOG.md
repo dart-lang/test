@@ -1,3 +1,7 @@
+## 0.3.18
+
+* Update to the latest `test_api`.
+
 ## 0.3.17
 
 * Complete the null safety migration.

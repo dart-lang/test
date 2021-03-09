@@ -1,3 +1,7 @@
+## 1.16.7
+
+* Update `test_core` and `test_api` deps.
+
 ## 1.16.6
 
 * Complete the migration to null safety.
