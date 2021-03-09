@@ -138,7 +138,7 @@ Future<String> _languageVersionCommentFor(String url) async {
     if (version != null) return '// @dart=$version';
   }
 
-  // Returns the root package language version for `data` uris. These are
+  // Returns the root package language version for `data` URIs. These are
   // assumed to be from `spawnHybridCode` calls.
   if (parsedUri.scheme == 'data') {
     return await rootPackageLanguageVersionComment;
