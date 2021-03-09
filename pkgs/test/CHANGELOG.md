@@ -1,5 +1,6 @@
 ## 1.16.7
 
+* Update `spawnHybridCode` to default to the current packages language version.
 * Update `test_core` and `test_api` deps.
 
 ## 1.16.6

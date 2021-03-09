@@ -1,0 +1,13 @@
+dart:
+  - dev
+  - stable
+
+stages:
+    - analyze_and_format:
+      - group:
+        - dartfmt: sdk
+        - dartanalyzer: --fatal-infos --fatal-warnings .
+        dart:
+        - dev
+    - unit_test:
+      - test: -p chrome,vm,node

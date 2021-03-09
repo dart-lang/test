@@ -90,6 +90,10 @@ for PKG in ${PKGS}; do
         echo 'dartfmt -n --set-exit-if-changed .'
         dartfmt -n --set-exit-if-changed . || EXIT_CODE=$?
         ;;
+      test)
+        echo 'pub run test -p chrome,vm,node'
+        pub run test -p chrome,vm,node || EXIT_CODE=$?
+        ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"
         exit 64
