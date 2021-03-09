@@ -111,7 +111,7 @@ String _normalizeUrl(String url, Suite suite) {
 ///
 /// If there is a language version comment in the file, that is returned.
 ///
-/// If the uri is a `data` uri, a comment representing the language version of
+/// If the URI has a `data` scheme, a comment representing the language version of
 /// the current package is returned.
 ///
 /// Otherwise a comment representing the default version from the
