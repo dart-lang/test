@@ -16,7 +16,7 @@ void shouldFail(Object? value, Matcher matcher, Object? expected) {
     if (expected is String) {
       expect(errorString, equalsIgnoringWhitespace(expected));
     } else {
-      expect(errorString.replaceAll('\n', ''), expected);
+      expect(errorString?.replaceAll('\n', ''), expected);
     }
   }
 
