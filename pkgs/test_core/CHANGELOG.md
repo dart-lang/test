@@ -1,6 +1,7 @@
-## 0.3.18-dev
+## 0.3.18
 
 * Update `spawnHybridCode` to default to the current packages language version.
+* Update to the latest `test_api`.
 
 ## 0.3.17
 

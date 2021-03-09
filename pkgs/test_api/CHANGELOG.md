@@ -1,4 +1,4 @@
-## 0.3.0-dev
+## 0.3.0
 
 * **Breaking** `TestException.message` is now nullable.
   * Fixes handling of `null` messages in remote exceptions.
