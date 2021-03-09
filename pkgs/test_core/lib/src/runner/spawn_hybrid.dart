@@ -117,7 +117,7 @@ String _normalizeUrl(String url, Suite suite) {
 /// Otherwise a comment representing the default version from the
 /// [currentPackageConfig] is returned.
 ///
-/// If no default language version is known (the uri scheme is not recognized
+/// If no default language version is known (the URI scheme is not recognized
 /// for instance), then an empty string is returned.
 Future<String> _languageVersionCommentFor(String url) async {
   var parsedUri = Uri.parse(url);
