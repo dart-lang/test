@@ -1,3 +1,8 @@
+## 0.3.20-dev
+
+* Add library `scaffolding.dart` to allow importing a subset of the normal
+  surface area.
+
 ## 0.3.19
 
 * Disable stack trace chaining by default.

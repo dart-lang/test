@@ -1,3 +1,10 @@
+## 0.3.1-dev
+
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing as
+  subset of the normal surface area.
+* Add new APIs in `hooks.dart` to allow writing custom expectation frameworks
+  which integrate with the test runner.
+
 ## 0.3.0
 
 * **Breaking** `TestException.message` is now nullable.

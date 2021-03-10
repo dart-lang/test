@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
+import 'package:test_api/hooks.dart';
 
-import '../backend/invoker.dart';
 import 'expect.dart';
 
 /// A matcher that does asynchronous computation.
@@ -35,13 +35,11 @@ abstract class AsyncMatcher extends Matcher {
         reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is Future) {
-      Invoker.current!.addOutstandingCallback();
-      result.then((realResult) {
+      TestHandle.current.mustWaitFor(result.then((realResult) {
         if (realResult != null) {
           fail(formatFailure(this, item, realResult as String));
         }
-        Invoker.current!.removeOutstandingCallback();
-      });
+      }));
     } else if (result is String) {
       matchState[this] = result;
       return false;

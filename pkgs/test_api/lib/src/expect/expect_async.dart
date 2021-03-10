@@ -4,9 +4,9 @@
 
 import 'dart:async';
 
-import '../backend/invoker.dart';
-import '../util/placeholder.dart';
-import 'expect.dart';
+import 'package:test_api/hooks.dart';
+
+import 'util/placeholder.dart';
 
 // Function types returned by expectAsync# methods.
 
@@ -61,14 +61,13 @@ class _ExpectedFunction<T> {
   /// The number of times the function has been called.
   int _actualCalls = 0;
 
-  /// The test invoker in which this function was wrapped.
-  Invoker? get _invoker => _zone[#test.invoker] as Invoker?;
-
-  /// The zone in which this function was wrapped.
-  final Zone _zone;
+  /// The test in which this function was wrapped.
+  late final TestHandle _test;
 
   /// Whether this function has been called the requisite number of times.
   late bool _complete;
+
+  Completer<void>? _expectationSatisfied;
 
   /// Wraps [callback] in a function that asserts that it's called at least
   /// [minExpected] times and no more than [maxExpected] times.
@@ -84,17 +83,21 @@ class _ExpectedFunction<T> {
             (maxExpected == 0 && minExpected > 0) ? minExpected : maxExpected,
         _isDone = isDone,
         _reason = reason == null ? '' : '\n$reason',
-        _zone = Zone.current,
         _id = _makeCallbackId(id, callback) {
-    if (_invoker == null) {
-      throw StateError('[expectAsync] was called outside of a test.');
-    } else if (maxExpected > 0 && minExpected > maxExpected) {
+    try {
+      _test = TestHandle.current;
+    } on OutsideTestException {
+      throw StateError('`expectAsync` must be called within a test.');
+    }
+
+    if (maxExpected > 0 && minExpected > maxExpected) {
       throw ArgumentError('max ($maxExpected) may not be less than count '
           '($minExpected).');
     }
 
     if (isDone != null || minExpected > 0) {
-      _invoker!.addOutstandingCallback();
+      var completer = _expectationSatisfied = Completer<void>();
+      _test.mustWaitFor(completer.future);
       _complete = false;
     } else {
       _complete = true;
@@ -132,7 +135,7 @@ class _ExpectedFunction<T> {
     if (_callback is Function(Null)) return max1;
     if (_callback is Function()) return max0;
 
-    _invoker!.removeOutstandingCallback();
+    _expectationSatisfied?.complete();
     throw ArgumentError(
         'The wrapped function has more than 6 required arguments');
   }
@@ -182,9 +185,9 @@ class _ExpectedFunction<T> {
     // pass it to the invoker anyway.
     try {
       _actualCalls++;
-      if (_invoker!.liveTest.state.shouldBeDone) {
+      if (_test.shouldBeDone) {
         throw 'Callback ${_id}called ($_actualCalls) after test case '
-            '${_invoker!.liveTest.test.name} had already completed.$_reason';
+            '${_test.name} had already completed.$_reason';
       } else if (_maxExpectedCalls >= 0 && _actualCalls > _maxExpectedCalls) {
         throw TestFailure('Callback ${_id}called more times than expected '
             '($_maxExpectedCalls).$_reason');
@@ -205,7 +208,7 @@ class _ExpectedFunction<T> {
     // Mark this callback as complete and remove it from the test case's
     // oustanding callback count; if that hits zero the test is done.
     _complete = true;
-    _invoker!.removeOutstandingCallback();
+    _expectationSatisfied?.complete();
   }
 }
 
@@ -215,13 +218,8 @@ class _ExpectedFunction<T> {
 /// [expectAsync6] instead.
 @Deprecated('Will be removed in 0.13.0')
 Function expectAsync(Function callback,
-    {int count = 1, int max = 0, String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync() may only be called within a test.');
-  }
-
-  return _ExpectedFunction(callback, count, max, id: id, reason: reason).func;
-}
+        {int count = 1, int max = 0, String? id, String? reason}) =>
+    _ExpectedFunction(callback, count, max, id: id, reason: reason).func;
 
 /// Informs the framework that the given [callback] of arity 0 is expected to be
 /// called [count] number of times (by default 1).
@@ -245,14 +243,8 @@ Function expectAsync(Function callback,
 /// [expectAsync1], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func0<T> expectAsync0<T>(T Function() callback,
-    {int count = 1, int max = 0, String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync0() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max0;
-}
+        {int count = 1, int max = 0, String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max0;
 
 /// Informs the framework that the given [callback] of arity 1 is expected to be
 /// called [count] number of times (by default 1).
@@ -276,14 +268,8 @@ Func0<T> expectAsync0<T>(T Function() callback,
 /// [expectAsync0], [expectAsync2], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func1<T, A> expectAsync1<T, A>(T Function(A) callback,
-    {int count = 1, int max = 0, String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync1() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max1;
-}
+        {int count = 1, int max = 0, String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max1;
 
 /// Informs the framework that the given [callback] of arity 2 is expected to be
 /// called [count] number of times (by default 1).
@@ -307,14 +293,8 @@ Func1<T, A> expectAsync1<T, A>(T Function(A) callback,
 /// [expectAsync0], [expectAsync1], [expectAsync3], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func2<T, A, B> expectAsync2<T, A, B>(T Function(A, B) callback,
-    {int count = 1, int max = 0, String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync2() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max2;
-}
+        {int count = 1, int max = 0, String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max2;
 
 /// Informs the framework that the given [callback] of arity 3 is expected to be
 /// called [count] number of times (by default 1).
@@ -338,14 +318,8 @@ Func2<T, A, B> expectAsync2<T, A, B>(T Function(A, B) callback,
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync4],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func3<T, A, B, C> expectAsync3<T, A, B, C>(T Function(A, B, C) callback,
-    {int count = 1, int max = 0, String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync3() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max3;
-}
+        {int count = 1, int max = 0, String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max3;
 
 /// Informs the framework that the given [callback] of arity 4 is expected to be
 /// called [count] number of times (by default 1).
@@ -369,18 +343,12 @@ Func3<T, A, B, C> expectAsync3<T, A, B, C>(T Function(A, B, C) callback,
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync5], and [expectAsync6] for callbacks with different arity.
 Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(
-    T Function(A, B, C, D) callback,
-    {int count = 1,
-    int max = 0,
-    String? id,
-    String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync4() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max4;
-}
+        T Function(A, B, C, D) callback,
+        {int count = 1,
+        int max = 0,
+        String? id,
+        String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max4;
 
 /// Informs the framework that the given [callback] of arity 5 is expected to be
 /// called [count] number of times (by default 1).
@@ -404,18 +372,12 @@ Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync4], and [expectAsync6] for callbacks with different arity.
 Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
-    T Function(A, B, C, D, E) callback,
-    {int count = 1,
-    int max = 0,
-    String? id,
-    String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync5() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max5;
-}
+        T Function(A, B, C, D, E) callback,
+        {int count = 1,
+        int max = 0,
+        String? id,
+        String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max5;
 
 /// Informs the framework that the given [callback] of arity 6 is expected to be
 /// called [count] number of times (by default 1).
@@ -439,18 +401,12 @@ Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
 /// [expectAsync0], [expectAsync1], [expectAsync2], [expectAsync3],
 /// [expectAsync4], and [expectAsync5] for callbacks with different arity.
 Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
-    T Function(A, B, C, D, E, F) callback,
-    {int count = 1,
-    int max = 0,
-    String? id,
-    String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsync6() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, count, max, id: id, reason: reason)
-      .max6;
-}
+        T Function(A, B, C, D, E, F) callback,
+        {int count = 1,
+        int max = 0,
+        String? id,
+        String? reason}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max6;
 
 /// This function is deprecated because it doesn't work well with strong mode.
 /// Use [expectAsyncUntil0], [expectAsyncUntil1],
@@ -458,15 +414,9 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
 /// [expectAsyncUntil5], or [expectAsyncUntil6] instead.
 @Deprecated('Will be removed in 0.13.0')
 Function expectAsyncUntil(Function callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil() may only be called within a test.');
-  }
-
-  return _ExpectedFunction(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .func;
-}
+        {String? id, String? reason}) =>
+    _ExpectedFunction(callback, 0, -1, id: id, reason: reason, isDone: isDone)
+        .func;
 
 /// Informs the framework that the given [callback] of arity 0 is expected to be
 /// called until [isDone] returns true.
@@ -486,15 +436,10 @@ Function expectAsyncUntil(Function callback, bool Function() isDone,
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func0<T> expectAsyncUntil0<T>(T Function() callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil0() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max0;
-}
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max0;
 
 /// Informs the framework that the given [callback] of arity 1 is expected to be
 /// called until [isDone] returns true.
@@ -514,16 +459,11 @@ Func0<T> expectAsyncUntil0<T>(T Function() callback, bool Function() isDone,
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func1<T, A> expectAsyncUntil1<T, A>(
-    T Function(A) callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil1() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max1;
-}
+        T Function(A) callback, bool Function() isDone,
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max1;
 
 /// Informs the framework that the given [callback] of arity 2 is expected to be
 /// called until [isDone] returns true.
@@ -543,16 +483,11 @@ Func1<T, A> expectAsyncUntil1<T, A>(
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func2<T, A, B> expectAsyncUntil2<T, A, B>(
-    T Function(A, B) callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil2() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max2;
-}
+        T Function(A, B) callback, bool Function() isDone,
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max2;
 
 /// Informs the framework that the given [callback] of arity 3 is expected to be
 /// called until [isDone] returns true.
@@ -572,16 +507,11 @@ Func2<T, A, B> expectAsyncUntil2<T, A, B>(
 /// [expectAsyncUntil4], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
-    T Function(A, B, C) callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil3() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max3;
-}
+        T Function(A, B, C) callback, bool Function() isDone,
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max3;
 
 /// Informs the framework that the given [callback] of arity 4 is expected to be
 /// called until [isDone] returns true.
@@ -601,16 +531,11 @@ Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
 /// [expectAsyncUntil3], [expectAsyncUntil5], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
-    T Function(A, B, C, D) callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil4() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max4;
-}
+        T Function(A, B, C, D) callback, bool Function() isDone,
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max4;
 
 /// Informs the framework that the given [callback] of arity 5 is expected to be
 /// called until [isDone] returns true.
@@ -630,16 +555,11 @@ Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
 /// [expectAsyncUntil3], [expectAsyncUntil4], and [expectAsyncUntil6] for
 /// callbacks with different arity.
 Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
-    T Function(A, B, C, D, E) callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil5() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max5;
-}
+        T Function(A, B, C, D, E) callback, bool Function() isDone,
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max5;
 
 /// Informs the framework that the given [callback] of arity 6 is expected to be
 /// called until [isDone] returns true.
@@ -659,13 +579,8 @@ Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
 /// [expectAsyncUntil3], [expectAsyncUntil4], and [expectAsyncUntil5] for
 /// callbacks with different arity.
 Func6<T, A, B, C, D, E, F> expectAsyncUntil6<T, A, B, C, D, E, F>(
-    T Function(A, B, C, D, E, F) callback, bool Function() isDone,
-    {String? id, String? reason}) {
-  if (Invoker.current == null) {
-    throw StateError('expectAsyncUntil() may only be called within a test.');
-  }
-
-  return _ExpectedFunction<T>(callback, 0, -1,
-          id: id, reason: reason, isDone: isDone)
-      .max6;
-}
+        T Function(A, B, C, D, E, F) callback, bool Function() isDone,
+        {String? id, String? reason}) =>
+    _ExpectedFunction<T>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
+        .max6;

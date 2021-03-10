@@ -3,21 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
+import 'package:test_api/hooks.dart';
 
-import '../backend/closed_exception.dart';
-import '../backend/invoker.dart';
-import '../utils.dart';
 import 'async_matcher.dart';
-
-/// An exception thrown when a test assertion fails.
-class TestFailure {
-  final String? message;
-
-  TestFailure(this.message);
-
-  @override
-  String toString() => message.toString();
-}
+import 'util/pretty_print.dart';
 
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
@@ -78,6 +67,7 @@ Future expectLater(actual, matcher, {String? reason, skip}) =>
 // ignore: body_might_complete_normally
 Future _expect(actual, matcher,
     {String? reason, skip, bool verbose = false, ErrorFormatter? formatter}) {
+  final test = TestHandle.current;
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
@@ -85,12 +75,6 @@ Future _expect(actual, matcher,
     return formatFailure(matcher, actual, mismatchDescription.toString(),
         reason: reason);
   };
-
-  if (Invoker.current == null) {
-    throw StateError('expect() may only be called within a test.');
-  }
-
-  if (Invoker.current!.closed) throw ClosedException();
 
   if (skip != null && skip is! bool && skip is! String) {
     throw ArgumentError.value(skip, 'skip', 'must be a bool or a String');
@@ -108,7 +92,7 @@ Future _expect(actual, matcher,
       message = 'Skip expect ($description).';
     }
 
-    Invoker.current!.skip(message);
+    test.markSkipped(message);
     return Future.sync(() {});
   }
 
@@ -122,16 +106,11 @@ Future _expect(actual, matcher,
     if (result is String) {
       fail(formatFailure(matcher, actual, result, reason: reason));
     } else if (result is Future) {
-      Invoker.current!.addOutstandingCallback();
-      return result.then((realResult) {
+      return test.mustWaitFor(result.then((realResult) {
         if (realResult == null) return;
         fail(formatFailure(matcher as Matcher, actual, realResult as String,
             reason: reason));
-      }).whenComplete(() {
-        // Always remove this, in case the failure is caught and handled
-        // gracefully.
-        Invoker.current!.removeOutstandingCallback();
-      });
+      }));
     }
 
     return Future.sync(() {});

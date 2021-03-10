@@ -9,10 +9,8 @@ import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
-import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
-import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'backend/operating_system.dart';
 
@@ -101,15 +99,6 @@ class Pair<E, F> {
 /// [toString], so we remove that if it exists.
 String getErrorMessage(error) =>
     error.toString().replaceFirst(_exceptionPrefix, '');
-
-/// Indent each line in [string] by [size] spaces.
-///
-/// If [first] is passed, it's used in place of the first line's indentation and
-/// [size] defaults to `first.length`. Otherwise, [size] defaults to 2.
-String indent(String string, {int? size, String? first}) {
-  size ??= first == null ? 2 : first.length;
-  return prefixLines(string, ' ' * size, first: first);
-}
 
 /// Returns a sentence fragment listing the elements of [iter].
 ///
@@ -277,13 +266,6 @@ void ensureJsonEncodable(Object? message) {
   }
 }
 
-/// Indents [text], and adds a bullet at the beginning.
-String addBullet(String text) =>
-    prefixLines(text, '  ', first: '${glyph.bullet} ');
-
-/// Converts [strings] to a bulleted list.
-String bullet(Iterable<String> strings) => strings.map(addBullet).join('\n');
-
 /// Prepends each line in [text] with [prefix].
 ///
 /// If [first] or [last] is passed, the first and last lines, respectively, are
@@ -308,13 +290,6 @@ String prefixLines(String text, String prefix,
   buffer.write('$last${lines.last}');
   return buffer.toString();
 }
-
-/// Returns a pretty-printed representation of [value].
-///
-/// The matcher package doesn't expose its pretty-print function directly, but
-/// we can use it through StringDescription.
-String prettyPrint(value) =>
-    StringDescription().addDescriptionOf(value).toString();
 
 /// Indicates to tools that [future] is intentionally not `await`-ed.
 ///

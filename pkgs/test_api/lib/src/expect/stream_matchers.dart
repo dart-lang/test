@@ -5,10 +5,10 @@
 import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
 
-import '../utils.dart';
 import 'async_matcher.dart';
 import 'stream_matcher.dart';
 import 'throws_matcher.dart';
+import 'util/pretty_print.dart';
 
 /// Returns a [StreamMatcher] that asserts that the stream emits a "done" event.
 final emitsDone = StreamMatcher(

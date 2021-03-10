@@ -1,6 +1,11 @@
+## 1.16.9-dev
+
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing a
+  subset of the normal surface area.
+
 ## 1.16.8
 
-* Fix an issue where coverage collection could hang on Chrome. 
+* Fix an issue where coverage collection could hang on Chrome.
 * Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.
 
