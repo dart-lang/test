@@ -113,7 +113,7 @@ class Chrome extends Browser {
       (scriptId) => _sourceMapProvider(scriptId, httpClient),
       _sourceUriProvider,
     );
-    httpClient.close();
+    httpClient.close(force: true);
     return coverage;
   }
 

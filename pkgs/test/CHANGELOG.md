@@ -1,3 +1,7 @@
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+
 ## 1.16.7
 
 * Update `spawnHybridCode` to default to the current packages language version.
