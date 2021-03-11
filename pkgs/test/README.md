@@ -259,7 +259,7 @@ only supports boolean operations. The following identifiers are defined:
 * `chrome`: Whether the test is running on Google Chrome.
 
 * `phantomjs`: Whether the test is running on
-  [PhantomJS](http://phantomjs.org/).
+  [PhantomJS](https://phantomjs.org/).
 
 * `firefox`: Whether the test is running on Mozilla Firefox.
 
