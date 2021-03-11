@@ -102,7 +102,7 @@ final ArgParser _parser = (() {
           'especially for asynchronous code. It may be useful to disable\n'
           'to provide improved test performance but at the cost of\n'
           'debuggability.',
-      defaultsTo: true);
+      defaultsTo: false);
   parser.addFlag('no-retry',
       help: "Don't rerun tests that have retry set.",
       defaultsTo: false,
