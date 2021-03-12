@@ -36,26 +36,25 @@ const Matcher throws = Throws();
 ///
 /// Examples:
 /// ```dart
-/// void functionThatThrows() => throw UnsupportedError('Unsupported');
+/// void functionThatThrows() => throw SomeException();
 ///
 /// void functionWithArgument(bool shouldThrow) {
 ///   if (shouldThrow) {
-///     throw UnsupportedError('Unsupported');
+///     throw SomeException();
 ///   }
 /// }
 ///
-/// Future<void> asyncFunctionThatThrows() async =>
-///     throw UnsupportedError('Unsupported');
+/// Future<void> asyncFunctionThatThrows() async => throw SomeException();
 ///
-/// expect(functionThatThrows, throwsA(isA<UnsupportedError>()));
+/// expect(functionThatThrows, throwsA(isA<SomeException>()));
 ///
-/// expect(() => functionWithArgument(true), throwsA(isA<UnsupportedError>()));
+/// expect(() => functionWithArgument(true), throwsA(isA<SomeException>()));
 ///
 /// var future = asyncFunctionThatThrows();
-/// await expectLater(future, throwsA(isA<UnsupportedError>()));
+/// await expectLater(future, throwsA(isA<SomeException>()));
 ///
 /// await expectLater(
-///     asyncFunctionThatThrows, throwsA(isA<UnsupportedError>()));
+///     asyncFunctionThatThrows, throwsA(isA<SomeException>()));
 /// ```
 Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 
