@@ -5,7 +5,7 @@
 import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
 
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 import 'stream_matcher.dart';
 import 'throws_matcher.dart';

@@ -16,10 +16,12 @@ import 'package:test_api/src/backend/platform_selector.dart'; // ignore: impleme
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
-import '../suite.dart';
-import '../runtime_selection.dart';
+import '../../util/dart.dart';
 import '../../util/io.dart';
+import '../../util/pretty_print.dart';
 import '../configuration.dart';
+import '../runtime_selection.dart';
+import '../suite.dart';
 import 'custom_runtime.dart';
 import 'load.dart' as self;
 import 'reporters.dart';

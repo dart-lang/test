@@ -4,7 +4,7 @@
 
 import 'package:matcher/matcher.dart';
 
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 import 'format_stack_trace.dart';
 

@@ -6,8 +6,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
-
+import '../util/async.dart';
 import '../util/io.dart';
 import 'runner_suite.dart';
 import 'configuration.dart';
