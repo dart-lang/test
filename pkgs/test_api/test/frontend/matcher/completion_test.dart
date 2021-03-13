@@ -4,9 +4,9 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test_api/src/utils.dart';
 
 import '../../utils.dart';
 

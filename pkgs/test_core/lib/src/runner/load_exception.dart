@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:source_span/source_span.dart';
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+
+import '../util/dart.dart';
 
 class LoadException implements Exception {
   final String path;

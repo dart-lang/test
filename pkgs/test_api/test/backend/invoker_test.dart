@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
@@ -12,7 +13,6 @@ import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
-import 'package:test_api/src/utils.dart';
 
 import '../utils.dart';
 

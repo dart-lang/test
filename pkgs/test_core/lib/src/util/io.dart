@@ -13,7 +13,8 @@ import 'package:path/path.dart' as p;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+
+import 'pretty_print.dart';
 
 /// The default line length for output when there isn't a terminal attached to
 /// stdout.
@@ -48,6 +49,13 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
     os: runtime.isBrowser ? OperatingSystem.none : currentOS,
     inGoogle: inGoogle);
+
+/// A transformer that decodes bytes using UTF-8 and splits them on newlines.
+final lineSplitter = StreamTransformer<List<int>, String>(
+    (stream, cancelOnError) => utf8.decoder
+        .bind(stream)
+        .transform(const LineSplitter())
+        .listen(null, cancelOnError: cancelOnError));
 
 /// A queue of lines of standard input.
 ///
@@ -208,3 +216,27 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     return base;
   }
 }
+
+/// Directories that are specific to OS X.
+///
+/// This is used to try to distinguish OS X and Linux in [currentOSGuess].
+final _macOSDirectories = {
+  '/Applications',
+  '/Library',
+  '/Network',
+  '/System',
+  '/Users',
+};
+
+/// Returns the best guess for the current operating system without using
+/// `dart:io`.
+///
+/// This is useful for running test files directly and skipping tests as
+/// appropriate. The only OS-specific information we have is the current path,
+/// which we try to use to figure out the OS.
+final OperatingSystem currentOSGuess = (() {
+  if (p.style == p.Style.url) return OperatingSystem.none;
+  if (p.style == p.Style.windows) return OperatingSystem.windows;
+  if (_macOSDirectories.any(p.current.startsWith)) return OperatingSystem.macOS;
+  return OperatingSystem.linux;
+})();
