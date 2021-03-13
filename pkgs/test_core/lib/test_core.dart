@@ -22,7 +22,7 @@ import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/runner/suite.dart';
 import 'src/util/async.dart';
-import 'src/util/io.dart';
+import 'src/util/os.dart';
 import 'src/util/print_sink.dart';
 
 export 'package:matcher/matcher.dart';
