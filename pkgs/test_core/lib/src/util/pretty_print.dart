@@ -8,7 +8,6 @@ final _colorCode = RegExp('\u001b\\[[0-9;]+m');
 /// Returns [str] without any color codes.
 String withoutColors(String str) => str.replaceAll(_colorCode, '');
 
-
 /// A regular expression matching a single vowel.
 final _vowel = RegExp('[aeiou]');
 
