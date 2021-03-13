@@ -9,11 +9,10 @@ import 'dart:isolate';
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
-// ignore: implementation_imports
-import 'package:test_api/src/utils.dart' as utils;
 
 import '../../util/io.dart';
+import '../../util/pretty_print.dart';
+import '../../util/pretty_print.dart' as utils;
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';

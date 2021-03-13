@@ -6,7 +6,7 @@ import 'package:matcher/matcher.dart';
 
 import '../backend/closed_exception.dart';
 import '../backend/invoker.dart';
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 
 /// An exception thrown when a test assertion fails.

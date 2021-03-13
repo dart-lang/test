@@ -1,3 +1,11 @@
+## 1.16.9-dev
+
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+
 ## 1.16.7
 
 * Update `spawnHybridCode` to default to the current packages language version.

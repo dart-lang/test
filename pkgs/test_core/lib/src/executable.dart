@@ -9,12 +9,13 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_api/src/util/pretty_print.dart'; // ignore: implementation_imports
 
+import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/version.dart';
-import 'runner.dart';
+import 'util/dart.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 

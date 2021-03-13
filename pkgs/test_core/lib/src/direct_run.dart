@@ -12,7 +12,6 @@ import 'package:test_api/src/backend/group.dart'; //ignore: implementation_impor
 import 'package:test_api/src/backend/group_entry.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; //ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'runner/configuration.dart';
 import 'runner/engine.dart';
@@ -21,6 +20,7 @@ import 'runner/reporter.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
+import 'util/io.dart';
 import 'util/print_sink.dart';
 
 /// Runs all unskipped test cases declared in [testMain].

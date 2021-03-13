@@ -1,3 +1,9 @@
+## 0.3.20-dev
+
+## 0.3.19
+
+* Disable stack trace chaining by default.
+
 ## 0.3.18
 
 * Update `spawnHybridCode` to default to the current packages language version.
