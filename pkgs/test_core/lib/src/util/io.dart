@@ -216,27 +216,3 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     return base;
   }
 }
-
-/// Directories that are specific to OS X.
-///
-/// This is used to try to distinguish OS X and Linux in [currentOSGuess].
-final _macOSDirectories = {
-  '/Applications',
-  '/Library',
-  '/Network',
-  '/System',
-  '/Users',
-};
-
-/// Returns the best guess for the current operating system without using
-/// `dart:io`.
-///
-/// This is useful for running test files directly and skipping tests as
-/// appropriate. The only OS-specific information we have is the current path,
-/// which we try to use to figure out the OS.
-final OperatingSystem currentOSGuess = (() {
-  if (p.style == p.Style.url) return OperatingSystem.none;
-  if (p.style == p.Style.windows) return OperatingSystem.windows;
-  if (_macOSDirectories.any(p.current.startsWith)) return OperatingSystem.macOS;
-  return OperatingSystem.linux;
-})();

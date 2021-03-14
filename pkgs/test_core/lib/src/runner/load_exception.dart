@@ -4,7 +4,7 @@
 
 import 'package:source_span/source_span.dart';
 
-import '../util/dart.dart';
+import '../util/errors.dart';
 
 class LoadException implements Exception {
   final String path;

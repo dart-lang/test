@@ -20,7 +20,7 @@ import 'runner/reporter.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
-import 'util/io.dart';
+import 'util/os.dart';
 import 'util/print_sink.dart';
 
 /// Runs all unskipped test cases declared in [testMain].

@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
@@ -12,8 +12,6 @@ import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:yaml/yaml.dart';
-
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
@@ -28,14 +26,15 @@ import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implem
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/dart.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/pair.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+import 'package:yaml/yaml.dart';
 
-import '../executable_settings.dart';
 import '../../util/package_map.dart';
+import '../executable_settings.dart';
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin

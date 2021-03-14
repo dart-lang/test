@@ -27,7 +27,7 @@ import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_i
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/dart.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
