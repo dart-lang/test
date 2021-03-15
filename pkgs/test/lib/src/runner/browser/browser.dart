@@ -6,10 +6,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:typed_data/typed_data.dart';
-
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:pedantic/pedantic.dart';
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
+import 'package:typed_data/typed_data.dart';
 
 /// An interface for running browser instances.
 ///

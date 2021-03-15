@@ -8,7 +8,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import '../../hooks.dart' show TestFailure;
 import '../util/test.dart';
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'closed_exception.dart';
 import 'declarer.dart';
 import 'group.dart';

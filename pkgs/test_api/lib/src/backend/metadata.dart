@@ -7,6 +7,7 @@ import 'package:collection/collection.dart';
 
 import '../scaffolding/skip.dart';
 import '../scaffolding/timeout.dart';
+import '../util/pretty_print.dart';
 import '../utils.dart';
 import 'platform_selector.dart';
 import 'suite_platform.dart';

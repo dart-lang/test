@@ -13,11 +13,12 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 // ignore: deprecated_member_use
 import 'package:test_api/test_api.dart' show Timeout;
 
+import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
+import '../util/pair.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';

@@ -4,6 +4,7 @@
   subset of the normal surface area.
 * Add new APIs in `hooks.dart` to allow writing custom expectation frameworks
   which integrate with the test runner.
+* Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
 
 ## 0.3.0
 

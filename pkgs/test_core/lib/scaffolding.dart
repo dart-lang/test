@@ -14,13 +14,14 @@ import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
 import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'src/runner/engine.dart';
 import 'src/runner/plugin/environment.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/runner/suite.dart';
+import 'src/util/async.dart';
+import 'src/util/os.dart';
 import 'src/util/print_sink.dart';
 
 // Hide implementations which don't support being run directly.

@@ -3,37 +3,38 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:package_config/package_config.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:yaml/yaml.dart';
-
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/pair.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+import 'package:yaml/yaml.dart';
 
-import '../executable_settings.dart';
 import '../../util/package_map.dart';
+import '../executable_settings.dart';
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
@@ -118,7 +119,7 @@ class NodePlatform extends PlatformPlugin
       var socket = await StreamGroup.merge(servers).first;
       var channel = StreamChannel(socket.cast<List<int>>(), socket)
           .transform(StreamChannelTransformer.fromCodec(utf8))
-          .transform(chunksToLines)
+          .transform(_chunksToLines)
           .transform(jsonDocument)
           .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
         process.kill();
@@ -356,3 +357,13 @@ final int _addressInUseErrno = () {
   assert(Platform.isLinux);
   return 98;
 }();
+
+/// A [StreamChannelTransformer] that converts a chunked string channel to a
+/// line-by-line channel.
+///
+/// Note that this is only safe for channels whose messages are guaranteed not
+/// to contain newlines.
+final _chunksToLines = StreamChannelTransformer<String, String>(
+    const LineSplitter(),
+    StreamSinkTransformer.fromHandlers(
+        handleData: (data, sink) => sink.add('$data\n')));
