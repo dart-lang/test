@@ -406,7 +406,7 @@ $_usage''');
             '00:00 +0: failure',
             '00:00 +0 -1: failure [E]',
             'oh no',
-            'test.dart 8:7   main.<fn>.<fn>',
+            'test.dart 8:7  main.<fn>.<fn>',
           ]));
       await test.shouldExit(1);
     });
