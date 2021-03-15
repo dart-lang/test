@@ -15,7 +15,9 @@ import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_i
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/hooks.dart' show TestFailure; // ignore: implementation_imports
+import 'package:test_api/hooks.dart' // ignore: implementation_imports
+    show
+        TestFailure;
 
 import '../configuration.dart';
 import '../engine.dart';
