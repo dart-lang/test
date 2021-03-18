@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 import 'package:analyzer/dart/analysis/utilities.dart';
@@ -17,7 +15,7 @@ void main() {
     test('a single simple string', () {
       var iter = _parse('"abc"');
 
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset));
 
       expect(iter.moveNext(), isTrue);
@@ -33,14 +31,14 @@ void main() {
       expect(iter.offset, equals(_offset + 3));
 
       expect(iter.moveNext(), isFalse);
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 4));
     });
 
     test('a raw string', () {
       var iter = _parse('r"abc"');
 
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 1));
 
       expect(iter.moveNext(), isTrue);
@@ -56,14 +54,14 @@ void main() {
       expect(iter.offset, equals(_offset + 4));
 
       expect(iter.moveNext(), isFalse);
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 5));
     });
 
     test('a multiline string', () {
       var iter = _parse('"""ab\ncd"""');
 
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 2));
 
       expect(iter.moveNext(), isTrue);
@@ -87,14 +85,14 @@ void main() {
       expect(iter.offset, equals(_offset + 7));
 
       expect(iter.moveNext(), isFalse);
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 8));
     });
 
     test('a raw multiline string', () {
       var iter = _parse('r"""ab\ncd"""');
 
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 3));
 
       expect(iter.moveNext(), isTrue);
@@ -118,14 +116,14 @@ void main() {
       expect(iter.offset, equals(_offset + 8));
 
       expect(iter.moveNext(), isFalse);
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 9));
     });
 
     test('adjacent strings', () {
       var iter = _parse('"ab" r"cd" """ef\ngh"""');
 
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset));
 
       expect(iter.moveNext(), isTrue);
@@ -165,7 +163,7 @@ void main() {
       expect(iter.offset, equals(_offset + 18));
 
       expect(iter.moveNext(), isFalse);
-      expect(iter.current, isNull);
+      expect(() => iter.current, throwsA(isA<TypeError>()));
       expect(iter.offset, equals(_offset + 19));
     });
   });
@@ -211,7 +209,7 @@ void main() {
 void _expectEscape(String escape, String value) {
   var iter = _parse('"a${escape}b"');
 
-  expect(iter.current, isNull);
+  expect(() => iter.current, throwsA(isA<TypeError>()));
   expect(iter.offset, equals(_offset));
 
   expect(iter.moveNext(), isTrue);
@@ -227,7 +225,7 @@ void _expectEscape(String escape, String value) {
   expect(iter.offset, equals(_offset + escape.length + 2));
 
   expect(iter.moveNext(), isFalse);
-  expect(iter.current, isNull);
+  expect(() => iter.current, throwsA(isA<TypeError>()));
   expect(iter.offset, equals(_offset + escape.length + 3));
 }
 

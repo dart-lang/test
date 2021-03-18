@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 
@@ -94,7 +92,6 @@ Running Tests:
                                       especially for asynchronous code. It may be useful to disable
                                       to provide improved test performance but at the cost of
                                       debuggability.
-                                      (defaults to on)
     --no-retry                        Don't rerun tests that have retry set.
     --test-randomize-ordering-seed    Use the specified seed to randomize the execution order of test cases.
                                       Must be a 32bit unsigned integer or "random".
@@ -391,25 +388,25 @@ $_usage''');
   });
 
   group('runs failing tests', () {
-    test('defaults to chaining stack traces', () async {
+    test('respects the chain-stack-traces flag', () async {
       await d.file('test.dart', _asyncFailure).create();
 
-      var test = await runTest(['test.dart']);
+      var test = await runTest(['test.dart', '--chain-stack-traces']);
       expect(test.stdout, emitsThrough(contains('asynchronous gap')));
       await test.shouldExit(1);
     });
 
-    test('respects the chain-stack-traces flag', () async {
+    test('defaults to not chaining stack traces', () async {
       await d.file('test.dart', _asyncFailure).create();
 
-      var test = await runTest(['test.dart', '--no-chain-stack-traces']);
+      var test = await runTest(['test.dart']);
       expect(
           test.stdout,
           containsInOrder([
             '00:00 +0: failure',
             '00:00 +0 -1: failure [E]',
             'oh no',
-            'test.dart 8:7  main.<fn>',
+            'test.dart 8:7   main.<fn>.<fn>',
           ]));
       await test.shouldExit(1);
     });
@@ -784,11 +781,11 @@ $_testContents''').create();
     });
 
     group('defaults', () {
-      PackageConfig currentPackageConfig;
+      late PackageConfig currentPackageConfig;
 
       setUpAll(() async {
         currentPackageConfig =
-            await loadPackageConfigUri(await Isolate.packageConfig);
+            await loadPackageConfigUri((await Isolate.packageConfig)!);
       });
 
       setUp(() async {

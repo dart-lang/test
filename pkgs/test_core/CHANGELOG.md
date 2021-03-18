@@ -1,4 +1,21 @@
-## 0.3.15-dev
+## 0.3.20-dev
+
+## 0.3.19
+
+* Disable stack trace chaining by default.
+
+## 0.3.18
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update to the latest `test_api`.
+
+## 0.3.17
+
+* Complete the null safety migration.
+
+## 0.3.16
+
+* Allow package:io version 1.0.0.
 
 ## 0.3.14
 

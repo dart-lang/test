@@ -1,8 +1,6 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:convert';
 
@@ -20,11 +18,12 @@ import 'package:test_core/src/runner/version.dart';
 Future<void> expectJsonReport(
     List<String> outputLines,
     int testPid,
-    List<List<dynamic /*Map|Matcher*/ >> expected,
+    List<List<Object /*Map|Matcher*/ >> expected,
     Map<Object, Object> done) async {
   // Ensure the output is of the same length, including start, done and all
   // suites messages.
-  expect(outputLines.length, equals(expected.fold(3, (a, m) => a + m.length)),
+  expect(
+      outputLines.length, equals(expected.fold(3, (int a, m) => a + m.length)),
       reason: 'Expected $outputLines to match $expected.');
 
   dynamic decodeLine(String l) =>
@@ -54,21 +53,22 @@ Future<void> expectJsonReport(
 /// all suites.
 ///
 /// The [count] defaults to 1.
-Map<String, Object> allSuitesJson({int count}) {
-  return {'type': 'allSuites', 'count': count ?? 1};
+Map<String, Object> allSuitesJson({int count = 1}) {
+  return {'type': 'allSuites', 'count': count};
 }
 
 /// Returns the event emitted by the JSON reporter indicating that a suite has
 /// begun running.
 ///
 /// The [platform] defaults to `"vm"`, the [path] defaults to `"test.dart"`.
-Map<String, Object> suiteJson(int id, {String platform, String path}) {
+Map<String, Object> suiteJson(int id,
+    {String platform = 'vm', String path = 'test.dart'}) {
   return {
     'type': 'suite',
     'suite': {
       'id': id,
-      'platform': platform ?? 'vm',
-      'path': path ?? 'test.dart'
+      'platform': platform,
+      'path': path,
     }
   };
 }
@@ -83,13 +83,13 @@ Map<String, Object> suiteJson(int id, {String platform, String path}) {
 /// The [testCount] parameter indicates the number of tests in the group. It
 /// defaults to 1.
 Map<String, Object> groupJson(int id,
-    {String name,
-    int suiteID,
-    int parentID,
-    skip,
-    int testCount,
-    int line,
-    int column}) {
+    {String? name,
+    int? suiteID,
+    int? parentID,
+    Object? skip,
+    int? testCount,
+    int? line,
+    int? column}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(
         'line and column must either both be null or both be passed');
@@ -121,15 +121,15 @@ Map<String, Object> groupJson(int id,
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
 Map<String, Object> testStartJson(int id, String name,
-    {int suiteID,
-    Iterable<int> groupIDs,
-    int line,
-    int column,
-    String url,
-    skip,
-    int root_line,
-    int root_column,
-    String root_url}) {
+    {int? suiteID,
+    Iterable<int>? groupIDs,
+    int? line,
+    int? column,
+    String? url,
+    Object? skip,
+    int? root_line,
+    int? root_column,
+    String? root_url}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(
         'line and column must either both be null or both be passed');
@@ -165,13 +165,14 @@ Map<String, Object> testStartJson(int id, String name,
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// printed [message].
-Matcher printJson(int id, dynamic /*String|Matcher*/ message, {String type}) {
+Matcher printJson(int id, dynamic /*String|Matcher*/ message,
+    {String type = 'print'}) {
   return allOf(
     hasLength(4),
     containsPair('type', 'print'),
     containsPair('testID', id),
     containsPair('message', message),
-    containsPair('messageType', type ?? 'print'),
+    containsPair('messageType', type),
   );
 }
 
@@ -199,8 +200,7 @@ Map<String, Object> errorJson(int id, String error, {bool isFailure = false}) {
 /// after finishing. The [skipped] parameter indicates whether the test was
 /// skipped.
 Map<String, Object> testDoneJson(int id,
-    {String result, bool hidden = false, bool skipped = false}) {
-  result ??= 'success';
+    {String result = 'success', bool hidden = false, bool skipped = false}) {
   return {
     'type': 'testDone',
     'testID': id,
@@ -216,7 +216,7 @@ Map<String, Object> doneJson({bool success = true}) =>
     {'type': 'done', 'success': success};
 
 /// Returns the serialized metadata corresponding to [skip].
-Map<String, Object> metadataJson({skip}) {
+Map<String, Object?> metadataJson({skip}) {
   if (skip == true) {
     return {'skip': true, 'skipReason': null};
   } else if (skip is String) {

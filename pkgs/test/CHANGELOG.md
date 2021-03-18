@@ -1,3 +1,24 @@
+## 1.16.9-dev
+
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+
+## 1.16.7
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update `test_core` and `test_api` deps.
+
+## 1.16.6
+
+* Complete the migration to null safety.
+
+## 1.16.5
+
+* Expand several deps to allow the latest versions.
+
 ## 1.16.4
 
 * Update `test_core` dependency to `0.3.14`.

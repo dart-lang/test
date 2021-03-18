@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @JS()
 library test.host;
@@ -23,7 +21,7 @@ class _TestRunner {
 
 /// Returns the current content shell runner, or `null` if none exists.
 @JS()
-external _TestRunner get testRunner;
+external _TestRunner? get testRunner;
 
 /// A class that exposes the test API to JS.
 ///
@@ -114,7 +112,7 @@ void main() {
   testRunner?.waitUntilDone();
 
   if (_currentUrl.queryParameters['debug'] == 'true') {
-    document.body.classes.add('debug');
+    document.body!.classes.add('debug');
   }
 
   runZonedGuarded(() {
@@ -127,14 +125,14 @@ void main() {
             _connectToIframe(message['url'] as String, message['id'] as int);
         suiteChannel.pipe(iframeChannel);
       } else if (message['command'] == 'displayPause') {
-        document.body.classes.add('paused');
+        document.body!.classes.add('paused');
       } else if (message['command'] == 'resume') {
-        document.body.classes.remove('paused');
+        document.body!.classes.remove('paused');
       } else {
         assert(message['command'] == 'closeSuite');
-        _iframes.remove(message['id']).remove();
+        _iframes.remove(message['id'])!.remove();
 
-        for (var subscription in _subscriptions.remove(message['id'])) {
+        for (var subscription in _subscriptions.remove(message['id'])!) {
           subscription.cancel();
         }
       }
@@ -146,13 +144,13 @@ void main() {
         (_) => serverChannel.sink.add({'command': 'ping'}));
 
     var play = document.querySelector('#play');
-    play.onClick.listen((_) {
-      if (!document.body.classes.remove('paused')) return;
+    play!.onClick.listen((_) {
+      if (!document.body!.classes.remove('paused')) return;
       serverChannel.sink.add({'command': 'resume'});
     });
 
     _jsApi = _JSApi(resume: allowInterop(() {
-      if (!document.body.classes.remove('paused')) return;
+      if (!document.body!.classes.remove('paused')) return;
       serverChannel.sink.add({'command': 'resume'});
     }), restartCurrent: allowInterop(() {
       serverChannel.sink.add({'command': 'restart'});
@@ -167,7 +165,7 @@ void main() {
 MultiChannel<dynamic> _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
-  var webSocket = WebSocket(_currentUrl.queryParameters['managerUrl']);
+  var webSocket = WebSocket(_currentUrl.queryParameters['managerUrl']!);
 
   var controller = StreamChannelController(sync: true);
   webSocket.onMessage.listen((message) {
@@ -188,7 +186,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var iframe = IFrameElement();
   _iframes[id] = iframe;
   iframe.src = url;
-  document.body.children.add(iframe);
+  document.body!.children.add(iframe);
 
   // Use this to communicate securely with the iframe.
   var channel = MessageChannel();
@@ -217,7 +215,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     if (message.data['ready'] == true) {
       // This message indicates that the iframe is actively listening for
       // events, so the message channel's second port can now be transferred.
-      iframe.contentWindow
+      iframe.contentWindow!
           .postMessage('port', window.location.origin, [channel.port2]);
       readyCompleter.complete();
     } else if (message.data['exception'] == true) {

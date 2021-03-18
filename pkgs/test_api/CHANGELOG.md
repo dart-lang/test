@@ -1,4 +1,15 @@
-## 0.2.20-dev
+## 0.3.1-dev
+
+* Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
+
+## 0.3.0
+
+* **Breaking** `TestException.message` is now nullable.
+  * Fixes handling of `null` messages in remote exceptions.
+
+## 0.2.20
+
+* Fix some strong null safety mode errors in the original migration.
 
 ## 0.2.19
 

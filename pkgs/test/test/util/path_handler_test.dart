@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 
@@ -11,7 +9,7 @@ import 'package:test/src/util/path_handler.dart';
 import 'package:test/test.dart';
 
 void main() {
-  PathHandler handler;
+  late PathHandler handler;
   setUp(() => handler = PathHandler());
 
   Future<shelf.Response> _handle(shelf.Request request) =>
@@ -60,7 +58,7 @@ void main() {
     handler.add(
         'foo',
         expectAsync1((_) {
-          return null;
+          return shelf.Response.notFound('fake');
         }, count: 0));
     handler.add('foo/bar', expectAsync1((request) {
       expect(request.handlerPath, equals('/foo/bar/'));
@@ -70,7 +68,7 @@ void main() {
     handler.add(
         'foo/bar/baz/bang',
         expectAsync1((_) {
-          return null;
+          return shelf.Response.notFound('fake');
         }, count: 0));
 
     var response = await _handle(request);

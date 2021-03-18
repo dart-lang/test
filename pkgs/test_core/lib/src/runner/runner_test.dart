@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -27,7 +25,7 @@ class RunnerTest extends Test {
   @override
   final Metadata metadata;
   @override
-  final Trace /*?*/ trace;
+  final Trace? trace;
 
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
@@ -37,9 +35,9 @@ class RunnerTest extends Test {
   RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
   @override
-  LiveTest load(Suite suite, {Iterable<Group> /*?*/ groups}) {
-    /*late final*/ LiveTestController controller;
-    /*late final*/ VirtualChannel testChannel;
+  LiveTest load(Suite suite, {Iterable<Group>? groups}) {
+    late final LiveTestController controller;
+    late final VirtualChannel testChannel;
     controller = LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
@@ -103,7 +101,7 @@ class RunnerTest extends Test {
   }
 
   @override
-  Test /*?*/ forPlatform(SuitePlatform platform) {
+  Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);
   }

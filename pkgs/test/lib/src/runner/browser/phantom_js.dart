@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:io';
@@ -50,8 +48,8 @@ class PhantomJS extends Browser {
   final Future<Uri> remoteDebuggerUrl;
 
   factory PhantomJS(url, Configuration configuration,
-      {ExecutableSettings settings}) {
-    settings ??= defaultSettings[Runtime.phantomJS];
+      {ExecutableSettings? settings}) {
+    settings ??= defaultSettings[Runtime.phantomJS]!;
     var remoteDebuggerCompleter = Completer<Uri>.sync();
     return PhantomJS._(() async {
       var dir = createTempDir();
@@ -60,7 +58,7 @@ class PhantomJS extends Browser {
 
       var port = configuration.debug ? await getUnsafeUnusedPort() : null;
 
-      var args = settings.arguments.toList();
+      var args = settings!.arguments.toList();
       if (configuration.debug) {
         args.addAll(
             ['--remote-debugger-port=$port', '--remote-debugger-autorun=yes']);

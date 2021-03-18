@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 import 'dart:async';
@@ -22,7 +20,7 @@ import 'package:test/test.dart';
 
 import '../utils.dart';
 
-Loader _loader;
+late Loader _loader;
 
 final _tests = '''
 import 'dart:async';
@@ -44,7 +42,7 @@ void main() {
   tearDown(() => _loader.close());
 
   group('.loadFile()', () {
-    RunnerSuite suite;
+    late RunnerSuite suite;
     setUp(() async {
       await d.file('a_test.dart', _tests).create();
       var suites = await _loader
@@ -52,7 +50,7 @@ void main() {
           .toList();
       expect(suites, hasLength(1));
       var loadSuite = suites.first;
-      suite = await loadSuite.getSuite();
+      suite = (await loadSuite.getSuite())!;
     });
 
     test('returns a suite with the file path and platform', () {
@@ -106,7 +104,7 @@ void main() {
     });
 
     group('with suites loaded from a directory', () {
-      List<RunnerSuite> suites;
+      late List<RunnerSuite> suites;
       setUp(() async {
         await d.file('a_test.dart', _tests).create();
         await d.file('another_test.dart', _tests).create();
@@ -114,7 +112,7 @@ void main() {
 
         suites = await _loader
             .loadDir(d.sandbox, SuiteConfiguration.empty)
-            .asyncMap((loadSuite) => loadSuite.getSuite())
+            .asyncMap((loadSuite) async => (await loadSuite.getSuite())!)
             .toList();
       });
 
@@ -129,7 +127,8 @@ void main() {
       });
 
       test('can run tests in those suites', () {
-        var suite = suites.firstWhere((suite) => suite.path.contains('a_test'));
+        var suite =
+            suites.firstWhere((suite) => suite.path!.contains('a_test'));
         var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
         expectSingleFailure(liveTest);
         return liveTest.run().whenComplete(() => liveTest.close());
@@ -182,7 +181,7 @@ void main() {
             .toList();
         expect(suites, hasLength(1));
         var loadSuite = suites.first;
-        var suite = await loadSuite.getSuite();
+        var suite = (await loadSuite.getSuite())!;
         expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
         expect(suite.platform.runtime, equals(Runtime.vm));
       }, zoneSpecification:

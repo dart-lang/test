@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 
@@ -17,7 +15,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../io.dart';
 
 void main() {
-  String packageRoot;
+  late String packageRoot;
   setUpAll(() async {
     packageRoot = p.absolute(p.dirname(p
         .fromUri(await Isolate.resolvePackageUri(Uri.parse('package:test/')))));
@@ -431,9 +429,7 @@ void main() {
 ///
 /// If [arguments] is given, it's passed on to the invocation of the test
 /// runner.
-void _spawnHybridUriTests([Iterable<String> arguments]) {
-  arguments ??= [];
-
+void _spawnHybridUriTests([Iterable<String> arguments = const []]) {
   test('loads a file in a separate isolate connected via StreamChannel',
       () async {
     await d.file('test.dart', '''
@@ -701,7 +697,7 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
     // Adds the sandbox dir as a new package to the existing config,
     // opting it out.
     var originalPackageConfig =
-        await loadPackageConfigUri(await Isolate.packageConfig);
+        await loadPackageConfigUri((await Isolate.packageConfig)!);
     var extraPackage = Package('_test', Uri.file('${d.sandbox}/'),
         languageVersion: LanguageVersion(2, 9));
     var newConfig = PackageConfig([

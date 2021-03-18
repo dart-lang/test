@@ -17,7 +17,7 @@ class RemoteException implements Exception {
   ///
   /// If the original exception was a plain string, this will contain that
   /// string.
-  final String message;
+  final String? message;
 
   /// The value of the original exception's `runtimeType.toString()`.
   final String type;
@@ -63,11 +63,11 @@ class RemoteException implements Exception {
 
   /// Deserializes the exception portion of [serialized].
   static RemoteException _deserializeException(serialized) {
-    final message = serialized['message'] as String;
+    final message = serialized['message'] as String?;
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;
 
-    switch (serialized['supertype'] as String) {
+    switch (serialized['supertype'] as String?) {
       case 'TestFailure':
         return _RemoteTestFailure(message, type, toString);
       default:
@@ -86,6 +86,6 @@ class RemoteException implements Exception {
 /// It's important to preserve [TestFailure]-ness, because tests have different
 /// results depending on whether an exception was a failure or an error.
 class _RemoteTestFailure extends RemoteException implements TestFailure {
-  _RemoteTestFailure(String message, String type, String toString)
+  _RemoteTestFailure(String? message, String type, String toString)
       : super._(message, type, toString);
 }
