@@ -31,8 +31,8 @@ import 'environment.dart';
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
-  final _compiler = TestCompiler(
-      p.join(Directory.current.path, '.dart_tool', 'pkg_test_kernel.bin'));
+  final _compiler =
+      TestCompiler(p.join(p.current, '.dart_tool', 'pkg_test_kernel.bin'));
 
   VMPlatform();
 
@@ -126,10 +126,11 @@ class VMPlatform extends PlatformPlugin {
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
     } else {
-      final compiledDill =
+      final response =
           await _compiler.compile(File(path).absolute.uri, suiteMetadata);
+      var compiledDill = response.kernelOutputUri?.toFilePath();
       if (compiledDill == null) {
-        throw Exception('Failed to compile $path');
+        throw LoadException(path, response.compilerOutput ?? 'unknown error');
       }
       return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
           checked: true);

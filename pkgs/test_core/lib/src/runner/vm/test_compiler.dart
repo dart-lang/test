@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:frontend_server_client/frontend_server_client.dart';
 
+import '../load_exception.dart';
 import '../package_version.dart';
 
 /// A request to the [TestCompiler] for recompilation.
@@ -17,7 +18,14 @@ class _CompilationRequest {
 
   Uri mainUri;
   Metadata metadata;
-  Completer<String> result;
+  Completer<CompilationResponse> result;
+}
+
+class CompilationResponse {
+  final String? compilerOutput;
+  final Uri? kernelOutputUri;
+
+  CompilationResponse({this.compilerOutput, this.kernelOutputUri});
 }
 
 class TestCompiler {
@@ -36,8 +44,8 @@ class TestCompiler {
   late final File _outputDill;
   FrontendServerClient? _frontendServerClient;
 
-  Future<String?> compile(Uri mainDart, Metadata metadata) {
-    final completer = Completer<String>();
+  Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) {
+    final completer = Completer<CompilationResponse>();
     if (_compilerController.isClosed) {
       return Future.value(null);
     }
@@ -95,7 +103,8 @@ class TestCompiler {
       final client = _frontendServerClient!;
       final outputPath = compilerOutput?.dillOutput;
       if (outputPath == null) {
-        request.result.complete(null);
+        request.result.complete(CompilationResponse(
+            compilerOutput: compilerOutput?.compilerOutputLines.join('\n')));
       } else {
         final outputFile = File(outputPath);
         final kernelReadyToRun = await outputFile.copy('${tempFile.path}.dill');
@@ -112,7 +121,9 @@ class TestCompiler {
           }
           await outputFile.copy(_dillCachePath);
         }
-        request.result.complete(kernelReadyToRun.absolute.path);
+        request.result.complete(CompilationResponse(
+            compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+            kernelOutputUri: kernelReadyToRun.absolute.uri));
         client.accept();
         client.reset();
       }
