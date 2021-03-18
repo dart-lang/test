@@ -1,8 +1,6 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:async';
 import 'dart:io';
@@ -35,10 +33,10 @@ class TestCompiler {
   final _compilerController = StreamController<_CompilationRequest>();
   final _compilationQueue = <_CompilationRequest>[];
 
-  File _outputDill;
-  FrontendServerClient _frontendServerClient;
+  late final File _outputDill;
+  FrontendServerClient? _frontendServerClient;
 
-  Future<String> compile(Uri mainDart, Metadata metadata) {
+  Future<String?> compile(Uri mainDart, Metadata metadata) {
     final completer = Completer<String>();
     if (_compilerController.isClosed) {
       return Future.value(null);
@@ -80,7 +78,7 @@ class TestCompiler {
     while (_compilationQueue.isNotEmpty) {
       final request = _compilationQueue.first;
       var firstCompile = false;
-      CompileResult compilerOutput;
+      CompileResult? compilerOutput;
       final contents =
           await _generateEntrypoint(request.mainUri, request.metadata);
       final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
@@ -91,8 +89,10 @@ class TestCompiler {
         firstCompile = true;
       } else {
         compilerOutput =
-            await _frontendServerClient.compile(<Uri>[tempFile.uri]);
+            await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
       }
+      // The client is guaranteed initialized at this point.
+      final client = _frontendServerClient!;
       final outputPath = compilerOutput?.dillOutput;
       if (outputPath == null) {
         request.result.complete(null);
@@ -113,24 +113,24 @@ class TestCompiler {
           await outputFile.copy(_dillCachePath);
         }
         request.result.complete(kernelReadyToRun.absolute.path);
-        _frontendServerClient.accept();
-        _frontendServerClient.reset();
+        client.accept();
+        client.reset();
       }
       _compilationQueue.removeAt(0);
     }
   }
 
-  Future<CompileResult> _createCompiler(Uri testUri) async {
+  Future<CompileResult?> _createCompiler(Uri testUri) async {
     final platformDill = 'lib/_internal/vm_platform_strong.dill';
     final sdkRoot =
         Directory(p.relative(p.join(Platform.resolvedExecutable, '..', '..')))
             .uri;
-    _frontendServerClient = await FrontendServerClient.start(
+    var client = _frontendServerClient = await FrontendServerClient.start(
       testUri.toString(),
       _outputDill.path,
       platformDill,
       sdkRoot: sdkRoot.path,
     );
-    return _frontendServerClient.compile();
+    return client.compile();
   }
 }

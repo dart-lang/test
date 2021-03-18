@@ -17,11 +17,11 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
-  PackageConfig currentPackageConfig;
+  late PackageConfig currentPackageConfig;
 
   setUpAll(() async {
     currentPackageConfig =
-        await loadPackageConfigUri(await Isolate.packageConfig);
+        await loadPackageConfigUri((await Isolate.packageConfig)!);
   });
 
   setUp(() async {
