@@ -7,7 +7,7 @@ environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  frontend_server_client: ^1.0.0
+  frontend_server_client: ^2.0.0
   analyzer: '>=0.39.5 <2.0.0'
   async: ^2.5.0
   args: ">=1.4.0 <3.0.0"
