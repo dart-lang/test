@@ -9,7 +9,6 @@ import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:frontend_server_client/frontend_server_client.dart';
 
-import '../load_exception.dart';
 import '../package_version.dart';
 
 /// A request to the [TestCompiler] for recompilation.
