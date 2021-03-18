@@ -129,7 +129,7 @@ class VMPlatform extends PlatformPlugin {
       final response =
           await _compiler.compile(File(path).absolute.uri, suiteMetadata);
       var compiledDill = response.kernelOutputUri?.toFilePath();
-      if (compiledDill == null) {
+      if (compiledDill == null || response.errorCount > 0) {
         throw LoadException(path, response.compilerOutput ?? 'unknown error');
       }
       return await Isolate.spawnUri(p.toUri(compiledDill), [], message,

@@ -22,9 +22,11 @@ class _CompilationRequest {
 
 class CompilationResponse {
   final String? compilerOutput;
+  final int errorCount;
   final Uri? kernelOutputUri;
 
-  CompilationResponse({this.compilerOutput, this.kernelOutputUri});
+  CompilationResponse(
+      {this.compilerOutput, this.errorCount = 0, this.kernelOutputUri});
 }
 
 class TestCompiler {
@@ -103,7 +105,8 @@ class TestCompiler {
       final outputPath = compilerOutput?.dillOutput;
       if (outputPath == null) {
         request.result.complete(CompilationResponse(
-            compilerOutput: compilerOutput?.compilerOutputLines.join('\n')));
+            compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+            errorCount: compilerOutput?.errorCount ?? 0));
       } else {
         final outputFile = File(outputPath);
         final kernelReadyToRun = await outputFile.copy('${tempFile.path}.dill');
@@ -122,6 +125,7 @@ class TestCompiler {
         }
         request.result.complete(CompilationResponse(
             compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+            errorCount: compilerOutput?.errorCount ?? 0,
             kernelOutputUri: kernelReadyToRun.absolute.uri));
         client.accept();
         client.reset();
