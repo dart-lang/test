@@ -10,6 +10,7 @@ import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:frontend_server_client/frontend_server_client.dart';
 
 import '../package_version.dart';
+import '../../util/package_config.dart';
 
 /// A request to the [TestCompiler] for recompilation.
 class _CompilationRequest {
@@ -144,6 +145,7 @@ class TestCompiler {
       _outputDill.path,
       platformDill,
       sdkRoot: sdkRoot.path,
+      packagesJson: (await packageConfigUri).toFilePath(),
     );
     return client.compile();
   }
