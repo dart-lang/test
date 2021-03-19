@@ -59,7 +59,9 @@ class TestCompiler {
     await _compilerController.close();
     _frontendServerClient?.kill();
     _frontendServerClient = null;
-    _outputDillDirectory.deleteSync(recursive: true);
+    if (await _outputDillDirectory.exists()) {
+      await _outputDillDirectory.delete(recursive: true);
+    }
   }
 
   Future<String> _generateEntrypoint(
