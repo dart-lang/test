@@ -59,8 +59,8 @@ class TestCompiler {
     await _compilerController.close();
     _frontendServerClient?.kill();
     _frontendServerClient = null;
-    if (await _outputDillDirectory.exists()) {
-      await _outputDillDirectory.delete(recursive: true);
+    if (_outputDillDirectory.existsSync()) {
+      _outputDillDirectory.deleteSync(recursive: true);
     }
   }
 
