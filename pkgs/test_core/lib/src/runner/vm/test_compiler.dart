@@ -148,6 +148,7 @@ class TestCompiler {
       platformDill,
       sdkRoot: sdkRoot.path,
       packagesJson: (await packageConfigUri).toFilePath(),
+      printIncrementalDependencies: false,
     );
     return client.compile();
   }
