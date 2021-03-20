@@ -122,8 +122,8 @@ fails, to ensure that it has a chance to clean up after itself.
 import 'package:test/test.dart';
 
 void main() {
-  HttpServer server;
-  Uri url;
+  late HttpServer server;
+  late Uri url;
   setUp(() async {
     server = await HttpServer.bind('localhost', 0);
     url = Uri.parse('http://${server.address.host}:${server.port}');
