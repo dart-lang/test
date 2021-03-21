@@ -110,7 +110,7 @@ class TestProcess {
   /// This is protected, which means it should only be called by subclasses.
   @protected
   TestProcess(Process process, this.description,
-      {Encoding encoding= utf8, bool forwardStdio = false})
+      {Encoding encoding = utf8, bool forwardStdio = false})
       : _process = process,
         _stdoutSplitter = StreamSplitter(process.stdout
             .transform(encoding.decoder)
