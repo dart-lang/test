@@ -94,8 +94,8 @@ Running Tests:
                                       debuggability.
     --no-retry                        Don't rerun tests that have retry set.
     --use-data-isolate-strategy       Use `data:` uri isolates when spawning VM tests instead of the
-                                      default strategy. This may be faster when you only ever running
-                                      a single test suite at a time.
+                                      default strategy. This may be faster when you only ever run a
+                                      single test suite at a time.
     --test-randomize-ordering-seed    Use the specified seed to randomize the execution order of test cases.
                                       Must be a 32bit unsigned integer or "random".
                                       If "random", pick a random seed to use.
