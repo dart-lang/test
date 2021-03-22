@@ -593,7 +593,8 @@ import 'package:test/test.dart';
 
   await d.file('test.dart', testContent.toString()).create();
 
-  var test = await runTest(['test.dart', ...args], reporter: 'json');
+  var test = await runTest(['test.dart', '--chain-stack-traces', ...args],
+      reporter: 'json');
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

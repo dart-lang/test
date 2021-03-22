@@ -5,11 +5,16 @@
   * You can force the old strategy with `--use-data-isolate-strategy` flag if
     you run into issues, but please also file a bug.
 
+## 1.16.9
+
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+
 ## 1.16.8
 
 * Fix an issue where coverage collection could hang on Chrome. 
-* Disable stack trace chaining by default. It can be re-enabled by explicitly
-  passing the `--chain-stack-traces` flag.
+* ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.~~
 
 ## 1.16.7
 

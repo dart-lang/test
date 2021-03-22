@@ -1,5 +1,7 @@
 ## 0.3.20-dev
 
+* Disable stack trace chaining by default.
+
 * Change the default way VM tests are launched and ran to greatly speed up
   loading performance.
   * You can force the old strategy with `--use-data-isolate-strategy` flag if
@@ -7,7 +9,7 @@
 
 ## 0.3.19
 
-* Disable stack trace chaining by default.
+* ~~Disable stack trace chaining by default.~~
 
 ## 0.3.18
 
