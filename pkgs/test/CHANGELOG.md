@@ -1,7 +1,8 @@
-## 1.16.9
+## 1.16.9-dev
 
 * Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely.
 
 ## 1.16.8
 

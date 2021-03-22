@@ -341,12 +341,12 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest(['-p', 'chrome,firefox,phantomjs', 'test.dart']);
+      var test = await runTest(['-p', 'chrome,firefox', 'test.dart']);
       expect(
           test.stderr,
           emits(
-              "Warning: this package doesn't support running tests on Chrome, "
-              'Firefox, or PhantomJS.'));
+              "Warning: this package doesn't support running tests on Chrome "
+              'or Firefox.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
       await test.shouldExit(1);
     });

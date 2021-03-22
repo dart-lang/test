@@ -1,7 +1,8 @@
-## 0.3.1
+## 0.4.0-dev
 
 * Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
 * Disable stack trace chaining by default.
+* **Breaking** remove `Runtime.phantomJS`
 
 ## 0.3.0
 

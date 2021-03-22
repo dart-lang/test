@@ -20,10 +20,6 @@ final defaultSettings = UnmodifiableMapView({
       windowsExecutable: r'Mozilla Firefox\firefox.exe'),
   Runtime.internetExplorer:
       ExecutableSettings(windowsExecutable: r'Internet Explorer\iexplore.exe'),
-  Runtime.phantomJS: ExecutableSettings(
-      linuxExecutable: 'phantomjs',
-      macOSExecutable: 'phantomjs',
-      windowsExecutable: 'phantomjs.exe'),
   Runtime.safari: ExecutableSettings(
       macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari')
 });

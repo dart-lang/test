@@ -114,7 +114,7 @@ Output:
 
 ''';
 
-final _browsers = '[vm (default), chrome, phantomjs, firefox' +
+final _browsers = '[vm (default), chrome, firefox' +
     (Platform.isMacOS ? ', safari' : '') +
     (Platform.isWindows ? ', ie' : '') +
     ', node]';
