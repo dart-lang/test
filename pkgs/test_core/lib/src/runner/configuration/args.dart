@@ -108,10 +108,11 @@ final ArgParser _parser = (() {
       defaultsTo: false,
       negatable: false);
   parser.addFlag('use-data-isolate-strategy',
-      help: 'Use `data:` uri isolates when spawning VM tests instead of the '
-          'default strategy. This may be faster when you only ever running a '
-          'single test suite at a time.',
-      defaultsTo: false);
+      help: 'Use `data:` uri isolates when spawning VM tests instead of the\n'
+          'default strategy. This may be faster when you only ever running\n'
+          'a single test suite at a time.',
+      defaultsTo: false,
+      negatable: false);
   parser.addOption('test-randomize-ordering-seed',
       help: 'Use the specified seed to randomize the execution order of test'
           ' cases.\n'
