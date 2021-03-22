@@ -6,20 +6,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:frontend_server_client/frontend_server_client.dart';
 
 import '../package_version.dart';
 import '../../util/package_config.dart';
-
-/// A request to the [TestCompiler] for recompilation.
-class _CompilationRequest {
-  _CompilationRequest(this.mainUri, this.result, this.metadata);
-
-  Uri mainUri;
-  Metadata metadata;
-  Completer<CompilationResponse> result;
-}
 
 class CompilationResponse {
   final String? compilerOutput;
@@ -31,32 +23,37 @@ class CompilationResponse {
 }
 
 class TestCompiler {
-  TestCompiler(this._dillCachePath)
-      : _outputDillDirectory =
-            Directory.systemTemp.createTempSync('dart_test.') {
-    _outputDill = File(p.join(_outputDillDirectory.path, 'output.dill'));
-    _compilerController.stream.listen(_onCompilationRequest);
-  }
-
+  final _compilePool = Pool(1);
   final String _dillCachePath;
   final Directory _outputDillDirectory;
-  final _compilerController = StreamController<_CompilationRequest>();
-  final _compilationQueue = <_CompilationRequest>[];
 
-  late final File _outputDill;
+  late final _outputDill =
+      File(p.join(_outputDillDirectory.path, 'output.dill'));
   FrontendServerClient? _frontendServerClient;
 
+  TestCompiler(this._dillCachePath)
+      : _outputDillDirectory =
+            Directory.systemTemp.createTempSync('dart_test.');
+
+  /// Enqueues a request to compile [mainDart] and returns the result.
+  ///
+  /// This request may need to wait for ongoing compilations.
+  ///
+  /// If [dispose] has already been called, then this immediately returns a
+  /// failed response indicating the compiler was shut down.
+  ///
+  /// The entrypoint [mainDart] is wrapped in a script which bootstraps it with
+  /// a call to `internalBootstrapVmTest`.
   Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) {
-    final completer = Completer<CompilationResponse>();
-    if (_compilerController.isClosed) {
-      return Future.value(null);
+    if (_compilePool.isClosed) {
+      return Future.value(CompilationResponse(
+          errorCount: 1, compilerOutput: 'Compiler was already shut down.'));
     }
-    _compilerController.add(_CompilationRequest(mainDart, completer, metadata));
-    return completer.future;
+    return _compilePool.withResource(() => _compile(mainDart, metadata));
   }
 
   Future<void> dispose() async {
-    await _compilerController.close();
+    await _compilePool.close();
     _frontendServerClient?.kill();
     _frontendServerClient = null;
     if (_outputDillDirectory.existsSync()) {
@@ -80,61 +77,51 @@ class TestCompiler {
   ''';
   }
 
-  // Handle a compilation request.
-  Future<void> _onCompilationRequest(_CompilationRequest request) async {
-    final isEmpty = _compilationQueue.isEmpty;
-    _compilationQueue.add(request);
-    if (!isEmpty) {
-      return;
-    }
-    while (_compilationQueue.isNotEmpty) {
-      final request = _compilationQueue.first;
-      var firstCompile = false;
-      CompileResult? compilerOutput;
-      final contents =
-          await _generateEntrypoint(request.mainUri, request.metadata);
-      final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-        ..writeAsStringSync(contents);
+  Future<CompilationResponse> _compile(Uri mainUri, Metadata metadata) async {
+    var firstCompile = false;
+    CompileResult? compilerOutput;
+    final contents = await _generateEntrypoint(mainUri, metadata);
+    final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
+      ..writeAsStringSync(contents);
 
-      if (_frontendServerClient == null) {
-        compilerOutput = await _createCompiler(tempFile.uri);
-        firstCompile = true;
-      } else {
-        compilerOutput =
-            await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
-      }
-      // The client is guaranteed initialized at this point.
-      final client = _frontendServerClient!;
-      final outputPath = compilerOutput?.dillOutput;
-      if (outputPath == null) {
-        request.result.complete(CompilationResponse(
-            compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
-            errorCount: compilerOutput?.errorCount ?? 0));
-      } else {
-        final outputFile = File(outputPath);
-        final kernelReadyToRun = await outputFile.copy('${tempFile.path}.dill');
-        final testCache = File(_dillCachePath);
-        // Keep the cache file up-to-date and use the size of the kernel file
-        // as an approximation for how many packages are included. Larger files
-        // are prefered, since re-using more packages will reduce the number of
-        // files the frontend server needs to load and parse.
-        if (firstCompile ||
-            !testCache.existsSync() ||
-            (testCache.lengthSync() < outputFile.lengthSync())) {
-          if (!testCache.parent.existsSync()) {
-            testCache.parent.createSync(recursive: true);
-          }
-          await outputFile.copy(_dillCachePath);
-        }
-        request.result.complete(CompilationResponse(
-            compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
-            errorCount: compilerOutput?.errorCount ?? 0,
-            kernelOutputUri: kernelReadyToRun.absolute.uri));
-        client.accept();
-        client.reset();
-      }
-      _compilationQueue.removeAt(0);
+    if (_frontendServerClient == null) {
+      compilerOutput = await _createCompiler(tempFile.uri);
+      firstCompile = true;
+    } else {
+      compilerOutput =
+          await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
     }
+    // The client is guaranteed initialized at this point.
+    final client = _frontendServerClient!;
+    final outputPath = compilerOutput?.dillOutput;
+    if (outputPath == null) {
+      return CompilationResponse(
+          compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+          errorCount: compilerOutput?.errorCount ?? 0);
+    }
+
+    final outputFile = File(outputPath);
+    final kernelReadyToRun = await outputFile.copy('${tempFile.path}.dill');
+    final testCache = File(_dillCachePath);
+    // Keep the cache file up-to-date and use the size of the kernel file
+    // as an approximation for how many packages are included. Larger files
+    // are prefered, since re-using more packages will reduce the number of
+    // files the frontend server needs to load and parse.
+    if (firstCompile ||
+        !testCache.existsSync() ||
+        (testCache.lengthSync() < outputFile.lengthSync())) {
+      if (!testCache.parent.existsSync()) {
+        testCache.parent.createSync(recursive: true);
+      }
+      await outputFile.copy(_dillCachePath);
+    }
+
+    client.accept();
+    client.reset();
+    return CompilationResponse(
+        compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+        errorCount: compilerOutput?.errorCount ?? 0,
+        kernelOutputUri: kernelReadyToRun.absolute.uri);
   }
 
   Future<CompileResult?> _createCompiler(Uri testUri) async {
