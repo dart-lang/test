@@ -344,8 +344,7 @@ void main() {
       var test = await runTest(['-p', 'chrome,firefox', 'test.dart']);
       expect(
           test.stderr,
-          emits(
-              "Warning: this package doesn't support running tests on Chrome "
+          emits("Warning: this package doesn't support running tests on Chrome "
               'or Firefox.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
       await test.shouldExit(1);
