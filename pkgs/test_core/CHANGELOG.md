@@ -1,4 +1,4 @@
-## 0.3.20
+## 0.3.20-dev
 
 * Disable stack trace chaining by default.
 

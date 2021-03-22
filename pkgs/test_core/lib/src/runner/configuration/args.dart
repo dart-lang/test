@@ -230,15 +230,6 @@ class _Parser {
     var platform = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
         .toList();
-    if (platform
-            ?.any((runtime) => runtime.name == Runtime.phantomJS.identifier) ??
-        false) {
-      var yellow = color ? '\u001b[33m' : '';
-      var noColor = color ? '\u001b[0m' : '';
-      print('${yellow}Warning:$noColor '
-          'PhatomJS is deprecated and will be removed in version ^2.0.0');
-    }
-
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
