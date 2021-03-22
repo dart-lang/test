@@ -1,4 +1,9 @@
-## 1.16.9-dev
+## 1.17.0-dev
+
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
 
 ## 1.16.8
 

@@ -25,6 +25,9 @@ import '../../runner/platform.dart';
 import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
+import '../../util/dart.dart' as dart;
+import '../../util/package_config.dart';
+import '../package_version.dart';
 import 'environment.dart';
 
 /// A platform that loads tests in isolates spawned within this Dart process.
@@ -125,17 +128,39 @@ class VMPlatform extends PlatformPlugin {
       return _spawnPrecompiledIsolate(path, message, precompiledPath);
     } else if (_config.pubServeUrl != null) {
       return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
+    } else if (_config.useDataIsolateStrategy) {
+      return _spawnDataIsolate(path, message, suiteMetadata);
     } else {
-      final response =
-          await _compiler.compile(File(path).absolute.uri, suiteMetadata);
-      var compiledDill = response.kernelOutputUri?.toFilePath();
-      if (compiledDill == null || response.errorCount > 0) {
-        throw LoadException(path, response.compilerOutput ?? 'unknown error');
-      }
-      return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
-          checked: true);
+      return _spawnKernelIsolate(path, message, suiteMetadata);
     }
   }
+
+  /// Compiles [path] to kernel using [_compiler] and spawns that in an
+  /// isolate.
+  Future<Isolate> _spawnKernelIsolate(
+      String path, SendPort message, Metadata suiteMetadata) async {
+    final response =
+        await _compiler.compile(File(path).absolute.uri, suiteMetadata);
+    var compiledDill = response.kernelOutputUri?.toFilePath();
+    if (compiledDill == null || response.errorCount > 0) {
+      throw LoadException(path, response.compilerOutput ?? 'unknown error');
+    }
+    return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
+        packageConfig: await packageConfigUri, checked: true);
+  }
+}
+
+Future<Isolate> _spawnDataIsolate(
+    String path, SendPort message, Metadata suiteMetadata) async {
+  return await dart.runInIsolate('''
+    ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
+    import "dart:isolate";
+    import "package:test_core/src/bootstrap/vm.dart";
+    import "${p.toUri(p.absolute(path))}" as test;
+    void main(_, SendPort sendPort) {
+      internalBootstrapVmTest(() => test.main, sendPort);
+    }
+  ''', message);
 }
 
 Future<Isolate> _spawnPrecompiledIsolate(
