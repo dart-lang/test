@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
@@ -18,8 +19,11 @@ class CompilationResponse {
   final int errorCount;
   final Uri? kernelOutputUri;
 
-  CompilationResponse(
+  const CompilationResponse(
       {this.compilerOutput, this.errorCount = 0, this.kernelOutputUri});
+
+  static const _wasShutdown = CompilationResponse(
+      errorCount: 1, compilerOutput: 'Compiler no longer active.');
 }
 
 class TestCompiler {
@@ -31,6 +35,10 @@ class TestCompiler {
       File(p.join(_outputDillDirectory.path, 'output.dill'));
   FrontendServerClient? _frontendServerClient;
 
+  final _closeMemo = AsyncMemoizer<void>();
+
+  /// No work is done until the first call to [compile] is recieved, at which
+  /// point the compiler process is started.
   TestCompiler(this._dillCachePath)
       : _outputDillDirectory =
             Directory.systemTemp.createTempSync('dart_test.');
@@ -44,22 +52,19 @@ class TestCompiler {
   ///
   /// The entrypoint [mainDart] is wrapped in a script which bootstraps it with
   /// a call to `internalBootstrapVmTest`.
-  Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) {
-    if (_compilePool.isClosed) {
-      return Future.value(CompilationResponse(
-          errorCount: 1, compilerOutput: 'Compiler was already shut down.'));
-    }
+  Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) async {
+    if (_compilePool.isClosed) return CompilationResponse._wasShutdown;
     return _compilePool.withResource(() => _compile(mainDart, metadata));
   }
 
-  Future<void> dispose() async {
-    await _compilePool.close();
-    _frontendServerClient?.kill();
-    _frontendServerClient = null;
-    if (_outputDillDirectory.existsSync()) {
-      _outputDillDirectory.deleteSync(recursive: true);
-    }
-  }
+  Future<void> dispose() => _closeMemo.runOnce(() async {
+        await _compilePool.close();
+        _frontendServerClient?.kill();
+        _frontendServerClient = null;
+        if (_outputDillDirectory.existsSync()) {
+          _outputDillDirectory.deleteSync(recursive: true);
+        }
+      });
 
   Future<String> _generateEntrypoint(
       Uri testUri, Metadata suiteMetadata) async {
@@ -78,21 +83,30 @@ class TestCompiler {
   }
 
   Future<CompilationResponse> _compile(Uri mainUri, Metadata metadata) async {
+    if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var firstCompile = false;
     CompileResult? compilerOutput;
     final contents = await _generateEntrypoint(mainUri, metadata);
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
       ..writeAsStringSync(contents);
 
-    if (_frontendServerClient == null) {
-      compilerOutput = await _createCompiler(tempFile.uri);
-      firstCompile = true;
-    } else {
-      compilerOutput =
-          await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
+    try {
+      if (_frontendServerClient == null) {
+        compilerOutput = await _createCompiler(tempFile.uri);
+        firstCompile = true;
+      } else {
+        compilerOutput =
+            await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
+      }
+    } catch (e, s) {
+      if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
+      return CompilationResponse(errorCount: 1, compilerOutput: '$e\n$s');
+    } finally {
+      _frontendServerClient?.accept();
+      _frontendServerClient?.reset();
     }
+
     // The client is guaranteed initialized at this point.
-    final client = _frontendServerClient!;
     final outputPath = compilerOutput?.dillOutput;
     if (outputPath == null) {
       return CompilationResponse(
@@ -116,8 +130,6 @@ class TestCompiler {
       await outputFile.copy(_dillCachePath);
     }
 
-    client.accept();
-    client.reset();
     return CompilationResponse(
         compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
         errorCount: compilerOutput?.errorCount ?? 0,

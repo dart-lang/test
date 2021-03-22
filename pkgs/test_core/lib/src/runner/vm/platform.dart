@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
@@ -36,6 +37,7 @@ class VMPlatform extends PlatformPlugin {
   final _config = Configuration.current;
   final _compiler =
       TestCompiler(p.join(p.current, '.dart_tool', 'pkg_test_kernel.bin'));
+  final _closeMemo = AsyncMemoizer<void>();
 
   VMPlatform();
 
@@ -44,15 +46,16 @@ class VMPlatform extends PlatformPlugin {
       throw UnimplementedError();
 
   @override
-  Future<RunnerSuite> load(String path, SuitePlatform platform,
+  Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message) async {
     assert(platform.runtime == Runtime.vm);
 
     var receivePort = ReceivePort();
-    Isolate isolate;
+    Isolate? isolate;
     try {
       isolate =
           await _spawnIsolate(path, receivePort.sendPort, suiteConfig.metadata);
+      if (isolate == null) return null;
     } catch (error) {
       receivePort.close();
       rethrow;
@@ -62,7 +65,7 @@ class VMPlatform extends PlatformPlugin {
     StreamSubscription<Event>? eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
-      isolate.kill();
+      isolate!.kill();
       eventSub?.cancel();
       client?.dispose();
       sink.close();
@@ -113,25 +116,28 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() async {
-    await _compiler.dispose();
-  }
+  Future close() => _closeMemo.runOnce(() => _compiler.dispose());
 
   /// Spawns an isolate and passes it [message].
   ///
   /// This isolate connects an [IsolateChannel] to [message] and sends the
   /// serialized tests over that channel.
-  Future<Isolate> _spawnIsolate(
+  Future<Isolate?> _spawnIsolate(
       String path, SendPort message, Metadata suiteMetadata) async {
-    var precompiledPath = _config.suiteDefaults.precompiledPath;
-    if (precompiledPath != null) {
-      return _spawnPrecompiledIsolate(path, message, precompiledPath);
-    } else if (_config.pubServeUrl != null) {
-      return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
-    } else if (_config.useDataIsolateStrategy) {
-      return _spawnDataIsolate(path, message, suiteMetadata);
-    } else {
-      return _spawnKernelIsolate(path, message, suiteMetadata);
+    try {
+      var precompiledPath = _config.suiteDefaults.precompiledPath;
+      if (precompiledPath != null) {
+        return _spawnPrecompiledIsolate(path, message, precompiledPath);
+      } else if (_config.pubServeUrl != null) {
+        return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
+      } else if (_config.useDataIsolateStrategy) {
+        return _spawnDataIsolate(path, message, suiteMetadata);
+      } else {
+        return _spawnKernelIsolate(path, message, suiteMetadata);
+      }
+    } catch (_) {
+      if (_closeMemo.hasRun) return null;
+      rethrow;
     }
   }
 
