@@ -174,7 +174,7 @@ class Configuration {
       });
   Set<String>? _knownPresets;
 
-  /// Whether to use the original `data:` uri isolate spawning strategy for vm
+  /// Whether to use the original `data:` URI isolate spawning strategy for VM
   /// tests.
   ///
   /// This can make more sense than the default strategy in systems such as
