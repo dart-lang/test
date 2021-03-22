@@ -31,8 +31,8 @@ void main() {
 
   group('The data isolate strategy', () {
     test('can be enabled', () async {
-      /// We confirm it is enabled by checking the error output for an invalid
-      /// test, it looks a bit different.
+      // We confirm it is enabled by checking the error output for an invalid
+      // test, it looks a bit different.
       await d.file('test.dart', 'invalid Dart file').create();
       var test = await runTest(['--use-data-isolate-strategy', 'test.dart']);
 
