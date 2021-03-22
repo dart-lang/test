@@ -333,7 +333,8 @@ class Invoker {
     _controller.addError(error, stackTrace!);
     zone.run(() => _outstandingCallbacks.complete());
 
-    if (!liveTest.test.metadata.chainStackTraces) {
+    if (!liveTest.test.metadata.chainStackTraces &&
+        !liveTest.suite.isLoadSuite) {
       _printsOnFailure.add('Consider enabling the flag chain-stack-traces to '
           'receive more detailed exceptions.\n'
           "For example, 'pub run test --chain-stack-traces'.");
