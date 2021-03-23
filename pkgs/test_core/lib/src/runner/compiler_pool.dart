@@ -2,18 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
 import '../util/io.dart';
-import 'suite.dart';
+import '../util/package_config.dart';
 import 'configuration.dart';
+import 'suite.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
 final _dart2jsStatus =
@@ -42,7 +41,7 @@ class CompilerPool {
   final List<String> _extraArgs;
 
   /// Creates a compiler pool that multiple instances of `dart2js` at once.
-  CompilerPool([Iterable<String> extraArgs])
+  CompilerPool([Iterable<String>? extraArgs])
       : _pool = Pool(Configuration.current.concurrency),
         _extraArgs = extraArgs?.toList() ?? const [];
 
@@ -64,10 +63,12 @@ class CompilerPool {
         if (Platform.isWindows) dart2jsPath += '.bat';
 
         var args = [
+          for (var experiment in _enabledExperiments)
+            '--enable-experiment=$experiment',
           '--enable-asserts',
           wrapperPath,
           '--out=$jsPath',
-          '--packages=${await Isolate.packageConfig}',
+          '--packages=${await packageConfigUri}',
           ..._extraArgs,
           ...suiteConfig.dart2jsArgs
         ];
@@ -139,3 +140,23 @@ class CompilerPool {
     });
   }
 }
+
+/// Parses and returns the currently enabled experiments from
+/// [Platform.executableArguments].
+final List<String> _enabledExperiments = () {
+  var experiments = <String>[];
+  var itr = Platform.executableArguments.iterator;
+  while (itr.moveNext()) {
+    var arg = itr.current;
+    if (arg == '--enable-experiment') {
+      if (!itr.moveNext()) break;
+      experiments.add(itr.current);
+    } else if (arg.startsWith('--enable-experiment=')) {
+      var parts = arg.split('=');
+      if (parts.length == 2) {
+        experiments.addAll(parts[1].split(','));
+      }
+    }
+  }
+  return experiments;
+}();

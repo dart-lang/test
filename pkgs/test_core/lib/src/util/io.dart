@@ -3,20 +3,18 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:core' as core;
 import 'dart:core';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+
+import 'pretty_print.dart';
 
 /// The default line length for output when there isn't a terminal attached to
 /// stdout.
@@ -38,18 +36,6 @@ final int lineLength = () {
   }
 }();
 
-/// A comment which forces the language version to be that of the current
-/// packages default.
-///
-/// If the cwd is not a package, this returns an empty string which ends up
-/// defaulting to the current sdk version.
-final Future<String> rootPackageLanguageVersionComment = () async {
-  var packageConfig = await loadPackageConfigUri(await Isolate.packageConfig);
-  var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
-  if (rootPackage == null) return '';
-  return '// @dart=${rootPackage.languageVersion}';
-}();
-
 /// The root directory of the Dart SDK.
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
@@ -64,8 +50,24 @@ SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
     os: runtime.isBrowser ? OperatingSystem.none : currentOS,
     inGoogle: inGoogle);
 
+/// A transformer that decodes bytes using UTF-8 and splits them on newlines.
+final lineSplitter = StreamTransformer<List<int>, String>(
+    (stream, cancelOnError) => utf8.decoder
+        .bind(stream)
+        .transform(const LineSplitter())
+        .listen(null, cancelOnError: cancelOnError));
+
 /// A queue of lines of standard input.
-final stdinLines = StreamQueue(lineSplitter.bind(stdin));
+///
+/// Also returns an empty stream for Fuchsia since Fuchsia components can't
+/// access stdin.
+StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
+    Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
+
+StreamQueue<String>? _stdinLines;
+
+/// Call cancel on [stdinLines], but only if it's been accessed previously.
+void cancelStdinLines() => _stdinLines?.cancel(immediate: true);
 
 /// Whether this is being run as a subprocess in the test package's own tests.
 bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
@@ -76,7 +78,7 @@ bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
 /// This is configurable so that the test code can validate that the runner
 /// cleans up after itself fully.
 final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
-    ? Platform.environment['_UNITTEST_TEMP_DIR']
+    ? Platform.environment['_UNITTEST_TEMP_DIR']!
     : Directory.systemTemp.path;
 
 /// Whether or not the current terminal supports ansi escape codes.
@@ -143,7 +145,7 @@ String wordWrap(String text) {
 ///
 /// If [print] is `true`, this prints the message using [print] to associate it
 /// with the current test. Otherwise, it prints it using [stderr].
-void warn(String message, {bool color, bool print = false}) {
+void warn(String message, {bool? color, bool print = false}) {
   color ??= canUseSpecialChars;
   var header = color ? '\u001b[33mWarning:\u001b[0m' : 'Warning:';
   (print ? core.print : stderr.writeln)(wordWrap('$header $message\n'));
@@ -159,12 +161,12 @@ void warn(String message, {bool color, bool print = false}) {
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
 Future<T> getUnusedPort<T>(FutureOr<T> Function(int port) tryPort) async {
-  T value;
+  T? value;
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());
     return value == null;
   });
-  return value;
+  return value!;
 }
 
 /// Whether this computer supports binding to IPv6 addresses.
@@ -176,7 +178,7 @@ var _maySupportIPv6 = true;
 /// any time after this call has returned. If at all possible, callers should
 /// use [getUnusedPort] instead.
 Future<int> getUnsafeUnusedPort() async {
-  int port;
+  late int port;
   if (_maySupportIPv6) {
     try {
       final socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0,

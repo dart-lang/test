@@ -55,7 +55,7 @@ void main() {
         expect(merged.dart2jsPath, equals('/tmp/dart2js'));
         expect(merged.reporter, equals('json'));
         expect(merged.fileReporters, equals({'json': 'out.json'}));
-        expect(merged.pubServeUrl.port, equals(1234));
+        expect(merged.pubServeUrl!.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.paths, equals(['bar']));
@@ -86,7 +86,7 @@ void main() {
         expect(merged.dart2jsPath, equals('/tmp/dart2js'));
         expect(merged.reporter, equals('json'));
         expect(merged.fileReporters, equals({'json': 'out.json'}));
-        expect(merged.pubServeUrl.port, equals(1234));
+        expect(merged.pubServeUrl!.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.paths, equals(['bar']));
@@ -134,7 +134,7 @@ void main() {
         expect(merged.dart2jsPath, equals('../dart2js'));
         expect(merged.reporter, equals('compact'));
         expect(merged.fileReporters, equals({'json': 'new.json'}));
-        expect(merged.pubServeUrl.port, equals(5678));
+        expect(merged.pubServeUrl!.port, equals(5678));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.paths, equals(['blech']));
@@ -176,9 +176,9 @@ void main() {
           'zap': Configuration(help: true)
         }));
 
-        expect(merged.presets['bang'].pauseAfterLoad, isTrue);
-        expect(merged.presets['qux'].color, isFalse);
-        expect(merged.presets['zap'].help, isTrue);
+        expect(merged.presets['bang']!.pauseAfterLoad, isTrue);
+        expect(merged.presets['qux']!.color, isFalse);
+        expect(merged.presets['zap']!.help, isTrue);
       });
 
       test('automatically resolves a matching chosen preset', () {

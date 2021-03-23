@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:stream_channel/stream_channel.dart';
 
 import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
@@ -30,10 +28,14 @@ import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementat
 ///
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
-StreamChannel serializeSuite(Function Function() getMain,
-        {bool hidePrints = true, Future Function(SuiteChannelManager) beforeLoad}) =>
-    RemoteListener.start(getMain,
-        hidePrints: hidePrints, beforeLoad: beforeLoad);
+StreamChannel<Object?> serializeSuite(Function Function() getMain,
+        {bool hidePrints = true,
+        Future Function(SuiteChannelManager)? beforeLoad}) =>
+    RemoteListener.start(
+      getMain,
+      hidePrints: hidePrints,
+      beforeLoad: beforeLoad,
+    );
 
 /// Sets the stack trace mapper for the current test suite.
 ///

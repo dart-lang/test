@@ -104,9 +104,12 @@ void main() {
   });
 }
 
-Future _expectReports(String tests, String stdoutExpected,
-    List<List<dynamic /*Map|Matcher*/ >> jsonFileExpected, Map jsonFileDone,
-    {List<String> args}) async {
+Future<void> _expectReports(
+    String tests,
+    String stdoutExpected,
+    List<List<Object /*Map|Matcher*/ >> jsonFileExpected,
+    Map<Object, Object> jsonFileDone,
+    {List<String> args = const []}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -117,7 +120,7 @@ $tests
     }
   ''').create();
 
-  var test = await runTest(['test.dart', ...?args],
+  var test = await runTest(['test.dart', '--chain-stack-traces', ...args],
       // Write to a file within a dir that doesn't yet exist to verify that the
       // file is created recursively.
       fileReporter: 'json:reports/tests.json');

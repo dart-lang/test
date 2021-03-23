@@ -6,14 +6,14 @@ class PrintSink implements StringSink {
   final _buffer = StringBuffer();
 
   @override
-  void write(Object obj) {
+  void write(Object? obj) {
     _buffer.write(obj);
     _flush();
   }
 
   @override
   void writeAll(Iterable objects, [String separator = '']) {
-    _buffer.writeAll(objects, separator ?? '');
+    _buffer.writeAll(objects, separator);
     _flush();
   }
 
@@ -24,7 +24,7 @@ class PrintSink implements StringSink {
   }
 
   @override
-  void writeln([Object obj = '']) {
+  void writeln([Object? obj = '']) {
     _buffer.writeln(obj ?? '');
     _flush();
   }

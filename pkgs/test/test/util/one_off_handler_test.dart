@@ -9,7 +9,7 @@ import 'package:test/src/util/one_off_handler.dart';
 import 'package:test/test.dart';
 
 void main() {
-  OneOffHandler handler;
+  late OneOffHandler handler;
   setUp(() => handler = OneOffHandler());
 
   Future<shelf.Response> _handle(shelf.Request request) =>

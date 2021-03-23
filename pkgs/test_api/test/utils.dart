@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:collection';
 
 import 'package:test_api/src/backend/declarer.dart';
@@ -26,7 +25,7 @@ import 'package:test/test.dart';
 final suitePlatform = SuitePlatform(Runtime.vm);
 
 // The last state change detected via [expectStates].
-State lastState;
+State? lastState;
 
 /// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
 ///
@@ -57,7 +56,7 @@ void expectSingleFailure(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState?.status, equals(Status.complete));
       expect(error, isTestFailure('oh no'));
     }
   ]);
@@ -72,7 +71,7 @@ void expectSingleError(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState?.status, equals(Status.complete));
       expect(error, equals('oh no'));
     }
   ]);
@@ -100,7 +99,7 @@ Matcher isApplicationException(message) =>
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
-  var test = LocalTest('test', Metadata(), body);
+  var test = LocalTest('test', Metadata(chainStackTraces: true), body);
   var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }
@@ -146,8 +145,8 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// [stopBlocking] is passed the return value of [test].
 Future expectTestBlocks(
     dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
-  LiveTest liveTest;
-  Future future;
+  late LiveTest liveTest;
+  late Future future;
   liveTest = createTest(() {
     var value = test();
     future = pumpEventQueue().then((_) {

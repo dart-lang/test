@@ -1,13 +1,14 @@
+dart:
+  - dev
+  - stable
+
 stages:
   - analyze_and_format:
     - group:
       - dartfmt: sdk
       - dartanalyzer: --fatal-infos --fatal-warnings .
-      dart: dev
-    - group:
-      - dartanalyzer: --fatal-warnings .
-      dart: 2.7.0
+      dart:
+      - dev
   - unit_test:
     - group:
-      - test: --preset travis
-      dart: dev
+      - command: pub run test --preset travis -x browser

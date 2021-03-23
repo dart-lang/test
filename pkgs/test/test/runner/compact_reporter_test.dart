@@ -413,7 +413,8 @@ void main() {
   });
 }
 
-Future _expectReport(String tests, String expected, {List<String> args}) async {
+Future<void> _expectReport(String tests, String expected,
+    {List<String> args = const []}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -424,7 +425,7 @@ $tests
     }
   ''').create();
 
-  var test = await runTest(['test.dart', if (args != null) ...args],
+  var test = await runTest(['test.dart', '--chain-stack-traces', ...args],
       reporter: 'compact');
   await test.shouldExit();
 
@@ -432,7 +433,7 @@ $tests
 
   // Skip the first CR, remove excess trailing whitespace, and trim off
   // timestamps.
-  String lastLine;
+  String? lastLine;
   var actual = stdoutLines.skip(1).map((line) {
     if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
 

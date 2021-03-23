@@ -1,8 +1,156 @@
 ## 0.4.0-dev
 
-* Remove `suiteChannel` and `setStackTraceMapper` utilities. These are now
-  handled by additional arguments to the `beforeLoad` callback in
+* **Breaking** Remove `suiteChannel` and `setStackTraceMapper` utilities. These
+  are now handled by additional arguments to the `beforeLoad` callback in
   `serializeSuite`.
+* Disable stack trace chaining by default.
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Improve the error message for `hybridMain` functions with an incompatible
+  StreamChannel parameter type.
+
+## 0.3.19
+
+* ~~Disable stack trace chaining by default.~~
+
+## 0.3.18
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update to the latest `test_api`.
+
+## 0.3.17
+
+* Complete the null safety migration.
+
+## 0.3.16
+
+* Allow package:io version 1.0.0.
+
+## 0.3.14
+
+* Handle issue closing `stdin` during shutdown.
+
+## 0.3.13
+
+* Allow the latest analyzer `1.0.0`.
+
+## 0.3.12
+
+* Stable null safety release.
+
+## 0.3.12-nullsafety.17
+
+* Use the `test_api` for stable null safety.
+
+## 0.3.12-nullsafety.16
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 0.3.12-nullsafety.15
+
+* Support the latest vm_service release (`6.x.x`).
+
+## 0.3.12-nullsafety.14
+
+* Support the latest coverage release (`0.15.x`).
+
+## 0.3.12-nullsafety.13
+
+* Allow the latest args release (`2.x`).
+
+## 0.3.12-nullsafety.12
+
+* Allow the latest glob release (`2.x`).
+
+## 0.3.12-nullsafety.11
+
+* Fix `spawnHybridUri` on windows.
+* Allow `package:yaml` version `3.x.x`.
+
+## 0.3.12-nullsafety.10
+
+* Allow `package:analyzer` version `0.41.x`.
+
+## 0.3.12-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+* Pre-emptively fix legacy library import lint violations, and unmigrate some
+  libraries as necessary.
+
+## 0.3.12-nullsafety.8
+
+* Fix a bug where the test runner could crash when printing the elapsed time.
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
+
+## 0.3.12-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
+## 0.3.12-nullsafety.6
+
+* Add experimental `directRunTests`, `directRunSingle`, and `enumerateTestCases`
+  APIs to enable test runners written around a single executable that can report
+  and run any single test case.
+
+## 0.3.12-nullsafety.5
+
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
+* Add `src/platform.dart` library to consolidate the necessary imports required
+  to write a custom platform.
+* Stop required a `SILENT_OBSERVATORY` environment variable to run with
+  debugging and the JSON reporter.
+
+## 0.3.12-nullsafety.4
+
+* Support latest `package:vm_service`.
+
+## 0.3.12-nullsafety.3
+
+* Clean up `--help` output.
+
+## 0.3.12-nullsafety.2
+
+* Allow version `0.40.x` of `analyzer`.
+
+## 0.3.12-nullsafety.1
+
+* Update source_maps constraint.
+
+## 0.3.12-nullsafety
+
+* Migrate to null safety.
+
+## 0.3.11+4 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
+## 0.3.11+3 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
+
+## 0.3.11+2 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
+## 0.3.11+1
+
+* Allow analyzer 0.40.x.
+
+## 0.3.11
+
+* Update to `matcher` version `0.12.9`.
+
+## 0.3.10
+
+* Prepare for `unawaited` from `package:meta`.
+
+## 0.3.9
+
+* Ignore a null `RunnerSuite` rather than throw an error.
 
 ## 0.3.8
 
@@ -23,6 +171,11 @@
 
 * Add additional information to an exception when we end up with a null
   `RunnerSuite`.
+
+* Update vm bootstrapping logic to ensure the bootstrap library has the same
+  language version as the test.
+* Populate `languageVersionComment` in the `Metadata` returned from
+  `parseMetadata`.
 
 ## 0.3.4
 

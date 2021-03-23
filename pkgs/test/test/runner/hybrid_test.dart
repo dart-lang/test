@@ -7,15 +7,15 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
-  String packageRoot;
+  late String packageRoot;
   setUpAll(() async {
     packageRoot = p.absolute(p.dirname(p
         .fromUri(await Isolate.resolvePackageUri(Uri.parse('package:test/')))));
@@ -45,6 +45,34 @@ void main() {
           channel.sink..add(1)..add(2)..add(3)..close();
         }
       ''').stream.toList(), completion(equals([1, 2, 3])));
+    });
+
+    test('allows a first parameter with type StreamChannel<Object?>', () {
+      expect(spawnHybridCode('''
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel<Object?> channel) {
+          channel.sink..add(1)..add(2)..add(null)..close();
+        }
+      ''').stream.toList(), completion(equals([1, 2, null])));
+    });
+
+    test('gives a good error when the StreamChannel type is not supported', () {
+      expect(
+          spawnHybridCode('''
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel<Object> channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').stream,
+          emitsError(isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              contains(
+                  'The first parameter to the top-level hybridMain() must be a '
+                  'StreamChannel<dynamic> or StreamChannel<Object?>. More specific '
+                  'types such as StreamChannel<Object> are not supported.'))));
     });
 
     test('can use dart:io even when run from a browser', () async {
@@ -314,6 +342,7 @@ void main() {
 
     test('closes the channel when the test finishes by default', () async {
       await d.file('test.dart', '''
+        // @dart=2.7
         import "package:stream_channel/stream_channel.dart";
         import "package:test/test.dart";
 
@@ -356,8 +385,8 @@ void main() {
         import "package:test/test.dart";
 
         void main() {
-          StreamQueue queue;
-          StreamSink sink;
+          late StreamQueue queue;
+          late StreamSink sink;
           setUpAll(() {
             var channel = spawnHybridCode("""
               import "package:stream_channel/stream_channel.dart";
@@ -394,6 +423,33 @@ void main() {
           ]));
       await test.shouldExit(0);
     });
+
+    test('can opt out of null safety', () async {
+      expect(spawnHybridCode('''
+        // @dart=2.9
+        import "package:stream_channel/stream_channel.dart";
+
+        // Would cause an error in null safety mode.
+        int x;
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').stream.toList(), completion(equals([1, 2, 3])));
+    });
+
+    test('opts in to null safety by default', () async {
+      expect(spawnHybridCode('''
+        import "package:stream_channel/stream_channel.dart";
+
+        // Use some null safety syntax
+        int? x;
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').stream.toList(), completion(equals([1, 2, 3])));
+    });
   });
 }
 
@@ -401,9 +457,7 @@ void main() {
 ///
 /// If [arguments] is given, it's passed on to the invocation of the test
 /// runner.
-void _spawnHybridUriTests([Iterable<String> arguments]) {
-  arguments ??= [];
-
+void _spawnHybridUriTests([Iterable<String> arguments = const []]) {
   test('loads a file in a separate isolate connected via StreamChannel',
       () async {
     await d.file('test.dart', '''
@@ -583,5 +637,108 @@ void _spawnHybridUriTests([Iterable<String> arguments]) {
       () {
     expect(spawnHybridUri('non existent file').stream.first,
         throwsA(TypeMatcher<Exception>()));
+  });
+
+  test('can opt out of nnbd via language version comments', () async {
+    await d.file('test.dart', '''
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(spawnHybridUri("hybrid.dart").stream.toList(),
+                completion(equals([1, 2, 3])));
+          });
+        }
+      ''').create();
+
+    await d.file('hybrid.dart', '''
+        // @dart=2.9
+        import "package:stream_channel/stream_channel.dart";
+
+        // Would fail if null safety were enabled.
+        int x;
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').create();
+
+    var test = await runTest(['test.dart', ...arguments]);
+    expect(test.stdout,
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
+    await test.shouldExit(0);
+  });
+
+  test('can opt in to nnbd via language version comments', () async {
+    await d.file('test.dart', '''
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(spawnHybridUri("hybrid.dart").stream.toList(),
+                completion(equals([1, 2, 3])));
+          });
+        }
+      ''').create();
+
+    await d.file('hybrid.dart', '''
+        // @dart=2.12
+        import "package:stream_channel/stream_channel.dart";
+
+        // Use some null safety syntax to confirm we are opted in.
+        int? x;
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').create();
+
+    var test = await runTest(['test.dart', ...arguments]);
+    expect(test.stdout,
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
+    await test.shouldExit(0);
+  });
+
+  test('the default language version is used for hybrid code', () async {
+    await d.file('test.dart', '''
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(spawnHybridUri("hybrid.dart").stream.toList(),
+                completion(equals([1, 2, 3])));
+          });
+        }
+      ''').create();
+
+    await d.file('hybrid.dart', '''
+        import "package:stream_channel/stream_channel.dart";
+
+        // Would fail if null safety were enabled.
+        int x;
+
+        void hybridMain(StreamChannel channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').create();
+
+    // Adds the sandbox dir as a new package to the existing config,
+    // opting it out.
+    var originalPackageConfig =
+        await loadPackageConfigUri((await Isolate.packageConfig)!);
+    var extraPackage = Package('_test', Uri.file('${d.sandbox}/'),
+        languageVersion: LanguageVersion(2, 9));
+    var newConfig = PackageConfig([
+      ...originalPackageConfig.packages,
+      extraPackage,
+    ], extraData: originalPackageConfig.extraData);
+    await d.dir('.dart_tool').create();
+    await savePackageConfig(newConfig, Directory(d.sandbox));
+
+    var test = await runTest(['test.dart', ...arguments],
+        packageConfig: p.join(d.sandbox, '.dart_tool', 'package_config.json'));
+    expect(test.stdout,
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
+    await test.shouldExit(0);
   });
 }

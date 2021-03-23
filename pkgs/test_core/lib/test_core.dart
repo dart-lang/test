@@ -8,19 +8,21 @@ library test_core;
 
 import 'dart:async';
 
-import 'package:meta/meta.dart';
+import 'package:meta/meta.dart' show isTest, isTestGroup;
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_api/src/frontend/utils.dart'; // ignore: implementation_imports
 
 import 'src/runner/engine.dart';
 import 'src/runner/plugin/environment.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/runner/suite.dart';
+import 'src/util/async.dart';
+import 'src/util/os.dart';
 import 'src/util/print_sink.dart';
 
 export 'package:matcher/matcher.dart';
@@ -34,7 +36,7 @@ export 'package:test_api/test_api.dart'
 /// The global declarer.
 ///
 /// This is used if a test file is run directly, rather than through the runner.
-Declarer _globalDeclarer;
+Declarer? _globalDeclarer;
 
 /// Gets the declarer for the current scope.
 ///
@@ -44,16 +46,19 @@ Declarer _globalDeclarer;
 Declarer get _declarer {
   var declarer = Declarer.current;
   if (declarer != null) return declarer;
-  if (_globalDeclarer != null) return _globalDeclarer;
+  if (_globalDeclarer != null) return _globalDeclarer!;
 
   // Since there's no Zone-scoped declarer, the test file is being run directly.
   // In order to run the tests, we set up our own Declarer via
-  // [_globalDeclarer], and schedule a microtask to run the tests once they're
-  // finished being defined.
+  // [_globalDeclarer], and pump the event queue as a best effort to wait for
+  // all tests to be defined before starting them.
   _globalDeclarer = Declarer();
-  scheduleMicrotask(() async {
+
+  () async {
+    await pumpEventQueue();
+
     var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-        _globalDeclarer.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
+        _globalDeclarer!.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
 
     var engine = Engine();
@@ -64,11 +69,12 @@ Declarer get _declarer {
 
     var success = await runZoned(() => Invoker.guard(engine.run),
         zoneValues: {#test.declarer: _globalDeclarer});
-    if (success) return null;
+    if (success == true) return null;
     print('');
     unawaited(Future.error('Dummy exception to set exit code.'));
-  });
-  return _globalDeclarer;
+  }();
+
+  return _globalDeclarer!;
 }
 
 // TODO(nweiz): This and other top-level functions should throw exceptions if
@@ -128,12 +134,12 @@ Declarer get _declarer {
 /// filter tests by name.
 @isTest
 void test(description, dynamic Function() body,
-    {String testOn,
-    Timeout timeout,
+    {String? testOn,
+    Timeout? timeout,
     skip,
     tags,
-    Map<String, dynamic> onPlatform,
-    int retry,
+    Map<String, dynamic>? onPlatform,
+    int? retry,
     @deprecated bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
@@ -206,12 +212,12 @@ void test(description, dynamic Function() body,
 /// filter tests by name.
 @isTestGroup
 void group(description, dynamic Function() body,
-    {String testOn,
-    Timeout timeout,
+    {String? testOn,
+    Timeout? timeout,
     skip,
     tags,
-    Map<String, dynamic> onPlatform,
-    int retry,
+    Map<String, dynamic>? onPlatform,
+    int? retry,
     @deprecated bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,

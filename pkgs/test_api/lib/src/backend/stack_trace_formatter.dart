@@ -20,7 +20,7 @@ final _currentKey = Object();
 class StackTraceFormatter {
   /// A class that converts [trace] into a Dart stack trace, or `null` to use it
   /// as-is.
-  StackTraceMapper _mapper;
+  StackTraceMapper? _mapper;
 
   /// The set of packages to fold when producing terse [Chain]s.
   var _except = {'test', 'stream_channel', 'test_api'};
@@ -31,12 +31,12 @@ class StackTraceFormatter {
 
   /// Returns the current manager, or `null` if this isn't called within a call
   /// to [asCurrent].
-  static StackTraceFormatter get current =>
-      Zone.current[_currentKey] as StackTraceFormatter;
+  static StackTraceFormatter? get current =>
+      Zone.current[_currentKey] as StackTraceFormatter?;
 
-  /// Runs [body] with [this] as [StackTraceFormatter.current].
+  /// Runs [body] with this as [StackTraceFormatter.current].
   ///
-  /// This is zone-scoped, so [this] will be the current configuration in any
+  /// This is zone-scoped, so this will be the current configuration in any
   /// asynchronous callbacks transitively created by [body].
   T asCurrent<T>(T Function() body) =>
       runZoned(body, zoneValues: {_currentKey: this});
@@ -48,7 +48,7 @@ class StackTraceFormatter {
   /// [only] is non-empty, it indicates packages whose frames should *not* be
   /// folded away.
   void configure(
-      {StackTraceMapper mapper, Set<String> except, Set<String> only}) {
+      {StackTraceMapper? mapper, Set<String>? except, Set<String>? only}) {
     if (mapper != null) _mapper = mapper;
     if (except != null) _except = except;
     if (only != null) _only = only;
@@ -60,9 +60,8 @@ class StackTraceFormatter {
   /// If [verbose] is `true`, this doesn't fold out irrelevant stack frames. It
   /// defaults to the current test's [Metadata.verboseTrace] configuration, or
   /// `false` if there is no current test.
-  Chain formatStackTrace(StackTrace stackTrace, {bool verbose}) {
-    verbose ??=
-        Invoker.current?.liveTest?.test?.metadata?.verboseTrace ?? false;
+  Chain formatStackTrace(StackTrace stackTrace, {bool? verbose}) {
+    verbose ??= Invoker.current?.liveTest.test.metadata.verboseTrace ?? false;
 
     var chain =
         Chain.forTrace(_mapper?.mapStackTrace(stackTrace) ?? stackTrace);

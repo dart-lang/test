@@ -2,11 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:matcher/matcher.dart';
 
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 import 'format_stack_trace.dart';
 
@@ -35,14 +33,37 @@ const Matcher throws = Throws();
 /// In all three cases, when an exception is thrown, this will test that the
 /// exception object matches [matcher]. If [matcher] is not an instance of
 /// [Matcher], it will implicitly be treated as `equals(matcher)`.
+///
+/// Examples:
+/// ```dart
+/// void functionThatThrows() => throw SomeException();
+///
+/// void functionWithArgument(bool shouldThrow) {
+///   if (shouldThrow) {
+///     throw SomeException();
+///   }
+/// }
+///
+/// Future<void> asyncFunctionThatThrows() async => throw SomeException();
+///
+/// expect(functionThatThrows, throwsA(isA<SomeException>()));
+///
+/// expect(() => functionWithArgument(true), throwsA(isA<SomeException>()));
+///
+/// var future = asyncFunctionThatThrows();
+/// await expectLater(future, throwsA(isA<SomeException>()));
+///
+/// await expectLater(
+///     asyncFunctionThatThrows, throwsA(isA<SomeException>()));
+/// ```
 Matcher throwsA(matcher) => Throws(wrapMatcher(matcher));
 
 /// Use the [throwsA] function instead.
 @Deprecated('Will be removed in 0.13.0')
 class Throws extends AsyncMatcher {
-  final Matcher _matcher;
+  final Matcher? _matcher;
 
-  const Throws([Matcher matcher]) : _matcher = matcher;
+  const Throws([Matcher? matcher]) : _matcher = matcher;
 
   // Avoid async/await so we synchronously fail if we match a synchronous
   // function.
@@ -53,20 +74,28 @@ class Throws extends AsyncMatcher {
     }
 
     if (item is Future) {
-      return item.then((value) => indent(prettyPrint(value), first: 'emitted '),
-          onError: _check);
+      return _matchFuture(item, 'emitted ');
     }
 
     try {
       var value = item();
       if (value is Future) {
-        return value.then(
-            (value) => indent(prettyPrint(value),
-                first: 'returned a Future that emitted '),
-            onError: _check);
+        return _matchFuture(value, 'returned a Future that emitted ');
       }
 
       return indent(prettyPrint(value), first: 'returned ');
+    } catch (error, trace) {
+      return _check(error, trace);
+    }
+  }
+
+  /// Matches [future], using try/catch since `onError` doesn't seem to work
+  /// properly in nnbd.
+  Future<String?> _matchFuture(
+      Future<dynamic> future, String messagePrefix) async {
+    try {
+      var value = await future;
+      return indent(prettyPrint(value), first: messagePrefix);
     } catch (error, trace) {
       return _check(error, trace);
     }
@@ -83,13 +112,13 @@ class Throws extends AsyncMatcher {
 
   /// Verifies that [error] matches [_matcher] and returns a [String]
   /// description of the failure if it doesn't.
-  String _check(error, StackTrace trace) {
+  String? _check(error, StackTrace? trace) {
     if (_matcher == null) return null;
 
     var matchState = {};
-    if (_matcher.matches(error, matchState)) return null;
+    if (_matcher!.matches(error, matchState)) return null;
 
-    var result = _matcher
+    var result = _matcher!
         .describeMismatch(error, StringDescription(), matchState, false)
         .toString();
 

@@ -25,7 +25,7 @@ class RunnerTest extends Test {
   @override
   final Metadata metadata;
   @override
-  final Trace trace;
+  final Trace? trace;
 
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
@@ -35,9 +35,9 @@ class RunnerTest extends Test {
   RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
   @override
-  LiveTest load(Suite suite, {Iterable<Group> groups}) {
-    LiveTestController controller;
-    VirtualChannel testChannel;
+  LiveTest load(Suite suite, {Iterable<Group>? groups}) {
+    late final LiveTestController controller;
+    late final VirtualChannel testChannel;
     controller = LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
@@ -71,7 +71,7 @@ class RunnerTest extends Test {
             // When we kill the isolate that the test lives in, that will close
             // this virtual channel and cause the spawned isolate to close as
             // well.
-            spawnHybridUri(message['url'] as String, message['message'])
+            spawnHybridUri(message['url'] as String, message['message'], suite)
                 .pipe(testChannel.virtualChannel(message['channel'] as int));
             break;
         }
@@ -101,7 +101,7 @@ class RunnerTest extends Test {
   }
 
   @override
-  Test forPlatform(SuitePlatform platform) {
+  Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);
   }

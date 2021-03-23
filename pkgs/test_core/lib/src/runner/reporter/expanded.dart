@@ -7,8 +7,8 @@ import 'dart:async';
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
+import '../../util/pretty_print.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
@@ -62,21 +62,21 @@ class ExpandedReporter implements Reporter {
 
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
-  int _lastProgressPassed;
+  int _lastProgressPassed = 0;
 
   /// The size of `_engine.skipped` last time a progress notification was
   /// printed.
-  int _lastProgressSkipped;
+  int _lastProgressSkipped = 0;
 
   /// The size of `_engine.failed` last time a progress notification was
   /// printed.
-  int _lastProgressFailed;
+  int _lastProgressFailed = 0;
 
   /// The message printed for the last progress notification.
-  String _lastProgressMessage;
+  String _lastProgressMessage = '';
 
   /// The suffix added to the last progress notification.
-  String _lastProgressSuffix;
+  String? _lastProgressSuffix;
 
   /// Whether the reporter is paused.
   var _paused = false;
@@ -86,8 +86,6 @@ class ExpandedReporter implements Reporter {
 
   final StringSink _sink;
 
-  // TODO(nweiz): Get configuration from [Configuration.current] once we have
-  // cross-platform imports.
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
   ///
@@ -96,13 +94,16 @@ class ExpandedReporter implements Reporter {
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
   static ExpandedReporter watch(Engine engine, StringSink sink,
-      {bool color = true, bool printPath = true, bool printPlatform = true}) {
-    return ExpandedReporter._(engine, sink,
-        color: color, printPath: printPath, printPlatform: printPlatform);
-  }
+          {required bool color,
+          required bool printPath,
+          required bool printPlatform}) =>
+      ExpandedReporter._(engine, sink,
+          color: color, printPath: printPath, printPlatform: printPlatform);
 
   ExpandedReporter._(this._engine, this._sink,
-      {bool color = true, bool printPath = true, bool printPlatform = true})
+      {required bool color,
+      required bool printPath,
+      required bool printPlatform})
       : _printPath = printPath,
         _printPlatform = printPlatform,
         _color = color,
@@ -114,8 +115,8 @@ class ExpandedReporter implements Reporter {
         _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
-    /// Convert the future to a stream so that the subscription can be paused or
-    /// canceled.
+    // Convert the future to a stream so that the subscription can be paused or
+    // canceled.
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
@@ -134,6 +135,7 @@ class ExpandedReporter implements Reporter {
   @override
   void resume() {
     if (!_paused) return;
+
     _stopwatch.start();
 
     for (var subscription in _subscriptions) {
@@ -141,8 +143,7 @@ class ExpandedReporter implements Reporter {
     }
   }
 
-  @override
-  void cancel() {
+  void _cancel() {
     for (var subscription in _subscriptions) {
       subscription.cancel();
     }
@@ -205,7 +206,7 @@ class ExpandedReporter implements Reporter {
     }
 
     // TODO - what type is this?
-    _sink.writeln(indent((error as dynamic).toString(color: _color) as String));
+    _sink.writeln(indent(error.toString(color: _color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! FormatException && error.innerError is! String) {
@@ -217,7 +218,8 @@ class ExpandedReporter implements Reporter {
   ///
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
-  void _onDone(bool success) {
+  void _onDone(bool? success) {
+    _cancel();
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user, in
     // which case we shouldn't print summary information.
@@ -243,7 +245,7 @@ class ExpandedReporter implements Reporter {
   /// [message] goes after the progress report. If [color] is passed, it's used
   /// as the color for [message]. If [suffix] is passed, it's added to the end
   /// of [message].
-  void _progressLine(String message, {String color, String suffix}) {
+  void _progressLine(String message, {String? color, String? suffix}) {
     // Print nothing if nothing has changed since the last progress line.
     if (_engine.passed.length == _lastProgressPassed &&
         _engine.skipped.length == _lastProgressSkipped &&

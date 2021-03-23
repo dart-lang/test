@@ -42,13 +42,13 @@ RunnerSuiteController deserializeSuite(
     SuitePlatform platform,
     SuiteConfiguration suiteConfig,
     Environment environment,
-    StreamChannel channel,
+    StreamChannel<Object?> channel,
     Object message,
-    {Future<Map<String, dynamic>> Function() gatherCoverage}) {
-  var disconnector = Disconnector();
-  var suiteChannel = MultiChannel(channel.transform(disconnector));
+    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
+  var disconnector = Disconnector<Object?>();
+  var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
 
-  suiteChannel.sink.add({
+  suiteChannel.sink.add(<String, Object?>{
     'type': 'initial',
     'platform': platform.serialize(),
     'metadata': suiteConfig.metadata.serialize(),
@@ -64,7 +64,7 @@ RunnerSuiteController deserializeSuite(
   var completer = Completer<Group>();
 
   var loadSuiteZone = Zone.current;
-  void handleError(error, StackTrace stackTrace) {
+  void handleError(Object error, StackTrace stackTrace) {
     disconnector.disconnect();
 
     if (completer.isCompleted) {
@@ -77,7 +77,7 @@ RunnerSuiteController deserializeSuite(
     }
   }
 
-  suiteChannel.stream.listen(
+  suiteChannel.stream.cast<Map<String, Object?>>().listen(
       (response) {
         switch (response['type'] as String) {
           case 'print':
@@ -85,8 +85,8 @@ RunnerSuiteController deserializeSuite(
             break;
 
           case 'loadException':
-            handleError(
-                LoadException(path, response['message']), Trace.current());
+            handleError(LoadException(path, response['message'] as Object),
+                Trace.current());
             break;
 
           case 'error':
@@ -113,7 +113,7 @@ RunnerSuiteController deserializeSuite(
   return RunnerSuiteController(
       environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
-      onClose: () => disconnector.disconnect().catchError(handleError),
+      onClose: () => disconnector.disconnect().onError(handleError),
       gatherCoverage: gatherCoverage);
 }
 
@@ -132,20 +132,20 @@ class _Deserializer {
         (group['entries'] as List).map((entry) {
           var map = entry as Map;
           if (map['type'] == 'group') return deserializeGroup(map);
-          return _deserializeTest(map);
+          return _deserializeTest(map)!;
         }),
         metadata: metadata,
         trace: group['trace'] == null
             ? null
             : Trace.parse(group['trace'] as String),
-        setUpAll: _deserializeTest(group['setUpAll'] as Map),
-        tearDownAll: _deserializeTest(group['tearDownAll'] as Map));
+        setUpAll: _deserializeTest(group['setUpAll'] as Map?),
+        tearDownAll: _deserializeTest(group['tearDownAll'] as Map?));
   }
 
   /// Deserializes [test] into a concrete [Test] class.
   ///
   /// Returns `null` if [test] is `null`.
-  Test _deserializeTest(Map test) {
+  Test? _deserializeTest(Map? test) {
     if (test == null) return null;
 
     var metadata = Metadata.deserialize(test['metadata']);

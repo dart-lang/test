@@ -82,7 +82,7 @@ void main() {
           path = await process.stdout.next;
           await process.shouldExit(0);
         } else {
-          path = defaultSettings[Runtime.chrome].executable;
+          path = defaultSettings[Runtime.chrome]!.executable;
         }
 
         await d.file('dart_test.yaml', '''
@@ -480,7 +480,7 @@ void main() {
           path = await process.stdout.next;
           await process.shouldExit(0);
         } else {
-          path = defaultSettings[Runtime.chrome].executable;
+          path = defaultSettings[Runtime.chrome]!.executable;
         }
 
         await d.file('dart_test.yaml', '''

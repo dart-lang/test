@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import 'package:test_api/src/utils.dart';
 import 'package:test/test.dart';
+import 'package:pedantic/pedantic.dart';
 
 import '../../utils.dart';
 

@@ -21,7 +21,7 @@ class _TestRunner {
 
 /// Returns the current content shell runner, or `null` if none exists.
 @JS()
-external _TestRunner get testRunner;
+external _TestRunner? get testRunner;
 
 /// A class that exposes the test API to JS.
 ///
@@ -50,7 +50,7 @@ external set _jsApi(_JSApi api);
 final _iframes = <int, IFrameElement>{};
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = <int, List<StreamSubscription>>{};
+final _subscriptions = <int, List<StreamSubscription<void>>>{};
 
 /// The URL for the current page.
 final _currentUrl = Uri.parse(window.location.href);
@@ -112,10 +112,10 @@ void main() {
   testRunner?.waitUntilDone();
 
   if (_currentUrl.queryParameters['debug'] == 'true') {
-    document.body.classes.add('debug');
+    document.body!.classes.add('debug');
   }
 
-  runZoned(() {
+  runZonedGuarded(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
       if (message['command'] == 'loadSuite') {
@@ -125,14 +125,14 @@ void main() {
             _connectToIframe(message['url'] as String, message['id'] as int);
         suiteChannel.pipe(iframeChannel);
       } else if (message['command'] == 'displayPause') {
-        document.body.classes.add('paused');
+        document.body!.classes.add('paused');
       } else if (message['command'] == 'resume') {
-        document.body.classes.remove('paused');
+        document.body!.classes.remove('paused');
       } else {
         assert(message['command'] == 'closeSuite');
-        _iframes.remove(message['id']).remove();
+        _iframes.remove(message['id'])!.remove();
 
-        for (var subscription in _subscriptions.remove(message['id'])) {
+        for (var subscription in _subscriptions.remove(message['id'])!) {
           subscription.cancel();
         }
       }
@@ -144,28 +144,28 @@ void main() {
         (_) => serverChannel.sink.add({'command': 'ping'}));
 
     var play = document.querySelector('#play');
-    play.onClick.listen((_) {
-      if (!document.body.classes.remove('paused')) return;
+    play!.onClick.listen((_) {
+      if (!document.body!.classes.remove('paused')) return;
       serverChannel.sink.add({'command': 'resume'});
     });
 
     _jsApi = _JSApi(resume: allowInterop(() {
-      if (!document.body.classes.remove('paused')) return;
+      if (!document.body!.classes.remove('paused')) return;
       serverChannel.sink.add({'command': 'resume'});
     }), restartCurrent: allowInterop(() {
       serverChannel.sink.add({'command': 'restart'});
     }));
-  }, onError: (error, StackTrace stackTrace) {
+  }, (error, stackTrace) {
     print('$error\n${Trace.from(stackTrace).terse}');
   });
 }
 
 /// Creates a [MultiChannel] connection to the server, using a [WebSocket] as
 /// the underlying protocol.
-MultiChannel _connectToServer() {
+MultiChannel<dynamic> _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
-  var webSocket = WebSocket(_currentUrl.queryParameters['managerUrl']);
+  var webSocket = WebSocket(_currentUrl.queryParameters['managerUrl']!);
 
   var controller = StreamChannelController(sync: true);
   webSocket.onMessage.listen((message) {
@@ -182,11 +182,11 @@ MultiChannel _connectToServer() {
 /// a [MessageChannel].
 ///
 /// [id] identifies the suite loaded in this iframe.
-StreamChannel _connectToIframe(String url, int id) {
+StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var iframe = IFrameElement();
   _iframes[id] = iframe;
   iframe.src = url;
-  document.body.children.add(iframe);
+  document.body!.children.add(iframe);
 
   // Use this to communicate securely with the iframe.
   var channel = MessageChannel();
@@ -196,7 +196,7 @@ StreamChannel _connectToIframe(String url, int id) {
   // message to us. This ensures that no messages get dropped on the floor.
   var readyCompleter = Completer();
 
-  var subscriptions = <StreamSubscription>[];
+  var subscriptions = <StreamSubscription<void>>[];
   _subscriptions[id] = subscriptions;
 
   subscriptions.add(window.onMessage.listen((message) {
@@ -215,7 +215,7 @@ StreamChannel _connectToIframe(String url, int id) {
     if (message.data['ready'] == true) {
       // This message indicates that the iframe is actively listening for
       // events, so the message channel's second port can now be transferred.
-      iframe.contentWindow
+      iframe.contentWindow!
           .postMessage('port', window.location.origin, [channel.port2]);
       readyCompleter.complete();
     } else if (message.data['exception'] == true) {

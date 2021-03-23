@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../util/placeholder.dart';
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'expect.dart';
 import 'future_matchers.dart';
 import 'utils.dart';
@@ -25,16 +25,16 @@ import 'utils.dart';
 /// This also ensures that the test doesn't complete until a call to
 /// [pumpEventQueue] finishes, so that the callback has a chance to be called.
 Null Function(
-    [Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object,
-    Object]) get neverCalled {
+    [Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?,
+    Object?]) get neverCalled {
   // Make sure the test stays alive long enough to call the function if it's
   // going to.
   expect(pumpEventQueue(), completes);

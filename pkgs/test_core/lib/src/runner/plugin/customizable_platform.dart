@@ -21,7 +21,7 @@ import './../platform.dart';
 ///
 /// Plugins that implement this **must** support children of recognized runtimes
 /// (created by [Runtime.extend]) in their [loadChannel] or [load] methods.
-abstract class CustomizablePlatform<T> extends PlatformPlugin {
+abstract class CustomizablePlatform<T extends Object> extends PlatformPlugin {
   /// Parses user-provided [settings] for a custom platform into a
   /// plugin-defined format.
   ///

@@ -258,7 +258,7 @@ Future<TestProcess> _runTest(List<String> args, {bool forwardStdio = false}) =>
         environment: {'_UNITTEST_TEMP_DIR': _tempDir},
         forwardStdio: forwardStdio);
 
-Future signalAndQuit(TestProcess test) async {
+Future<void> signalAndQuit(TestProcess test) async {
   test.signal(ProcessSignal.sigterm);
   await test.shouldExit();
   await expectLater(test.stderr, emitsDone);

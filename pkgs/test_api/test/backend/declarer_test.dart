@@ -13,7 +13,7 @@ import 'package:test/test.dart';
 
 import '../utils.dart';
 
-Suite _suite;
+late Suite _suite;
 
 void main() {
   setUp(() {
@@ -136,7 +136,7 @@ void main() {
 
   group('.tearDown()', () {
     test('is run after all tests', () async {
-      bool tearDownRun;
+      late bool tearDownRun;
       var tests = declare(() {
         setUp(() => tearDownRun = false);
         tearDown(() => tearDownRun = true);
@@ -161,7 +161,7 @@ void main() {
     });
 
     test('is run after an out-of-band failure', () async {
-      bool tearDownRun;
+      late bool tearDownRun;
       var tests = declare(() {
         setUp(() => tearDownRun = false);
         tearDown(() => tearDownRun = true);
@@ -169,7 +169,7 @@ void main() {
         test(
             'description 1',
             expectAsync0(() {
-              Invoker.current.addOutstandingCallback();
+              Invoker.current!.addOutstandingCallback();
               Future(() => throw TestFailure('oh no'));
             }, max: 1));
       });
@@ -205,10 +205,10 @@ void main() {
         });
 
         test('description', () {
-          Invoker.current.addOutstandingCallback();
+          Invoker.current!.addOutstandingCallback();
           pumpEventQueue().then((_) {
             outstandingCallbackRemoved = true;
-            Invoker.current.removeOutstandingCallback();
+            Invoker.current!.removeOutstandingCallback();
           });
         });
       });
@@ -221,10 +221,10 @@ void main() {
       var outstandingCallbackRemoved = false;
       var tests = declare(() {
         tearDown(() {
-          Invoker.current.addOutstandingCallback();
+          Invoker.current!.addOutstandingCallback();
           pumpEventQueue().then((_) {
             outstandingCallbackRemoved = true;
-            Invoker.current.removeOutstandingCallback();
+            Invoker.current!.removeOutstandingCallback();
           });
         });
 
@@ -286,16 +286,17 @@ void main() {
 
     test('runs in the same error zone as the test', () {
       return expectTestsPass(() {
-        Future future;
+        late Zone testBodyZone;
+
         tearDown(() {
-          // If the tear-down is in a different error zone than the test, the
-          // error will try to cross the zone boundary and get top-leveled.
-          expect(future, throwsA('oh no'));
+          final tearDownZone = Zone.current;
+          expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
+              reason: 'The tear down callback is in a different error zone '
+                  'than the test body.');
         });
 
         test('test', () {
-          future = Future.error('oh no');
-          expect(future, throwsA('oh no'));
+          testBodyZone = Zone.current;
         });
       });
     });
@@ -512,7 +513,7 @@ void main() {
 
     group('.tearDown()', () {
       test('is scoped to the group', () async {
-        bool tearDownRun;
+        late bool tearDownRun;
         var entries = declare(() {
           setUp(() => tearDownRun = false);
 

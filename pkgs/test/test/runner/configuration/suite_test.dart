@@ -192,16 +192,16 @@ void main() {
               SuiteConfiguration(runSkipped: true)
         }));
 
-        expect(merged.tags[BooleanSelector.parse('foo')].precompiledPath,
+        expect(merged.tags[BooleanSelector.parse('foo')]!.precompiledPath,
             equals('path/'));
-        expect(merged.tags[BooleanSelector.parse('bar')].jsTrace, isFalse);
-        expect(merged.tags[BooleanSelector.parse('baz')].runSkipped, isTrue);
+        expect(merged.tags[BooleanSelector.parse('bar')]!.jsTrace, isFalse);
+        expect(merged.tags[BooleanSelector.parse('baz')]!.runSkipped, isTrue);
 
-        expect(merged.onPlatform[PlatformSelector.parse('vm')].precompiledPath,
+        expect(merged.onPlatform[PlatformSelector.parse('vm')]!.precompiledPath,
             'path/');
-        expect(merged.onPlatform[PlatformSelector.parse('chrome')].jsTrace,
+        expect(merged.onPlatform[PlatformSelector.parse('chrome')]!.jsTrace,
             isFalse);
-        expect(merged.onPlatform[PlatformSelector.parse('firefox')].runSkipped,
+        expect(merged.onPlatform[PlatformSelector.parse('firefox')]!.runSkipped,
             isTrue);
       });
     });

@@ -18,7 +18,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  RunnerSuite innerSuite;
+  late RunnerSuite innerSuite;
   setUp(() {
     innerSuite = runnerSuite(Group.root([]));
   });
@@ -64,7 +64,7 @@ void main() {
   test('a load test forwards errors and completes LoadSuite.suite to null',
       () async {
     var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform, () {
-      fail('error');
+      return fail('error');
     });
     expect(suite.group.entries, hasLength(1));
 

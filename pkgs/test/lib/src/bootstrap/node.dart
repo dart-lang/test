@@ -12,9 +12,9 @@ void internalBootstrapNodeTest(Function Function() getMain) {
   var channel =
       serializeSuite(getMain, beforeLoad: (suiteChannelManager) async {
     var serialized =
-        await suiteChannelManager.connectOut('test.node.mapper').stream.first;
-    if (serialized == null || serialized is! Map) return;
-    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized as Map));
+        await suiteChannelmanager.connectOut('test.node.mapper').stream.first;
+    if (serialized is! Map) return;
+    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });
   socketChannel().pipe(channel);
 }

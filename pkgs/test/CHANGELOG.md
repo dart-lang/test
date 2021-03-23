@@ -1,3 +1,182 @@
+## 1.17.0-dev
+
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely, it was previously broken.
+
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+* ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.~~
+
+## 1.16.7
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update `test_core` and `test_api` deps.
+
+## 1.16.6
+
+* Complete the migration to null safety.
+
+## 1.16.5
+
+* Expand several deps to allow the latest versions.
+
+## 1.16.4
+
+* Update `test_core` dependency to `0.3.14`.
+
+## 1.16.3
+
+* Update `web_socket_channel` dependency to support latest.
+
+## 1.16.2
+
+* Update `test_core` dependency to `0.3.13`.
+
+## 1.16.1
+
+* Allow the latest analyzer `1.0.0`.
+
+## 1.16.0
+
+* Stable null safety release.
+
+## 1.16.0-nullsafety.19
+
+* Use the `test_api` for stable null safety.
+
+## 1.16.0-nullsafety.18
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 1.16.0-nullsafety.17
+
+* Support the latest shelf release (`1.x.x`).
+
+## 1.16.0-nullsafety.16
+
+* Support the latest vm_service release (`6.x.x`).
+
+## 1.16.0-nullsafety.15
+
+* Support the latest coverage release (`0.15.x`).
+
+## 1.16.0-nullsafety.14
+
+* Allow the latest args release (`2.x`).
+
+## 1.16.0-nullsafety.13
+
+* Allow the latest glob release (`2.x`).
+
+## 1.16.0-nullsafety.12
+
+* Fix `spawnHybridUri` on windows.
+* Fix failures running tests on the `node` platform.
+* Allow `package:yaml` version `3.x.x`.
+
+## 1.16.0-nullsafety.11
+
+* Set up a stack trace mapper in precompiled mode if source maps exist. If
+  the stack traces are already mapped then this has no effect, otherwise it
+  will try to map any JS lines it sees.
+
+## 1.16.0-nullsafety.10
+
+* Allow injecting a test channel for browser tests.
+* Allow `package:analyzer` version `0.41.x`.
+
+## 1.16.0-nullsafety.9
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
+## 1.16.0-nullsafety.8
+
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
+## 1.16.0-nullsafety.7
+
+* Allow prerelease versions of the 2.12 sdk.
+
+## 1.16.0-nullsafety.6
+
+* Add `markTestSkipped` API.
+
+## 1.16.0-nullsafety.5
+
+* Allow `2.10` stable and `2.11.0-dev` SDKs.
+* Annotate the classes used as annotations to restrict their usage to library
+  level.
+* Stop required a `SILENT_OBSERVATORY` environment variable to run with
+  debugging and the JSON reporter.
+
+## 1.16.0-nullsafety.4
+
+* Depend on the latest test_core.
+
+## 1.16.0-nullsafety.3
+
+* Clean up `--help` output.
+
+## 1.16.0-nullsafety.2
+
+* Allow version `0.40.x` of `analyzer`.
+
+## 1.16.0-nullsafety.1
+
+* Depend on the latest test_core.
+
+## 1.16.0-nullsafety
+
+* Support running tests with null safety.
+  * Note that the test runner itself is not fully migrated yet.
+* Add the `Fake` class, available through `package:test_api/fake.dart`.  This
+  was previously part of the Mockito package, but with null safety it is useful
+  enough that we decided to make it available through `package:test`.  In a
+  future release it will be made available directly through
+  `package:test_api/test_api.dart` (and hence through
+  `package:test_core/test_core.dart` and `package:test/test.dart`).
+
+## 1.15.7 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
+## 1.15.6 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
+
+## 1.15.5 (Backport)
+
+* Fix `spawnHybridUri` to respect language versioning of the spawned uri.
+
+## 1.15.4
+
+* Allow analyzer 0.40.x.
+
+## 1.15.3
+
+* Update to `matcher` version `0.12.9` which improves the mismatch description
+  for deep collection equality matchers and TypeMatcher.
+
+## 1.15.2
+
+* Use the latest `test_core` which resolves an issue with the latest
+  `package:meta`.
+
+## 1.15.1
+
+* Avoid a confusing stack trace when there is a problem loading a platform when
+  using the JSON reporter and enabling debugging.
+* Restore behavior of listening for both `IPv6` and `IPv4` sockets for the node
+  platform.
+
 ## 1.15.0
 
 * Update bootstrapping logic to ensure the bootstrap library has
@@ -24,7 +203,7 @@
 
 ## 1.14.3
 
-* Fix an issue where coverage tests could not run in Chrome headless. 
+* Fix an issue where coverage tests could not run in Chrome headless.
 * Fix an issue where coverage collection would not work with source
   maps that contained absolute file URIs.
 * Fix error messages for incorrect string literals in test annotations.

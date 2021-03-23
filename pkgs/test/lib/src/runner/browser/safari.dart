@@ -22,13 +22,13 @@ class Safari extends Browser {
   @override
   final name = 'Safari';
 
-  Safari(url, {ExecutableSettings settings})
-      : super(() => _startBrowser(url, settings));
+  Safari(url, {ExecutableSettings? settings})
+      : super(() =>
+            _startBrowser(url, settings ?? defaultSettings[Runtime.safari]!));
 
   /// Starts a new instance of Safari open to the given [url], which may be a
   /// [Uri] or a [String].
   static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
-    settings ??= defaultSettings[Runtime.safari];
     var dir = createTempDir();
 
     // Safari will only open files (not general URLs) via the command-line

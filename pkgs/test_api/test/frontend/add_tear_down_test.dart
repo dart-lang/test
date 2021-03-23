@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:test_api/src/utils.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -166,13 +166,13 @@ void main() {
     test('runs in the same error zone as the test', () {
       return expectTestsPass(() {
         test('test', () {
-          var future = Future.error('oh no');
-          expect(future, throwsA('oh no'));
+          final testBodyZone = Zone.current;
 
           addTearDown(() {
-            // If the tear-down is in a different error zone than the test, the
-            // error will try to cross the zone boundary and get top-leveled.
-            expect(future, throwsA('oh no'));
+            final tearDownZone = Zone.current;
+            expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
+                reason: 'The tear down callback is in a different error zone '
+                    'than the test body.');
           });
         });
       });
@@ -566,14 +566,13 @@ void main() {
     test('runs in the same error zone as the setUpAll', () async {
       return expectTestsPass(() {
         setUpAll(() {
-          var future = Future.error('oh no');
-          expect(future, throwsA('oh no'));
+          final setUpAllZone = Zone.current;
 
           addTearDown(() {
-            // If the tear-down is in a different error zone than the setUpAll,
-            // the error will try to cross the zone boundary and get
-            // top-leveled.
-            expect(future, throwsA('oh no'));
+            final tearDownZone = Zone.current;
+            expect(tearDownZone.inSameErrorZone(setUpAllZone), isTrue,
+                reason: 'The tear down callback is in a different error zone '
+                    'than the set up all callback.');
           });
         });
 

@@ -2,11 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:matcher/matcher.dart';
 
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 import 'expect.dart';
 import 'utils.dart';
@@ -34,11 +32,11 @@ final Matcher completes = const _Completes(null);
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
-Matcher completion(matcher, [@deprecated String description]) =>
+Matcher completion(matcher, [@deprecated String? description]) =>
     _Completes(wrapMatcher(matcher));
 
 class _Completes extends AsyncMatcher {
-  final Matcher _matcher;
+  final Matcher? _matcher;
 
   const _Completes(this._matcher);
 
@@ -50,14 +48,14 @@ class _Completes extends AsyncMatcher {
     return item.then((value) async {
       if (_matcher == null) return null;
 
-      String result;
+      String? result;
       if (_matcher is AsyncMatcher) {
-        result = await (_matcher as AsyncMatcher).matchAsync(value) as String;
+        result = await (_matcher as AsyncMatcher).matchAsync(value) as String?;
         if (result == null) return null;
       } else {
         var matchState = {};
-        if (_matcher.matches(value, matchState)) return null;
-        result = _matcher
+        if (_matcher!.matches(value, matchState)) return null;
+        result = _matcher!
             .describeMismatch(value, StringDescription(), matchState, false)
             .toString();
       }

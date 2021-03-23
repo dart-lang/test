@@ -1,13 +1,23 @@
 # See with https://github.com/dart-lang/mono_repo for details on this file
-travis:
-  sudo: required
-  addons:
-    chrome: stable
-  env:
-    global: FORCE_TEST_EXIT=true
+self_validate: analyze_and_format
 
-  after_failure:
-  - tool/report_failure.sh
+github:
+  env:
+    FORCE_TEST_EXIT: true
+  # Setting just `cron` keeps the defaults for `push` and `pull_request`
+  cron: '0 0 * * 0' # “At 00:00 (UTC) on Sunday.”
+  on_completion:
+    - name: "Notify failure"
+      runs-on: ubuntu-latest
+      # Run only if other jobs have failed and this is a push or scheduled build.
+      if: (github.event_name == 'push' || github.event_name == 'schedule') && failure()
+      steps:
+        - run: >
+            curl -H "Content-Type: application/json" -X POST -d \
+              "{'text':'Build failed! ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'}" \
+              "${CHAT_WEBHOOK_URL}"
+          env:
+            CHAT_WEBHOOK_URL: ${{ secrets.BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL }}
 
 merge_stages:
 - analyze_and_format

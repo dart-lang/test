@@ -5,8 +5,6 @@
 import 'dart:async';
 import 'dart:io';
 
-// ignore: deprecated_member_use
-import 'package:analyzer/analyzer.dart' hide Configuration;
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
@@ -109,8 +107,8 @@ class Loader {
       }
 
       var runtime = parent.extend(customRuntime.name, customRuntime.identifier);
-      _platformPlugins[runtime] = _platformPlugins[parent];
-      _platformCallbacks[runtime] = _platformCallbacks[parent];
+      _platformPlugins[runtime] = _platformPlugins[parent]!;
+      _platformCallbacks[runtime] = _platformCallbacks[parent]!;
       _runtimesByIdentifier[runtime.identifier] = runtime;
 
       _runtimeSettings[runtime] = [customRuntime.settings];
@@ -121,17 +119,15 @@ class Loader {
   void _registerRuntimeOverrides() {
     for (var settings in _config.overrideRuntimes.values) {
       var runtime = _runtimesByIdentifier[settings.identifier];
-
-      // This is officially validated in [Configuration.validateRuntimes].
-      assert(runtime != null);
-
-      _runtimeSettings.putIfAbsent(runtime, () => []).addAll(settings.settings);
+      _runtimeSettings
+          .putIfAbsent(runtime!, () => [])
+          .addAll(settings.settings);
     }
   }
 
   /// Returns the [Runtime] registered with this loader that's identified
   /// by [identifier], or `null` if none can be found.
-  Runtime findRuntime(String identifier) => _runtimesByIdentifier[identifier];
+  Runtime? findRuntime(String identifier) => _runtimesByIdentifier[identifier];
 
   /// Loads all test suites in [dir] according to [suiteConfig].
   ///
@@ -144,14 +140,10 @@ class Loader {
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
     return StreamGroup.merge(
         Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File) return Stream.fromIterable([]);
-
-      if (!_config.filename.matches(p.basename(entry.path))) {
-        return Stream.fromIterable([]);
-      }
-
-      if (p.split(entry.path).contains('packages')) {
-        return Stream.fromIterable([]);
+      if (entry is! File ||
+          !_config.filename.matches(p.basename(entry.path)) ||
+          p.split(entry.path).contains('packages')) {
+        return Stream.empty();
       }
 
       return loadFile(entry.path, suiteConfig);
@@ -170,7 +162,7 @@ class Loader {
       suiteConfig = suiteConfig.merge(SuiteConfiguration.fromMetadata(
           parseMetadata(
               path, File(path).readAsStringSync(), _runtimeVariables.toSet())));
-    } on AnalyzerErrorGroup catch (_) {
+    } on ArgumentError catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
     } on FormatException catch (error, stackTrace) {
@@ -196,7 +188,7 @@ class Loader {
       var runtime = findRuntime(runtimeName);
       assert(runtime != null, 'Unknown platform "$runtimeName".');
 
-      var platform = currentPlatform(runtime);
+      var platform = currentPlatform(runtime!);
       if (!suiteConfig.metadata.testOn.evaluate(platform)) {
         continue;
       }
@@ -221,19 +213,19 @@ class Loader {
                   : 'loading ') +
               path;
       yield LoadSuite(name, platformConfig, platform, () async {
-        var memo = _platformPlugins[platform.runtime];
+        var memo = _platformPlugins[platform.runtime]!;
 
         var retriesLeft = suiteConfig.metadata.retry;
         while (true) {
           try {
             var plugin =
-                await memo.runOnce(_platformCallbacks[platform.runtime]);
+                await memo.runOnce(_platformCallbacks[platform.runtime]!);
             _customizePlatform(plugin, platform.runtime);
             var suite = await plugin.load(path, platform, platformConfig,
                 {'platformVariables': _runtimeVariables.toList()});
             if (suite != null) _suites.add(suite);
             return suite;
-          } catch (error, stackTrace) {
+          } on Object catch (error, stackTrace) {
             if (retriesLeft > 0) {
               retriesLeft--;
               print('Retrying load of $path in 1s ($retriesLeft remaining)');
@@ -272,11 +264,11 @@ class Loader {
       String identifier;
       SourceSpan span;
       if (runtime.isChild) {
-        identifier = runtime.parent.identifier;
-        span = _config.defineRuntimes[runtime.identifier].parentSpan;
+        identifier = runtime.parent!.identifier;
+        span = _config.defineRuntimes[runtime.identifier]!.parentSpan;
       } else {
         identifier = runtime.identifier;
-        span = _config.overrideRuntimes[runtime.identifier].identifierSpan;
+        span = _config.overrideRuntimes[runtime.identifier]!.identifierSpan;
       }
 
       throw SourceSpanFormatException(

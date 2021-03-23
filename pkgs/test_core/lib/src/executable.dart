@@ -9,24 +9,25 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_api/src/util/pretty_print.dart'; // ignore: implementation_imports
 
+import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/version.dart';
-import 'runner.dart';
+import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-StreamSubscription signalSubscription;
+StreamSubscription? signalSubscription;
 bool isShutdown = false;
 
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
-    return Platform.environment['DART_TEST_CONFIG'];
+    return Platform.environment['DART_TEST_CONFIG']!;
   } else if (Platform.operatingSystem == 'windows') {
-    return p.join(Platform.environment['LOCALAPPDATA'], 'DartTest.yaml');
+    return p.join(Platform.environment['LOCALAPPDATA']!, 'DartTest.yaml');
   } else {
     return '${Platform.environment['HOME']}/.dart_test.yaml';
   }
@@ -44,11 +45,11 @@ Future<void> runTests(List<String> args) async {
 void completeShutdown() {
   if (isShutdown) return;
   if (signalSubscription != null) {
-    signalSubscription.cancel();
+    signalSubscription!.cancel();
     signalSubscription = null;
   }
   isShutdown = true;
-  stdinLines.cancel(immediate: true);
+  cancelStdinLines();
 }
 
 Future<void> _execute(List<String> args) async {
@@ -60,8 +61,10 @@ Future<void> _execute(List<String> args) async {
   /// terminates the program immediately.
   final _signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
-      : StreamGroup.merge(
-          [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+      : Platform.isFuchsia // Signals don't exist on Fuchsia.
+          ? Stream.empty()
+          : StreamGroup.merge(
+              [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
   Configuration configuration;
   try {
@@ -133,7 +136,7 @@ Future<void> _execute(List<String> args) async {
     return;
   }
 
-  Runner runner;
+  Runner? runner;
 
   signalSubscription ??= _signals.listen((signal) async {
     completeShutdown();
@@ -176,7 +179,7 @@ Future<void> _execute(List<String> args) async {
 ///
 /// If [error] is passed, it's used in place of the usage message and the whole
 /// thing is printed to stderr instead of stdout.
-void _printUsage([String error]) {
+void _printUsage([String? error]) {
   var output = stdout;
 
   var message = 'Runs tests in this package.';

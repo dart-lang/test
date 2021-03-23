@@ -523,7 +523,7 @@ void main() {
               groupJson(2, testCount: 2),
               testStartJson(3, 'success 1',
                   line: 3,
-                  column: 50,
+                  column: 60,
                   url: p.toUri(p.join(d.sandbox, 'common.dart')).toString(),
                   root_column: 7,
                   root_line: 7,
@@ -538,7 +538,7 @@ void main() {
             'common.dart': '''
 import 'package:test/test.dart';
 
-void customTest(String name, Function testFn) => test(name, testFn);
+void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 ''',
           });
     });
@@ -575,11 +575,10 @@ void customTest(String name, Function testFn) => test(name, testFn);
 /// If [externalLibraries] are provided it should be a map of relative file
 /// paths to contents. All libraries will be added as imports to the test, and
 /// files will be created for them.
-Future _expectReport(
-    String tests, List<List<dynamic /*Map|Matcher*/ >> expected, Map done,
-    {List<String> args, Map<String, String> externalLibraries}) async {
-  args ??= [];
-  externalLibraries ??= {};
+Future<void> _expectReport(String tests,
+    List<List<Object /*Map|Matcher*/ >> expected, Map<Object, Object> done,
+    {List<String> args = const [],
+    Map<String, String> externalLibraries = const {}}) async {
   var testContent = StringBuffer('''
 import 'dart:async';
 
@@ -594,7 +593,8 @@ import 'package:test/test.dart';
 
   await d.file('test.dart', testContent.toString()).create();
 
-  var test = await runTest(['test.dart', ...args], reporter: 'json');
+  var test = await runTest(['test.dart', '--chain-stack-traces', ...args],
+      reporter: 'json');
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

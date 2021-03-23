@@ -106,7 +106,7 @@ void main() {
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
     var config = Configuration.load(path);
-    var presetBar = config.presets['bar'];
+    var presetBar = config.presets['bar']!;
     expect(presetBar.pauseAfterLoad, isTrue);
     expect(presetBar.reporter, 'expanded');
   });

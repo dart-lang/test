@@ -12,6 +12,6 @@ void main() {
   // iframes (https://bugzilla.mozilla.org/show_bug.cgi?id=548397), so we have
   // to do some special stuff to make sure tests that care about that work.
   test('getComputedStyle() works', () {
-    expect(document.body.getComputedStyle(), isNotNull);
+    expect(document.body!.getComputedStyle(), isNotNull);
   });
 }

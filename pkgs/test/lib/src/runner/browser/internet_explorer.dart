@@ -17,14 +17,13 @@ class InternetExplorer extends Browser {
   @override
   final name = 'Internet Explorer';
 
-  InternetExplorer(url, {ExecutableSettings settings})
-      : super(() => _startBrowser(url, settings));
+  InternetExplorer(url, {ExecutableSettings? settings})
+      : super(() => _startBrowser(
+            url, settings ?? defaultSettings[Runtime.internetExplorer]!));
 
   /// Starts a new instance of Internet Explorer open to the given [url], which
   /// may be a [Uri] or a [String].
   static Future<Process> _startBrowser(url, ExecutableSettings settings) {
-    settings ??= defaultSettings[Runtime.internetExplorer];
-
     return Process.start(settings.executable, [
       '-extoff',
       '$url',

@@ -17,7 +17,7 @@ import '../io.dart';
 
 void main() {
   group('with the --coverage flag,', () {
-    Directory coverageDirectory;
+    late Directory coverageDirectory;
 
     Future<void> _validateCoverage(
         TestProcess test, String coveragePath) async {
