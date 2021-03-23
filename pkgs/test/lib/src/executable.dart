@@ -13,7 +13,6 @@ void main(List<String> args) async {
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
   registerPlatformPlugin([
     Runtime.chrome,
-    Runtime.phantomJS,
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer

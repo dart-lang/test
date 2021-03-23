@@ -4,11 +4,9 @@
   loading performance.
   * You can force the old strategy with `--use-data-isolate-strategy` flag if
     you run into issues, but please also file a bug.
-
-## 1.16.9
-
 * Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely, it was previously broken.
 
 ## 1.16.8
 
