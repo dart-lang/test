@@ -1,3 +1,19 @@
+## 1.17.0-dev
+
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely, it was previously broken.
+
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+* ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.~~
+
 ## 1.16.7
 
 * Update `spawnHybridCode` to default to the current packages language version.

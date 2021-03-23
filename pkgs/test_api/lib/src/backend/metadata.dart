@@ -7,6 +7,7 @@ import 'package:collection/collection.dart';
 
 import '../frontend/skip.dart';
 import '../frontend/timeout.dart';
+import '../util/pretty_print.dart';
 import '../utils.dart';
 import 'platform_selector.dart';
 import 'suite_platform.dart';
@@ -40,7 +41,7 @@ class Metadata {
   final bool? _verboseTrace;
 
   /// Whether to chain stack traces.
-  bool get chainStackTraces => _chainStackTraces ?? true;
+  bool get chainStackTraces => _chainStackTraces ?? _verboseTrace ?? false;
   final bool? _chainStackTraces;
 
   /// The user-defined tags attached to the test or suite.

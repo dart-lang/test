@@ -14,10 +14,6 @@ class Runtime {
   static const Runtime chrome =
       Runtime('Chrome', 'chrome', isBrowser: true, isJS: true, isBlink: true);
 
-  /// PhantomJS.
-  static const Runtime phantomJS = Runtime('PhantomJS', 'phantomjs',
-      isBrowser: true, isJS: true, isBlink: true, isHeadless: true);
-
   /// Mozilla Firefox.
   static const Runtime firefox =
       Runtime('Firefox', 'firefox', isBrowser: true, isJS: true);
@@ -37,7 +33,6 @@ class Runtime {
   static const List<Runtime> builtIn = [
     Runtime.vm,
     Runtime.chrome,
-    Runtime.phantomJS,
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer,

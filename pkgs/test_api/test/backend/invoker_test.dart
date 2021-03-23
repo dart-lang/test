@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
@@ -12,7 +13,6 @@ import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
-import 'package:test_api/src/utils.dart';
 
 import '../utils.dart';
 
@@ -427,7 +427,10 @@ void main() {
     test('A test can be timed out', () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-      }, metadata: Metadata(timeout: Timeout(Duration(milliseconds: 100))))
+      },
+              metadata: Metadata(
+                  chainStackTraces: true,
+                  timeout: Timeout(Duration(milliseconds: 100))))
           .load(suite);
 
       expectStates(liveTest, [
@@ -550,6 +553,6 @@ void main() {
 }
 
 LocalTest _localTest(dynamic Function() body, {Metadata? metadata}) {
-  metadata ??= Metadata();
+  metadata ??= Metadata(chainStackTraces: true);
   return LocalTest('test', metadata, body);
 }

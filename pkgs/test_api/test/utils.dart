@@ -99,7 +99,7 @@ Matcher isApplicationException(message) =>
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
-  var test = LocalTest('test', Metadata(), body);
+  var test = LocalTest('test', Metadata(chainStackTraces: true), body);
   var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }

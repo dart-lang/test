@@ -122,8 +122,8 @@ fails, to ensure that it has a chance to clean up after itself.
 import 'package:test/test.dart';
 
 void main() {
-  HttpServer server;
-  Uri url;
+  late HttpServer server;
+  late Uri url;
   setUp(() async {
     server = await HttpServer.bind('localhost', 0);
     url = Uri.parse('http://${server.address.host}:${server.port}');
@@ -257,9 +257,6 @@ only supports boolean operations. The following identifiers are defined:
 * `vm`: Whether the test is running on the command-line Dart VM.
 
 * `chrome`: Whether the test is running on Google Chrome.
-
-* `phantomjs`: Whether the test is running on
-  [PhantomJS](https://phantomjs.org/).
 
 * `firefox`: Whether the test is running on Mozilla Firefox.
 
@@ -789,8 +786,8 @@ VM use [the Dart Observatory][observatory]'s .
 
 The first step when debugging is to pass the `--pause-after-load` flag to the
 test runner. This pauses the browser after each test suite has loaded, so that
-you have time to open the development tools and set breakpoints. For PhantomJS,
-and the Dart VM it will print the remote debugger URL.
+you have time to open the development tools and set breakpoints. For the Dart VM
+it will print the remote debugger URL.
 
 Once you've set breakpoints, either click the big arrow in the middle of the web
 page or press Enter in your terminal to start the tests running. When you hit a

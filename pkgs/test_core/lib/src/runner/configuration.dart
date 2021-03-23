@@ -13,17 +13,17 @@ import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import '../util/io.dart';
-import 'suite.dart';
-import 'runtime_selection.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/custom_runtime.dart';
 import 'configuration/load.dart';
 import 'configuration/reporters.dart';
 import 'configuration/runtime_settings.dart';
+import 'configuration/utils.dart';
 import 'configuration/values.dart';
+import 'runtime_selection.dart';
+import 'suite.dart';
 
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = Object();
@@ -174,6 +174,14 @@ class Configuration {
       });
   Set<String>? _knownPresets;
 
+  /// Whether to use the original `data:` URI isolate spawning strategy for VM
+  /// tests.
+  ///
+  /// This can make more sense than the default strategy in systems such as
+  /// `bazel` where only a single test suite is ran at a time.
+  bool get useDataIsolateStrategy => _useDataIsolateStrategy ?? false;
+  final bool? _useDataIsolateStrategy;
+
   /// Built-in runtimes whose settings are overridden by the user.
   final Map<String, RuntimeSettings> overrideRuntimes;
 
@@ -243,6 +251,7 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
+      bool? useDataIsolateStrategy,
 
       // Suite-level configuration
       bool? jsTrace,
@@ -292,6 +301,7 @@ class Configuration {
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
+        useDataIsolateStrategy: useDataIsolateStrategy,
         suiteDefaults: SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -354,6 +364,7 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
+      bool? useDataIsolateStrategy,
       SuiteConfiguration? suiteDefaults})
       : _help = help,
         customHtmlTemplatePath = customHtmlTemplatePath,
@@ -379,6 +390,7 @@ class Configuration {
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
+        _useDataIsolateStrategy = useDataIsolateStrategy,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 SuiteConfiguration(timeout: Timeout.none)
@@ -513,6 +525,8 @@ class Configuration {
         defineRuntimes:
             mergeUnmodifiableMaps(defineRuntimes, other.defineRuntimes),
         noRetry: other._noRetry ?? _noRetry,
+        useDataIsolateStrategy:
+            other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -549,6 +563,7 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
+      bool? useDataIsolateStrategy,
 
       // Suite-level configuration
       bool? jsTrace,
@@ -595,6 +610,8 @@ class Configuration {
         overrideRuntimes: overrideRuntimes ?? this.overrideRuntimes,
         defineRuntimes: defineRuntimes ?? this.defineRuntimes,
         noRetry: noRetry ?? _noRetry,
+        useDataIsolateStrategy:
+            useDataIsolateStrategy ?? _useDataIsolateStrategy,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
