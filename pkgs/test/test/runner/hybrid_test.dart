@@ -47,6 +47,34 @@ void main() {
       ''').stream.toList(), completion(equals([1, 2, 3])));
     });
 
+    test('allows a first parameter with type StreamChannel<Object?>', () {
+      expect(spawnHybridCode('''
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel<Object?> channel) {
+          channel.sink..add(1)..add(2)..add(null)..close();
+        }
+      ''').stream.toList(), completion(equals([1, 2, null])));
+    });
+
+    test('gives a good error when the StreamChannel type is not supported', () {
+      expect(
+          spawnHybridCode('''
+        import "package:stream_channel/stream_channel.dart";
+
+        void hybridMain(StreamChannel<Object> channel) {
+          channel.sink..add(1)..add(2)..add(3)..close();
+        }
+      ''').stream,
+          emitsError(isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              contains(
+                  'The first parameter to the top-level hybridMain() must be a '
+                  'StreamChannel<dynamic> or StreamChannel<Object?>. More specific '
+                  'types such as StreamChannel<Object> are not supported.'))));
+    });
+
     test('can use dart:io even when run from a browser', () async {
       var path = p.join(d.sandbox, 'test.dart');
       await d.file('test.dart', '''
