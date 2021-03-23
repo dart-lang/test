@@ -107,6 +107,12 @@ final ArgParser _parser = (() {
       help: "Don't rerun tests that have retry set.",
       defaultsTo: false,
       negatable: false);
+  parser.addFlag('use-data-isolate-strategy',
+      help: 'Use `data:` uri isolates when spawning VM tests instead of the\n'
+          'default strategy. This may be faster when you only ever run a\n'
+          'single test suite at a time.',
+      defaultsTo: false,
+      negatable: false);
   parser.addOption('test-randomize-ordering-seed',
       help: 'Use the specified seed to randomize the execution order of test'
           ' cases.\n'
@@ -259,6 +265,7 @@ class _Parser {
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),
+        useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
         testRandomizeOrderingSeed: testRandomizeOrderingSeed);
   }
 
