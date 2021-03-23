@@ -46,7 +46,9 @@ class RemoteListener {
   /// for this worker.
   static StreamChannel<Object?> start(Function Function() getMain,
       {bool hidePrints = true,
-      Future Function(SuiteChannelManager)? beforeLoad}) {
+      Future Function(
+              StreamChannel<Object?> Function(String name) suiteChannel)?
+          beforeLoad}) {
     // Synchronous in order to allow `print` output to show up immediately, even
     // if they are followed by long running synchronous work.
     var controller =
@@ -109,7 +111,7 @@ class RemoteListener {
             except: _deserializeSet(message['foldTraceExcept'] as List),
             only: _deserializeSet(message['foldTraceOnly'] as List));
 
-        if (beforeLoad != null) await beforeLoad(suiteChannelManager);
+        if (beforeLoad != null) await beforeLoad(suiteChannelManager.connectOut);
 
         await declarer.declare(main);
 

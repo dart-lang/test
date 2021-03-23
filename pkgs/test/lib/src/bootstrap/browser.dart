@@ -12,12 +12,9 @@ import '../runner/browser/post_message_channel.dart';
 void internalBootstrapBrowserTest(Function Function() getMain,
     {StreamChannel<Object?>? testChannel}) {
   var channel = serializeSuite(getMain, hidePrints: false,
-      beforeLoad: (suiteChannelManager) async {
-    var serialized = await suiteChannelManager
-        .connectOut('test.browser.mapper')
-        .stream
-        .first as Map?;
-    if (serialized == null) return;
+      beforeLoad: (suiteChannel) async {
+    var serialized = await suiteChannel('test.browser.mapper').stream.first;
+    if (serialized is! Map) return;
     setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });
   (testChannel ?? postMessageChannel()).pipe(channel);

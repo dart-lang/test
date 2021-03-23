@@ -9,10 +9,8 @@ import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implemen
 
 /// Bootstraps a browser test to communicate with the test runner.
 void internalBootstrapNodeTest(Function Function() getMain) {
-  var channel =
-      serializeSuite(getMain, beforeLoad: (suiteChannelManager) async {
-    var serialized =
-        await suiteChannelManager.connectOut('test.node.mapper').stream.first;
+  var channel = serializeSuite(getMain, beforeLoad: (suiteChannel) async {
+    var serialized = await suiteChannel('test.node.mapper').stream.first;
     if (serialized is! Map) return;
     setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });

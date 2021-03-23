@@ -7,10 +7,10 @@ import 'package:stream_channel/stream_channel.dart';
 /// A class that connects incoming and outgoing channels with the same names.
 class SuiteChannelManager {
   /// Connections from the test runner that have yet to connect to corresponding
-  /// calls to [suiteChannel] within this worker.
+  /// calls to [connectOut].
   final _incomingConnections = <String, StreamChannel<Object?>>{};
 
-  /// Connections from calls to [suiteChannel] that have yet to connect to
+  /// Connections from calls to [connectOut] that have yet to connect to
   /// corresponding connections from the test runner.
   final _outgoingConnections = <String, StreamChannelCompleter<Object?>>{};
 

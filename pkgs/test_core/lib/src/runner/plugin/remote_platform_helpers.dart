@@ -8,7 +8,6 @@ import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: imp
 import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 
 import 'package:test_api/src/remote_listener.dart'; // ignore: implementation_imports
-import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementation_imports
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].
@@ -30,7 +29,7 @@ import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementat
 /// for this worker.
 StreamChannel<Object?> serializeSuite(Function Function() getMain,
         {bool hidePrints = true,
-        Future Function(SuiteChannelManager)? beforeLoad}) =>
+        Future Function(StreamChannel<Object?> Function(String name) suiteChannel)? beforeLoad}) =>
     RemoteListener.start(
       getMain,
       hidePrints: hidePrints,
