@@ -16,7 +16,7 @@ void internalBootstrapBrowserTest(Function Function() getMain,
     var serialized = await suiteChannelManager
         .connectOut('test.browser.mapper')
         .stream
-        .first as Map;
+        .first as Map?;
     if (serialized == null) return;
     setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });
