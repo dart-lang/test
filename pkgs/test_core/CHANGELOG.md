@@ -1,7 +1,7 @@
-## 0.4.0-dev
+## 0.3.20-dev
 
-* **Breaking** Remove `suiteChannel`. This is now handled by an additional
-  argument to the `beforeLoad` callback in `serializeSuite`.
+* Remove `suiteChannel`. This is now handled by an additional argument to the
+  `beforeLoad` callback in `serializeSuite`.
 * Disable stack trace chaining by default.
 * Change the default way VM tests are launched and ran to greatly speed up
   loading performance.
