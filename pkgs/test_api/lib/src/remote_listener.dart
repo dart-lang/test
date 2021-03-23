@@ -111,7 +111,9 @@ class RemoteListener {
             except: _deserializeSet(message['foldTraceExcept'] as List),
             only: _deserializeSet(message['foldTraceOnly'] as List));
 
-        if (beforeLoad != null) await beforeLoad(suiteChannelManager.connectOut);
+        if (beforeLoad != null) {
+          await beforeLoad(suiteChannelManager.connectOut);
+        }
 
         await declarer.declare(main);
 

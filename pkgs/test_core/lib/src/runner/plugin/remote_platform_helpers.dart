@@ -29,7 +29,9 @@ import 'package:test_api/src/remote_listener.dart'; // ignore: implementation_im
 /// for this worker.
 StreamChannel<Object?> serializeSuite(Function Function() getMain,
         {bool hidePrints = true,
-        Future Function(StreamChannel<Object?> Function(String name) suiteChannel)? beforeLoad}) =>
+        Future Function(
+                StreamChannel<Object?> Function(String name) suiteChannel)?
+            beforeLoad}) =>
     RemoteListener.start(
       getMain,
       hidePrints: hidePrints,
