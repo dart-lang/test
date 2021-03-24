@@ -51,7 +51,8 @@ class CompilerPool {
   ///
   /// The returned [Future] will complete once the `dart2js` process completes
   /// *and* all its output has been printed to the command line.
-  Future<void> compile(String code, String jsPath, SuiteConfiguration suiteConfig) {
+  Future<void> compile(
+      String code, String jsPath, SuiteConfiguration suiteConfig) {
     return _pool.withResource(() {
       if (_closed) return null;
 
