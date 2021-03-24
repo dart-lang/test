@@ -2,12 +2,12 @@ include: package:pedantic/analysis_options.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
+  language:
+    strict-raw-types: true
   errors:
     # There are a number of deprecated members used through this package
     deprecated_member_use_from_same_package: ignore
     unsafe_html: ignore
-  enable-experiment:
-    - non-nullable
 linter:
   rules:
     - avoid_private_typedef_functions

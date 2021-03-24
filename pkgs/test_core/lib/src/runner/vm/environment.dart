@@ -25,10 +25,10 @@ class VMEnvironment implements Environment {
   Uri? get remoteDebuggerUrl => null;
 
   @override
-  Stream get onRestart => StreamController.broadcast().stream;
+  Stream<void> get onRestart => StreamController.broadcast().stream;
 
   @override
-  CancelableOperation displayPause() {
+  CancelableOperation<void> displayPause() {
     var completer =
         CancelableCompleter(onCancel: () => _client.resume(_isolate.id!));
 

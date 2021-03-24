@@ -25,13 +25,13 @@ class _LiveSuite extends LiveSuite {
   bool get isComplete => _controller._isComplete;
 
   @override
-  Future get onComplete => _controller._onCompleteGroup.future;
+  Future<void> get onComplete => _controller._onCompleteGroup.future;
 
   @override
   bool get isClosed => _controller._onCloseCompleter.isCompleted;
 
   @override
-  Future get onClose => _controller._onCloseCompleter.future;
+  Future<void> get onClose => _controller._onCloseCompleter.future;
 
   @override
   Stream<LiveTest> get onTestStarted =>
@@ -157,7 +157,7 @@ class LiveSuiteController {
   }
 
   /// Closes the underlying suite.
-  Future close() => _closeMemo.runOnce(() async {
+  Future<void> close() => _closeMemo.runOnce(() async {
         try {
           await _suite.close();
         } finally {

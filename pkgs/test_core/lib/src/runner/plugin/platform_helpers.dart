@@ -44,7 +44,7 @@ RunnerSuiteController deserializeSuite(
     Environment environment,
     StreamChannel<Object?> channel,
     Object message,
-    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
+    {Future<Map<String, Object?>> Function()? gatherCoverage}) {
   var disconnector = Disconnector<Object?>();
   var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
 
@@ -59,7 +59,7 @@ RunnerSuiteController deserializeSuite(
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
-  }..addAll(message as Map<String, dynamic>));
+  }..addAll(message as Map<String, Object?>));
 
   var completer = Completer<Group>();
 
@@ -97,8 +97,8 @@ RunnerSuiteController deserializeSuite(
 
           case 'success':
             var deserializer = _Deserializer(suiteChannel);
-            completer.complete(
-                deserializer.deserializeGroup(response['root'] as Map));
+            completer.complete(deserializer
+                .deserializeGroup(response['root'] as Map<String, Object?>));
             break;
         }
       },
@@ -120,17 +120,17 @@ RunnerSuiteController deserializeSuite(
 /// A utility class for storing state while deserializing tests.
 class _Deserializer {
   /// The channel over which tests communicate.
-  final MultiChannel _channel;
+  final MultiChannel<Object?> _channel;
 
   _Deserializer(this._channel);
 
   /// Deserializes [group] into a concrete [Group].
-  Group deserializeGroup(Map group) {
+  Group deserializeGroup(Map<String, Object?> group) {
     var metadata = Metadata.deserialize(group['metadata']);
     return Group(
         group['name'] as String,
         (group['entries'] as List).map((entry) {
-          var map = entry as Map;
+          var map = entry as Map<String, Object?>;
           if (map['type'] == 'group') return deserializeGroup(map);
           return _deserializeTest(map)!;
         }),
@@ -138,14 +138,15 @@ class _Deserializer {
         trace: group['trace'] == null
             ? null
             : Trace.parse(group['trace'] as String),
-        setUpAll: _deserializeTest(group['setUpAll'] as Map?),
-        tearDownAll: _deserializeTest(group['tearDownAll'] as Map?));
+        setUpAll: _deserializeTest(group['setUpAll'] as Map<String, Object?>?),
+        tearDownAll:
+            _deserializeTest(group['tearDownAll'] as Map<String, Object?>?));
   }
 
   /// Deserializes [test] into a concrete [Test] class.
   ///
   /// Returns `null` if [test] is `null`.
-  Test? _deserializeTest(Map? test) {
+  Test? _deserializeTest(Map<String, Object?>? test) {
     if (test == null) return null;
 
     var metadata = Metadata.deserialize(test['metadata']);

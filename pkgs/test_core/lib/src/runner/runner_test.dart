@@ -28,7 +28,7 @@ class RunnerTest extends Test {
   final Trace? trace;
 
   /// The channel used to communicate with the test's [IframeListener].
-  final MultiChannel _channel;
+  final MultiChannel<Object?> _channel;
 
   RunnerTest(this.name, this.metadata, this.trace, this._channel);
 
@@ -37,14 +37,15 @@ class RunnerTest extends Test {
   @override
   LiveTest load(Suite suite, {Iterable<Group>? groups}) {
     late final LiveTestController controller;
-    late final VirtualChannel testChannel;
+    late final VirtualChannel<Object?> testChannel;
     controller = LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
       testChannel = _channel.virtualChannel();
       _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
-      testChannel.stream.listen((message) {
+      testChannel.stream.listen((event) {
+        var message = event as Map<String, Object?>;
         switch (message['type'] as String) {
           case 'error':
             var asyncError = RemoteException.deserialize(message['error']);

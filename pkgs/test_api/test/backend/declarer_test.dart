@@ -647,7 +647,7 @@ void main() {
 ///
 /// This automatically sets up an `onError` listener to ensure that the test
 /// doesn't throw any invisible exceptions.
-Future _runTest(Test test, {bool shouldFail = false}) {
+Future<void> _runTest(Test test, {bool shouldFail = false}) {
   var liveTest = test.load(_suite);
 
   if (shouldFail) {

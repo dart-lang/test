@@ -19,7 +19,7 @@ import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-StreamSubscription? signalSubscription;
+StreamSubscription<ProcessSignal>? signalSubscription;
 bool isShutdown = false;
 
 /// Returns the path to the global test configuration file.
@@ -62,7 +62,7 @@ Future<void> _execute(List<String> args) async {
   final _signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
       : Platform.isFuchsia // Signals don't exist on Fuchsia.
-          ? Stream.empty()
+          ? Stream<ProcessSignal>.empty()
           : StreamGroup.merge(
               [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 

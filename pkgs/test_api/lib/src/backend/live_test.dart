@@ -99,7 +99,7 @@ abstract class LiveTest {
   /// first error or when all [expectAsync] callbacks have been called and any
   /// returned [Future] has completed, but it's possible for further processing
   /// to happen, which may cause further errors.
-  Future get onComplete;
+  Future<void> get onComplete;
 
   /// The name of this live test without any group prefixes.
   String get individualName {
@@ -125,7 +125,7 @@ abstract class LiveTest {
   ///
   /// This returns the same [Future] as [onComplete]. It may not be called more
   /// than once.
-  Future run();
+  Future<void> run();
 
   /// Signals that this test should stop emitting events and release any
   /// resources it may have allocated.
@@ -144,5 +144,5 @@ abstract class LiveTest {
   /// Returns a [Future] that completes once all resources are released *and*
   /// the test has completed. This allows the caller to wait until the test's
   /// tear-down logic has run.
-  Future close();
+  Future<void> close();
 }

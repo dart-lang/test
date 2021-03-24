@@ -16,7 +16,7 @@ class Console {
   final _commands = <String, _Command>{};
 
   /// The pending next line of standard input, if we're waiting on one.
-  CancelableOperation? _nextLine;
+  CancelableOperation<String>? _nextLine;
 
   /// Whether the console is currently running.
   bool _running = false;

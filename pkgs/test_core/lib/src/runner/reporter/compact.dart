@@ -99,7 +99,7 @@ class CompactReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
+  final _subscriptions = <StreamSubscription<void>>{};
 
   final StringSink _sink;
 

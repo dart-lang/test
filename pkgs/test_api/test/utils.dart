@@ -143,10 +143,10 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// is called at some later time.
 ///
 /// [stopBlocking] is passed the return value of [test].
-Future expectTestBlocks(
+Future<void> expectTestBlocks(
     dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
   late LiveTest liveTest;
-  late Future future;
+  late Future<void> future;
   liveTest = createTest(() {
     var value = test();
     future = pumpEventQueue().then((_) {
@@ -167,7 +167,7 @@ Future expectTestBlocks(
 ///
 /// This is typically used to run multiple tests where later tests make
 /// assertions about the results of previous ones.
-Future expectTestsPass(void Function() body) async {
+Future<void> expectTestsPass(void Function() body) async {
   var engine = declareEngine(body);
   var success = await engine.run();
 

@@ -89,7 +89,8 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
+StreamChannel<dynamic> spawnHybridUri(uri,
+    {Object? message, bool stayAlive = false}) {
   if (uri is String) {
     // Ensure that it can be parsed as a uri.
     Uri.parse(uri);
@@ -139,7 +140,7 @@ StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridCode(String dartCode,
+StreamChannel<dynamic> spawnHybridCode(String dartCode,
     {Object? message, bool stayAlive = false}) {
   var uri = Uri.dataFromString(dartCode,
       encoding: utf8, mimeType: 'application/dart');
@@ -147,7 +148,8 @@ StreamChannel spawnHybridCode(String dartCode,
 }
 
 /// Like [spawnHybridUri], but doesn't take [Uri] objects.
-StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
+StreamChannel<dynamic> _spawn(String uri, Object? message,
+    {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {
     throw UnsupportedError("Can't connect to the test runner.\n"
@@ -157,7 +159,7 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   ensureJsonEncodable(message);
 
   var virtualChannel = channel.virtualChannel();
-  StreamChannel isolateChannel = virtualChannel;
+  StreamChannel<dynamic> isolateChannel = virtualChannel;
   channel.sink.add({
     'type': 'spawn-hybrid-uri',
     'url': uri,
@@ -166,7 +168,7 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   });
 
   if (!stayAlive) {
-    var disconnector = Disconnector();
+    var disconnector = Disconnector<dynamic>();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }

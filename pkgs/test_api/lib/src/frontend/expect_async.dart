@@ -176,7 +176,7 @@ class _ExpectedFunction<T> {
       _run([a0, a1, a2, a3, a4, a5].where((a) => a != placeholder));
 
   /// Runs the wrapped function with [args] and returns its return value.
-  T _run(Iterable args) {
+  T _run(Iterable<Object?> args) {
     // Note that in the old test, this returned `null` if it encountered an
     // error, where now it just re-throws that error because Zone machinery will
     // pass it to the invoker anyway.
