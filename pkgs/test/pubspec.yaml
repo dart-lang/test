@@ -1,6 +1,7 @@
 name: test
 version: 1.17.0-dev
-description: A full featured library for writing and running Dart tests.
+description: >-
+  A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/blob/master/pkgs/test
 
 environment:
