@@ -3,6 +3,9 @@
 * Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
 * Disable stack trace chaining by default.
 * **Breaking** remove `Runtime.phantomJS`
+* **Breaking** Add callback to get the suite channel in the `beforeLoad`
+  callback of `RemoteListener.start`. This is now used in place of using zones
+  to communicate the value.
 
 ## 0.3.0
 

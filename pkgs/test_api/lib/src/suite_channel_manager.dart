@@ -2,37 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:stream_channel/stream_channel.dart';
-
-/// The key used to look up [SuiteChannelManager.current] in a zone.
-final _currentKey = Object();
 
 /// A class that connects incoming and outgoing channels with the same names.
 class SuiteChannelManager {
   /// Connections from the test runner that have yet to connect to corresponding
-  /// calls to [suiteChannel] within this worker.
+  /// calls to [connectOut].
   final _incomingConnections = <String, StreamChannel<Object?>>{};
 
-  /// Connections from calls to [suiteChannel] that have yet to connect to
+  /// Connections from calls to [connectOut] that have yet to connect to
   /// corresponding connections from the test runner.
   final _outgoingConnections = <String, StreamChannelCompleter<Object?>>{};
 
   /// The channel names that have already been used.
   final _names = <String>{};
-
-  /// Returns the current manager, or `null` if this isn't called within a call
-  /// to [asCurrent].
-  static SuiteChannelManager? get current =>
-      Zone.current[_currentKey] as SuiteChannelManager?;
-
-  /// Runs [body] with [this] as [SuiteChannelManager.current].
-  ///
-  /// This is zone-scoped, so [this] will be the current configuration in any
-  /// asynchronous callbacks transitively created by [body].
-  T asCurrent<T>(T Function() body) =>
-      runZoned(body, zoneValues: {_currentKey: this});
 
   /// Creates a connection to the test runnner's channel with the given [name].
   StreamChannel<Object?> connectOut(String name) {
