@@ -75,12 +75,12 @@ class Engine {
   /// A completer that will complete when this engine is unpaused.
   ///
   /// `null` if this engine is not paused.
-  Completer? _pauseCompleter;
+  Completer<void>? _pauseCompleter;
 
   /// A future that completes once this is unpaused.
   ///
   /// If this engine isn't paused, this future completes immediately.
-  Future get _onUnpaused =>
+  Future<void> get _onUnpaused =>
       _pauseCompleter == null ? Future.value() : _pauseCompleter!.future;
 
   /// Whether all tests passed or were skipped.
@@ -89,7 +89,7 @@ class Engine {
   /// This will be `null` if [close] was called before all the tests finished
   /// running.
   Future<bool?> get success async {
-    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
+    await Future.wait([_group.future, _runPool.done], eagerError: true);
     if (_closedBeforeDone!) return null;
     return liveTests.every((liveTest) =>
         liveTest.state.result.isPassing &&
@@ -100,7 +100,7 @@ class Engine {
   final _group = FutureGroup();
 
   /// All of the engine's stream subscriptions.
-  final _subscriptions = <StreamSubscription>{};
+  final _subscriptions = <StreamSubscription<void>>{};
 
   /// A sink used to pass [RunnerSuite]s in to the engine to run.
   ///
@@ -201,7 +201,7 @@ class Engine {
 
   /// A broadcast stream that fires an event whenever [isIdle] switches from
   /// `false` to `true`.
-  Stream get onIdle => _group.onIdle;
+  Stream<void> get onIdle => _group.onIdle;
 
   // TODO(nweiz): Use interface libraries to take a Configuration even when
   // dart:io is unavailable.
@@ -251,7 +251,7 @@ class Engine {
     }
     _runCalled = true;
 
-    late StreamSubscription subscription;
+    late StreamSubscription<RunnerSuite> subscription;
     subscription = _suiteController.stream.listen((suite) {
       _addedSuites.add(suite);
       _onSuiteAddedController.add(suite);
@@ -295,7 +295,7 @@ class Engine {
   /// [parents] is a list of groups that contain [group]. It may be modified,
   /// but it's guaranteed to be in its original state once this function has
   /// finished.
-  Future _runGroup(LiveSuiteController suiteController, Group group,
+  Future<void> _runGroup(LiveSuiteController suiteController, Group group,
       List<Group> parents) async {
     parents.add(group);
     try {
@@ -349,7 +349,7 @@ class Engine {
   ///
   /// If [countSuccess] is `true` (the default), the test is put into [passed]
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
-  Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
+  Future<void> _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
       {bool countSuccess = true}) async {
     await _onUnpaused;
     _active.add(liveTest);
@@ -359,7 +359,7 @@ class Engine {
     // non-load test to add.
     if (_active.first.suite is LoadSuite) _active.removeFirst();
 
-    late StreamSubscription subscription;
+    late StreamSubscription<State> subscription;
     subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _active.remove(liveTest);
@@ -393,7 +393,7 @@ class Engine {
   ///
   /// [suiteController] is the controller for the suite that contains [test].
   /// [parents] is a list of groups that contain [test].
-  Future _runSkippedTest(LiveSuiteController suiteController, Test test,
+  Future<void> _runSkippedTest(LiveSuiteController suiteController, Test test,
       List<Group> parents) async {
     await _onUnpaused;
     var skipped = LocalTest(test.name, test.metadata, () {}, trace: test.trace);
@@ -420,7 +420,7 @@ class Engine {
   /// running.
   ///
   /// Returns the same future as [LiveTest.close].
-  Future restartTest(LiveTest liveTest) async {
+  Future<void> restartTest(LiveTest liveTest) async {
     if (_activeLoadTests.contains(liveTest)) {
       throw ArgumentError("Can't restart a load test.");
     }
@@ -448,7 +448,7 @@ class Engine {
     // Only surface the load test if there are no other tests currently running.
     if (_active.isEmpty) _active.add(liveTest);
 
-    late StreamSubscription subscription;
+    late StreamSubscription<State> subscription;
     subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _activeLoadTests.remove(liveTest);
@@ -534,7 +534,7 @@ class Engine {
   /// **Note that closing the engine is not the same as closing [suiteSink].**
   /// Closing [suiteSink] indicates that no more input will be provided, closing
   /// the engine indicates that no more output should be emitted.
-  Future close() async {
+  Future<void> close() async {
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
     await _suiteController.close();

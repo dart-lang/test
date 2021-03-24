@@ -57,7 +57,7 @@ abstract class PlatformPlugin {
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Object message);
 
-  Future closeEphemeral() async {}
+  Future<void> closeEphemeral() async {}
 
-  Future close() async {}
+  Future<void> close() async {}
 }

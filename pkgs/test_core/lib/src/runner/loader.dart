@@ -276,7 +276,7 @@ class Loader {
     }
   }
 
-  Future closeEphemeral() async {
+  Future<void> closeEphemeral() async {
     await Future.wait(_platformPlugins.values.map((memo) async {
       if (!memo.hasRun) return;
       await (await memo.future).closeEphemeral();
@@ -284,7 +284,7 @@ class Loader {
   }
 
   /// Closes the loader and releases all resources allocated by it.
-  Future close() => _closeMemo.runOnce(() async {
+  Future<void> close() => _closeMemo.runOnce(() async {
         await Future.wait([
           Future.wait(_platformPlugins.values.map((memo) async {
             if (!memo.hasRun) return;

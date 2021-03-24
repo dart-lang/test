@@ -37,7 +37,7 @@ abstract class LiveSuite {
   ///
   /// The [onClose] future can be used to determine when the suite and its tests
   /// are guaranteed to emit no more events.
-  Future get onComplete;
+  Future<void> get onComplete;
 
   /// Whether the suite has been closed.
   ///
@@ -51,7 +51,7 @@ abstract class LiveSuite {
   /// Once this completes, no code is running for the suite or any of its tests.
   /// At this point, the caller can be sure that the suites' tests are all in
   /// fixed states that will not change in the future.
-  Future get onClose;
+  Future<void> get onClose;
 
   /// All the currently-known tests in this suite that have run or are running.
   ///

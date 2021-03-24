@@ -58,7 +58,7 @@ class JsonReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
+  final _subscriptions = <StreamSubscription<void>>{};
 
   final StringSink _sink;
 
@@ -232,7 +232,8 @@ class JsonReporter implements Reporter {
   }
 
   /// Serializes [metadata] into a JSON-protocol-compatible map.
-  Map _serializeMetadata(SuiteConfiguration suiteConfig, Metadata metadata) =>
+  Map<String, Object?> _serializeMetadata(
+          SuiteConfiguration suiteConfig, Metadata metadata) =>
       suiteConfig.runSkipped
           ? {'skip': false, 'skipReason': null}
           : {'skip': metadata.skip, 'skipReason': metadata.skipReason};
@@ -279,7 +280,7 @@ class JsonReporter implements Reporter {
       suite is RunnerSuite ? suite.config : SuiteConfiguration.empty;
 
   /// Emits an event with the given type and attributes.
-  void _emit(String type, Map attributes) {
+  void _emit(String type, Map<String, Object?> attributes) {
     attributes['type'] = type;
     attributes['time'] = _stopwatch.elapsed.inMilliseconds;
     _sink.writeln(jsonEncode(attributes));

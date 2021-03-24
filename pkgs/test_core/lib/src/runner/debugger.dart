@@ -24,7 +24,7 @@ import 'reporter.dart';
 /// Returns a [CancelableOperation] that will complete once the suite has
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
-CancelableOperation debug(
+CancelableOperation<void> debug(
     Engine engine, Reporter reporter, LoadSuite loadSuite) {
   _Debugger? debugger;
   var canceled = false;
@@ -78,7 +78,7 @@ class _Debugger {
   StreamSubscription<bool>? _onDebuggingSubscription;
 
   /// The subscription to [_suite.environment.onRestart].
-  late final StreamSubscription _onRestartSubscription;
+  late final StreamSubscription<void> _onRestartSubscription;
 
   /// Whether [close] has been called.
   bool _closed = false;
@@ -99,7 +99,7 @@ class _Debugger {
   ///
   /// This prints information about the suite's debugger, then once the user has
   /// had a chance to set breakpoints, runs the suite's tests.
-  Future run() async {
+  Future<void> run() async {
     try {
       await _pause();
       if (_closed) return;
@@ -121,7 +121,7 @@ class _Debugger {
 
   /// Prints URLs for the [_suite]'s debugger and waits for the user to tell the
   /// suite to run.
-  Future _pause() async {
+  Future<void> _pause() async {
     if (!_suite.environment.supportsDebugging) return;
 
     try {

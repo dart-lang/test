@@ -205,11 +205,11 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   @override
-  StreamChannel channel(String name) =>
+  StreamChannel<Object?> channel(String name) =>
       throw UnsupportedError('LoadSuite.channel() is not supported.');
 
   @override
-  Future close() async {}
+  Future<void> close() async {}
 
   @override
   Future<Map<String, dynamic>> gatherCoverage() =>

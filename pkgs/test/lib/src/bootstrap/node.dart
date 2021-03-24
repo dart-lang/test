@@ -12,7 +12,8 @@ void internalBootstrapNodeTest(Function Function() getMain) {
   var channel = serializeSuite(getMain, beforeLoad: (suiteChannel) async {
     var serialized = await suiteChannel('test.node.mapper').stream.first;
     if (serialized is! Map) return;
-    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
+    setStackTraceMapper(
+        JSStackTraceMapper.deserialize(serialized as Map<String, Object?>)!);
   });
   socketChannel().pipe(channel);
 }

@@ -50,7 +50,7 @@ class Runner {
   final Reporter _reporter;
 
   /// The subscription to the stream returned by [_loadSuites].
-  StreamSubscription? _suiteSubscription;
+  StreamSubscription<LoadSuite>? _suiteSubscription;
 
   /// The set of suite paths for which [_warnForUnknownTags] has already been
   /// called.
@@ -62,7 +62,7 @@ class Runner {
   /// The current debug operation, if any.
   ///
   /// This is stored so that we can cancel it when the runner is closed.
-  CancelableOperation? _debugOperation;
+  CancelableOperation<void>? _debugOperation;
 
   /// The memoizer for ensuring [close] only runs once.
   final _closeMemo = AsyncMemoizer();
@@ -122,7 +122,7 @@ class Runner {
         } else {
           var subscription =
               _suiteSubscription = suites.listen(_engine.suiteSink.add);
-          var results = await Future.wait(<Future>[
+          var results = await Future.wait([
             subscription.asFuture().then((_) => _engine.suiteSink.close()),
             _engine.run()
           ], eagerError: true);
@@ -161,7 +161,7 @@ class Runner {
     if (unsupportedRuntimes.isEmpty) return;
 
     // Human-readable names for all unsupported runtimes.
-    var unsupportedNames = [];
+    var unsupportedNames = <Object>[];
 
     // If the user tried to run on one or moe unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
@@ -204,7 +204,7 @@ class Runner {
   /// This stops any future test suites from running. It will wait for any
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
-  Future close() => _closeMemo.runOnce(() async {
+  Future<void> close() => _closeMemo.runOnce(() async {
         Timer? timer;
         if (!_engine.isIdle) {
           // Wait a bit to print this message, since printing it eagerly looks weird
@@ -387,9 +387,10 @@ class Runner {
     var subscription = _suiteSubscription = suites.asyncMap((loadSuite) async {
       var operation = _debugOperation = debug(_engine, _reporter, loadSuite);
       await operation.valueOrCancellation();
+      return loadSuite;
     }).listen(null);
 
-    var results = await Future.wait(<Future>[
+    var results = await Future.wait([
       subscription.asFuture().then((_) => _engine.suiteSink.close()),
       _engine.run()
     ], eagerError: true);

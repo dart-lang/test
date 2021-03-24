@@ -24,14 +24,14 @@ abstract class Environment {
   /// environment to restart the current test once it's finished.
   ///
   /// Never emits an error, and never closes.
-  Stream get onRestart;
+  Stream<void> get onRestart;
 
   /// Displays information indicating that the test runner is paused.
   ///
   /// The returned operation will complete when the user takes action within the
   /// environment that should unpause the runner. If the runner is unpaused
   /// elsewhere, the operation should be canceled.
-  CancelableOperation displayPause();
+  CancelableOperation<void> displayPause();
 }
 
 /// The default environment for platform plugins.
@@ -39,7 +39,7 @@ class PluginEnvironment implements Environment {
   @override
   final supportsDebugging = false;
   @override
-  Stream get onRestart => StreamController.broadcast().stream;
+  Stream<void> get onRestart => StreamController.broadcast().stream;
 
   const PluginEnvironment();
 
@@ -50,6 +50,6 @@ class PluginEnvironment implements Environment {
   Uri? get remoteDebuggerUrl => null;
 
   @override
-  CancelableOperation displayPause() => throw UnsupportedError(
+  CancelableOperation<void> displayPause() => throw UnsupportedError(
       'PluginEnvironment.displayPause is not supported.');
 }

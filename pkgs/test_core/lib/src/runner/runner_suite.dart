@@ -50,7 +50,7 @@ class RunnerSuite extends Suite {
   /// `suiteChannel` argument from a `beforeLoad` callback to `serializeSuite`
   /// with the same name.
   /// It can be used used to send and receive any JSON-serializable object.
-  StreamChannel channel(String name) => _controller.channel(name);
+  StreamChannel<Object?> channel(String name) => _controller.channel(name);
 
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode and doesn't support suite channels.
@@ -76,7 +76,7 @@ class RunnerSuite extends Suite {
   }
 
   /// Closes the suite and releases any resources associated with it.
-  Future close() => _controller._close();
+  Future<void> close() => _controller._close();
 
   /// Collects a hit-map containing merged coverage.
   ///
@@ -99,7 +99,7 @@ class RunnerSuiteController {
   final SuiteConfiguration _config;
 
   /// A channel that communicates with the remote suite.
-  final MultiChannel? _suiteChannel;
+  final MultiChannel<Object?>? _suiteChannel;
 
   /// The function to call when the suite is closed.
   final Function()? _onClose;
@@ -156,7 +156,7 @@ class RunnerSuiteController {
   /// This is exposed on the [RunnerSuiteController] so that runner plugins can
   /// communicate with the workers they spawn before the associated [suite] is
   /// fully loaded.
-  StreamChannel channel(String name) {
+  StreamChannel<Object?> channel(String name) {
     if (!_channelNames.add(name)) {
       throw StateError('Duplicate RunnerSuite.channel() connection "$name".');
     }
@@ -173,7 +173,7 @@ class RunnerSuiteController {
   }
 
   /// The backing function for [suite.close].
-  Future _close() => _closeMemo.runOnce(() async {
+  Future<void> _close() => _closeMemo.runOnce(() async {
         await _onDebuggingController.close();
         var onClose = _onClose;
         if (onClose != null) await onClose();

@@ -87,7 +87,7 @@ class RemoteListener {
         var message = await queue.next as Map;
         assert(message['type'] == 'initial');
 
-        queue.rest.cast<Map>().listen((message) {
+        queue.rest.cast<Map<String, Object?>>().listen((message) {
           if (message['type'] == 'close') {
             controller.local.sink.close();
             return;

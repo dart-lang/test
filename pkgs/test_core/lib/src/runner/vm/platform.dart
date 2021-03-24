@@ -116,7 +116,7 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() => _compiler.dispose());
+  Future<void> close() => _closeMemo.runOnce(() => _compiler.dispose());
 
   /// Spawns an isolate and passes it [message].
   ///

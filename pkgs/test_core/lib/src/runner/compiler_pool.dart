@@ -51,7 +51,7 @@ class CompilerPool {
   ///
   /// The returned [Future] will complete once the `dart2js` process completes
   /// *and* all its output has been printed to the command line.
-  Future compile(String code, String jsPath, SuiteConfiguration suiteConfig) {
+  Future<void> compile(String code, String jsPath, SuiteConfiguration suiteConfig) {
     return _pool.withResource(() {
       if (_closed) return null;
 
@@ -131,7 +131,7 @@ class CompilerPool {
   /// This kills all currently-running compilers and ensures that no more will
   /// be started. It returns a [Future] that completes once all the compilers
   /// have been killed and all resources released.
-  Future close() {
+  Future<void> close() {
     return _closeMemo.runOnce(() async {
       await Future.wait(_processes.map((process) async {
         process.kill();
