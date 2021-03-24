@@ -16,8 +16,8 @@ import './../platform.dart';
 /// field. The custom settings will be passed to the plugin using
 /// [customizePlatform].
 ///
-/// [override_platforms]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#override_platforms
-/// [define_platforms]: https://github.com/dart-lang/test/blob/master/doc/configuration.md#define_platforms
+/// [override_platforms]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#override_platforms
+/// [define_platforms]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#define_platforms
 ///
 /// Plugins that implement this **must** support children of recognized runtimes
 /// (created by [Runtime.extend]) in their [loadChannel] or [load] methods.

@@ -66,7 +66,7 @@ Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 /// If [retry] is passed, the test will be retried the provided number of times
 /// before being marked as a failure.
 ///
-/// [configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
+/// [configuring tags]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#configuring-tags
 ///
 /// [onPlatform] allows tests to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
