@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:convert';
@@ -26,7 +24,6 @@ import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
-import 'phantom_js.dart';
 import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -45,7 +42,7 @@ class BrowserManager {
   /// The channel used to communicate with the browser.
   ///
   /// This is connected to a page running `static/host.dart`.
-  MultiChannel<Object> _channel;
+  late final MultiChannel<Object> _channel;
 
   /// A pool that ensures that limits the number of initial connections the
   /// manager will wait for at once.
@@ -69,13 +66,13 @@ class BrowserManager {
   ///
   /// This will be `null` as long as the browser isn't displaying a pause
   /// screen.
-  CancelableCompleter<void> _pauseCompleter;
+  CancelableCompleter<void>? _pauseCompleter;
 
   /// The controller for [_BrowserEnvironment.onRestart].
   final _onRestartController = StreamController<Null>.broadcast();
 
   /// The environment to attach to each suite.
-  Future<_BrowserEnvironment> _environment;
+  late final Future<_BrowserEnvironment> _environment;
 
   /// Controllers for every suite in this browser.
   ///
@@ -87,7 +84,7 @@ class BrowserManager {
   //
   // Because the browser stops running code when the user is actively debugging,
   // this lets us detect whether they're debugging reasonably accurately.
-  RestartableTimer _timer;
+  late final RestartableTimer _timer;
 
   /// Starts the browser identified by [runtime] and has it connect to [url].
   ///
@@ -112,17 +109,18 @@ class BrowserManager {
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
-    browser.onExit.then((_) {
+    browser.onExit.then<void>((_) {
       throw ApplicationException('${runtime.name} exited before connecting.');
-    }).catchError((error, StackTrace stackTrace) {
-      if (completer.isCompleted) return;
-      completer.completeError(error, stackTrace);
+    }).onError<Object>((error, stackTrace) {
+      if (!completer.isCompleted) {
+        completer.completeError(error, stackTrace);
+      }
     });
 
     future.then((webSocket) {
       if (completer.isCompleted) return;
       completer.complete(BrowserManager._(browser, runtime, webSocket));
-    }).catchError((error, StackTrace stackTrace) {
+    }).onError((Object error, StackTrace stackTrace) {
       browser.close();
       if (completer.isCompleted) return;
       completer.completeError(error, stackTrace);
@@ -143,8 +141,6 @@ class BrowserManager {
     switch (browser.root) {
       case Runtime.chrome:
         return Chrome(url, configuration, settings: settings);
-      case Runtime.phantomJS:
-        return PhantomJS(url, configuration, settings: settings);
       case Runtime.firefox:
         return Firefox(url, settings: settings);
       case Runtime.safari:
@@ -187,8 +183,9 @@ class BrowserManager {
     }));
 
     _environment = _loadBrowserEnvironment();
-    _channel.stream
-        .listen((message) => _onMessage(message as Map), onDone: close);
+    _channel.stream.listen(
+        (message) => _onMessage(message as Map<Object, Object?>),
+        onDone: close);
   }
 
   /// Loads [_BrowserEnvironment].
@@ -207,7 +204,7 @@ class BrowserManager {
   /// from this test suite.
   Future<RunnerSuite> load(
       String path, Uri url, SuiteConfiguration suiteConfig, Object message,
-      {StackTraceMapper mapper}) async {
+      {StackTraceMapper? mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
       'metadata': suiteConfig.metadata.serialize(),
@@ -215,10 +212,10 @@ class BrowserManager {
     })));
 
     var suiteID = _suiteID++;
-    RunnerSuiteController controller;
+    RunnerSuiteController? controller;
     void closeIframe() {
       if (_closed) return;
-      _controllers.remove(controller);
+      if (controller != null) _controllers.remove(controller);
       _channel.sink.add({'command': 'closeSuite', 'id': suiteID});
     }
 
@@ -246,17 +243,20 @@ class BrowserManager {
             currentPlatform(_runtime),
             suiteConfig,
             await _environment,
-            suiteChannel,
+            suiteChannel.cast(),
             message, gatherCoverage: () async {
           var browser = _browser;
           if (browser is Chrome) return browser.gatherCoverage();
           return {};
         });
 
-        controller.channel('test.browser.mapper').sink.add(mapper?.serialize());
+        controller!
+            .channel('test.browser.mapper')
+            .sink
+            .add(mapper?.serialize());
 
-        _controllers.add(controller);
-        return await controller.suite;
+        _controllers.add(controller!);
+        return await controller!.suite;
       } catch (_) {
         closeIframe();
         rethrow;
@@ -266,24 +266,24 @@ class BrowserManager {
 
   /// An implementation of [Environment.displayPause].
   CancelableOperation<void> _displayPause() {
-    if (_pauseCompleter != null) return _pauseCompleter.operation;
+    if (_pauseCompleter != null) return _pauseCompleter!.operation;
 
-    _pauseCompleter = CancelableCompleter(onCancel: () {
+    final pauseCompleter = _pauseCompleter = CancelableCompleter(onCancel: () {
       _channel.sink.add({'command': 'resume'});
       _pauseCompleter = null;
     });
 
-    _pauseCompleter.operation.value.whenComplete(() {
+    pauseCompleter.operation.value.whenComplete(() {
       _pauseCompleter = null;
     });
 
     _channel.sink.add({'command': 'displayPause'});
 
-    return _pauseCompleter.operation;
+    return pauseCompleter.operation;
   }
 
   /// The callback for handling messages received from the host page.
-  void _onMessage(Map<Object, Object> message) {
+  void _onMessage(Map<Object, Object?> message) {
     switch (message['command'] as String) {
       case 'ping':
         break;
@@ -293,7 +293,7 @@ class BrowserManager {
         break;
 
       case 'resume':
-        if (_pauseCompleter != null) _pauseCompleter.complete();
+        _pauseCompleter?.complete();
         break;
 
       default:
@@ -308,7 +308,7 @@ class BrowserManager {
   Future<void> close() => _closeMemoizer.runOnce(() {
         _closed = true;
         _timer.cancel();
-        if (_pauseCompleter != null) _pauseCompleter.complete();
+        _pauseCompleter?.complete();
         _pauseCompleter = null;
         _controllers.clear();
         return _browser.close();
@@ -326,10 +326,10 @@ class _BrowserEnvironment implements Environment {
   final supportsDebugging = true;
 
   @override
-  final Uri observatoryUrl;
+  final Uri? observatoryUrl;
 
   @override
-  final Uri remoteDebuggerUrl;
+  final Uri? remoteDebuggerUrl;
 
   @override
   final Stream<Null> onRestart;

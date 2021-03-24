@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:io';
 import 'dart:isolate';
@@ -15,6 +13,7 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '../util/dart.dart' as dart;
 import '../util/package_config.dart';
+import 'package_version.dart';
 
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
@@ -32,8 +31,7 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// contains `pubspec.yaml`, *not* the `test/` directory). If it's a `package:`
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
-StreamChannel /*!*/ spawnHybridUri(
-    String url, Object /*?*/ message, Suite suite) {
+StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
   url = _normalizeUrl(url, suite);
   return StreamChannelCompleter.fromFuture(() async {
     var port = ReceivePort();
@@ -99,7 +97,7 @@ String _normalizeUrl(String url, Suite suite) {
       return p.url
           .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
     } else {
-      var suitePath = suite.path;
+      var suitePath = suite.path!;
       return p.url.join(
           p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
           parsedUri.toString());
@@ -113,11 +111,14 @@ String _normalizeUrl(String url, Suite suite) {
 ///
 /// If there is a language version comment in the file, that is returned.
 ///
+/// If the URI has a `data` scheme, a comment representing the language version of
+/// the current package is returned.
+///
 /// Otherwise a comment representing the default version from the
 /// [currentPackageConfig] is returned.
 ///
-/// If no default language version is known (data: uri for instance), then
-/// an empty string is returned.
+/// If no default language version is known (the URI scheme is not recognized
+/// for instance), then an empty string is returned.
 Future<String> _languageVersionCommentFor(String url) async {
   var parsedUri = Uri.parse(url);
 
@@ -134,7 +135,13 @@ Future<String> _languageVersionCommentFor(String url) async {
     var packageConfig = await currentPackageConfig;
     var package = packageConfig.packageOf(parsedUri);
     var version = package?.languageVersion;
-    if (version != null) return '// @dart=${version}';
+    if (version != null) return '// @dart=$version';
+  }
+
+  // Returns the root package language version for `data` URIs. These are
+  // assumed to be from `spawnHybridCode` calls.
+  if (parsedUri.scheme == 'data') {
+    return await rootPackageLanguageVersionComment;
   }
 
   // Fall back on no language comment.
@@ -147,7 +154,7 @@ Future<String> _readUri(Uri uri) async {
     case 'file':
       return File.fromUri(uri).readAsString();
     case 'data':
-      return uri.data.contentAsString();
+      return uri.data!.contentAsString();
     default:
       throw ArgumentError.value(uri, 'uri',
           'Only data and file uris (as well as relative paths) are supported');

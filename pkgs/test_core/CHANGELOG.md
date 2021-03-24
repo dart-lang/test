@@ -1,3 +1,52 @@
+## 0.3.20-dev
+
+* Remove `suiteChannel`. This is now handled by an additional argument to the
+  `beforeLoad` callback in `serializeSuite`.
+* Disable stack trace chaining by default.
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Improve the error message for `hybridMain` functions with an incompatible
+  StreamChannel parameter type.
+
+## 0.3.19
+
+* ~~Disable stack trace chaining by default.~~
+
+## 0.3.18
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update to the latest `test_api`.
+
+## 0.3.17
+
+* Complete the null safety migration.
+
+## 0.3.16
+
+* Allow package:io version 1.0.0.
+
+## 0.3.14
+
+* Handle issue closing `stdin` during shutdown.
+
+## 0.3.13
+
+* Allow the latest analyzer `1.0.0`.
+
+## 0.3.12
+
+* Stable null safety release.
+
+## 0.3.12-nullsafety.17
+
+* Use the `test_api` for stable null safety.
+
+## 0.3.12-nullsafety.16
+
+* Expand upper bound constraints for some null safe migrated packages.
+
 ## 0.3.12-nullsafety.15
 
 * Support the latest vm_service release (`6.x.x`).

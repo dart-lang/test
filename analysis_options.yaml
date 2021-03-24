@@ -3,15 +3,9 @@ analyzer:
   strong-mode:
     implicit-casts: false
   errors:
-    # Remove noise from workspace diagnostics lists
-    todo: ignore
-    # Upgrade lints to errors that will break Google3
-    unused_element: error
-    unused_import: error
-    unused_local_variable: error
-    dead_code: error
     # There are a number of deprecated members used through this package
     deprecated_member_use_from_same_package: ignore
+    unsafe_html: ignore
   enable-experiment:
     - non-nullable
 linter:

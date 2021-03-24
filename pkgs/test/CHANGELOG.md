@@ -1,7 +1,67 @@
+## 1.17.0-dev
+
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely, it was previously broken.
+
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+* ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.~~
+
+## 1.16.7
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update `test_core` and `test_api` deps.
+
+## 1.16.6
+
+* Complete the migration to null safety.
+
+## 1.16.5
+
+* Expand several deps to allow the latest versions.
+
+## 1.16.4
+
+* Update `test_core` dependency to `0.3.14`.
+
+## 1.16.3
+
+* Update `web_socket_channel` dependency to support latest.
+
+## 1.16.2
+
+* Update `test_core` dependency to `0.3.13`.
+
+## 1.16.1
+
+* Allow the latest analyzer `1.0.0`.
+
+## 1.16.0
+
+* Stable null safety release.
+
+## 1.16.0-nullsafety.19
+
+* Use the `test_api` for stable null safety.
+
+## 1.16.0-nullsafety.18
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 1.16.0-nullsafety.17
+
+* Support the latest shelf release (`1.x.x`).
+
 ## 1.16.0-nullsafety.16
 
 * Support the latest vm_service release (`6.x.x`).
-
 
 ## 1.16.0-nullsafety.15
 
@@ -1003,7 +1063,7 @@
 
 * Wait for a test's tear-down logic to run, even if it times out.
 
-[focusing]: http://jasmine.github.io/2.1/focused_specs.html
+[focusing]: https://jasmine.github.io/2.1/focused_specs.html
 [issue 16]: https://github.com/dart-lang/test/issues/16
 
 ## 0.12.6+2

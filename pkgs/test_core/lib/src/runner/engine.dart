@@ -216,7 +216,7 @@ class Engine {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
       _closedBeforeDone ??= false;
-    }).catchError((_) {
+    }).onError((_, __) {
       // Don't top-level errors. They'll be thrown via [success] anyway.
     });
   }

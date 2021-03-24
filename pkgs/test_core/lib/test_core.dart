@@ -15,13 +15,14 @@ import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_i
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
 import 'package:test_api/src/frontend/utils.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 import 'src/runner/engine.dart';
 import 'src/runner/plugin/environment.dart';
 import 'src/runner/reporter/expanded.dart';
 import 'src/runner/runner_suite.dart';
 import 'src/runner/suite.dart';
+import 'src/util/async.dart';
+import 'src/util/os.dart';
 import 'src/util/print_sink.dart';
 
 export 'package:matcher/matcher.dart';
@@ -104,7 +105,7 @@ Declarer get _declarer {
 /// If [retry] is passed, the test will be retried the provided number of times
 /// before being marked as a failure.
 ///
-/// [configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
+/// [configuring tags]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#configuring-tags
 ///
 /// [onPlatform] allows tests to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
@@ -182,7 +183,7 @@ void test(description, dynamic Function() body,
 /// [package configuration file][configuring tags]. The parameter can be an
 /// [Iterable] of tag names, or a [String] representing a single tag.
 ///
-/// [configuring tags]: https://github.com/dart-lang/test/blob/master/doc/package_config.md#configuring-tags
+/// [configuring tags]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#configuring-tags
 ///
 /// [onPlatform] allows groups to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to

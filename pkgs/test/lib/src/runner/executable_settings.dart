@@ -1,8 +1,6 @@
 // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:io';
 
@@ -20,13 +18,13 @@ class ExecutableSettings {
   ///
   /// This may be an absolute path or a basename, in which case it will be
   /// looked up on the system path. It may not be relative.
-  final String _linuxExecutable;
+  final String? _linuxExecutable;
 
   /// The path to the executable on Mac OS.
   ///
   /// This may be an absolute path or a basename, in which case it will be
   /// looked up on the system path. It may not be relative.
-  final String _macOSExecutable;
+  final String? _macOSExecutable;
 
   /// The path to the executable on Windows.
   ///
@@ -34,15 +32,16 @@ class ExecutableSettings {
   /// up on the system path; or a relative path, in which case it will be looked
   /// up relative to the paths in the `LOCALAPPDATA`, `PROGRAMFILES`, and
   /// `PROGRAMFILES(X64)` environment variables.
-  final String _windowsExecutable;
+  final String? _windowsExecutable;
 
   /// The path to the executable for the current operating system.
   String get executable {
-    if (Platform.isMacOS) return _macOSExecutable;
-    if (!Platform.isWindows) return _linuxExecutable;
-    if (p.isAbsolute(_windowsExecutable)) return _windowsExecutable;
-    if (p.basename(_windowsExecutable) == _windowsExecutable) {
-      return _windowsExecutable;
+    if (Platform.isMacOS) return _macOSExecutable!;
+    if (!Platform.isWindows) return _linuxExecutable!;
+    final windowsExecutable = _windowsExecutable!;
+    if (p.isAbsolute(windowsExecutable)) return windowsExecutable;
+    if (p.basename(windowsExecutable) == windowsExecutable) {
+      return windowsExecutable;
     }
 
     var prefixes = [
@@ -54,14 +53,14 @@ class ExecutableSettings {
     for (var prefix in prefixes) {
       if (prefix == null) continue;
 
-      var path = p.join(prefix, _windowsExecutable);
+      var path = p.join(prefix, windowsExecutable);
       if (File(path).existsSync()) return path;
     }
 
     // If we can't find a path that works, return one that doesn't. This will
     // cause an "executable not found" error to surface.
     return p.join(
-        prefixes.firstWhere((prefix) => prefix != null, orElse: () => '.'),
+        prefixes.firstWhere((prefix) => prefix != null, orElse: () => '.')!,
         _windowsExecutable);
   }
 
@@ -69,11 +68,11 @@ class ExecutableSettings {
   ///
   /// This is currently only supported by Chrome.
   bool get headless => _headless ?? true;
-  final bool _headless;
+  final bool? _headless;
 
   /// Parses settings from a user-provided YAML mapping.
   factory ExecutableSettings.parse(YamlMap settings) {
-    List<String> arguments;
+    List<String>? arguments;
     var argumentsNode = settings.nodes['arguments'];
     if (argumentsNode != null) {
       var value = argumentsNode.value;
@@ -89,9 +88,9 @@ class ExecutableSettings {
       }
     }
 
-    String linuxExecutable;
-    String macOSExecutable;
-    String windowsExecutable;
+    String? linuxExecutable;
+    String? macOSExecutable;
+    String? windowsExecutable;
     var executableNode = settings.nodes['executable'];
     if (executableNode != null) {
       var value = executableNode.value;
@@ -140,7 +139,7 @@ class ExecutableSettings {
   ///
   /// If [allowRelative] is `false` (the default), asserts that the value isn't
   /// a relative path.
-  static String _getExecutable(YamlNode executableNode,
+  static String? _getExecutable(YamlNode? executableNode,
       {bool allowRelative = false}) {
     if (executableNode == null || executableNode.value == null) return null;
     if (executableNode.value is! String) {
@@ -166,11 +165,11 @@ class ExecutableSettings {
   }
 
   ExecutableSettings(
-      {Iterable<String> arguments,
-      String linuxExecutable,
-      String macOSExecutable,
-      String windowsExecutable,
-      bool headless})
+      {Iterable<String>? arguments,
+      String? linuxExecutable,
+      String? macOSExecutable,
+      String? windowsExecutable,
+      bool? headless})
       : arguments = arguments == null ? const [] : List.unmodifiable(arguments),
         _linuxExecutable = linuxExecutable,
         _macOSExecutable = macOSExecutable,

@@ -5,7 +5,7 @@
 import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
 
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 import 'format_stack_trace.dart';
 
@@ -156,7 +156,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
 
       // Wait on a timer tick so all buffered events are emitted.
       await Future.delayed(Duration.zero);
-      unawaited(subscription.cancel());
+      _unawaited(subscription.cancel());
 
       var eventsString = events.map((event) {
         if (event == null) {
@@ -167,7 +167,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
           var error = event.asError!;
           var chain = formatStackTrace(error.stackTrace);
           var text = '${error.error}\n$chain';
-          return prefixLines(text, '  ', first: '! ');
+          return indent(text, first: '! ');
         }
       }).join('\n');
       if (eventsString.isEmpty) eventsString = 'no events';
@@ -191,3 +191,5 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
   Description describe(Description description) =>
       description.add('should ').add(this.description);
 }
+
+void _unawaited(Future<void> f) {}

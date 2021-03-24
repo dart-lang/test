@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 
 import '../util/placeholder.dart';
-import '../utils.dart';
+import '../util/pretty_print.dart';
 import 'expect.dart';
 import 'future_matchers.dart';
 import 'utils.dart';

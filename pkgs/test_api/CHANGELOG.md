@@ -1,5 +1,11 @@
-## 0.2.19-nullsafety.7
+## 0.4.0-dev
 
+* Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
+* Disable stack trace chaining by default.
+* **Breaking** remove `Runtime.phantomJS`
+* **Breaking** Add callback to get the suite channel in the `beforeLoad`
+  callback of `RemoteListener.start`. This is now used in place of using zones
+  to communicate the value.
 * Improve typing of a lot of internal APIs and a few public APIs:
   * **Breaking Change**: `LiveTest.onComplete`, `LiveTest.run()`, and
     `LiveTest.close()` each now return a `Future<void>` instead of a
@@ -13,6 +19,23 @@
     return `Future<dynamic>`).
   * **Breaking Change**: `errorsDontStopTest` now returns a `Future<void>`
     instead of a `Future<dynamic>`.
+
+## 0.3.0
+
+* **Breaking** `TestException.message` is now nullable.
+  * Fixes handling of `null` messages in remote exceptions.
+
+## 0.2.20
+
+* Fix some strong null safety mode errors in the original migration.
+
+## 0.2.19
+
+* Stable release for null safety.
+
+## 0.2.19-nullsafety.7
+
+* Expand upper bound constraints for some null safe migrated packages.
 
 ## 0.2.19-nullsafety.6
 
