@@ -180,7 +180,7 @@ class RemoteListener {
   /// Serializes [group] into a JSON-safe map.
   ///
   /// [parents] lists the groups that contain [group].
-  Map<dynamic, dynamic> _serializeGroup(
+  Map<String, Object?> _serializeGroup(
       MultiChannel<dynamic> channel, Group group, Iterable<Group> parents) {
     parents = parents.toList()..add(group);
     return {
@@ -202,7 +202,7 @@ class RemoteListener {
   ///
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
-  Map<dynamic, dynamic>? _serializeTest(
+  Map<String, Object?>? _serializeTest(
       MultiChannel<dynamic> channel, Test? test, Iterable<Group>? groups) {
     if (test == null) return null;
 
