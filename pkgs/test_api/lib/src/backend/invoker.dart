@@ -369,8 +369,6 @@ class Invoker {
     Chain.capture(() {
       _guardIfGuarded(() {
         runZoned(() async {
-          _outstandingCallbackZones.add(Zone.current);
-
           // Run the test asynchronously so that the "running" state change
           // has a chance to hit its event handler(s) before the test produces
           // an error. If an error is emitted before the first state change is
