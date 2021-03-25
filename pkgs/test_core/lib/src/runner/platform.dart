@@ -55,7 +55,7 @@ abstract class PlatformPlugin {
   /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
   /// pass the opaque [message] parameter to the [deserializeSuite] call.
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message);
+      SuiteConfiguration suiteConfig, Map<String, Object?> message);
 
   Future closeEphemeral() async {}
 

@@ -1,4 +1,4 @@
-## 0.3.20-dev
+## 0.4.0-dev
 
 * Remove `suiteChannel`. This is now handled by an additional argument to the
   `beforeLoad` callback in `serializeSuite`.
@@ -9,6 +9,8 @@
     you run into issues, but please also file a bug.
 * Improve the error message for `hybridMain` functions with an incompatible
   StreamChannel parameter type.
+* **Breaking** change the `message` argument to `deserializeSuite` and
+  `PlatformPlugin.load` to `Map<String, Object?>`
 
 ## 0.3.19
 
