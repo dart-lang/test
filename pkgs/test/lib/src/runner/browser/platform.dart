@@ -208,7 +208,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
