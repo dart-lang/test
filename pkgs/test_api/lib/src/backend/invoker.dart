@@ -223,7 +223,7 @@ class Invoker {
   ///
   /// An exception thrown in a tearDown callback will cause the test to fail, if
   /// it isn't already failing, but it won't prevent the remaining callbacks
-  /// from running. This invoker will not be closeable within this zone that the
+  /// from running. This invoker will not be closeable within the zone that the
   /// teardowns are running in.
   Future<void> runTearDowns(List<FutureOr<void> Function()> tearDowns) {
     heartbeat();
