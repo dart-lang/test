@@ -83,29 +83,34 @@ class Invoker {
   /// Whether to run this test in its own error zone.
   final bool _guarded;
 
-  /// Whether the test can be closed in the current zone.
-  bool get _closable => Zone.current[_closableKey] as bool;
+  /// Whether the user code is allowed to interact with the invoker despite it
+  /// being closed.
+  ///
+  /// A test is generally closed because the runner is shutting down (in
+  /// response to a signal) or because the test's suite is finished.
+  /// Typically calls to [addTearDown] and [addOutstandingCallback] are only
+  /// allowed before the test is closed. Tear down callbacks, however, are
+  /// allowed to perform these interactions to facilitate resource cleanup on a
+  /// best-effort basis, so the invoker is made to appear open only within the
+  /// zones running the teardown callbacks.
+  bool get _forceOpen => Zone.current[_forceOpenForTearDownKey] as bool;
 
   /// An opaque object used as a key in the zone value map to identify
-  /// [_closable].
+  /// [_forceOpen].
   ///
   /// This is an instance variable to ensure that multiple invokers don't step
   /// on one anothers' toes.
-  final _closableKey = Object();
+  final _forceOpenForTearDownKey = Object();
 
   /// Whether the test has been closed.
   ///
   /// Once the test is closed, [expect] and [expectAsync] will throw
   /// [ClosedException]s whenever accessed to help the test stop executing as
   /// soon as possible.
-  bool get closed => _closable && _onCloseCompleter.isCompleted;
+  bool get closed => !_forceOpen && _onCloseCompleter.isCompleted;
 
   /// A future that completes once the test has been closed.
-  Future<void> get onClose => _closable
-      ? _onCloseCompleter.future
-      // If we're in an unclosable block, return a future that will never
-      // complete.
-      : Completer<void>().future;
+  Future<void> get onClose => _onCloseCompleter.future;
   final _onCloseCompleter = Completer<void>();
 
   /// The test being run.
@@ -233,7 +238,7 @@ class Invoker {
 
         await completer.future;
       }
-    }, zoneValues: {_closableKey: false});
+    }, zoneValues: {_forceOpenForTearDownKey: true});
   }
 
   /// Runs [fn] and completes once [fn] and all outstanding callbacks registered
@@ -407,7 +412,7 @@ class Invoker {
         },
             zoneValues: {
               #test.invoker: this,
-              _closableKey: true,
+              _forceOpenForTearDownKey: false,
               #runCount: _runCount,
             },
             zoneSpecification:
