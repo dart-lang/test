@@ -25,7 +25,7 @@ void main() {
     test('1', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync1((arg) {
+        expectAsync1((int arg) {
           expect(arg, equals(1));
           callbackRun = true;
         })(1);
@@ -319,10 +319,22 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test('works with arguments', () async {
+    test('works with dynamci arguments', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2) {
+          callbackRun = true;
+        })(1, 2);
+      });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
+    });
+
+    test('works with non-nullable arguments', () async {
+      var callbackRun = false;
+      var liveTest = await runTestBody(() {
+        expectAsync((int arg1, int arg2) {
           callbackRun = true;
         })(1, 2);
       });

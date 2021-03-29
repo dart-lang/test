@@ -7,6 +7,7 @@
 * Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.
 * Remove `phantomjs` support completely, it was previously broken.
+* Fix `expectAsync` function type checks.
 
 ## 1.16.8
 
