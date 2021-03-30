@@ -319,7 +319,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test('works with dynamci arguments', () async {
+    test('works with dynamic arguments', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2) {
@@ -337,6 +337,18 @@ void main() {
         expectAsync((int arg1, int arg2) {
           callbackRun = true;
         })(1, 2);
+      });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
+    });
+
+    test('works with 6 arguments', () async {
+      var callbackRun = false;
+      var liveTest = await runTestBody(() {
+        expectAsync((arg1, arg2, arg3, arg4, arg5, arg6) {
+          callbackRun = true;
+        })(1, 2, 3, 4, 5, 6);
       });
 
       expectTestPassed(liveTest);
