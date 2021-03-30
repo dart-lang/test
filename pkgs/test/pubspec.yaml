@@ -33,7 +33,7 @@ dependencies:
   webkit_inspection_protocol: ^1.0.0
   yaml: ^3.0.0
   # Use an exact version until the test_api and test_core package are stable.
-  test_api: 4.0.0
+  test_api: 0.4.0
   test_core: 0.3.20
 
 dev_dependencies:
