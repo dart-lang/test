@@ -202,8 +202,8 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> load(
-      String path, Uri url, SuiteConfiguration suiteConfig, Object message,
+  Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
+      Map<String, Object?> message,
       {StackTraceMapper? mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
