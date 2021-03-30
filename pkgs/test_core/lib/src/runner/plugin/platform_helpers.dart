@@ -43,7 +43,7 @@ RunnerSuiteController deserializeSuite(
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel<Object?> channel,
-    Map<String, Object?> message,
+    Object /*Map<String, Object?>*/ message,
     {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
   var disconnector = Disconnector<Object?>();
   var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
@@ -59,7 +59,7 @@ RunnerSuiteController deserializeSuite(
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
-    ...message,
+    ...(message as Map<String, dynamic>),
   });
 
   var completer = Completer<Group>();
