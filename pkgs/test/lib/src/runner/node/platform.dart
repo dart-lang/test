@@ -86,7 +86,7 @@ class NodePlatform extends PlatformPlugin
 
   @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);
     var controller = deserializeSuite(
         path, platform, suiteConfig, PluginEnvironment(), pair.first, message);

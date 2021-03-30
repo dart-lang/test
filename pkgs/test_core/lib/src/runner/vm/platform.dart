@@ -47,7 +47,7 @@ class VMPlatform extends PlatformPlugin {
 
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     assert(platform.runtime == Runtime.vm);
 
     var receivePort = ReceivePort();
