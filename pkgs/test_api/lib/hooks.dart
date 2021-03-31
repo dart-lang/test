@@ -16,11 +16,14 @@ class TestHandle {
   static TestHandle get current {
     final invoker = Invoker.current;
     if (invoker == null) throw OutsideTestException();
-    return TestHandle._(invoker, StackTraceFormatter.current);
+    return TestHandle._(
+        invoker, StackTraceFormatter.current ?? _defaultFormatter);
   }
 
+  static final _defaultFormatter = StackTraceFormatter();
+
   final Invoker _invoker;
-  final StackTraceFormatter? _stackTraceFormatter;
+  final StackTraceFormatter _stackTraceFormatter;
   TestHandle._(this._invoker, this._stackTraceFormatter);
 
   String get name => _invoker.liveTest.test.name;
@@ -55,8 +58,7 @@ class TestHandle {
   /// Converts [stackTrace] to a [Chain] according to the current test's
   /// configuration.
   Chain formatStackTrace(StackTrace stackTrace) =>
-      (_stackTraceFormatter ?? _defaultFormatter).formatStackTrace(stackTrace);
-  static final _defaultFormatter = StackTraceFormatter();
+      _stackTraceFormatter.formatStackTrace(stackTrace);
 }
 
 class OutsideTestException implements Exception {}
