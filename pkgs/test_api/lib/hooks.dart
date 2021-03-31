@@ -12,7 +12,7 @@ class TestHandle {
   /// Returns handle for the currently running test.
   ///
   /// This must be called from within the zone that the test is running in. If
-  /// the current zone is no a test's zone throws [OutsideTestException].
+  /// the current zone is not a test's zone throws [OutsideTestException].
   static TestHandle get current {
     final invoker = Invoker.current;
     if (invoker == null) throw OutsideTestException();
@@ -42,7 +42,7 @@ class TestHandle {
     _invoker.skip(message);
   }
 
-  /// Indicates that this test should to be considered done until [future]
+  /// Indicates that this test should not be considered done until [future]
   /// completes.
   ///
   /// The test may time out before [future] completes.
@@ -62,9 +62,6 @@ class TestHandle {
 class OutsideTestException implements Exception {}
 
 /// An exception thrown when a test assertion fails.
-///
-/// This may be used to distinguish a test which fails an expectation from a
-/// test which has an 'error' and throws any other exception.
 class TestFailure {
   final String? message;
 
