@@ -14,6 +14,6 @@ export 'src/scaffolding/tags.dart' show Tags;
 export 'src/scaffolding/test_on.dart' show TestOn;
 export 'src/scaffolding/timeout.dart' show Timeout;
 export 'src/scaffolding/utils.dart'
-    show pumpEventQueue, registerException, printOnFailure, markTestSkipped;
+    show pumpEventQueue, printOnFailure, markTestSkipped;
 export 'src/scaffolding/test_structure.dart'
     show group, test, setUp, setUpAll, tearDown, tearDownAll, addTearDown;

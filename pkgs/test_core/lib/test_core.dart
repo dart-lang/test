@@ -9,6 +9,8 @@ library test_core;
 export 'scaffolding.dart';
 export 'package:test_api/expect.dart';
 export 'package:test_api/hooks.dart' show TestFailure;
-// Deprecated exports not surfaced through focused libraries above.
+// Not yet deprecated, but not exposed through focused libraries.
+export 'package:test_api/test_api.dart' show registerException;
+// Deprecated exports not surfaced through focused libraries.
 export 'package:test_api/test_api.dart'
     show ErrorFormatter, expectAsync, throws, Throws;
