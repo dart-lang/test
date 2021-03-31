@@ -2,10 +2,22 @@
 
 * Add library `scaffolding.dart` to allow importing a subset of the normal
   surface area.
+* Remove `suiteChannel`. This is now handled by an additional argument to the
+  `beforeLoad` callback in `serializeSuite`.
+* Disable stack trace chaining by default.
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Improve the error message for `hybridMain` functions with an incompatible
+  StreamChannel parameter type.
+* Change the `message` argument to `PlatformPlugin.load` to `Map<String,
+  Object?>`. In an upcoming release this will be required as the type for this
+  argument when passed through to `deserializeSuite`.
 
 ## 0.3.19
 
-* Disable stack trace chaining by default.
+* ~~Disable stack trace chaining by default.~~
 
 ## 0.3.18
 

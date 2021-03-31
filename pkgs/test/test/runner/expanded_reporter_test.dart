@@ -317,7 +317,7 @@ void main() {
 }
 
 Future<void> _expectReport(String tests, String expected,
-    {List<String>? args}) async {
+    {List<String> args = const []}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -328,7 +328,7 @@ $tests
     }
   ''').create();
 
-  var test = await runTest(['test.dart', if (args != null) ...args]);
+  var test = await runTest(['test.dart', '--chain-stack-traces', ...args]);
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

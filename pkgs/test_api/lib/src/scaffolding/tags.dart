@@ -8,7 +8,7 @@ import 'package:meta/meta_meta.dart';
 ///
 /// See [the documentation on tagging tests][tagging tests].
 ///
-/// [tagging tests]: https://github.com/dart-lang/test/blob/master/README.md#tagging-tests
+/// [tagging tests]: https://github.com/dart-lang/test/blob/master/pkgs/test/README.md#tagging-tests
 @Target({TargetKind.library})
 class Tags {
   /// The tags for the test suite.

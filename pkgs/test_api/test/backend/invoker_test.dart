@@ -427,7 +427,10 @@ void main() {
     test('A test can be timed out', () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-      }, metadata: Metadata(timeout: Timeout(Duration(milliseconds: 100))))
+      },
+              metadata: Metadata(
+                  chainStackTraces: true,
+                  timeout: Timeout(Duration(milliseconds: 100))))
           .load(suite);
 
       expectStates(liveTest, [
@@ -446,49 +449,67 @@ void main() {
     });
   });
 
-  group('waitForOutstandingCallbacks:', () {
-    test('waits for the wrapped function to complete', () async {
-      var functionCompleted = false;
-      await Invoker.current!.waitForOutstandingCallbacks(() async {
-        await pumpEventQueue();
-        functionCompleted = true;
-      });
-
-      expect(functionCompleted, isTrue);
+  group('runTearDowns', () {
+    test('runs multiple tear downs', () async {
+      var firstTearDownStarted = false;
+      var secondTearDownStarted = false;
+      await Invoker.current!.runTearDowns([
+        () {
+          firstTearDownStarted = true;
+        },
+        () {
+          secondTearDownStarted = true;
+        }
+      ]);
+      expect(secondTearDownStarted, isTrue);
+      expect(firstTearDownStarted, isTrue);
     });
 
-    test('waits for registered callbacks in the wrapped function to run',
+    test('waits for the future returned tear downs to complete', () async {
+      var firstTearDownWork = Completer<void>();
+      var secondTearDownStarted = false;
+      var result = Invoker.current!.runTearDowns([
+        () {
+          secondTearDownStarted = true;
+        },
         () async {
-      var callbackRun = false;
-      await Invoker.current!.waitForOutstandingCallbacks(() {
-        pumpEventQueue().then(expectAsync1((_) {
-          callbackRun = true;
-        }));
-      });
-
-      expect(callbackRun, isTrue);
+          await firstTearDownWork.future;
+        },
+      ]);
+      await pumpEventQueue();
+      expect(secondTearDownStarted, isFalse);
+      firstTearDownWork.complete();
+      await result;
+      expect(secondTearDownStarted, isTrue);
     });
 
-    test("doesn't automatically block the enclosing context", () async {
-      var innerFunctionCompleted = false;
-      await Invoker.current!.waitForOutstandingCallbacks(() {
-        Invoker.current!.waitForOutstandingCallbacks(() async {
-          await pumpEventQueue();
-          innerFunctionCompleted = true;
-        });
-      });
-
-      expect(innerFunctionCompleted, isFalse);
+    test('allows next tear down to run while there are still prior callbacks',
+        () async {
+      var firstTearDownAsyncWork = Completer<void>();
+      var secondTearDownStarted = false;
+      unawaited(Invoker.current!.runTearDowns([
+        () {
+          secondTearDownStarted = true;
+        },
+        () {
+          Invoker.current!.addOutstandingCallback();
+          firstTearDownAsyncWork.future
+              .whenComplete(Invoker.current!.removeOutstandingCallback);
+        },
+      ]));
+      await pumpEventQueue();
+      expect(secondTearDownStarted, isTrue);
+      firstTearDownAsyncWork.complete();
     });
 
-    test(
-        "forwards errors to the enclosing test but doesn't remove its "
-        'outstanding callbacks', () async {
+    test('forwards errors to the enclosing test but does not end it', () async {
       var liveTest = _localTest(() async {
         Invoker.current!.addOutstandingCallback();
-        await Invoker.current!.waitForOutstandingCallbacks(() {
-          throw 'oh no';
-        });
+        await Invoker.current!.runTearDowns([
+          () {
+            throw 'oh no';
+          }
+        ]);
       }).load(suite);
 
       expectStates(liveTest, [
@@ -550,6 +571,6 @@ void main() {
 }
 
 LocalTest _localTest(dynamic Function() body, {Metadata? metadata}) {
-  metadata ??= Metadata();
+  metadata ??= Metadata(chainStackTraces: true);
   return LocalTest('test', metadata, body);
 }

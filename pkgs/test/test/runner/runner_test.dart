@@ -93,6 +93,9 @@ Running Tests:
                                       to provide improved test performance but at the cost of
                                       debuggability.
     --no-retry                        Don't rerun tests that have retry set.
+    --use-data-isolate-strategy       Use `data:` uri isolates when spawning VM tests instead of the
+                                      default strategy. This may be faster when you only ever run a
+                                      single test suite at a time.
     --test-randomize-ordering-seed    Use the specified seed to randomize the execution order of test cases.
                                       Must be a 32bit unsigned integer or "random".
                                       If "random", pick a random seed to use.
@@ -114,7 +117,7 @@ Output:
 
 ''';
 
-final _browsers = '[vm (default), chrome, phantomjs, firefox' +
+final _browsers = '[vm (default), chrome, firefox' +
     (Platform.isMacOS ? ', safari' : '') +
     (Platform.isWindows ? ', ie' : '') +
     ', node]';
@@ -167,8 +170,7 @@ $_usage''');
           test.stdout,
           containsInOrder([
             'Failed to load "test.dart":',
-            'Unable to spawn isolate: test.dart:1:9: Error: '
-                "Expected ';' after this.",
+            "test.dart:1:9: Error: Expected ';' after this.",
             'invalid Dart file'
           ]));
 
@@ -186,8 +188,7 @@ $_usage''');
           containsInOrder([
             '-1: loading test.dart [E]',
             'Failed to load "test.dart":',
-            'Unable to spawn isolate: test.dart:1:14: '
-                "Error: Expected ';' after this"
+            "test.dart:1:14: Error: Expected ';' after this"
           ]));
 
       await test.shouldExit(1);
@@ -204,8 +205,7 @@ $_usage''');
           containsInOrder([
             '-1: loading test.dart [E]',
             'Failed to load "test.dart":',
-            'Unable to spawn isolate: test.dart:1:8: Error: '
-                "Expected a declaration, but got ')'",
+            "test.dart:1:8: Error: Expected a declaration, but got ')'",
             '@TestOn)',
           ]));
 
@@ -406,7 +406,7 @@ $_usage''');
             '00:00 +0: failure',
             '00:00 +0 -1: failure [E]',
             'oh no',
-            'test.dart 8:7   main.<fn>.<fn>',
+            'test.dart 8:7  main.<fn>.<fn>',
           ]));
       await test.shouldExit(1);
     });

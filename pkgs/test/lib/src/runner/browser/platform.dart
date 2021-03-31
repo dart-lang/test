@@ -208,7 +208,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
@@ -473,19 +473,13 @@ class BrowserPlatform extends PlatformPlugin
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   @override
-  Future<void> close() => _closeMemo.runOnce(() async {
-        var futures =
-            _browserManagers.values.map<Future<dynamic>>((future) async {
-          var result = await future;
-          if (result == null) return;
-
-          await result.close();
-        }).toList();
-
-        futures.add(_server.close());
-        futures.add(_compilers.close());
-
-        await Future.wait(futures);
+  Future<void> close() async => _closeMemo.runOnce(() async {
+        await Future.wait([
+          for (var browser in _browserManagers.values)
+            browser.then((b) => b?.close()),
+          _server.close(),
+          _compilers.close(),
+        ]);
 
         if (_config.pubServeUrl == null) {
           Directory(_compiledDir!).deleteSync(recursive: true);

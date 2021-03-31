@@ -56,12 +56,11 @@ class Configuration {
   final bool? _pauseAfterLoad;
 
   /// Whether to run browsers in their respective debug modes
-  bool get debug => pauseAfterLoad || (_debug ?? false) || _coverage != null;
+  bool get debug => pauseAfterLoad || (_debug ?? false) || coverage != null;
   final bool? _debug;
 
   /// The output folder for coverage gathering
-  String? get coverage => _coverage;
-  final String? _coverage;
+  final String? coverage;
 
   /// The path to the file from which to load more configuration information.
   ///
@@ -150,11 +149,10 @@ class Configuration {
   final Set<String> chosenPresets;
 
   /// The set of tags that have been declared in any way in this configuration.
-  Set<String> get knownTags => _knownTags ??= UnmodifiableSetView({
-        ...suiteDefaults.knownTags,
-        for (var configuration in presets.values) ...configuration.knownTags
-      });
-  Set<String>? _knownTags;
+  late final Set<String> knownTags = UnmodifiableSetView({
+    ...suiteDefaults.knownTags,
+    for (var configuration in presets.values) ...configuration.knownTags
+  });
 
   /// Configuration presets.
   ///
@@ -174,6 +172,14 @@ class Configuration {
         for (var configuration in presets.values) ...configuration.knownPresets
       });
   Set<String>? _knownPresets;
+
+  /// Whether to use the original `data:` URI isolate spawning strategy for VM
+  /// tests.
+  ///
+  /// This can make more sense than the default strategy in systems such as
+  /// `bazel` where only a single test suite is ran at a time.
+  bool get useDataIsolateStrategy => _useDataIsolateStrategy ?? false;
+  final bool? _useDataIsolateStrategy;
 
   /// Built-in runtimes whose settings are overridden by the user.
   final Map<String, RuntimeSettings> overrideRuntimes;
@@ -244,6 +250,7 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
+      bool? useDataIsolateStrategy,
 
       // Suite-level configuration
       bool? jsTrace,
@@ -293,6 +300,7 @@ class Configuration {
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
+        useDataIsolateStrategy: useDataIsolateStrategy,
         suiteDefaults: SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -341,7 +349,7 @@ class Configuration {
       String? dart2jsPath,
       String? reporter,
       Map<String, String>? fileReporters,
-      String? coverage,
+      this.coverage,
       int? pubServePort,
       int? concurrency,
       this.shardIndex,
@@ -355,6 +363,7 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
+      bool? useDataIsolateStrategy,
       SuiteConfiguration? suiteDefaults})
       : _help = help,
         customHtmlTemplatePath = customHtmlTemplatePath,
@@ -366,7 +375,6 @@ class Configuration {
         _dart2jsPath = dart2jsPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
-        _coverage = coverage,
         pubServeUrl = pubServePort == null
             ? null
             : Uri.parse('http://localhost:$pubServePort'),
@@ -380,6 +388,7 @@ class Configuration {
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
+        _useDataIsolateStrategy = useDataIsolateStrategy,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
                 SuiteConfiguration(timeout: Timeout.none)
@@ -494,7 +503,7 @@ class Configuration {
         dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         reporter: other._reporter ?? _reporter,
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
-        coverage: other._coverage ?? _coverage,
+        coverage: other.coverage ?? coverage,
         pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
@@ -514,6 +523,8 @@ class Configuration {
         defineRuntimes:
             mergeUnmodifiableMaps(defineRuntimes, other.defineRuntimes),
         noRetry: other._noRetry ?? _noRetry,
+        useDataIsolateStrategy:
+            other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -550,6 +561,7 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
+      bool? useDataIsolateStrategy,
 
       // Suite-level configuration
       bool? jsTrace,
@@ -596,6 +608,8 @@ class Configuration {
         overrideRuntimes: overrideRuntimes ?? this.overrideRuntimes,
         defineRuntimes: defineRuntimes ?? this.defineRuntimes,
         noRetry: noRetry ?? _noRetry,
+        useDataIsolateStrategy:
+            useDataIsolateStrategy ?? _useDataIsolateStrategy,
         suiteDefaults: suiteDefaults.change(
             jsTrace: jsTrace,
             runSkipped: runSkipped,

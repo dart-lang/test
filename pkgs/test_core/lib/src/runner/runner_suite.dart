@@ -46,8 +46,9 @@ class RunnerSuite extends Suite {
 
   /// Returns a channel that communicates with the remote suite.
   ///
-  /// This connects to a channel created by code in the test worker calling
-  /// `suiteChannel()` from `remote_platform_helpers.dart` with the same name.
+  /// This connects to a channel created by code in the test worker calling the
+  /// `suiteChannel` argument from a `beforeLoad` callback to `serializeSuite`
+  /// with the same name.
   /// It can be used used to send and receive any JSON-serializable object.
   StreamChannel channel(String name) => _controller.channel(name);
 
@@ -147,8 +148,9 @@ class RunnerSuiteController {
 
   /// Returns a channel that communicates with the remote suite.
   ///
-  /// This connects to a channel created by code in the test worker calling
-  /// `suiteChannel()` from `remote_platform_helpers.dart` with the same name.
+  /// This connects to a channel created by code in the test worker calling the
+  /// `suiteChannel` argument from a `beforeLoad` callback to `serializeSuite`
+  /// with the same name.
   /// It can be used used to send and receive any JSON-serializable object.
   ///
   /// This is exposed on the [RunnerSuiteController] so that runner plugins can

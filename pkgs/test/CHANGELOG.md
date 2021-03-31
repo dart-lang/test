@@ -1,13 +1,21 @@
-## 1.16.9-dev
+## 1.17.0-dev
 
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely, it was previously broken.
+* Fix `expectAsync` function type checks.
 * Add libraries `scaffolding.dart`, and `expect.dart` to allow importing a
   subset of the normal surface area.
 
 ## 1.16.8
 
-* Fix an issue where coverage collection could hang on Chrome.
-* Disable stack trace chaining by default. It can be re-enabled by explicitly
-  passing the `--chain-stack-traces` flag.
+* Fix an issue where coverage collection could hang on Chrome. 
+* ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.~~
 
 ## 1.16.7
 
@@ -1058,7 +1066,7 @@
 
 * Wait for a test's tear-down logic to run, even if it times out.
 
-[focusing]: http://jasmine.github.io/2.1/focused_specs.html
+[focusing]: https://jasmine.github.io/2.1/focused_specs.html
 [issue 16]: https://github.com/dart-lang/test/issues/16
 
 ## 0.12.6+2

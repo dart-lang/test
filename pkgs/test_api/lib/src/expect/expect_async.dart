@@ -127,12 +127,14 @@ class _ExpectedFunction<T> {
   /// Returns a function that has the same number of positional arguments as the
   /// wrapped function (up to a total of 6).
   Function get func {
-    if (_callback is Function(Null, Null, Null, Null, Null Nulll)) return max6;
-    if (_callback is Function(Null, Null, Null, Null, Null)) return max5;
-    if (_callback is Function(Null, Null, Null, Null)) return max4;
-    if (_callback is Function(Null, Null, Null)) return max3;
-    if (_callback is Function(Null, Null)) return max2;
-    if (_callback is Function(Null)) return max1;
+    if (_callback is Function(Never, Never, Never, Never, Never, Never)) {
+      return max6;
+    }
+    if (_callback is Function(Never, Never, Never, Never, Never)) return max5;
+    if (_callback is Function(Never, Never, Never, Never)) return max4;
+    if (_callback is Function(Never, Never, Never)) return max3;
+    if (_callback is Function(Never, Never)) return max2;
+    if (_callback is Function(Never)) return max1;
     if (_callback is Function()) return max0;
 
     _expectationSatisfied?.complete();

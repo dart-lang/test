@@ -109,6 +109,12 @@ final ArgParser _parser = (() {
       help: "Don't rerun tests that have retry set.",
       defaultsTo: false,
       negatable: false);
+  parser.addFlag('use-data-isolate-strategy',
+      help: 'Use `data:` uri isolates when spawning VM tests instead of the\n'
+          'default strategy. This may be faster when you only ever run a\n'
+          'single test suite at a time.',
+      defaultsTo: false,
+      negatable: false);
   parser.addOption('test-randomize-ordering-seed',
       help: 'Use the specified seed to randomize the execution order of test'
           ' cases.\n'
@@ -232,15 +238,6 @@ class _Parser {
     var platform = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
         .toList();
-    if (platform
-            ?.any((runtime) => runtime.name == Runtime.phantomJS.identifier) ??
-        false) {
-      var yellow = color ? '\u001b[33m' : '';
-      var noColor = color ? '\u001b[0m' : '';
-      print('${yellow}Warning:$noColor '
-          'PhatomJS is deprecated and will be removed in version ^2.0.0');
-    }
-
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -270,6 +267,7 @@ class _Parser {
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),
+        useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
         testRandomizeOrderingSeed: testRandomizeOrderingSeed);
   }
 

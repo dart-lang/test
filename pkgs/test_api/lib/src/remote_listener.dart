@@ -45,7 +45,10 @@ class RemoteListener {
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
   static StreamChannel<Object?> start(Function Function() getMain,
-      {bool hidePrints = true, Future Function()? beforeLoad}) {
+      {bool hidePrints = true,
+      Future Function(
+              StreamChannel<Object?> Function(String name) suiteChannel)?
+          beforeLoad}) {
     // Synchronous in order to allow `print` output to show up immediately, even
     // if they are followed by long running synchronous work.
     var controller =
@@ -60,75 +63,75 @@ class RemoteListener {
       channel.sink.add({'type': 'print', 'line': line});
     });
 
-    SuiteChannelManager().asCurrent(() {
-      StackTraceFormatter().asCurrent(() {
-        runZonedGuarded(() async {
-          Function? main;
-          try {
-            main = getMain();
-          } on NoSuchMethodError catch (_) {
-            _sendLoadException(
-                channel, 'No top-level main() function defined.');
-            return;
-          } catch (error, stackTrace) {
-            _sendError(channel, error, stackTrace, verboseChain);
-            return;
-          }
-
-          if (main is! Function()) {
-            _sendLoadException(
-                channel, 'Top-level main() function takes arguments.');
-            return;
-          }
-
-          var queue = StreamQueue(channel.stream);
-          var message = await queue.next as Map;
-          assert(message['type'] == 'initial');
-
-          queue.rest.cast<Map>().listen((message) {
-            if (message['type'] == 'close') {
-              controller.local.sink.close();
-              return;
-            }
-
-            assert(message['type'] == 'suiteChannel');
-            SuiteChannelManager.current!.connectIn(message['name'] as String,
-                channel.virtualChannel(message['id'] as int));
-          });
-
-          if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
-          var metadata = Metadata.deserialize(message['metadata']);
-          verboseChain = metadata.verboseTrace;
-          var declarer = Declarer(
-              metadata: metadata,
-              platformVariables:
-                  Set.from(message['platformVariables'] as Iterable),
-              collectTraces: message['collectTraces'] as bool,
-              noRetry: message['noRetry'] as bool);
-          StackTraceFormatter.current!.configure(
-              except: _deserializeSet(message['foldTraceExcept'] as List),
-              only: _deserializeSet(message['foldTraceOnly'] as List));
-
-          if (beforeLoad != null) await beforeLoad();
-
-          await declarer.declare(main);
-
-          var suite = Suite(declarer.build(),
-              SuitePlatform.deserialize(message['platform'] as Object),
-              path: message['path'] as String);
-
-          runZoned(() {
-            Invoker.guard(
-                () => RemoteListener._(suite, printZone)._listen(channel));
-          },
-              // Make the declarer visible to running tests so that they'll throw
-              // useful errors when calling `test()` and `group()` within a test,
-              // and so they can add to the declarer's `tearDownAll()` list.
-              zoneValues: {#test.declarer: declarer});
-        }, (error, stackTrace) {
+    final suiteChannelManager = SuiteChannelManager();
+    StackTraceFormatter().asCurrent(() {
+      runZonedGuarded(() async {
+        Function? main;
+        try {
+          main = getMain();
+        } on NoSuchMethodError catch (_) {
+          _sendLoadException(channel, 'No top-level main() function defined.');
+          return;
+        } catch (error, stackTrace) {
           _sendError(channel, error, stackTrace, verboseChain);
-        }, zoneSpecification: spec);
-      });
+          return;
+        }
+
+        if (main is! Function()) {
+          _sendLoadException(
+              channel, 'Top-level main() function takes arguments.');
+          return;
+        }
+
+        var queue = StreamQueue(channel.stream);
+        var message = await queue.next as Map;
+        assert(message['type'] == 'initial');
+
+        queue.rest.cast<Map>().listen((message) {
+          if (message['type'] == 'close') {
+            controller.local.sink.close();
+            return;
+          }
+
+          assert(message['type'] == 'suiteChannel');
+          suiteChannelManager.connectIn(message['name'] as String,
+              channel.virtualChannel(message['id'] as int));
+        });
+
+        if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
+        var metadata = Metadata.deserialize(message['metadata']);
+        verboseChain = metadata.verboseTrace;
+        var declarer = Declarer(
+            metadata: metadata,
+            platformVariables:
+                Set.from(message['platformVariables'] as Iterable),
+            collectTraces: message['collectTraces'] as bool,
+            noRetry: message['noRetry'] as bool);
+        StackTraceFormatter.current!.configure(
+            except: _deserializeSet(message['foldTraceExcept'] as List),
+            only: _deserializeSet(message['foldTraceOnly'] as List));
+
+        if (beforeLoad != null) {
+          await beforeLoad(suiteChannelManager.connectOut);
+        }
+
+        await declarer.declare(main);
+
+        var suite = Suite(declarer.build(),
+            SuitePlatform.deserialize(message['platform'] as Object),
+            path: message['path'] as String);
+
+        runZoned(() {
+          Invoker.guard(
+              () => RemoteListener._(suite, printZone)._listen(channel));
+        },
+            // Make the declarer visible to running tests so that they'll throw
+            // useful errors when calling `test()` and `group()` within a test,
+            // and so they can add to the declarer's `tearDownAll()` list.
+            zoneValues: {#test.declarer: declarer});
+      }, (error, stackTrace) {
+        _sendError(channel, error, stackTrace, verboseChain);
+      }, zoneSpecification: spec);
     });
 
     return controller.foreign;

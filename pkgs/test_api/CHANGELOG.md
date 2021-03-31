@@ -1,10 +1,16 @@
-## 0.3.1-dev
+## 0.4.0-dev
 
 * Add libraries `scaffolding.dart`, and `expect.dart` to allow importing as
   subset of the normal surface area.
 * Add new APIs in `hooks.dart` to allow writing custom expectation frameworks
   which integrate with the test runner.
 * Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
+* Disable stack trace chaining by default.
+* Fix `expectAsync` function type checks.
+* **Breaking** remove `Runtime.phantomJS`
+* **Breaking** Add callback to get the suite channel in the `beforeLoad`
+  callback of `RemoteListener.start`. This is now used in place of using zones
+  to communicate the value.
 
 ## 0.3.0
 

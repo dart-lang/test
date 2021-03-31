@@ -24,7 +24,6 @@ import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
-import 'phantom_js.dart';
 import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -142,8 +141,6 @@ class BrowserManager {
     switch (browser.root) {
       case Runtime.chrome:
         return Chrome(url, configuration, settings: settings);
-      case Runtime.phantomJS:
-        return PhantomJS(url, configuration, settings: settings);
       case Runtime.firefox:
         return Firefox(url, settings: settings);
       case Runtime.safari:
@@ -205,8 +202,8 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> load(
-      String path, Uri url, SuiteConfiguration suiteConfig, Object message,
+  Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
+      Map<String, Object?> message,
       {StackTraceMapper? mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
