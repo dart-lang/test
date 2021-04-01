@@ -181,41 +181,6 @@ void main() {
       await signalAndQuit(test);
     });
 
-    test('causes expect() to always throw an error immediately', () async {
-      await d.file('test.dart', '''
-import 'dart:async';
-import 'dart:io';
-
-import 'package:test/test.dart';
-
-void main() {
-  var expectThrewError = false;
-
-  tearDown(() {
-    File("output").writeAsStringSync(expectThrewError.toString());
-  });
-
-  test("test", () async {
-    print("running test");
-
-    await Future.delayed(Duration(seconds: 1));
-    try {
-      expect(true, isTrue);
-    } catch (_) {
-      expectThrewError = true;
-    }
-  });
-}
-''').create();
-
-      var test = await _runTest(['test.dart']);
-      await expectLater(test.stdout, emitsThrough('running test'));
-      await signalAndQuit(test);
-
-      await d.file('output', 'true').validate();
-      expectTempDirEmpty();
-    });
-
     test('causes expectAsync() to always throw an error immediately', () async {
       await d.file('test.dart', '''
 import 'dart:async';

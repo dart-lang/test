@@ -3,10 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
+import 'package:test_api/hooks.dart';
 
-import '../util/pretty_print.dart';
 import 'async_matcher.dart';
-import 'format_stack_trace.dart';
+import 'util/pretty_print.dart';
 
 /// This function is deprecated.
 ///
@@ -125,8 +125,9 @@ class Throws extends AsyncMatcher {
     var buffer = StringBuffer();
     buffer.writeln(indent(prettyPrint(error), first: 'threw '));
     if (trace != null) {
-      buffer
-          .writeln(indent(formatStackTrace(trace).toString(), first: 'stack '));
+      buffer.writeln(indent(
+          TestHandle.current.formatStackTrace(trace).toString(),
+          first: 'stack '));
     }
     if (result.isNotEmpty) buffer.writeln(indent(result, first: 'which '));
     return buffer.toString().trimRight();

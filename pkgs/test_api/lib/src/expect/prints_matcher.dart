@@ -6,9 +6,9 @@ import 'dart:async';
 
 import 'package:matcher/matcher.dart';
 
-import '../util/pretty_print.dart';
 import 'async_matcher.dart';
 import 'expect.dart';
+import 'util/pretty_print.dart';
 
 /// Matches a [Function] that prints text that matches [matcher].
 ///

@@ -4,10 +4,10 @@
 
 import 'package:async/async.dart';
 import 'package:matcher/matcher.dart';
+import 'package:test_api/hooks.dart';
 
-import '../util/pretty_print.dart';
 import 'async_matcher.dart';
-import 'format_stack_trace.dart';
+import 'util/pretty_print.dart';
 
 /// A matcher that matches events from [Stream]s or [StreamQueue]s.
 ///
@@ -164,7 +164,7 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
           return addBullet(event.asValue!.value.toString());
         } else {
           var error = event.asError!;
-          var chain = formatStackTrace(error.stackTrace);
+          var chain = TestHandle.current.formatStackTrace(error.stackTrace);
           var text = '${error.error}\n$chain';
           return indent(text, first: '! ');
         }

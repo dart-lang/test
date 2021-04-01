@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../frontend/expect.dart';
+import '../../hooks.dart' show TestFailure;
 import '../util/pretty_print.dart';
 import 'closed_exception.dart';
 import 'declarer.dart';

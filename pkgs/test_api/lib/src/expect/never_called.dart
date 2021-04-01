@@ -5,12 +5,13 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
+import 'package:test_api/hooks.dart';
+import 'package:test_api/test_api.dart' show pumpEventQueue;
 
-import '../util/placeholder.dart';
-import '../util/pretty_print.dart';
 import 'expect.dart';
 import 'future_matchers.dart';
-import 'utils.dart';
+import 'util/placeholder.dart';
+import 'util/pretty_print.dart';
 
 /// Returns a function that causes the test to fail if it's called.
 ///

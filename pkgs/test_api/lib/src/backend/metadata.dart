@@ -5,8 +5,8 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 
-import '../frontend/skip.dart';
-import '../frontend/timeout.dart';
+import '../scaffolding/skip.dart';
+import '../scaffolding/timeout.dart';
 import '../util/pretty_print.dart';
 import '../utils.dart';
 import 'platform_selector.dart';

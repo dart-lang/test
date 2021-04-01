@@ -8,6 +8,8 @@
   passing the `--chain-stack-traces` flag.
 * Remove `phantomjs` support completely, it was previously broken.
 * Fix `expectAsync` function type checks.
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing a
+  subset of the normal surface area.
 
 ## 1.16.8
 

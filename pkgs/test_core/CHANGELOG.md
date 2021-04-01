@@ -1,5 +1,7 @@
 ## 0.3.20-dev
 
+* Add library `scaffolding.dart` to allow importing a subset of the normal
+  surface area.
 * Remove `suiteChannel`. This is now handled by an additional argument to the
   `beforeLoad` callback in `serializeSuite`.
 * Disable stack trace chaining by default.

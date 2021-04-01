@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test/test.dart';
@@ -303,6 +305,14 @@ void main() {
       expect(expectAsync0(() => throw 'oh no'), throwsA('oh no'));
     });
 
+    expectTestPassed(liveTest);
+  });
+
+  test('may be called in a non-test zone', () async {
+    var liveTest = await runTestBody(() {
+      var callback = expectAsync0(() {});
+      Zone.root.run(callback);
+    });
     expectTestPassed(liveTest);
   });
 
