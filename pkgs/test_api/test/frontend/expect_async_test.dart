@@ -4,9 +4,10 @@
 
 import 'dart:async';
 
+import 'package:fake_async/fake_async.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test/test.dart';
 
 import '../utils.dart';
 
@@ -312,6 +313,16 @@ void main() {
     var liveTest = await runTestBody(() {
       var callback = expectAsync0(() {});
       Zone.root.run(callback);
+    });
+    expectTestPassed(liveTest);
+  });
+
+  test('may be called in a FakeAsync zone that does not run further', () async {
+    var liveTest = await runTestBody(() {
+      FakeAsync().run((_) {
+        var callback = expectAsync0(() {});
+        callback();
+      });
     });
     expectTestPassed(liveTest);
   });

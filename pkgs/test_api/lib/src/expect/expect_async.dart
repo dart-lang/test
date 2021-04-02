@@ -96,7 +96,8 @@ class _ExpectedFunction<T> {
     }
 
     if (isDone != null || minExpected > 0) {
-      var completer = _expectationSatisfied = Completer<void>();
+      var completer = _expectationSatisfied =
+          Zone.root.run<Completer<void>>(() => Completer<void>());
       _test.mustWaitFor(completer.future);
       _complete = false;
     } else {
