@@ -29,17 +29,19 @@ abstract class AsyncMatcher extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var result = matchAsync(item);
+    final result = matchAsync(item);
     expect(result,
         anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
         reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is Future) {
-      TestHandle.current.mustWaitFor(result.then((realResult) {
+      final outstandingWork = TestHandle.current.markPending();
+      result.then((realResult) {
         if (realResult != null) {
           fail(formatFailure(this, item, realResult as String));
         }
-      }));
+        outstandingWork.complete();
+      });
     } else if (result is String) {
       matchState[this] = result;
       return false;

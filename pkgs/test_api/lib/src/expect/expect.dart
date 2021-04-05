@@ -106,11 +106,16 @@ Future _expect(actual, matcher,
     if (result is String) {
       fail(formatFailure(matcher, actual, result, reason: reason));
     } else if (result is Future) {
-      return test.mustWaitFor(result.then((realResult) {
+      final outstandingWork = test.markPending();
+      return result.then((realResult) {
         if (realResult == null) return;
         fail(formatFailure(matcher as Matcher, actual, realResult as String,
             reason: reason));
-      }));
+      }).whenComplete(() {
+        // Always remove this, in case the failure is caught and handled
+        // gracefully.
+        outstandingWork.complete();
+      });
     }
 
     return Future.sync(() {});

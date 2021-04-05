@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:stack_trace/stack_trace.dart';
 
 import 'src/backend/closed_exception.dart';
@@ -45,20 +47,33 @@ class TestHandle {
     _invoker.skip(message);
   }
 
-  /// Indicates that this test should not be considered done until [future]
-  /// completes.
+  /// Indicates that this test should not be considered done until the returned
+  /// [OutstandingWork] is marked as complete;
   ///
-  /// The test may time out before [future] completes.
-  Future<T> mustWaitFor<T>(Future<T> future) {
+  /// The test may time out before the outstanding work completes.
+  OutstandingWork markPending() {
     if (_invoker.closed) throw ClosedException();
-    _invoker.addOutstandingCallback();
-    return future.whenComplete(_invoker.removeOutstandingCallback);
+    return OutstandingWork._(_invoker, Zone.current);
   }
 
   /// Converts [stackTrace] to a [Chain] according to the current test's
   /// configuration.
   Chain formatStackTrace(StackTrace stackTrace) =>
       _stackTraceFormatter.formatStackTrace(stackTrace);
+}
+
+class OutstandingWork {
+  final Invoker _invoker;
+  final Zone _zone;
+  var _isComplete = false;
+  OutstandingWork._(this._invoker, this._zone) {
+    _invoker.addOutstandingCallback();
+  }
+  void complete() {
+    if (_isComplete) return;
+    _isComplete = true;
+    _zone.run(_invoker.removeOutstandingCallback);
+  }
 }
 
 class OutsideTestException implements Exception {}

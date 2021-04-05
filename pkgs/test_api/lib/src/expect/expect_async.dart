@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:test_api/hooks.dart';
 
 import 'util/placeholder.dart';
@@ -67,7 +65,7 @@ class _ExpectedFunction<T> {
   /// Whether this function has been called the requisite number of times.
   late bool _complete;
 
-  Completer<void>? _expectationSatisfied;
+  OutstandingWork? _outstandingWork;
 
   /// Wraps [callback] in a function that asserts that it's called at least
   /// [minExpected] times and no more than [maxExpected] times.
@@ -96,8 +94,7 @@ class _ExpectedFunction<T> {
     }
 
     if (isDone != null || minExpected > 0) {
-      var completer = _expectationSatisfied = Completer<void>();
-      _test.mustWaitFor(completer.future);
+      _outstandingWork = _test.markPending();
       _complete = false;
     } else {
       _complete = true;
@@ -137,7 +134,7 @@ class _ExpectedFunction<T> {
     if (_callback is Function(Never)) return max1;
     if (_callback is Function()) return max0;
 
-    _expectationSatisfied?.complete();
+    _outstandingWork?.complete();
     throw ArgumentError(
         'The wrapped function has more than 6 required arguments');
   }
@@ -210,7 +207,7 @@ class _ExpectedFunction<T> {
     // Mark this callback as complete and remove it from the test case's
     // oustanding callback count; if that hits zero the test is done.
     _complete = true;
-    _expectationSatisfied?.complete();
+    _outstandingWork?.complete();
   }
 }
 
