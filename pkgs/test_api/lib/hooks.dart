@@ -48,7 +48,7 @@ class TestHandle {
   }
 
   /// Indicates that this test should not be considered done until the returned
-  /// [OutstandingWork] is marked as complete;
+  /// [OutstandingWork] is marked as complete.
   ///
   /// The test may time out before the outstanding work completes.
   OutstandingWork markPending() {
