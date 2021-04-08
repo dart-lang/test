@@ -16,13 +16,13 @@ import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: impl
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
 
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
 import 'live_suite_controller.dart';
 import 'load_suite.dart';
 import 'runner_suite.dart';
+import 'util/iterable_set.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///
