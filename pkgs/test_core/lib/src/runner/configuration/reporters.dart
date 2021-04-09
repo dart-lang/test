@@ -52,8 +52,8 @@ final _allReporters = <String, ReporterDetails>{
 final defaultReporter = inTestTests
     ? 'expanded'
     : canUseSpecialChars
-        ? 'compact'
-        : 'expanded';
+    ? 'compact'
+    : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.
