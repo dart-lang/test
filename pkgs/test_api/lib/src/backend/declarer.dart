@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import '../scaffolding/timeout.dart';
+import 'configuration/timeout.dart';
 import 'group.dart';
 import 'group_entry.dart';
 import 'invoker.dart';

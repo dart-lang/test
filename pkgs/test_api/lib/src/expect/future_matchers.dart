@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
-import 'package:test_api/test_api.dart' show pumpEventQueue;
+import 'package:test_api/hooks.dart' show pumpEventQueue;
 
 import 'async_matcher.dart';
 import 'expect.dart';

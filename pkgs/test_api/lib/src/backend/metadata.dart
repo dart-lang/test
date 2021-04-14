@@ -5,12 +5,12 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 
-import '../scaffolding/skip.dart';
-import '../scaffolding/timeout.dart';
-import '../util/pretty_print.dart';
-import '../utils.dart';
+import 'configuration/skip.dart';
+import 'configuration/timeout.dart';
 import 'platform_selector.dart';
 import 'suite_platform.dart';
+import 'util/identifier_regex.dart';
+import 'util/pretty_print.dart';
 
 /// Metadata for a test or test suite.
 ///

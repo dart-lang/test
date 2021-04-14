@@ -8,9 +8,9 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../test_api.dart';
-import '../util/remote_exception.dart';
+import '../backend/remote_exception.dart';
 import '../utils.dart';
+import 'test_structure.dart' show addTearDown;
 
 /// A transformer that handles messages from the spawned isolate and ensures
 /// that messages sent to it are JSON-encodable.

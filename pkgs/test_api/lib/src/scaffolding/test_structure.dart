@@ -6,9 +6,9 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+import '../backend/configuration/timeout.dart';
 import '../backend/declarer.dart';
 import '../backend/invoker.dart';
-import '../scaffolding/timeout.dart';
 
 // test_core does not support running tests directly, so the Declarer should
 // always be on the Zone.

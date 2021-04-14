@@ -22,7 +22,9 @@ dependencies:
   matcher: '>=0.12.10 <0.12.11'
 
 dev_dependencies:
+  glob: ^2.0.0
   fake_async: ^1.2.0
+  graphs: ^2.0.0
   pedantic: ^1.10.0
   test: any
   test_core: any

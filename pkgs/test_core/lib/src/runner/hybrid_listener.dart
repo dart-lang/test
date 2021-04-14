@@ -9,7 +9,8 @@ import 'package:async/async.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart' show RemoteException;
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// A sink transformer that wraps data and error events so that errors can be

@@ -11,7 +11,7 @@ import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
         Timeout;
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
 
 import '../util/dart.dart';
 import '../util/pair.dart';

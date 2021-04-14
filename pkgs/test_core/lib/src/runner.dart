@@ -6,15 +6,15 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/pretty_print.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/reporter/multiplex.dart';
 
 import 'runner/application_exception.dart';

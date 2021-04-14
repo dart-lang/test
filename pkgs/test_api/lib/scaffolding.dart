@@ -6,14 +6,14 @@
     'Please use package:test.')
 library test_api.scaffolding;
 
-export 'src/scaffolding/on_platform.dart' show OnPlatform;
-export 'src/scaffolding/retry.dart' show Retry;
-export 'src/scaffolding/skip.dart' show Skip;
+export 'src/backend/configuration/on_platform.dart' show OnPlatform;
+export 'src/backend/configuration/retry.dart' show Retry;
+export 'src/backend/configuration/skip.dart' show Skip;
+export 'src/backend/configuration/tags.dart' show Tags;
+export 'src/backend/configuration/test_on.dart' show TestOn;
+export 'src/backend/configuration/timeout.dart' show Timeout;
 export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridUri, spawnHybridCode;
-export 'src/scaffolding/tags.dart' show Tags;
-export 'src/scaffolding/test_on.dart' show TestOn;
-export 'src/scaffolding/timeout.dart' show Timeout;
-export 'src/scaffolding/utils.dart'
-    show pumpEventQueue, printOnFailure, markTestSkipped;
 export 'src/scaffolding/test_structure.dart'
     show group, test, setUp, setUpAll, tearDown, tearDownAll, addTearDown;
+export 'src/scaffolding/utils.dart'
+    show pumpEventQueue, printOnFailure, markTestSkipped;

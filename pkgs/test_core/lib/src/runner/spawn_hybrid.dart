@@ -10,13 +10,13 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart' show RemoteException;
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 
 import '../util/dart.dart' as dart;
 import '../util/package_config.dart';
 import 'package_version.dart';
-
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 /// Spawns a hybrid isolate from [url] with the given [message], and returns a
 /// [StreamChannel] that communicates with it.

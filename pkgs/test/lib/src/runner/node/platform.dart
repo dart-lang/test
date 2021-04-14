@@ -12,9 +12,9 @@ import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
