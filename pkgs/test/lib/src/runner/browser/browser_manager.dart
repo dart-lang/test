@@ -8,8 +8,8 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart' show Runtime, StackTraceMapper;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports

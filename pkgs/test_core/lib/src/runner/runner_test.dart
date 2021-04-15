@@ -5,16 +5,16 @@
 import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 import 'spawn_hybrid.dart';
 

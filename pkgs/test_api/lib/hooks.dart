@@ -10,6 +10,9 @@ import 'src/backend/closed_exception.dart';
 import 'src/backend/invoker.dart';
 import 'src/backend/stack_trace_formatter.dart';
 
+export 'src/backend/test_failure.dart' show TestFailure;
+export 'src/scaffolding/utils.dart' show pumpEventQueue;
+
 class TestHandle {
   /// Returns handle for the currently running test.
   ///
@@ -77,13 +80,3 @@ class OutstandingWork {
 }
 
 class OutsideTestException implements Exception {}
-
-/// An exception thrown when a test assertion fails.
-class TestFailure {
-  final String? message;
-
-  TestFailure(this.message);
-
-  @override
-  String toString() => message.toString();
-}

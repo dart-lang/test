@@ -3,11 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:stream_channel/stream_channel.dart';
-
-import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-
-import 'package:test_api/src/remote_listener.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show RemoteListener, StackTraceFormatter, StackTraceMapper;
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].

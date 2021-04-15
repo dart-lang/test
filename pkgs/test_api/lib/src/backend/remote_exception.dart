@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../../hooks.dart' show TestFailure;
+import 'test_failure.dart';
 
 /// An exception that was thrown remotely.
 ///

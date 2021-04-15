@@ -7,6 +7,8 @@
 * Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
 * Disable stack trace chaining by default.
 * Fix `expectAsync` function type checks.
+* Add `RemoteException`, `RemoteListener`, `StackTraceFormatter`, and
+  `StackTraceMapper` to `backend.dart`.
 * **Breaking** remove `Runtime.phantomJS`
 * **Breaking** Add callback to get the suite channel in the `beforeLoad`
   callback of `RemoteListener.start`. This is now used in place of using zones

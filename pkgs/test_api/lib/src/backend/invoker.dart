@@ -6,8 +6,6 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../../hooks.dart' show TestFailure;
-import '../util/pretty_print.dart';
 import 'closed_exception.dart';
 import 'declarer.dart';
 import 'group.dart';
@@ -19,6 +17,8 @@ import 'state.dart';
 import 'suite.dart';
 import 'suite_platform.dart';
 import 'test.dart';
+import 'test_failure.dart';
+import 'util/pretty_print.dart';
 
 /// A test in this isolate.
 class LocalTest extends Test {

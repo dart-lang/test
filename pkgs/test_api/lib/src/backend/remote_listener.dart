@@ -8,18 +8,17 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
-import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
-
+import 'declarer.dart';
+import 'group.dart';
+import 'invoker.dart';
+import 'live_test.dart';
+import 'metadata.dart';
+import 'remote_exception.dart';
+import 'stack_trace_formatter.dart';
+import 'suite.dart';
 import 'suite_channel_manager.dart';
+import 'suite_platform.dart';
+import 'test.dart';
 
 class RemoteListener {
   /// The test suite to run.

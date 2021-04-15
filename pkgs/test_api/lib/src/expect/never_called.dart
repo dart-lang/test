@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/hooks.dart';
-import 'package:test_api/test_api.dart' show pumpEventQueue;
 
 import 'expect.dart';
 import 'future_matchers.dart';
