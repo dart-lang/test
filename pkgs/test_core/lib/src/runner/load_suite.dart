@@ -14,7 +14,7 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 // ignore: deprecated_member_use
-import 'package:test_api/test_api.dart' show Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 
 import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
