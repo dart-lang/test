@@ -260,6 +260,7 @@ class JsonReporter implements Reporter {
     }
     return liveTest.state.result.toString();
   }
+
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
     _emit('error', {
