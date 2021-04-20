@@ -37,7 +37,7 @@ new tests, use the existing tests as a guideline for what they should look like.
 Before you send your pull request, make sure all the tests pass! To run all the
 tests, you'll need:
 
-* [NodeJS][https://nodejs.org/]
+* [NodeJS](https://nodejs.org/])
 
 Once you have this, just run `pub run test`.
 
