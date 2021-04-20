@@ -37,17 +37,15 @@ new tests, use the existing tests as a guideline for what they should look like.
 Before you send your pull request, make sure all the tests pass! To run all the
 tests, you'll need:
 
-* [PhantomJS][] version 2.0.0 or higher.
+* [NodeJS]: https://nodejs.org/
 
-[PhantomJS]: http://phantomjs.org/
-
-Once you have these, just run `pub run test`.
+Once you have this, just run `pub run test`.
 
 ### File headers
 
 All files in the project must start with the following header.
 
-    // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
+    // Copyright (c) 2021, the Dart project authors.  Please see the AUTHORS file
     // for details. All rights reserved. Use of this source code is governed by a
     // BSD-style license that can be found in the LICENSE file.
 
