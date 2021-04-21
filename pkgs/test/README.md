@@ -350,9 +350,9 @@ completed this may cause some errors to be missed, or to surface in only some
 runs.
 
 Avoid uncaught async errors by ensuring that all futures have an error handler
-[before they complete as an error][].
+[before they complete as an error][early-handler].
 
-[before they compelte as an error]:https://dart.dev/guides/libraries/futures-error-handling#potential-problem-failing-to-register-error-handlers-early
+[early-handler]:https://dart.dev/guides/libraries/futures-error-handling#potential-problem-failing-to-register-error-handlers-early
 
 
 ### Future Matchers
