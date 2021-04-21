@@ -9,6 +9,7 @@ import 'dart:isolate';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/context_builder.dart';
 import 'package:analyzer/dart/analysis/context_locator.dart';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
@@ -128,7 +129,7 @@ class _ImportCheck {
   Future<Set<Uri>> _findImports(Uri uri, String restrictToPackage) async {
     var path = await _pathForUri(uri);
     var analysisSession = _context.currentSession;
-    var parseResult = analysisSession.getParsedUnit(path);
+    var parseResult = analysisSession.getParsedUnit2(path) as ParsedUnitResult;
     assert(parseResult.content.isNotEmpty,
         'Tried to read an invalid library $uri');
     return parseResult.unit.directives
