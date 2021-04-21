@@ -1,4 +1,4 @@
-## 0.4.0-dev
+## 0.4.0
 
 * Add libraries `scaffolding.dart`, and `expect.dart` to allow importing as
   subset of the normal surface area.

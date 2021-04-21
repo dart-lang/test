@@ -1,4 +1,4 @@
-## 0.3.20-dev
+## 0.3.20
 
 * Add library `scaffolding.dart` to allow importing a subset of the normal
   surface area.

@@ -1,4 +1,4 @@
-## 1.17.0-dev
+## 1.17.0
 
 * Change the default way VM tests are launched and ran to greatly speed up
   loading performance.
