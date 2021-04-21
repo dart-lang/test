@@ -340,7 +340,24 @@ void main() {
 }
 ```
 
-There are also a number of useful functions and matchers for more advanced
+### Uncaught Async Errors
+
+Any uncaught asynchronous error throws within the zone that a test is running in
+will cause the test to be considered a failure. This can cause a test which was
+previously considered complete and passing to change into a failure if the
+uncaught async error is raised late. If all test cases within the suite have
+completed this may cause some errors to be missed, or to surface in only some
+runs.
+
+Avoid uncaught async errors by ensuring that all futures have an error handler
+[before they complete as an error][].
+
+[before they compelte as an error]:https://dart.dev/guides/libraries/futures-error-handling#potential-problem-failing-to-register-error-handlers-early
+
+
+### Future Matchers
+
+There are a number of useful functions and matchers for more advanced
 asynchrony. The [`completion()`] matcher can be used to test `Futures`; it
 ensures that the test doesn't finish until the `Future` completes, and runs a
 matcher against that `Future`'s value.
