@@ -78,7 +78,7 @@ class _TestCompilerForLanguageVersion {
       : _dillCachePath =
             '$dillCachePrefix.${base64.encode(utf8.encode(_languageVersionComment.replaceAll(' ', '')))}';
 
-  Future<String> _generateEntrypoint(Uri testUri) async {
+  String _generateEntrypoint(Uri testUri) {
     return '''
     $_languageVersionComment
     import "dart:isolate";
@@ -100,9 +100,8 @@ class _TestCompilerForLanguageVersion {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var firstCompile = false;
     CompileResult? compilerOutput;
-    final contents = await _generateEntrypoint(mainUri);
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(contents);
+      ..writeAsStringSync(_generateEntrypoint(mainUri));
 
     try {
       if (_frontendServerClient == null) {
