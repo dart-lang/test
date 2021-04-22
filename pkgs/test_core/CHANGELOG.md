@@ -1,3 +1,8 @@
+## 0.3.21
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
 ## 0.3.20
 
 * Add library `scaffolding.dart` to allow importing a subset of the normal
