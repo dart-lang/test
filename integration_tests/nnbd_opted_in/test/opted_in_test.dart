@@ -4,8 +4,10 @@
 
 import 'package:test/test.dart';
 
+import 'common/is_opted_out.dart';
+
 void main() {
   test('sound behavior', () async {
-    expect(() => null as int, throwsA(anything));
+    expect(isOptedOut, false);
   });
 }
