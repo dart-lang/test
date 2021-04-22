@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
@@ -27,49 +28,59 @@ class CompilationResponse {
 }
 
 class TestCompiler {
-  final _compilePool = Pool(1);
-  final String _dillCachePath;
-  final Directory _outputDillDirectory;
-
-  late final _outputDill =
-      File(p.join(_outputDillDirectory.path, 'output.dill'));
-  FrontendServerClient? _frontendServerClient;
-
   final _closeMemo = AsyncMemoizer<void>();
+
+  /// Each language version that appears in test files gets its own compiler,
+  /// to ensure that all language modes are supported (such as sound and
+  /// unsound null safety).
+  final _compilerForLanguageVersion =
+      <String, _TestCompilerForLanguageVersion>{};
+
+  /// A prefix used for the dill files for each compiler that is created.
+  final String _dillCachePrefix;
 
   /// No work is done until the first call to [compile] is recieved, at which
   /// point the compiler process is started.
-  TestCompiler(this._dillCachePath)
-      : _outputDillDirectory =
-            Directory.systemTemp.createTempSync('dart_test.');
+  TestCompiler(this._dillCachePrefix);
 
-  /// Enqueues a request to compile [mainDart] and returns the result.
-  ///
-  /// This request may need to wait for ongoing compilations.
-  ///
-  /// If [dispose] has already been called, then this immediately returns a
-  /// failed response indicating the compiler was shut down.
-  ///
-  /// The entrypoint [mainDart] is wrapped in a script which bootstraps it with
-  /// a call to `internalBootstrapVmTest`.
+  /// Compiles [mainDart], using a separate compiler per language version of
+  /// the tests.
   Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) async {
-    if (_compilePool.isClosed) return CompilationResponse._wasShutdown;
-    return _compilePool.withResource(() => _compile(mainDart, metadata));
+    if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
+    var languageVersionComment = metadata.languageVersionComment ??
+        await rootPackageLanguageVersionComment;
+    var compiler = _compilerForLanguageVersion.putIfAbsent(
+        languageVersionComment,
+        () => _TestCompilerForLanguageVersion(
+            _dillCachePrefix, languageVersionComment));
+    return compiler.compile(mainDart);
   }
 
-  Future<void> dispose() => _closeMemo.runOnce(() async {
-        await _compilePool.close();
-        _frontendServerClient?.kill();
-        _frontendServerClient = null;
-        if (_outputDillDirectory.existsSync()) {
-          _outputDillDirectory.deleteSync(recursive: true);
-        }
-      });
+  Future<void> dispose() => _closeMemo.runOnce(() => Future.wait([
+        for (var compiler in _compilerForLanguageVersion.values)
+          compiler.dispose(),
+      ]));
+}
 
-  Future<String> _generateEntrypoint(
-      Uri testUri, Metadata suiteMetadata) async {
+class _TestCompilerForLanguageVersion {
+  final _closeMemo = AsyncMemoizer();
+  final _compilePool = Pool(1);
+  final String _dillCachePath;
+  FrontendServerClient? _frontendServerClient;
+  final String _languageVersionComment;
+  late final _outputDill =
+      File(p.join(_outputDillDirectory.path, 'output.dill'));
+  final _outputDillDirectory =
+      Directory.systemTemp.createTempSync('dart_test.');
+
+  _TestCompilerForLanguageVersion(
+      String dillCachePrefix, this._languageVersionComment)
+      : _dillCachePath =
+            '$dillCachePrefix.${base64.encode(utf8.encode(_languageVersionComment.replaceAll(' ', '')))}';
+
+  String _generateEntrypoint(Uri testUri) {
     return '''
-        ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
+    $_languageVersionComment
     import "dart:isolate";
 
     import "package:test_core/src/bootstrap/vm.dart";
@@ -82,13 +93,15 @@ class TestCompiler {
   ''';
   }
 
-  Future<CompilationResponse> _compile(Uri mainUri, Metadata metadata) async {
+  Future<CompilationResponse> compile(Uri mainUri) =>
+      _compilePool.withResource(() => _compile(mainUri));
+
+  Future<CompilationResponse> _compile(Uri mainUri) async {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var firstCompile = false;
     CompileResult? compilerOutput;
-    final contents = await _generateEntrypoint(mainUri, metadata);
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(contents);
+      ..writeAsStringSync(_generateEntrypoint(mainUri));
 
     try {
       if (_frontendServerClient == null) {
@@ -151,4 +164,13 @@ class TestCompiler {
     );
     return client.compile();
   }
+
+  Future<void> dispose() => _closeMemo.runOnce(() async {
+        await _compilePool.close();
+        _frontendServerClient?.kill();
+        _frontendServerClient = null;
+        if (_outputDillDirectory.existsSync()) {
+          _outputDillDirectory.deleteSync(recursive: true);
+        }
+      });
 }

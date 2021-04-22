@@ -1,3 +1,8 @@
+## 1.17.1
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
 ## 1.17.0
 
 * Change the default way VM tests are launched and ran to greatly speed up

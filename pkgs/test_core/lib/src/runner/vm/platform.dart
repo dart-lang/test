@@ -35,8 +35,8 @@ import 'environment.dart';
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
-  final _compiler =
-      TestCompiler(p.join(p.current, '.dart_tool', 'pkg_test_kernel.bin'));
+  final _compiler = TestCompiler(
+      p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
 
   VMPlatform();
