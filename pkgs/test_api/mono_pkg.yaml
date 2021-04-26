@@ -12,3 +12,6 @@ stages:
   - unit_test:
     - group:
       - command: pub run test --preset travis -x browser
+        os:
+        - linux
+        - windows
