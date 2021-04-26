@@ -1,3 +1,7 @@
+## 1.17.2
+
+* Fix a windows issue with the new loading strategy.
+
 ## 1.17.1
 
 * Fix an issue where you couldn't have tests compiled in both sound and
