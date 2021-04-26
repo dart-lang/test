@@ -38,7 +38,7 @@ jobs:
       - name: mono_repo self validate
         run: pub global run mono_repo generate --validate
   job_002:
-    name: "analyze_and_format; Dart dev; PKGS: integration_tests/nnbd_opted_in, integration_tests/nnbd_opted_out, pkgs/test, pkgs/test_api, pkgs/test_core; `dartfmt -n --set-exit-if-changed .`, `dartanalyzer --fatal-infos --fatal-warnings .`"
+    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/nnbd_opted_in, integration_tests/nnbd_opted_out, pkgs/test, pkgs/test_api, pkgs/test_core; `dartfmt -n --set-exit-if-changed .`, `dartanalyzer --fatal-infos --fatal-warnings .`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -122,7 +122,7 @@ jobs:
         working-directory: pkgs/test_core
         run: dartanalyzer --fatal-infos --fatal-warnings .
   job_003:
-    name: "unit_test; Dart dev; PKG: integration_tests/nnbd_opted_in; `pub run test -p chrome,vm,node`"
+    name: "unit_test; linux; Dart dev; PKG: integration_tests/nnbd_opted_in; `pub run test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -153,7 +153,7 @@ jobs:
       - job_001
       - job_002
   job_004:
-    name: "unit_test; Dart dev; PKG: integration_tests/nnbd_opted_out; `pub run test -p chrome,vm,node`"
+    name: "unit_test; linux; Dart dev; PKG: integration_tests/nnbd_opted_out; `pub run test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -184,7 +184,49 @@ jobs:
       - job_001
       - job_002
   job_005:
-    name: "unit_test; Dart stable; PKG: integration_tests/nnbd_opted_in; `pub run test -p chrome,vm,node`"
+    name: "unit_test; windows; Dart dev; PKG: integration_tests/nnbd_opted_in; `pub run test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: integration_tests_nnbd_opted_in_pub_upgrade
+        name: "integration_tests/nnbd_opted_in; pub.bat upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_in
+        run: pub.bat upgrade --no-precompile
+      - name: "integration_tests/nnbd_opted_in; pub run test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_in
+        run: "pub.bat run test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_006:
+    name: "unit_test; windows; Dart dev; PKG: integration_tests/nnbd_opted_out; `pub run test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: dev
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: integration_tests_nnbd_opted_out_pub_upgrade
+        name: "integration_tests/nnbd_opted_out; pub.bat upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_out
+        run: pub.bat upgrade --no-precompile
+      - name: "integration_tests/nnbd_opted_out; pub run test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_out
+        run: "pub.bat run test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_007:
+    name: "unit_test; linux; Dart stable; PKG: integration_tests/nnbd_opted_in; `pub run test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -214,8 +256,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_006:
-    name: "unit_test; Dart stable; PKG: integration_tests/nnbd_opted_out; `pub run test -p chrome,vm,node`"
+  job_008:
+    name: "unit_test; linux; Dart stable; PKG: integration_tests/nnbd_opted_out; `pub run test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -245,8 +287,50 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_007:
-    name: "unit_test; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0`"
+  job_009:
+    name: "unit_test; windows; Dart stable; PKG: integration_tests/nnbd_opted_in; `pub run test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: integration_tests_nnbd_opted_in_pub_upgrade
+        name: "integration_tests/nnbd_opted_in; pub.bat upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_in
+        run: pub.bat upgrade --no-precompile
+      - name: "integration_tests/nnbd_opted_in; pub run test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_in
+        run: "pub.bat run test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_010:
+    name: "unit_test; windows; Dart stable; PKG: integration_tests/nnbd_opted_out; `pub run test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: integration_tests_nnbd_opted_out_pub_upgrade
+        name: "integration_tests/nnbd_opted_out; pub.bat upgrade --no-precompile"
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_out
+        run: pub.bat upgrade --no-precompile
+      - name: "integration_tests/nnbd_opted_out; pub run test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_out
+        run: "pub.bat run test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_011:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -276,8 +360,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_008:
-    name: "unit_test; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0`"
+  job_012:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -307,8 +391,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_009:
-    name: "unit_test; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 1`"
+  job_013:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -338,8 +422,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_010:
-    name: "unit_test; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 1`"
+  job_014:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -369,8 +453,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_011:
-    name: "unit_test; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 2`"
+  job_015:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -400,8 +484,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_012:
-    name: "unit_test; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 2`"
+  job_016:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -431,8 +515,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_013:
-    name: "unit_test; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3`"
+  job_017:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -462,8 +546,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_014:
-    name: "unit_test; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3`"
+  job_018:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -493,8 +577,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_015:
-    name: "unit_test; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4`"
+  job_019:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -524,8 +608,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_016:
-    name: "unit_test; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4`"
+  job_020:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" pub run test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -555,8 +639,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_017:
-    name: "unit_test; Dart dev; PKG: pkgs/test_api; `pub run test --preset travis -x browser`"
+  job_021:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `pub run test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -586,8 +670,8 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_018:
-    name: "unit_test; Dart stable; PKG: pkgs/test_api; `pub run test --preset travis -x browser`"
+  job_022:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test_api; `pub run test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -617,7 +701,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_019:
+  job_023:
     name: Notify failure
     runs-on: ubuntu-latest
     if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
@@ -647,3 +731,7 @@ jobs:
       - job_016
       - job_017
       - job_018
+      - job_019
+      - job_020
+      - job_021
+      - job_022
