@@ -152,13 +152,12 @@ class _TestCompilerForLanguageVersion {
   Future<CompileResult?> _createCompiler(Uri testUri) async {
     final platformDill = 'lib/_internal/vm_platform_strong.dill';
     final sdkRoot =
-        Directory(p.relative(p.join(Platform.resolvedExecutable, '..', '..')))
-            .uri;
+        p.relative(p.dirname(p.dirname(Platform.resolvedExecutable)));
     var client = _frontendServerClient = await FrontendServerClient.start(
       testUri.toString(),
       _outputDill.path,
       platformDill,
-      sdkRoot: sdkRoot.path,
+      sdkRoot: sdkRoot,
       packagesJson: (await packageConfigUri).toFilePath(),
       printIncrementalDependencies: false,
     );
