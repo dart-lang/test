@@ -1,9 +1,6 @@
 dart:
   - dev
   - stable
-os:
-- linux
-- windows
 
 stages:
     - analyze_and_format:
@@ -12,8 +9,6 @@ stages:
         - dartanalyzer: --fatal-infos --fatal-warnings .
         dart:
         - dev
-        os:
-        - linux
     - unit_test:
       - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 0
       - command: xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 1
