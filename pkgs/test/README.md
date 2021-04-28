@@ -808,12 +808,12 @@ Compilation for browser and node tests can be configured by passing arguments to
 
 Fine grained compilation configuration is not supported for the VM. Any
 configuration which impacts runtime behavior for the entire VM, such as `-D`
-defines and runtime experiments, will influence both the test runner and the
-isolates spawned to run test suites. Experiments which are breaking may cause
-incompatibilities with the test runner. These may be specified with a
-`DART_VM_OPTIONS` environment variable when running with `pub run test`, or by
-passing them to the `dart` command before the `test` subcommand when using `dart
-test`.
+defines (when used for non-const values) and runtime behavior experiments, will
+influence both the test runner and the isolates spawned to run test suites.
+Experiments which are breaking may cause incompatibilities with the test runner.
+These may be specified with a `DART_VM_OPTIONS` environment variable when
+running with `pub run test`, or by passing them to the `dart` command before the
+`test` subcommand when using `dart test`.
 
 ## Debugging
 
