@@ -11,6 +11,7 @@ import 'package:pool/pool.dart';
 
 import '../util/io.dart';
 import '../util/package_config.dart';
+import '../util/dart.dart';
 import 'configuration.dart';
 import 'suite.dart';
 
@@ -63,7 +64,7 @@ class CompilerPool {
         if (Platform.isWindows) dart2jsPath += '.bat';
 
         var args = [
-          for (var experiment in _enabledExperiments)
+          for (var experiment in enabledExperiments)
             '--enable-experiment=$experiment',
           '--enable-asserts',
           wrapperPath,
@@ -140,23 +141,3 @@ class CompilerPool {
     });
   }
 }
-
-/// Parses and returns the currently enabled experiments from
-/// [Platform.executableArguments].
-final List<String> _enabledExperiments = () {
-  var experiments = <String>[];
-  var itr = Platform.executableArguments.iterator;
-  while (itr.moveNext()) {
-    var arg = itr.current;
-    if (arg == '--enable-experiment') {
-      if (!itr.moveNext()) break;
-      experiments.add(itr.current);
-    } else if (arg.startsWith('--enable-experiment=')) {
-      var parts = arg.split('=');
-      if (parts.length == 2) {
-        experiments.addAll(parts[1].split(','));
-      }
-    }
-  }
-  return experiments;
-}();
