@@ -1,3 +1,8 @@
+## 1.17.3
+
+* Forward experiment args from the runner executable to the compiler with the
+  new vm test loading strategy.
+
 ## 1.17.2
 
 * Fix a windows issue with the new loading strategy.

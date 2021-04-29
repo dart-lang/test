@@ -7,12 +7,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:package_config/package_config_types.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:frontend_server_client/frontend_server_client.dart';
 
 import '../package_version.dart';
+import '../../util/dart.dart';
 import '../../util/package_config.dart';
 
 class CompilationResponse {
@@ -75,8 +77,8 @@ class _TestCompilerForLanguageVersion {
 
   _TestCompilerForLanguageVersion(
       String dillCachePrefix, this._languageVersionComment)
-      : _dillCachePath =
-            '$dillCachePrefix.${base64.encode(utf8.encode(_languageVersionComment.replaceAll(' ', '')))}';
+      : _dillCachePath = '$dillCachePrefix.'
+            '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
   String _generateEntrypoint(Uri testUri) {
     return '''
@@ -157,6 +159,7 @@ class _TestCompilerForLanguageVersion {
       testUri.toString(),
       _outputDill.path,
       platformDill,
+      enabledExperiments: enabledExperiments,
       sdkRoot: sdkRoot,
       packagesJson: (await packageConfigUri).toFilePath(),
       printIncrementalDependencies: false,
@@ -172,4 +175,16 @@ class _TestCompilerForLanguageVersion {
           _outputDillDirectory.deleteSync(recursive: true);
         }
       });
+}
+
+/// Computes a unique dill cache suffix for each [languageVersionComment]
+/// and [enabledExperiments] combination.
+String _dillCacheSuffix(
+    String languageVersionComment, List<String> enabledExperiments) {
+  var identifierString =
+      StringBuffer(languageVersionComment.replaceAll(' ', ''));
+  for (var experiment in enabledExperiments) {
+    identifierString.writeln(experiment);
+  }
+  return base64.encode(utf8.encode(identifierString.toString()));
 }

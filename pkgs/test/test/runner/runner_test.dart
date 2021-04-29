@@ -840,4 +840,40 @@ $_testContents''').create();
       });
     });
   });
+
+  group('language experiments', () {
+    group('are inherited from the executable arguments', () {
+      setUp(() async {
+        await d.file('test.dart', '''
+// @dart=2.10
+import 'package:test/test.dart';
+
+// Compile time error if the experiment is enabled
+int x;
+
+void main() {
+  test('x is null', () {
+    expect(x, isNull);
+  });
+}
+''').create();
+      });
+
+      for (var platform in ['vm', 'chrome']) {
+        test('on the $platform platform', () async {
+          var test = await runTest(['test.dart', '-p', platform],
+              vmArgs: ['--enable-experiment=non-nullable']);
+
+          await expectLater(test.stdout, emitsThrough(contains('int x;')));
+          await test.shouldExit(1);
+
+          // Test that they can be removed on subsequent runs as well
+          test = await runTest(['test.dart', '-p', platform]);
+          await expectLater(
+              test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        });
+      }
+    });
+  });
 }
