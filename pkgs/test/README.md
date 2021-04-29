@@ -792,6 +792,29 @@ A configuration file can do much more than just set global defaults. See
 
 [package config]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md
 
+### Compiler flags
+
+The test runner does not support general purpose flags to control compilation
+such as `-D` defines or flags like `--no-sound-null-safety`. In most cases it is
+preferable to avoid writing tests that depend on the fine grained compiler
+configuration. For instance to choose between sound and unsound null safety,
+prefer to choose a language version for each test which has the desired behavior
+by default - choose a language version below `2.12` to disable sound null
+safety, and a language version above `2.12` to enable sound null safety. When
+fine grained configuration is unavoidable the approach varies by platform.
+
+Compilation for browser and node tests can be configured by passing arguments to
+`dart2js` with `--dart2js-args` options.
+
+Fine grained compilation configuration is not supported for the VM. Any
+configuration which impacts runtime behavior for the entire VM, such as `-D`
+defines (when used for non-const values) and runtime behavior experiments, will
+influence both the test runner and the isolates spawned to run test suites.
+Experiments which are breaking may cause incompatibilities with the test runner.
+These may be specified with a `DART_VM_OPTIONS` environment variable when
+running with `pub run test`, or by passing them to the `dart` command before the
+`test` subcommand when using `dart test`.
+
 ## Debugging
 
 Tests can be debugged interactively using platforms' built-in development tools.
