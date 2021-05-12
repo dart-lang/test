@@ -1,3 +1,8 @@
+## 0.3.24
+
+* Fix race condition between compilation of vm tests and the running of
+  isolates.
+
 ## 0.3.23
 
 * Forward experiment args from the runner executable to the compiler with the

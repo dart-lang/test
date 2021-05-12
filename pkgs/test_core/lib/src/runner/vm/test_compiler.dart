@@ -73,6 +73,8 @@ class _TestCompilerForLanguageVersion {
       File(p.join(_outputDillDirectory.path, 'output.dill'));
   final _outputDillDirectory =
       Directory.systemTemp.createTempSync('dart_test.');
+  // Used to create unique file names for final kernel files.
+  int compileNumber = 0;
 
   _TestCompilerForLanguageVersion(
       String dillCachePrefix, this._languageVersionComment)
@@ -98,6 +100,7 @@ class _TestCompilerForLanguageVersion {
       _compilePool.withResource(() => _compile(mainUri));
 
   Future<CompilationResponse> _compile(Uri mainUri) async {
+    compileNumber++;
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var firstCompile = false;
     CompileResult? compilerOutput;
@@ -129,7 +132,8 @@ class _TestCompilerForLanguageVersion {
     }
 
     final outputFile = File(outputPath);
-    final kernelReadyToRun = await outputFile.copy('${tempFile.path}.dill');
+    final kernelReadyToRun =
+        await outputFile.copy('${tempFile.path}_$compileNumber.dill');
     final testCache = File(_dillCachePath);
     // Keep the cache file up-to-date and use the size of the kernel file
     // as an approximation for how many packages are included. Larger files
