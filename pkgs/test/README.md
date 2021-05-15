@@ -233,7 +233,7 @@ void main() {
 }
 ```
 
-[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api/TestOn-class.html
+[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/TestOn-class.html
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
