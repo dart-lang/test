@@ -108,7 +108,7 @@ Output:
           [expanded] (default)        A separate line for each update.
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
 
-    --file-reporter                   Set the reporter used to write test results to a file.
+    --file-reporter                   Enable an additional reporter writing test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
     --verbose-trace                   Emit stack traces with core library frames.
     --js-trace                        Emit raw JavaScript stack traces for browser tests.
