@@ -19,8 +19,8 @@ JSON reporter.
 
     pub run test --reporter json <path-to-test-file>
 
-You may also use the `--file-reporter` option to enable the JSON reporter such
-that it writes to a file instead of stdout.
+You may also use the `--file-reporter` option to enable the JSON reporter output
+to a file, in addition to another reporter writing to stdout.
 
     pub run test --file-reporter json:reports/tests.json <path-to-test-file>
 

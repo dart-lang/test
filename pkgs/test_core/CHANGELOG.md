@@ -1,3 +1,5 @@
+## 0.3.25-dev
+
 ## 0.3.24
 
 * Fix race condition between compilation of vm tests and the running of
@@ -247,7 +249,7 @@
 ## 0.2.17
 
 * Add `file_reporters` configuration option and `--file-reporter` CLI option to
-  allow specifying a separate reporter that writes to a file instead of stdout.
+  allow specifying a separate reporter that writes to a file.
 
 ## 0.2.16
 
