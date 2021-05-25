@@ -36,3 +36,4 @@ dependencies:
 dependency_overrides:
   test_api:
     path: ../test_api
+  vm_service: 7.0.0
