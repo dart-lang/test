@@ -1,5 +1,7 @@
 ## 0.3.25-dev
 
+* Support the latest vm_service release (`7.0.0`).
+
 ## 0.3.24
 
 * Fix race condition between compilation of vm tests and the running of
