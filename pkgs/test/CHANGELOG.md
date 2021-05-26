@@ -1,4 +1,6 @@
-## 1.17.5-dev
+## 1.17.5
+
+* Support the latest vm_service release (`7.0.0`).
 
 ## 1.17.4
 
