@@ -10,6 +10,7 @@ linter:
   rules:
     - avoid_private_typedef_functions
     - await_only_futures
+    - depend_on_referenced_packages
     - implementation_imports
     - prefer_generic_function_type_aliases
     - prefer_single_quotes
