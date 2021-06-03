@@ -14,8 +14,6 @@ import 'expect.dart';
 /// returned future completes, and [expect] returns a future that completes when
 /// the returned future completes so that tests can wait for it.
 abstract class AsyncMatcher extends Matcher {
-  const AsyncMatcher();
-
   /// Returns `null` if this matches [item], or a [String] description of the
   /// failure if it doesn't match.
   ///

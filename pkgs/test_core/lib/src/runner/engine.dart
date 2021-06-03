@@ -129,17 +129,6 @@ class Engine {
   Stream<RunnerSuite> get onSuiteAdded => _onSuiteAddedController.stream;
   final _onSuiteAddedController = StreamController<RunnerSuite>.broadcast();
 
-  /// All the currently-known suites that have run or are running.
-  ///
-  /// These are [LiveSuite]s, representing the in-progress state of each suite
-  /// as its component tests are being run.
-  ///
-  /// Note that unlike [addedSuites], for suites that are loaded using
-  /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
-  /// be in this set.
-  Set<LiveSuite> get liveSuites => UnmodifiableSetView(_liveSuites);
-  final _liveSuites = <LiveSuite>{};
-
   /// A broadcast stream that emits each [LiveSuite] as it's loaded.
   ///
   /// Note that unlike [onSuiteAdded], for suites that are loaded using
@@ -491,7 +480,6 @@ class Engine {
   /// Add [liveSuite] and the information it exposes to the engine's
   /// informational streams and collections.
   void _addLiveSuite(LiveSuite liveSuite) {
-    _liveSuites.add(liveSuite);
     _onSuiteStartedController.add(liveSuite);
 
     _onTestStartedGroup.add(liveSuite.onTestStarted);

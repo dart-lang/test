@@ -22,9 +22,6 @@ class _LiveSuite extends LiveSuite {
   RunnerSuite get suite => _controller._suite;
 
   @override
-  bool get isComplete => _controller._isComplete;
-
-  @override
   Future get onComplete => _controller._onCompleteGroup.future;
 
   @override
@@ -62,8 +59,7 @@ class _LiveSuite extends LiveSuite {
 /// down, [close] should be called.
 class LiveSuiteController {
   /// The [LiveSuite] being controlled.
-  LiveSuite get liveSuite => _liveSuite;
-  late final LiveSuite _liveSuite;
+  late final liveSuite = _LiveSuite(this);
 
   /// The suite that's being run.
   final RunnerSuite _suite;
@@ -72,9 +68,6 @@ class LiveSuiteController {
   ///
   /// This contains all the futures from tests that are run in this suite.
   final _onCompleteGroup = FutureGroup();
-
-  /// Whether [_onCompleteGroup]'s future has fired.
-  var _isComplete = false;
 
   /// The completer that backs [LiveSuite.onClose].
   ///
@@ -103,13 +96,7 @@ class LiveSuiteController {
   /// Once this is called, the controller assumes responsibility for closing the
   /// suite. The caller should call [LiveSuiteController.close] rather than
   /// calling [RunnerSuite.close] directly.
-  LiveSuiteController(this._suite) {
-    _liveSuite = _LiveSuite(this);
-
-    _onCompleteGroup.future.then((_) {
-      _isComplete = true;
-    }, onError: (_) {});
-  }
+  LiveSuiteController(this._suite);
 
   /// Reports the status of [liveTest] through [liveSuite].
   ///

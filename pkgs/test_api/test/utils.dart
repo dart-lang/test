@@ -89,14 +89,6 @@ Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
 Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
-/// Returns a matcher that matches a [ApplicationException] with the given
-/// [message].
-///
-/// [message] can be a string or a [Matcher].
-Matcher isApplicationException(message) =>
-    const TypeMatcher<ApplicationException>()
-        .having((e) => e.message, 'message', message);
-
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
@@ -195,7 +187,3 @@ Engine declareEngine(void Function() body, {bool runSkipped = false}) {
         suitePlatform)
   ]);
 }
-
-/// Returns a [RunnerSuite] with a default environment and configuration.
-RunnerSuite runnerSuite(Group root) => RunnerSuite(
-    const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);
