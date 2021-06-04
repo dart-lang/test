@@ -6,13 +6,13 @@ import 'package:meta/meta_meta.dart';
 
 /// An annotation for marking a test suite to be retried.
 ///
-/// A test with retries enabled will be re-run if it fails for a reason
-/// other than [TestFailure].
+/// A suite-level retry configuration will enable retries for every test in the
+/// suite, unless the group or test is configured with a more specific retry.
 @Target({TargetKind.library})
 class Retry {
-  /// The number of times the test will be retried.
+  /// The number of times the tests in the suite will be retried.
   final int count;
 
-  /// Marks a test to be retried.
+  /// Marks all tests in a test suite to be retried.
   const Retry(this.count);
 }
