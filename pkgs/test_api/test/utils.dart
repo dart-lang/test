@@ -14,7 +14,6 @@ import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
-import 'package:test_core/src/runner/application_exception.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
 import 'package:test_core/src/runner/suite.dart';
