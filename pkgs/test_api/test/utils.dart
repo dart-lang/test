@@ -14,7 +14,6 @@ import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
-import 'package:test_core/src/runner/application_exception.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
 import 'package:test_core/src/runner/suite.dart';
@@ -88,14 +87,6 @@ Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
 /// [message] can be a string or a [Matcher].
 Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
-
-/// Returns a matcher that matches a [ApplicationException] with the given
-/// [message].
-///
-/// [message] can be a string or a [Matcher].
-Matcher isApplicationException(message) =>
-    const TypeMatcher<ApplicationException>()
-        .having((e) => e.message, 'message', message);
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
@@ -195,7 +186,3 @@ Engine declareEngine(void Function() body, {bool runSkipped = false}) {
         suitePlatform)
   ]);
 }
-
-/// Returns a [RunnerSuite] with a default environment and configuration.
-RunnerSuite runnerSuite(Group root) => RunnerSuite(
-    const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);

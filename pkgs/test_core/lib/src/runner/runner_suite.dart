@@ -44,14 +44,6 @@ class RunnerSuite extends Suite {
   /// The event is `true` when debugging starts and `false` when it ends.
   Stream<bool> get onDebugging => _controller._onDebuggingController.stream;
 
-  /// Returns a channel that communicates with the remote suite.
-  ///
-  /// This connects to a channel created by code in the test worker calling the
-  /// `suiteChannel` argument from a `beforeLoad` callback to `serializeSuite`
-  /// with the same name.
-  /// It can be used used to send and receive any JSON-serializable object.
-  StreamChannel channel(String name) => _controller.channel(name);
-
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode and doesn't support suite channels.
   factory RunnerSuite(Environment environment, SuiteConfiguration config,

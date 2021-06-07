@@ -212,19 +212,6 @@ class Configuration {
   factory Configuration.load(String path, {bool global = false}) =>
       load(path, global: global);
 
-  /// Loads the configuration from YAML formatted [source].
-  ///
-  /// If [global] is `true`, this restricts the configuration file to only rules
-  /// that are supported globally.
-  ///
-  /// If [sourceUrl] is provided then that will be set as the source url for
-  /// the yaml document.
-  ///
-  /// Throws a [FormatException] if its contents are invalid.
-  factory Configuration.loadFromString(String source,
-          {bool global = false, Uri? sourceUrl}) =>
-      loadFromString(source, global: global, sourceUrl: sourceUrl);
-
   factory Configuration(
       {bool? help,
       String? customHtmlTemplatePath,
