@@ -37,7 +37,8 @@ void printOnFailure(String message) {
   var invoker = Invoker.current;
   if (invoker == null) {
     throw Exception(
-        'There is no current invoker. Please make sure that you are making the call inside a test zone.');
+        'There is no current invoker. Please make sure that you are making the '
+        'call inside a test zone.');
   }
   return invoker.printOnFailure(message);
 }
