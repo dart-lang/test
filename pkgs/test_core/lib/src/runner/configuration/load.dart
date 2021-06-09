@@ -24,7 +24,6 @@ import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
 import 'custom_runtime.dart';
-import 'load.dart' as self;
 import 'reporters.dart';
 import 'runtime_settings.dart';
 
@@ -107,7 +106,7 @@ class _ConfigurationLoader {
     var basePath =
         p.join(p.dirname(p.fromUri(_document.span.sourceUrl)), includePath);
     try {
-      return self.load(basePath);
+      return Configuration.load(basePath);
     } on FileSystemException catch (error) {
       throw SourceSpanFormatException(
           getErrorMessage(error), includeNode.span, _source);
