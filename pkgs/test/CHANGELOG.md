@@ -1,3 +1,8 @@
+## 1.17.6
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
 ## 1.17.5
 
 * Support the latest vm_service release (`7.0.0`).
