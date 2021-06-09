@@ -1,4 +1,7 @@
-## 0.3.26-dev
+## 0.3.26
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
 
 ## 0.3.25
 
