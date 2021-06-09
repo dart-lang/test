@@ -1,3 +1,7 @@
+## 0.3.27
+
+* Restore the `Configuration.loadFromString` constructor.
+
 ## 0.3.26
 
 * Give a better error when `printOnFailure` is called from outside a test

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
@@ -202,15 +203,31 @@ class Configuration {
   /// Throws a [FormatException] if [args] are invalid.
   factory Configuration.parse(List<String> arguments) => args.parse(arguments);
 
-  /// Loads the configuration from [path].
+  /// Loads configuration from [path].
   ///
-  /// If [global] is `true`, this restricts the configuration file to only rules
-  /// that are supported globally.
+  /// If [global] is `true`, this restricts the configuration to rules that are
+  /// supported globally.
   ///
   /// Throws an [IOException] if [path] does not exist or cannot be read. Throws
-  /// a [FormatException] if its contents are invalid.
-  factory Configuration.load(String path, {bool global = false}) =>
-      load(path, global: global);
+  /// a [FormatException] if the file contents are invalid.
+  factory Configuration.load(String path, {bool global = false}) {
+    final content = File(path).readAsStringSync();
+    final sourceUrl = p.toUri(path);
+    return parse(content, global: global, sourceUrl: sourceUrl);
+  }
+
+  /// Parses configuration from YAML formatted [content].
+  ///
+  /// If [global] is `true`, this restricts the configuration to rules that are
+  /// supported globally.
+  ///
+  /// If [sourceUrl] is provided it will be set as the source url for the yaml
+  /// document.
+  ///
+  /// Throws a [FormatException] if the content is invalid.
+  factory Configuration.loadFromString(String content,
+          {bool global = false, Uri? sourceUrl}) =>
+      parse(content, global: global, sourceUrl: sourceUrl);
 
   factory Configuration(
       {bool? help,

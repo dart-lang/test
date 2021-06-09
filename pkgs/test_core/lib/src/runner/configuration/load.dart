@@ -24,7 +24,6 @@ import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
 import 'custom_runtime.dart';
-import 'load.dart' as self;
 import 'reporters.dart';
 import 'runtime_settings.dart';
 
@@ -41,7 +40,7 @@ final _identifierRegExp = RegExp(r'[a-zA-Z_]\w*');
 final _packageName =
     RegExp('^${_identifierRegExp.pattern}(\\.${_identifierRegExp.pattern})*\$');
 
-/// Loads configuration information from a YAML file at [path].
+/// Parses configuration from YAML formatted [content].
 ///
 /// If [global] is `true`, this restricts the configuration file to only rules
 /// that are supported globally.
@@ -50,19 +49,18 @@ final _packageName =
 /// the yaml document.
 ///
 /// Throws a [FormatException] if the configuration is invalid.
-Configuration load(String path, {bool global = false}) {
-  var source = File(path).readAsStringSync();
-  var document = loadYamlNode(source, sourceUrl: p.toUri(path));
+Configuration parse(String content, {Uri? sourceUrl, bool global = false}) {
+  var document = loadYamlNode(content, sourceUrl: sourceUrl);
 
   if (document.value == null) return Configuration.empty;
 
   if (document is! Map) {
     throw SourceSpanFormatException(
-        'The configuration must be a YAML map.', document.span, source);
+        'The configuration must be a YAML map.', document.span, content);
   }
 
   var loader =
-      _ConfigurationLoader(document as YamlMap, source, global: global);
+      _ConfigurationLoader(document as YamlMap, content, global: global);
   return loader.load();
 }
 
@@ -108,7 +106,7 @@ class _ConfigurationLoader {
     var basePath =
         p.join(p.dirname(p.fromUri(_document.span.sourceUrl)), includePath);
     try {
-      return self.load(basePath);
+      return Configuration.load(basePath);
     } on FileSystemException catch (error) {
       throw SourceSpanFormatException(
           getErrorMessage(error), includeNode.span, _source);

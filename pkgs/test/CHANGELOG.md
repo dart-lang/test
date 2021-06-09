@@ -1,3 +1,7 @@
+## 1.17.7
+
+* Support the latest `test_core`.
+
 ## 1.17.6
 
 * Give a better error when `printOnFailure` is called from outside a test
