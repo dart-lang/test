@@ -36,7 +36,7 @@ void registerException(Object error,
 void printOnFailure(String message) {
   var invoker = Invoker.current;
   if (invoker == null) {
-    throw Exception(
+    throw StateError(
         'There is no current invoker. Please make sure that you are making the '
         'call inside a test zone.');
   }
