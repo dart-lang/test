@@ -126,7 +126,7 @@ class JsonReporter implements Reporter {
     // Don't emit groups for load suites. They're always empty and they provide
     // unnecessary clutter.
     var groupIDs = liveTest.suite is LoadSuite
-        ? []
+        ? <int>[]
         : _idsForGroups(liveTest.groups, liveTest.suite);
 
     var suiteConfig = _configFor(liveTest.suite);
