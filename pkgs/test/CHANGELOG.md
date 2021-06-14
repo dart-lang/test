@@ -1,3 +1,8 @@
+## 1.17.8-dev
+
+* Update json reporter docs with updated nullability annotations and
+  descriptions.
+
 ## 1.17.7
 
 * Support the latest `test_core`.

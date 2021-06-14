@@ -76,7 +76,10 @@ class JsonReporter implements Reporter {
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
     _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
-      _emit('allSuites', {'count': _engine.addedSuites.length});
+      _emit('allSuites', {
+        'count': _engine.addedSuites.length,
+        'time': _stopwatch.elapsed.inMilliseconds
+      });
     }));
 
     _emit('start',
@@ -126,7 +129,7 @@ class JsonReporter implements Reporter {
     // Don't emit groups for load suites. They're always empty and they provide
     // unnecessary clutter.
     var groupIDs = liveTest.suite is LoadSuite
-        ? []
+        ? <int>[]
         : _idsForGroups(liveTest.groups, liveTest.suite);
 
     var suiteConfig = _configFor(liveTest.suite);
