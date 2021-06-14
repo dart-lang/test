@@ -114,7 +114,7 @@ test runner has started running.
 ### AllSuitesEvent
 
 ```
-class AllSuitesEvent {
+class AllSuitesEvent extends Event {
   String type = "allSuites";
 
   /// The total number of suites that will be loaded.
