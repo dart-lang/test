@@ -1,7 +1,9 @@
-## 1.17.8-dev
+## 1.17.8
 
 * Update json reporter docs with updated nullability annotations and
   descriptions.
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
 
 ## 1.17.7
 
