@@ -1,4 +1,7 @@
-## 0.3.28-dev
+## 0.3.28
+
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
 
 ## 0.3.27
 
