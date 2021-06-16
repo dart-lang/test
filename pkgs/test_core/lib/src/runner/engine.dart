@@ -73,7 +73,7 @@ class Engine {
   ///
   /// If null or zero no shuffling will occur.
   /// The same seed will shuffle the tests in the same way every time.
-  int? _testRandomizeOrderingSeed;
+  int? testRandomizeOrderingSeed;
 
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
@@ -207,7 +207,7 @@ class Engine {
   Engine({int? concurrency, String? coverage, int? randomizeOrderingSeed})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage,
-        _testRandomizeOrderingSeed = randomizeOrderingSeed {
+        testRandomizeOrderingSeed = randomizeOrderingSeed {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
@@ -308,9 +308,9 @@ class Engine {
       if (!_closed && setUpAllSucceeded) {
         // shuffle the group entries
         var entries = group.entries.toList();
-        if (_testRandomizeOrderingSeed != null &&
-            _testRandomizeOrderingSeed! > 0) {
-          entries.shuffle(Random(_testRandomizeOrderingSeed));
+        if (testRandomizeOrderingSeed != null &&
+            testRandomizeOrderingSeed! > 0) {
+          entries.shuffle(Random(testRandomizeOrderingSeed));
         }
 
         for (var entry in entries) {
