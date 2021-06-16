@@ -191,6 +191,12 @@ class Configuration {
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
+  /// The seed used to generate randomess for test case shuffling.
+  ///
+  /// If null or zero no shuffling will occur.
+  /// The same seed will shuffle the tests in the same way every time.
+  final int? testRandomizeOrderingSeed;
+
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
@@ -305,6 +311,7 @@ class Configuration {
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         suiteDefaults: SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -316,7 +323,6 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
-            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
 
             // Test-level configuration
             timeout: timeout,
@@ -368,6 +374,7 @@ class Configuration {
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
       bool? useDataIsolateStrategy,
+      this.testRandomizeOrderingSeed,
       SuiteConfiguration? suiteDefaults})
       : _help = help,
         customHtmlTemplatePath = customHtmlTemplatePath,
@@ -529,6 +536,8 @@ class Configuration {
         noRetry: other._noRetry ?? _noRetry,
         useDataIsolateStrategy:
             other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
+        testRandomizeOrderingSeed:
+            other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -625,7 +634,6 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
-            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
             timeout: timeout,
             verboseTrace: verboseTrace,
             chainStackTraces: chainStackTraces,

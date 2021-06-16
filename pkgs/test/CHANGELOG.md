@@ -1,3 +1,8 @@
+## 1.17.9-dev
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
 ## 1.17.8
 
 * Update json reporter docs with updated nullability annotations and
