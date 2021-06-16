@@ -76,7 +76,7 @@ class Runner {
         var engine = Engine(
             concurrency: config.concurrency,
             coverage: config.coverage,
-            randomizeOrderingSeed: config.testRandomizeOrderingSeed);
+            testRandomizeOrderingSeed: config.testRandomizeOrderingSeed);
 
         var sinks = <IOSink>[];
         Reporter createFileReporter(String reporterName, String filepath) {

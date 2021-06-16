@@ -204,10 +204,10 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
   /// defaults to 1.
-  Engine({int? concurrency, String? coverage, int? randomizeOrderingSeed})
+  Engine({int? concurrency, String? coverage, int? testRandomizeOrderingSeed})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage,
-        testRandomizeOrderingSeed = randomizeOrderingSeed {
+        testRandomizeOrderingSeed = testRandomizeOrderingSeed {
     _group.future.then((_) {
       _onTestStartedGroup.close();
       _onSuiteStartedController.close();
