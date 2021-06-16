@@ -1,3 +1,8 @@
+## 0.3.28-dev
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
 ## 0.3.27
 
 * Restore the `Configuration.loadFromString` constructor.

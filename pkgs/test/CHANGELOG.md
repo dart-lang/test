@@ -1,3 +1,8 @@
+## 1.17.8-dev
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
 ## 1.17.7
 
 * Support the latest `test_core`.

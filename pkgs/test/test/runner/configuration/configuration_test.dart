@@ -27,6 +27,7 @@ void main() {
         expect(merged.pubServeUrl, isNull);
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
+        expect(merged.testRandomizeOrderingSeed, isNull);
         expect(merged.paths, equals(['test']));
       });
 
@@ -44,6 +45,7 @@ void main() {
             pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
+            testRandomizeOrderingSeed: 123,
             paths: ['bar']).merge(Configuration());
 
         expect(merged.help, isTrue);
@@ -58,6 +60,7 @@ void main() {
         expect(merged.pubServeUrl!.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
+        expect(merged.testRandomizeOrderingSeed, 123);
         expect(merged.paths, equals(['bar']));
       });
 
@@ -75,6 +78,7 @@ void main() {
             pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
+            testRandomizeOrderingSeed: 123,
             paths: ['bar']));
 
         expect(merged.help, isTrue);
@@ -89,6 +93,7 @@ void main() {
         expect(merged.pubServeUrl!.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
+        expect(merged.testRandomizeOrderingSeed, 123);
         expect(merged.paths, equals(['bar']));
       });
 
@@ -108,6 +113,7 @@ void main() {
             pubServePort: 1234,
             shardIndex: 2,
             totalShards: 4,
+            testRandomizeOrderingSeed: 0,
             paths: ['bar']);
         var newer = Configuration(
             help: false,
@@ -122,6 +128,7 @@ void main() {
             pubServePort: 5678,
             shardIndex: 3,
             totalShards: 10,
+            testRandomizeOrderingSeed: 123,
             paths: ['blech']);
         var merged = older.merge(newer);
 
@@ -137,6 +144,7 @@ void main() {
         expect(merged.pubServeUrl!.port, equals(5678));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
+        expect(merged.testRandomizeOrderingSeed, 123);
         expect(merged.paths, equals(['blech']));
       });
     });
