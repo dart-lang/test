@@ -1,4 +1,4 @@
-## 0.3.29-dev
+## 0.3.29
 
 * Fix a bug where a tag level configuration would cause test suites with that
   tag to ignore the `--test-randomize-ordering-seed` argument.
