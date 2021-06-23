@@ -54,7 +54,6 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
       var disconnector = Disconnector();
       onExitPort.listen((_) {
         disconnector.disconnect();
-        port.close();
         onExitPort.close();
       });
 
@@ -63,7 +62,6 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
           .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
         // If the user closes the stream channel, kill the isolate.
         isolate.kill();
-        port.close();
         onExitPort.close();
         sink.close();
       }));
