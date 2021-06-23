@@ -63,6 +63,7 @@ class VMPlatform extends PlatformPlugin {
     StreamSubscription<Event>? eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
+      receivePort.close();
       isolate!.kill();
       eventSub?.cancel();
       client?.dispose();
