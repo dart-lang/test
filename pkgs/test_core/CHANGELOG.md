@@ -1,3 +1,7 @@
+## 0.3.30-dev
+
+* Remove support for `FORCE_TEST_EXIT`.
+
 ## 0.3.29
 
 * Fix a bug where a tag level configuration would cause test suites with that

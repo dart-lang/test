@@ -714,8 +714,7 @@ void main(List<String> args) async {
   test.completeShutdown();
 }''').create();
       var test = await runDart(['runner.dart', '--no-color', '--', 'test.dart'],
-          description: 'dart runner.dart -- test.dart',
-          environment: {'FORCE_TEST_EXIT': 'false'});
+          description: 'dart runner.dart -- test.dart');
       expect(
           test.stdout,
           emitsThrough(containsInOrder([
