@@ -2,16 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:collection';
-
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 
-import '../frontend/skip.dart';
-import '../frontend/timeout.dart';
-import '../utils.dart';
+import 'configuration/skip.dart';
+import 'configuration/timeout.dart';
 import 'platform_selector.dart';
 import 'suite_platform.dart';
+import 'util/identifier_regex.dart';
+import 'util/pretty_print.dart';
 
 /// Metadata for a test or test suite.
 ///
@@ -42,7 +41,7 @@ class Metadata {
   final bool? _verboseTrace;
 
   /// Whether to chain stack traces.
-  bool get chainStackTraces => _chainStackTraces ?? true;
+  bool get chainStackTraces => _chainStackTraces ?? _verboseTrace ?? false;
   final bool? _chainStackTraces;
 
   /// The user-defined tags attached to the test or suite.

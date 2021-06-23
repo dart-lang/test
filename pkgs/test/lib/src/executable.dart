@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 // ignore: implementation_imports
 import 'package:test_core/src/executable.dart' as executable;
@@ -15,7 +13,6 @@ void main(List<String> args) async {
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
   registerPlatformPlugin([
     Runtime.chrome,
-    Runtime.phantomJS,
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer

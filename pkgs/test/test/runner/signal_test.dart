@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 // Windows doesn't support sending signals.
 @TestOn('vm && !windows')
@@ -183,41 +181,6 @@ void main() {
       await signalAndQuit(test);
     });
 
-    test('causes expect() to always throw an error immediately', () async {
-      await d.file('test.dart', '''
-import 'dart:async';
-import 'dart:io';
-
-import 'package:test/test.dart';
-
-void main() {
-  var expectThrewError = false;
-
-  tearDown(() {
-    File("output").writeAsStringSync(expectThrewError.toString());
-  });
-
-  test("test", () async {
-    print("running test");
-
-    await Future.delayed(Duration(seconds: 1));
-    try {
-      expect(true, isTrue);
-    } catch (_) {
-      expectThrewError = true;
-    }
-  });
-}
-''').create();
-
-      var test = await _runTest(['test.dart']);
-      await expectLater(test.stdout, emitsThrough('running test'));
-      await signalAndQuit(test);
-
-      await d.file('output', 'true').validate();
-      expectTempDirEmpty();
-    });
-
     test('causes expectAsync() to always throw an error immediately', () async {
       await d.file('test.dart', '''
 import 'dart:async';
@@ -260,7 +223,7 @@ Future<TestProcess> _runTest(List<String> args, {bool forwardStdio = false}) =>
         environment: {'_UNITTEST_TEMP_DIR': _tempDir},
         forwardStdio: forwardStdio);
 
-Future signalAndQuit(TestProcess test) async {
+Future<void> signalAndQuit(TestProcess test) async {
   test.signal(ProcessSignal.sigterm);
   await test.shouldExit();
   await expectLater(test.stderr, emitsDone);

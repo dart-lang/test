@@ -1,13 +1,14 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:isolate';
 
+import 'package:package_config/package_config.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test_core/src/util/io.dart';
@@ -16,6 +17,20 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  late PackageConfig currentPackageConfig;
+
+  setUpAll(() async {
+    currentPackageConfig =
+        await loadPackageConfigUri((await Isolate.packageConfig)!);
+  });
+
+  setUp(() async {
+    await d
+        .file('package_config.json',
+            jsonEncode(PackageConfig.toJson(currentPackageConfig)))
+        .create();
+  });
+
   group('for suite', () {
     test('runs a test suite on a matching platform', () async {
       await _writeTestFile('vm_test.dart', suiteTestOn: 'vm');
@@ -178,10 +193,10 @@ void main() {
 /// Each of [suiteTestOn], [groupTestOn], and [testTestOn] is a platform
 /// selector that's suite-, group-, and test-level respectively. If [loadable]
 /// is `false`, the test file will be made unloadable on the Dart VM.
-Future _writeTestFile(String filename,
-    {String suiteTestOn,
-    String groupTestOn,
-    String testTestOn,
+Future<void> _writeTestFile(String filename,
+    {String? suiteTestOn,
+    String? groupTestOn,
+    String? testTestOn,
     bool loadable = true}) {
   var buffer = StringBuffer();
   if (suiteTestOn != null) buffer.writeln("@TestOn('$suiteTestOn')");

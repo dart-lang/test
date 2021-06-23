@@ -1,3 +1,41 @@
+## 0.4.1
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 0.4.0
+
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing as
+  subset of the normal surface area.
+* Add new APIs in `hooks.dart` to allow writing custom expectation frameworks
+  which integrate with the test runner.
+* Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
+* Disable stack trace chaining by default.
+* Fix `expectAsync` function type checks.
+* Add `RemoteException`, `RemoteListener`, `StackTraceFormatter`, and
+  `StackTraceMapper` to `backend.dart`.
+* **Breaking** remove `Runtime.phantomJS`
+* **Breaking** Add callback to get the suite channel in the `beforeLoad`
+  callback of `RemoteListener.start`. This is now used in place of using zones
+  to communicate the value.
+
+## 0.3.0
+
+* **Breaking** `TestException.message` is now nullable.
+  * Fixes handling of `null` messages in remote exceptions.
+
+## 0.2.20
+
+* Fix some strong null safety mode errors in the original migration.
+
+## 0.2.19
+
+* Stable release for null safety.
+
+## 0.2.19-nullsafety.7
+
+* Expand upper bound constraints for some null safe migrated packages.
+
 ## 0.2.19-nullsafety.6
 
 * Fix `spawnHybridUri` to respect language versioning of the spawned uri.

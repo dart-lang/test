@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:collection';
 
 import 'package:test_api/src/backend/declarer.dart';
@@ -15,7 +14,6 @@ import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
-import 'package:test_core/src/runner/application_exception.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
 import 'package:test_core/src/runner/suite.dart';
@@ -90,17 +88,9 @@ Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
 Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
-/// Returns a matcher that matches a [ApplicationException] with the given
-/// [message].
-///
-/// [message] can be a string or a [Matcher].
-Matcher isApplicationException(message) =>
-    const TypeMatcher<ApplicationException>()
-        .having((e) => e.message, 'message', message);
-
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
-  var test = LocalTest('test', Metadata(), body);
+  var test = LocalTest('test', Metadata(chainStackTraces: true), body);
   var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }
@@ -196,7 +186,3 @@ Engine declareEngine(void Function() body, {bool runSkipped = false}) {
         suitePlatform)
   ]);
 }
-
-/// Returns a [RunnerSuite] with a default environment and configuration.
-RunnerSuite runnerSuite(Group root) => RunnerSuite(
-    const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);

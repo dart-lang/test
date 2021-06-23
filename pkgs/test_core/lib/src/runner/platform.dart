@@ -41,7 +41,7 @@ abstract class PlatformPlugin {
   /// associated with this plugin in [new Loader]'s `plugins` parameter.
   // TODO(grouma) - Remove this method from the API as no platforms implement
   // it.
-  StreamChannel loadChannel(String path, SuitePlatform platform);
+  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform);
 
   /// Loads the runner suite for the test file at [path] using [platform], with
   /// [suiteConfig] encoding the suite-specific configuration.
@@ -55,7 +55,7 @@ abstract class PlatformPlugin {
   /// `platform_helpers.dart` to obtain a [RunnerSuiteController]. They must
   /// pass the opaque [message] parameter to the [deserializeSuite] call.
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message);
+      SuiteConfiguration suiteConfig, Map<String, Object?> message);
 
   Future closeEphemeral() async {}
 

@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:io';
@@ -17,7 +15,11 @@ import 'package:test/test.dart';
 /// The path to the root directory of the `test` package.
 final Future<String> packageDir =
     Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/'))
-        .then((uri) => p.dirname(uri.path));
+        .then((uri) {
+  var dir = p.dirname(uri!.path);
+  if (dir.startsWith('/C:')) dir = dir.substring(1);
+  return dir;
+});
 
 /// The path to the `pub` executable in the current Dart SDK.
 final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
@@ -38,8 +40,8 @@ final otherOS = Platform.isWindows ? 'mac-os' : 'windows';
 /// The port of a pub serve instance run via [runPubServe].
 ///
 /// This is only set after [runPubServe] is called.
-int get pubServePort => _pubServePort;
-int _pubServePort;
+int get pubServePort => _pubServePort!;
+int? _pubServePort;
 
 /// Expects that the entire stdout stream of [test] equals [expected].
 void expectStdoutEquals(TestProcess test, String expected) =>
@@ -67,22 +69,22 @@ StreamMatcher containsInOrder(Iterable<String> strings) =>
 
 /// Runs the test executable with the package root set properly.
 Future<TestProcess> runTest(Iterable<String> args,
-    {String reporter,
-    String fileReporter,
-    int concurrency,
-    Map<String, String> environment,
+    {String? reporter,
+    String? fileReporter,
+    int? concurrency,
+    Map<String, String>? environment,
     bool forwardStdio = false,
-    String packageConfig,
-    Iterable<String> vmArgs}) async {
+    String? packageConfig,
+    Iterable<String>? vmArgs}) async {
   concurrency ??= 1;
 
   var allArgs = [
     ...?vmArgs,
-    p.absolute(p.join(await packageDir, 'bin/test.dart')),
+    Uri.file(p.url.join(await packageDir, 'bin', 'test.dart')).toString(),
     '--concurrency=$concurrency',
     if (reporter != null) '--reporter=$reporter',
     if (fileReporter != null) '--file-reporter=$fileReporter',
-    ...?args,
+    ...args,
   ];
 
   environment ??= {};
@@ -100,10 +102,10 @@ Future<TestProcess> runTest(Iterable<String> args,
 /// If [packageConfig] is provided then that is passed for the `--packages`
 /// arg, otherwise the current isolate config is passed.
 Future<TestProcess> runDart(Iterable<String> args,
-    {Map<String, String> environment,
-    String description,
+    {Map<String, String>? environment,
+    String? description,
     bool forwardStdio = false,
-    String packageConfig}) async {
+    String? packageConfig}) async {
   var allArgs = <String>[
     ...Platform.executableArguments.where((arg) =>
         !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
@@ -121,7 +123,7 @@ Future<TestProcess> runDart(Iterable<String> args,
 
 /// Runs Pub.
 Future<TestProcess> runPub(Iterable<String> args,
-    {Map<String, String> environment}) {
+    {Map<String, String>? environment}) {
   return TestProcess.start(_pubPath, args,
       workingDirectory: d.sandbox,
       environment: environment,
@@ -133,19 +135,19 @@ Future<TestProcess> runPub(Iterable<String> args,
 /// This returns assigns [_pubServePort] to a future that will complete to the
 /// port of the "pub serve" instance.
 Future<TestProcess> runPubServe(
-    {Iterable<String> args,
-    String workingDirectory,
-    Map<String, String> environment}) async {
+    {Iterable<String>? args,
+    String? workingDirectory,
+    Map<String, String>? environment}) async {
   var allArgs = ['serve', '--port', '0'];
   if (args != null) allArgs.addAll(args);
 
   var pub = await runPub(allArgs, environment: environment);
 
-  Match match;
+  Match? match;
   while (match == null) {
     match = _servingRegExp.firstMatch(await pub.stdout.next);
   }
-  _pubServePort = int.parse(match[1]);
+  _pubServePort = int.parse(match[1]!);
 
   return pub;
 }

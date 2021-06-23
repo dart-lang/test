@@ -3,12 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:stream_channel/stream_channel.dart';
-
-import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-
-import 'package:test_api/src/remote_listener.dart'; // ignore: implementation_imports
-import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show RemoteListener, StackTraceFormatter, StackTraceMapper;
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].
@@ -29,30 +26,15 @@ import 'package:test_api/src/suite_channel_manager.dart'; // ignore: implementat
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
 StreamChannel<Object?> serializeSuite(Function Function() getMain,
-        {bool hidePrints = true, Future Function()? beforeLoad}) =>
+        {bool hidePrints = true,
+        Future Function(
+                StreamChannel<Object?> Function(String name) suiteChannel)?
+            beforeLoad}) =>
     RemoteListener.start(
       getMain,
       hidePrints: hidePrints,
       beforeLoad: beforeLoad,
     );
-
-/// Returns a channel that communicates with a plugin in the test runner.
-///
-/// This connects to a channel created by code in the test runner calling
-/// `RunnerSuite.channel()` with the same name. It can be used used to send and
-/// receive any JSON-serializable object.
-///
-/// Throws a [StateError] if [name] has already been used for a channel, or if
-/// this is called outside a worker context (such as within a running test or
-/// `serializeSuite()`'s `onLoad()` function).
-StreamChannel<Object?> suiteChannel(String name) {
-  var manager = SuiteChannelManager.current;
-  if (manager == null) {
-    throw StateError('suiteChannel() may only be called within a test worker.');
-  }
-
-  return manager.connectOut(name);
-}
 
 /// Sets the stack trace mapper for the current test suite.
 ///

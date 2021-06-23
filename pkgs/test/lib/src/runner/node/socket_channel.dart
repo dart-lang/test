@@ -5,9 +5,11 @@
 @JS()
 library node;
 
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 @JS('require')
 external _Net _require(String module);
@@ -30,14 +32,17 @@ class _Socket {
 /// Returns a [StreamChannel] of JSON-encodable objects that communicates over a
 /// socket whose port is given by `process.argv[2]`.
 StreamChannel<Object?> socketChannel() {
-  var controller =
-      StreamChannelController<String?>(allowForeignErrors: false, sync: true);
   var net = _require('net');
   var socket = net.connect(int.parse(_args[2]));
   socket.setEncoding('utf8');
 
-  controller.local.stream.listen((chunk) => socket.write(chunk!));
-  socket.on('data', allowInterop(controller.local.sink.add));
+  var socketSink = StreamController<Object?>(sync: true)
+    ..stream.listen((event) => socket.write('${jsonEncode(event)}\n'));
 
-  return controller.foreign.transform(chunksToLines).transform(jsonDocument);
+  var socketStream = StreamController<String>(sync: true);
+  socket.on('data', allowInterop(socketStream.add));
+
+  return StreamChannel.withCloseGuarantee(
+      socketStream.stream.transform(const LineSplitter()).map(jsonDecode),
+      socketSink);
 }

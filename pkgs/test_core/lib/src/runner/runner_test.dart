@@ -1,22 +1,20 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'package:pedantic/pedantic.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 import 'spawn_hybrid.dart';
 
@@ -27,7 +25,7 @@ class RunnerTest extends Test {
   @override
   final Metadata metadata;
   @override
-  final Trace /*?*/ trace;
+  final Trace? trace;
 
   /// The channel used to communicate with the test's [IframeListener].
   final MultiChannel _channel;
@@ -37,9 +35,9 @@ class RunnerTest extends Test {
   RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
   @override
-  LiveTest load(Suite suite, {Iterable<Group> /*?*/ groups}) {
-    /*late final*/ LiveTestController controller;
-    /*late final*/ VirtualChannel testChannel;
+  LiveTest load(Suite suite, {Iterable<Group>? groups}) {
+    late final LiveTestController controller;
+    late final VirtualChannel testChannel;
     controller = LiveTestController(suite, this, () {
       controller.setState(const State(Status.running, Result.success));
 
@@ -103,7 +101,7 @@ class RunnerTest extends Test {
   }
 
   @override
-  Test /*?*/ forPlatform(SuitePlatform platform) {
+  Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);
   }

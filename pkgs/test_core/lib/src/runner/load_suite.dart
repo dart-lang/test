@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
@@ -13,11 +12,12 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 // ignore: deprecated_member_use
-import 'package:test_api/test_api.dart' show Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 
+import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
+import '../util/pair.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
@@ -88,7 +88,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite(String name, SuiteConfiguration config,
       SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
       {String? path}) {
-    var completer = Completer<Pair<RunnerSuite, Zone>>.sync();
+    var completer = Completer<Pair<RunnerSuite, Zone>?>.sync();
     return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker!.addOutstandingCallback();
@@ -167,7 +167,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If [suite] completes to `null`, [change] won't be run. [change] is run
   /// within the load test's zone, so any errors or prints it emits will be
   /// associated with that test.
-  LoadSuite changeSuite(RunnerSuite Function(RunnerSuite) change) {
+  LoadSuite changeSuite(RunnerSuite? Function(RunnerSuite) change) {
     return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 
@@ -202,10 +202,6 @@ class LoadSuite extends Suite implements RunnerSuite {
     filtered ??= Group.root([], metadata: metadata);
     return LoadSuite._filtered(this, filtered);
   }
-
-  @override
-  StreamChannel channel(String name) =>
-      throw UnsupportedError('LoadSuite.channel() is not supported.');
 
   @override
   Future close() async {}

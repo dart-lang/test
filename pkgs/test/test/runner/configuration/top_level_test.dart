@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 
@@ -343,12 +341,11 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest(['-p', 'chrome,firefox,phantomjs', 'test.dart']);
+      var test = await runTest(['-p', 'chrome,firefox', 'test.dart']);
       expect(
           test.stderr,
-          emits(
-              "Warning: this package doesn't support running tests on Chrome, "
-              'Firefox, or PhantomJS.'));
+          emits("Warning: this package doesn't support running tests on Chrome "
+              'or Firefox.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
       await test.shouldExit(1);
     });

@@ -4,12 +4,11 @@
 
 import 'dart:async';
 
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/test.dart';
-import 'package:test_api/src/frontend/timeout.dart';
-import 'package:test/test.dart';
 
 import '../utils.dart';
 

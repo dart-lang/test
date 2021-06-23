@@ -1,15 +1,15 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.9
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:source_span/source_span.dart';
 
+import '../util/package_config.dart';
 import 'string_literal_iterator.dart';
 
 /// Runs [code] in an isolate.
@@ -19,12 +19,12 @@ import 'string_literal_iterator.dart';
 /// passed to the [main] method of the code being run; the caller is responsible
 /// for using this to establish communication with the isolate.
 Future<Isolate> runInIsolate(String code, Object message,
-        {SendPort /*?*/ onExit}) async =>
+        {SendPort? onExit}) async =>
     Isolate.spawnUri(
         Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
         [],
         message,
-        packageConfig: await Isolate.packageConfig,
+        packageConfig: await packageConfigUri,
         checked: true,
         onExit: onExit);
 
@@ -53,7 +53,7 @@ Future<Isolate> runInIsolate(String code, Object message,
 ///
 /// This will return `null` if [context] contains an invalid string or does not
 /// contain [span].
-SourceSpan /*?*/ contextualizeSpan(
+SourceSpan? contextualizeSpan(
     SourceSpan span, StringLiteral context, SourceFile file) {
   var contextRunes = StringLiteralIterator(context)..moveNext();
 
@@ -69,3 +69,23 @@ SourceSpan /*?*/ contextualizeSpan(
 
   return file.span(start, contextRunes.offset);
 }
+
+/// Parses and returns the currently enabled experiments from
+/// [Platform.executableArguments].
+final List<String> enabledExperiments = () {
+  var experiments = <String>[];
+  var itr = Platform.executableArguments.iterator;
+  while (itr.moveNext()) {
+    var arg = itr.current;
+    if (arg == '--enable-experiment') {
+      if (!itr.moveNext()) break;
+      experiments.add(itr.current);
+    } else if (arg.startsWith('--enable-experiment=')) {
+      var parts = arg.split('=');
+      if (parts.length == 2) {
+        experiments.addAll(parts[1].split(','));
+      }
+    }
+  }
+  return experiments;
+}();

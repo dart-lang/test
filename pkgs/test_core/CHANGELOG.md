@@ -1,4 +1,123 @@
-## 0.3.12-nullsafety.10-dev
+## 0.3.29-dev
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
+## 0.3.28
+
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
+
+## 0.3.27
+
+* Restore the `Configuration.loadFromString` constructor.
+
+## 0.3.26
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 0.3.25
+
+* Support the latest vm_service release (`7.0.0`).
+
+## 0.3.24
+
+* Fix race condition between compilation of vm tests and the running of
+  isolates.
+
+## 0.3.23
+
+* Forward experiment args from the runner executable to the compiler with the
+  new vm test loading strategy.
+
+## 0.3.22
+
+* Fix a windows issue with the new loading strategy.
+
+## 0.3.21
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
+## 0.3.20
+
+* Add library `scaffolding.dart` to allow importing a subset of the normal
+  surface area.
+* Remove `suiteChannel`. This is now handled by an additional argument to the
+  `beforeLoad` callback in `serializeSuite`.
+* Disable stack trace chaining by default.
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Improve the error message for `hybridMain` functions with an incompatible
+  StreamChannel parameter type.
+* Change the `message` argument to `PlatformPlugin.load` to `Map<String,
+  Object?>`. In an upcoming release this will be required as the type for this
+  argument when passed through to `deserializeSuite`.
+
+## 0.3.19
+
+* ~~Disable stack trace chaining by default.~~
+
+## 0.3.18
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update to the latest `test_api`.
+
+## 0.3.17
+
+* Complete the null safety migration.
+
+## 0.3.16
+
+* Allow package:io version 1.0.0.
+
+## 0.3.14
+
+* Handle issue closing `stdin` during shutdown.
+
+## 0.3.13
+
+* Allow the latest analyzer `1.0.0`.
+
+## 0.3.12
+
+* Stable null safety release.
+
+## 0.3.12-nullsafety.17
+
+* Use the `test_api` for stable null safety.
+
+## 0.3.12-nullsafety.16
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 0.3.12-nullsafety.15
+
+* Support the latest vm_service release (`6.x.x`).
+
+## 0.3.12-nullsafety.14
+
+* Support the latest coverage release (`0.15.x`).
+
+## 0.3.12-nullsafety.13
+
+* Allow the latest args release (`2.x`).
+
+## 0.3.12-nullsafety.12
+
+* Allow the latest glob release (`2.x`).
+
+## 0.3.12-nullsafety.11
+
+* Fix `spawnHybridUri` on windows.
+* Allow `package:yaml` version `3.x.x`.
+
+## 0.3.12-nullsafety.10
+
+* Allow `package:analyzer` version `0.41.x`.
 
 ## 0.3.12-nullsafety.9
 
@@ -50,6 +169,14 @@
 ## 0.3.12-nullsafety
 
 * Migrate to null safety.
+
+## 0.3.11+4 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
+## 0.3.11+3 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
 
 ## 0.3.11+2 (Backport)
 
@@ -143,7 +270,7 @@
 ## 0.2.17
 
 * Add `file_reporters` configuration option and `--file-reporter` CLI option to
-  allow specifying a separate reporter that writes to a file instead of stdout.
+  allow specifying a separate reporter that writes to a file.
 
 ## 0.2.16
 

@@ -31,23 +31,19 @@ this repository.
 [pr]: https://help.github.com/articles/creating-a-pull-request/
 
 Functional changes will require tests to be added or changed. The tests live in
-the `test/` directory, and are run with `pub run test`. If you need to create
-new tests, use the existing tests as a guideline for what they should look like.
+the `test/` directory for each package, and are run with `pub run test`. If you
+need to create new tests, use the existing tests as a guideline for what they
+should look like.
 
-Before you send your pull request, make sure all the tests pass! To run all the
-tests, you'll need:
-
-* [PhantomJS][] version 2.0.0 or higher.
-
-[PhantomJS]: http://phantomjs.org/
-
-Once you have these, just run `pub run test`.
+You can run all additional presubmit checks locally if you wish, by using the
+`mono_repo` tool. From the root of the repository, run
+`pub global run mono_repo presubmit`.
 
 ### File headers
 
 All files in the project must start with the following header.
 
-    // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
+    // Copyright (c) 2021, the Dart project authors.  Please see the AUTHORS file
     // for details. All rights reserved. Use of this source code is governed by a
     // BSD-style license that can be found in the LICENSE file.
 

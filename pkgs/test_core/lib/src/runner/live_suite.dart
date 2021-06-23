@@ -17,17 +17,6 @@ abstract class LiveSuite {
   /// The suite that's being run.
   RunnerSuite get suite;
 
-  /// Whether the suite has completed.
-  ///
-  /// Note that even if this returns `true`, the suite may still be running code
-  /// asynchronously. A suite is considered complete once all of its tests are
-  /// complete, but it's possible for a test to continue running even after it's
-  /// been marked complete—see [LiveTest.isComplete] for details.
-  ///
-  /// The [isClosed] getter can be used to determine whether the suite and its
-  /// tests are guaranteed to emit no more events.
-  bool get isComplete;
-
   /// A [Future] that completes once the suite is complete.
   ///
   /// Note that even once this completes, the suite may still be running code

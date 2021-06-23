@@ -1,6 +1,143 @@
+## 1.17.9-dev
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
+## 1.17.8
+
+* Update json reporter docs with updated nullability annotations and
+  descriptions.
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
+
+## 1.17.7
+
+* Support the latest `test_core`.
+
+## 1.17.6
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 1.17.5
+
+* Support the latest vm_service release (`7.0.0`).
+
+## 1.17.4
+
+* Fix race condition between compilation of vm tests and the running of
+  isolates.
+
+## 1.17.3
+
+* Forward experiment args from the runner executable to the compiler with the
+  new vm test loading strategy.
+
+## 1.17.2
+
+* Fix a windows issue with the new loading strategy.
+
+## 1.17.1
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
+## 1.17.0
+
+* Change the default way VM tests are launched and ran to greatly speed up
+  loading performance.
+  * You can force the old strategy with `--use-data-isolate-strategy` flag if
+    you run into issues, but please also file a bug.
+* Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.
+* Remove `phantomjs` support completely, it was previously broken.
+* Fix `expectAsync` function type checks.
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing a
+  subset of the normal surface area.
+
+## 1.16.8
+
+* Fix an issue where coverage collection could hang on Chrome. 
+* ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
+  passing the `--chain-stack-traces` flag.~~
+
+## 1.16.7
+
+* Update `spawnHybridCode` to default to the current packages language version.
+* Update `test_core` and `test_api` deps.
+
+## 1.16.6
+
+* Complete the migration to null safety.
+
+## 1.16.5
+
+* Expand several deps to allow the latest versions.
+
+## 1.16.4
+
+* Update `test_core` dependency to `0.3.14`.
+
+## 1.16.3
+
+* Update `web_socket_channel` dependency to support latest.
+
+## 1.16.2
+
+* Update `test_core` dependency to `0.3.13`.
+
+## 1.16.1
+
+* Allow the latest analyzer `1.0.0`.
+
+## 1.16.0
+
+* Stable null safety release.
+
+## 1.16.0-nullsafety.19
+
+* Use the `test_api` for stable null safety.
+
+## 1.16.0-nullsafety.18
+
+* Expand upper bound constraints for some null safe migrated packages.
+
+## 1.16.0-nullsafety.17
+
+* Support the latest shelf release (`1.x.x`).
+
+## 1.16.0-nullsafety.16
+
+* Support the latest vm_service release (`6.x.x`).
+
+## 1.16.0-nullsafety.15
+
+* Support the latest coverage release (`0.15.x`).
+
+## 1.16.0-nullsafety.14
+
+* Allow the latest args release (`2.x`).
+
+## 1.16.0-nullsafety.13
+
+* Allow the latest glob release (`2.x`).
+
+## 1.16.0-nullsafety.12
+
+* Fix `spawnHybridUri` on windows.
+* Fix failures running tests on the `node` platform.
+* Allow `package:yaml` version `3.x.x`.
+
+## 1.16.0-nullsafety.11
+
+* Set up a stack trace mapper in precompiled mode if source maps exist. If
+  the stack traces are already mapped then this has no effect, otherwise it
+  will try to map any JS lines it sees.
+
 ## 1.16.0-nullsafety.10
 
-* Allow to inject a test channel for browser tests.
+* Allow injecting a test channel for browser tests.
+* Allow `package:analyzer` version `0.41.x`.
 
 ## 1.16.0-nullsafety.9
 
@@ -53,6 +190,14 @@
   future release it will be made available directly through
   `package:test_api/test_api.dart` (and hence through
   `package:test_core/test_core.dart` and `package:test/test.dart`).
+
+## 1.15.7 (Backport)
+
+* Fix `spawnHybridUri` on windows.
+
+## 1.15.6 (Backport)
+
+* Support `package:analyzer` version `0.41.x`.
 
 ## 1.15.5 (Backport)
 
@@ -965,7 +1110,7 @@
 
 * Wait for a test's tear-down logic to run, even if it times out.
 
-[focusing]: http://jasmine.github.io/2.1/focused_specs.html
+[focusing]: https://jasmine.github.io/2.1/focused_specs.html
 [issue 16]: https://github.com/dart-lang/test/issues/16
 
 ## 0.12.6+2

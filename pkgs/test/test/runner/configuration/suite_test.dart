@@ -1,8 +1,6 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 @TestOn('vm')
 import 'package:boolean_selector/boolean_selector.dart';
@@ -22,7 +20,6 @@ void main() {
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, isNull);
         expect(merged.runtimes, equals([Runtime.vm.identifier]));
-        expect(merged.testRandomizeOrderingSeed, null);
       });
 
       test("if only the old configuration's is defined, uses it", () {
@@ -44,13 +41,11 @@ void main() {
             jsTrace: true,
             runSkipped: true,
             precompiledPath: '/tmp/js',
-            testRandomizeOrderingSeed: 1234,
             runtimes: [RuntimeSelection(Runtime.chrome.identifier)]));
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals('/tmp/js'));
-        expect(merged.testRandomizeOrderingSeed, 1234);
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
       });
 
@@ -194,16 +189,16 @@ void main() {
               SuiteConfiguration(runSkipped: true)
         }));
 
-        expect(merged.tags[BooleanSelector.parse('foo')].precompiledPath,
+        expect(merged.tags[BooleanSelector.parse('foo')]!.precompiledPath,
             equals('path/'));
-        expect(merged.tags[BooleanSelector.parse('bar')].jsTrace, isFalse);
-        expect(merged.tags[BooleanSelector.parse('baz')].runSkipped, isTrue);
+        expect(merged.tags[BooleanSelector.parse('bar')]!.jsTrace, isFalse);
+        expect(merged.tags[BooleanSelector.parse('baz')]!.runSkipped, isTrue);
 
-        expect(merged.onPlatform[PlatformSelector.parse('vm')].precompiledPath,
+        expect(merged.onPlatform[PlatformSelector.parse('vm')]!.precompiledPath,
             'path/');
-        expect(merged.onPlatform[PlatformSelector.parse('chrome')].jsTrace,
+        expect(merged.onPlatform[PlatformSelector.parse('chrome')]!.jsTrace,
             isFalse);
-        expect(merged.onPlatform[PlatformSelector.parse('firefox')].runSkipped,
+        expect(merged.onPlatform[PlatformSelector.parse('firefox')]!.runSkipped,
             isTrue);
       });
     });

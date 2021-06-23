@@ -7,8 +7,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import '../frontend/timeout.dart';
-import '../util/test.dart';
+import 'configuration/timeout.dart';
 import 'group.dart';
 import 'group_entry.dart';
 import 'invoker.dart';
@@ -352,13 +351,7 @@ class Declarer {
 
     return LocalTest(
         _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
-      return runZoned(() {
-        return Invoker.current!.unclosable(() async {
-          while (_tearDownAlls.isNotEmpty) {
-            await errorsDontStopTest(_tearDownAlls.removeLast());
-          }
-        });
-      },
+      return runZoned(() => Invoker.current!.runTearDowns(_tearDownAlls),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
           zoneValues: {#test.declarer: this});

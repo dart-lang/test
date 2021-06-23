@@ -9,7 +9,8 @@ import 'package:async/async.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart' show RemoteException;
 import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// A sink transformer that wraps data and error events so that errors can be
@@ -54,8 +55,17 @@ void listen(Function Function() getMain, List data) {
         return;
       } else if (main is! Function(StreamChannel) &&
           main is! Function(StreamChannel, Never)) {
-        _sendError(channel,
-            'Top-level hybridMain() function must take one or two arguments.');
+        if (main is Function(StreamChannel<Never>) ||
+            main is Function(StreamChannel<Never>, Never)) {
+          _sendError(
+              channel,
+              'The first parameter to the top-level hybridMain() must be a '
+              'StreamChannel<dynamic> or StreamChannel<Object?>. More specific '
+              'types such as StreamChannel<Object> are not supported.');
+        } else {
+          _sendError(channel,
+              'Top-level hybridMain() function must take one or two arguments.');
+        }
         return;
       }
 

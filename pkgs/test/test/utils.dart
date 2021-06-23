@@ -1,8 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//
-// @dart=2.7
 
 import 'dart:async';
 import 'dart:collection';
@@ -29,7 +27,7 @@ import 'package:test/test.dart';
 final suitePlatform = SuitePlatform(Runtime.vm);
 
 // The last state change detected via [expectStates].
-State lastState;
+State? lastState;
 
 /// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
 ///
@@ -60,7 +58,7 @@ void expectSingleFailure(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState!.status, equals(Status.complete));
       expect(error, isTestFailure('oh no'));
     }
   ]);
@@ -75,7 +73,7 @@ void expectSingleError(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState.status, equals(Status.complete));
+      expect(lastState!.status, equals(Status.complete));
       expect(error, equals('oh no'));
     }
   ]);
@@ -103,7 +101,7 @@ Matcher isApplicationException(message) =>
 
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
-  var test = LocalTest('test', Metadata(), body);
+  var test = LocalTest('test', Metadata(chainStackTraces: true), body);
   var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }
@@ -147,10 +145,10 @@ void expectTestFailed(LiveTest liveTest, message) {
 /// is called at some later time.
 ///
 /// [stopBlocking] is passed the return value of [test].
-Future expectTestBlocks(
+Future<void> expectTestBlocks(
     dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
-  LiveTest liveTest;
-  Future future;
+  late LiveTest liveTest;
+  late Future<void> future;
   liveTest = createTest(() {
     var value = test();
     future = pumpEventQueue().then((_) {
@@ -171,7 +169,7 @@ Future expectTestBlocks(
 ///
 /// This is typically used to run multiple tests where later tests make
 /// assertions about the results of previous ones.
-Future expectTestsPass(void Function() body) async {
+Future<void> expectTestsPass(void Function() body) async {
   var engine = declareEngine(body);
   var success = await engine.run();
 
@@ -190,7 +188,7 @@ List<GroupEntry> declare(void Function() body) {
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
 Engine declareEngine(void Function() body,
-    {bool runSkipped = false, String coverage}) {
+    {bool runSkipped = false, String? coverage}) {
   var declarer = Declarer()..declare(body);
   return Engine.withSuites([
     RunnerSuite(
