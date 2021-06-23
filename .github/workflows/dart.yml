@@ -13,7 +13,6 @@ defaults:
     shell: bash
 env:
   PUB_ENVIRONMENT: bot.github
-  FORCE_TEST_EXIT: true
 
 jobs:
   job_001:
