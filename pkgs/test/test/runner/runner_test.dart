@@ -108,7 +108,7 @@ Output:
           [expanded] (default)        A separate line for each update.
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
 
-    --file-reporter                   Set the reporter used to write test results to a file.
+    --file-reporter                   Enable an additional reporter writing test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
     --verbose-trace                   Emit stack traces with core library frames.
     --js-trace                        Emit raw JavaScript stack traces for browser tests.
@@ -714,8 +714,7 @@ void main(List<String> args) async {
   test.completeShutdown();
 }''').create();
       var test = await runDart(['runner.dart', '--no-color', '--', 'test.dart'],
-          description: 'dart runner.dart -- test.dart',
-          environment: {'FORCE_TEST_EXIT': 'false'});
+          description: 'dart runner.dart -- test.dart');
       expect(
           test.stdout,
           emitsThrough(containsInOrder([
@@ -838,6 +837,42 @@ $_testContents''').create();
         expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
         await test.shouldExit(0);
       });
+    });
+  });
+
+  group('language experiments', () {
+    group('are inherited from the executable arguments', () {
+      setUp(() async {
+        await d.file('test.dart', '''
+// @dart=2.10
+import 'package:test/test.dart';
+
+// Compile time error if the experiment is enabled
+int x;
+
+void main() {
+  test('x is null', () {
+    expect(x, isNull);
+  });
+}
+''').create();
+      });
+
+      for (var platform in ['vm', 'chrome']) {
+        test('on the $platform platform', () async {
+          var test = await runTest(['test.dart', '-p', platform],
+              vmArgs: ['--enable-experiment=non-nullable']);
+
+          await expectLater(test.stdout, emitsThrough(contains('int x;')));
+          await test.shouldExit(1);
+
+          // Test that they can be removed on subsequent runs as well
+          test = await runTest(['test.dart', '-p', platform]);
+          await expectLater(
+              test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        });
+      }
     });
   });
 }

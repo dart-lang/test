@@ -33,7 +33,15 @@ void registerException(Object error,
 /// without cluttering the output for successful tests. Note that unlike
 /// [print], each individual message passed to [printOnFailure] will be
 /// separated by a blank line.
-void printOnFailure(String message) => Invoker.current!.printOnFailure(message);
+void printOnFailure(String message) {
+  var invoker = Invoker.current;
+  if (invoker == null) {
+    throw StateError(
+        'There is no current invoker. Please make sure that you are making the '
+        'call inside a test zone.');
+  }
+  return invoker.printOnFailure(message);
+}
 
 /// Marks the current test as skipped.
 ///

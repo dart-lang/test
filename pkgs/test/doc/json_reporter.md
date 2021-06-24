@@ -19,8 +19,8 @@ JSON reporter.
 
     pub run test --reporter json <path-to-test-file>
 
-You may also use the `--file-reporter` option to enable the JSON reporter such
-that it writes to a file instead of stdout.
+You may also use the `--file-reporter` option to enable the JSON reporter output
+to a file, in addition to another reporter writing to stdout.
 
     pub run test --file-reporter json:reports/tests.json <path-to-test-file>
 
@@ -99,7 +99,9 @@ class StartEvent extends Event {
   String protocolVersion;
 
   // The version of the test runner being used.
-  String runnerVersion;
+  //
+  // This is null if for some reason the version couldn't be loaded.
+  String? runnerVersion;
 
   // The pid of the VM process running the tests.
   int pid;
@@ -112,7 +114,7 @@ test runner has started running.
 ### AllSuitesEvent
 
 ```
-class AllSuitesEvent {
+class AllSuitesEvent extends Event {
   String type = "allSuites";
 
   /// The total number of suites that will be loaded.
@@ -151,11 +153,11 @@ class DebugEvent extends Event {
 
   /// The HTTP URL for the Dart Observatory, or `null` if the Observatory isn't
   /// available for this suite.
-  String observatory;
+  String? observatory;
 
   /// The HTTP URL for the remote debugger for this suite's host page, or `null`
   /// if no remote debugger is available for this suite.
-  String remoteDebugger;
+  String? remoteDebugger;
 }
 ```
 
@@ -316,7 +318,10 @@ class DoneEvent extends Event {
   String type = "done";
 
   // Whether all tests succeeded (or were skipped).
-  bool success;
+  //
+  // Will be `null` if the test runner was close before all tests completed
+  // running.
+  bool? success;
 }
 ```
 
@@ -343,30 +348,30 @@ class Test {
   List<int> groupIDs;
 
   // The (1-based) line on which the test was defined, or `null`.
-  int line;
+  int? line;
 
   // The (1-based) column on which the test was defined, or `null`.
-  int column;
+  int? column;
 
   // The URL for the file in which the test was defined, or `null`.
-  String url;
+  String? url;
 
   // The (1-based) line in the original test suite from which the test
   // originated.
   //
   // Will only be present if `root_url` is different from `url`.
-  int root_line;
+  int? root_line;
 
   // The (1-based) line on in the original test suite from which the test
   // originated.
   //
   // Will only be present if `root_url` is different from `url`.
-  int root_column;
+  int? root_column;
 
   // The URL for the original test suite in which the test was defined.
   //
   // Will only be present if different from `url`.
-  String root_url;
+  String? root_url;
 
   // This field is deprecated and should not be used.
   Metadata metadata;
@@ -394,10 +399,10 @@ class Suite {
   int id;
 
   // The platform on which the suite is running.
-  String? platform;
+  String platform;
 
-  // The path to the suite's file.
-  String path;
+  // The path to the suite's file, or `null` if that path is unknown.
+  String? path;
 }
 ```
 
@@ -418,7 +423,7 @@ class Group {
   int id;
 
   // The name of the group, including prefixes from any containing groups.
-  String? name;
+  String name;
 
   // The ID of the suite containing this group.
   int suiteID;
@@ -430,13 +435,13 @@ class Group {
   int testCount;
 
   // The (1-based) line on which the group was defined, or `null`.
-  int line;
+  int? line;
 
   // The (1-based) column on which the group was defined, or `null`.
-  int column;
+  int? column;
 
   // The URL for the file in which the group was defined, or `null`.
-  String url;
+  String? url;
 
   // This field is deprecated and should not be used.
   Metadata metadata;
@@ -460,6 +465,8 @@ and may be a `package:` URL.
 ```
 class Metadata {
   bool skip;
+
+  // The reason the tests was skipped, or `null` if it wasn't skipped.
   String? skipReason;
 }
 ```

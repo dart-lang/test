@@ -1,4 +1,50 @@
-## 1.17.0-dev
+## 1.17.10-dev
+
+## 1.17.9
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
+## 1.17.8
+
+* Update json reporter docs with updated nullability annotations and
+  descriptions.
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
+
+## 1.17.7
+
+* Support the latest `test_core`.
+
+## 1.17.6
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 1.17.5
+
+* Support the latest vm_service release (`7.0.0`).
+
+## 1.17.4
+
+* Fix race condition between compilation of vm tests and the running of
+  isolates.
+
+## 1.17.3
+
+* Forward experiment args from the runner executable to the compiler with the
+  new vm test loading strategy.
+
+## 1.17.2
+
+* Fix a windows issue with the new loading strategy.
+
+## 1.17.1
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
+## 1.17.0
 
 * Change the default way VM tests are launched and ran to greatly speed up
   loading performance.

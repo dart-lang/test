@@ -13,8 +13,6 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/vm/test_compiler.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
 import 'package:vm_service/vm_service_io.dart';
@@ -35,8 +33,8 @@ import 'environment.dart';
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
-  final _compiler =
-      TestCompiler(p.join(p.current, '.dart_tool', 'pkg_test_kernel.bin'));
+  final _compiler = TestCompiler(
+      p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
 
   VMPlatform();
@@ -65,6 +63,7 @@ class VMPlatform extends PlatformPlugin {
     StreamSubscription<Event>? eventSub;
     var channel = IsolateChannel.connectReceive(receivePort)
         .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
+      receivePort.close();
       isolate!.kill();
       eventSub?.cancel();
       client?.dispose();

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
@@ -190,6 +191,12 @@ class Configuration {
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
+  /// The seed used to generate randomess for test case shuffling.
+  ///
+  /// If null or zero no shuffling will occur.
+  /// The same seed will shuffle the tests in the same way every time.
+  final int? testRandomizeOrderingSeed;
+
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
@@ -202,28 +209,31 @@ class Configuration {
   /// Throws a [FormatException] if [args] are invalid.
   factory Configuration.parse(List<String> arguments) => args.parse(arguments);
 
-  /// Loads the configuration from [path].
+  /// Loads configuration from [path].
   ///
-  /// If [global] is `true`, this restricts the configuration file to only rules
-  /// that are supported globally.
+  /// If [global] is `true`, this restricts the configuration to rules that are
+  /// supported globally.
   ///
   /// Throws an [IOException] if [path] does not exist or cannot be read. Throws
-  /// a [FormatException] if its contents are invalid.
-  factory Configuration.load(String path, {bool global = false}) =>
-      load(path, global: global);
+  /// a [FormatException] if the file contents are invalid.
+  factory Configuration.load(String path, {bool global = false}) {
+    final content = File(path).readAsStringSync();
+    final sourceUrl = p.toUri(path);
+    return parse(content, global: global, sourceUrl: sourceUrl);
+  }
 
-  /// Loads the configuration from YAML formatted [source].
+  /// Parses configuration from YAML formatted [content].
   ///
-  /// If [global] is `true`, this restricts the configuration file to only rules
-  /// that are supported globally.
+  /// If [global] is `true`, this restricts the configuration to rules that are
+  /// supported globally.
   ///
-  /// If [sourceUrl] is provided then that will be set as the source url for
-  /// the yaml document.
+  /// If [sourceUrl] is provided it will be set as the source url for the yaml
+  /// document.
   ///
-  /// Throws a [FormatException] if its contents are invalid.
-  factory Configuration.loadFromString(String source,
+  /// Throws a [FormatException] if the content is invalid.
+  factory Configuration.loadFromString(String content,
           {bool global = false, Uri? sourceUrl}) =>
-      loadFromString(source, global: global, sourceUrl: sourceUrl);
+      parse(content, global: global, sourceUrl: sourceUrl);
 
   factory Configuration(
       {bool? help,
@@ -301,6 +311,7 @@ class Configuration {
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         suiteDefaults: SuiteConfiguration(
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -312,7 +323,6 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
-            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
 
             // Test-level configuration
             timeout: timeout,
@@ -364,6 +374,7 @@ class Configuration {
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
       bool? useDataIsolateStrategy,
+      this.testRandomizeOrderingSeed,
       SuiteConfiguration? suiteDefaults})
       : _help = help,
         customHtmlTemplatePath = customHtmlTemplatePath,
@@ -525,6 +536,8 @@ class Configuration {
         noRetry: other._noRetry ?? _noRetry,
         useDataIsolateStrategy:
             other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
+        testRandomizeOrderingSeed:
+            other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -621,7 +634,6 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
-            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
             timeout: timeout,
             verboseTrace: verboseTrace,
             chainStackTraces: chainStackTraces,

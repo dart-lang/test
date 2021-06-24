@@ -166,12 +166,6 @@ Future<void> _execute(List<String> args) async {
     await runner?.close();
   }
 
-  // TODO(grouma) - figure out why the executable can hang in the travis
-  // environment. https://github.com/dart-lang/test/issues/599
-  if (Platform.environment['FORCE_TEST_EXIT'] == 'true') {
-    exit(exitCode);
-  }
-
   return;
 }
 

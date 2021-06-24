@@ -1,26 +1,35 @@
 #!/bin/bash
-# Created with package:mono_repo v3.4.7
+# Created with package:mono_repo v5.0.0
 
 # Support built in commands on windows out of the box.
+# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
+# then "flutter" is called instead of "pub".
+# This assumes that the Flutter SDK has been installed in a previous step.
 function pub() {
-  if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    command pub.bat "$@"
+  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
+    command flutter pub "$@"
   else
-    command pub "$@"
+    command dart pub "$@"
   fi
 }
-function dartfmt() {
-  if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    command dartfmt.bat "$@"
+# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
+# then "flutter" is called instead of "pub".
+# This assumes that the Flutter SDK has been installed in a previous step.
+function format() {
+  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
+    command flutter format "$@"
   else
-    command dartfmt "$@"
+    command dart format "$@"
   fi
 }
-function dartanalyzer() {
-  if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    command dartanalyzer.bat "$@"
+# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
+# then "flutter" is called instead of "pub".
+# This assumes that the Flutter SDK has been installed in a previous step.
+function analyze() {
+  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
+    command flutter analyze "$@"
   else
-    command dartanalyzer "$@"
+    command dart analyze "$@"
   fi
 }
 
@@ -47,17 +56,21 @@ for PKG in ${PKGS}; do
     exit 64
   fi
 
-  pub upgrade --no-precompile || EXIT_CODE=$?
+  dart pub upgrade || EXIT_CODE=$?
 
   if [[ ${EXIT_CODE} -ne 0 ]]; then
-    echo -e "\033[31mPKG: ${PKG}; 'pub upgrade' - FAILED  (${EXIT_CODE})\033[0m"
-    FAILURES+=("${PKG}; 'pub upgrade'")
+    echo -e "\033[31mPKG: ${PKG}; 'dart pub upgrade' - FAILED  (${EXIT_CODE})\033[0m"
+    FAILURES+=("${PKG}; 'dart pub upgrade'")
   else
     for TASK in "$@"; do
       EXIT_CODE=0
       echo
       echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
       case ${TASK} in
+      analyze)
+        echo 'dart analyze --fatal-infos --fatal-warnings .'
+        dart analyze --fatal-infos --fatal-warnings . || EXIT_CODE=$?
+        ;;
       command_0)
         echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 0'
         xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
@@ -82,17 +95,13 @@ for PKG in ${PKGS}; do
         echo 'pub run test --preset travis -x browser'
         pub run test --preset travis -x browser || EXIT_CODE=$?
         ;;
-      dartanalyzer)
-        echo 'dartanalyzer --fatal-infos --fatal-warnings .'
-        dartanalyzer --fatal-infos --fatal-warnings . || EXIT_CODE=$?
-        ;;
-      dartfmt)
-        echo 'dartfmt -n --set-exit-if-changed .'
-        dartfmt -n --set-exit-if-changed . || EXIT_CODE=$?
+      format)
+        echo 'dart format --output=none --set-exit-if-changed .'
+        dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
       test)
-        echo 'pub run test -p chrome,vm,node'
-        pub run test -p chrome,vm,node || EXIT_CODE=$?
+        echo 'dart test -p chrome,vm,node'
+        dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

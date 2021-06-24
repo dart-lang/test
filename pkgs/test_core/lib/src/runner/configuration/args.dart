@@ -135,7 +135,7 @@ final ArgParser _parser = (() {
       allowed: reporterDescriptions.keys.toList(),
       allowedHelp: reporterDescriptions);
   parser.addOption('file-reporter',
-      help: 'Set the reporter used to write test results to a file.\n'
+      help: 'Enable an additional reporter writing test results to a file.\n'
           'Should be in the form <reporter>:<filepath>, '
           'Example: "json:reports/tests.json"');
   parser.addFlag('verbose-trace',

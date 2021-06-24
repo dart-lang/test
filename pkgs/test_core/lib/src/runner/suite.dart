@@ -86,11 +86,6 @@ class SuiteConfiguration {
   /// configuration fields, but that isn't enforced.
   final Map<PlatformSelector, SuiteConfiguration> onPlatform;
 
-  /// The seed with which to shuffle the test order.
-  /// Default value is null if not provided and will not change the test order.
-  /// The same seed will shuffle the tests in the same way every time.
-  final int? testRandomizeOrderingSeed;
-
   /// The global test metadata derived from this configuration.
   Metadata get metadata {
     if (tags.isEmpty && onPlatform.isEmpty) return _metadata;
@@ -140,7 +135,6 @@ class SuiteConfiguration {
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout? timeout,
@@ -162,7 +156,6 @@ class SuiteConfiguration {
         excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
-        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         metadata: Metadata(
             timeout: timeout,
             verboseTrace: verboseTrace,
@@ -190,7 +183,6 @@ class SuiteConfiguration {
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
       Metadata? metadata})
       : _jsTrace = jsTrace,
         _runSkipped = runSkipped,
@@ -201,7 +193,6 @@ class SuiteConfiguration {
         excludeTags = excludeTags ?? BooleanSelector.none,
         tags = _map(tags),
         onPlatform = _map(onPlatform),
-        testRandomizeOrderingSeed = testRandomizeOrderingSeed,
         _metadata = metadata ?? Metadata.empty;
 
   /// Creates a new [SuiteConfiguration] that takes its configuration from
@@ -250,8 +241,6 @@ class SuiteConfiguration {
         excludeTags: excludeTags.union(other.excludeTags),
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
-        testRandomizeOrderingSeed:
-            other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
   }
@@ -271,7 +260,6 @@ class SuiteConfiguration {
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout? timeout,
@@ -293,8 +281,6 @@ class SuiteConfiguration {
         excludeTags: excludeTags ?? this.excludeTags,
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
-        testRandomizeOrderingSeed:
-            testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         metadata: _metadata.change(
             timeout: timeout,
             verboseTrace: verboseTrace,

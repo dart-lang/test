@@ -69,6 +69,12 @@ class Engine {
   /// The coverage output directory.
   String? _coverage;
 
+  /// The seed used to generate randomess for test case shuffling.
+  ///
+  /// If null or zero no shuffling will occur.
+  /// The same seed will shuffle the tests in the same way every time.
+  int? testRandomizeOrderingSeed;
+
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
 
@@ -128,17 +134,6 @@ class Engine {
   /// This is guaranteed to fire after the suite is added to [addedSuites].
   Stream<RunnerSuite> get onSuiteAdded => _onSuiteAddedController.stream;
   final _onSuiteAddedController = StreamController<RunnerSuite>.broadcast();
-
-  /// All the currently-known suites that have run or are running.
-  ///
-  /// These are [LiveSuite]s, representing the in-progress state of each suite
-  /// as its component tests are being run.
-  ///
-  /// Note that unlike [addedSuites], for suites that are loaded using
-  /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
-  /// be in this set.
-  Set<LiveSuite> get liveSuites => UnmodifiableSetView(_liveSuites);
-  final _liveSuites = <LiveSuite>{};
 
   /// A broadcast stream that emits each [LiveSuite] as it's loaded.
   ///
@@ -209,7 +204,7 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
   /// defaults to 1.
-  Engine({int? concurrency, String? coverage})
+  Engine({int? concurrency, String? coverage, this.testRandomizeOrderingSeed})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage {
     _group.future.then((_) {
@@ -312,9 +307,9 @@ class Engine {
       if (!_closed && setUpAllSucceeded) {
         // shuffle the group entries
         var entries = group.entries.toList();
-        if (suiteConfig.testRandomizeOrderingSeed != null &&
-            suiteConfig.testRandomizeOrderingSeed! > 0) {
-          entries.shuffle(Random(suiteConfig.testRandomizeOrderingSeed));
+        if (testRandomizeOrderingSeed != null &&
+            testRandomizeOrderingSeed! > 0) {
+          entries.shuffle(Random(testRandomizeOrderingSeed));
         }
 
         for (var entry in entries) {
@@ -491,7 +486,6 @@ class Engine {
   /// Add [liveSuite] and the information it exposes to the engine's
   /// informational streams and collections.
   void _addLiveSuite(LiveSuite liveSuite) {
-    _liveSuites.add(liveSuite);
     _onSuiteStartedController.add(liveSuite);
 
     _onTestStartedGroup.add(liveSuite.onTestStarted);

@@ -1,4 +1,50 @@
-## 0.3.20-dev
+## 0.3.30-dev
+
+* Remove support for `FORCE_TEST_EXIT`.
+
+## 0.3.29
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
+## 0.3.28
+
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
+
+## 0.3.27
+
+* Restore the `Configuration.loadFromString` constructor.
+
+## 0.3.26
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 0.3.25
+
+* Support the latest vm_service release (`7.0.0`).
+
+## 0.3.24
+
+* Fix race condition between compilation of vm tests and the running of
+  isolates.
+
+## 0.3.23
+
+* Forward experiment args from the runner executable to the compiler with the
+  new vm test loading strategy.
+
+## 0.3.22
+
+* Fix a windows issue with the new loading strategy.
+
+## 0.3.21
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
+## 0.3.20
 
 * Add library `scaffolding.dart` to allow importing a subset of the normal
   surface area.
@@ -228,7 +274,7 @@
 ## 0.2.17
 
 * Add `file_reporters` configuration option and `--file-reporter` CLI option to
-  allow specifying a separate reporter that writes to a file instead of stdout.
+  allow specifying a separate reporter that writes to a file.
 
 ## 0.2.16
 

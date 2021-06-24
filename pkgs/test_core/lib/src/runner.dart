@@ -73,8 +73,10 @@ class Runner {
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
-        var engine =
-            Engine(concurrency: config.concurrency, coverage: config.coverage);
+        var engine = Engine(
+            concurrency: config.concurrency,
+            coverage: config.coverage,
+            testRandomizeOrderingSeed: config.testRandomizeOrderingSeed);
 
         var sinks = <IOSink>[];
         Reporter createFileReporter(String reporterName, String filepath) {
