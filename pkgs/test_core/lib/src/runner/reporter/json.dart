@@ -246,21 +246,17 @@ class JsonReporter implements Reporter {
   void _onComplete(LiveTest liveTest) {
     _emit('testDone', {
       'testID': _liveTestIDs[liveTest],
-      'result': _getTestResultString(liveTest),
+      'result': _normalizeTestResult(liveTest),
       'skipped': liveTest.state.result == Result.skipped,
       'hidden': !_engine.liveTests.contains(liveTest)
     });
   }
 
-  String _getTestResultString(LiveTest liveTest) {
+  String _normalizeTestResult(LiveTest liveTest) {
     // For backwards-compatibility, report skipped tests as successes.
-    if (liveTest.state.result == Result.skipped) {
-      return 'success';
-    }
+    if (liveTest.state.result == Result.skipped) return 'success';
     // if test is still active, it was probably cancelled
-    if (_engine.active.contains(liveTest)) {
-      return 'error';
-    }
+    if (_engine.active.contains(liveTest)) return 'error';
     return liveTest.state.result.toString();
   }
 
