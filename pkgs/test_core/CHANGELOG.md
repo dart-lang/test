@@ -1,6 +1,8 @@
 ## 0.3.30-dev
 
 * Remove support for `FORCE_TEST_EXIT`.
+* Report incomplete tests as errors in the JSON reporter when the run is
+  canceled early.
 
 ## 0.3.29
 
