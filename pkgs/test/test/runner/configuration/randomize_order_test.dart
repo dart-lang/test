@@ -74,6 +74,12 @@ void main() {
               'Shuffling test order with --test-randomize-ordering-seed=0'))
         ]));
     await test.shouldExit(0);
+
+    // Doesn't log about shuffling with the json reporter
+    test = await runTest(
+        ['test.dart', '--test-randomize-ordering-seed=random', '-r', 'json']);
+    expect(test.stdout, neverEmits(contains('Shuffling test order')));
+    await test.shouldExit(0);
   });
 
   test('shuffles each suite with the same seed', () async {
