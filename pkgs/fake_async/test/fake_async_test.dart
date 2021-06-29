@@ -526,6 +526,31 @@ void main() {
         expect(timer.isActive, isFalse);
       });
     });
+
+    test('should increment tick in a non-periodic timer', () {
+      return FakeAsync().run((async) {
+        late Timer timer;
+        timer = Timer(elapseBy, expectAsync0(() {
+          expect(timer.tick, 1);
+        }));
+
+        expect(timer.tick, 0);
+        async.elapse(elapseBy);
+      });
+    });
+
+    test('should increment tick in a periodic timer', () {
+      return FakeAsync().run((async) {
+        final ticks = [];
+        Timer.periodic(
+            elapseBy,
+            expectAsync1((timer) {
+              ticks.add(timer.tick);
+            }, count: 2));
+        async..elapse(elapseBy)..elapse(elapseBy);
+        expect(ticks, [1, 2]);
+      });
+    });
   });
 
   group('clock', () {

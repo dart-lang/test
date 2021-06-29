@@ -283,10 +283,10 @@ class FakeTimer implements Timer {
   /// The current stack trace when this timer was created.
   final creationStackTrace = StackTrace.current;
 
+  var _tick = 0;
+
   @override
-  int get tick {
-    throw UnimplementedError('tick');
-  }
+  int get tick => _tick;
 
   /// Returns debugging information to try to identify the source of the
   /// [Timer].
@@ -308,6 +308,7 @@ class FakeTimer implements Timer {
   /// Fires this timer's callback and updates its state as necessary.
   void _fire() {
     assert(isActive);
+    _tick++;
     if (isPeriodic) {
       _callback(this);
       _nextCall += duration;

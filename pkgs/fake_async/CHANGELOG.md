@@ -1,3 +1,7 @@
+## 1.3.0-dev
+
+* `FakeTimer.tick` will return a value instead of throwing.
+
 ## 1.2.0
 
 * Stable release for null safety.
