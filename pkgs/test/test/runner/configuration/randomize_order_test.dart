@@ -80,10 +80,9 @@ void main() {
         ['test.dart', '--test-randomize-ordering-seed=random', '-r', 'json']);
     expect(
         test.stdout,
-        emitsInAnyOrder([
-          isNot((contains(
-              'Shuffling test order with --test-randomize-ordering-seed'))),
-        ]));
+        isNot(emitsInAnyOrder([
+          contains('Shuffling test order with --test-randomize-ordering-seed'),
+        ])));
     await test.shouldExit(0);
   });
 
