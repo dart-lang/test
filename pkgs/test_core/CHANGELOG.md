@@ -4,6 +4,8 @@
 * Report incomplete tests as errors in the JSON reporter when the run is
   canceled early.
 * Don't log the --test-randomization-ordering-seed if using the json reporter.
+* Add a new exit code, 79, which is used when no tests were ran.
+* When no tests were ran but tags were provided, list the tag configuration.
 
 ## 0.3.29
 

@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/no_tests_found_exception.dart';
 
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
@@ -155,6 +156,9 @@ Future<void> _execute(List<String> args) async {
   } on FormatException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
+  } on NoTestsFoundException catch (error) {
+    stderr.writeln(error.message);
+    exitCode = exit_codes.noTestsRan;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(Trace.from(stackTrace).terse);
