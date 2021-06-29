@@ -223,12 +223,18 @@ class _Parser {
       }
     }
 
+    var reporter = _ifParsed('reporter') as String?;
+
     var testRandomizeOrderingSeed =
         _parseOption('test-randomize-ordering-seed', (value) {
       var seed = value == 'random'
           ? Random().nextInt(4294967295)
           : int.parse(value).toUnsigned(32);
-      print('Shuffling test order with --test-randomize-ordering-seed=$seed');
+
+      // TODO(#1547): Less hacky way of not breaking the json reporter
+      if (reporter != 'json') {
+        print('Shuffling test order with --test-randomize-ordering-seed=$seed');
+      }
 
       return seed;
     });
@@ -251,7 +257,7 @@ class _Parser {
         dart2jsPath: _ifParsed('dart2js-path'),
         dart2jsArgs: _ifParsed('dart2js-args'),
         precompiledPath: _ifParsed('precompiled'),
-        reporter: _ifParsed('reporter'),
+        reporter: reporter,
         fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),
         pubServePort: _parseOption('pub-serve', int.parse),
