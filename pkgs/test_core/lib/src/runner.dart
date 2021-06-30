@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:boolean_selector/boolean_selector.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
@@ -17,7 +18,7 @@ import 'package:test_api/src/backend/test.dart'; // ignore: implementation_impor
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/reporter/multiplex.dart';
 
-import 'runner/application_exception.dart';
+import 'runner/no_tests_found_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
@@ -135,14 +136,22 @@ class Runner {
 
         if (_engine.passed.isEmpty &&
             _engine.failed.isEmpty &&
-            _engine.skipped.isEmpty &&
-            _config.suiteDefaults.patterns.isNotEmpty) {
-          var patterns = toSentence(_config.suiteDefaults.patterns.map(
-              (pattern) => pattern is RegExp
-                  ? 'regular expression "${pattern.pattern}"'
-                  : '"$pattern"'));
-
-          throw ApplicationException('No tests match $patterns.');
+            _engine.skipped.isEmpty) {
+          if (_config.suiteDefaults.patterns.isNotEmpty) {
+            var patterns = toSentence(_config.suiteDefaults.patterns.map(
+                (pattern) => pattern is RegExp
+                    ? 'regular expression "${pattern.pattern}"'
+                    : '"$pattern"'));
+            throw NoTestsFoundException('No tests match $patterns.');
+          } else if (_config.suiteDefaults.includeTags != BooleanSelector.all ||
+              _config.suiteDefaults.excludeTags != BooleanSelector.none) {
+            throw NoTestsFoundException(
+                'No tests match the requested tag selectors:\n'
+                '  include: "${_config.suiteDefaults.includeTags}"\n'
+                '  exclude: "${_config.suiteDefaults.excludeTags}"');
+          } else {
+            throw NoTestsFoundException('No tests were found.');
+          }
         }
 
         return (success ?? false) &&

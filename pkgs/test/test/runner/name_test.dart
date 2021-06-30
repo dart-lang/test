@@ -76,7 +76,7 @@ void main() {
           test.stderr,
           emitsThrough(
               contains('No tests match regular expression "no match".')));
-      await test.shouldExit(exit_codes.data);
+      await test.shouldExit(exit_codes.noTestsRan);
     });
 
     test("doesn't filter out load exceptions", () async {
@@ -152,7 +152,7 @@ void main() {
 
       var test = await runTest(['--plain-name', 'no match', 'test.dart']);
       expect(test.stderr, emitsThrough(contains('No tests match "no match".')));
-      await test.shouldExit(exit_codes.data);
+      await test.shouldExit(exit_codes.noTestsRan);
     });
   });
 

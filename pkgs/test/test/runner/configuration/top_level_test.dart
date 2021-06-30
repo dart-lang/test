@@ -282,7 +282,7 @@ void main() {
               "Warning: this package doesn't support running tests on the Dart "
               'VM.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('warns about the OS when some OSes are supported', () async {
@@ -302,7 +302,7 @@ void main() {
           emits("Warning: this package doesn't support running tests on "
               '${currentOS.name}.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('warns about browsers in general when no browsers are supported',
@@ -323,7 +323,7 @@ void main() {
           emits(
               "Warning: this package doesn't support running tests on browsers."));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test(
@@ -347,7 +347,7 @@ void main() {
           emits("Warning: this package doesn't support running tests on Chrome "
               'or Firefox.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
   });
 

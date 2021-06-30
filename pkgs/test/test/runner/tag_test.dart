@@ -72,7 +72,7 @@ void main() {
     test('prints no warnings when all tags are specified', () async {
       var test = await runTest(['--tags=a,b,c', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
   });
 
@@ -110,7 +110,7 @@ void main() {
 
       var test = await runTest(['--exclude-tags=a', 'test.dart']);
       expect(test.stdout, emits('No tests ran.'));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('allows unused tags', () async {
@@ -182,7 +182,7 @@ void main() {
 
     var test = await runTest(['-x', 'a', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('No tests ran')));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
   });
 
   group('warning formatting', () {
