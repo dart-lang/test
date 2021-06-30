@@ -143,7 +143,7 @@ void main() {
     var test =
         await runTest(['test.dart', '--shard-index=1', '--total-shards=3']);
     expect(test.stdout, emitsThrough('No tests ran.'));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
   });
 
   group('reports an error if', () {

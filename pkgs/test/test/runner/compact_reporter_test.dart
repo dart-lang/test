@@ -18,7 +18,7 @@ void main() {
 
     var test = await runTest(['test.dart'], reporter: 'compact');
     expect(test.stdout, emitsThrough(contains('No tests ran.')));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
   });
 
   test('runs several successful tests and reports when each completes', () {
