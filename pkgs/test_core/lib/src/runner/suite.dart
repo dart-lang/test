@@ -23,7 +23,23 @@ class SuiteConfiguration {
   ///
   /// Using this is slightly more efficient than manually constructing a new
   /// configuration with no arguments.
-  static final empty = SuiteConfiguration._();
+  static final empty = SuiteConfiguration._(
+      allowTestRandomization: null,
+      jsTrace: null,
+      runSkipped: null,
+      dart2jsArgs: null,
+      precompiledPath: null,
+      patterns: null,
+      runtimes: null,
+      includeTags: null,
+      excludeTags: null,
+      tags: null,
+      onPlatform: null,
+      metadata: null);
+
+  /// Whether test randomization should be allowed for this test.
+  bool get allowTestRandomization => _allowTestRandomization ?? true;
+  final bool? _allowTestRandomization;
 
   /// Whether JavaScript stack traces should be left as-is or converted to
   /// Dart-like traces.
@@ -125,27 +141,29 @@ class SuiteConfiguration {
   }
 
   factory SuiteConfiguration(
-      {bool? jsTrace,
-      bool? runSkipped,
-      Iterable<String>? dart2jsArgs,
-      String? precompiledPath,
-      Iterable<Pattern>? patterns,
-      Iterable<RuntimeSelection>? runtimes,
-      BooleanSelector? includeTags,
-      BooleanSelector? excludeTags,
-      Map<BooleanSelector, SuiteConfiguration>? tags,
-      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      {required bool? allowTestRandomization,
+      required bool? jsTrace,
+      required bool? runSkipped,
+      required Iterable<String>? dart2jsArgs,
+      required String? precompiledPath,
+      required Iterable<Pattern>? patterns,
+      required Iterable<RuntimeSelection>? runtimes,
+      required BooleanSelector? includeTags,
+      required BooleanSelector? excludeTags,
+      required Map<BooleanSelector, SuiteConfiguration>? tags,
+      required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
 
       // Test-level configuration
-      Timeout? timeout,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      bool? skip,
-      int? retry,
-      String? skipReason,
-      PlatformSelector? testOn,
-      Iterable<String>? addTags}) {
+      required Timeout? timeout,
+      required bool? verboseTrace,
+      required bool? chainStackTraces,
+      required bool? skip,
+      required int? retry,
+      required String? skipReason,
+      required PlatformSelector? testOn,
+      required Iterable<String>? addTags}) {
     var config = SuiteConfiguration._(
+        allowTestRandomization: allowTestRandomization,
         jsTrace: jsTrace,
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
@@ -168,23 +186,84 @@ class SuiteConfiguration {
     return config._resolveTags();
   }
 
+  /// A constructor that doesn't require all of its options to be passed.
+  ///
+  /// This should only be used in situations where you really only want to
+  /// configure a specific restricted set of options.
+  factory SuiteConfiguration._unsafe(
+          {bool? allowTestRandomization,
+          bool? jsTrace,
+          bool? runSkipped,
+          Iterable<String>? dart2jsArgs,
+          String? precompiledPath,
+          Iterable<Pattern>? patterns,
+          Iterable<RuntimeSelection>? runtimes,
+          BooleanSelector? includeTags,
+          BooleanSelector? excludeTags,
+          Map<BooleanSelector, SuiteConfiguration>? tags,
+          Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+
+          // Test-level configuration
+          Timeout? timeout,
+          bool? verboseTrace,
+          bool? chainStackTraces,
+          bool? skip,
+          int? retry,
+          String? skipReason,
+          PlatformSelector? testOn,
+          Iterable<String>? addTags}) =>
+      SuiteConfiguration(
+          allowTestRandomization: allowTestRandomization,
+          jsTrace: jsTrace,
+          runSkipped: runSkipped,
+          dart2jsArgs: dart2jsArgs,
+          precompiledPath: precompiledPath,
+          patterns: patterns,
+          runtimes: runtimes,
+          includeTags: includeTags,
+          excludeTags: excludeTags,
+          tags: tags,
+          onPlatform: onPlatform,
+          timeout: timeout,
+          verboseTrace: verboseTrace,
+          chainStackTraces: chainStackTraces,
+          skip: skip,
+          retry: retry,
+          skipReason: skipReason,
+          testOn: testOn,
+          addTags: addTags);
+
+  /// A specialized constructor for only configuring the runtimes.
+  factory SuiteConfiguration.runtimes(Iterable<RuntimeSelection> runtimes) =>
+      SuiteConfiguration._unsafe(runtimes: runtimes);
+
+  /// A specialized constructor for only configuring runSkipped.
+  factory SuiteConfiguration.runSkipped(bool runSkipped) =>
+      SuiteConfiguration._unsafe(runSkipped: runSkipped);
+
+  /// A specialized constructor for only configuring the timeout.
+  factory SuiteConfiguration.timeout(Timeout timeout) =>
+      SuiteConfiguration._unsafe(timeout: timeout);
+
   /// Creates new SuiteConfiguration.
   ///
   /// Unlike [new SuiteConfiguration], this assumes [tags] is already
   /// resolved.
   SuiteConfiguration._(
-      {bool? jsTrace,
-      bool? runSkipped,
-      Iterable<String>? dart2jsArgs,
-      this.precompiledPath,
-      Iterable<Pattern>? patterns,
-      Iterable<RuntimeSelection>? runtimes,
-      BooleanSelector? includeTags,
-      BooleanSelector? excludeTags,
-      Map<BooleanSelector, SuiteConfiguration>? tags,
-      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      Metadata? metadata})
-      : _jsTrace = jsTrace,
+      {required bool? allowTestRandomization,
+      required bool? jsTrace,
+      required bool? runSkipped,
+      required Iterable<String>? dart2jsArgs,
+      required this.precompiledPath,
+      required Iterable<Pattern>? patterns,
+      required Iterable<RuntimeSelection>? runtimes,
+      required BooleanSelector? includeTags,
+      required BooleanSelector? excludeTags,
+      required Map<BooleanSelector, SuiteConfiguration>? tags,
+      required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      required Metadata? metadata})
+      : _allowTestRandomization = allowTestRandomization,
+        _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
         patterns = UnmodifiableSetView(patterns?.toSet() ?? {}),
@@ -199,11 +278,21 @@ class SuiteConfiguration {
   /// [metadata].
   factory SuiteConfiguration.fromMetadata(Metadata metadata) =>
       SuiteConfiguration._(
-          tags: metadata.forTag.map((key, child) =>
-              MapEntry(key, SuiteConfiguration.fromMetadata(child))),
-          onPlatform: metadata.onPlatform.map((key, child) =>
-              MapEntry(key, SuiteConfiguration.fromMetadata(child))),
-          metadata: metadata.change(forTag: {}, onPlatform: {}));
+        tags: metadata.forTag.map((key, child) =>
+            MapEntry(key, SuiteConfiguration.fromMetadata(child))),
+        onPlatform: metadata.onPlatform.map((key, child) =>
+            MapEntry(key, SuiteConfiguration.fromMetadata(child))),
+        metadata: metadata.change(forTag: {}, onPlatform: {}),
+        allowTestRandomization: null,
+        jsTrace: null,
+        runSkipped: null,
+        dart2jsArgs: null,
+        precompiledPath: null,
+        patterns: null,
+        runtimes: null,
+        includeTags: null,
+        excludeTags: null,
+      );
 
   /// Returns an unmodifiable copy of [input].
   ///
@@ -231,6 +320,8 @@ class SuiteConfiguration {
     if (other == SuiteConfiguration.empty) return this;
 
     var config = SuiteConfiguration._(
+        allowTestRandomization:
+            other._allowTestRandomization ?? _allowTestRandomization,
         jsTrace: other._jsTrace ?? _jsTrace,
         runSkipped: other._runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
@@ -250,7 +341,8 @@ class SuiteConfiguration {
   /// Note that unlike [merge], this has no merging behavior—the old value is
   /// always replaced by the new one.
   SuiteConfiguration change(
-      {bool? jsTrace,
+      {bool? allowTestRandomization,
+      bool? jsTrace,
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
       String? precompiledPath,
@@ -271,6 +363,8 @@ class SuiteConfiguration {
       PlatformSelector? testOn,
       Iterable<String>? addTags}) {
     var config = SuiteConfiguration._(
+        allowTestRandomization:
+            allowTestRandomization ?? _allowTestRandomization,
         jsTrace: jsTrace ?? _jsTrace,
         runSkipped: runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,

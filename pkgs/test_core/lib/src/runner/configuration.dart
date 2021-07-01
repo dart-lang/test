@@ -263,6 +263,7 @@ class Configuration {
       bool? useDataIsolateStrategy,
 
       // Suite-level configuration
+      bool? allowTestRandomization,
       bool? jsTrace,
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
@@ -313,6 +314,7 @@ class Configuration {
         useDataIsolateStrategy: useDataIsolateStrategy,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         suiteDefaults: SuiteConfiguration(
+            allowTestRandomization: allowTestRandomization,
             jsTrace: jsTrace,
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
@@ -402,7 +404,7 @@ class Configuration {
         _useDataIsolateStrategy = useDataIsolateStrategy,
         suiteDefaults = pauseAfterLoad == true
             ? suiteDefaults?.change(timeout: Timeout.none) ??
-                SuiteConfiguration(timeout: Timeout.none)
+                SuiteConfiguration.timeout(Timeout.none)
             : suiteDefaults ?? SuiteConfiguration.empty {
     if (_filename != null && _filename!.context.style != p.style) {
       throw ArgumentError(

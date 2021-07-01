@@ -1,6 +1,8 @@
-## 0.3.30-dev
+## 0.4.0-dev
 
-* Remove support for `FORCE_TEST_EXIT`.
+* **BREAKING**: All parameters to the `SuiteConfiguration` constructor are now
+  required.
+* **BREAKING**: Remove support for `FORCE_TEST_EXIT`.
 * Report incomplete tests as errors in the JSON reporter when the run is
   canceled early.
 * Don't log the --test-randomization-ordering-seed if using the json reporter.
