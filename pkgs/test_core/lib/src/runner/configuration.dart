@@ -498,14 +498,15 @@ class Configuration {
       );
 
   /// Configuration limited to the locally configurable test config.
-  factory Configuration.localTest({
-    required bool? skip,
-    required int? retry,
-    required String? skipReason,
-    required PlatformSelector? testOn,
-    required Iterable<String>? addTags,
-  }) =>
+  factory Configuration.localTest(
+          {required bool? skip,
+          required int? retry,
+          required String? skipReason,
+          required PlatformSelector? testOn,
+          required Iterable<String>? addTags,
+          required bool? allowTestRandomization}) =>
       Configuration(
+        allowTestRandomization: allowTestRandomization,
         skip: skip,
         retry: retry,
         skipReason: skipReason,
@@ -537,7 +538,6 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
-        allowTestRandomization: null,
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,

@@ -174,6 +174,7 @@ class _ConfigurationLoader {
       _disallow('test_on');
       _disallow('add_tags');
       _disallow('tags');
+      _disallow('allow_test_randomization');
       return Configuration.empty;
     }
 
@@ -201,12 +202,15 @@ class _ConfigurationLoader {
 
     var retry = _getNonNegativeInt('retry');
 
+    var allowTestRandomization = _getBool('allow_test_randomization');
+
     return Configuration.localTest(
             skip: skip,
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
-            addTags: addTags)
+            addTags: addTags,
+            allowTestRandomization: allowTestRandomization)
         .merge(_extractPresets<BooleanSelector>(
             tags, (map) => Configuration.tags(map)));
   }
