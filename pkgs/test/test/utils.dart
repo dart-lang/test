@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:glob/glob.dart';
 import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
     show
         Timeout;
@@ -21,6 +22,9 @@ import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/application_exception.dart';
+import 'package:test_core/src/runner/configuration.dart';
+import 'package:test_core/src/runner/configuration/custom_runtime.dart';
+import 'package:test_core/src/runner/configuration/runtime_settings.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/load_suite.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
@@ -247,6 +251,103 @@ SuiteConfiguration suiteConfiguration(
         excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
+        timeout: timeout,
+        verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
+        skip: skip,
+        retry: retry,
+        skipReason: skipReason,
+        testOn: testOn,
+        addTags: addTags);
+
+Configuration configuration(
+        {bool? help,
+        String? customHtmlTemplatePath,
+        bool? version,
+        bool? pauseAfterLoad,
+        bool? debug,
+        bool? color,
+        String? configurationPath,
+        String? dart2jsPath,
+        String? reporter,
+        Map<String, String>? fileReporters,
+        String? coverage,
+        int? pubServePort,
+        int? concurrency,
+        int? shardIndex,
+        int? totalShards,
+        Iterable<String>? paths,
+        Iterable<String>? foldTraceExcept,
+        Iterable<String>? foldTraceOnly,
+        Glob? filename,
+        Iterable<String>? chosenPresets,
+        Map<String, Configuration>? presets,
+        Map<String, RuntimeSettings>? overrideRuntimes,
+        Map<String, CustomRuntime>? defineRuntimes,
+        bool? noRetry,
+        bool? useDataIsolateStrategy,
+
+        // Suite-level configuration
+        bool? allowTestRandomization,
+        bool? jsTrace,
+        bool? runSkipped,
+        Iterable<String>? dart2jsArgs,
+        String? precompiledPath,
+        Iterable<Pattern>? patterns,
+        Iterable<RuntimeSelection>? runtimes,
+        BooleanSelector? includeTags,
+        BooleanSelector? excludeTags,
+        Map<BooleanSelector, SuiteConfiguration>? tags,
+        Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+        int? testRandomizeOrderingSeed,
+
+        // Test-level configuration
+        Timeout? timeout,
+        bool? verboseTrace,
+        bool? chainStackTraces,
+        bool? skip,
+        int? retry,
+        String? skipReason,
+        PlatformSelector? testOn,
+        Iterable<String>? addTags}) =>
+    Configuration(
+        help: help,
+        customHtmlTemplatePath: customHtmlTemplatePath,
+        version: version,
+        pauseAfterLoad: pauseAfterLoad,
+        debug: debug,
+        color: color,
+        configurationPath: configurationPath,
+        dart2jsPath: dart2jsPath,
+        reporter: reporter,
+        fileReporters: fileReporters,
+        coverage: coverage,
+        pubServePort: pubServePort,
+        concurrency: concurrency,
+        shardIndex: shardIndex,
+        totalShards: totalShards,
+        paths: paths,
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
+        filename: filename,
+        chosenPresets: chosenPresets,
+        presets: presets,
+        overrideRuntimes: overrideRuntimes,
+        defineRuntimes: defineRuntimes,
+        noRetry: noRetry,
+        useDataIsolateStrategy: useDataIsolateStrategy,
+        allowTestRandomization: allowTestRandomization,
+        jsTrace: jsTrace,
+        runSkipped: runSkipped,
+        dart2jsArgs: dart2jsArgs,
+        precompiledPath: precompiledPath,
+        patterns: patterns,
+        runtimes: runtimes,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
+        tags: tags,
+        onPlatform: onPlatform,
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,

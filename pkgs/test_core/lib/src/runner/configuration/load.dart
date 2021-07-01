@@ -147,7 +147,7 @@ class _ConfigurationLoader {
         key: (keyNode) => _parseIdentifierLike(keyNode, 'presets key'),
         value: (valueNode) => _nestedConfig(valueNode, 'presets value'));
 
-    var config = Configuration(
+    var config = Configuration.globalTest(
             verboseTrace: verboseTrace,
             jsTrace: jsTrace,
             timeout: timeout,
@@ -156,7 +156,7 @@ class _ConfigurationLoader {
             foldTraceExcept: foldStackFrames['except'],
             foldTraceOnly: foldStackFrames['only'])
         .merge(_extractPresets<PlatformSelector>(
-            onPlatform, (map) => Configuration(onPlatform: map)));
+            onPlatform, (map) => Configuration.onPlatform(map)));
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -201,14 +201,14 @@ class _ConfigurationLoader {
 
     var retry = _getNonNegativeInt('retry');
 
-    return Configuration(
+    return Configuration.localTest(
             skip: skip,
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags)
         .merge(_extractPresets<BooleanSelector>(
-            tags, (map) => Configuration(tags: map)));
+            tags, (map) => Configuration.tags(map)));
   }
 
   /// Loads runner configuration that's allowed in the global configuration
@@ -272,7 +272,7 @@ class _ConfigurationLoader {
 
     var customHtmlTemplatePath = _getString('custom_html_template_path');
 
-    return Configuration(
+    return Configuration.globalRunner(
         pauseAfterLoad: pauseAfterLoad,
         customHtmlTemplatePath: customHtmlTemplatePath,
         runSkipped: runSkipped,
@@ -354,7 +354,7 @@ class _ConfigurationLoader {
 
     var defineRuntimes = _loadDefineRuntimes();
 
-    return Configuration(
+    return Configuration.localRunner(
         pubServePort: pubServePort,
         patterns: patterns,
         paths: paths,

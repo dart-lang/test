@@ -6,15 +6,16 @@
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
-import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/reporters.dart';
 import 'package:test_core/src/util/io.dart';
+
+import '../../utils.dart';
 
 void main() {
   group('merge', () {
     group('for most fields', () {
       test('if neither is defined, preserves the default', () {
-        var merged = Configuration().merge(Configuration());
+        var merged = configuration().merge(configuration());
         expect(merged.help, isFalse);
         expect(merged.version, isFalse);
         expect(merged.pauseAfterLoad, isFalse);
@@ -32,7 +33,7 @@ void main() {
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = Configuration(
+        var merged = configuration(
             help: true,
             version: true,
             pauseAfterLoad: true,
@@ -46,7 +47,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['bar']).merge(Configuration());
+            paths: ['bar']).merge(configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -65,7 +66,7 @@ void main() {
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = Configuration().merge(Configuration(
+        var merged = configuration().merge(configuration(
             help: true,
             version: true,
             pauseAfterLoad: true,
@@ -100,7 +101,7 @@ void main() {
       test(
           "if the two configurations conflict, uses the new configuration's "
           'values', () {
-        var older = Configuration(
+        var older = configuration(
             help: true,
             version: false,
             pauseAfterLoad: true,
@@ -115,7 +116,7 @@ void main() {
             totalShards: 4,
             testRandomizeOrderingSeed: 0,
             paths: ['bar']);
-        var newer = Configuration(
+        var newer = configuration(
             help: false,
             version: true,
             pauseAfterLoad: false,
@@ -151,37 +152,37 @@ void main() {
 
     group('for chosenPresets', () {
       test('if neither is defined, preserves the default', () {
-        var merged = Configuration().merge(Configuration());
+        var merged = configuration().merge(configuration());
         expect(merged.chosenPresets, isEmpty);
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = Configuration(chosenPresets: ['baz', 'bang'])
-            .merge(Configuration());
+        var merged = configuration(chosenPresets: ['baz', 'bang'])
+            .merge(configuration());
         expect(merged.chosenPresets, equals(['baz', 'bang']));
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = Configuration()
-            .merge(Configuration(chosenPresets: ['baz', 'bang']));
+        var merged = configuration()
+            .merge(configuration(chosenPresets: ['baz', 'bang']));
         expect(merged.chosenPresets, equals(['baz', 'bang']));
       });
 
       test('if both are defined, unions them', () {
-        var merged = Configuration(chosenPresets: ['baz', 'bang'])
-            .merge(Configuration(chosenPresets: ['qux']));
+        var merged = configuration(chosenPresets: ['baz', 'bang'])
+            .merge(configuration(chosenPresets: ['qux']));
         expect(merged.chosenPresets, equals(['baz', 'bang', 'qux']));
       });
     });
 
     group('for presets', () {
       test('merges each nested configuration', () {
-        var merged = Configuration(presets: {
-          'bang': Configuration(pauseAfterLoad: true),
-          'qux': Configuration(color: true)
-        }).merge(Configuration(presets: {
-          'qux': Configuration(color: false),
-          'zap': Configuration(help: true)
+        var merged = configuration(presets: {
+          'bang': configuration(pauseAfterLoad: true),
+          'qux': configuration(color: true)
+        }).merge(configuration(presets: {
+          'qux': configuration(color: false),
+          'zap': configuration(help: true)
         }));
 
         expect(merged.presets['bang']!.pauseAfterLoad, isTrue);
@@ -190,68 +191,67 @@ void main() {
       });
 
       test('automatically resolves a matching chosen preset', () {
-        var configuration = Configuration(
-            presets: {'foo': Configuration(color: true)},
+        var config = configuration(
+            presets: {'foo': configuration(color: true)},
             chosenPresets: ['foo']);
-        expect(configuration.presets, isEmpty);
-        expect(configuration.chosenPresets, equals(['foo']));
-        expect(configuration.knownPresets, equals(['foo']));
-        expect(configuration.color, isTrue);
+        expect(config.presets, isEmpty);
+        expect(config.chosenPresets, equals(['foo']));
+        expect(config.knownPresets, equals(['foo']));
+        expect(config.color, isTrue);
       });
 
       test('resolves a chosen presets in order', () {
-        var configuration = Configuration(presets: {
-          'foo': Configuration(color: true),
-          'bar': Configuration(color: false)
+        var config = configuration(presets: {
+          'foo': configuration(color: true),
+          'bar': configuration(color: false)
         }, chosenPresets: [
           'foo',
           'bar'
         ]);
-        expect(configuration.presets, isEmpty);
-        expect(configuration.chosenPresets, equals(['foo', 'bar']));
-        expect(configuration.knownPresets, unorderedEquals(['foo', 'bar']));
-        expect(configuration.color, isFalse);
+        expect(config.presets, isEmpty);
+        expect(config.chosenPresets, equals(['foo', 'bar']));
+        expect(config.knownPresets, unorderedEquals(['foo', 'bar']));
+        expect(config.color, isFalse);
 
-        configuration = Configuration(presets: {
-          'foo': Configuration(color: true),
-          'bar': Configuration(color: false)
+        config = configuration(presets: {
+          'foo': configuration(color: true),
+          'bar': configuration(color: false)
         }, chosenPresets: [
           'bar',
           'foo'
         ]);
-        expect(configuration.presets, isEmpty);
-        expect(configuration.chosenPresets, equals(['bar', 'foo']));
-        expect(configuration.knownPresets, unorderedEquals(['foo', 'bar']));
-        expect(configuration.color, isTrue);
+        expect(config.presets, isEmpty);
+        expect(config.chosenPresets, equals(['bar', 'foo']));
+        expect(config.knownPresets, unorderedEquals(['foo', 'bar']));
+        expect(config.color, isTrue);
       });
 
       test('ignores inapplicable chosen presets', () {
-        var configuration = Configuration(presets: {}, chosenPresets: ['baz']);
-        expect(configuration.presets, isEmpty);
-        expect(configuration.chosenPresets, equals(['baz']));
-        expect(configuration.knownPresets, equals(isEmpty));
+        var config = configuration(presets: {}, chosenPresets: ['baz']);
+        expect(config.presets, isEmpty);
+        expect(config.chosenPresets, equals(['baz']));
+        expect(config.knownPresets, equals(isEmpty));
       });
 
       test('resolves presets through merging', () {
-        var configuration =
-            Configuration(presets: {'foo': Configuration(color: true)})
-                .merge(Configuration(chosenPresets: ['foo']));
+        var config = configuration(presets: {'foo': configuration(color: true)})
+            .merge(configuration(chosenPresets: ['foo']));
 
-        expect(configuration.presets, isEmpty);
-        expect(configuration.chosenPresets, equals(['foo']));
-        expect(configuration.knownPresets, equals(['foo']));
-        expect(configuration.color, isTrue);
+        expect(config.presets, isEmpty);
+        expect(config.chosenPresets, equals(['foo']));
+        expect(config.knownPresets, equals(['foo']));
+        expect(config.color, isTrue);
       });
 
       test('preserves known presets through merging', () {
-        var configuration = Configuration(
-            presets: {'foo': Configuration(color: true)},
-            chosenPresets: ['foo']).merge(Configuration());
+        var config = configuration(
+            presets: {'foo': configuration(color: true)},
+            chosenPresets: ['foo']).merge(configuration());
 
-        expect(configuration.presets, isEmpty);
-        expect(configuration.chosenPresets, equals(['foo']));
-        expect(configuration.knownPresets, equals(['foo']));
-        expect(configuration.color, isTrue);
+        expect(config.presets, isEmpty);
+        expect(config.chosenPresets, equals(['foo']));
+        expect(config.knownPresets, equals(['foo']));
+        expect(config.color, isTrue);
       });
     });
   });

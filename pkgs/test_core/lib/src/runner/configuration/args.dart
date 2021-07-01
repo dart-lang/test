@@ -274,7 +274,23 @@ class _Parser {
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),
         useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
-        testRandomizeOrderingSeed: testRandomizeOrderingSeed);
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        // Config that isn't supported on the command line
+        addTags: null,
+        allowTestRandomization: null,
+        customHtmlTemplatePath: null,
+        defineRuntimes: null,
+        filename: null,
+        foldTraceExcept: null,
+        foldTraceOnly: null,
+        onPlatform: null,
+        overrideRuntimes: null,
+        presets: null,
+        retry: null,
+        skip: null,
+        skipReason: null,
+        testOn: null,
+        tags: null);
   }
 
   /// Returns the parsed option for [name], or `null` if none was parsed.

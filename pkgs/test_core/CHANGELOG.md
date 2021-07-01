@@ -1,7 +1,8 @@
 ## 0.4.0-dev
 
-* **BREAKING**: All parameters to the `SuiteConfiguration` constructor are now
-  required.
+* **BREAKING**: All parameters to the `SuiteConfiguration` and `Configuration`
+  constructors are now required. Some specialized constructors have been added
+  for the common cases where a subset are intended to be provided.
 * **BREAKING**: Remove support for `FORCE_TEST_EXIT`.
 * Report incomplete tests as errors in the JSON reporter when the run is
   canceled early.
