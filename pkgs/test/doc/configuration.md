@@ -202,7 +202,6 @@ This is typically useful when a subset of your tests are order dependent, but
 you want to run the other ones with randomized ordering.
 
 ```yaml
-# This package uses dart:io.
 tags:
   doNotRandomize:
     allow_test_randomization: false
