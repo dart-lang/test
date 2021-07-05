@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Update `meta` constraint to `>=1.3.0 <3.0.0`.
+
 ## 2.0.0
 
 * Migrate to null safety.
