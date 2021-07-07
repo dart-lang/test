@@ -27,7 +27,7 @@ late Loader _loader;
 
 /// A configuration that loads suites on Chrome.
 final _chrome =
-    SuiteConfiguration(runtimes: [RuntimeSelection(Runtime.chrome.identifier)]);
+    SuiteConfiguration.runtimes([RuntimeSelection(Runtime.chrome.identifier)]);
 
 void main() {
   setUp(() async {
@@ -135,7 +135,7 @@ Future main() {
     var suites = await _loader
         .loadFile(
             path,
-            SuiteConfiguration(runtimes: [
+            SuiteConfiguration.runtimes([
               RuntimeSelection(Runtime.vm.identifier),
               RuntimeSelection(Runtime.chrome.identifier)
             ]))

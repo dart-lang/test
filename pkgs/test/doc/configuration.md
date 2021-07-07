@@ -32,6 +32,7 @@ tags:
   * [`skip`](#skip)
   * [`retry`](#retry)
   * [`test_on`](#test_on)
+  * [`allow_test_randomization`](#allow_test_randomization)
 * [Runner Configuration](#runner-configuration)
   * [`include`](#include)
   * [`paths`](#paths)
@@ -46,6 +47,7 @@ tags:
   * [`run_skipped`](#run_skipped)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
+  * [`file_reporters`](#file_reporters)
   * [`fold_stack_frames`](#fold_stack_frames)
   * [`custom_html_template_path`](#custom_html_template_path)
 * [Configuring Tags](#configuring-tags)
@@ -56,13 +58,13 @@ tags:
   * [`on_platform`](#on_platform)
   * [`override_platforms`](#override_platforms)
   * [`define_platforms`](#define_platforms)
-  * [Browser/Node.js Settings](#browser-and-node-js-settings)
+  * [Browser and Node.js Settings](#browser-and-nodejs-settings)
     * [`arguments`](#arguments)
     * [`executable`](#executable)
     * [`headless`](#headless)
 * [Configuration Presets](#configuration-presets)
   * [`presets`](#presets)
-  * [`add_preset`](#add_preset)
+  * [`add_presets`](#add_presets)
 * [Global Configuration](#global-configuration)
 
 ## Test Configuration
@@ -190,6 +192,20 @@ test_on: vm
 
 This field is not supported in the
 [global configuration file](#global-configuration).
+
+### `allow_test_randomization`
+
+This can be used to disable test randomization for certain tests, regardless
+of the `--test-randomize-ordering-seed` configuration.
+
+This is typically useful when a subset of your tests are order dependent, but
+you want to run the other ones with randomized ordering.
+
+```yaml
+tags:
+  doNotRandomize:
+    allow_test_randomization: false
+```
 
 ## Runner Configuration
 

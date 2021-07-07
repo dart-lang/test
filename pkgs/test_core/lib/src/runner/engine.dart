@@ -307,7 +307,8 @@ class Engine {
       if (!_closed && setUpAllSucceeded) {
         // shuffle the group entries
         var entries = group.entries.toList();
-        if (testRandomizeOrderingSeed != null &&
+        if (suiteConfig.allowTestRandomization &&
+            testRandomizeOrderingSeed != null &&
             testRandomizeOrderingSeed! > 0) {
           entries.shuffle(Random(testRandomizeOrderingSeed));
         }

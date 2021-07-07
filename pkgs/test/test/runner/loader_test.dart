@@ -177,7 +177,7 @@ void main() {
       await runZoned(() async {
         var suites = await _loader
             .loadFile(p.join(d.sandbox, 'a_test.dart'),
-                SuiteConfiguration(retry: numRetries))
+                suiteConfiguration(retry: numRetries))
             .toList();
         expect(suites, hasLength(1));
         var loadSuite = suites.first;

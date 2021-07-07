@@ -34,10 +34,11 @@ dependencies:
   yaml: ^3.0.0
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.4.1
-  test_core: 0.3.30
+  test_core: 0.4.0
 
 dev_dependencies:
   fake_async: ^1.0.0
+  glob: ^2.0.0
   shelf_test_handler: ^2.0.0
   test_descriptor: ^2.0.0
   test_process: ^2.0.0

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+import 'dart:convert';
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -79,6 +80,43 @@ void main() {
     test = await runTest(
         ['test.dart', '--test-randomize-ordering-seed=random', '-r', 'json']);
     expect(test.stdout, neverEmits(contains('Shuffling test order')));
+    await test.shouldExit(0);
+  });
+
+  test('test shuffling can be disabled in dart_test.yml', () async {
+    await d
+        .file(
+            'dart_test.yaml',
+            jsonEncode({
+              'tags': {
+                'doNotShuffle': {'allow_test_randomization': false}
+              }
+            }))
+        .create();
+
+    await d.file('test.dart', '''
+      @Tags(['doNotShuffle'])
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test 1", () {});
+        test("test 2", () {});
+        test("test 3", () {});
+        test("test 4", () {});
+      }
+    ''').create();
+
+    var test =
+        await runTest(['test.dart', '--test-randomize-ordering-seed=987654']);
+    expect(
+        test.stdout,
+        containsInOrder([
+          '+0: test 1',
+          '+1: test 2',
+          '+2: test 3',
+          '+3: test 4',
+          '+4: All tests passed!'
+        ]));
     await test.shouldExit(0);
   });
 

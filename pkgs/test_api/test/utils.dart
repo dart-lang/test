@@ -181,7 +181,7 @@ Engine declareEngine(void Function() body, {bool runSkipped = false}) {
   return Engine.withSuites([
     RunnerSuite(
         const PluginEnvironment(),
-        SuiteConfiguration(runSkipped: runSkipped),
+        SuiteConfiguration.runSkipped(runSkipped),
         declarer.build(),
         suitePlatform)
   ]);
