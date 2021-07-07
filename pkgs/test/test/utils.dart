@@ -7,9 +7,6 @@ import 'dart:collection';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
-import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
-    show
-        Timeout;
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
