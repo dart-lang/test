@@ -151,7 +151,7 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {
     throw UnsupportedError("Can't connect to the test runner.\n"
-        'spawnHybridUri() is currently only supported within "pub run test".');
+        'spawnHybridUri() is currently only supported within "dart test".');
   }
 
   ensureJsonEncodable(message);

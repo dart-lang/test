@@ -54,7 +54,7 @@ void main() {
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 final _usage = '''
-Usage: pub run test [files or directories...]
+Usage: dart test [files or directories...]
 
 -h, --help                            Show this usage information.
     --version                         Show the package:test version.

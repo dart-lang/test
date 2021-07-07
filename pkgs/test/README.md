@@ -150,11 +150,12 @@ void main() {
 
 ## Running Tests
 
-A single test file can be run just using `pub run test path/to/test.dart`.
+A single test file can be run just using `dart test path/to/test.dart` (as of
+Dart 2.10 - prior sdk versions must use `pub run test` instead of `dart test`).
 
 ![Single file being run via "pub run"](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test1.gif)
 
-Many tests can be run at a time using `pub run test path/to/dir`.
+Many tests can be run at a time using `dart test path/to/dir`.
 
 ![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test2.gif)
 
@@ -166,17 +167,17 @@ The test runner considers any file that ends with `_test.dart` to be a test
 file. If you don't pass any paths, it will run all the test files in your
 `test/` directory, making it easy to test your entire application at once.
 
-You can select specific tests cases to run by name using `pub run test -n "test
+You can select specific tests cases to run by name using `dart test -n "test
 name"`. The string is interpreted as a regular expression, and only tests whose
 description (including any group descriptions) match that regular expression
 will be run. You can also use the `-N` flag to run tests whose names contain a
 plain-text string.
 
 By default, tests are run in the Dart VM, but you can run them in the browser as
-well by passing `pub run test -p chrome path/to/test.dart`. `test` will take
+well by passing `dart test -p chrome path/to/test.dart`. `test` will take
 care of starting the browser and loading the tests, and all the results will be
 reported on the command line just like for VM tests. In fact, you can even run
-tests on both platforms with a single command: `pub run test -p "chrome,vm"
+tests on both platforms with a single command: `dart test -p "chrome,vm"
 path/to/test.dart`.
 
 ### Sharding Tests
@@ -185,9 +186,9 @@ allowing you to split up your test suites and run them separately. For example,
 if you wanted to run 3 shards of your test suite, you could run them as follows:
 
 ```bash
-pub run test --total-shards 3 --shard-index 0 path/to/test.dart
-pub run test --total-shards 3 --shard-index 1 path/to/test.dart
-pub run test --total-shards 3 --shard-index 2 path/to/test.dart
+dart test --total-shards 3 --shard-index 0 path/to/test.dart
+dart test --total-shards 3 --shard-index 1 path/to/test.dart
+dart test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
 
 ### Shuffling Tests
@@ -197,8 +198,8 @@ This allows you to shuffle your tests with a specific seed (deterministic) or
 a random seed for each run. For example, consider the following test runs:
 
 ```bash
-pub run test --test-randomize-ordering-seed=12345
-pub run test --test-randomize-ordering-seed=random
+dart test --test-randomize-ordering-seed=12345
+dart test --test-randomize-ordering-seed=random
 ```
 
 Setting `--test-randomize-ordering-seed=0` will have the same effect as not

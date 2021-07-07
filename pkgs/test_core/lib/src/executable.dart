@@ -188,7 +188,7 @@ void _printUsage([String? error]) {
 
   output.write('''${wordWrap(message)}
 
-Usage: pub run test [files or directories...]
+Usage: dart test [files or directories...]
 
 ${Configuration.usage}
 ''');
