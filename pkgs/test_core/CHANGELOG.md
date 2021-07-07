@@ -11,6 +11,7 @@
   * Previously you would have gotten either exit code 1 or 65 (65 if you had
     provided a test name regex).
 * When no tests were ran but tags were provided, list the tag configuration.
+* Update `analyzer` constraint to `>=1.0.0 <3.0.0`.
 
 ## 0.3.29
 

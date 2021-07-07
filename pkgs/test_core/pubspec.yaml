@@ -7,7 +7,7 @@ environment:
  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  analyzer: ^1.0.0
+  analyzer: '>=1.0.0 <3.0.0'
   async: ^2.5.0
   args: ^2.0.0
   boolean_selector: ^2.1.0
@@ -31,7 +31,7 @@ dependencies:
   # matcher is tightly constrained by test_api
   matcher: any
   # Use an exact version until the test_api package is stable.
-  test_api: 0.4.1
+  test_api: 0.4.2-dev
 
 dependency_overrides:
   test_api:

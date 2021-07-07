@@ -2,6 +2,7 @@
 
 * Report incomplete tests as errors in the JSON reporter when the run is
   canceled early.
+* Update `analyzer` constraint to `>=1.0.0 <3.0.0`.
 
 ## 1.17.9
 
