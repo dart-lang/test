@@ -17,12 +17,12 @@ and so on.
 Pass the `--reporter json` command-line flag to the test runner to activate the
 JSON reporter.
 
-    pub run test --reporter json <path-to-test-file>
+    dart test --reporter json <path-to-test-file>
 
 You may also use the `--file-reporter` option to enable the JSON reporter output
 to a file, in addition to another reporter writing to stdout.
 
-    pub run test --file-reporter json:reports/tests.json <path-to-test-file>
+    dart test --file-reporter json:reports/tests.json <path-to-test-file>
 
 The JSON stream will be emitted via standard output. It will be a stream of JSON
 objects, separated by newlines.

@@ -540,7 +540,7 @@ void main() {
       },
           prints('Consider enabling the flag chain-stack-traces to '
               'receive more detailed exceptions.\n'
-              "For example, 'pub run test --chain-stack-traces'.\n"));
+              "For example, 'dart test --chain-stack-traces'.\n"));
     });
   });
 

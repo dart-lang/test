@@ -684,7 +684,7 @@ define_platforms:
       executable: chromium
 ```
 
-Once this is defined, you can run `pub run test -p chromium` and it will run
+Once this is defined, you can run `dart test -p chromium` and it will run
 those tests in the Chromium browser, using the same logic it normally uses for
 Chrome. You can even use `chromium` in platform selectors; for example, you
 might pass `testOn: "chromium"` to declare that a test is Chromium-specific.

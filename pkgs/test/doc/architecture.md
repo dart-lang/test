@@ -66,7 +66,7 @@ then communicate with directly.
 ### Runner
 
 The [`lib/src/runner`][runner] directory contains the code that's executed when
-`pub run test` is invoked. It's in charge of locating test files, loading them,
+`dart test` is invoked. It's in charge of locating test files, loading them,
 executing them, and communicating their results to the user. It's also by far
 the biggest section. For more information on the runner architecture, see
 [Lifecycle of a Test Run](#lifecycle-of-a-test-suite) below.
@@ -76,7 +76,7 @@ the biggest section. For more information on the runner architecture, see
 ## Lifecycle of a Test Run
 
 To understand generally how the test runner works, let's look at an example run.
-When the user first invokes `pub run test`, the command-line arguments and
+When the user first invokes `dart test`, the command-line arguments and
 [configuration files][] are combined into a single
 [`Configuration`][Configuration] object which is passed into the
 [`Runner`][Runner] class. The `Runner` is mostly just glue: it starts up the
