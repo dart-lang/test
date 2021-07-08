@@ -1,3 +1,7 @@
+## 0.4.2-dev
+
+* Update `analyzer` constraint to `>=1.5.0 <3.0.0`.
+
 ## 0.4.1
 
 * Give a better error when `printOnFailure` is called from outside a test
