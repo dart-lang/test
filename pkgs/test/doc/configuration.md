@@ -172,7 +172,7 @@ platforms that match the selector. It's often used with
 [specific tags](#configuring-tags) to ensure that certain features will only be
 tested on supported platforms.
 
-[platform selectors]: https://github.com/dart-lang/test/blob/master/README.md#platform-selectors
+[platform selectors]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-selectors
 
 ```yaml
 tags:
