@@ -244,8 +244,11 @@ class NodePlatform extends PlatformPlugin
     nodePath = nodePath == null ? nodeModules : '$nodePath:$nodeModules';
 
     try {
-      return await Process.start(settings.executable,
-          settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
+      return await Process.start(
+          settings.executable,
+          settings.arguments.toList()
+            ..add(jsPath)
+            ..add(socketPort.toString()),
           environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
       await Future<Never>.error(
