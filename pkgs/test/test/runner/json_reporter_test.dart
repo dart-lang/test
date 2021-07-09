@@ -589,7 +589,10 @@ import 'package:test/test.dart';
     testContent.writeln("import '${entry.key}';");
     await d.file(entry.key, entry.value).create();
   }
-  testContent..writeln('void main() {')..writeln(tests)..writeln('}');
+  testContent
+    ..writeln('void main() {')
+    ..writeln(tests)
+    ..writeln('}');
 
   await d.file('test.dart', testContent.toString()).create();
 

@@ -115,7 +115,10 @@ void main() {
           });
         }
       ''');
-      channel.sink..add(1)..add(2)..add(3);
+      channel.sink
+        ..add(1)
+        ..add(2)
+        ..add(3);
       expect(channel.stream.take(3).toList(), completion(equals([2, 3, 4])));
     });
 

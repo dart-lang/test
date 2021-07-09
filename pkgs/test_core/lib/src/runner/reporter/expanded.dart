@@ -201,7 +201,9 @@ class ExpandedReporter implements Reporter {
     _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
 
     if (error is! LoadException) {
-      _sink..writeln(indent('$error'))..writeln(indent('$stackTrace'));
+      _sink
+        ..writeln(indent('$error'))
+        ..writeln(indent('$stackTrace'));
       return;
     }
 
