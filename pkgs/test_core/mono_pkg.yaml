@@ -5,4 +5,4 @@ stages:
   - analyze_and_format:
     - group:
       - format
-      - analyze: --fatal-infos --fatal-warnings .
+      - analyze: --fatal-infos
