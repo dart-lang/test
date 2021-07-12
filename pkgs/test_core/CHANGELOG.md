@@ -1,4 +1,4 @@
-## 0.4.0-dev
+## 0.4.0
 
 * **BREAKING**: All parameters to the `SuiteConfiguration` and `Configuration`
   constructors are now required. Some specialized constructors have been added

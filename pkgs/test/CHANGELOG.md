@@ -1,4 +1,4 @@
-## 1.17.10-dev
+## 1.17.10
 
 * Report incomplete tests as errors in the JSON reporter when the run is
   canceled early.
