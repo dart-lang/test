@@ -547,7 +547,9 @@ void main() {
             expectAsync1((timer) {
               ticks.add(timer.tick);
             }, count: 2));
-        async..elapse(elapseBy)..elapse(elapseBy);
+        async
+          ..elapse(elapseBy)
+          ..elapse(elapseBy);
         expect(ticks, [1, 2]);
       });
     });
