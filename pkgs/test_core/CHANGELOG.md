@@ -1,3 +1,5 @@
+## 0.4.1-dev
+
 ## 0.4.0
 
 * **BREAKING**: All parameters to the `SuiteConfiguration` and `Configuration`

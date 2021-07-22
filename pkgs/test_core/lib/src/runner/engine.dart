@@ -204,6 +204,13 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
   /// defaults to 1.
+  ///
+  /// [testRandomizeOrderingSeed] configures test case shuffling within each
+  /// test suite.
+  /// Any non-zero value will enable shuffling using this value as a seed.
+  /// Omitting this argument or passing `0` disables shuffling.
+  ///
+  /// [coverage] specifies a directory to output coverage information.
   Engine({int? concurrency, String? coverage, this.testRandomizeOrderingSeed})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage {
