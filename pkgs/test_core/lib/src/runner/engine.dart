@@ -198,8 +198,6 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
-  // TODO(nweiz): Use interface libraries to take a Configuration even when
-  // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
