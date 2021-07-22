@@ -1,14 +1,8 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
-  enable-experiment:
-    - non-nullable
-  errors:
-    dead_code: error
-    unused_element: error
-    unused_import: error
-    unused_local_variable: error
+
 linter:
   rules:
     - always_declare_return_types
