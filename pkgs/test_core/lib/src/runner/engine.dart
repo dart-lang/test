@@ -198,12 +198,17 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
-  // TODO(nweiz): Use interface libraries to take a Configuration even when
-  // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
   /// defaults to 1.
+  ///
+  /// [testRandomizeOrderingSeed] configures test case shuffling within each
+  /// test suite.
+  /// Any non-zero value will enable shuffling using this value as a seed.
+  /// Omitting this argument or passing `0` disables shuffling.
+  ///
+  /// [coverage] specifies a directory to output coverage information.
   Engine({int? concurrency, String? coverage, this.testRandomizeOrderingSeed})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage {
