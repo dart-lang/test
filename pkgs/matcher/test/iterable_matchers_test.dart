@@ -242,7 +242,7 @@ void main() {
         containsAll([1]),
         'Expected: contains all of [1] '
         'Actual: <1> '
-        "Which: not an <Instance of \'Iterable\'>");
+        "Which: not an <Instance of 'Iterable'>");
     shouldFail(
         [-1, 2],
         containsAll([greaterThan(0), greaterThan(1)]),
@@ -285,7 +285,7 @@ void main() {
         containsAllInOrder([1]),
         'Expected: contains in order([1]) '
         'Actual: <1> '
-        "Which: not an <Instance of \'Iterable\'>");
+        "Which: not an <Instance of 'Iterable'>");
   });
 
   test('pairwise compare', () {
@@ -297,7 +297,7 @@ void main() {
         pairwiseCompare(e, (int e, int a) => a <= e, 'less than or equal'),
         'Expected: pairwise less than or equal [1, 4, 9] '
             "Actual: 'x' "
-            "Which: not an <Instance of \'Iterable\'>");
+            "Which: not an <Instance of 'Iterable'>");
     shouldFail(
         c,
         pairwiseCompare(e, (int e, int a) => a <= e, 'less than or equal'),

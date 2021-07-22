@@ -229,7 +229,7 @@ void main() {
       shouldPass('cow', predicate((x) => x is String, 'an instance of String'));
 
       shouldFail(0, predicate((bool x) => x, 'bool value is true'),
-          endsWith("not an <Instance of \'bool\'>"));
+          endsWith("not an <Instance of 'bool'>"));
     });
   });
 
