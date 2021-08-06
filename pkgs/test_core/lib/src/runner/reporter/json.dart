@@ -64,7 +64,8 @@ class JsonReporter implements Reporter {
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine, StringSink sink, {required bool isDebugRun}) =>
+  static JsonReporter watch(Engine engine, StringSink sink,
+          {required bool isDebugRun}) =>
       JsonReporter._(engine, sink, isDebugRun);
 
   JsonReporter._(this._engine, this._sink, this._isDebugRun) {
