@@ -46,7 +46,8 @@ final _allReporters = <String, ReporterDetails>{
   'json': ReporterDetails(
       'A machine-readable format (see '
       'https://dart.dev/go/test-docs/json_reporter.md).',
-      (_, engine, sink) => JsonReporter.watch(engine, sink)),
+      (config, engine, sink) =>
+          JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
 };
 
 final defaultReporter = inTestTests

@@ -19,7 +19,6 @@ import 'package:test_api/hooks.dart' // ignore: implementation_imports
     show
         TestFailure;
 
-import '../configuration.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
@@ -29,8 +28,8 @@ import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
-  /// The global configuration that applies to this reporter.
-  final Configuration _config;
+  /// Whether the test runner will pause for debugging.
+  final bool _isDebugRun;
 
   /// The engine used to run the tests.
   final Engine _engine;
@@ -65,10 +64,11 @@ class JsonReporter implements Reporter {
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine, StringSink sink) =>
-      JsonReporter._(engine, sink);
+  static JsonReporter watch(Engine engine, StringSink sink,
+          {required bool isDebugRun}) =>
+      JsonReporter._(engine, sink, isDebugRun);
 
-  JsonReporter._(this._engine, this._sink) : _config = Configuration.current {
+  JsonReporter._(this._engine, this._sink, this._isDebugRun) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
@@ -180,7 +180,7 @@ class JsonReporter implements Reporter {
       suite.suite.then((runnerSuite) {
         if (runnerSuite == null) return;
         _suiteIDs[runnerSuite] = id;
-        if (!_config.debug) return;
+        if (!_isDebugRun) return;
 
         // TODO(nweiz): test this when we have a library for communicating with
         // the Chrome remote debugger, or when we have VM debug support.
