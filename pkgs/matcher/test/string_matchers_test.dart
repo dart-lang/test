@@ -120,6 +120,19 @@ void main() {
         'goodbye cruel world', stringContainsInOrder(['cruel', 'world']));
     shouldPass('goodbye cruel world',
         stringContainsInOrder(['goodbye', 'cruel', 'world']));
+    shouldPass(
+        'foo', stringContainsInOrder(['f', '', '', '', 'o', '', '', 'o']));
+
+    shouldFail(
+        'abc',
+        stringContainsInOrder(['ab', 'bc']),
+        "Expected: a string containing 'ab', 'bc' in order "
+            "Actual: 'abc'");
+    shouldFail(
+        'hello',
+        stringContainsInOrder(['hello', 'hello']),
+        "Expected: a string containing 'hello', 'hello' in order "
+            "Actual: 'hello'");
     shouldFail(
         'goodbye cruel world',
         stringContainsInOrder(['goo', 'cruel', 'bye']),

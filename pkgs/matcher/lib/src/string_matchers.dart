@@ -122,8 +122,9 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
   bool typedMatches(dynamic item, Map matchState) {
     var fromIndex = 0;
     for (var s in _substrings) {
-      fromIndex = item.indexOf(s, fromIndex);
-      if (fromIndex < 0) return false;
+      var index = item.indexOf(s, fromIndex);
+      if (index < 0) return false;
+      fromIndex = index + s.length;
     }
     return true;
   }

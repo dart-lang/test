@@ -1,6 +1,8 @@
 ## 0.12.11-dev
 
 * Change many argument types from `dynamic` to `Object?`.
+* Fix `stringContainsInOrder` to account for repetitions and empty strings.
+  * **Note**: This may break some existing tests, as the behavior does change.
 
 ## 0.12.10
 
