@@ -1,3 +1,7 @@
+## 0.4.3
+
+* Use the latest `package:matcher`.
+
 ## 0.4.2
 
 * Update `analyzer` constraint to `>=1.5.0 <3.0.0`.

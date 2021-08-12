@@ -1,4 +1,6 @@
-## 0.4.1-dev
+## 0.4.1
+
+* Use the latest `package:matcher`.
 
 ## 0.4.0
 
