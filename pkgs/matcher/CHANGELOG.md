@@ -1,4 +1,4 @@
-## 0.12.11-dev
+## 0.12.11
 
 * Change many argument types from `dynamic` to `Object?`.
 * Fix `stringContainsInOrder` to account for repetitions and empty strings.
