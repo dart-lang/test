@@ -26,8 +26,9 @@ Future<void> expectJsonReport(
       equals(expected.fold<int>(3, (int a, m) => a + m.length)),
       reason: 'Expected $outputLines to match $expected.');
 
-  dynamic decodeLine(String l) =>
-      jsonDecode(l)..remove('time')..remove('stackTrace');
+  dynamic decodeLine(String l) => jsonDecode(l)
+    ..remove('time')
+    ..remove('stackTrace');
 
   // Should contain all suites message.
   expect(outputLines.map(decodeLine), containsAll([allSuitesJson()]));
