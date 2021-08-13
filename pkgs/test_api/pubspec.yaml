@@ -1,5 +1,5 @@
 name: test_api
-version: 0.4.2
+version: 0.4.3
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 
@@ -19,7 +19,7 @@ dependencies:
 
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
-  matcher: '>=0.12.10 <0.12.11'
+  matcher: '>=0.12.11 <0.12.12'
 
 dev_dependencies:
   analyzer: '>=1.5.0 <3.0.0'

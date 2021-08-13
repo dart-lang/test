@@ -1,4 +1,9 @@
-## 1.17.11-dev
+## 1.17.11
+
+* Use the latest `package:matcher`.
+  * Change many argument types from `dynamic` to `Object?`.
+  * Fix `stringContainsInOrder` to account for repetitions and empty strings.
+    * **Note**: This may break some existing tests, as the behavior does change.
 
 ## 1.17.10
 

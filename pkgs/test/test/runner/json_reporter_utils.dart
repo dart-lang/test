@@ -22,8 +22,8 @@ Future<void> expectJsonReport(
     Map<Object, Object> done) async {
   // Ensure the output is of the same length, including start, done and all
   // suites messages.
-  expect(
-      outputLines.length, equals(expected.fold(3, (int a, m) => a + m.length)),
+  expect(outputLines.length,
+      equals(expected.fold<int>(3, (int a, m) => a + m.length)),
       reason: 'Expected $outputLines to match $expected.');
 
   dynamic decodeLine(String l) => jsonDecode(l)
