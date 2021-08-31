@@ -106,9 +106,13 @@ class _TestCompilerForLanguageVersion {
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
       ..writeAsStringSync(_generateEntrypoint(mainUri));
+    final testCache = File(_dillCachePath);
 
     try {
       if (_frontendServerClient == null) {
+        if (await testCache.exists()) {
+          await testCache.copy(_outputDill.path);
+        }
         compilerOutput = await _createCompiler(tempFile.uri);
         firstCompile = true;
       } else {
@@ -134,7 +138,6 @@ class _TestCompilerForLanguageVersion {
     final outputFile = File(outputPath);
     final kernelReadyToRun =
         await outputFile.copy('${tempFile.path}_$_compileNumber.dill');
-    final testCache = File(_dillCachePath);
     // Keep the cache file up-to-date and use the size of the kernel file
     // as an approximation for how many packages are included. Larger files
     // are prefered, since re-using more packages will reduce the number of
