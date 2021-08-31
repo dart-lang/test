@@ -75,6 +75,9 @@ class _TestCompilerForLanguageVersion {
       Directory.systemTemp.createTempSync('dart_test.');
   // Used to create unique file names for final kernel files.
   int _compileNumber = 0;
+  // The largest incremental dill file we created, will be cached under
+  // the `.dart_tool` dir at the end of compilation.
+  File? _dillToCache;
 
   _TestCompilerForLanguageVersion(
       String dillCachePrefix, this._languageVersionComment)
@@ -138,17 +141,13 @@ class _TestCompilerForLanguageVersion {
     final outputFile = File(outputPath);
     final kernelReadyToRun =
         await outputFile.copy('${tempFile.path}_$_compileNumber.dill');
-    // Keep the cache file up-to-date and use the size of the kernel file
-    // as an approximation for how many packages are included. Larger files
-    // are prefered, since re-using more packages will reduce the number of
-    // files the frontend server needs to load and parse.
-    if (firstCompile ||
-        !testCache.existsSync() ||
-        (testCache.lengthSync() < outputFile.lengthSync())) {
-      if (!testCache.parent.existsSync()) {
-        testCache.parent.createSync(recursive: true);
-      }
-      await outputFile.copy(_dillCachePath);
+    // Keep the `_dillToCache` file up-to-date and use the size of the
+    // kernel file as an approximation for how many packages are included.
+    // Larger files are prefered, since re-using more packages will reduce the
+    // number of files the frontend server needs to load and parse.
+    if (_dillToCache == null ||
+        (_dillToCache!.lengthSync() < kernelReadyToRun.lengthSync())) {
+      _dillToCache = kernelReadyToRun;
     }
 
     return CompilationResponse(
@@ -175,6 +174,13 @@ class _TestCompilerForLanguageVersion {
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
         await _compilePool.close();
+        if (_dillToCache != null) {
+          var testCache = File(_dillCachePath);
+          if (!testCache.parent.existsSync()) {
+            testCache.parent.createSync(recursive: true);
+          }
+          _dillToCache!.copySync(_dillCachePath);
+        }
         _frontendServerClient?.kill();
         _frontendServerClient = null;
         if (_outputDillDirectory.existsSync()) {
