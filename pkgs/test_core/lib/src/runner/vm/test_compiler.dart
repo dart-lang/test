@@ -75,6 +75,9 @@ class _TestCompilerForLanguageVersion {
       Directory.systemTemp.createTempSync('dart_test.');
   // Used to create unique file names for final kernel files.
   int _compileNumber = 0;
+  // The largest incremental dill file we created, will be cached under
+  // the `.dart_tool` dir at the end of compilation.
+  File? _dillToCache;
 
   _TestCompilerForLanguageVersion(
       String dillCachePrefix, this._languageVersionComment)
@@ -102,15 +105,17 @@ class _TestCompilerForLanguageVersion {
   Future<CompilationResponse> _compile(Uri mainUri) async {
     _compileNumber++;
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
-    var firstCompile = false;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
       ..writeAsStringSync(_generateEntrypoint(mainUri));
+    final testCache = File(_dillCachePath);
 
     try {
       if (_frontendServerClient == null) {
+        if (await testCache.exists()) {
+          await testCache.copy(_outputDill.path);
+        }
         compilerOutput = await _createCompiler(tempFile.uri);
-        firstCompile = true;
       } else {
         compilerOutput =
             await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
@@ -134,18 +139,13 @@ class _TestCompilerForLanguageVersion {
     final outputFile = File(outputPath);
     final kernelReadyToRun =
         await outputFile.copy('${tempFile.path}_$_compileNumber.dill');
-    final testCache = File(_dillCachePath);
-    // Keep the cache file up-to-date and use the size of the kernel file
-    // as an approximation for how many packages are included. Larger files
-    // are prefered, since re-using more packages will reduce the number of
-    // files the frontend server needs to load and parse.
-    if (firstCompile ||
-        !testCache.existsSync() ||
-        (testCache.lengthSync() < outputFile.lengthSync())) {
-      if (!testCache.parent.existsSync()) {
-        testCache.parent.createSync(recursive: true);
-      }
-      await outputFile.copy(_dillCachePath);
+    // Keep the `_dillToCache` file up-to-date and use the size of the
+    // kernel file as an approximation for how many packages are included.
+    // Larger files are prefered, since re-using more packages will reduce the
+    // number of files the frontend server needs to load and parse.
+    if (_dillToCache == null ||
+        (_dillToCache!.lengthSync() < kernelReadyToRun.lengthSync())) {
+      _dillToCache = kernelReadyToRun;
     }
 
     return CompilationResponse(
@@ -172,6 +172,13 @@ class _TestCompilerForLanguageVersion {
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
         await _compilePool.close();
+        if (_dillToCache != null) {
+          var testCache = File(_dillCachePath);
+          if (!testCache.parent.existsSync()) {
+            testCache.parent.createSync(recursive: true);
+          }
+          _dillToCache!.copySync(_dillCachePath);
+        }
         _frontendServerClient?.kill();
         _frontendServerClient = null;
         if (_outputDillDirectory.existsSync()) {

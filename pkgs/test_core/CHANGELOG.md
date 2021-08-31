@@ -1,3 +1,7 @@
+## 0.4.2
+
+* Re-use the cached dill file from previous runs on subsequent runs.
+
 ## 0.4.1
 
 * Use the latest `package:matcher`.

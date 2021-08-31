@@ -247,10 +247,15 @@ $_usage''');
 
       expect(
           test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            "Error: Getter not found: 'main'",
-          ]));
+          emitsThrough(
+            contains('-1: loading test.dart [E]'),
+          ));
+      expect(
+          test.stdout,
+          emitsThrough(anyOf([
+            contains("Error: Getter not found: 'main'"),
+            contains("Error: Undefined name 'main'"),
+          ])));
 
       await test.shouldExit(1);
     });

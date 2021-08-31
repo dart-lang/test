@@ -1,3 +1,8 @@
+## 1.17.12
+
+* Support the latest `test_core`.
+* Re-use the cached dill file from previous runs on subsequent runs.
+
 ## 1.17.11
 
 * Use the latest `package:matcher`.
