@@ -129,7 +129,7 @@ class _ImportCheck {
   Future<Set<Uri>> _findImports(Uri uri, String restrictToPackage) async {
     var path = await _pathForUri(uri);
     var analysisSession = _context.currentSession;
-    var parseResult = analysisSession.getParsedUnit2(path) as ParsedUnitResult;
+    var parseResult = analysisSession.getParsedUnit(path) as ParsedUnitResult;
     assert(parseResult.content.isNotEmpty,
         'Tried to read an invalid library $uri');
     return parseResult.unit.directives
