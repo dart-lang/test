@@ -105,7 +105,6 @@ class _TestCompilerForLanguageVersion {
   Future<CompilationResponse> _compile(Uri mainUri) async {
     _compileNumber++;
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
-    var firstCompile = false;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
       ..writeAsStringSync(_generateEntrypoint(mainUri));
@@ -117,7 +116,6 @@ class _TestCompilerForLanguageVersion {
           await testCache.copy(_outputDill.path);
         }
         compilerOutput = await _createCompiler(tempFile.uri);
-        firstCompile = true;
       } else {
         compilerOutput =
             await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
