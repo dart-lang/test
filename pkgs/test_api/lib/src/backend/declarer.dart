@@ -79,6 +79,8 @@ class Declarer {
   Trace? _tearDownAllTrace;
 
   /// The children of this group, either tests or sub-groups.
+  ///
+  /// All modifications to this must go through [_addEntry].
   final _entries = <GroupEntry>[];
 
   /// Whether [build] has been called for this declarer.
@@ -103,6 +105,9 @@ class Declarer {
 
   /// The current zone-scoped declarer.
   static Declarer? get current => Zone.current[#test.declarer] as Declarer?;
+
+  /// All the test and group names that have been declared in the entire suite.
+  final Set<String?> _seenNames;
 
   /// Creates a new declarer for the root group.
   ///
@@ -133,7 +138,7 @@ class Declarer {
             collectTraces,
             null,
             noRetry,
-            fullTestName);
+            fullTestName, <String>{});
 
   Declarer._(
     this._parent,
@@ -144,6 +149,7 @@ class Declarer {
     this._trace,
     this._noRetry,
     this._fullTestName,
+    this._seenNames,
   );
 
   /// Runs [body] with this declarer as [Declarer.current].
@@ -177,7 +183,7 @@ class Declarer {
         retry: _noRetry ? 0 : retry);
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
-    _entries.add(LocalTest(fullName, metadata, () async {
+    _addEntry(LocalTest(fullName, metadata, () async {
       var parents = <Declarer>[];
       for (Declarer? declarer = this;
           declarer != null;
@@ -235,8 +241,16 @@ class Declarer {
     var metadata = _metadata.merge(newMetadata);
     var trace = _collectTraces ? Trace.current(2) : null;
 
-    var declarer = Declarer._(this, fullTestPrefix, metadata,
-        _platformVariables, _collectTraces, trace, _noRetry, _fullTestName);
+    var declarer = Declarer._(
+        this,
+        fullTestPrefix,
+        metadata,
+        _platformVariables,
+        _collectTraces,
+        trace,
+        _noRetry,
+        _fullTestName,
+        _seenNames);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
@@ -244,7 +258,7 @@ class Declarer {
       if (result is! Future) return;
       throw ArgumentError('Groups may not be async.');
     });
-    _entries.add(declarer.build());
+    _addEntry(declarer.build());
 
     if (solo || declarer._solo) {
       _soloEntries.add(_entries.last);
@@ -356,5 +370,14 @@ class Declarer {
           // the declarer's `tearDownAll()` list.
           zoneValues: {#test.declarer: this});
     }, trace: _tearDownAllTrace, guarded: false, isScaffoldAll: true);
+  }
+
+  void _addEntry(GroupEntry entry) {
+    if (_seenNames.contains(entry.name)) {
+      throw ArgumentError(
+          'Found a duplicate test name `${entry.name}`, which is not allowed.');
+    }
+    _seenNames.add(entry.name);
+    _entries.add(entry);
   }
 }

@@ -640,6 +640,20 @@ void main() {
       });
     });
   });
+
+  group('errors', () {
+    test('duplicate names are not allowed', () {
+      expect(
+          () => declare(() {
+                test('a', expectAsync0(() {}, count: 0));
+                test('a', expectAsync0(() {}, count: 0));
+              }),
+          throwsA(isA<ArgumentError>().having(
+              (e) => e.message,
+              'mentioning the duplicate test name',
+              contains('duplicate test name `a`'))));
+    });
+  });
 }
 
 /// Runs [test].
