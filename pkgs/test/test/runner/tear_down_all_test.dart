@@ -50,40 +50,18 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test("doesn't run if no tests in the group are selected", () async {
-    await d.file('test.dart', r'''
-        import 'package:test/test.dart';
-
-        void main() {
-          group("group", () {
-            tearDownAll(() => throw "oh no");
-
-            test("with", () {});
-          });
-
-          group("group", () {
-            test("without", () {});
-          });
-        }
-        ''').create();
-
-    var test = await runTest(['test.dart', '--name', 'without']);
-    expect(test.stdout, neverEmits(contains('(tearDownAll)')));
-    await test.shouldExit(0);
-  });
-
   test("doesn't run if no tests in the group match the platform", () async {
     await d.file('test.dart', r'''
         import 'package:test/test.dart';
 
         void main() {
-          group("group", () {
+          group("group1", () {
             tearDownAll(() => throw "oh no");
 
             test("with", () {}, testOn: "browser");
           });
 
-          group("group", () {
+          group("group2", () {
             test("without", () {});
           });
         }
@@ -99,13 +77,13 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          group("group", () {
+          group("group1", () {
             tearDownAll(() => throw "oh no");
 
             test("with", () {});
           }, testOn: "browser");
 
-          group("group", () {
+          group("group2", () {
             test("without", () {});
           });
         }

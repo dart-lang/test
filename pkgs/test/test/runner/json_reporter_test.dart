@@ -188,8 +188,8 @@ void main() {
           });
         });
 
-        test('success', () {});
-        test('success', () {});
+        test('success1', () {});
+        test('success2', () {});
       });
     ''', [
       [
@@ -206,10 +206,10 @@ void main() {
         testStartJson(6, 'group 1 .2 .3 success',
             groupIDs: [2, 3, 4, 5], line: 9, column: 13),
         testDoneJson(6),
-        testStartJson(7, 'group 1 success',
+        testStartJson(7, 'group 1 success1',
             groupIDs: [2, 3], line: 13, column: 9),
         testDoneJson(7),
-        testStartJson(8, 'group 1 success',
+        testStartJson(8, 'group 1 success2',
             groupIDs: [2, 3], line: 14, column: 9),
         testDoneJson(8),
       ]

@@ -55,13 +55,13 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          group("group", () {
+          group("group1", () {
             setUpAll(() => throw "oh no");
 
             test("with", () {}, testOn: "browser");
           });
 
-          group("group", () {
+          group("group2", () {
             test("without", () {});
           });
         }
@@ -77,13 +77,13 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          group("group", () {
+          group("group1", () {
             setUpAll(() => throw "oh no");
 
             test("with", () {});
           }, testOn: "browser");
 
-          group("group", () {
+          group("group2", () {
             test("without", () {});
           });
         }
