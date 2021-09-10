@@ -215,7 +215,8 @@ LoadSuite loadSuite(String name, FutureOr<RunnerSuite> Function() body) =>
     LoadSuite(name, SuiteConfiguration.empty, suitePlatform, body);
 
 SuiteConfiguration suiteConfiguration(
-        {bool? allowTestRandomization,
+        {bool? allowDuplicateTestNames,
+        bool? allowTestRandomization,
         bool? jsTrace,
         bool? runSkipped,
         Iterable<String>? dart2jsArgs,
@@ -237,6 +238,7 @@ SuiteConfiguration suiteConfiguration(
         PlatformSelector? testOn,
         Iterable<String>? addTags}) =>
     SuiteConfiguration(
+        allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
         jsTrace: jsTrace,
         runSkipped: runSkipped,
@@ -285,6 +287,7 @@ Configuration configuration(
         bool? useDataIsolateStrategy,
 
         // Suite-level configuration
+        bool? allowDuplicateTestNames,
         bool? allowTestRandomization,
         bool? jsTrace,
         bool? runSkipped,
@@ -333,6 +336,7 @@ Configuration configuration(
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
+        allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
         jsTrace: jsTrace,
         runSkipped: runSkipped,

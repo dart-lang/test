@@ -107,7 +107,10 @@ class Declarer {
   static Declarer? get current => Zone.current[#test.declarer] as Declarer?;
 
   /// All the test and group names that have been declared in the entire suite.
-  final Set<String?> _seenNames;
+  ///
+  /// If duplicate test names are allowed, this is not tracked and it will be
+  /// `null`.
+  final Set<String>? _seenNames;
 
   /// Creates a new declarer for the root group.
   ///
@@ -124,13 +127,18 @@ class Declarer {
   /// thousands of tests are being declared (see #457).
   ///
   /// If [noRetry] is `true` tests will be run at most once.
-  Declarer(
-      {Metadata? metadata,
-      Set<String>? platformVariables,
-      bool collectTraces = false,
-      bool noRetry = false,
-      String? fullTestName})
-      : this._(
+  ///
+  /// If [allowDuplicateTestNames] is `false`, then a
+  /// [DuplicateTestNameException] will be thrown if two tests (or groups) have
+  /// the same name.
+  Declarer({
+    Metadata? metadata,
+    Set<String>? platformVariables,
+    bool collectTraces = false,
+    bool noRetry = false,
+    String? fullTestName,
+    bool allowDuplicateTestNames = false,
+  }) : this._(
             null,
             null,
             metadata ?? Metadata(),
@@ -138,7 +146,8 @@ class Declarer {
             collectTraces,
             null,
             noRetry,
-            fullTestName, <String>{});
+            fullTestName,
+            allowDuplicateTestNames ? null : <String>{});
 
   Declarer._(
     this._parent,
@@ -373,11 +382,20 @@ class Declarer {
   }
 
   void _addEntry(GroupEntry entry) {
-    if (_seenNames.contains(entry.name)) {
-      throw ArgumentError(
-          'Found a duplicate test name `${entry.name}`, which is not allowed.');
+    if (_seenNames?.add(entry.name) == false) {
+      throw DuplicateTestNameException(entry.name);
     }
-    _seenNames.add(entry.name);
     _entries.add(entry);
   }
+}
+
+/// An exception thrown when two test cases in the same test suite (same `main`)
+/// have an identical name.
+class DuplicateTestNameException implements Exception {
+  final String name;
+  DuplicateTestNameException(this.name);
+
+  @override
+  String toString() => 'A test with the name "$name" was already declared. '
+      'Test cases must have unique names.';
 }

@@ -278,6 +278,7 @@ class _Parser {
         // Config that isn't supported on the command line
         addTags: null,
         allowTestRandomization: null,
+        allowDuplicateTestNames: null,
         customHtmlTemplatePath: null,
         defineRuntimes: null,
         filename: null,

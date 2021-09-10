@@ -175,6 +175,7 @@ class _ConfigurationLoader {
       _disallow('add_tags');
       _disallow('tags');
       _disallow('allow_test_randomization');
+      _disallow('allow_duplicate_test_names');
       return Configuration.empty;
     }
 
@@ -204,13 +205,16 @@ class _ConfigurationLoader {
 
     var allowTestRandomization = _getBool('allow_test_randomization');
 
+    var allowDuplicateTestNames = _getBool('allow_duplicate_test_names');
+
     return Configuration.localTest(
             skip: skip,
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
             addTags: addTags,
-            allowTestRandomization: allowTestRandomization)
+            allowTestRandomization: allowTestRandomization,
+            allowDuplicateTestNames: allowDuplicateTestNames)
         .merge(_extractPresets<BooleanSelector>(
             tags, (map) => Configuration.tags(map)));
   }
