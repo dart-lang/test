@@ -170,8 +170,10 @@ Future expectTestsPass(void Function() body) async {
 }
 
 /// Runs [body] with a declarer and returns the declared entries.
-List<GroupEntry> declare(void Function() body) {
-  var declarer = Declarer()..declare(body);
+List<GroupEntry> declare(void Function() body,
+    {bool allowDuplicateTestNames = false}) {
+  var declarer = Declarer(allowDuplicateTestNames: allowDuplicateTestNames)
+    ..declare(body);
   return declarer.build().entries;
 }
 

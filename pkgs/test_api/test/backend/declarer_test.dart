@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
+import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/suite.dart';
@@ -641,17 +642,25 @@ void main() {
     });
   });
 
-  group('errors', () {
-    test('duplicate names are not allowed', () {
+  group('duplicate names', () {
+    test('are not allowed by default', () {
       expect(
           () => declare(() {
                 test('a', expectAsync0(() {}, count: 0));
                 test('a', expectAsync0(() {}, count: 0));
               }),
-          throwsA(isA<ArgumentError>().having(
-              (e) => e.message,
-              'mentioning the duplicate test name',
-              contains('duplicate test name `a`'))));
+          throwsA(isA<DuplicateTestNameException>()
+              .having((e) => e.name, 'name', 'a')));
+    });
+
+    test('can be enabled', () {
+      expect(
+          declare(() {
+            test('a', expectAsync0(() {}, count: 0));
+            test('a', expectAsync0(() {}, count: 0));
+          }, allowDuplicateTestNames: true)
+              .map((e) => e.name),
+          equals(['a', 'a']));
     });
   });
 }
