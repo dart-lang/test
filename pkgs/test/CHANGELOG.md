@@ -1,3 +1,10 @@
+## 2.0.0-dev
+
+* **Breaking**: Disallow duplicate test and group names by default. See the
+  [docs][allow_test_randomization] if you want to revert to the old behavior.
+
+[allow_test_randomization]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_test_randomization
+
 ## 1.17.12
 
 * Support the latest `test_core`.

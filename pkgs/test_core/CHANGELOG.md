@@ -1,3 +1,8 @@
+## 0.5.0-dev
+
+* **Breaking**: Disallow duplicate test or group names in `directRunTests`.
+  * If you require an option to bypass this, please file an issue.
+
 ## 0.4.2
 
 * Re-use the cached dill file from previous runs on subsequent runs.
