@@ -32,8 +32,6 @@ class RunnerTest extends Test {
 
   RunnerTest(this.name, this.metadata, this.trace, this._channel);
 
-  RunnerTest._(this.name, this.metadata, this.trace, this._channel);
-
   @override
   LiveTest load(Suite suite, {Iterable<Group>? groups}) {
     late final LiveTestController controller;
@@ -103,6 +101,6 @@ class RunnerTest extends Test {
   @override
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);
+    return RunnerTest(name, metadata.forPlatform(platform), trace, _channel);
   }
 }
