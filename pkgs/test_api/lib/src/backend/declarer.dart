@@ -397,5 +397,7 @@ class DuplicateTestNameException implements Exception {
 
   @override
   String toString() => 'A test with the name "$name" was already declared. '
-      'Test cases must have unique names.';
+      'Test cases must have unique names.\n\n'
+      'See https://github.com/dart-lang/test/blob/master/pkgs/test/doc/'
+      'configuration.md#allow_test_randomization for info on enabling this.';
 }
