@@ -29,8 +29,12 @@ import 'util/print_sink.dart';
 /// is applied except for the filtering defined by `solo` or `skip` arguments to
 /// `group` and `test`. Returns [true] if all tests passed.
 Future<bool> directRunTests(FutureOr<void> Function() testMain,
-        {Reporter Function(Engine)? reporterFactory}) =>
-    _directRunTests(testMain, reporterFactory: reporterFactory);
+        {Reporter Function(Engine)? reporterFactory,
+        // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+        bool allowDuplicateTestNames = true}) =>
+    _directRunTests(testMain,
+        reporterFactory: reporterFactory,
+        allowDuplicateTestNames: allowDuplicateTestNames);
 
 /// Runs a single test declared in [testMain] matched by it's full test name.
 ///
@@ -49,14 +53,19 @@ Future<bool> directRunSingleTest(
         FutureOr<void> Function() testMain, String fullTestName,
         {Reporter Function(Engine)? reporterFactory}) =>
     _directRunTests(testMain,
-        reporterFactory: reporterFactory, fullTestName: fullTestName);
+        reporterFactory: reporterFactory,
+        fullTestName: fullTestName,
+        allowDuplicateTestNames: false);
 
 Future<bool> _directRunTests(FutureOr<void> Function() testMain,
-    {Reporter Function(Engine)? reporterFactory, String? fullTestName}) async {
+    {Reporter Function(Engine)? reporterFactory,
+    String? fullTestName,
+    required bool allowDuplicateTestNames}) async {
   reporterFactory ??= (engine) => ExpandedReporter.watch(engine, PrintSink(),
       color: Configuration.empty.color, printPath: false, printPlatform: false);
-  final declarer =
-      Declarer(fullTestName: fullTestName, allowDuplicateTestNames: false);
+  final declarer = Declarer(
+      fullTestName: fullTestName,
+      allowDuplicateTestNames: allowDuplicateTestNames);
   await declarer.declare(testMain);
 
   final suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,

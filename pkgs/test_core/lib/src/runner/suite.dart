@@ -40,7 +40,9 @@ class SuiteConfiguration {
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
-  bool get allowDuplicateTestNames => _allowDuplicateTestNames ?? false;
+  //
+  // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+  bool get allowDuplicateTestNames => _allowDuplicateTestNames ?? true;
   final bool? _allowDuplicateTestNames;
 
   /// Whether test randomization should be allowed for this test.

@@ -137,7 +137,8 @@ class Declarer {
     bool collectTraces = false,
     bool noRetry = false,
     String? fullTestName,
-    bool allowDuplicateTestNames = false,
+    // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+    bool allowDuplicateTestNames = true,
   }) : this._(
             null,
             null,

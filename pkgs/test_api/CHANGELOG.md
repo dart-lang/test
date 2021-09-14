@@ -1,8 +1,6 @@
-## 0.5.0-dev
+## 0.4.4-dev
 
-* **Breaking**: Disallow duplicate test or group names by default in the
-  `Declarer`. This can be re-enabled by setting `allowDuplicateTestNames` to
-  `true`.
+* Allow disabling duplicate test or group names in the `Declarer`.
 
 ## 0.4.3
 

@@ -643,23 +643,22 @@ void main() {
   });
 
   group('duplicate names', () {
-    test('are not allowed by default', () {
+    test('can be enabled', () {
       expect(
           () => declare(() {
                 test('a', expectAsync0(() {}, count: 0));
                 test('a', expectAsync0(() {}, count: 0));
-              }),
+              }, allowDuplicateTestNames: false),
           throwsA(isA<DuplicateTestNameException>()
               .having((e) => e.name, 'name', 'a')));
     });
 
-    test('can be enabled', () {
+    test('are allowed by default', () {
       expect(
           declare(() {
             test('a', expectAsync0(() {}, count: 0));
             test('a', expectAsync0(() {}, count: 0));
-          }, allowDuplicateTestNames: true)
-              .map((e) => e.name),
+          }).map((e) => e.name),
           equals(['a', 'a']));
     });
   });

@@ -5,6 +5,8 @@
 @TestOn('vm')
 import 'dart:convert';
 
+import 'package:path/path.dart' as p;
+
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/test.dart';
@@ -13,9 +15,14 @@ import '../../io.dart';
 
 void main() {
   group('duplicate names', () {
-    group('are not allowed by default for', () {
+    group('can be disabled for', () {
       for (var function in ['group', 'test']) {
         test('${function}s', () async {
+          await d
+              .file('dart_test.yaml',
+                  jsonEncode({'allow_duplicate_test_names': false}))
+              .create();
+
           var testName = 'test';
           await d.file('test.dart', '''
           import 'package:test/test.dart';
@@ -26,7 +33,11 @@ void main() {
           }
         ''').create();
 
-          var test = await runTest(['test.dart']);
+          var test = await runTest([
+            'test.dart',
+            '--configuration',
+            p.join(d.sandbox, 'dart_test.yaml')
+          ]);
 
           expect(
               test.stdout,
@@ -37,14 +48,9 @@ void main() {
         });
       }
     });
-    group('can be enabled for ', () {
+    group('are allowed by default for', () {
       for (var function in ['group', 'test']) {
         test('${function}s', () async {
-          await d
-              .file('dart_test.yaml',
-                  jsonEncode({'allow_duplicate_test_names': true}))
-              .create();
-
           var testName = 'test';
           await d.file('test.dart', '''
           import 'package:test/test.dart';
@@ -60,8 +66,9 @@ void main() {
           }
         ''').create();
 
-          var test = await runTest(['test.dart'],
-              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          var test = await runTest(
+            ['test.dart'],
+          );
 
           expect(test.stdout, emitsThrough(contains('All tests passed!')));
 

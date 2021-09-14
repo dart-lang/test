@@ -1,7 +1,10 @@
-## 0.5.0-dev
+## 0.4.3-dev
 
-* **Breaking**: Disallow duplicate test or group names in `directRunTests`.
-  * If you require an option to bypass this, please file an issue.
+* Add an option to disallow duplicate test or group names in `directRunTests`.
+* Add configuration to disallow duplicate test and group names by default. See
+  the [docs][allow_test_randomization] for more information.
+
+[allow_test_randomization]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_test_randomization
 
 ## 0.4.2
 
