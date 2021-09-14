@@ -96,7 +96,7 @@ class _Handler {
   ///
   /// This is used over throwing errors directly since the request handler might
   /// not be running in the same error zone as the test.
-  void Function(Object, StackTrace) _onError;
+  final void Function(Object, StackTrace) _onError;
 
   /// The queue of expected requests to this handler.
   final _expectations = Queue<_Expectation>();
