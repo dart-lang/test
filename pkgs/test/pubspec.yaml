@@ -49,7 +49,7 @@ dependency_overrides:
   test_api:
     path: ../test_api
   # Needed due to cyclic dep
-  shelf_packages_handler: ^2.0.0
+  shelf_packages_handler: ^3.0.0
   shelf_static: ^1.0.0
   shelf_test_handler: ^2.0.0
   test_descriptor: ^2.0.0
