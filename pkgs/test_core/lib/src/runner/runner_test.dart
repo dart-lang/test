@@ -27,7 +27,7 @@ class RunnerTest extends Test {
   @override
   final Trace? trace;
 
-  /// The channel used to communicate with the test's [IframeListener].
+  /// The channel used to communicate with the test's `RemoteListener`.
   final MultiChannel _channel;
 
   RunnerTest(this.name, this.metadata, this.trace, this._channel);
