@@ -84,7 +84,7 @@ final _currentUrl = Uri.parse(window.location.href);
 ///      ┃                         │                          ┃
 ///      ┃         ┌──────────MultiChannel┬─────────┐         ┃
 ///      ┃         │          │     │     │         │         ┃
-///      ┃   IframeListener  test  test  test  running test   ┃
+///      ┃   RemoteListener  test  test  test  running test   ┃
 ///      ┃                                                    ┃
 ///      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ///
@@ -93,9 +93,9 @@ final _currentUrl = Uri.parse(window.location.href);
 /// receive messages like "load a suite at this URL", and the rest are
 /// connected to each test suite's iframe via a [MessageChannel].
 ///
-/// Each iframe then has its own [MultiChannel] which takes its
-/// [MessageChannel] connection and splits it again. One connection is used for
-/// the [IframeListener], which sends messages like "here are all the tests in
+/// Each iframe runs a `RemoteListener` which creates its own [MultiChannel] on
+/// top of the [MessageChannel] connection. One connection is used for
+/// the `RemoteListener`, which sends messages like "here are all the tests in
 /// this suite". The rest are used for each test, receiving messages like
 /// "start running". A new connection is also created whenever a test begins
 /// running to send status messages about its progress.

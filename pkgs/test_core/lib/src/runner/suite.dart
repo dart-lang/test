@@ -122,31 +122,15 @@ class SuiteConfiguration {
   final Metadata _metadata;
 
   /// The set of tags that have been declared in any way in this configuration.
-  Set<String> get knownTags {
-    if (_knownTags != null) return _knownTags!;
-
-    var known = includeTags.variables.toSet()
-      ..addAll(excludeTags.variables)
-      ..addAll(_metadata.tags);
-
-    for (var selector in tags.keys) {
-      known.addAll(selector.variables);
-    }
-
-    for (var configuration in _children) {
-      known.addAll(configuration.knownTags);
-    }
-
-    return _knownTags = UnmodifiableSetView(known);
-  }
-
+  Set<String> get knownTags => _knownTags ??= UnmodifiableSetView({
+        ...includeTags.variables,
+        ...excludeTags.variables,
+        ..._metadata.tags,
+        for (var selector in tags.keys) ...selector.variables,
+        for (var configuration in tags.values) ...configuration.knownTags,
+        for (var configuration in onPlatform.values) ...configuration.knownTags,
+      });
   Set<String>? _knownTags;
-
-  /// All child configurations that may be selected under various circumstances.
-  Iterable<SuiteConfiguration> get _children sync* {
-    yield* tags.values;
-    yield* onPlatform.values;
-  }
 
   factory SuiteConfiguration(
       {required bool? allowDuplicateTestNames,
