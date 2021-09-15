@@ -29,8 +29,12 @@ import 'util/print_sink.dart';
 /// is applied except for the filtering defined by `solo` or `skip` arguments to
 /// `group` and `test`. Returns [true] if all tests passed.
 Future<bool> directRunTests(FutureOr<void> Function() testMain,
-        {Reporter Function(Engine)? reporterFactory}) =>
-    _directRunTests(testMain, reporterFactory: reporterFactory);
+        {Reporter Function(Engine)? reporterFactory,
+        // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+        bool allowDuplicateTestNames = true}) =>
+    _directRunTests(testMain,
+        reporterFactory: reporterFactory,
+        allowDuplicateTestNames: allowDuplicateTestNames);
 
 /// Runs a single test declared in [testMain] matched by it's full test name.
 ///
@@ -49,13 +53,19 @@ Future<bool> directRunSingleTest(
         FutureOr<void> Function() testMain, String fullTestName,
         {Reporter Function(Engine)? reporterFactory}) =>
     _directRunTests(testMain,
-        reporterFactory: reporterFactory, fullTestName: fullTestName);
+        reporterFactory: reporterFactory,
+        fullTestName: fullTestName,
+        allowDuplicateTestNames: false);
 
 Future<bool> _directRunTests(FutureOr<void> Function() testMain,
-    {Reporter Function(Engine)? reporterFactory, String? fullTestName}) async {
+    {Reporter Function(Engine)? reporterFactory,
+    String? fullTestName,
+    required bool allowDuplicateTestNames}) async {
   reporterFactory ??= (engine) => ExpandedReporter.watch(engine, PrintSink(),
       color: Configuration.empty.color, printPath: false, printPlatform: false);
-  final declarer = Declarer(fullTestName: fullTestName);
+  final declarer = Declarer(
+      fullTestName: fullTestName,
+      allowDuplicateTestNames: allowDuplicateTestNames);
   await declarer.declare(testMain);
 
   final suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
@@ -74,9 +84,6 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
 
   if (fullTestName != null) {
     final testCount = engine.liveTests.length;
-    if (testCount > 1) {
-      throw DuplicateTestNameException(fullTestName);
-    }
     if (testCount == 0) {
       throw MissingTestException(fullTestName);
     }
@@ -97,16 +104,12 @@ Future<Set<String>> enumerateTestCases(
   await declarer.declare(testMain);
 
   final toVisit = Queue<GroupEntry>.of([declarer.build()]);
-  final allTestNames = <String>{};
   final unskippedTestNames = <String>{};
   while (toVisit.isNotEmpty) {
     final current = toVisit.removeLast();
     if (current is Group) {
       toVisit.addAll(current.entries.reversed);
     } else if (current is Test) {
-      if (!allTestNames.add(current.name)) {
-        throw DuplicateTestNameException(current.name);
-      }
       if (current.metadata.skip) continue;
       unskippedTestNames.add(current.name);
     } else {
@@ -114,17 +117,6 @@ Future<Set<String>> enumerateTestCases(
     }
   }
   return unskippedTestNames;
-}
-
-/// An exception thrown when two test cases in the same test suite (same `main`)
-/// have an identical name.
-class DuplicateTestNameException implements Exception {
-  final String name;
-  DuplicateTestNameException(this.name);
-
-  @override
-  String toString() => 'A test with the name "$name" was already declared. '
-      'Test cases must have unique names.';
 }
 
 /// An exception thrown when a specific test was requested by name that does not

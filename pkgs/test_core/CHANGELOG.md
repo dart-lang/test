@@ -1,5 +1,11 @@
 ## 0.4.3-dev
 
+* Add an option to disallow duplicate test or group names in `directRunTests`.
+* Add configuration to disallow duplicate test and group names by default. See
+  the [docs][allow_duplicate_test_names] for more information.
+
+[allow_duplicate_test_names]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_duplicate_test_names
+
 ## 0.4.2
 
 * Re-use the cached dill file from previous runs on subsequent runs.

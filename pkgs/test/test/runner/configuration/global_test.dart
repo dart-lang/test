@@ -93,7 +93,7 @@ void main() {
     for (var field in [
       'skip', 'retry', 'test_on', 'paths', 'filename', 'names', 'tags', //
       'plain_names', 'include_tags', 'exclude_tags', 'pub_serve', 'add_tags',
-      'define_platforms'
+      'define_platforms', 'allow_duplicate_test_names',
     ]) {
       test('for $field', () async {
         await d.file('global_test.yaml', jsonEncode({field: null})).create();

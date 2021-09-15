@@ -1,5 +1,7 @@
 ## 0.4.4-dev
 
+* Allow disabling duplicate test or group names in the `Declarer`.
+
 ## 0.4.3
 
 * Use the latest `package:matcher`.

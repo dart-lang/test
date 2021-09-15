@@ -1,3 +1,6 @@
+# Disallow duplicate test names in this package
+allow_duplicate_test_names: false
+
 # Fold frames from helper packages we use in our tests, but not from test
 # itself.
 fold_stack_frames:

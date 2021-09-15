@@ -105,7 +105,9 @@ class RemoteListener {
             platformVariables:
                 Set.from(message['platformVariables'] as Iterable),
             collectTraces: message['collectTraces'] as bool,
-            noRetry: message['noRetry'] as bool);
+            noRetry: message['noRetry'] as bool,
+            allowDuplicateTestNames:
+                message['allowDuplicateTestNames'] as bool);
         StackTraceFormatter.current!.configure(
             except: _deserializeSet(message['foldTraceExcept'] as List),
             only: _deserializeSet(message['foldTraceOnly'] as List));

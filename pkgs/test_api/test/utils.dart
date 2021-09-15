@@ -170,8 +170,13 @@ Future expectTestsPass(void Function() body) async {
 }
 
 /// Runs [body] with a declarer and returns the declared entries.
-List<GroupEntry> declare(void Function() body) {
-  var declarer = Declarer()..declare(body);
+List<GroupEntry> declare(
+  void Function() body, {
+  // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+  bool allowDuplicateTestNames = true,
+}) {
+  var declarer = Declarer(allowDuplicateTestNames: allowDuplicateTestNames)
+    ..declare(body);
   return declarer.build().entries;
 }
 

@@ -59,6 +59,7 @@ RunnerSuiteController deserializeSuite(
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
+    'allowDuplicateTestNames': suiteConfig.allowDuplicateTestNames,
     ...(message as Map<String, dynamic>),
   });
 

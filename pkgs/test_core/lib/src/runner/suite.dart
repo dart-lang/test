@@ -24,6 +24,7 @@ class SuiteConfiguration {
   /// Using this is slightly more efficient than manually constructing a new
   /// configuration with no arguments.
   static final empty = SuiteConfiguration._(
+      allowDuplicateTestNames: null,
       allowTestRandomization: null,
       jsTrace: null,
       runSkipped: null,
@@ -36,6 +37,13 @@ class SuiteConfiguration {
       tags: null,
       onPlatform: null,
       metadata: null);
+
+  /// Whether or not duplicate test (or group) names are allowed within the same
+  /// test suite.
+  //
+  // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+  bool get allowDuplicateTestNames => _allowDuplicateTestNames ?? true;
+  final bool? _allowDuplicateTestNames;
 
   /// Whether test randomization should be allowed for this test.
   bool get allowTestRandomization => _allowTestRandomization ?? true;
@@ -125,7 +133,8 @@ class SuiteConfiguration {
   Set<String>? _knownTags;
 
   factory SuiteConfiguration(
-      {required bool? allowTestRandomization,
+      {required bool? allowDuplicateTestNames,
+      required bool? allowTestRandomization,
       required bool? jsTrace,
       required bool? runSkipped,
       required Iterable<String>? dart2jsArgs,
@@ -147,6 +156,7 @@ class SuiteConfiguration {
       required PlatformSelector? testOn,
       required Iterable<String>? addTags}) {
     var config = SuiteConfiguration._(
+        allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
         jsTrace: jsTrace,
         runSkipped: runSkipped,
@@ -175,7 +185,8 @@ class SuiteConfiguration {
   /// This should only be used in situations where you really only want to
   /// configure a specific restricted set of options.
   factory SuiteConfiguration._unsafe(
-          {bool? allowTestRandomization,
+          {bool? allowDuplicateTestNames,
+          bool? allowTestRandomization,
           bool? jsTrace,
           bool? runSkipped,
           Iterable<String>? dart2jsArgs,
@@ -197,6 +208,7 @@ class SuiteConfiguration {
           PlatformSelector? testOn,
           Iterable<String>? addTags}) =>
       SuiteConfiguration(
+          allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
           runSkipped: runSkipped,
@@ -234,7 +246,8 @@ class SuiteConfiguration {
   /// Unlike [new SuiteConfiguration], this assumes [tags] is already
   /// resolved.
   SuiteConfiguration._(
-      {required bool? allowTestRandomization,
+      {required bool? allowDuplicateTestNames,
+      required bool? allowTestRandomization,
       required bool? jsTrace,
       required bool? runSkipped,
       required Iterable<String>? dart2jsArgs,
@@ -246,7 +259,8 @@ class SuiteConfiguration {
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       required Metadata? metadata})
-      : _allowTestRandomization = allowTestRandomization,
+      : _allowDuplicateTestNames = allowDuplicateTestNames,
+        _allowTestRandomization = allowTestRandomization,
         _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
@@ -267,6 +281,7 @@ class SuiteConfiguration {
         onPlatform: metadata.onPlatform.map((key, child) =>
             MapEntry(key, SuiteConfiguration.fromMetadata(child))),
         metadata: metadata.change(forTag: {}, onPlatform: {}),
+        allowDuplicateTestNames: null,
         allowTestRandomization: null,
         jsTrace: null,
         runSkipped: null,
@@ -304,6 +319,8 @@ class SuiteConfiguration {
     if (other == SuiteConfiguration.empty) return this;
 
     var config = SuiteConfiguration._(
+        allowDuplicateTestNames:
+            other._allowDuplicateTestNames ?? _allowDuplicateTestNames,
         allowTestRandomization:
             other._allowTestRandomization ?? _allowTestRandomization,
         jsTrace: other._jsTrace ?? _jsTrace,
@@ -325,7 +342,8 @@ class SuiteConfiguration {
   /// Note that unlike [merge], this has no merging behavior—the old value is
   /// always replaced by the new one.
   SuiteConfiguration change(
-      {bool? allowTestRandomization,
+      {bool? allowDuplicateTestNames,
+      bool? allowTestRandomization,
       bool? jsTrace,
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
@@ -347,6 +365,8 @@ class SuiteConfiguration {
       PlatformSelector? testOn,
       Iterable<String>? addTags}) {
     var config = SuiteConfiguration._(
+        allowDuplicateTestNames:
+            allowDuplicateTestNames ?? _allowDuplicateTestNames,
         allowTestRandomization:
             allowTestRandomization ?? _allowTestRandomization,
         jsTrace: jsTrace ?? _jsTrace,

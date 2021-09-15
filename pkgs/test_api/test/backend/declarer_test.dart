@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
+import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/suite.dart';
@@ -638,6 +639,27 @@ void main() {
         await _runTest(innerGroup.entries.single as Test, shouldFail: true);
         expect(outerTearDownRun, isTrue);
       });
+    });
+  });
+
+  group('duplicate names', () {
+    test('can be enabled', () {
+      expect(
+          () => declare(() {
+                test('a', expectAsync0(() {}, count: 0));
+                test('a', expectAsync0(() {}, count: 0));
+              }, allowDuplicateTestNames: false),
+          throwsA(isA<DuplicateTestNameException>()
+              .having((e) => e.name, 'name', 'a')));
+    });
+
+    test('are allowed by default', () {
+      expect(
+          declare(() {
+            test('a', expectAsync0(() {}, count: 0));
+            test('a', expectAsync0(() {}, count: 0));
+          }).map((e) => e.name),
+          equals(['a', 'a']));
     });
   });
 }

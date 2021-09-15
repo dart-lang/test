@@ -33,6 +33,7 @@ tags:
   * [`retry`](#retry)
   * [`test_on`](#test_on)
   * [`allow_test_randomization`](#allow_test_randomization)
+  * [`allow_duplicate_test_names`](#allow_duplicate_test_names)
 * [Runner Configuration](#runner-configuration)
   * [`include`](#include)
   * [`paths`](#paths)
@@ -206,6 +207,30 @@ tags:
   doNotRandomize:
     allow_test_randomization: false
 ```
+
+### `allow_duplicate_test_names`
+
+This can be used to allow multiple tests in the same suite to have the same
+name. This is disabled by default because it is usually an indication of a
+mistake, and it causes problems with IDE integrations which run tests by name.
+
+It can be disabled for all tests:
+
+```yaml
+allow_duplicate_test_names: true
+```
+
+Or for tagged tests only (useful if migrating to enable this):
+
+```yaml
+tags:
+  allowDuplicates:
+    allow_duplicate_test_names: true
+```
+
+It cannot be globally enabled or configured on the command line - this would
+make it so that tests might pass on one users machine but not anothers which
+should be avoided.
 
 ## Runner Configuration
 

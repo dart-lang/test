@@ -264,6 +264,7 @@ class Configuration {
       required int? testRandomizeOrderingSeed,
 
       // Suite-level configuration
+      required bool? allowDuplicateTestNames,
       required bool? allowTestRandomization,
       required bool? jsTrace,
       required bool? runSkipped,
@@ -314,6 +315,7 @@ class Configuration {
         useDataIsolateStrategy: useDataIsolateStrategy,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         suiteDefaults: SuiteConfiguration(
+            allowDuplicateTestNames: allowDuplicateTestNames,
             allowTestRandomization: allowTestRandomization,
             jsTrace: jsTrace,
             runSkipped: runSkipped,
@@ -368,6 +370,7 @@ class Configuration {
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
           bool? useDataIsolateStrategy,
+          bool? allowDuplicateTestNames,
 
           // Suite-level configuration
           bool? allowTestRandomization,
@@ -418,6 +421,7 @@ class Configuration {
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
           useDataIsolateStrategy: useDataIsolateStrategy,
+          allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
           runSkipped: runSkipped,
@@ -439,7 +443,11 @@ class Configuration {
           testOn: testOn,
           addTags: addTags);
 
-  /// Configuration limited to the globally configurable test config.
+  /// Suite level configuration allowed in the global test config file.
+  ///
+  /// This is per-user configuration and should be limited as such, it should
+  /// not contain options that would change the pass/fail result of any given
+  /// test, or change which tests would run.
   factory Configuration.globalTest({
     required bool? verboseTrace,
     required bool? jsTrace,
@@ -480,6 +488,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        allowDuplicateTestNames: null,
         allowTestRandomization: null,
         runSkipped: null,
         dart2jsArgs: null,
@@ -497,15 +506,23 @@ class Configuration {
         addTags: null,
       );
 
-  /// Configuration limited to the locally configurable test config.
-  factory Configuration.localTest(
-          {required bool? skip,
-          required int? retry,
-          required String? skipReason,
-          required PlatformSelector? testOn,
-          required Iterable<String>? addTags,
-          required bool? allowTestRandomization}) =>
+  /// Suite level configuration that is not allowed in the global test
+  /// config file.
+  ///
+  /// This configuration may alter the pass/fail result of a test run, and thus
+  /// should only be configured per package and not at the global level (global
+  /// config is user specific).
+  factory Configuration.localTest({
+    required bool? skip,
+    required int? retry,
+    required String? skipReason,
+    required PlatformSelector? testOn,
+    required Iterable<String>? addTags,
+    required bool? allowDuplicateTestNames,
+    required bool? allowTestRandomization,
+  }) =>
       Configuration(
+        allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
         skip: skip,
         retry: retry,
@@ -553,7 +570,14 @@ class Configuration {
         chainStackTraces: null,
       );
 
-  /// Configuration options limited to the global runner config.
+  /// Runner configuration that is allowed in the global test config file.
+  ///
+  /// This is per-user configuration and should be limited as such, it should
+  /// not contain options that would change the pass/fail result of any given
+  /// test, or change which tests would run.
+  ///
+  /// Note that [customHtmlTemplatePath] violates this rule, and really should
+  /// not be configurable globally.
   factory Configuration.globalRunner(
           {required bool? pauseAfterLoad,
           required String? customHtmlTemplatePath,
@@ -593,6 +617,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        allowDuplicateTestNames: null,
         allowTestRandomization: null,
         jsTrace: null,
         dart2jsArgs: null,
@@ -612,7 +637,11 @@ class Configuration {
         addTags: null,
       );
 
-  /// Configuration options limited to the local runner config.
+  /// Runner configuration that is not allowed in the global test config file.
+  ///
+  /// This configuration may alter the pass/fail result of a test run, and thus
+  /// should only be configured per package and not at the global level (global
+  /// config is user specific).
   factory Configuration.localRunner(
           {required int? pubServePort,
           required Iterable<Pattern>? patterns,
@@ -651,6 +680,7 @@ class Configuration {
           noRetry: null,
           useDataIsolateStrategy: null,
           testRandomizeOrderingSeed: null,
+          allowDuplicateTestNames: null,
           allowTestRandomization: null,
           jsTrace: null,
           runSkipped: null,
@@ -948,6 +978,7 @@ class Configuration {
       bool? useDataIsolateStrategy,
 
       // Suite-level configuration
+      bool? allowDuplicateTestNames,
       bool? jsTrace,
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
@@ -999,6 +1030,7 @@ class Configuration {
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
         suiteDefaults: suiteDefaults.change(
+            allowDuplicateTestNames: allowDuplicateTestNames,
             jsTrace: jsTrace,
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
