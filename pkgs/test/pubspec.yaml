@@ -1,5 +1,5 @@
 name: test
-version: 2.0.0-dev
+version: 1.18.0-dev
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/blob/master/pkgs/test
@@ -47,9 +47,3 @@ dependency_overrides:
     path: ../test_core
   test_api:
     path: ../test_api
-  # Needed due to cyclic dep
-  shelf_packages_handler: ^3.0.0
-  shelf_static: ^1.0.0
-  shelf_test_handler: ^2.0.0
-  test_descriptor: ^2.0.0
-  test_process: ^2.0.0

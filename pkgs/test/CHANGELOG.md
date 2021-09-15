@@ -1,9 +1,9 @@
 ## 1.18.0-dev
 
-* Add configuration to disallow duplicate test and group names by default. See
-  the [docs][allow_test_randomization] for more information.
+* Add configuration to disallow duplicate test and group names. See the
+  [docs][allow_duplicate_test_names] for more information.
 
-[allow_test_randomization]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_test_randomization
+[allow_duplicate_test_names]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_duplicate_test_names
 
 ## 1.17.12
 
