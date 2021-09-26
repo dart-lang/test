@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:test_api/hooks.dart';
 import 'package:http_multi_server/http_multi_server.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
