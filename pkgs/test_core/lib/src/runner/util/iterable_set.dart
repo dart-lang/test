@@ -32,9 +32,9 @@ class IterableSet<E> extends SetMixin<E> with UnmodifiableSetMixin<E> {
   bool contains(Object? element) => _base.contains(element);
 
   @override
-  E? lookup(Object? needle) {
+  E? lookup(Object? element) {
     for (var e in _base) {
-      if (e == needle) return e;
+      if (e == element) return e;
     }
   }
 

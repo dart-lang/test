@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -45,7 +44,7 @@ class Chrome extends Browser {
     var connectionCompleter = Completer<WipConnection>();
     var idToUrl = <String, String>{};
     return Chrome._(() async {
-      var tryPort = ([int? port]) async {
+      Future<Process> tryPort([int? port]) async {
         var dir = createTempDir();
         var args = [
           '--user-data-dir=$dir',
@@ -91,7 +90,7 @@ class Chrome extends Browser {
             .then((_) => Directory(dir).deleteSync(recursive: true)));
 
         return process;
-      };
+      }
 
       if (!configuration.debug) return tryPort();
       return getUnusedPort<Process>(tryPort);

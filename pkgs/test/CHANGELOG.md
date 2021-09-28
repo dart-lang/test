@@ -2,6 +2,7 @@
 
 * Add configuration to disallow duplicate test and group names. See the
   [docs][allow_duplicate_test_names] for more information.
+* Remove dependency on pedantic.
 
 [allow_duplicate_test_names]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_duplicate_test_names
 
@@ -82,7 +83,7 @@
 
 ## 1.16.8
 
-* Fix an issue where coverage collection could hang on Chrome. 
+* Fix an issue where coverage collection could hang on Chrome.
 * ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.~~
 

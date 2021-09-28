@@ -127,8 +127,11 @@ Map<String, Object> testStartJson(int id, String name,
     int? column,
     String? url,
     Object? skip,
+    // ignore: non_constant_identifier_names
     int? root_line,
+    // ignore: non_constant_identifier_names
     int? root_column,
+    // ignore: non_constant_identifier_names
     String? root_url}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(

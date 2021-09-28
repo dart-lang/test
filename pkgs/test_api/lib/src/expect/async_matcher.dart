@@ -51,7 +51,7 @@ abstract class AsyncMatcher extends Matcher {
   }
 
   @override
-  Description describeMismatch(
-          item, Description description, Map matchState, bool verbose) =>
+  Description describeMismatch(item, Description mismatchDescription,
+          Map matchState, bool verbose) =>
       StringDescription(matchState[this] as String);
 }

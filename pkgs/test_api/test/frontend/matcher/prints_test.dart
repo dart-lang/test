@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:pedantic/pedantic.dart';
 
 import '../../utils.dart';
 
@@ -27,9 +26,9 @@ void main() {
     });
 
     test('describes a failure nicely', () async {
-      var closure = () => print('Hello, world!');
+      void local() => print('Hello, world!');
       var liveTest = await runTestBody(() {
-        expect(closure, prints('Goodbye, world!\n'));
+        expect(local, prints('Goodbye, world!\n'));
       });
 
       expectTestFailed(
@@ -50,9 +49,9 @@ void main() {
     });
 
     test('describes a failure with a non-descriptive Matcher nicely', () async {
-      var closure = () => print('Hello, world!');
+      void local() => print('Hello, world!');
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains('Goodbye')));
+        expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
@@ -67,9 +66,9 @@ void main() {
     });
 
     test('describes a failure with no text nicely', () async {
-      var closure = () {};
+      void local() {}
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains('Goodbye')));
+        expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
@@ -116,9 +115,9 @@ void main() {
     });
 
     test('describes a failure nicely', () async {
-      var closure = () => Future(() => print('Hello, world!'));
+      void local() => Future(() => print('Hello, world!'));
       var liveTest = await runTestBody(() {
-        expect(closure, prints('Goodbye, world!\n'));
+        expect(local, prints('Goodbye, world!\n'));
       });
 
       expectTestFailed(
@@ -139,9 +138,9 @@ void main() {
     });
 
     test('describes a failure with a non-descriptive Matcher nicely', () async {
-      var closure = () => Future(() => print('Hello, world!'));
+      void local() => Future(() => print('Hello, world!'));
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains('Goodbye')));
+        expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
@@ -156,9 +155,9 @@ void main() {
     });
 
     test('describes a failure with no text nicely', () async {
-      var closure = () => Future.value();
+      void local() => Future.value();
       var liveTest = await runTestBody(() {
-        expect(closure, prints(contains('Goodbye')));
+        expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(

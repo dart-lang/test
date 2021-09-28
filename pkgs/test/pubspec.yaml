@@ -5,7 +5,7 @@ description: >-
 repository: https://github.com/dart-lang/test/blob/master/pkgs/test
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
   analyzer: '>=1.0.0 <3.0.0'
@@ -19,7 +19,6 @@ dependencies:
   node_preamble: ^2.0.0
   package_config: ^2.0.0
   path: ^1.8.0
-  pedantic: ^1.10.0
   pool: ^1.5.0
   shelf: ^1.0.0
   shelf_packages_handler: ^3.0.0
@@ -39,6 +38,7 @@ dependencies:
 dev_dependencies:
   fake_async: ^1.0.0
   glob: ^2.0.0
+  lints: ^1.0.0
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
 

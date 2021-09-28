@@ -7,7 +7,6 @@ import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -428,7 +427,7 @@ class Engine {
 
     if (!_active.contains(liveTest)) {
       throw StateError("Can't restart inactive test "
-          '\"${liveTest.test.name}\".');
+          '"${liveTest.test.name}".');
     }
 
     _restarted.add(liveTest);

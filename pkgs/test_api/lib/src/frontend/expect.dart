@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@deprecated
+@Deprecated('Moved to src/expect/expect.dart')
 library test_api.src.frontend.expect;
 
 // Temporary re-export to avoid churn in analyzer tests.

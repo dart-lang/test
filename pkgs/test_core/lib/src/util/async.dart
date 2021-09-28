@@ -15,9 +15,8 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
   var operationSet = operations.toSet();
   var controller = StreamController<T>(
       sync: true,
-      onCancel: () {
-        return Future.wait(operationSet.map((operation) => operation.cancel()));
-      });
+      onCancel: () =>
+          Future.wait(operationSet.map((operation) => operation.cancel())));
 
   for (var operation in operationSet) {
     operation.value

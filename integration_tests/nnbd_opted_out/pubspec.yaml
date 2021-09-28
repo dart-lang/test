@@ -2,6 +2,7 @@ name: nnbd_opted_out
 environment:
   sdk: '>=2.11.0 <3.0.0'
 dev_dependencies:
+  lints: ^1.0.0
   test: any
 dependency_overrides:
   test:
