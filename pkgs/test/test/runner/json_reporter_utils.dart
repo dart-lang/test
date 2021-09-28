@@ -127,12 +127,9 @@ Map<String, Object> testStartJson(int id, String name,
     int? column,
     String? url,
     Object? skip,
-    // ignore: non_constant_identifier_names
-    int? root_line,
-    // ignore: non_constant_identifier_names
-    int? root_column,
-    // ignore: non_constant_identifier_names
-    String? root_url}) {
+    int? rootLine,
+    int? rootColumn,
+    String? rootUrl}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(
         'line and column must either both be null or both be passed');
@@ -154,14 +151,14 @@ Map<String, Object> testStartJson(int id, String name,
     }
   };
   var testObj = expected['test'] as Map<String, dynamic>;
-  if (root_line != null) {
-    testObj['root_line'] = root_line;
+  if (rootLine != null) {
+    testObj['root_line'] = rootLine;
   }
-  if (root_column != null) {
-    testObj['root_column'] = root_column;
+  if (rootColumn != null) {
+    testObj['root_column'] = rootColumn;
   }
-  if (root_url != null) {
-    testObj['root_url'] = root_url;
+  if (rootUrl != null) {
+    testObj['root_url'] = rootUrl;
   }
   return expected;
 }
