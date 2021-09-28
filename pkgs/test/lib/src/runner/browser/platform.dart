@@ -255,12 +255,10 @@ class BrowserPlatform extends PlatformPlugin
       await _pubServeSuite(path, dartUrl, browser, suiteConfig);
       suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
-      if (browser.isJS) {
-        if (suiteConfig.precompiledPath == null) {
-          await _compileSuite(path, suiteConfig);
-        } else {
-          await _addPrecompiledStackTraceMapper(path, suiteConfig);
-        }
+      if (suiteConfig.precompiledPath == null) {
+        await _compileSuite(path, suiteConfig);
+      } else {
+        await _addPrecompiledStackTraceMapper(path, suiteConfig);
       }
 
       if (_closed) return null;
@@ -275,7 +273,7 @@ class BrowserPlatform extends PlatformPlugin
     if (_closed || browserManager == null) return null;
 
     var suite = await browserManager.load(path, suiteUrl, suiteConfig, message,
-        mapper: browser.isJS ? _mappers[path] : null);
+        mapper: _mappers[path]);
     if (_closed) return null;
     return suite;
   }
@@ -304,44 +302,32 @@ class BrowserPlatform extends PlatformPlugin
         print('"pub serve" is compiling $path...');
       });
 
-      // For browsers that run Dart compiled to JavaScript, get the source map
-      // instead of the Dart code for two reasons. We want to verify that the
-      // server's dart2js compiler is running on the Dart code, and also load
-      // the StackTraceMapper.
-      var getSourceMap = browser.isJS;
+      var sourceMapUrl = dartUrl.replace(path: dartUrl.path + '.js.map');
 
-      var url = getSourceMap
-          ? dartUrl.replace(path: dartUrl.path + '.js.map')
-          : dartUrl;
-
-      HttpClientResponse response;
       try {
-        var request = await _http!.getUrl(url);
-        response = await request.close();
+        var request = await _http!.getUrl(sourceMapUrl);
+        var response = await request.close();
 
         if (response.statusCode != 200) {
-          // We don't care about the response body, but we have to drain it or
-          // else the process can't exit.
-          response.listen((_) {});
+          // Drain response to avoid VM hang.
+          response.drain();
 
           throw LoadException(
               path,
-              'Error getting $url: ${response.statusCode} '
+              'Error getting $sourceMapUrl: ${response.statusCode} '
               '${response.reasonPhrase}\n'
               'Make sure "pub serve" is serving the test/ directory.');
         }
 
-        if (getSourceMap && !suiteConfig.jsTrace) {
-          _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
-              mapUrl: url,
-              sdkRoot: p.toUri('packages/\$sdk'),
-              packageMap:
-                  (await currentPackageConfig).toPackagesDirPackageMap());
+        if (suiteConfig.jsTrace) {
+          // Drain response to avoid VM hang.
+          response.drain();
           return;
         }
-
-        // Drain the response stream.
-        response.listen((_) {});
+        _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
+            mapUrl: sourceMapUrl,
+            sdkRoot: p.toUri('packages/\$sdk'),
+            packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
       } on IOException catch (error) {
         var message = getErrorMessage(error);
         if (error is SocketException) {
@@ -351,7 +337,7 @@ class BrowserPlatform extends PlatformPlugin
 
         throw LoadException(
             path,
-            'Error getting $url: $message\n'
+            'Error getting $sourceMapUrl: $message\n'
             'Make sure "pub serve" is running.');
       } finally {
         timer.cancel();
