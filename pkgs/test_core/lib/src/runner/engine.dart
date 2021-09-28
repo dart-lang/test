@@ -251,39 +251,41 @@ class Engine {
     }
     _runCalled = true;
 
-    late StreamSubscription subscription;
-    subscription = _suiteController.stream.listen((suite) {
-      _addedSuites.add(suite);
-      _onSuiteAddedController.add(suite);
+    var subscription = _suiteController.stream.listen(null);
+    subscription
+      ..onData((suite) {
+        _addedSuites.add(suite);
+        _onSuiteAddedController.add(suite);
 
-      _group.add(() async {
-        var resource = await _runPool.request();
-        LiveSuiteController? controller;
-        try {
-          if (suite is LoadSuite) {
-            await _onUnpaused;
-            controller = await _addLoadSuite(suite);
-            if (controller == null) return;
-          } else {
-            controller = LiveSuiteController(suite);
+        _group.add(() async {
+          var resource = await _runPool.request();
+          LiveSuiteController? controller;
+          try {
+            if (suite is LoadSuite) {
+              await _onUnpaused;
+              controller = await _addLoadSuite(suite);
+              if (controller == null) return;
+            } else {
+              controller = LiveSuiteController(suite);
+            }
+
+            _addLiveSuite(controller.liveSuite);
+
+            if (_closed) return;
+            await _runGroup(controller, controller.liveSuite.suite.group, []);
+            controller.noMoreLiveTests();
+            if (_coverage != null) await writeCoverage(_coverage!, controller);
+          } finally {
+            resource.allowRelease(() => controller?.close());
           }
-
-          _addLiveSuite(controller.liveSuite);
-
-          if (_closed) return;
-          await _runGroup(controller, controller.liveSuite.suite.group, []);
-          controller.noMoreLiveTests();
-          if (_coverage != null) await writeCoverage(_coverage!, controller);
-        } finally {
-          resource.allowRelease(() => controller?.close());
-        }
-      }());
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-      _onSuiteAddedController.close();
-      _group.close();
-      _runPool.close();
-    });
+        }());
+      })
+      ..onDone(() {
+        _subscriptions.remove(subscription);
+        _onSuiteAddedController.close();
+        _group.close();
+        _runPool.close();
+      });
     _subscriptions.add(subscription);
 
     return success;
@@ -360,18 +362,20 @@ class Engine {
     // non-load test to add.
     if (_active.first.suite is LoadSuite) _active.removeFirst();
 
-    late StreamSubscription subscription;
-    subscription = liveTest.onStateChange.listen((state) {
-      if (state.status != Status.complete) return;
-      _active.remove(liveTest);
+    var subscription = liveTest.onStateChange.listen(null);
+    subscription
+      ..onData((state) {
+        if (state.status != Status.complete) return;
+        _active.remove(liveTest);
 
-      // If we're out of non-load tests, surface a load test.
-      if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-        _active.add(_activeLoadTests.first);
-      }
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-    });
+        // If we're out of non-load tests, surface a load test.
+        if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
+          _active.add(_activeLoadTests.first);
+        }
+      })
+      ..onDone(() {
+        _subscriptions.remove(subscription);
+      });
     _subscriptions.add(subscription);
 
     suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
@@ -449,21 +453,23 @@ class Engine {
     // Only surface the load test if there are no other tests currently running.
     if (_active.isEmpty) _active.add(liveTest);
 
-    late StreamSubscription subscription;
-    subscription = liveTest.onStateChange.listen((state) {
-      if (state.status != Status.complete) return;
-      _activeLoadTests.remove(liveTest);
+    var subscription = liveTest.onStateChange.listen(null);
+    subscription
+      ..onData((state) {
+        if (state.status != Status.complete) return;
+        _activeLoadTests.remove(liveTest);
 
-      // Only one load test will be active at any given time, and it will always
-      // be the only active test. Remove it and, if possible, surface another
-      // load test.
-      if (_active.isNotEmpty && _active.first.suite == suite) {
-        _active.remove(liveTest);
-        if (_activeLoadTests.isNotEmpty) _active.add(_activeLoadTests.last);
-      }
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-    });
+        // Only one load test will be active at any given time, and it will always
+        // be the only active test. Remove it and, if possible, surface another
+        // load test.
+        if (_active.isNotEmpty && _active.first.suite == suite) {
+          _active.remove(liveTest);
+          if (_activeLoadTests.isNotEmpty) _active.add(_activeLoadTests.last);
+        }
+      })
+      ..onDone(() {
+        _subscriptions.remove(subscription);
+      });
     _subscriptions.add(subscription);
 
     controller.reportLiveTest(liveTest, countSuccess: false);
