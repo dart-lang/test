@@ -377,7 +377,7 @@ void main() {
     });
 
     test("doesn't support a function with 7 arguments", () {
-      expect(() => expectAsync((_1, _2, _3, _4, _5, _6, _7) {}),
+      expect(() => expectAsync((_a, _b, _c, _d, _e, _f, _g) {}),
           throwsArgumentError);
     });
   });

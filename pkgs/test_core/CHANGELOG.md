@@ -3,6 +3,7 @@
 * Add an option to disallow duplicate test or group names in `directRunTests`.
 * Add configuration to disallow duplicate test and group names by default. See
   the [docs][allow_duplicate_test_names] for more information.
+* Remove dependency on pedantic.
 
 [allow_duplicate_test_names]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_duplicate_test_names
 

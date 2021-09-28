@@ -5,7 +5,6 @@
 @TestOn('vm')
 import 'dart:async';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 

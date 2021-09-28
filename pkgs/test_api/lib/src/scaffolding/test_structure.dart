@@ -77,7 +77,7 @@ void test(description, dynamic Function() body,
     tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @deprecated bool solo = false}) {
+    @Deprecated('Debug only') bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
@@ -155,7 +155,7 @@ void group(description, dynamic Function() body,
     tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @deprecated bool solo = false}) {
+    @Deprecated('Debug only') bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
       timeout: timeout,

@@ -229,7 +229,7 @@ void main() {
   });
 }
 
-Future<Null> _writePackagesFile() async {
+Future<void> _writePackagesFile() async {
   var config = (await findPackageConfig(Directory.current))!;
   // TODO: remove try/catch when this issue is resolved:
   // https://github.com/dart-lang/package_config/issues/66

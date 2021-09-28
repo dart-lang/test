@@ -69,7 +69,7 @@ class BrowserManager {
   CancelableCompleter<void>? _pauseCompleter;
 
   /// The controller for [_BrowserEnvironment.onRestart].
-  final _onRestartController = StreamController<Null>.broadcast();
+  final _onRestartController = StreamController<void>.broadcast();
 
   /// The environment to attach to each suite.
   late final Future<_BrowserEnvironment> _environment;
@@ -109,9 +109,10 @@ class BrowserManager {
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
-    browser.onExit.then<void>((_) {
-      throw ApplicationException('${runtime.name} exited before connecting.');
-    }).onError<Object>((error, stackTrace) {
+    browser.onExit
+        .then<void>((_) => throw ApplicationException(
+            '${runtime.name} exited before connecting.'))
+        .onError<Object>((error, stackTrace) {
       if (!completer.isCompleted) {
         completer.completeError(error, stackTrace);
       }
@@ -332,7 +333,7 @@ class _BrowserEnvironment implements Environment {
   final Uri? remoteDebuggerUrl;
 
   @override
-  final Stream<Null> onRestart;
+  final Stream<void> onRestart;
 
   _BrowserEnvironment(this._manager, this.observatoryUrl,
       this.remoteDebuggerUrl, this.onRestart);

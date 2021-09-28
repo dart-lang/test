@@ -720,7 +720,7 @@ class Configuration {
   /// Unlike [new Configuration], this assumes [presets] is already resolved.
   Configuration._(
       {required bool? help,
-      required String? customHtmlTemplatePath,
+      required this.customHtmlTemplatePath,
       required bool? version,
       required bool? pauseAfterLoad,
       required bool? debug,
@@ -747,7 +747,6 @@ class Configuration {
       required this.testRandomizeOrderingSeed,
       required SuiteConfiguration? suiteDefaults})
       : _help = help,
-        customHtmlTemplatePath = customHtmlTemplatePath,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
         _debug = debug,

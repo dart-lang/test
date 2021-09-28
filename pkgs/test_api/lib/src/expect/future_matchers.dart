@@ -32,7 +32,8 @@ final Matcher completes = const _Completes(null);
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
-Matcher completion(matcher, [@deprecated String? description]) =>
+Matcher completion(matcher,
+        [@Deprecated('this parameter is ignored') String? description]) =>
     _Completes(wrapMatcher(matcher));
 
 class _Completes extends AsyncMatcher {

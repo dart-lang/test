@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
@@ -43,7 +42,7 @@ class Firefox extends Browser {
 
     var process = await Process.start(settings.executable, [
       '--profile',
-      '$dir',
+      dir,
       url.toString(),
       '--no-remote',
       ...settings.arguments,

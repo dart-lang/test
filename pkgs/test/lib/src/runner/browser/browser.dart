@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 import 'package:typed_data/typed_data.dart';
