@@ -173,8 +173,7 @@ class Engine {
   List<LiveTest> get active => UnmodifiableListView(_active);
   final _active = QueueList<LiveTest>();
 
-  /// The tests from [LoadSuite]s that are still running, in the order they
-  /// began running.
+  /// The suites that are still loading, in the order they began.
   List<LiveTest> get activeSuiteLoads =>
       UnmodifiableListView(_activeSuiteLoads);
   final _activeSuiteLoads = <LiveTest>{};
