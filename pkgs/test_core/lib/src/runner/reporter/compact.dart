@@ -186,10 +186,12 @@ class CompactReporter implements Reporter {
           .listen((_) => _progressLine(_lastProgressMessage ?? '')));
     }
 
-    // If this is the first test to start, print a progress line so the user
-    // knows what's running. It's possible that the active test may not be
-    // [liveTest] because the engine doesn't always surface load tests.
-    if (_engine.active.length == 1 && _engine.active.first == liveTest) {
+    // If this is the first test or suite load to start, print a progress line
+    // so the user knows what's running.
+    if ((_engine.active.length == 1 && _engine.active.first == liveTest) ||
+        (_engine.active.isEmpty &&
+            _engine.activeSuiteLoads.length == 1 &&
+            _engine.activeSuiteLoads.first == liveTest)) {
       _progressLine(_description(liveTest));
     }
 

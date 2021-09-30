@@ -36,15 +36,10 @@ import 'util/iterable_set.dart';
 ///
 /// The engine has some special logic for [LoadSuite]s and the tests they
 /// contain, referred to as "load tests". Load tests exist to provide visibility
-/// into the process of loading test files, but as long as that process is
-/// proceeding normally users usually don't care about it, so the engine only
-/// surfaces running load tests (that is, includes them in [liveTests] and other
-/// collections) under specific circumstances.
-///
-/// If only load tests are running, exactly one load test will be in [active]
-/// and [liveTests]. If this test passes, it will be removed from both [active]
-/// and [liveTests] and *will not* be added to [passed]. If at any point a load
-/// test fails, it will be added to [failed] and [liveTests].
+/// into the process of loading test files. As long as that process is
+/// proceeding normally users usually don't care about it, so the engine does
+/// not include them in [liveTests] and other collections.
+/// If a load test fails, it will be added to [failed] and [liveTests].
 ///
 /// The test suite loaded by a load suite will be automatically be run by the
 /// engine; it doesn't need to be added to [suiteSink] manually.
@@ -174,21 +169,20 @@ class Engine {
   Set<LiveTest> get failed => _failedGroup.set;
   final _failedGroup = UnionSetController<LiveTest>(disjoint: true);
 
-  /// The tests that are still running, in the order they begain running.
+  /// The tests that are still running, in the order they began running.
   List<LiveTest> get active => UnmodifiableListView(_active);
   final _active = QueueList<LiveTest>();
+
+  /// The suites that are still loading, in the order they began.
+  List<LiveTest> get activeSuiteLoads =>
+      UnmodifiableListView(_activeSuiteLoads);
+  final _activeSuiteLoads = <LiveTest>{};
 
   /// The set of tests that have been marked for restarting.
   ///
   /// This is always a subset of [active]. Once a test in here has finished
   /// running, it's run again.
   final _restarted = <LiveTest>{};
-
-  /// The tests from [LoadSuite]s that are still running, in the order they
-  /// began running.
-  ///
-  /// This is separate from [active] because load tests aren't always surfaced.
-  final _activeLoadTests = <LiveTest>{};
 
   /// Whether this engine is idle—that is, not currently executing a test.
   bool get isIdle => _group.isIdle;
@@ -356,21 +350,11 @@ class Engine {
     await _onUnpaused;
     _active.add(liveTest);
 
-    // If there were no active non-load tests, the current active test would
-    // have been a load test. In that case, remove it, since now we have a
-    // non-load test to add.
-    if (_active.first.suite is LoadSuite) _active.removeFirst();
-
     var subscription = liveTest.onStateChange.listen(null);
     subscription
       ..onData((state) {
         if (state.status != Status.complete) return;
         _active.remove(liveTest);
-
-        // If we're out of non-load tests, surface a load test.
-        if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-          _active.add(_activeLoadTests.first);
-        }
       })
       ..onDone(() {
         _subscriptions.remove(subscription);
@@ -425,7 +409,7 @@ class Engine {
   ///
   /// Returns the same future as [LiveTest.close].
   Future restartTest(LiveTest liveTest) async {
-    if (_activeLoadTests.contains(liveTest)) {
+    if (_activeSuiteLoads.contains(liveTest)) {
       throw ArgumentError("Can't restart a load test.");
     }
 
@@ -447,24 +431,13 @@ class Engine {
     _addLiveSuite(controller.liveSuite);
 
     var liveTest = suite.test.load(suite);
-    _activeLoadTests.add(liveTest);
-
-    // Only surface the load test if there are no other tests currently running.
-    if (_active.isEmpty) _active.add(liveTest);
+    _activeSuiteLoads.add(liveTest);
 
     var subscription = liveTest.onStateChange.listen(null);
     subscription
       ..onData((state) {
         if (state.status != Status.complete) return;
-        _activeLoadTests.remove(liveTest);
-
-        // Only one load test will be active at any given time, and it will always
-        // be the only active test. Remove it and, if possible, surface another
-        // load test.
-        if (_active.isNotEmpty && _active.first.suite == suite) {
-          _active.remove(liveTest);
-          if (_activeLoadTests.isNotEmpty) _active.add(_activeLoadTests.last);
-        }
+        _activeSuiteLoads.remove(liveTest);
       })
       ..onDone(() {
         _subscriptions.remove(subscription);
@@ -547,7 +520,7 @@ class Engine {
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
-    var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
+    var allLiveTests = liveTests.toSet()..addAll(_activeSuiteLoads);
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
     // Closing the run pool will close the test suites as soon as their tests

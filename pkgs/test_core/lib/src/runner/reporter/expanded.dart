@@ -164,8 +164,9 @@ class ExpandedReporter implements Reporter {
       // emit information about them unless they fail.
       _subscriptions.add(liveTest.onStateChange
           .listen((state) => _onStateChange(liveTest, state)));
-    } else if (_engine.active.length == 1 &&
-        _engine.active.first == liveTest &&
+    } else if (_engine.active.isEmpty &&
+        _engine.activeSuiteLoads.length == 1 &&
+        _engine.activeSuiteLoads.first == liveTest &&
         liveTest.test.name.startsWith('compiling ')) {
       // Print a progress line for load tests that come from compiling JS, since
       // that takes a long time.
