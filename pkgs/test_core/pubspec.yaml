@@ -32,7 +32,9 @@ dependencies:
   # Use an exact version until the test_api package is stable.
   test_api: 0.4.4
 
-dependency_overrides:
+dev_dependencies:
   lints: ^1.0.0
+
+dependency_overrides:
   test_api:
     path: ../test_api
