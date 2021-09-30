@@ -1,4 +1,4 @@
-## 0.4.3-dev
+## 0.4.3
 
 * Add an option to disallow duplicate test or group names in `directRunTests`.
 * Add configuration to disallow duplicate test and group names by default. See

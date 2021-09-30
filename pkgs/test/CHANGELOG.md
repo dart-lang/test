@@ -1,4 +1,4 @@
-## 1.18.0-dev
+## 1.18.0
 
 * Add configuration to disallow duplicate test and group names. See the
   [docs][allow_duplicate_test_names] for more information.
