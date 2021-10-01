@@ -1,4 +1,6 @@
-## 0.4.5-dev
+## 0.4.5
+
+* Use newer analyzer APIs.
 
 ## 0.4.4
 
