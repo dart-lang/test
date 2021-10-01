@@ -101,14 +101,14 @@ class RemoteListener {
         var metadata = Metadata.deserialize(message['metadata']);
         verboseChain = metadata.verboseTrace;
         var declarer = Declarer(
-            metadata: metadata,
-            platformVariables:
-                Set.from(message['platformVariables'] as Iterable),
-            collectTraces: message['collectTraces'] as bool,
-            noRetry: message['noRetry'] as bool,
-            // TODO: Change to non-nullable https://github.com/dart-lang/test/issues/1591
-            allowDuplicateTestNames:
-                message['allowDuplicateTestNames'] as bool? ?? false,);
+          metadata: metadata,
+          platformVariables: Set.from(message['platformVariables'] as Iterable),
+          collectTraces: message['collectTraces'] as bool,
+          noRetry: message['noRetry'] as bool,
+          // TODO: Change to non-nullable https://github.com/dart-lang/test/issues/1591
+          allowDuplicateTestNames:
+              message['allowDuplicateTestNames'] as bool? ?? true,
+        );
         StackTraceFormatter.current!.configure(
             except: _deserializeSet(message['foldTraceExcept'] as List),
             only: _deserializeSet(message['foldTraceOnly'] as List));

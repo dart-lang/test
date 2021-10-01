@@ -1,4 +1,7 @@
-## 0.4.5-dev
+## 0.4.5
+
+* Add defaulting for older test backends that don't pass a configuration for
+  the `allow_duplicate_test_names` parameter to the remote listener.
 
 ## 0.4.4
 
