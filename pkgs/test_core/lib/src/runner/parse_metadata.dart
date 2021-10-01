@@ -220,7 +220,7 @@ class _Parser {
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
           var className = _resolveConstructor(
-                  expression.constructorName.type.name,
+                  expression.constructorName.type2.name,
                   expression.constructorName.name)
               .first;
 
@@ -356,7 +356,7 @@ class _Parser {
 
   String? _findConstructornameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
-    var pair = _resolveConstructor(constructor.constructorName.type.name,
+    var pair = _resolveConstructor(constructor.constructorName.type2.name,
         constructor.constructorName.name);
     var actualClassName = pair.first;
     var constructorName = pair.last;
