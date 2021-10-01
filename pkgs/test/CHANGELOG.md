@@ -1,4 +1,6 @@
-## 1.18.2-dev
+## 1.18.2
+
+* Publish with the `host.dart.js` file.
 
 ## 1.18.1
 
