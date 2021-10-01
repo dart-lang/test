@@ -1,4 +1,6 @@
-## 0.4.4-dev
+## 0.4.4
+
+* Support the latest `test_api`.
 
 ## 0.4.3
 
