@@ -17,17 +17,3 @@ dev_dependencies:
   test: any
   test_api: any
   test_core: any
-
-dependency_overrides:
-  test_api:
-    git:
-      url: https://github.com/dart-lang/test.git
-      path: pkgs/test_api
-  test_core:
-    git:
-      url: git://github.com/dart-lang/test
-      path: pkgs/test_core
-  test:
-    git:
-      url: git://github.com/dart-lang/test
-      path: pkgs/test
