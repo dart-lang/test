@@ -1,12 +1,8 @@
+## 2.0.1-dev
+
 ## 2.0.0
 
 * Null safety stable release.
-* See breaking changes in the `2.0.0-nullsafety` version.
-
-## 2.0.0-nullsafety
-
-* Migrate to null safety.
-* Fix outdated URLs in `README.md`.
 * BREAKING: Removed archive support.
 * BREAKING: `DirectoryDescriptor.load` only supports a `String` path instead of
   also accepting relative `Uri` objects.
