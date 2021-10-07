@@ -1,3 +1,7 @@
+## 0.4.6-dev
+
+* Give a better exception when using `markTestSkipped` outside of a test.
+
 ## 0.4.5
 
 * Add defaulting for older test backends that don't pass a configuration for
