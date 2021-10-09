@@ -233,7 +233,7 @@ pub global run coverage:format_coverage --packages=.packages --report-on=lib --l
 ## Generate LCOV report:
 genhtml -o ./coverage/report ./coverage/lcov.info
 
-## Open the HTML coverage report.
+## Open the HTML coverage report:
 open ./coverage/report/index.html
 ```
 
