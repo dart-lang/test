@@ -237,6 +237,12 @@ genhtml -o ./coverage/report ./coverage/lcov.info
 open ./coverage/report/index.html
 ```
 
+* *LCOV is a GNU tool which provides information about what parts of a program are
+  actually executed (i.e. "covered") while running a particular test case.*
+* The binary `genhtml` is one of the LCOV tools.
+* See the LCOV project for more: https://github.com/linux-test-project/lcov
+* See the Homebrew LCOV formula: https://formulae.brew.sh/formula/lcov
+
 ### Restricting Tests to Certain Platforms
 
 Some test files only make sense to run on particular platforms. They may use
