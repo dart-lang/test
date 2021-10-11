@@ -221,6 +221,31 @@ The files can then be formatted using the `package:coverage`
 Coverage gathering is currently only implemented for tests run on the Dart VM or
 Chrome.
 
+Here's an example of how to run tests and format the collected coverage to LCOV:
+
+```shell
+## Run Dart tests and output them at directory `./coverage`:
+dart run test --coverage=./coverage
+
+## Activate pacakge `coverage` (if needed):
+dart pub global activate coverage
+
+## Format collected coverage to LCOV (only for directory "lib")
+pub global run coverage:format_coverage --packages=.packages --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
+
+## Generate LCOV report:
+genhtml -o ./coverage/report ./coverage/lcov.info
+
+## Open the HTML coverage report:
+open ./coverage/report/index.html
+```
+
+* *LCOV is a GNU tool which provides information about what parts of a program are
+  actually executed (i.e. "covered") while running a particular test case.*
+* The binary `genhtml` is one of the LCOV tools.
+* See the LCOV project for more: https://github.com/linux-test-project/lcov
+* See the Homebrew LCOV formula: https://formulae.brew.sh/formula/lcov
+
 ### Restricting Tests to Certain Platforms
 
 Some test files only make sense to run on particular platforms. They may use
