@@ -1,3 +1,7 @@
+## 1.18.3-dev
+
+* Give a better exception when using `markTestSkipped` outside of a test.
+
 ## 1.18.2
 
 * Publish with the `host.dart.js` file.

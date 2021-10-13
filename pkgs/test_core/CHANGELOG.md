@@ -1,3 +1,7 @@
+## 0.4.6-dev
+
+* Support the latest `test_api`.
+
 ## 0.4.5
 
 * Use newer analyzer APIs.
