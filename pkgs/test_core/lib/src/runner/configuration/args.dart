@@ -178,17 +178,15 @@ PathConfiguration _parsePathConfiguration(String option) {
   final uri = Uri.parse(option);
 
   final name = uri.queryParameters['name'];
-  final fullName = uri.queryParameters['full_name'];
-
-  if (name != null && fullName != null) {
-    throw FormatException(
-      'Cannot specify both `name` and `full_name` simultaneously',
-    );
-  }
+  final fullName = uri.queryParameters['full-name'];
 
   return PathConfiguration(
     filePath: uri.path,
-    testName: name != null ? RegExp(name) : fullName,
+    testName: fullName != null
+        ? RegExp('^${RegExp.escape(fullName)}\$')
+        : name != null
+            ? RegExp(name)
+            : null,
   );
 }
 
