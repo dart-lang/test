@@ -180,6 +180,12 @@ PathConfiguration _parsePathConfiguration(String option) {
   final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
 
+  if (names != null && names.isNotEmpty && fullName != null) {
+    throw FormatException(
+      'Cannot specify both "name=<...>" and "full-name=<...>".',
+    );
+  }
+
   return PathConfiguration(
     testPath: uri.path,
     testNames: fullName != null

@@ -278,8 +278,7 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test('test?name="name" and test?full-name="name" filters by full name',
-      () async {
+  test('test?name="name" and test?full-name="name" throws', () async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';
 
@@ -293,11 +292,7 @@ void main() {
 
     var test = await runTest(['test.dart?name=selected&full-name=selected 1']);
 
-    expect(
-      test.stdout,
-      emitsThrough(contains('+1: All tests passed!')),
-    );
-    await test.shouldExit(0);
+    await test.shouldExit(255);
   });
 
   group('with the --name flag,', () {
