@@ -30,7 +30,7 @@ void main() {
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
         expect(merged.testRandomizeOrderingSeed, isNull);
-        expect(merged.paths, equals(['test']));
+        expect(merged.paths.single.testPath, 'test');
       });
 
       test("if only the old configuration's is defined, uses it", () {
@@ -63,7 +63,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths, equals(['bar']));
+        expect(merged.paths.single.testPath, 'bar');
       });
 
       test("if only the new configuration's is defined, uses it", () {
@@ -96,7 +96,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths, equals(['bar']));
+        expect(merged.paths.single.testPath, 'bar');
       });
 
       test(
@@ -147,7 +147,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths, equals(['blech']));
+        expect(merged.paths.single.testPath, 'blech');
       });
     });
 
