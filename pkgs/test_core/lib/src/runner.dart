@@ -256,23 +256,23 @@ class Runner {
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
     return StreamGroup.merge(_config.paths.map((pathConfig) {
-      final suiteConfig = pathConfig.testName == null
+      final suiteConfig = pathConfig.testNames == null
           ? _config.suiteDefaults
           : _config.suiteDefaults.change(
               patterns: [
                 ..._config.suiteDefaults.patterns,
-                pathConfig.testName!
+                ...pathConfig.testNames!
               ],
             );
 
-      if (Directory(pathConfig.filePath).existsSync()) {
-        return _loader.loadDir(pathConfig.filePath, suiteConfig);
-      } else if (File(pathConfig.filePath).existsSync()) {
-        return _loader.loadFile(pathConfig.filePath, suiteConfig);
+      if (Directory(pathConfig.testPath).existsSync()) {
+        return _loader.loadDir(pathConfig.testPath, suiteConfig);
+      } else if (File(pathConfig.testPath).existsSync()) {
+        return _loader.loadFile(pathConfig.testPath, suiteConfig);
       } else {
         return Stream.fromIterable([
           LoadSuite.forLoadException(
-            LoadException(pathConfig.filePath, 'Does not exist.'),
+            LoadException(pathConfig.testPath, 'Does not exist.'),
             suiteConfig,
           ),
         ]);

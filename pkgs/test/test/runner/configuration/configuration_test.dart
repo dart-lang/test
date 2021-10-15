@@ -48,7 +48,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: [PathConfiguration(filePath: 'bar')]).merge(configuration());
+            paths: [PathConfiguration(testPath: 'bar')]).merge(configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -81,7 +81,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: [PathConfiguration(filePath: 'bar')]));
+            paths: [PathConfiguration(testPath: 'bar')]));
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -116,7 +116,7 @@ void main() {
             shardIndex: 2,
             totalShards: 4,
             testRandomizeOrderingSeed: 0,
-            paths: [PathConfiguration(filePath: 'bar')]);
+            paths: [PathConfiguration(testPath: 'bar')]);
         var newer = configuration(
             help: false,
             version: true,
@@ -131,7 +131,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: [PathConfiguration(filePath: 'blech')]);
+            paths: [PathConfiguration(testPath: 'blech')]);
         var merged = older.merge(newer);
 
         expect(merged.help, isFalse);

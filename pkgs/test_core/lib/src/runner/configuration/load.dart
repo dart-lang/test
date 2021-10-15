@@ -353,7 +353,7 @@ class _ConfigurationLoader {
           (value) => p.url.isRelative(value as String));
 
       return PathConfiguration(
-        filePath: _parseNode(pathNode, 'path', p.fromUri),
+        testPath: _parseNode(pathNode, 'path', p.fromUri),
       );
     });
 

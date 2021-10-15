@@ -177,16 +177,14 @@ Configuration parse(List<String> args) => _Parser(args).parse();
 PathConfiguration _parsePathConfiguration(String option) {
   final uri = Uri.parse(option);
 
-  final name = uri.queryParameters['name'];
+  final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
 
   return PathConfiguration(
-    filePath: uri.path,
-    testName: fullName != null
-        ? RegExp('^${RegExp.escape(fullName)}\$')
-        : name != null
-            ? RegExp(name)
-            : null,
+    testPath: uri.path,
+    testNames: fullName != null
+        ? [RegExp('^${RegExp.escape(fullName)}\$')]
+        : names?.map((name) => RegExp(name)).toList(),
   );
 }
 

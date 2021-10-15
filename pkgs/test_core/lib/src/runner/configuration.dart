@@ -30,14 +30,15 @@ import 'suite.dart';
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = Object();
 
+/// Encapsulates a file/directory path and filter options specific to this path.
 class PathConfiguration {
   const PathConfiguration({
-    required this.filePath,
-    this.testName,
+    required this.testPath,
+    this.testNames,
   });
 
-  final String filePath;
-  final Pattern? testName;
+  final String testPath;
+  final List<Pattern>? testNames;
 }
 
 /// A class that encapsulates the command-line configuration of the test runner.
@@ -140,7 +141,7 @@ class Configuration {
 
   /// The paths from which to load tests.
   List<PathConfiguration> get paths =>
-      _paths ?? const [PathConfiguration(filePath: 'test')];
+      _paths ?? const [PathConfiguration(testPath: 'test')];
   final List<PathConfiguration>? _paths;
 
   /// Whether the load paths were passed explicitly or the default was used.

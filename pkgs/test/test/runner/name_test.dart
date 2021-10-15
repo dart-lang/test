@@ -85,6 +85,55 @@ void main() {
       await test.shouldExit(0);
     });
 
+    test('selects more narrowly when passed multiple times', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("nope", () => throw TestFailure("oh no"));
+          test("selected 2", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?name=selected&name=1']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+1: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('applies to directories', () async {
+      await d.dir('dir', [
+        d.file('first_test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("selected 2", () => throw TestFailure("oh no"));
+        }
+      '''),
+        d.file('second_test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("selected 2", () => throw TestFailure("oh no"));
+        }
+      ''')
+      ]).create();
+
+      var test = await runTest(['dir?name=selected 1']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
     test('produces an error when no tests match', () async {
       await d.file('test.dart', '''
         import 'package:test/test.dart';
