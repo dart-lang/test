@@ -1,3 +1,10 @@
+## 1.19.0-dev
+
+* Support query parameters `name` and `full-name` on test paths, which will
+  apply the filters to only those test suites.
+  * All specified filters must match for a test to run.
+  * Global filters (ie: `--name`) are also still respected and must match.
+
 ## 1.18.2
 
 * Publish with the `host.dart.js` file.
