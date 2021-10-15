@@ -189,7 +189,9 @@ tests that will run within just those paths.
   - This is the only option that supports more than one entry.
 - **full-name**: Requires an match for the name of the test.
 - **line**: Matches any test that originates from this line in the test suite.
+  - Not supported for browser tests.
 - **col**: Matches any test that originates from this column in the test suite.
+  - Not supported for browser tests.
 
 **Example Usage**: `dart test "path/to/test.dart?line=10&col=2"`
 
