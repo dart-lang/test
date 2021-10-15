@@ -37,7 +37,10 @@ class PathConfiguration {
     this.testNames,
   });
 
+  /// The explicit path to a test suite.
   final String testPath;
+
+  /// Name filters specific to [testPath].
   final List<Pattern>? testNames;
 }
 
