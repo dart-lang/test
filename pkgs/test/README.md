@@ -1,28 +1,32 @@
 `test` provides a standard way of writing and running tests in Dart.
 
-* [Writing Tests](#writing-tests)
-* [Running Tests](#running-tests)
-  * [Sharding Tests](#sharding-tests)
-  * [Collecting Code Coverage](#collecting-code-coverage)
-  * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
-  * [Platform Selectors](#platform-selectors)
-  * [Running Tests on Node.js](#running-tests-on-nodejs)
-* [Asynchronous Tests](#asynchronous-tests)
-  * [Stream Matchers](#stream-matchers)
-* [Running Tests With Custom HTML](#running-tests-with-custom-html)
-  * [Providing a custom HTML template](#providing-a-custom-html-template)
-* [Configuring Tests](#configuring-tests)
-  * [Skipping Tests](#skipping-tests)
-  * [Timeouts](#timeouts)
-  * [Platform-Specific Configuration](#platform-specific-configuration)
-  * [Whole-Package Configuration](#whole-package-configuration)
-* [Tagging Tests](#tagging-tests)
-* [Debugging](#debugging)
-* [Browser/VM Hybrid Tests](#browservm-hybrid-tests)
-* [Support for Other Packages](#support-for-other-packages)
-  * [`build_runner`](#build_runner)
-  * [`term_glyph`](#term_glyph)
-* [Further Reading](#further-reading)
+- [Writing Tests](#writing-tests)
+- [Running Tests](#running-tests)
+  - [Sharding Tests](#sharding-tests)
+  - [Shuffling Tests](#shuffling-tests)
+  - [Collecting Code Coverage](#collecting-code-coverage)
+  - [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
+  - [Platform Selectors](#platform-selectors)
+  - [Running Tests on Node.js](#running-tests-on-nodejs)
+- [Asynchronous Tests](#asynchronous-tests)
+  - [Uncaught Async Errors](#uncaught-async-errors)
+  - [Future Matchers](#future-matchers)
+  - [Stream Matchers](#stream-matchers)
+- [Running Tests With Custom HTML](#running-tests-with-custom-html)
+  - [Providing a custom HTML template](#providing-a-custom-html-template)
+- [Configuring Tests](#configuring-tests)
+  - [Skipping Tests](#skipping-tests)
+  - [Timeouts](#timeouts)
+  - [Platform-Specific Configuration](#platform-specific-configuration)
+  - [Tagging Tests](#tagging-tests)
+  - [Whole-Package Configuration](#whole-package-configuration)
+  - [Compiler flags](#compiler-flags)
+- [Debugging](#debugging)
+- [Browser/VM Hybrid Tests](#browservm-hybrid-tests)
+- [Support for Other Packages](#support-for-other-packages)
+  - [`build_runner`](#build_runner)
+  - [`term_glyph`](#term_glyph)
+- [Further Reading](#further-reading)
 
 ## Writing Tests
 
@@ -172,6 +176,10 @@ name"`. The string is interpreted as a regular expression, and only tests whose
 description (including any group descriptions) match that regular expression
 will be run. You can also use the `-N` flag to run tests whose names contain a
 plain-text string.
+
+Alternatively, you can filter tests by name only for a specific file/directory
+by specifying a query on a path: `dart test "path/to/test.dart?name=test name"`.
+That ensures that the name filters applies to one path but not others.
 
 By default, tests are run in the Dart VM, but you can run them in the browser as
 well by passing `dart test -p chrome path/to/test.dart`. `test` will take
