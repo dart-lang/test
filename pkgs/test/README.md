@@ -173,6 +173,10 @@ description (including any group descriptions) match that regular expression
 will be run. You can also use the `-N` flag to run tests whose names contain a
 plain-text string.
 
+Alternatively, you can filter tests by name only for a specific file/directory
+by specifying a query on a path: `dart test "path/to/test.dart?name=test name"`.
+That ensures that the name filters applies to one path but not others.
+
 By default, tests are run in the Dart VM, but you can run them in the browser as
 well by passing `dart test -p chrome path/to/test.dart`. `test` will take
 care of starting the browser and loading the tests, and all the results will be

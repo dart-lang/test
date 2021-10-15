@@ -275,7 +275,7 @@ Configuration configuration(
         int? concurrency,
         int? shardIndex,
         int? totalShards,
-        Iterable<String>? paths,
+        Iterable<PathConfiguration>? paths,
         Iterable<String>? foldTraceExcept,
         Iterable<String>? foldTraceOnly,
         Glob? filename,

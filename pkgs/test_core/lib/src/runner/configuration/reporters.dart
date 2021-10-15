@@ -34,14 +34,14 @@ final _allReporters = <String, ReporterDetails>{
       (config, engine, sink) => ExpandedReporter.watch(engine, sink,
           color: config.color,
           printPath: config.paths.length > 1 ||
-              Directory(config.paths.single).existsSync(),
+              Directory(config.paths.single.testPath).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'compact': ReporterDetails(
       'A single line, updated continuously.',
       (config, engine, sink) => CompactReporter.watch(engine, sink,
           color: config.color,
           printPath: config.paths.length > 1 ||
-              Directory(config.paths.single).existsSync(),
+              Directory(config.paths.single.testPath).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
       'A machine-readable format (see '

@@ -174,6 +174,26 @@ String get usage => _parser.usage;
 /// Throws a [FormatException] if [args] are invalid.
 Configuration parse(List<String> args) => _Parser(args).parse();
 
+PathConfiguration _parsePathConfiguration(String option) {
+  final uri = Uri.parse(option);
+
+  final names = uri.queryParametersAll['name'];
+  final fullName = uri.queryParameters['full-name'];
+
+  if (names != null && names.isNotEmpty && fullName != null) {
+    throw FormatException(
+      'Cannot specify both "name=<...>" and "full-name=<...>".',
+    );
+  }
+
+  return PathConfiguration(
+    testPath: uri.path,
+    testPatterns: fullName != null
+        ? [RegExp('^${RegExp.escape(fullName)}\$')]
+        : names?.map((name) => RegExp(name)).toList(),
+  );
+}
+
 /// A class for parsing an argument list.
 ///
 /// This is used to provide access to the arg results across helper methods.
@@ -244,6 +264,14 @@ class _Parser {
     var platform = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
         .toList();
+
+    final paths = _options.rest.isEmpty ? null : _options.rest;
+
+    final pathConfigurations = paths
+        ?.map((value) =>
+            _wrapFormatException(value, () => _parsePathConfiguration(value)))
+        .toList();
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -269,7 +297,7 @@ class _Parser {
         runtimes: platform,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
-        paths: _options.rest.isEmpty ? null : _options.rest,
+        paths: pathConfigurations,
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),

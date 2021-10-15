@@ -12,6 +12,289 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  group('with test.dart?name="name" query', () {
+    test('selects tests with matching names', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("nope", () => throw TestFailure("oh no"));
+          test("selected 2", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?name=selected']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+
+      await test.shouldExit(0);
+    });
+
+    test('supports RegExp syntax', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test 1", () {});
+          test("test 2", () => throw TestFailure("oh no"));
+          test("test 3", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?name=test [13]']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+
+      await test.shouldExit(0);
+    });
+
+    test('applies only to the associated file', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("selected 2", () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      await d.file('test2.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () => throw TestFailure("oh no"));
+          test("selected 2", () {});
+        }
+      ''').create();
+
+      var test = await runTest(
+        ['test.dart?name=selected 1', 'test2.dart?name=selected 2'],
+      );
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('selects more narrowly when passed multiple times', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("nope", () => throw TestFailure("oh no"));
+          test("selected 2", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?name=selected&name=1']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+1: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('applies to directories', () async {
+      await d.dir('dir', [
+        d.file('first_test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("selected 2", () => throw TestFailure("oh no"));
+        }
+      '''),
+        d.file('second_test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("selected 2", () => throw TestFailure("oh no"));
+        }
+      ''')
+      ]).create();
+
+      var test = await runTest(['dir?name=selected 1']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('produces an error when no tests match', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?name=no']);
+
+      expect(
+        test.stderr,
+        emitsThrough(contains('No tests were found.')),
+      );
+
+      await test.shouldExit(exit_codes.noTestsRan);
+    });
+
+    test("doesn't filter out load exceptions", () async {
+      var test = await runTest(['file?name=name']);
+      expect(
+        test.stdout,
+        containsInOrder([
+          '-1: loading file [E]',
+          '  Failed to load "file": Does not exist.'
+        ]),
+      );
+
+      await test.shouldExit(1);
+    });
+  });
+
+  group('with test.dart?full-name query,', () {
+    test('matches with the complete test name', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected", () {});
+          test("nope", () => throw TestFailure("oh no"));
+          test("selected nope", () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?full-name=selected']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+1: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test("doesn't support RegExp syntax", () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test 1", () => throw TestFailure("oh no"));
+          test("test 2", () => throw TestFailure("oh no"));
+          test("test [12]", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?full-name=test [12]']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+1: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('applies only to the associated file', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () {});
+          test("selected 2", () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      await d.file('test2.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("selected 1", () => throw TestFailure("oh no"));
+          test("selected 2", () {});
+        }
+      ''').create();
+
+      var test = await runTest(
+        ['test.dart?full-name=selected 1', 'test2.dart?full-name=selected 2'],
+      );
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('produces an error when no tests match', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {});
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?full-name=no match']);
+
+      expect(
+        test.stderr,
+        emitsThrough(contains('No tests were found.')),
+      );
+      await test.shouldExit(exit_codes.noTestsRan);
+    });
+  });
+
+  test('test?name="name" and --name narrow the selection', () async {
+    await d.file('test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("selected 1", () {});
+        test("nope 1", () => throw TestFailure("oh no"));
+        test("selected 2", () => throw TestFailure("oh no"));
+        test("nope 2", () => throw TestFailure("oh no"));
+      }
+    ''').create();
+
+    var test = await runTest(['--name', '1', 'test.dart?name=selected']);
+
+    expect(
+      test.stdout,
+      emitsThrough(contains('+1: All tests passed!')),
+    );
+    await test.shouldExit(0);
+  });
+
+  test('test?name="name" and test?full-name="name" throws', () async {
+    await d.file('test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("selected 1", () {});
+        test("nope 1", () => throw TestFailure("oh no"));
+        test("selected 2", () => throw TestFailure("oh no"));
+        test("nope 2", () => throw TestFailure("oh no"));
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart?name=selected&full-name=selected 1']);
+
+    await test.shouldExit(255);
+  });
+
   group('with the --name flag,', () {
     test('selects tests with matching names', () async {
       await d.file('test.dart', '''

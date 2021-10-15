@@ -6,6 +6,7 @@
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/reporters.dart';
 import 'package:test_core/src/util/io.dart';
 
@@ -29,7 +30,7 @@ void main() {
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
         expect(merged.testRandomizeOrderingSeed, isNull);
-        expect(merged.paths, equals(['test']));
+        expect(merged.paths.single.testPath, 'test');
       });
 
       test("if only the old configuration's is defined, uses it", () {
@@ -47,7 +48,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['bar']).merge(configuration());
+            paths: [PathConfiguration(testPath: 'bar')]).merge(configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -62,7 +63,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths, equals(['bar']));
+        expect(merged.paths.single.testPath, 'bar');
       });
 
       test("if only the new configuration's is defined, uses it", () {
@@ -80,7 +81,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['bar']));
+            paths: [PathConfiguration(testPath: 'bar')]));
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -95,7 +96,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths, equals(['bar']));
+        expect(merged.paths.single.testPath, 'bar');
       });
 
       test(
@@ -115,7 +116,7 @@ void main() {
             shardIndex: 2,
             totalShards: 4,
             testRandomizeOrderingSeed: 0,
-            paths: ['bar']);
+            paths: [PathConfiguration(testPath: 'bar')]);
         var newer = configuration(
             help: false,
             version: true,
@@ -130,7 +131,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['blech']);
+            paths: [PathConfiguration(testPath: 'blech')]);
         var merged = older.merge(newer);
 
         expect(merged.help, isFalse);
@@ -146,7 +147,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths, equals(['blech']));
+        expect(merged.paths.single.testPath, 'blech');
       });
     });
 
