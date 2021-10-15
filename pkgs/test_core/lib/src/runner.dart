@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
@@ -256,14 +257,14 @@ class Runner {
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
     return StreamGroup.merge(_config.paths.map((pathConfig) {
-      final suiteConfig = pathConfig.testPatterns == null
-          ? _config.suiteDefaults
-          : _config.suiteDefaults.change(
-              patterns: [
-                ..._config.suiteDefaults.patterns,
-                ...pathConfig.testPatterns!
-              ],
-            );
+      final suiteConfig = _config.suiteDefaults.change(
+        patterns: [
+          ..._config.suiteDefaults.patterns,
+          ...?pathConfig.testPatterns
+        ],
+        line: pathConfig.line,
+        col: pathConfig.col,
+      );
 
       if (Directory(pathConfig.testPath).existsSync()) {
         return _loader.loadDir(pathConfig.testPath, suiteConfig);
@@ -279,6 +280,14 @@ class Runner {
       }
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
+        // TODO: Support this for browser tests
+        if (suite.platform.runtime.isBrowser &&
+            (suite.config.line != null || suite.config.col != null)) {
+          throw UnsupportedError(
+              'The `line` and `col` filters are not available for browser '
+              'tests.');
+        }
+
         _warnForUnknownTags(suite);
 
         return _shardSuite(suite.filter((test) {
@@ -296,6 +305,30 @@ class Runner {
           // Skip tests that do match any tags the user wants to exclude.
           if (suite.config.excludeTags.evaluate(test.metadata.tags.contains)) {
             return false;
+          }
+
+          // Skip tests that don't start on `line` or `col` if specified.
+          var line = suite.config.line;
+          var col = suite.config.col;
+          var trace = test.trace;
+          if (trace == null && (line != null || col != null)) {
+            return false;
+          } else if (trace != null) {
+            var absoluteSuitePath = p.absolute(suite.path!);
+            if (line != null &&
+                !trace.frames.any((frame) =>
+                    frame.uri.scheme == 'file' &&
+                    frame.uri.toFilePath() == absoluteSuitePath &&
+                    frame.line == line)) {
+              return false;
+            }
+            if (col != null &&
+                !trace.frames.any((frame) =>
+                    frame.uri.scheme == 'file' &&
+                    frame.uri.toFilePath() == absoluteSuitePath &&
+                    frame.column == col)) {
+              return false;
+            }
           }
 
           return true;

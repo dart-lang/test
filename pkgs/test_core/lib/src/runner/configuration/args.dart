@@ -179,6 +179,8 @@ PathConfiguration _parsePathConfiguration(String option) {
 
   final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
+  final line = uri.queryParameters['line'];
+  final col = uri.queryParameters['col'];
 
   if (names != null && names.isNotEmpty && fullName != null) {
     throw FormatException(
@@ -191,6 +193,8 @@ PathConfiguration _parsePathConfiguration(String option) {
     testPatterns: fullName != null
         ? [RegExp('^${RegExp.escape(fullName)}\$')]
         : names?.map((name) => RegExp(name)).toList(),
+    line: line == null ? null : int.parse(line),
+    col: col == null ? null : int.parse(col),
   );
 }
 
