@@ -4,6 +4,7 @@
   apply the filters to only those test suites.
   * All specified filters must match for a test to run.
   * Global filters (ie: `--name`) are also still respected and must match.
+* Give a better exception when using `markTestSkipped` outside of a test.
 
 ## 1.18.2
 

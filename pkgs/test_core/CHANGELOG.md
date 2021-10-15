@@ -4,6 +4,7 @@
   apply the filters to only those test suites.
   * All specified filters must match for a test to run.
   * Global filters (ie: `--name`) are also still respected and must match.
+* Support the latest `test_api`.
 
 ## 0.4.5
 
