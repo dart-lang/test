@@ -12,6 +12,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('divides all the tests among the available shards', () async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';

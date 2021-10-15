@@ -15,6 +15,8 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('ignores an empty file', () async {
     await d.file('dart_test.yaml', '').create();
 

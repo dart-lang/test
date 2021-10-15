@@ -11,6 +11,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('a skipped expect', () {
     test('marks the test as skipped', () async {
       await d.file('test.dart', '''

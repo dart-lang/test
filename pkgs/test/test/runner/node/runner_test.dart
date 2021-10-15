@@ -29,6 +29,8 @@ final _failure = '''
 ''';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('fails gracefully if', () {
     test('a test file fails to compile', () async {
       await d.file('test.dart', 'invalid Dart file').create();

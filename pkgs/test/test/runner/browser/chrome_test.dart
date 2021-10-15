@@ -15,6 +15,8 @@ import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('starts Chrome with the given URL', () async {
     var server = await CodeServer.start();
 

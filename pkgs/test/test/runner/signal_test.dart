@@ -23,6 +23,8 @@ String get _tempDir => p.join(d.sandbox, 'tmp');
 // represent a best effort to kill the test runner at certain times during its
 // execution.
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() => d.dir('tmp').create());
 
   group('during loading,', () {
