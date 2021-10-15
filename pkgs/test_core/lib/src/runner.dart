@@ -256,12 +256,12 @@ class Runner {
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
     return StreamGroup.merge(_config.paths.map((pathConfig) {
-      final suiteConfig = pathConfig.testNames == null
+      final suiteConfig = pathConfig.testPatterns == null
           ? _config.suiteDefaults
           : _config.suiteDefaults.change(
               patterns: [
                 ..._config.suiteDefaults.patterns,
-                ...pathConfig.testNames!
+                ...pathConfig.testPatterns!
               ],
             );
 

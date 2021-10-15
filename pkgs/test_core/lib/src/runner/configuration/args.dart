@@ -188,7 +188,7 @@ PathConfiguration _parsePathConfiguration(String option) {
 
   return PathConfiguration(
     testPath: uri.path,
-    testNames: fullName != null
+    testPatterns: fullName != null
         ? [RegExp('^${RegExp.escape(fullName)}\$')]
         : names?.map((name) => RegExp(name)).toList(),
   );

@@ -34,14 +34,14 @@ final _currentKey = Object();
 class PathConfiguration {
   const PathConfiguration({
     required this.testPath,
-    this.testNames,
+    this.testPatterns,
   });
 
   /// The explicit path to a test suite.
   final String testPath;
 
   /// Name filters specific to [testPath].
-  final List<Pattern>? testNames;
+  final List<Pattern>? testPatterns;
 }
 
 /// A class that encapsulates the command-line configuration of the test runner.
