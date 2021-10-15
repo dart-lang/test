@@ -352,7 +352,9 @@ class _ConfigurationLoader {
       _validate(pathNode, 'Paths must be relative.',
           (value) => p.url.isRelative(value as String));
 
-      return _parseNode(pathNode, 'path', p.fromUri);
+      return PathConfiguration(
+        filePath: _parseNode(pathNode, 'path', p.fromUri),
+      );
     });
 
     var filename = _parseValue('filename', (value) => Glob(value));

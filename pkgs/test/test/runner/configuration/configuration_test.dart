@@ -6,6 +6,7 @@
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/reporters.dart';
 import 'package:test_core/src/util/io.dart';
 
@@ -47,7 +48,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['bar']).merge(configuration());
+            paths: [PathConfiguration(filePath: 'bar')]).merge(configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -80,7 +81,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['bar']));
+            paths: [PathConfiguration(filePath: 'bar')]));
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -115,7 +116,7 @@ void main() {
             shardIndex: 2,
             totalShards: 4,
             testRandomizeOrderingSeed: 0,
-            paths: ['bar']);
+            paths: [PathConfiguration(filePath: 'bar')]);
         var newer = configuration(
             help: false,
             version: true,
@@ -130,7 +131,7 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: ['blech']);
+            paths: [PathConfiguration(filePath: 'blech')]);
         var merged = older.merge(newer);
 
         expect(merged.help, isFalse);

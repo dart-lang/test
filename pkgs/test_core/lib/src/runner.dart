@@ -255,15 +255,26 @@ class Runner {
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return StreamGroup.merge(_config.paths.map((path) {
-      if (Directory(path).existsSync()) {
-        return _loader.loadDir(path, _config.suiteDefaults);
-      } else if (File(path).existsSync()) {
-        return _loader.loadFile(path, _config.suiteDefaults);
+    return StreamGroup.merge(_config.paths.map((pathConfig) {
+      final suiteConfig = pathConfig.testName == null
+          ? _config.suiteDefaults
+          : _config.suiteDefaults.change(
+              patterns: [
+                ..._config.suiteDefaults.patterns,
+                pathConfig.testName!
+              ],
+            );
+
+      if (Directory(pathConfig.filePath).existsSync()) {
+        return _loader.loadDir(pathConfig.filePath, suiteConfig);
+      } else if (File(pathConfig.filePath).existsSync()) {
+        return _loader.loadFile(pathConfig.filePath, suiteConfig);
       } else {
         return Stream.fromIterable([
           LoadSuite.forLoadException(
-              LoadException(path, 'Does not exist.'), _config.suiteDefaults)
+            LoadException(pathConfig.filePath, 'Does not exist.'),
+            suiteConfig,
+          ),
         ]);
       }
     })).map((loadSuite) {

@@ -30,6 +30,16 @@ import 'suite.dart';
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = Object();
 
+class PathConfiguration {
+  const PathConfiguration({
+    required this.filePath,
+    this.testName,
+  });
+
+  final String filePath;
+  final Pattern? testName;
+}
+
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
   /// An empty configuration with only default values.
@@ -129,8 +139,9 @@ class Configuration {
   final Set<String>? _foldTraceOnly;
 
   /// The paths from which to load tests.
-  List<String> get paths => _paths ?? ['test'];
-  final List<String>? _paths;
+  List<PathConfiguration> get paths =>
+      _paths ?? const [PathConfiguration(filePath: 'test')];
+  final List<PathConfiguration>? _paths;
 
   /// Whether the load paths were passed explicitly or the default was used.
   bool get explicitPaths => _paths != null;
@@ -251,7 +262,7 @@ class Configuration {
       required int? concurrency,
       required int? shardIndex,
       required int? totalShards,
-      required Iterable<String>? paths,
+      required Iterable<PathConfiguration>? paths,
       required Iterable<String>? foldTraceExcept,
       required Iterable<String>? foldTraceOnly,
       required Glob? filename,
@@ -360,7 +371,7 @@ class Configuration {
           int? concurrency,
           int? shardIndex,
           int? totalShards,
-          Iterable<String>? paths,
+          Iterable<PathConfiguration>? paths,
           Iterable<String>? foldTraceExcept,
           Iterable<String>? foldTraceOnly,
           Glob? filename,
@@ -645,7 +656,7 @@ class Configuration {
   factory Configuration.localRunner(
           {required int? pubServePort,
           required Iterable<Pattern>? patterns,
-          required Iterable<String>? paths,
+          required Iterable<PathConfiguration>? paths,
           required Glob? filename,
           required BooleanSelector? includeTags,
           required BooleanSelector? excludeTags,
@@ -734,7 +745,7 @@ class Configuration {
       required int? concurrency,
       required this.shardIndex,
       required this.totalShards,
-      required Iterable<String>? paths,
+      required Iterable<PathConfiguration>? paths,
       required Iterable<String>? foldTraceExcept,
       required Iterable<String>? foldTraceOnly,
       required Glob? filename,
@@ -965,7 +976,7 @@ class Configuration {
       int? concurrency,
       int? shardIndex,
       int? totalShards,
-      Iterable<String>? paths,
+      Iterable<PathConfiguration>? paths,
       Iterable<String>? exceptPackages,
       Iterable<String>? onlyPackages,
       Glob? filename,

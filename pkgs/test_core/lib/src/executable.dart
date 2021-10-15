@@ -130,7 +130,7 @@ Future<void> _execute(List<String> args) async {
   }
 
   if (!configuration.explicitPaths &&
-      !Directory(configuration.paths.single).existsSync()) {
+      !Directory(configuration.paths.single.filePath).existsSync()) {
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
