@@ -34,13 +34,7 @@ void registerException(Object error,
 /// [print], each individual message passed to [printOnFailure] will be
 /// separated by a blank line.
 void printOnFailure(String message) {
-  var invoker = Invoker.current;
-  if (invoker == null) {
-    throw StateError(
-        'There is no current invoker. Please make sure that you are making the '
-        'call inside a test zone.');
-  }
-  return invoker.printOnFailure(message);
+  _currentInvoker.printOnFailure(message);
 }
 
 /// Marks the current test as skipped.
@@ -48,4 +42,10 @@ void printOnFailure(String message) {
 /// A skipped test may still fail if any exception is thrown, including uncaught
 /// asynchronous errors. If the entire test should be skipped `return` from the
 /// test body after marking it as skipped.
-void markTestSkipped(String message) => Invoker.current!.skip(message);
+void markTestSkipped(String message) => _currentInvoker..skip(message);
+
+Invoker get _currentInvoker =>
+    Invoker.current ??
+    (throw StateError(
+        'There is no current invoker. Please make sure that you are making the '
+        'call inside a test zone.'));
