@@ -12,6 +12,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('with test.dart?line=<line> query', () {
     test('selects test with the matching line', () async {
       await d.file('test.dart', '''
