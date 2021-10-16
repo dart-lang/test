@@ -15,6 +15,8 @@ import '../io.dart';
 import 'json_reporter_utils.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('runs several successful tests and reports when each completes', () {
     return _expectReport('''
       test('success 1', () {});

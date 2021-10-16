@@ -12,6 +12,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('shuffles test order when passed a seed', () async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';
@@ -176,7 +178,7 @@ void main() {
         test("test 2.2", () {});
         test("test 2.3", () {});
         test("test 2.4", () {});
-       }); 
+       });
       }
     ''').create();
 

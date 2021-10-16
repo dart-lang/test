@@ -11,6 +11,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('respects top-level @Timeout declarations', () async {
     await d.file('test.dart', '''
 @Timeout(const Duration(seconds: 0))

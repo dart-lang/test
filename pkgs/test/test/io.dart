@@ -67,7 +67,39 @@ void _expectStreamEquals(Stream<String> stream, String expected) {
 StreamMatcher containsInOrder(Iterable<String> strings) =>
     emitsInOrder(strings.map((string) => emitsThrough(contains(string))));
 
+/// Lazily compile the test package to kernel and re-use that, initialized with
+/// [precompileTestExecutable].
+String? _testExecutablePath;
+
+/// Must be invoked before any call to [runTests], should be invoked in a top
+/// level `setUpAll` for best caching results.
+Future<void> precompileTestExecutable() async {
+  if (_testExecutablePath != null) {
+    throw StateError('Test executable already precompiled');
+  }
+  var tmpDirectory = await Directory.systemTemp.createTemp('test');
+  var precompiledPath = p.join(tmpDirectory.path, 'test_runner.dill');
+  var result = await Process.run(Platform.executable, [
+    'compile',
+    'kernel',
+    p.url.join(await packageDir, 'bin', 'test.dart'),
+    '-o',
+    precompiledPath,
+  ]);
+  if (result.exitCode != 0) {
+    throw StateError(
+        'Failed to compile test runner:\n${result.stdout}\n${result.stderr}');
+  }
+
+  addTearDown(() async {
+    await tmpDirectory.delete(recursive: true);
+  });
+  _testExecutablePath = precompiledPath;
+}
+
 /// Runs the test executable with the package root set properly.
+///
+/// You must invoke [precompileTestExecutable] before invoking this function.
 Future<TestProcess> runTest(Iterable<String> args,
     {String? reporter,
     String? fileReporter,
@@ -77,10 +109,15 @@ Future<TestProcess> runTest(Iterable<String> args,
     String? packageConfig,
     Iterable<String>? vmArgs}) async {
   concurrency ??= 1;
+  var testExecutablePath = _testExecutablePath;
+  if (testExecutablePath == null) {
+    throw StateError(
+        'You must call `precompileTestExecutable` before calling `runTest`');
+  }
 
   var allArgs = [
     ...?vmArgs,
-    Uri.file(p.url.join(await packageDir, 'bin', 'test.dart')).toString(),
+    testExecutablePath,
     '--concurrency=$concurrency',
     if (reporter != null) '--reporter=$reporter',
     if (fileReporter != null) '--file-reporter=$fileReporter',

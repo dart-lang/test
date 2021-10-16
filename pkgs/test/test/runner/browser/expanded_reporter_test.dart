@@ -11,6 +11,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('prints the platform name when running on multiple platforms', () async {
     await d.file('test.dart', '''
 import 'dart:async';

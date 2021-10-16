@@ -14,6 +14,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('presets', () {
     test("don't do anything by default", () async {
       await d

@@ -16,6 +16,8 @@ import 'package:test_process/test_process.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('with the --coverage flag,', () {
     late Directory coverageDirectory;
 

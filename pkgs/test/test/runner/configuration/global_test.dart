@@ -13,6 +13,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('ignores an empty file', () async {
     await d.file('global_test.yaml', '').create();
 

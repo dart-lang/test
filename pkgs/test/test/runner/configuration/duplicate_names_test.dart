@@ -14,6 +14,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('duplicate names', () {
     group('can be disabled for', () {
       for (var function in ['group', 'test']) {

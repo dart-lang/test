@@ -13,6 +13,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('rejects an invalid fold_stack_frames', () async {
     await d
         .file('dart_test.yaml', jsonEncode({'fold_stack_frames': 'flup'}))

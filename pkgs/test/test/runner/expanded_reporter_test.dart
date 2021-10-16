@@ -13,6 +13,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('reports when no tests are run', () async {
     await d.file('test.dart', 'void main() {}').create();
 

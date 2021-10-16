@@ -14,6 +14,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('on_platform', () {
     test('applies platform-specific configuration to matching tests', () async {
       await d
