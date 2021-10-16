@@ -11,6 +11,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('an error causes the run to fail', () async {
     await d.file('test.dart', r'''
         import 'package:test/test.dart';

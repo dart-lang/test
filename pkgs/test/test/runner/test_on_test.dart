@@ -20,6 +20,7 @@ void main() {
   late PackageConfig currentPackageConfig;
 
   setUpAll(() async {
+    await precompileTestExecutable();
     currentPackageConfig =
         await loadPackageConfigUri((await Isolate.packageConfig)!);
   });

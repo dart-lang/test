@@ -19,6 +19,8 @@ import '../io.dart';
 String get _pubServeArg => '--pub-serve=$pubServePort';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() async {
     await d.file('pubspec.yaml', '''
 name: myapp

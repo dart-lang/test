@@ -12,6 +12,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('with test.dart?name="name" query', () {
     test('selects tests with matching names', () async {
       await d.file('test.dart', '''

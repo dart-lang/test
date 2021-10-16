@@ -20,6 +20,8 @@ import 'package:test/src/util/package_map.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('browser tests', () {
     setUp(() async {
       await d.file('to_precompile.dart', '''

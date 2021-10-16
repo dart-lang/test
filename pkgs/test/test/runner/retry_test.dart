@@ -10,6 +10,8 @@ import 'package:test/test.dart';
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('respects --no-retry flag with retry option', () async {
     await d.file('test.dart', '''
           import 'dart:async';

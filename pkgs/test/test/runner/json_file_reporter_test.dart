@@ -18,6 +18,8 @@ import '../io.dart';
 import 'json_reporter_utils.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('runs successful tests with a stdout reporter and file reporter', () {
     return _expectReports('''
       test('success 1', () {});

@@ -123,6 +123,8 @@ final _browsers = '[vm (default), chrome, firefox' +
     ', node]';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('prints help information', () async {
     var test = await runTest(['--help']);
     expectStdoutEquals(test, '''

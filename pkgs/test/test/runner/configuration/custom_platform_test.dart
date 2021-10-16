@@ -17,6 +17,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() async {
     await d.file('test.dart', '''
         import 'package:test/test.dart';

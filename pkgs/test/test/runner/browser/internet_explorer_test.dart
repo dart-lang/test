@@ -16,6 +16,8 @@ import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('starts IE with the given URL', () async {
     var server = await CodeServer.start();
 

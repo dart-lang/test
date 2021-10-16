@@ -14,6 +14,8 @@ import 'package:test/test.dart';
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('adds the specified tags', () async {
     await d
         .file(

@@ -17,6 +17,7 @@ import '../io.dart';
 void main() {
   late String packageRoot;
   setUpAll(() async {
+    await precompileTestExecutable();
     packageRoot = p.absolute(p.dirname(p
         .fromUri(await Isolate.resolvePackageUri(Uri.parse('package:test/')))));
   });
