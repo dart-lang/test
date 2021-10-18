@@ -153,11 +153,11 @@ void main() {
 A single test file can be run just using `dart test path/to/test.dart` (as of
 Dart 2.10 - prior sdk versions must use `pub run test` instead of `dart test`).
 
-![Single file being run via "pub run"](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test1.gif)
+![Single file being run via "dart test"](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test1.gif)
 
 Many tests can be run at a time using `dart test path/to/dir`.
 
-![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test2.gif)
+![Directory being run via "dart test".](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test2.gif)
 
 It's also possible to run a test on the Dart VM only by invoking it using `dart
 path/to/test.dart`, but this doesn't load the full test runner and will be
