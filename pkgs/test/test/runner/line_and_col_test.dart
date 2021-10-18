@@ -317,5 +317,45 @@ void main() {
 
       await test.shouldExit(exit_codes.noTestsRan);
     });
+
+    test('supports browser tests', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("a", () {});
+          test("b", () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?line=4&col=11', '-p', 'chrome']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+1: All tests passed!')),
+      );
+
+      await test.shouldExit(0);
+    });
+
+    test('supports node tests', () async {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("a", () {});
+          test("b", () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?line=4&col=11', '-p', 'node']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+1: All tests passed!')),
+      );
+
+      await test.shouldExit(0);
+    });
   });
 }
