@@ -280,14 +280,6 @@ class Runner {
       }
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        // TODO: Support this for JS tests
-        if (suite.platform.runtime.isJS &&
-            (suite.config.line != null || suite.config.col != null)) {
-          throw UnsupportedError(
-              'The `line` and `col` filters are not available for JavaScript '
-              'tests.');
-        }
-
         _warnForUnknownTags(suite);
 
         return _shardSuite(suite.filter((test) {
