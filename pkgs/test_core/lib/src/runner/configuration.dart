@@ -35,6 +35,8 @@ class PathConfiguration {
   const PathConfiguration({
     required this.testPath,
     this.testPatterns,
+    this.line,
+    this.col,
   });
 
   /// The explicit path to a test suite.
@@ -42,6 +44,12 @@ class PathConfiguration {
 
   /// Name filters specific to [testPath].
   final List<Pattern>? testPatterns;
+
+  /// Only run tests that originate from this line in the test suite.
+  final int? line;
+
+  /// Only run tests that originate from this column in the test suite.
+  final int? col;
 }
 
 /// A class that encapsulates the command-line configuration of the test runner.
@@ -342,6 +350,8 @@ class Configuration {
             excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
+            line: null, // Only configurable from the command line
+            col: null, // Only configurable from the command line
 
             // Test-level configuration
             timeout: timeout,

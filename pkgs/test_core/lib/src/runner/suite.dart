@@ -36,7 +36,9 @@ class SuiteConfiguration {
       excludeTags: null,
       tags: null,
       onPlatform: null,
-      metadata: null);
+      metadata: null,
+      line: null,
+      col: null);
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
@@ -132,6 +134,12 @@ class SuiteConfiguration {
       });
   Set<String>? _knownTags;
 
+  /// Only run tests that originate from this line in a test file.
+  final int? line;
+
+  /// Only run tests that original from this column in a test file.
+  final int? col;
+
   factory SuiteConfiguration(
       {required bool? allowDuplicateTestNames,
       required bool? allowTestRandomization,
@@ -145,6 +153,8 @@ class SuiteConfiguration {
       required BooleanSelector? excludeTags,
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      required int? line,
+      required int? col,
 
       // Test-level configuration
       required Timeout? timeout,
@@ -168,6 +178,8 @@ class SuiteConfiguration {
         excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
+        line: line,
+        col: col,
         metadata: Metadata(
             timeout: timeout,
             verboseTrace: verboseTrace,
@@ -197,6 +209,8 @@ class SuiteConfiguration {
           BooleanSelector? excludeTags,
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+          int? line,
+          int? col,
 
           // Test-level configuration
           Timeout? timeout,
@@ -220,6 +234,8 @@ class SuiteConfiguration {
           excludeTags: excludeTags,
           tags: tags,
           onPlatform: onPlatform,
+          line: line,
+          col: col,
           timeout: timeout,
           verboseTrace: verboseTrace,
           chainStackTraces: chainStackTraces,
@@ -258,7 +274,9 @@ class SuiteConfiguration {
       required BooleanSelector? excludeTags,
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      required Metadata? metadata})
+      required Metadata? metadata,
+      required this.line,
+      required this.col})
       : _allowDuplicateTestNames = allowDuplicateTestNames,
         _allowTestRandomization = allowTestRandomization,
         _jsTrace = jsTrace,
@@ -291,6 +309,8 @@ class SuiteConfiguration {
         runtimes: null,
         includeTags: null,
         excludeTags: null,
+        line: null,
+        col: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -333,6 +353,8 @@ class SuiteConfiguration {
         excludeTags: excludeTags.union(other.excludeTags),
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
+        line: other.line ?? line,
+        col: other.col ?? col,
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
   }
@@ -354,6 +376,8 @@ class SuiteConfiguration {
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      int? line,
+      int? col,
 
       // Test-level configuration
       Timeout? timeout,
@@ -379,6 +403,8 @@ class SuiteConfiguration {
         excludeTags: excludeTags ?? this.excludeTags,
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
+        line: line ?? this.line,
+        col: col ?? this.col,
         metadata: _metadata.change(
             timeout: timeout,
             verboseTrace: verboseTrace,

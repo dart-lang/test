@@ -1,9 +1,11 @@
 ## 0.4.6-dev
 
-* Support query parameters `name` and `full-name` on test paths, which will
-  apply the filters to only those test suites.
+* Support query parameters `name`, `full-name`, `line`, and `col` on test paths,
+  which will apply the filters to only those test suites.
   * All specified filters must match for a test to run.
   * Global filters (ie: `--name`) are also still respected and must match.
+  * The `line` and `col` will match if any frame from the test trace matches
+    (the test trace is the current stack trace where `test` is invoked).
 * Support the latest `test_api`.
 
 ## 0.4.5

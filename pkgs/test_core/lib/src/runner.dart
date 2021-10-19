@@ -7,6 +7,8 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
@@ -256,14 +258,14 @@ class Runner {
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
     return StreamGroup.merge(_config.paths.map((pathConfig) {
-      final suiteConfig = pathConfig.testPatterns == null
-          ? _config.suiteDefaults
-          : _config.suiteDefaults.change(
-              patterns: [
-                ..._config.suiteDefaults.patterns,
-                ...pathConfig.testPatterns!
-              ],
-            );
+      final suiteConfig = _config.suiteDefaults.change(
+        patterns: [
+          ..._config.suiteDefaults.patterns,
+          ...?pathConfig.testPatterns
+        ],
+        line: pathConfig.line,
+        col: pathConfig.col,
+      );
 
       if (Directory(pathConfig.testPath).existsSync()) {
         return _loader.loadDir(pathConfig.testPath, suiteConfig);
@@ -296,6 +298,43 @@ class Runner {
           // Skip tests that do match any tags the user wants to exclude.
           if (suite.config.excludeTags.evaluate(test.metadata.tags.contains)) {
             return false;
+          }
+
+          // Skip tests that don't start on `line` or `col` if specified.
+          var line = suite.config.line;
+          var col = suite.config.col;
+          if (line != null || col != null) {
+            var trace = test.trace;
+            if (trace == null) {
+              throw StateError(
+                  'Cannot filter by line/column for this test suite, no stack'
+                  'trace available.');
+            }
+            var path = suite.path;
+            if (path == null) {
+              throw StateError(
+                  'Cannot filter by line/column for this test suite, no suite'
+                  'path available.');
+            }
+            var absoluteSuitePath = p.absolute(path);
+
+            bool matchLineAndCol(Frame frame) {
+              if (frame.uri.scheme != 'file' ||
+                  frame.uri.toFilePath() != absoluteSuitePath) {
+                return false;
+              }
+              if (line != null && frame.line != line) {
+                return false;
+              }
+              if (col != null && frame.column != col) {
+                return false;
+              }
+              return true;
+            }
+
+            if (!trace.frames.any(matchLineAndCol)) {
+              return false;
+            }
           }
 
           return true;

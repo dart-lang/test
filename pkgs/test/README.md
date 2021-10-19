@@ -173,16 +173,40 @@ description (including any group descriptions) match that regular expression
 will be run. You can also use the `-N` flag to run tests whose names contain a
 plain-text string.
 
-Alternatively, you can filter tests by name only for a specific file/directory
-by specifying a query on a path: `dart test "path/to/test.dart?name=test name"`.
-That ensures that the name filters applies to one path but not others.
-
 By default, tests are run in the Dart VM, but you can run them in the browser as
 well by passing `dart test -p chrome path/to/test.dart`. `test` will take
 care of starting the browser and loading the tests, and all the results will be
 reported on the command line just like for VM tests. In fact, you can even run
 tests on both platforms with a single command: `dart test -p "chrome,vm"
 path/to/test.dart`.
+
+### Test Path Queries
+
+Some query parameters are supported on test paths, which allow you to filter the
+tests that will run within just those paths. These filters are merged with any
+global options that are passed, and all filters must match for a test to be ran.
+
+- **name**: Works the same as `--name` (simple contains check).
+  - This is the only option that supports more than one entry.
+- **full-name**: Requires an exact match for the name of the test.
+- **line**: Matches any test that originates from this line in the test suite.
+- **col**: Matches any test that originates from this column in the test suite.
+
+**Example Usage**: `dart test "path/to/test.dart?line=10&col=2"`
+
+#### Line/Col Matching Semantics
+
+The `line` and `col` filters match against the current stack trace taken from
+the invocation to the `test` function, and are considered a match if
+**any frame** in the trace meets **all** of the following criteria:
+
+* The URI of the frame matches the root test suite uri.
+  * This means it will not match lines from imported libraries.
+* If both `line` and `col` are passed, both must match **the same frame**.
+* The specific `line` and `col` to be matched are defined by the tools creating
+  the stack trace. This generally means they are 1 based and not 0 based, but
+  this package is not in control of the exact semantics and they may vary based
+  on platform implementations.
 
 ### Sharding Tests
 Tests can also be sharded with the `--total-shards` and `--shard-index` arguments,

@@ -227,6 +227,8 @@ SuiteConfiguration suiteConfiguration(
         BooleanSelector? excludeTags,
         Map<BooleanSelector, SuiteConfiguration>? tags,
         Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+        int? line,
+        int? col,
 
         // Test-level configuration
         Timeout? timeout,
@@ -250,6 +252,8 @@ SuiteConfiguration suiteConfiguration(
         excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
+        line: line,
+        col: col,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,
