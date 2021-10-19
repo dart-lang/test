@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
@@ -302,23 +303,29 @@ class Runner {
           // Skip tests that don't start on `line` or `col` if specified.
           var line = suite.config.line;
           var col = suite.config.col;
-          var trace = test.trace;
-          if (trace == null && (line != null || col != null)) {
-            return false;
-          } else if (trace != null) {
-            var absoluteSuitePath = p.absolute(suite.path!);
-            if (line != null &&
-                !trace.frames.any((frame) =>
-                    frame.uri.scheme == 'file' &&
-                    frame.uri.toFilePath() == absoluteSuitePath &&
-                    frame.line == line)) {
+          if (line != null || col != null) {
+            var trace = test.trace;
+            var path = suite.path;
+            if (path == null || trace == null) {
               return false;
             }
-            if (col != null &&
-                !trace.frames.any((frame) =>
-                    frame.uri.scheme == 'file' &&
-                    frame.uri.toFilePath() == absoluteSuitePath &&
-                    frame.column == col)) {
+            var absoluteSuitePath = p.absolute(path);
+
+            bool matchLineAndCol(Frame frame) {
+              if (frame.uri.scheme != 'file' ||
+                  frame.uri.toFilePath() != absoluteSuitePath) {
+                return false;
+              }
+              if (line != null && frame.line != line) {
+                return false;
+              }
+              if (col != null && frame.column != col) {
+                return false;
+              }
+              return true;
+            }
+
+            if (!trace.frames.any(matchLineAndCol)) {
               return false;
             }
           }

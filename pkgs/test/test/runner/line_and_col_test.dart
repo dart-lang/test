@@ -235,17 +235,21 @@ void main() {
   });
 
   group('with test.dart?line=<line>&col=<col> query', () {
-    test('selects test with the matching line and col', () async {
+    test('selects test with the matching line and col in the same frame',
+        () async {
       await d.file('test.dart', '''
         import 'package:test/test.dart';
 
         void main() {
+          void runTests() {
           test("a", () {});test("b", () => throw TestFailure("oh no"));
-          test("b", () => throw TestFailure("oh no"));
+          }
+          runTests();
+          test("c", () => throw TestFailure("oh no"));
         }
       ''').create();
 
-      var test = await runTest(['test.dart?line=4&col=11']);
+      var test = await runTest(['test.dart?line=5&col=11']);
 
       expect(
         test.stdout,
