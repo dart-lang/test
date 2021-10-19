@@ -6,8 +6,6 @@
   * Global filters (ie: `--name`) are also still respected and must match.
   * The `line` and `col` will match if any frame from the test trace matches
     (the test trace is the current stack trace where `test` is invoked).
-    * If either `line` or `col` are used, stack trace chaining is enabled for
-      that suite, regardless of the global setting.
 * Give a better exception when using `markTestSkipped` outside of a test.
 
 ## 1.18.2
