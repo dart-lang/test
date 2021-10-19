@@ -305,9 +305,16 @@ class Runner {
           var col = suite.config.col;
           if (line != null || col != null) {
             var trace = test.trace;
+            if (trace == null) {
+              throw StateError(
+                  'Cannot filter by line/column for this test suite, no stack'
+                  'trace available.');
+            }
             var path = suite.path;
-            if (path == null || trace == null) {
-              return false;
+            if (path == null) {
+              throw StateError(
+                  'Cannot filter by line/column for this test suite, no suite'
+                  'path available.');
             }
             var absoluteSuitePath = p.absolute(path);
 
