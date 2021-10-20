@@ -1,4 +1,4 @@
-## 1.19.0-dev
+## 1.19.0
 
 * Support query parameters `name`, `full-name`, `line`, and `col` on test paths,
   which will apply the filters to only those test suites.
