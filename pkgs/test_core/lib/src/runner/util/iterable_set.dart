@@ -15,7 +15,7 @@ import 'package:collection/collection.dart';
 /// Note also that set operations that are usually expected to be `O(1)` or
 /// `O(log(n))`, such as [contains], may be `O(n)` for many underlying iterable
 /// types. As such, this should only be used for small iterables.
-class IterableSet<E> with SetMixin<E> with UnmodifiableSetMixin<E> {
+class IterableSet<E> with SetMixin<E>, UnmodifiableSetMixin<E> {
   /// The base iterable that set operations forward to.
   final Iterable<E> _base;
 
