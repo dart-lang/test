@@ -29,8 +29,6 @@ CancelableOperation debug(
   _Debugger? debugger;
   var canceled = false;
   return CancelableOperation.fromFuture(() async {
-    // Make the underlying suite null so that the engine doesn't start running
-    // it immediately.
     engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
       engine.pause();
       return runnerSuite;
