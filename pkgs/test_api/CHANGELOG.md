@@ -1,4 +1,4 @@
-## 0.4.6-dev
+## 0.4.6
 
 * Give a better exception when using `markTestSkipped` outside of a test.
 * Format stack traces if a formatter is available when serializing tests
