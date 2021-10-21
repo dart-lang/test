@@ -180,7 +180,7 @@ PathConfiguration _parsePathConfiguration(String option) {
     return PathConfiguration(testPath: option);
   } else if (option.substring(0, firstQuestion).contains('\\')) {
     throw FormatException(
-        'When passing test path queries, you must use pass the path in URI '
+        'When passing test path queries, you must pass the path in URI '
         'format (use `/` for directory separators instead of `\\`).');
   }
 
