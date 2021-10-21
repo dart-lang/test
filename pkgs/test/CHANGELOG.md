@@ -1,4 +1,8 @@
-## 1.19.1-dev
+## 1.19.2-dev
+
+## 1.19.1
+
+* Fix parsing of file paths into a URI on windows.
 
 ## 1.19.0
 

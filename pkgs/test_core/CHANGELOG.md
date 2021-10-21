@@ -1,4 +1,8 @@
-## 0.4.7-dev
+## 0.4.8-dev
+
+## 0.4.7
+
+* Fix parsing of file paths into a URI on windows.
 
 ## 0.4.6
 
