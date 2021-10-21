@@ -216,31 +216,26 @@ class _Parser {
 
   _Parser(List<String> args) : _options = _parser.parse(args);
 
+  List<String>? _readMulti(String name) => _options['name'] as List<String>?;
+
   /// Returns the parsed configuration.
   Configuration parse() {
-    var patterns = (_options['name'] as List<String>)
-        .map<Pattern>((value) => _wrapFormatException(
-            value, () => RegExp(value),
-            optionName: 'name'))
-        .toList()
-      ..addAll(_options['plain-name'] as List<String>);
+    var patterns = [
+      for (var value in _readMulti('name')!)
+        _wrapFormatException(value, () => RegExp(value), optionName: 'name'),
+      ..._readMulti('plain-name')!,
+    ];
 
-    var includeTagSet = Set.from(_options['tags'] as Iterable? ?? [])
-      ..addAll(_options['tag'] as Iterable? ?? []);
-
-    var includeTags = includeTagSet.fold(BooleanSelector.all,
-        (BooleanSelector selector, tag) {
-      var tagSelector = BooleanSelector.parse(tag as String);
-      return selector.intersection(tagSelector);
+    var includeTags = {...?_readMulti('tags'), ...?_readMulti('tag')}
+        .fold<BooleanSelector>(BooleanSelector.all, (selector, tag) {
+      return selector.intersection(BooleanSelector.parse(tag));
     });
 
-    var excludeTagSet = Set.from(_options['exclude-tags'] as Iterable? ?? [])
-      ..addAll(_options['exclude-tag'] as Iterable? ?? []);
-
-    var excludeTags = excludeTagSet.fold(BooleanSelector.none,
-        (BooleanSelector selector, tag) {
-      var tagSelector = BooleanSelector.parse(tag as String);
-      return selector.union(tagSelector);
+    var excludeTags = {
+      ...?_readMulti('exclude-tags'),
+      ...?_readMulti('exclude-tag')
+    }.fold<BooleanSelector>(BooleanSelector.none, (selector, tag) {
+      return selector.union(BooleanSelector.parse(tag));
     });
 
     var shardIndex = _parseOption('shard-index', int.parse);
