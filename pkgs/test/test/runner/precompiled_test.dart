@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+@OnPlatform({'windows': Skip('https://github.com/dart-lang/test/issues/1617')})
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
