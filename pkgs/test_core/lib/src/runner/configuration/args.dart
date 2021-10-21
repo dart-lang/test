@@ -175,6 +175,15 @@ String get usage => _parser.usage;
 Configuration parse(List<String> args) => _Parser(args).parse();
 
 PathConfiguration _parsePathConfiguration(String option) {
+  var firstQuestion = option.indexOf('?');
+  if (firstQuestion == -1) {
+    return PathConfiguration(testPath: option);
+  } else if (option.substring(0, firstQuestion).contains('\\')) {
+    throw FormatException(
+        'When passing test path queries, you must pass the path in URI '
+        'format (use `/` for directory separators instead of `\\`).');
+  }
+
   final uri = Uri.parse(option);
 
   final names = uri.queryParametersAll['name'];
@@ -210,8 +219,9 @@ class _Parser {
   /// Returns the parsed configuration.
   Configuration parse() {
     var patterns = (_options['name'] as List<String>)
-        .map<Pattern>(
-            (value) => _wrapFormatException('name', () => RegExp(value)))
+        .map<Pattern>((value) => _wrapFormatException(
+            value, () => RegExp(value),
+            optionName: 'name'))
         .toList()
       ..addAll(_options['plain-name'] as List<String>);
 
@@ -342,7 +352,8 @@ class _Parser {
     var value = _options[name];
     if (value == null) return null;
 
-    return _wrapFormatException(name, () => parse(value as String));
+    return _wrapFormatException(value, () => parse(value as String),
+        optionName: name);
   }
 
   Map<String, String>? _parseFileReporterOption() =>
@@ -362,11 +373,13 @@ class _Parser {
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.
-  T _wrapFormatException<T>(String name, T Function() parse) {
+  T _wrapFormatException<T>(Object? value, T Function() parse,
+      {String? optionName}) {
     try {
       return parse();
     } on FormatException catch (error) {
-      throw FormatException('Couldn\'t parse --$name "${_options[name]}": '
+      throw FormatException(
+          'Couldn\'t parse ${optionName == null ? '' : '--$optionName '}"$value": '
           '${error.message}');
     }
   }

@@ -294,7 +294,7 @@ void main() {
 
     var test = await runTest(['test.dart?name=selected&full-name=selected 1']);
 
-    await test.shouldExit(255);
+    await test.shouldExit(64);
   });
 
   group('with the --name flag,', () {
