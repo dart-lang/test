@@ -17,7 +17,8 @@ final Future<String> packageDir =
     Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/'))
         .then((uri) {
   var dir = p.dirname(uri!.path);
-  if (dir.startsWith('/C:')) dir = dir.substring(1);
+  // If it starts with a `/C:` or other drive letter, remove the leading `/`.
+  if (dir[0] == '/' && dir[2] == ':') dir = dir.substring(1);
   return dir;
 });
 
