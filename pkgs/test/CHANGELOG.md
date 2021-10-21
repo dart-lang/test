@@ -1,3 +1,7 @@
+## 1.19.1
+
+* Fix parsing of file paths into a URI on windows.
+
 ## 1.19.0
 
 * Support query parameters `name`, `full-name`, `line`, and `col` on test paths,

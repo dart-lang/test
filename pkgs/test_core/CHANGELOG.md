@@ -1,3 +1,7 @@
+## 0.4.7
+
+* Fix parsing of file paths into a URI on windows.
+
 ## 0.4.6
 
 * Support query parameters `name`, `full-name`, `line`, and `col` on test paths,

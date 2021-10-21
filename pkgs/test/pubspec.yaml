@@ -1,5 +1,5 @@
 name: test
-version: 1.19.0
+version: 1.19.1
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/blob/master/pkgs/test
@@ -33,7 +33,7 @@ dependencies:
   yaml: ^3.0.0
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.4.6
-  test_core: 0.4.6
+  test_core: 0.4.7
 
 dev_dependencies:
   fake_async: ^1.0.0

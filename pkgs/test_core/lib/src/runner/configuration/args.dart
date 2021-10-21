@@ -175,7 +175,7 @@ String get usage => _parser.usage;
 Configuration parse(List<String> args) => _Parser(args).parse();
 
 PathConfiguration _parsePathConfiguration(String option) {
-  final uri = Uri.parse(option);
+  final uri = Uri.file(option);
 
   final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
