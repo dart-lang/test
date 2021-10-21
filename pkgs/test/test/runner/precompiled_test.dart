@@ -46,8 +46,10 @@ void main() {
       ]).create();
 
       var dart2js = await TestProcess.start(
-          p.join(sdkDir, 'bin', 'dart2js'),
+          Platform.resolvedExecutable,
           [
+            'compile',
+            'js',
             ...Platform.executableArguments,
             '--packages=${await Isolate.packageConfig}',
             'to_precompile.dart',
