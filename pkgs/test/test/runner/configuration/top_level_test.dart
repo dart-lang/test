@@ -98,7 +98,9 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
-  }, tags: 'chrome');
+  }, tags: 'chrome', onPlatform: const {
+    'windows': Skip('https://github.com/dart-lang/test/issues/1613')
+  });
 
   test('runs skipped tests with run_skipped: true', () async {
     await d.file('dart_test.yaml', jsonEncode({'run_skipped': true})).create();

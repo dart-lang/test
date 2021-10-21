@@ -52,3 +52,4 @@ tags:
   # don't have Node installed.
   node:
     timeout: 2x
+    test_on: linux

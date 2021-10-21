@@ -106,9 +106,10 @@ void main() {
 
       var jsPath = p.join(d.sandbox, 'test', 'test.dart.node_test.dart.js');
       var dart2js = await TestProcess.start(
-          p.join(sdkDir, 'bin', 'dart2js'),
+          Platform.resolvedExecutable,
           [
-            ...Platform.executableArguments,
+            'compile',
+            'js',
             '--packages=${await Isolate.packageConfig}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',
