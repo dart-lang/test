@@ -51,7 +51,7 @@ void main() {
             'compile',
             'js',
             ...Platform.executableArguments,
-            '--packages=${await Isolate.packageConfig}',
+            '--packages=${(await Isolate.packageConfig)!.toFilePath()}',
             'to_precompile.dart',
             '--out=precompiled/test.dart.browser_test.dart.js'
           ],
