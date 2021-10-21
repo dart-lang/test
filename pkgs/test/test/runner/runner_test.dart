@@ -740,6 +740,8 @@ void main(List<String> args) async {
           ])));
       await test.shouldExit(0);
     });
+  }, onPlatform: const {
+    'windows': Skip('https://github.com/dart-lang/test/issues/1615')
   });
 
   group('nnbd', () {

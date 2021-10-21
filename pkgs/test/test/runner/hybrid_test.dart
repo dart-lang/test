@@ -90,7 +90,7 @@ void main() {
 
               void hybridMain(StreamChannel channel) {
                 channel.sink
-                  ..add(File("$path").readAsStringSync())
+                  ..add(File(r"$path").readAsStringSync())
                   ..close();
               }
             """).stream.first, completion(contains("hybrid emits numbers")));
