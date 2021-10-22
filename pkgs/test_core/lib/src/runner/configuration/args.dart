@@ -216,7 +216,7 @@ class _Parser {
 
   _Parser(List<String> args) : _options = _parser.parse(args);
 
-  List<String>? _readMulti(String name) => _options['name'] as List<String>?;
+  List<String>? _readMulti(String name) => _options[name] as List<String>?;
 
   /// Returns the parsed configuration.
   Configuration parse() {
