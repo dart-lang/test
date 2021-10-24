@@ -13,9 +13,10 @@ defaults:
     shell: bash
 env:
   PUB_ENVIRONMENT: bot.github
-
-jobs:
-  job_001:
+variables:
+   name:success
+   value:"success"
+job_001:
     name: mono_repo self validate
     runs-on: ubuntu-latest
     steps:
@@ -57,67 +58,67 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_in_pub_upgrade
         name: integration_tests/nnbd_opted_in; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_in; dart format --output=none --set-exit-if-changed ."
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: "dart format --output=none --set-exit-if-changed ."
       - name: "integration_tests/nnbd_opted_in; dart analyze --fatal-infos"
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: dart analyze --fatal-infos
       - id: integration_tests_nnbd_opted_out_pub_upgrade
         name: integration_tests/nnbd_opted_out; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_out; dart format --output=none --set-exit-if-changed ."
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: "dart format --output=none --set-exit-if-changed ."
       - name: "integration_tests/nnbd_opted_out; dart analyze --fatal-infos"
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: dart analyze --fatal-infos
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; dart format --output=none --set-exit-if-changed ."
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "dart format --output=none --set-exit-if-changed ."
       - name: "pkgs/test; dart analyze --fatal-infos"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: dart analyze --fatal-infos
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test_api
         run: dart pub upgrade
       - name: "pkgs/test_api; dart format --output=none --set-exit-if-changed ."
-        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test_api
         run: "dart format --output=none --set-exit-if-changed ."
       - name: "pkgs/test_api; dart analyze --fatal-infos"
-        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test_api
         run: dart analyze --fatal-infos
       - id: pkgs_test_core_pub_upgrade
         name: pkgs/test_core; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test_core
         run: dart pub upgrade
       - name: "pkgs/test_core; dart format --output=none --set-exit-if-changed ."
-        if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test_core
         run: "dart format --output=none --set-exit-if-changed ."
       - name: "pkgs/test_core; dart analyze --fatal-infos"
-        if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test_core
         run: dart analyze --fatal-infos
   job_003:
@@ -141,11 +142,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_in_pub_upgrade
         name: integration_tests/nnbd_opted_in; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_in; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: "dart test -p chrome,vm,node"
     needs:
@@ -172,11 +173,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_out_pub_upgrade
         name: integration_tests/nnbd_opted_out; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: "dart test -p chrome,vm,node"
     needs:
@@ -203,11 +204,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
     needs:
@@ -234,11 +235,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
     needs:
@@ -265,11 +266,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
     needs:
@@ -296,11 +297,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
     needs:
@@ -327,11 +328,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
     needs:
@@ -358,11 +359,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test_api
         run: dart pub upgrade
       - name: "pkgs/test_api; dart test --preset travis -x browser"
-        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test_api
         run: dart test --preset travis -x browser
     needs:
@@ -389,11 +390,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_in_pub_upgrade
         name: integration_tests/nnbd_opted_in; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_in; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: "dart test -p chrome,vm,node"
     needs:
@@ -420,11 +421,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_out_pub_upgrade
         name: integration_tests/nnbd_opted_out; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: "dart test -p chrome,vm,node"
     needs:
@@ -451,11 +452,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
     needs:
@@ -482,11 +483,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
     needs:
@@ -513,11 +514,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
     needs:
@@ -544,11 +545,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
     needs:
@@ -575,11 +576,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test
         run: dart pub upgrade
       - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test
         run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
     needs:
@@ -606,11 +607,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: pkgs/test_api
         run: dart pub upgrade
       - name: "pkgs/test_api; dart test --preset travis -x browser"
-        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == $success"
         working-directory: pkgs/test_api
         run: dart test --preset travis -x browser
     needs:
@@ -627,11 +628,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_in_pub_upgrade
         name: integration_tests/nnbd_opted_in; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_in; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: "dart test -p chrome,vm,node"
     needs:
@@ -648,11 +649,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_out_pub_upgrade
         name: integration_tests/nnbd_opted_out; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: "dart test -p chrome,vm,node"
     needs:
@@ -669,11 +670,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_in_pub_upgrade
         name: integration_tests/nnbd_opted_in; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_in; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_in
         run: "dart test -p chrome,vm,node"
     needs:
@@ -690,11 +691,11 @@ jobs:
         uses: actions/checkout@v2.3.4
       - id: integration_tests_nnbd_opted_out_pub_upgrade
         name: integration_tests/nnbd_opted_out; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
+        if: "always() && steps.checkout.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: dart pub upgrade
       - name: "integration_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == $success"
         working-directory: integration_tests/nnbd_opted_out
         run: "dart test -p chrome,vm,node"
     needs:
