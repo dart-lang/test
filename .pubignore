@@ -1,0 +1,10 @@
+# Don’t commit the following directories created by pub.
+.buildlog
+.dart_tool/
+.pub/
+build/
+packages
+
+# Include when developing application packages.
+pubspec.lock
+.packages

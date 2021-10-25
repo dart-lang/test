@@ -1,4 +1,6 @@
-## 1.19.2-dev
+## 1.19.2
+
+* Republish with missing JS file for browser tests.
 
 ## 1.19.1
 
