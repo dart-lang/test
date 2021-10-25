@@ -1,5 +1,3 @@
-# MOST UPDATES TO THIS FILE SHOULD ALSO BE MADE TO THE `.pubignore` FILE.
-
 # Don’t commit the following directories created by pub.
 .buildlog
 .dart_tool/
