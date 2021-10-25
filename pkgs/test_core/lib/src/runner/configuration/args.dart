@@ -216,24 +216,24 @@ class _Parser {
 
   _Parser(List<String> args) : _options = _parser.parse(args);
 
-  List<String>? _readMulti(String name) => _options[name] as List<String>?;
+  List<String> _readMulti(String name) => _options[name] as List<String>;
 
   /// Returns the parsed configuration.
   Configuration parse() {
     var patterns = [
-      for (var value in _readMulti('name')!)
+      for (var value in _readMulti('name'))
         _wrapFormatException(value, () => RegExp(value), optionName: 'name'),
-      ..._readMulti('plain-name')!,
+      ..._readMulti('plain-name'),
     ];
 
-    var includeTags = {...?_readMulti('tags'), ...?_readMulti('tag')}
+    var includeTags = {..._readMulti('tags'), ..._readMulti('tag')}
         .fold<BooleanSelector>(BooleanSelector.all, (selector, tag) {
       return selector.intersection(BooleanSelector.parse(tag));
     });
 
     var excludeTags = {
-      ...?_readMulti('exclude-tags'),
-      ...?_readMulti('exclude-tag')
+      ..._readMulti('exclude-tags'),
+      ..._readMulti('exclude-tag')
     }.fold<BooleanSelector>(BooleanSelector.none, (selector, tag) {
       return selector.union(BooleanSelector.parse(tag));
     });
