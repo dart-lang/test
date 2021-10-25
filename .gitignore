@@ -10,14 +10,3 @@ packages
 # Include when developing application packages.
 pubspec.lock
 .packages
-
-# The files created by dart2js.
-#
-# This section should not be included in the `.pubignore` file, as we need
-# the `pkgs/test/lib/src/runner/browser/static/host.dart.js` file to be
-# included when we publish.
-*.dart.js
-*.js_
-*.js.deps
-*.js.map
-
