@@ -30,7 +30,9 @@ tags:
     add_tags: [browser]
     timeout: 2x
 
-  firefox: {add_tags: [dart2js]}
+  firefox:
+    add_tags: [dart2js]
+    test_on: linux
   chrome: {add_tags: [dart2js]}
 
   safari:
@@ -40,6 +42,7 @@ tags:
   ie:
     add_tags: [dart2js]
     test_on: windows
+    skip: https://github.com/dart-lang/test/issues/1614
 
   # Tests that run pub. These tests may need to be excluded when there are local
   # dependency_overrides.
@@ -50,3 +53,4 @@ tags:
   # don't have Node installed.
   node:
     timeout: 2x
+    test_on: linux

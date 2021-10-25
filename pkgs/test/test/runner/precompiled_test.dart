@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+@OnPlatform({'windows': Skip('https://github.com/dart-lang/test/issues/1617')})
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -13,7 +15,6 @@ import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
-import 'package:test_core/src/util/io.dart';
 import 'package:test/test.dart';
 import 'package:test/src/util/package_map.dart';
 
@@ -46,10 +47,12 @@ void main() {
       ]).create();
 
       var dart2js = await TestProcess.start(
-          p.join(sdkDir, 'bin', 'dart2js'),
+          Platform.resolvedExecutable,
           [
+            'compile',
+            'js',
             ...Platform.executableArguments,
-            '--packages=${await Isolate.packageConfig}',
+            '--packages=${(await Isolate.packageConfig)!.toFilePath()}',
             'to_precompile.dart',
             '--out=precompiled/test.dart.browser_test.dart.js'
           ],
@@ -104,9 +107,10 @@ void main() {
 
       var jsPath = p.join(d.sandbox, 'test', 'test.dart.node_test.dart.js');
       var dart2js = await TestProcess.start(
-          p.join(sdkDir, 'bin', 'dart2js'),
+          Platform.resolvedExecutable,
           [
-            ...Platform.executableArguments,
+            'compile',
+            'js',
             '--packages=${await Isolate.packageConfig}',
             p.join('test', 'test.dart'),
             '--out=$jsPath',

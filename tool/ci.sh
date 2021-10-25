@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created with package:mono_repo v5.0.2
+# Created with package:mono_repo v5.0.4
 
 # Support built in commands on windows out of the box.
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
@@ -71,27 +71,47 @@ for PKG in ${PKGS}; do
         echo 'dart analyze --fatal-infos'
         dart analyze --fatal-infos || EXIT_CODE=$?
         ;;
-      command_0)
+      command_00)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
-      command_1)
+      command_01)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
-      command_2)
+      command_02)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
-      command_3)
+      command_03)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
-      command_4)
+      command_04)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
-      command_5)
+      command_05)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 0'
+        dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
+        ;;
+      command_06)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 1'
+        dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
+        ;;
+      command_07)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 2'
+        dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
+        ;;
+      command_08)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 3'
+        dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
+        ;;
+      command_09)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 4'
+        dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
+        ;;
+      command_10)
         echo 'dart test --preset travis -x browser'
         dart test --preset travis -x browser || EXIT_CODE=$?
         ;;

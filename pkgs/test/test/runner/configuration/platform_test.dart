@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -205,8 +206,10 @@ void main() {
       var test = await runTest(['.']);
       expect(
           test.stdout,
-          containsInOrder(
-              ['+0: ./test_foo.dart: test_foo', '+1: All tests passed!']));
+          containsInOrder([
+            '+0: .${Platform.pathSeparator}test_foo.dart: test_foo',
+            '+1: All tests passed!'
+          ]));
       await test.shouldExit(0);
     });
 
@@ -241,8 +244,10 @@ void main() {
       var test = await runTest(['.']);
       expect(
           test.stdout,
-          containsInOrder(
-              ['+0: ./foo_test.dart: foo_test', '+1: All tests passed!']));
+          containsInOrder([
+            '+0: .${Platform.pathSeparator}foo_test.dart: foo_test',
+            '+1: All tests passed!'
+          ]));
       await test.shouldExit(0);
     });
 
