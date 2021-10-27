@@ -216,6 +216,8 @@ class BrowserPlatform extends PlatformPlugin
       throw ArgumentError('$browser is not a browser.');
     }
 
+    final workers = <Uri>[];
+
     var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
     if (File(htmlPathFromTestPath).existsSync()) {
       if (_config.customHtmlTemplatePath != null &&
@@ -227,6 +229,7 @@ class BrowserPlatform extends PlatformPlugin
             'like the test file.');
       }
       _checkHtmlCorrectness(htmlPathFromTestPath, path);
+      workers.addAll(_getWorkers(htmlPathFromTestPath, path));
     } else if (_config.customHtmlTemplatePath != null) {
       var htmlTemplatePath = _config.customHtmlTemplatePath!;
       if (!File(htmlTemplatePath).existsSync()) {
@@ -240,6 +243,7 @@ class BrowserPlatform extends PlatformPlugin
             '"$htmlTemplatePath" must contain exactly one {{testScript}} placeholder');
       }
       _checkHtmlCorrectness(htmlTemplatePath, path);
+      workers.addAll(_getWorkers(htmlTemplatePath, path));
     }
 
     Uri suiteUrl;
@@ -256,7 +260,7 @@ class BrowserPlatform extends PlatformPlugin
       suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (suiteConfig.precompiledPath == null) {
-        await _compileSuite(path, suiteConfig);
+        await _compileSuite(path, workers, suiteConfig);
       } else {
         await _addPrecompiledStackTraceMapper(path, suiteConfig);
       }
@@ -276,6 +280,28 @@ class BrowserPlatform extends PlatformPlugin
         mapper: _mappers[path]);
     if (_closed) return null;
     return suite;
+  }
+
+  /// Loads worker URLs referenced by `<link rel="x-dart-worker" href="path/to/worker_code.dart">` elements.
+  /// 
+  /// If `path/to/worker_code.dart` does not exists (relative to HTML file), an exception is thrown.
+  Iterable<Uri> _getWorkers(String htmlPath, String path) sync* {
+    final dir = p.dirname(htmlPath);
+    final html = File(htmlPath).readAsStringSync();
+    final worker = RegExp('<link\\s+rel=(?:"x-dart-worker"|\'x-dart-worker\')\\s+href=(?:"([^"]+)"|\'([^\']+)\')\\s*>|<link\\s+href=(?:"([^"]+)"|\'([^\']+)\')\\s+ref=(?:"x-dart-worker"|\'x-dart-worker\')\\s*>');
+    for (var m in worker.allMatches(html)) {
+      final workerUrl = m.group(1) ?? '';
+      if (workerUrl.isNotEmpty) {
+        final workerUri = Uri.parse(workerUrl);
+        final workerPath = p.join(dir, workerUri.toFilePath());
+        if (!File(workerPath).existsSync()) {
+          throw LoadException(path,
+              '"$htmlPath" references Dart worker "$workerUrl" but "$workerPath" does not exist.');
+        }
+        print(workerUrl + ' --> FOUND');
+        yield workerUri;
+      }
+    }
   }
 
   void _checkHtmlCorrectness(String htmlPath, String path) {
@@ -345,44 +371,29 @@ class BrowserPlatform extends PlatformPlugin
     });
   }
 
-  /// Compile the test suite at [dartPath] to JavaScript.
+  /// Compile the code to JavaScript.
   ///
-  /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
+  /// Once the code has been compiled, it's added to [_jsHandler] so it can be
   /// served.
-  Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
-    return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = Directory(_compiledDir!).createTempSync('test_').path;
-      var jsPath = p.join(dir, p.basename(dartPath) + '.browser_test.dart.js');
-      var bootstrapContent = '''
-        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import "package:test/src/bootstrap/browser.dart";
-
-        import "${p.toUri(p.absolute(dartPath))}" as test;
-
-        void main() {
-          internalBootstrapBrowserTest(() => test.main);
-        }
-      ''';
-
-      await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
+  Future<void> _compile(String code, String dir, String dartPath, String postFix, SuiteConfiguration suiteConfig) async {
+    var jsPath = p.join(dir, p.basename(dartPath) + postFix + '.js');
+    await _compilers.compile(code, jsPath, suiteConfig);
       if (_closed) return;
 
-      var bootstrapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
-          '.browser_test.dart';
-      _jsHandler.add(bootstrapUrl, (request) {
-        return shelf.Response.ok(bootstrapContent,
+    var baseDartUrl = p.toUri(p.relative(dartPath, from: _root)).path;
+    var dartUrl = baseDartUrl + postFix;
+    _jsHandler.add(dartUrl, (request) {
+      return shelf.Response.ok(code,
             headers: {'Content-Type': 'application/dart'});
       });
 
-      var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
-          '.browser_test.dart.js';
+    var jsUrl = dartUrl + '.js';
       _jsHandler.add(jsUrl, (request) {
         return shelf.Response.ok(File(jsPath).readAsStringSync(),
             headers: {'Content-Type': 'application/javascript'});
       });
 
-      var mapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
-          '.browser_test.dart.js.map';
+    var mapUrl = jsUrl + '.map';
       _jsHandler.add(mapUrl, (request) {
         return shelf.Response.ok(File(jsPath + '.map').readAsStringSync(),
             headers: {'Content-Type': 'application/json'});
@@ -394,6 +405,43 @@ class BrowserPlatform extends PlatformPlugin
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
           packageMap: (await currentPackageConfig).toPackageMap());
+  }
+
+  /// Compile the test suite at [dartPath] to JavaScript.
+  ///
+  /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
+  /// served.
+  Future<void> _compileSuite(String dartPath, List<Uri> workers, SuiteConfiguration suiteConfig) {
+    return _compileFutures.putIfAbsent(dartPath, () async {
+      final dir = Directory(_compiledDir!).createTempSync('test_').path;
+      final languageVersionComment = suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment;
+      final bootstrapCode = '''
+        $languageVersionComment
+        import "package:test/src/bootstrap/browser.dart";
+
+        import "${p.toUri(p.absolute(dartPath))}" as test;
+
+        void main() {
+          internalBootstrapBrowserTest(() => test.main);
+        }
+      ''';
+
+      await _compile(bootstrapCode, dir, dartPath, '.browser_test.dart', suiteConfig);
+
+      if (workers.isNotEmpty) {
+        final dartDir = p.dirname(dartPath);
+
+        for (var worker in workers) {
+          final workerPath = p.join(dartDir, worker.toFilePath());
+          final workerDir = p.join(dir, p.dirname(workerPath));
+          Directory(p.dirname(workerDir)).createSync(recursive: true);
+          final workerCode = '''
+            $languageVersionComment
+            export "${p.toUri(p.absolute(workerPath))}";
+          ''';
+          await _compile(workerCode, workerDir, workerPath, '', suiteConfig);
+        }
+      }
     });
   }
 

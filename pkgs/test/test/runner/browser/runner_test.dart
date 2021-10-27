@@ -210,6 +210,29 @@ void main() {
       await test.shouldExit(1);
     }, tags: 'chrome');
 
+    test('a custom HTML file has an invalid worker URL', () async {
+      await d.file('test.dart', _success).create();
+
+      await d.file('test.html', '''
+<html>
+<head>
+  <link rel="x-dart-test" href="test.dart">
+  <link rel="x-dart-worker" href="wrong.dart">
+  <script src="packages/test/dart.js"></script>
+</head>
+</html>
+''').create();
+
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": "test.html" references Dart worker "wrong.dart" but ".\\wrong.dart" does not exist.'
+          ]));
+      await test.shouldExit(1);
+    }, tags: 'chrome');
+
     test(
         'still errors even with a custom HTML template set since it will take precedence',
         () async {
@@ -466,6 +489,55 @@ void main() {
           expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
           await test.shouldExit(0);
         }, tags: 'chrome');
+
+        test('takes Dart worker link into account - same directory', () async {
+          await d.file('worker.dart', '''
+  void main() {
+  }
+  ''').create();
+
+          await d.file('html_template.html.tpl', '''
+  <html>
+  <head>
+    {{testScript}}
+    <link rel="x-dart-worker" href="test-worker/worker.dart">
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    <div id="foo"></div>
+  </body>
+  </html>
+  ''').create();
+
+          var test = await runTest(['-p', 'chrome', 'test.dart']);
+          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+
+        test('takes Dart worker link into account - sub-directory', () async {
+          await d.dir('test-worker', [d.file('worker.dart', '''
+  void main() {
+  }
+  ''')]).create();
+
+          await d.file('html_template.html.tpl', '''
+  <html>
+  <head>
+    {{testScript}}
+    <link rel="x-dart-worker" href="test-worker/worker.dart">
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body>
+    <div id="foo"></div>
+  </body>
+  </html>
+  ''').create();
+
+          var test = await runTest(['-p', 'chrome', 'test.dart']);
+          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+
       });
 
       group('with a {{testName}} tag', () {
@@ -555,6 +627,54 @@ void main() {
   <link rel='x-dart-test-not'>
   <link rel='other' href='test.dart'>
   <link rel='x-dart-test' href='test.dart'>
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test.dart']);
+        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+        await test.shouldExit(0);
+      }, tags: 'chrome');
+
+      test('takes Dart worker link into account - same directory', () async {
+        await d.file('worker.dart', '''
+void main() {
+}
+''').create();
+
+        await d.file('test.html', '''
+<html>
+<head>
+  <link rel="x-dart-worker" href="worker.dart">
+  <link rel="x-dart-test" href="test.dart">
+  <script src="packages/test/dart.js"></script>
+</head>
+<body>
+  <div id="foo"></div>
+</body>
+</html>
+''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test.dart']);
+        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+        await test.shouldExit(0);
+      }, tags: 'chrome');
+
+      test('takes Dart worker link into account - sub-directory', () async {
+        await d.dir('test-worker', [d.file('worker.dart', '''
+void main() {
+}
+''')]).create();
+
+        await d.file('test.html', '''
+<html>
+<head>
+  <link rel="x-dart-worker" href="test-worker/worker.dart">
+  <link rel="x-dart-test" href="test.dart">
   <script src="packages/test/dart.js"></script>
 </head>
 <body>
