@@ -210,7 +210,7 @@ void main() {
       await test.shouldExit(1);
     }, tags: 'chrome');
 
-    test('a custom HTML file has an invalid worker URL', () async {
+    test('a custom HTML file has an invalid Dart Worker URL', () async {
       await d.file('test.dart', _success).create();
 
       await d.file('test.html', '''
@@ -228,12 +228,12 @@ void main() {
           test.stdout,
           containsInOrder([
             '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": "test.html" references Dart worker "wrong.dart" but ".\\wrong.dart" does not exist.'
+            'Failed to load "test.dart": "test.html" references Dart Worker "wrong.dart" but ".\\wrong.dart" does not exist.'
           ]));
       await test.shouldExit(1);
     }, tags: 'chrome');
 
-    test('a custom HTML file has a worker URL with invalid code', () async {
+    test('a custom HTML file has a Dart Worker URL with invalid code', () async {
       await d.file('test.dart', _success).create();
 
       await d.file('not-a-worker.dart', '''
@@ -772,6 +772,149 @@ void main() {
           await test.shouldExit(0);
         }, tags: 'chrome');
       });
+    });
+    
+    group('with a live Dart Worker', () {
+      test('running from the same directory', () async {
+        await d.file('echo_worker.dart', r'''
+          import 'dart:html';
+
+          void main() {
+            final scope = DedicatedWorkerGlobalScope.instance;
+            scope.onError.listen((error) {
+              scope.postMessage('Error in Web Worker main program: $error (onError)');
+            });
+            scope.onMessage.listen((MessageEvent e) {
+              try {
+                scope.postMessage('ECHO "${e.data}"');
+              } catch (error) {
+                scope.postMessage('Error in Web Worker main program: $error (onMessage)');
+              }
+            });
+          }
+        ''').create();
+
+        await d.file('test-worker.dart', '''
+          import 'dart:async';
+          import 'dart:html';
+
+          import 'package:test/test.dart';
+
+          void main() {
+            test("success", () {
+              expect(document.querySelector('#foo'), isNotNull);
+            });
+            test("worker", () async {
+              final worker = Worker('echo_worker.dart.js');
+
+              final completer = Completer<String>();
+
+              worker.onError.listen((error) {
+                completer.complete('Error in Web Worker listener: ' + error.toString());
+              });
+              worker.onMessage.listen((event) {
+                completer.complete(event.data);
+              });
+
+              worker.postMessage('Hello from same directory');
+
+              final result = await completer.future;
+              expect(result, 'ECHO "Hello from same directory"');
+
+              worker.terminate();
+            });
+          }
+        ''').create();
+
+        await d.file('test-worker.html', '''
+          <html>
+          <head>
+            <link rel="x-dart-test" href="test-worker.dart">
+            <link rel="x-dart-worker" href="echo_worker.dart">
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test-worker.dart']);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+        await test.shouldExit(0);
+      }, tags: 'chrome');
+
+      test('running from a subdirectory', () async {
+        final workerDir = 'worker-dir';
+        await d.dir(workerDir, [
+          d.file('echo_worker.dart', r'''
+            import 'dart:html';
+
+            void main() {
+              final scope = DedicatedWorkerGlobalScope.instance;
+              scope.onError.listen((error) {
+                scope.postMessage('Error in Web Worker main program: $error (onError)');
+              });
+              scope.onMessage.listen((MessageEvent e) {
+                try {
+                  scope.postMessage('ECHO "${e.data}"');
+                } catch (error) {
+                  scope.postMessage('Error in Web Worker main program: $error (onMessage)');
+                }
+              });
+            }
+          ''')
+        ]).create();
+
+        await d.file('test-worker.dart', '''
+          import 'dart:async';
+          import 'dart:html';
+
+          import 'package:test/test.dart';
+
+          void main() {
+            test("success", () {
+              expect(document.querySelector('#foo'), isNotNull);
+            });
+            test("worker", () async {
+              final worker = Worker('$workerDir/echo_worker.dart.js');
+
+              final completer = Completer<String>();
+
+              worker.onError.listen((error) {
+                completer.complete('Error in Web Worker listener: ' + error.toString());
+              });
+              worker.onMessage.listen((event) {
+                completer.complete(event.data);
+              });
+
+              worker.postMessage('Hello from $workerDir');
+
+              final result = await completer.future;
+              expect(result, 'ECHO "Hello from $workerDir"');
+
+              worker.terminate();
+            });
+          }
+        ''').create();
+
+        await d.file('test-worker.html', '''
+          <html>
+          <head>
+            <link rel="x-dart-test" href="test-worker.dart">
+            <link rel="x-dart-worker" href="$workerDir/echo_worker.dart">
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test-worker.dart']);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+        await test.shouldExit(0);
+      }, tags: 'chrome');
     });
   });
 

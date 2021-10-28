@@ -285,6 +285,8 @@ class BrowserPlatform extends PlatformPlugin
   /// Loads worker URLs referenced by `<link rel="x-dart-worker" href="path/to/worker_code.dart">` elements.
   ///
   /// If `path/to/worker_code.dart` does not exists (relative to HTML file), an exception is thrown.
+  /// TODO: use a proper DOM parser to find only valid <link rel="x-dart-worker"> instead of a RegExp.
+  /// Currently, eg. if the <link> is commented out, it will still be picked up by the RegExp.
   Iterable<Uri> _getWorkers(String htmlPath, String path) sync* {
     final dir = p.dirname(htmlPath);
     final html = File(htmlPath).readAsStringSync();
@@ -297,7 +299,7 @@ class BrowserPlatform extends PlatformPlugin
         final workerPath = p.join(dir, workerUri.toFilePath());
         if (!File(workerPath).existsSync()) {
           throw LoadException(path,
-              '"$htmlPath" references Dart worker "$workerUrl" but "$workerPath" does not exist.');
+              '"$htmlPath" references Dart Worker "$workerUrl" but "$workerPath" does not exist.');
         }
         yield workerUri;
       }
