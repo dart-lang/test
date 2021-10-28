@@ -233,7 +233,8 @@ void main() {
       await test.shouldExit(1);
     }, tags: 'chrome');
 
-    test('a custom HTML file has a Dart Worker URL with invalid code', () async {
+    test('a custom HTML file has a Dart Worker URL with invalid code',
+        () async {
       await d.file('test.dart', _success).create();
 
       await d.file('not-a-worker.dart', '''
@@ -773,7 +774,7 @@ void main() {
         }, tags: 'chrome');
       });
     });
-    
+
     group('with a live Dart Worker', () {
       test('running from the same directory', () async {
         await d.file('echo_worker.dart', r'''
