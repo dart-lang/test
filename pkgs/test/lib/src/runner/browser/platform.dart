@@ -283,12 +283,13 @@ class BrowserPlatform extends PlatformPlugin
   }
 
   /// Loads worker URLs referenced by `<link rel="x-dart-worker" href="path/to/worker_code.dart">` elements.
-  /// 
+  ///
   /// If `path/to/worker_code.dart` does not exists (relative to HTML file), an exception is thrown.
   Iterable<Uri> _getWorkers(String htmlPath, String path) sync* {
     final dir = p.dirname(htmlPath);
     final html = File(htmlPath).readAsStringSync();
-    final worker = RegExp('<link\\s+rel=(?:"x-dart-worker"|\'x-dart-worker\')\\s+href=(?:"([^"]+)"|\'([^\']+)\')\\s*>|<link\\s+href=(?:"([^"]+)"|\'([^\']+)\')\\s+ref=(?:"x-dart-worker"|\'x-dart-worker\')\\s*>');
+    final worker = RegExp(
+        '<link\\s+rel=(?:"x-dart-worker"|\'x-dart-worker\')\\s+href=(?:"([^"]+)"|\'([^\']+)\')\\s*>|<link\\s+href=(?:"([^"]+)"|\'([^\']+)\')\\s+ref=(?:"x-dart-worker"|\'x-dart-worker\')\\s*>');
     for (var m in worker.allMatches(html)) {
       final workerUrl = m.group(1) ?? '';
       if (workerUrl.isNotEmpty) {
@@ -298,7 +299,6 @@ class BrowserPlatform extends PlatformPlugin
           throw LoadException(path,
               '"$htmlPath" references Dart worker "$workerUrl" but "$workerPath" does not exist.');
         }
-        print(workerUrl + ' --> FOUND');
         yield workerUri;
       }
     }
@@ -375,46 +375,50 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// Once the code has been compiled, it's added to [_jsHandler] so it can be
   /// served.
-  Future<void> _compile(String code, String dir, String dartPath, String postFix, SuiteConfiguration suiteConfig) async {
+  Future<void> _compile(String code, String dir, String dartPath,
+      String postFix, SuiteConfiguration suiteConfig) async {
     var jsPath = p.join(dir, p.basename(dartPath) + postFix + '.js');
     await _compilers.compile(code, jsPath, suiteConfig);
-      if (_closed) return;
+    if (_closed) return;
 
     var baseDartUrl = p.toUri(p.relative(dartPath, from: _root)).path;
     var dartUrl = baseDartUrl + postFix;
     _jsHandler.add(dartUrl, (request) {
       return shelf.Response.ok(code,
-            headers: {'Content-Type': 'application/dart'});
-      });
+          headers: {'Content-Type': 'application/dart'});
+    });
 
     var jsUrl = dartUrl + '.js';
-      _jsHandler.add(jsUrl, (request) {
-        return shelf.Response.ok(File(jsPath).readAsStringSync(),
-            headers: {'Content-Type': 'application/javascript'});
-      });
+    _jsHandler.add(jsUrl, (request) {
+      return shelf.Response.ok(File(jsPath).readAsStringSync(),
+          headers: {'Content-Type': 'application/javascript'});
+    });
 
     var mapUrl = jsUrl + '.map';
-      _jsHandler.add(mapUrl, (request) {
-        return shelf.Response.ok(File(jsPath + '.map').readAsStringSync(),
-            headers: {'Content-Type': 'application/json'});
-      });
+    _jsHandler.add(mapUrl, (request) {
+      return shelf.Response.ok(File(jsPath + '.map').readAsStringSync(),
+          headers: {'Content-Type': 'application/json'});
+    });
 
-      if (suiteConfig.jsTrace) return;
-      var mapPath = jsPath + '.map';
-      _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
+    if (suiteConfig.jsTrace) return;
+    var mapPath = jsPath + '.map';
+    _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
+        mapUrl: p.toUri(mapPath),
+        sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+        packageMap: (await currentPackageConfig).toPackageMap());
   }
 
   /// Compile the test suite at [dartPath] to JavaScript.
   ///
   /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
   /// served.
-  Future<void> _compileSuite(String dartPath, List<Uri> workers, SuiteConfiguration suiteConfig) {
+  Future<void> _compileSuite(
+      String dartPath, List<Uri> workers, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       final dir = Directory(_compiledDir!).createTempSync('test_').path;
-      final languageVersionComment = suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment;
+      final languageVersionComment =
+          suiteConfig.metadata.languageVersionComment ??
+              await rootPackageLanguageVersionComment;
       final bootstrapCode = '''
         $languageVersionComment
         import "package:test/src/bootstrap/browser.dart";
@@ -426,7 +430,8 @@ class BrowserPlatform extends PlatformPlugin
         }
       ''';
 
-      await _compile(bootstrapCode, dir, dartPath, '.browser_test.dart', suiteConfig);
+      await _compile(
+          bootstrapCode, dir, dartPath, '.browser_test.dart', suiteConfig);
 
       if (workers.isNotEmpty) {
         final dartDir = p.dirname(dartPath);
