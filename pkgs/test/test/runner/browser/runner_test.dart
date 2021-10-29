@@ -101,12 +101,12 @@ void main() {
       await d.file('test.dart', 'void main() {}').create();
 
       await d.file('test.html', '''
-<html>
-<head>
-  <link rel="x-dart-test" href="test.dart">
-</head>
-</html>
-''').create();
+        <html>
+        <head>
+          <link rel="x-dart-test" href="test.dart">
+        </head>
+        </html>
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -123,12 +123,12 @@ void main() {
       await d.file('test.dart', 'void main() {}').create();
 
       await d.file('test.html', '''
-<html>
-<head>
-  <script src="packages/test/dart.js"></script>
-</head>
-</html>
-''').create();
+        <html>
+        <head>
+          <script src="packages/test/dart.js"></script>
+        </head>
+        </html>
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -145,14 +145,14 @@ void main() {
       await d.file('test.dart', 'void main() {}').create();
 
       await d.file('test.html', '''
-<html>
-<head>
-  <link rel='x-dart-test' href='test.dart'>
-  <link rel='x-dart-test' href='test.dart'>
-  <script src="packages/test/dart.js"></script>
-</head>
-</html>
-''').create();
+        <html>
+        <head>
+          <link rel='x-dart-test' href='test.dart'>
+          <link rel='x-dart-test' href='test.dart'>
+          <script src="packages/test/dart.js"></script>
+        </head>
+        </html>
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -169,13 +169,13 @@ void main() {
       await d.file('test.dart', 'void main() {}').create();
 
       await d.file('test.html', '''
-<html>
-<head>
-  <link rel='x-dart-test'>
-  <script src="packages/test/dart.js"></script>
-</head>
-</html>
-''').create();
+        <html>
+        <head>
+          <link rel='x-dart-test'>
+          <script src="packages/test/dart.js"></script>
+        </head>
+        </html>
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -192,13 +192,13 @@ void main() {
       await d.file('test.dart', 'void main() {}').create();
 
       await d.file('test.html', '''
-<html>
-<head>
-  <link rel='x-dart-test' href='wrong.dart'>
-  <script src="packages/test/dart.js"></script>
-</head>
-</html>
-''').create();
+        <html>
+        <head>
+          <link rel='x-dart-test' href='wrong.dart'>
+          <script src="packages/test/dart.js"></script>
+        </head>
+        </html>
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -210,18 +210,70 @@ void main() {
       await test.shouldExit(1);
     }, tags: 'chrome');
 
+    test('a custom HTML file has an invalid Dart Worker URL', () async {
+      await d.file('test.dart', _success).create();
+
+      await d.file('test.html', '''
+        <html>
+        <head>
+          <link rel="x-dart-test" href="test.dart">
+          <link rel="x-dart-worker" href="wrong.dart">
+          <script src="packages/test/dart.js"></script>
+        </head>
+        </html>
+      ''').create();
+
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": "test.html" references Dart Worker "wrong.dart" but ".\\wrong.dart" does not exist.'
+          ]));
+      await test.shouldExit(1);
+    }, tags: 'chrome');
+
+    test('a custom HTML file has a Dart Worker URL with invalid code',
+        () async {
+      await d.file('test.dart', _success).create();
+
+      await d.file('not-a-worker.dart', '''
+        class NotAWorker {
+        }
+      ''').create();
+
+      await d.file('test.html', '''
+        <html>
+        <head>
+          <link rel="x-dart-test" href="test.dart">
+          <link rel="x-dart-worker" href="not-a-worker.dart">
+          <script src="packages/test/dart.js"></script>
+        </head>
+        </html>
+      ''').create();
+
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
+      expect(
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": dart2js failed.'
+          ]));
+      await test.shouldExit(1);
+    }, tags: 'chrome');
+
     test(
         'still errors even with a custom HTML template set since it will take precedence',
         () async {
       await d.file('test.dart', 'void main() {}').create();
 
       await d.file('test.html', '''
-<html>
-<head>
-  <link rel="x-dart-test" href="test.dart">
-</head>
-</html>
-''').create();
+        <html>
+        <head>
+          <link rel="x-dart-test" href="test.dart">
+        </head>
+        </html>
+      ''').create();
 
       await d
           .file(
@@ -231,16 +283,16 @@ void main() {
           .create();
 
       await d.file('html_template.html.tpl', '''
-<html>
-<head>
-  {{testScript}}
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+        <html>
+        <head>
+          {{testScript}}
+          <script src="packages/test/dart.js"></script>
+        </head>
+        <body>
+          <div id="foo"></div>
+        </body>
+        </html>
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart'],
           environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
@@ -279,15 +331,15 @@ void main() {
 
       test("that doesn't contain the {{testScript}} tag", () async {
         await d.file('html_template.html.tpl', '''
-<html>
-<head>
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+          <html>
+          <head>
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
 
         var test = await runTest(['-p', 'chrome', 'test.dart'],
             environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
@@ -302,17 +354,17 @@ void main() {
 
       test('that contains more than one {{testScript}} tag', () async {
         await d.file('html_template.html.tpl', '''
-<html>
-<head>
-  {{testScript}}
-  {{testScript}}
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+          <html>
+          <head>
+            {{testScript}}
+            {{testScript}}
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
 
         var test = await runTest(['-p', 'chrome', 'test.dart'],
             environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
@@ -327,12 +379,12 @@ void main() {
 
       test('that has no script tag', () async {
         await d.file('html_template.html.tpl', '''
-<html>
-<head>
-  {{testScript}}
-</head>
-</html>
-''').create();
+          <html>
+          <head>
+            {{testScript}}
+          </head>
+          </html>
+        ''').create();
 
         var test = await runTest(['-p', 'chrome', 'test.dart'],
             environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
@@ -348,13 +400,13 @@ void main() {
 
       test('that is named like the test file', () async {
         await d.file('test.html', '''
-<html>
-<head>
-  {{testScript}}
-  <script src="packages/test/dart.js"></script>
-</head>
-</html>
-''').create();
+          <html>
+          <head>
+            {{testScript}}
+            <script src="packages/test/dart.js"></script>
+          </head>
+          </html>
+        ''').create();
 
         await d
             .file('global_test_2.yaml',
@@ -385,14 +437,14 @@ void main() {
 
     test('with setUpAll', () async {
       await d.file('test.dart', r'''
-          import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-          void main() {
-            setUpAll(() => print("in setUpAll"));
+        void main() {
+          setUpAll(() => print("in setUpAll"));
 
-            test("test", () {});
-          }
-          ''').create();
+          test("test", () {});
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+0: (setUpAll)')));
@@ -402,14 +454,14 @@ void main() {
 
     test('with tearDownAll', () async {
       await d.file('test.dart', r'''
-          import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-          void main() {
-            tearDownAll(() => print("in tearDownAll"));
+        void main() {
+          tearDownAll(() => print("in tearDownAll"));
 
-            test("test", () {});
-          }
-          ''').create();
+          test("test", () {});
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: (tearDownAll)')));
@@ -427,47 +479,6 @@ void main() {
     }, tags: 'chrome');
 
     group('with a custom HTML template file', () {
-      group('without a {{testName}} tag', () {
-        setUp(() async {
-          await d
-              .file(
-                  'global_test.yaml',
-                  jsonEncode(
-                      {'custom_html_template_path': 'html_template.html.tpl'}))
-              .create();
-          await d.file('html_template.html.tpl', '''
-  <html>
-  <head>
-    {{testScript}}
-    <script src="packages/test/dart.js"></script>
-  </head>
-  <body>
-    <div id="foo"></div>
-  </body>
-  </html>
-  ''').create();
-
-          await d.file('test.dart', '''
-  import 'dart:html';
-
-  import 'package:test/test.dart';
-
-  void main() {
-    test("success", () {
-      expect(document.querySelector('#foo'), isNotNull);
-    });
-  }
-  ''').create();
-        });
-
-        test('on Chrome', () async {
-          var test = await runTest(['-p', 'chrome', 'test.dart'],
-              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
-          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-          await test.shouldExit(0);
-        }, tags: 'chrome');
-      });
-
       group('with a {{testName}} tag', () {
         setUp(() async {
           await d
@@ -477,32 +488,32 @@ void main() {
                       {'custom_html_template_path': 'html_template.html.tpl'}))
               .create();
           await d.file('html_template.html.tpl', '''
-  <html>
-  <head>
-    <title>{{testName}}</title>
-    {{testScript}}
-    <script src="packages/test/dart.js"></script>
-  </head>
-  <body>
-    <div id="foo"></div>
-  </body>
-  </html>
-  ''').create();
+            <html>
+            <head>
+              <title>{{testName}}</title>
+              {{testScript}}
+              <script src="packages/test/dart.js"></script>
+            </head>
+            <body>
+              <div id="foo"></div>
+            </body>
+            </html>
+          ''').create();
 
           await d.file('test-with-title.dart', '''
-  import 'dart:html';
+            import 'dart:html';
 
-  import 'package:test/test.dart';
+            import 'package:test/test.dart';
 
-  void main() {
-    test("success", () {
-      expect(document.querySelector('#foo'), isNotNull);
-    });
-    test("title", () {
-      expect(document.title, 'test-with-title.dart');
-    });
-  }
-  ''').create();
+            void main() {
+              test("success", () {
+                expect(document.querySelector('#foo'), isNotNull);
+              });
+              test("title", () {
+                expect(document.title, 'test-with-title.dart');
+              });
+            }
+          ''').create();
         });
 
         test('on Chrome', () async {
@@ -511,85 +522,398 @@ void main() {
           expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
           await test.shouldExit(0);
         }, tags: 'chrome');
+
+        group('with a Dart Worker', () {
+          test('living in the same directory', () async {
+            await d.file('worker.dart', '''
+              void main() {
+              }
+            ''').create();
+
+            await d.file('html_template.html.tpl', '''
+              <html>
+              <head>
+                <title>{{testName}}</title>
+                {{testScript}}
+                <link rel="x-dart-worker" href="worker.dart">
+                <script src="packages/test/dart.js"></script>
+              </head>
+              <body>
+                <div id="foo"></div>
+              </body>
+              </html>
+            ''').create();
+
+            var test = await runTest(['-p', 'chrome', 'test-with-title.dart'],
+                environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+            expect(
+                test.stdout, emitsThrough(contains('+2: All tests passed!')));
+            await test.shouldExit(0);
+          }, tags: 'chrome');
+
+          test('living in a subdirectory', () async {
+            await d.dir('test-worker', [
+              d.file('worker.dart', '''
+                void main() {
+                }
+              ''')
+            ]).create();
+
+            await d.file('html_template.html.tpl', '''
+              <html>
+              <head>
+                <title>{{testName}}</title>
+                {{testScript}}
+                <link rel="x-dart-worker" href="test-worker/worker.dart">
+                <script src="packages/test/dart.js"></script>
+              </head>
+              <body>
+                <div id="foo"></div>
+              </body>
+              </html>
+            ''').create();
+
+            var test = await runTest(['-p', 'chrome', 'test-with-title.dart'],
+                environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+            expect(
+                test.stdout, emitsThrough(contains('+2: All tests passed!')));
+            await test.shouldExit(0);
+          }, tags: 'chrome');
+        });
+      });
+
+      group('without a {{testName}} tag', () {
+        setUp(() async {
+          await d
+              .file(
+                  'global_test.yaml',
+                  jsonEncode(
+                      {'custom_html_template_path': 'html_template.html.tpl'}))
+              .create();
+
+          await d.file('html_template.html.tpl', '''
+            <html>
+            <head>
+              {{testScript}}
+              <script src="packages/test/dart.js"></script>
+            </head>
+            <body>
+              <div id="foo"></div>
+            </body>
+            </html>
+          ''').create();
+
+          await d.file('test-without-title.dart', '''
+            import 'dart:html';
+
+            import 'package:test/test.dart';
+
+            void main() {
+              test("success", () {
+                expect(document.querySelector('#foo'), isNotNull);
+              });
+            }
+          ''').create();
+        });
+
+        test('on Chrome', () async {
+          var test = await runTest(['-p', 'chrome', 'test-without-title.dart'],
+              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+
+        group('with a Dart Worker', () {
+          test('living in the same directory', () async {
+            await d.file('worker.dart', '''
+              void main() {
+              }
+            ''').create();
+
+            await d.file('html_template.html.tpl', '''
+              <html>
+              <head>
+                {{testScript}}
+                <link rel="x-dart-worker" href="worker.dart">
+                <script src="packages/test/dart.js"></script>
+              </head>
+              <body>
+                <div id="foo"></div>
+              </body>
+              </html>
+            ''').create();
+
+            var test = await runTest(
+                ['-p', 'chrome', 'test-without-title.dart'],
+                environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+            expect(
+                test.stdout, emitsThrough(contains('+1: All tests passed!')));
+            await test.shouldExit(0);
+          }, tags: 'chrome');
+
+          test('living in a subdirectory', () async {
+            await d.dir('test-worker', [
+              d.file('worker.dart', '''
+                void main() {
+                }
+              ''')
+            ]).create();
+
+            await d.file('html_template.html.tpl', '''
+              <html>
+              <head>
+                {{testScript}}
+                <link rel="x-dart-worker" href="test-worker/worker.dart">
+                <script src="packages/test/dart.js"></script>
+              </head>
+              <body>
+                <div id="foo"></div>
+              </body>
+              </html>
+            ''').create();
+
+            var test = await runTest(
+                ['-p', 'chrome', 'test-without-title.dart'],
+                environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+            expect(
+                test.stdout, emitsThrough(contains('+1: All tests passed!')));
+            await test.shouldExit(0);
+          }, tags: 'chrome');
+        });
       });
     });
 
     group('with a custom HTML file', () {
       setUp(() async {
-        await d.file('test.dart', '''
-import 'dart:html';
+        await d.file('test-custom.html', '''
+          <html>
+          <head>
+            <title>This is a custom file</title>
+            <link rel="x-dart-test" href="test-custom.dart">
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
 
-import 'package:test/test.dart';
+        await d.file('test-custom.dart', '''
+          import 'dart:html';
 
-void main() {
-  test("success", () {
-    expect(document.querySelector('#foo'), isNotNull);
-  });
-}
-''').create();
+          import 'package:test/test.dart';
 
-        await d.file('test.html', '''
-<html>
-<head>
-  <link rel='x-dart-test' href='test.dart'>
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+          void main() {
+            test("success", () {
+              expect(document.querySelector('#foo'), isNotNull);
+            });
+            test("title", () {
+              expect(document.title, 'This is a custom file');
+            });
+          }
+        ''').create();
       });
 
       test('on Chrome', () async {
-        var test = await runTest(['-p', 'chrome', 'test.dart']);
-        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+        var test = await runTest(['-p', 'chrome', 'test-custom.dart']);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
         await test.shouldExit(0);
       }, tags: 'chrome');
 
-      // Regression test for https://github.com/dart-lang/test/issues/82.
-      test('ignores irrelevant link tags', () async {
-        await d.file('test.html', '''
-<html>
-<head>
-  <link rel='x-dart-test-not'>
-  <link rel='other' href='test.dart'>
-  <link rel='x-dart-test' href='test.dart'>
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+      group('with a Dart Worker', () {
+        test('living in the same directory', () async {
+          await d.file('worker.dart', '''
+            void main() {
+            }
+          ''').create();
 
-        var test = await runTest(['-p', 'chrome', 'test.dart']);
-        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await d.file('test-custom.html', '''
+            <html>
+            <head>
+              <title>This is a custom file</title>
+              <link rel="x-dart-test" href="test-custom.dart">
+              <link rel="x-dart-worker" href="worker.dart">
+              <script src="packages/test/dart.js"></script>
+            </head>
+            <body>
+              <div id="foo"></div>
+            </body>
+            </html>
+          ''').create();
+
+          var test = await runTest(['-p', 'chrome', 'test-custom.dart']);
+          expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+
+        test('living in a subdirectory', () async {
+          await d.dir('test-worker', [
+            d.file('worker.dart', '''
+              void main() {
+              }
+            ''')
+          ]).create();
+
+          await d.file('test-custom.html', '''
+            <html>
+            <head>
+              <title>This is a custom file</title>
+              <link rel="x-dart-test" href="test-custom.dart">
+              <link rel="x-dart-worker" href="test-worker/worker.dart">
+              <script src="packages/test/dart.js"></script>
+            </head>
+            <body>
+              <div id="foo"></div>
+            </body>
+            </html>
+          ''').create();
+
+          var test = await runTest(['-p', 'chrome', 'test-custom.dart']);
+          expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+          await test.shouldExit(0);
+        }, tags: 'chrome');
+      });
+    });
+
+    group('with a live Dart Worker', () {
+      test('running from the same directory', () async {
+        await d.file('echo_worker.dart', r'''
+          import 'dart:html';
+
+          void main() {
+            final scope = DedicatedWorkerGlobalScope.instance;
+            scope.onError.listen((error) {
+              scope.postMessage('Error in Web Worker main program: $error (onError)');
+            });
+            scope.onMessage.listen((MessageEvent e) {
+              try {
+                scope.postMessage('ECHO "${e.data}"');
+              } catch (error) {
+                scope.postMessage('Error in Web Worker main program: $error (onMessage)');
+              }
+            });
+          }
+        ''').create();
+
+        await d.file('test-worker.dart', '''
+          import 'dart:async';
+          import 'dart:html';
+
+          import 'package:test/test.dart';
+
+          void main() {
+            test("success", () {
+              expect(document.querySelector('#foo'), isNotNull);
+            });
+            test("worker", () async {
+              final worker = Worker('echo_worker.dart.js');
+
+              final completer = Completer<String>();
+
+              worker.onError.listen((error) {
+                completer.complete('Error in Web Worker listener: ' + error.toString());
+              });
+              worker.onMessage.listen((event) {
+                completer.complete(event.data);
+              });
+
+              worker.postMessage('Hello from same directory');
+
+              final result = await completer.future;
+              expect(result, 'ECHO "Hello from same directory"');
+
+              worker.terminate();
+            });
+          }
+        ''').create();
+
+        await d.file('test-worker.html', '''
+          <html>
+          <head>
+            <link rel="x-dart-test" href="test-worker.dart">
+            <link rel="x-dart-worker" href="echo_worker.dart">
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test-worker.dart']);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
         await test.shouldExit(0);
       }, tags: 'chrome');
 
-      test('takes precedence over provided HTML template', () async {
-        await d
-            .file(
-                'global_test.yaml',
-                jsonEncode(
-                    {'custom_html_template_path': 'html_template.html.tpl'}))
-            .create();
-        await d.file('html_template.html.tpl', '''
-<html>
-<head>
-  {{testScript}}
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="not-foo"></div>
-</body>
-</html>
-''').create();
+      test('running from a subdirectory', () async {
+        final workerDir = 'worker-dir';
+        await d.dir(workerDir, [
+          d.file('echo_worker.dart', r'''
+            import 'dart:html';
 
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
-        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+            void main() {
+              final scope = DedicatedWorkerGlobalScope.instance;
+              scope.onError.listen((error) {
+                scope.postMessage('Error in Web Worker main program: $error (onError)');
+              });
+              scope.onMessage.listen((MessageEvent e) {
+                try {
+                  scope.postMessage('ECHO "${e.data}"');
+                } catch (error) {
+                  scope.postMessage('Error in Web Worker main program: $error (onMessage)');
+                }
+              });
+            }
+          ''')
+        ]).create();
+
+        await d.file('test-worker.dart', '''
+          import 'dart:async';
+          import 'dart:html';
+
+          import 'package:test/test.dart';
+
+          void main() {
+            test("success", () {
+              expect(document.querySelector('#foo'), isNotNull);
+            });
+            test("worker", () async {
+              final worker = Worker('$workerDir/echo_worker.dart.js');
+
+              final completer = Completer<String>();
+
+              worker.onError.listen((error) {
+                completer.complete('Error in Web Worker listener: ' + error.toString());
+              });
+              worker.onMessage.listen((event) {
+                completer.complete(event.data);
+              });
+
+              worker.postMessage('Hello from $workerDir');
+
+              final result = await completer.future;
+              expect(result, 'ECHO "Hello from $workerDir"');
+
+              worker.terminate();
+            });
+          }
+        ''').create();
+
+        await d.file('test-worker.html', '''
+          <html>
+          <head>
+            <link rel="x-dart-test" href="test-worker.dart">
+            <link rel="x-dart-worker" href="$workerDir/echo_worker.dart">
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
+
+        var test = await runTest(['-p', 'chrome', 'test-worker.dart']);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
         await test.shouldExit(0);
       }, tags: 'chrome');
     });
@@ -598,17 +922,17 @@ void main() {
   group('runs failing tests', () {
     test('that fail only on the browser', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:path/path.dart' as p;
-import 'package:test/test.dart';
+        import 'package:path/path.dart' as p;
+        import 'package:test/test.dart';
 
-void main() {
-  test("test", () {
-    if (p.style == p.Style.url) throw TestFailure("oh no");
-  });
-}
-''').create();
+        void main() {
+          test("test", () {
+            if (p.style == p.Style.url) throw TestFailure("oh no");
+          });
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', '-p', 'vm', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+1 -1: Some tests failed.')));
@@ -617,17 +941,17 @@ void main() {
 
     test('that fail only on the VM', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:path/path.dart' as p;
-import 'package:test/test.dart';
+        import 'package:path/path.dart' as p;
+        import 'package:test/test.dart';
 
-void main() {
-  test("test", () {
-    if (p.style != p.Style.url) throw TestFailure("oh no");
-  });
-}
-''').create();
+        void main() {
+          test("test", () {
+            if (p.style != p.Style.url) throw TestFailure("oh no");
+          });
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', '-p', 'vm', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+1 -1: Some tests failed.')));
@@ -637,28 +961,28 @@ void main() {
     group('with a custom HTML file', () {
       setUp(() async {
         await d.file('test.dart', '''
-import 'dart:html';
+          import 'dart:html';
 
-import 'package:test/test.dart';
+          import 'package:test/test.dart';
 
-void main() {
-  test("failure", () {
-    expect(document.querySelector('#foo'), isNull);
-  });
-}
-''').create();
+          void main() {
+            test("failure", () {
+              expect(document.querySelector('#foo'), isNull);
+            });
+          }
+        ''').create();
 
         await d.file('test.html', '''
-<html>
-<head>
-  <link rel='x-dart-test' href='test.dart'>
-  <script src="packages/test/dart.js"></script>
-</head>
-<body>
-  <div id="foo"></div>
-</body>
-</html>
-''').create();
+          <html>
+          <head>
+            <link rel='x-dart-test' href='test.dart'>
+            <script src="packages/test/dart.js"></script>
+          </head>
+          <body>
+            <div id="foo"></div>
+          </body>
+          </html>
+        ''').create();
       });
 
       test('on Chrome', () async {
@@ -679,17 +1003,17 @@ void main() {
 
   test('forwards prints from the browser test', () async {
     await d.file('test.dart', '''
-import 'dart:async';
+      import 'dart:async';
 
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  test("test", () {
-    print("Hello,");
-    return Future(() => print("world!"));
-  });
-}
-''').create();
+      void main() {
+        test("test", () {
+          print("Hello,");
+          return Future(() => print("world!"));
+        });
+      }
+    ''').create();
 
     var test = await runTest(['-p', 'chrome', 'test.dart']);
     expect(test.stdout, emitsInOrder([emitsThrough('Hello,'), 'world!']));
@@ -721,16 +1045,16 @@ void main() {
 
   test('respects top-level @Timeout declarations', () async {
     await d.file('test.dart', '''
-@Timeout(const Duration(seconds: 0))
+      @Timeout(const Duration(seconds: 0))
 
-import 'dart:async';
+      import 'dart:async';
 
-import 'package:test/test.dart';
+      import 'package:test/test.dart';
 
-void main() {
-  test("timeout", () => Future.delayed(Duration.zero));
-}
-''').create();
+      void main() {
+        test("timeout", () => Future.delayed(Duration.zero));
+      }
+    ''').create();
 
     var test = await runTest(['-p', 'chrome', 'test.dart']);
     expect(
@@ -743,14 +1067,14 @@ void main() {
   group('with onPlatform', () {
     test('respects matching Skips', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("fail", () => throw 'oh no', onPlatform: {"browser": Skip()});
-}
-''').create();
+        void main() {
+          test("fail", () => throw 'oh no', onPlatform: {"browser": Skip()});
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+0 ~1: All tests skipped.')));
@@ -759,14 +1083,14 @@ void main() {
 
     test('ignores non-matching Skips', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("success", () {}, onPlatform: {"vm": Skip()});
-}
-''').create();
+        void main() {
+          test("success", () {}, onPlatform: {"vm": Skip()});
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -775,19 +1099,19 @@ void main() {
 
     test('respects matching Timeouts', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("fail", () async {
-    await Future.delayed(Duration.zero);
-    throw 'oh no';
-  }, onPlatform: {
-    "browser": Timeout(Duration.zero)
-  });
-}
-''').create();
+        void main() {
+          test("fail", () async {
+            await Future.delayed(Duration.zero);
+            throw 'oh no';
+          }, onPlatform: {
+            "browser": Timeout(Duration.zero)
+          });
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -799,16 +1123,16 @@ void main() {
 
     test('ignores non-matching Timeouts', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("success", () {}, onPlatform: {
-    "vm": Timeout(Duration(seconds: 0))
-  });
-}
-''').create();
+        void main() {
+          test("success", () {}, onPlatform: {
+            "vm": Timeout(Duration(seconds: 0))
+          });
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -817,20 +1141,20 @@ void main() {
 
     test('applies matching platforms in order', () async {
       await d.file('test.dart', '''
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("success", () {}, onPlatform: {
-    "browser": Skip("first"),
-    "browser || windows": Skip("second"),
-    "browser || linux": Skip("third"),
-    "browser || mac-os": Skip("fourth"),
-    "browser || android": Skip("fifth")
-  });
-}
-''').create();
+        void main() {
+          test("success", () {}, onPlatform: {
+            "browser": Skip("first"),
+            "browser || windows": Skip("second"),
+            "browser || linux": Skip("third"),
+            "browser || mac-os": Skip("fourth"),
+            "browser || android": Skip("fifth")
+          });
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdoutStream(), neverEmits(contains('Skip: first')));
@@ -845,16 +1169,16 @@ void main() {
   group('with an @OnPlatform annotation', () {
     test('respects matching Skips', () async {
       await d.file('test.dart', '''
-@OnPlatform(const {"browser": const Skip()})
+        @OnPlatform(const {"browser": const Skip()})
 
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("fail", () => throw 'oh no');
-}
-''').create();
+        void main() {
+          test("fail", () => throw 'oh no');
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('~1: All tests skipped.')));
@@ -863,16 +1187,16 @@ void main() {
 
     test('ignores non-matching Skips', () async {
       await d.file('test.dart', '''
-@OnPlatform(const {"vm": const Skip()})
+        @OnPlatform(const {"vm": const Skip()})
 
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("success", () {});
-}
-''').create();
+        void main() {
+          test("success", () {});
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -881,21 +1205,21 @@ void main() {
 
     test('respects matching Timeouts', () async {
       await d.file('test.dart', '''
-@OnPlatform(const {
-  "browser": const Timeout(const Duration(seconds: 0))
-})
+        @OnPlatform(const {
+          "browser": const Timeout(const Duration(seconds: 0))
+        })
 
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("fail", () async {
-    await Future.delayed(Duration.zero);
-    throw 'oh no';
-  });
-}
-''').create();
+        void main() {
+          test("fail", () async {
+            await Future.delayed(Duration.zero);
+            throw 'oh no';
+          });
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
@@ -907,18 +1231,18 @@ void main() {
 
     test('ignores non-matching Timeouts', () async {
       await d.file('test.dart', '''
-@OnPlatform(const {
-  "vm": const Timeout(const Duration(seconds: 0))
-})
+        @OnPlatform(const {
+          "vm": const Timeout(const Duration(seconds: 0))
+        })
 
-import 'dart:async';
+        import 'dart:async';
 
-import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-void main() {
-  test("success", () {});
-}
-''').create();
+        void main() {
+          test("success", () {});
+        }
+      ''').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       await test.shouldExit(0);
