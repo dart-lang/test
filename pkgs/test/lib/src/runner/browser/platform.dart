@@ -296,6 +296,11 @@ class BrowserPlatform extends PlatformPlugin
       final workerUrl = m.group(1) ?? '';
       if (workerUrl.isNotEmpty) {
         final workerUri = Uri.parse(workerUrl);
+        if (workerUri.isAbsolute || workerUri.hasScheme) {
+          throw LoadException(path,
+              '"$htmlPath" references Dart Worker "$workerUri" but only relative paths '
+              'are supported');
+        }
         final workerPath = p.join(dir, workerUri.toFilePath());
         if (!File(workerPath).existsSync()) {
           throw LoadException(path,
