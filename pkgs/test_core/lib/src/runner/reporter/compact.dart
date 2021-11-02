@@ -98,6 +98,10 @@ class CompactReporter implements Reporter {
   /// Whether the reporter is paused.
   var _paused = false;
 
+  // Whether a notice should be logged about enabling stack trace chaining at
+  // the end of all tests running.
+  var _shouldPrintStackTraceChainingNotice = false;
+
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
 
@@ -216,8 +220,6 @@ class CompactReporter implements Reporter {
   void _onStateChange(LiveTest liveTest, State state) {
     if (state.status != Status.complete) return;
 
-    // Errors are printed in [onError]; no need to print them here as well.
-    if (state.result == Result.failure) return;
     if (state.result == Result.error) return;
 
     // Always display the name of the oldest active test, unless testing
@@ -231,6 +233,11 @@ class CompactReporter implements Reporter {
 
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+    if (!liveTest.test.metadata.chainStackTraces &&
+        !liveTest.suite.isLoadSuite) {
+      _shouldPrintStackTraceChainingNotice = true;
+    }
+
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest),
@@ -297,6 +304,14 @@ class CompactReporter implements Reporter {
     } else {
       _progressLine('All tests passed!');
       _sink.writeln('');
+    }
+
+    if (_shouldPrintStackTraceChainingNotice) {
+      _sink
+        ..writeln('')
+        ..writeln('Consider enabling the flag chain-stack-traces to '
+            'receive more detailed exceptions.\n'
+            "For example, 'dart test --chain-stack-traces'.");
     }
   }
 

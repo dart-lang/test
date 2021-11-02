@@ -1,3 +1,8 @@
+## 1.19.3
+
+* Remove duplicate logging of suggestion to enable the `chain-stack-traces`
+  flag, a single log will now appear at the end.
+
 ## 1.19.2
 
 * Republish with missing JS file for browser tests.
