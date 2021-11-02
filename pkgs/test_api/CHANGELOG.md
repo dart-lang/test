@@ -1,3 +1,7 @@
+## 0.4.7
+
+* Remove logging about enabling the chain-stack-traces flag from the invoker.
+
 ## 0.4.6
 
 * Give a better exception when using `markTestSkipped` outside of a test.

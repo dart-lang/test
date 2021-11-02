@@ -316,10 +316,25 @@ void main() {
           +2: All tests passed!''', args: ['--run-skipped']);
     });
   });
+
+  test('Directs users to enable stack trace chaining if disabled', () async {
+    await _expectReport(
+        '''test('failure 1', () => throw TestFailure('oh no'));''', '''
+        +0: failure 1
+        +0 -1: failure 1 [E]
+          oh no
+          test.dart 6:25  main.<fn>
+
+        +0 -1: Some tests failed.
+
+        Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+        For example, 'dart test --chain-stack-traces'.''',
+        chainStackTraces: false);
+  });
 }
 
 Future<void> _expectReport(String tests, String expected,
-    {List<String> args = const []}) async {
+    {List<String> args = const [], bool chainStackTraces = true}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -330,7 +345,11 @@ $tests
     }
   ''').create();
 
-  var test = await runTest(['test.dart', '--chain-stack-traces', ...args]);
+  var test = await runTest([
+    'test.dart',
+    if (chainStackTraces) '--chain-stack-traces',
+    ...args,
+  ]);
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

@@ -1,4 +1,8 @@
-## 0.4.8-dev
+## 0.4.8
+
+* Add logging about enabling stack trace chaining to the compact and expanded
+  reporters (moved from the invoker). This will now only be logged once after
+  all tests have ran.
 
 ## 0.4.7
 

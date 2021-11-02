@@ -348,13 +348,6 @@ class Invoker {
     _controller.addError(error, stackTrace!);
     zone.run(() => _outstandingCallbacks.complete());
 
-    if (!liveTest.test.metadata.chainStackTraces &&
-        !liveTest.suite.isLoadSuite) {
-      _printsOnFailure.add('Consider enabling the flag chain-stack-traces to '
-          'receive more detailed exceptions.\n'
-          "For example, 'dart test --chain-stack-traces'.");
-    }
-
     if (_printsOnFailure.isNotEmpty) {
       print(_printsOnFailure.join('\n\n'));
       _printsOnFailure.clear();
