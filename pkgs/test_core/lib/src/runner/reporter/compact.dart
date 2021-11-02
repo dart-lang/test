@@ -220,6 +220,8 @@ class CompactReporter implements Reporter {
   void _onStateChange(LiveTest liveTest, State state) {
     if (state.status != Status.complete) return;
 
+    // Errors are printed in [onError]; no need to print them here as well.
+    if (state.result == Result.failure) return;
     if (state.result == Result.error) return;
 
     // Always display the name of the oldest active test, unless testing
