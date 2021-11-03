@@ -22,12 +22,12 @@ void main() {
     fakeAsync((async) {
       // All asynchronous features that rely on timing are automatically
       // controlled by [fakeAsync].
-      expect(new Completer().future.timeout(new Duration(seconds: 5)),
-          throwsA(new isInstanceOf<TimeoutException>()));
+      expect(Completer().future.timeout(Duration(seconds: 5)),
+          throwsA(isA<TimeoutException>()));
 
       // This will cause the timeout above to fire immediately, without waiting
       // 5 seconds of real time.
-      async.elapse(new Duration(seconds: 5));
+      async.elapse(Duration(seconds: 5));
     });
   });
 }
