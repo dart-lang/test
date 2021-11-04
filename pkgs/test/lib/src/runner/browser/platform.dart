@@ -287,10 +287,6 @@ class BrowserPlatform extends PlatformPlugin
     }
   }
 
-  @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
-
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
   /// This ensures that only one suite is loaded at a time, and that any errors

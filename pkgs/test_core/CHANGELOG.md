@@ -1,3 +1,5 @@
+## 0.4.9-dev
+
 ## 0.4.8
 
 * Add logging about enabling stack trace chaining to the compact and expanded

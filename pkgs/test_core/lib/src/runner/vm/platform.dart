@@ -11,7 +11,6 @@ import 'package:async/async.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
-import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:test_core/src/runner/vm/test_compiler.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
@@ -36,12 +35,6 @@ class VMPlatform extends PlatformPlugin {
   final _compiler = TestCompiler(
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
-
-  VMPlatform();
-
-  @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
 
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
