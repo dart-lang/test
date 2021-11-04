@@ -70,10 +70,8 @@ abstract class Browser {
 
       void drainOutput(Stream<List<int>> stream) {
         try {
-          _ioSubscriptions.add(stream.listen((bytes) {
-            print('From Browser: ' + utf8.decode(bytes));
-            output.addAll(bytes);
-          }, cancelOnError: true));
+          _ioSubscriptions
+              .add(stream.listen(output.addAll, cancelOnError: true));
         } on StateError catch (_) {}
       }
 
