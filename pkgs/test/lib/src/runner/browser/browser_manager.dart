@@ -130,7 +130,8 @@ class BrowserManager {
     return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
       browser.close();
       throw ApplicationException(
-          'Timed out waiting for ${runtime.name} to connect.');
+          'Timed out waiting for ${runtime.name} to connect.\n'
+          'Browser output: ${browser.output}');
     });
   }
 
