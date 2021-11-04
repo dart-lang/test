@@ -131,7 +131,7 @@ class BrowserManager {
       browser.close();
       throw ApplicationException(
           'Timed out waiting for ${runtime.name} to connect.\n'
-          'Browser output: ${browser.output}');
+          'Browser output: ${utf8.decode(browser.output)}');
     });
   }
 
