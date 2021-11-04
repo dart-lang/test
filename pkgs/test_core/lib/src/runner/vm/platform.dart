@@ -37,7 +37,7 @@ class VMPlatform extends PlatformPlugin {
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
 
-  final _isolateExits = <Future<Result<void>>>[];
+  final _isolateExits = <Future<void>>[];
 
   @override
   StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
@@ -49,9 +49,9 @@ class VMPlatform extends PlatformPlugin {
     assert(platform.runtime == Runtime.vm);
 
     var receivePort = ReceivePort();
+    var onExitPort = ReceivePort();
     Isolate? isolate;
     try {
-      var onExitPort = ReceivePort();
       isolate = await _spawnIsolate(
           path, receivePort.sendPort, suiteConfig.metadata,
           onExit: onExitPort.sendPort);
@@ -59,9 +59,10 @@ class VMPlatform extends PlatformPlugin {
         onExitPort.close();
         return null;
       }
-      _isolateExits.add(Result.capture(onExitPort.first));
+      _isolateExits.add(onExitPort.first.onError((e, st) {}));
     } catch (error) {
       receivePort.close();
+      onExitPort.close();
       rethrow;
     }
 
@@ -121,10 +122,8 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() => Future.wait([
-        for (var exit in _isolateExits) Result.release(exit),
-        _compiler.dispose()
-      ]));
+  Future close() => _closeMemo
+      .runOnce(() => Future.wait([..._isolateExits, _compiler.dispose()]));
 
   /// Spawns an isolate and passes it [message].
   ///
