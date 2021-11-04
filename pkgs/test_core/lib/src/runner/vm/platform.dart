@@ -55,8 +55,10 @@ class VMPlatform extends PlatformPlugin {
       isolate = await _spawnIsolate(
           path, receivePort.sendPort, suiteConfig.metadata,
           onExit: onExitPort.sendPort);
-      if (isolate == null) return null;
-
+      if (isolate == null) {
+        onExitPort.close();
+        return null;
+      }
       _isolateExits.add(Result.capture(onExitPort.first));
     } catch (error) {
       receivePort.close();
