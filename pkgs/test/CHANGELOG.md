@@ -1,3 +1,7 @@
+## 1.19.4-dev
+
+* Wait for paused VM platform isolates before shutdown.
+
 ## 1.19.3
 
 * Remove duplicate logging of suggestion to enable the `chain-stack-traces`
