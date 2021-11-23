@@ -80,10 +80,6 @@ class NodePlatform extends PlatformPlugin
   }
 
   @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
-
-  @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);

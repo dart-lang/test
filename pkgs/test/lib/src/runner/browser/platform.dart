@@ -15,7 +15,6 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:stream_channel/stream_channel.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Runtime, StackTraceMapper, SuitePlatform;
@@ -286,10 +285,6 @@ class BrowserPlatform extends PlatformPlugin
           '</script>.');
     }
   }
-
-  @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
 
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
