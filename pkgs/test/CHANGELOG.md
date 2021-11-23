@@ -1,6 +1,8 @@
 ## 1.19.4-dev
 
 * Wait for paused VM platform isolates before shutdown.
+* `TestFailure` implements `Exception` for compatibility with
+  `only_throw_exceptions`.
 
 ## 1.19.3
 

@@ -1,3 +1,8 @@
+## 0.4.8-dev
+
+* `TestFailure` implements `Exception` for compatibility with
+  `only_throw_exceptions`.
+
 ## 0.4.7
 
 * Remove logging about enabling the chain-stack-traces flag from the invoker.
