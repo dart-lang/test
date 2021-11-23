@@ -1,4 +1,4 @@
-## 0.4.8-dev
+## 0.4.8
 
 * `TestFailure` implements `Exception` for compatibility with
   `only_throw_exceptions`.

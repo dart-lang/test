@@ -1,4 +1,4 @@
-## 1.19.4-dev
+## 1.19.4
 
 * Wait for paused VM platform isolates before shutdown.
 * `TestFailure` implements `Exception` for compatibility with
