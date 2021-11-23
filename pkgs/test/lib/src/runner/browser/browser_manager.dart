@@ -127,7 +127,7 @@ class BrowserManager {
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
+    return completer.future.timeout(Duration(seconds: 45), onTimeout: () {
       browser.close();
       throw ApplicationException(
           'Timed out waiting for ${runtime.name} to connect.\n'
