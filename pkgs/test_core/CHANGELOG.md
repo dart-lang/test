@@ -1,5 +1,7 @@
 ## 0.4.9-dev
 
+* Wait for paused VM platform isolates before shutdown.
+
 ## 0.4.8
 
 * Add logging about enabling stack trace chaining to the compact and expanded
