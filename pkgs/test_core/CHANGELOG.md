@@ -1,4 +1,4 @@
-## 0.4.9-dev
+## 0.4.9
 
 * Wait for paused VM platform isolates before shutdown.
 
