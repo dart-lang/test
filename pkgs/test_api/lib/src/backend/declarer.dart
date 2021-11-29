@@ -112,9 +112,6 @@ class Declarer {
   /// `null`.
   final Set<String>? _seenNames;
 
-  /// Whether or not timeouts should be ignored.
-  final bool ignoreTimeouts;
-
   /// Creates a new declarer for the root group.
   ///
   /// This is the implicit group that exists outside of any calls to `group()`.
@@ -142,7 +139,6 @@ class Declarer {
     String? fullTestName,
     // TODO: Change the default https://github.com/dart-lang/test/issues/1571
     bool allowDuplicateTestNames = true,
-    bool ignoreTimeouts = false,
   }) : this._(
             null,
             null,
@@ -152,8 +148,7 @@ class Declarer {
             null,
             noRetry,
             fullTestName,
-            allowDuplicateTestNames ? null : <String>{},
-            ignoreTimeouts);
+            allowDuplicateTestNames ? null : <String>{});
 
   Declarer._(
     this._parent,
@@ -165,7 +160,6 @@ class Declarer {
     this._noRetry,
     this._fullTestName,
     this._seenNames,
-    this.ignoreTimeouts,
   );
 
   /// Runs [body] with this declarer as [Declarer.current].
@@ -266,8 +260,7 @@ class Declarer {
         trace,
         _noRetry,
         _fullTestName,
-        _seenNames,
-        ignoreTimeouts);
+        _seenNames);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
