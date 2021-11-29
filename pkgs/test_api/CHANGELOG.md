@@ -1,7 +1,7 @@
 ## 0.4.9-dev
 
-* Add `ignoreTimeouts` option to the `Declarer`, which disables all timeouts
-  for all tests.
+* Add `ignoreTimeouts` option to `Suite`, which disables all timeouts for all
+  tests in that suite.
 
 ## 0.4.8
 
