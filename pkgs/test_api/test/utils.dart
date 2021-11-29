@@ -91,7 +91,7 @@ Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform);
+  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
   return test.load(suite);
 }
 
@@ -174,10 +174,8 @@ List<GroupEntry> declare(
   void Function() body, {
   // TODO: Change the default https://github.com/dart-lang/test/issues/1571
   bool allowDuplicateTestNames = true,
-  bool ignoreTimeouts = false,
 }) {
-  var declarer = Declarer(
-      allowDuplicateTestNames: allowDuplicateTestNames, ignoreTimeouts: false)
+  var declarer = Declarer(allowDuplicateTestNames: allowDuplicateTestNames)
     ..declare(body);
   return declarer.build().entries;
 }

@@ -108,7 +108,6 @@ class RemoteListener {
           // TODO: Change to non-nullable https://github.com/dart-lang/test/issues/1591
           allowDuplicateTestNames:
               message['allowDuplicateTestNames'] as bool? ?? true,
-          ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
         );
         StackTraceFormatter.current!.configure(
             except: _deserializeSet(message['foldTraceExcept'] as List),
@@ -120,9 +119,12 @@ class RemoteListener {
 
         await declarer.declare(main);
 
-        var suite = Suite(declarer.build(),
-            SuitePlatform.deserialize(message['platform'] as Object),
-            path: message['path'] as String);
+        var suite = Suite(
+          declarer.build(),
+          SuitePlatform.deserialize(message['platform'] as Object),
+          path: message['path'] as String,
+          ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
+        );
 
         runZoned(() {
           Invoker.guard(
