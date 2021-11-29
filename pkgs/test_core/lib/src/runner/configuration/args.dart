@@ -88,7 +88,7 @@ final ArgParser _parser = (() {
   parser.addOption('timeout',
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
-  parser.addFlag('--ignore-timeouts',
+  parser.addFlag('ignore-timeouts',
       help: 'Ignore all timeouts (useful if debugging)', negatable: false);
   parser.addFlag('pause-after-load',
       help: 'Pause for debugging before any tests execute.\n'
