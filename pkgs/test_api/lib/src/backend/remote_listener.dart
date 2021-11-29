@@ -108,6 +108,7 @@ class RemoteListener {
           // TODO: Change to non-nullable https://github.com/dart-lang/test/issues/1591
           allowDuplicateTestNames:
               message['allowDuplicateTestNames'] as bool? ?? true,
+          ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
         );
         StackTraceFormatter.current!.configure(
             except: _deserializeSet(message['foldTraceExcept'] as List),

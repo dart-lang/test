@@ -268,7 +268,7 @@ class Invoker {
   /// Each heartbeat resets the timeout timer. This helps ensure that
   /// long-running tests that still make progress don't time out.
   void heartbeat() {
-    if (liveTest.isComplete) return;
+    if (liveTest.isComplete || Declarer.current!.ignoreTimeouts) return;
     if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
     const defaultTimeout = Duration(seconds: 30);

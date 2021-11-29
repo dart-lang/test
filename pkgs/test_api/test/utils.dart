@@ -174,8 +174,10 @@ List<GroupEntry> declare(
   void Function() body, {
   // TODO: Change the default https://github.com/dart-lang/test/issues/1571
   bool allowDuplicateTestNames = true,
+  bool ignoreTimeouts = false,
 }) {
-  var declarer = Declarer(allowDuplicateTestNames: allowDuplicateTestNames)
+  var declarer = Declarer(
+      allowDuplicateTestNames: allowDuplicateTestNames, ignoreTimeouts: false)
     ..declare(body);
   return declarer.build().entries;
 }

@@ -289,6 +289,7 @@ Configuration configuration(
         Map<String, CustomRuntime>? defineRuntimes,
         bool? noRetry,
         bool? useDataIsolateStrategy,
+        bool? ignoreTimeouts,
 
         // Suite-level configuration
         bool? allowDuplicateTestNames,
@@ -340,6 +341,7 @@ Configuration configuration(
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
+        ignoreTimeouts: ignoreTimeouts,
         allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
         jsTrace: jsTrace,

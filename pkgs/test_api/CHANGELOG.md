@@ -1,3 +1,8 @@
+## 0.4.9-dev
+
+* Add `ignoreTimeouts` option to the `Declarer`, which disables all timeouts
+  for all tests.
+
 ## 0.4.8
 
 * `TestFailure` implements `Exception` for compatibility with
