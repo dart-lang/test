@@ -49,7 +49,7 @@ class Chrome extends Browser {
         var args = [
           '--user-data-dir=$dir',
           url.toString(),
-          if (Platform.isLinux) '--enable-logging=stderr',
+          '--enable-logging=stdout',
           '--v=1',
           '--disable-extensions',
           '--disable-popup-blocking',
