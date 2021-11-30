@@ -11,6 +11,7 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
+import 'configuration.dart';
 import 'environment.dart';
 import 'suite.dart';
 
@@ -58,7 +59,8 @@ class RunnerSuite extends Suite {
 
   RunnerSuite._(this._controller, Group group, SuitePlatform platform,
       {String? path})
-      : super(group, platform, path: path);
+      : super(group, platform,
+            path: path, ignoreTimeouts: Configuration.current.ignoreTimeouts);
 
   @override
   RunnerSuite filter(bool Function(Test) callback) {

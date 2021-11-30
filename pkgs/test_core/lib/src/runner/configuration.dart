@@ -220,6 +220,9 @@ class Configuration {
   /// The same seed will shuffle the tests in the same way every time.
   final int? testRandomizeOrderingSeed;
 
+  final bool? _ignoreTimeouts;
+  bool get ignoreTimeouts => _ignoreTimeouts ?? false;
+
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
@@ -285,6 +288,7 @@ class Configuration {
       required bool? noRetry,
       required bool? useDataIsolateStrategy,
       required int? testRandomizeOrderingSeed,
+      required bool? ignoreTimeouts,
 
       // Suite-level configuration
       required bool? allowDuplicateTestNames,
@@ -337,6 +341,7 @@ class Configuration {
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        ignoreTimeouts: ignoreTimeouts,
         suiteDefaults: SuiteConfiguration(
             allowDuplicateTestNames: allowDuplicateTestNames,
             allowTestRandomization: allowTestRandomization,
@@ -395,9 +400,11 @@ class Configuration {
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
           bool? useDataIsolateStrategy,
-          bool? allowDuplicateTestNames,
+          int? testRandomizeOrderingSeed,
+          bool? ignoreTimeouts,
 
           // Suite-level configuration
+          bool? allowDuplicateTestNames,
           bool? allowTestRandomization,
           bool? jsTrace,
           bool? runSkipped,
@@ -409,7 +416,6 @@ class Configuration {
           BooleanSelector? excludeTags,
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-          int? testRandomizeOrderingSeed,
 
           // Test-level configuration
           Timeout? timeout,
@@ -446,6 +452,8 @@ class Configuration {
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
           useDataIsolateStrategy: useDataIsolateStrategy,
+          testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+          ignoreTimeouts: ignoreTimeouts,
           allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
@@ -458,7 +466,6 @@ class Configuration {
           excludeTags: excludeTags,
           tags: tags,
           onPlatform: onPlatform,
-          testRandomizeOrderingSeed: testRandomizeOrderingSeed,
           timeout: timeout,
           verboseTrace: verboseTrace,
           chainStackTraces: chainStackTraces,
@@ -513,6 +520,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        ignoreTimeouts: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
         runSkipped: null,
@@ -580,6 +588,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        ignoreTimeouts: null,
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,
@@ -642,6 +651,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        ignoreTimeouts: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
         jsTrace: null,
@@ -705,6 +715,7 @@ class Configuration {
           noRetry: null,
           useDataIsolateStrategy: null,
           testRandomizeOrderingSeed: null,
+          ignoreTimeouts: null,
           allowDuplicateTestNames: null,
           allowTestRandomization: null,
           jsTrace: null,
@@ -770,6 +781,7 @@ class Configuration {
       required bool? noRetry,
       required bool? useDataIsolateStrategy,
       required this.testRandomizeOrderingSeed,
+      required bool? ignoreTimeouts,
       required SuiteConfiguration? suiteDefaults})
       : _help = help,
         _version = version,
@@ -794,10 +806,9 @@ class Configuration {
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
         _useDataIsolateStrategy = useDataIsolateStrategy,
-        suiteDefaults = pauseAfterLoad == true
-            ? suiteDefaults?.change(timeout: Timeout.none) ??
-                SuiteConfiguration.timeout(Timeout.none)
-            : suiteDefaults ?? SuiteConfiguration.empty {
+        _ignoreTimeouts =
+            pauseAfterLoad == true ? ignoreTimeouts ?? true : ignoreTimeouts,
+        suiteDefaults = suiteDefaults ?? SuiteConfiguration.empty {
     if (_filename != null && _filename!.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
@@ -845,6 +856,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        ignoreTimeouts: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -961,6 +973,7 @@ class Configuration {
             other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
+        ignoreTimeouts: other._ignoreTimeouts ?? ignoreTimeouts,
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -1000,6 +1013,8 @@ class Configuration {
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
       bool? useDataIsolateStrategy,
+      int? testRandomizeOrderingSeed,
+      bool? ignoreTimeouts,
 
       // Suite-level configuration
       bool? allowDuplicateTestNames,
@@ -1013,7 +1028,6 @@ class Configuration {
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout? timeout,
@@ -1053,6 +1067,7 @@ class Configuration {
             useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
+        ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
         suiteDefaults: suiteDefaults.change(
             allowDuplicateTestNames: allowDuplicateTestNames,
             jsTrace: jsTrace,

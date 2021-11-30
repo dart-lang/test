@@ -26,13 +26,16 @@ class Suite {
   /// The top-level group for this test suite.
   final Group group;
 
+  /// Whether or not to ignore test timeouts.
+  final bool ignoreTimeouts;
+
   /// Creates a new suite containing [entires].
   ///
   /// If [platform] and/or [os] are passed, [group] is filtered to match that
   /// platform information.
   ///
   /// If [os] is passed without [platform], throws an [ArgumentError].
-  Suite(Group group, this.platform, {this.path})
+  Suite(Group group, this.platform, {required this.ignoreTimeouts, this.path})
       : group = _filterGroup(group, platform);
 
   /// Returns [entries] filtered according to [platform] and [os].
@@ -51,7 +54,8 @@ class Suite {
   Suite filter(bool Function(Test) callback) {
     var filtered = group.filter(callback);
     filtered ??= Group.root([], metadata: metadata);
-    return Suite(filtered, platform, path: path);
+    return Suite(filtered, platform,
+        ignoreTimeouts: ignoreTimeouts, path: path);
   }
 
   bool get isLoadSuite => false;

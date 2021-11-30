@@ -82,8 +82,9 @@ Running Tests:
     --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
+    --ignore-timeouts                 Ignore all timeouts (useful if debugging)
     --pause-after-load                Pause for debugging before any tests execute.
-                                      Implies --concurrency=1, --debug, and --timeout=none.
+                                      Implies --concurrency=1, --debug, and --ignore-timeouts.
                                       Currently only supported for browser tests.
     --debug                           Run the VM and Chrome tests in debug mode.
     --coverage=<directory>            Gather coverage and output it to the specified directory.
