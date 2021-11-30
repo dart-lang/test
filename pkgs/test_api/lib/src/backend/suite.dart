@@ -35,7 +35,7 @@ class Suite {
   /// platform information.
   ///
   /// If [os] is passed without [platform], throws an [ArgumentError].
-  Suite(Group group, this.platform, {required this.ignoreTimeouts, this.path})
+  Suite(Group group, this.platform, {this.ignoreTimeouts = false, this.path})
       : group = _filterGroup(group, platform);
 
   /// Returns [entries] filtered according to [platform] and [os].
