@@ -1,3 +1,8 @@
+## 1.19.5-dev
+
+* Try to get more logging from `chrome` on windows to diagnose intermittent
+  failures.
+
 ## 1.19.4
 
 * Wait for paused VM platform isolates before shutdown.
