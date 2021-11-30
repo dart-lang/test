@@ -38,7 +38,8 @@ class SuiteConfiguration {
       onPlatform: null,
       metadata: null,
       line: null,
-      col: null);
+      col: null,
+      ignoreTimeouts: null);
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
@@ -140,6 +141,10 @@ class SuiteConfiguration {
   /// Only run tests that original from this column in a test file.
   final int? col;
 
+  /// Whether or not timeouts should be ignored.
+  final bool? _ignoreTimeouts;
+  bool get ignoreTimeouts => _ignoreTimeouts ?? false;
+
   factory SuiteConfiguration(
       {required bool? allowDuplicateTestNames,
       required bool? allowTestRandomization,
@@ -155,6 +160,7 @@ class SuiteConfiguration {
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       required int? line,
       required int? col,
+      required bool? ignoreTimeouts,
 
       // Test-level configuration
       required Timeout? timeout,
@@ -180,6 +186,7 @@ class SuiteConfiguration {
         onPlatform: onPlatform,
         line: line,
         col: col,
+        ignoreTimeouts: ignoreTimeouts,
         metadata: Metadata(
             timeout: timeout,
             verboseTrace: verboseTrace,
@@ -211,6 +218,7 @@ class SuiteConfiguration {
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
           int? line,
           int? col,
+          bool? ignoreTimeouts,
 
           // Test-level configuration
           Timeout? timeout,
@@ -236,6 +244,7 @@ class SuiteConfiguration {
           onPlatform: onPlatform,
           line: line,
           col: col,
+          ignoreTimeouts: ignoreTimeouts,
           timeout: timeout,
           verboseTrace: verboseTrace,
           chainStackTraces: chainStackTraces,
@@ -261,23 +270,24 @@ class SuiteConfiguration {
   ///
   /// Unlike [new SuiteConfiguration], this assumes [tags] is already
   /// resolved.
-  SuiteConfiguration._(
-      {required bool? allowDuplicateTestNames,
-      required bool? allowTestRandomization,
-      required bool? jsTrace,
-      required bool? runSkipped,
-      required Iterable<String>? dart2jsArgs,
-      required this.precompiledPath,
-      required Iterable<Pattern>? patterns,
-      required Iterable<RuntimeSelection>? runtimes,
-      required BooleanSelector? includeTags,
-      required BooleanSelector? excludeTags,
-      required Map<BooleanSelector, SuiteConfiguration>? tags,
-      required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      required Metadata? metadata,
-      required this.line,
-      required this.col})
-      : _allowDuplicateTestNames = allowDuplicateTestNames,
+  SuiteConfiguration._({
+    required bool? allowDuplicateTestNames,
+    required bool? allowTestRandomization,
+    required bool? jsTrace,
+    required bool? runSkipped,
+    required Iterable<String>? dart2jsArgs,
+    required this.precompiledPath,
+    required Iterable<Pattern>? patterns,
+    required Iterable<RuntimeSelection>? runtimes,
+    required BooleanSelector? includeTags,
+    required BooleanSelector? excludeTags,
+    required Map<BooleanSelector, SuiteConfiguration>? tags,
+    required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+    required Metadata? metadata,
+    required this.line,
+    required this.col,
+    required bool? ignoreTimeouts,
+  })  : _allowDuplicateTestNames = allowDuplicateTestNames,
         _allowTestRandomization = allowTestRandomization,
         _jsTrace = jsTrace,
         _runSkipped = runSkipped,
@@ -288,6 +298,7 @@ class SuiteConfiguration {
         excludeTags = excludeTags ?? BooleanSelector.none,
         tags = _map(tags),
         onPlatform = _map(onPlatform),
+        _ignoreTimeouts = ignoreTimeouts,
         _metadata = metadata ?? Metadata.empty;
 
   /// Creates a new [SuiteConfiguration] that takes its configuration from
@@ -311,6 +322,7 @@ class SuiteConfiguration {
         excludeTags: null,
         line: null,
         col: null,
+        ignoreTimeouts: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -355,6 +367,7 @@ class SuiteConfiguration {
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
         line: other.line ?? line,
         col: other.col ?? col,
+        ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
   }
@@ -378,6 +391,7 @@ class SuiteConfiguration {
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       int? line,
       int? col,
+      bool? ignoreTimeouts,
 
       // Test-level configuration
       Timeout? timeout,
@@ -405,6 +419,7 @@ class SuiteConfiguration {
         onPlatform: onPlatform ?? this.onPlatform,
         line: line ?? this.line,
         col: col ?? this.col,
+        ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
         metadata: _metadata.change(
             timeout: timeout,
             verboseTrace: verboseTrace,

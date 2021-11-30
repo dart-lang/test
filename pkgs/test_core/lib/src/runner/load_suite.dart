@@ -18,7 +18,6 @@ import 'package:test_api/scaffolding.dart' show Timeout;
 import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
 import '../util/pair.dart';
-import 'configuration.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
@@ -117,8 +116,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       // If the test is forcibly closed, let it complete, since load tests don't
       // have timeouts.
       invoker.onClose.then((_) => invoker.removeOutstandingCallback());
-    }, completer.future,
-        path: path, ignoreTimeouts: Configuration.current.ignoreTimeouts);
+    }, completer.future, path: path, ignoreTimeouts: config.ignoreTimeouts);
   }
 
   /// A utility constructor for a load suite that just throws [exception].

@@ -229,6 +229,7 @@ SuiteConfiguration suiteConfiguration(
         Map<PlatformSelector, SuiteConfiguration>? onPlatform,
         int? line,
         int? col,
+        bool? ignoreTimeouts,
 
         // Test-level configuration
         Timeout? timeout,
@@ -254,6 +255,7 @@ SuiteConfiguration suiteConfiguration(
         onPlatform: onPlatform,
         line: line,
         col: col,
+        ignoreTimeouts: ignoreTimeouts,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,
