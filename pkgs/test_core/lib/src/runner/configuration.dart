@@ -299,6 +299,7 @@ class Configuration {
       required BooleanSelector? excludeTags,
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      required bool? ignoreTimeouts,
 
       // Test-level configuration
       required Timeout? timeout,
@@ -352,6 +353,7 @@ class Configuration {
             onPlatform: onPlatform,
             line: null, // Only configurable from the command line
             col: null, // Only configurable from the command line
+            ignoreTimeouts: ignoreTimeouts,
 
             // Test-level configuration
             timeout: timeout,
@@ -395,9 +397,10 @@ class Configuration {
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
           bool? useDataIsolateStrategy,
-          bool? allowDuplicateTestNames,
+          int? testRandomizeOrderingSeed,
 
           // Suite-level configuration
+          bool? allowDuplicateTestNames,
           bool? allowTestRandomization,
           bool? jsTrace,
           bool? runSkipped,
@@ -409,7 +412,7 @@ class Configuration {
           BooleanSelector? excludeTags,
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-          int? testRandomizeOrderingSeed,
+          bool? ignoreTimeouts,
 
           // Test-level configuration
           Timeout? timeout,
@@ -446,6 +449,7 @@ class Configuration {
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
           useDataIsolateStrategy: useDataIsolateStrategy,
+          testRandomizeOrderingSeed: testRandomizeOrderingSeed,
           allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
@@ -458,7 +462,7 @@ class Configuration {
           excludeTags: excludeTags,
           tags: tags,
           onPlatform: onPlatform,
-          testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+          ignoreTimeouts: ignoreTimeouts,
           timeout: timeout,
           verboseTrace: verboseTrace,
           chainStackTraces: chainStackTraces,
@@ -513,6 +517,7 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        ignoreTimeouts: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
         runSkipped: null,
@@ -590,6 +595,7 @@ class Configuration {
         excludeTags: null,
         tags: null,
         onPlatform: null,
+        ignoreTimeouts: null,
         timeout: null,
         verboseTrace: null,
         chainStackTraces: null,
@@ -652,6 +658,7 @@ class Configuration {
         excludeTags: null,
         tags: null,
         onPlatform: null,
+        ignoreTimeouts: null,
         timeout: null,
         verboseTrace: null,
         chainStackTraces: null,
@@ -714,6 +721,7 @@ class Configuration {
           runtimes: null,
           tags: null,
           onPlatform: null,
+          ignoreTimeouts: null,
           timeout: null,
           verboseTrace: null,
           chainStackTraces: null,
@@ -794,10 +802,13 @@ class Configuration {
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
         _useDataIsolateStrategy = useDataIsolateStrategy,
-        suiteDefaults = pauseAfterLoad == true
-            ? suiteDefaults?.change(timeout: Timeout.none) ??
-                SuiteConfiguration.timeout(Timeout.none)
-            : suiteDefaults ?? SuiteConfiguration.empty {
+        suiteDefaults = (() {
+          var config = suiteDefaults ?? SuiteConfiguration.empty;
+          if (pauseAfterLoad == true) {
+            return config.change(ignoreTimeouts: true);
+          }
+          return config;
+        }()) {
     if (_filename != null && _filename!.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
@@ -1000,6 +1011,8 @@ class Configuration {
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
       bool? useDataIsolateStrategy,
+      int? testRandomizeOrderingSeed,
+      bool? ignoreTimeouts,
 
       // Suite-level configuration
       bool? allowDuplicateTestNames,
@@ -1013,7 +1026,6 @@ class Configuration {
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout? timeout,
@@ -1054,24 +1066,26 @@ class Configuration {
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
         suiteDefaults: suiteDefaults.change(
-            allowDuplicateTestNames: allowDuplicateTestNames,
-            jsTrace: jsTrace,
-            runSkipped: runSkipped,
-            dart2jsArgs: dart2jsArgs,
-            precompiledPath: precompiledPath,
-            patterns: patterns,
-            runtimes: runtimes,
-            includeTags: includeTags,
-            excludeTags: excludeTags,
-            tags: tags,
-            onPlatform: onPlatform,
-            timeout: timeout,
-            verboseTrace: verboseTrace,
-            chainStackTraces: chainStackTraces,
-            skip: skip,
-            skipReason: skipReason,
-            testOn: testOn,
-            addTags: addTags));
+          allowDuplicateTestNames: allowDuplicateTestNames,
+          jsTrace: jsTrace,
+          runSkipped: runSkipped,
+          dart2jsArgs: dart2jsArgs,
+          precompiledPath: precompiledPath,
+          patterns: patterns,
+          runtimes: runtimes,
+          includeTags: includeTags,
+          excludeTags: excludeTags,
+          tags: tags,
+          onPlatform: onPlatform,
+          timeout: timeout,
+          verboseTrace: verboseTrace,
+          chainStackTraces: chainStackTraces,
+          skip: skip,
+          skipReason: skipReason,
+          testOn: testOn,
+          addTags: addTags,
+          ignoreTimeouts: ignoreTimeouts,
+        ));
     return config._resolvePresets();
   }
 

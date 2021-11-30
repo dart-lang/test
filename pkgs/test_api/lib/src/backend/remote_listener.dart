@@ -119,9 +119,12 @@ class RemoteListener {
 
         await declarer.declare(main);
 
-        var suite = Suite(declarer.build(),
-            SuitePlatform.deserialize(message['platform'] as Object),
-            path: message['path'] as String);
+        var suite = Suite(
+          declarer.build(),
+          SuitePlatform.deserialize(message['platform'] as Object),
+          path: message['path'] as String,
+          ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
+        );
 
         runZoned(() {
           Invoker.guard(

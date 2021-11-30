@@ -1,3 +1,9 @@
+## 1.20.0-dev
+
+* Add an `--ignore-timeouts` command line flag, which disables all timeouts
+  for all tests. This can be useful when debugging, so tests don't time out
+  during debug sessions.
+
 ## 1.19.5
 
 * Try to get more logging from `chrome` on windows to diagnose intermittent
