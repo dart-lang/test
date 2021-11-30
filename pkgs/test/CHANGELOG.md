@@ -1,4 +1,4 @@
-## 1.19.5-dev
+## 1.19.5
 
 * Try to get more logging from `chrome` on windows to diagnose intermittent
   failures.
