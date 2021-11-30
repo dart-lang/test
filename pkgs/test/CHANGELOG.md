@@ -4,6 +4,11 @@
   for all tests. This can be useful when debugging, so tests don't time out
   during debug sessions.
 
+## 1.19.5
+
+* Try to get more logging from `chrome` on windows to diagnose intermittent
+  failures.
+
 ## 1.19.4
 
 * Wait for paused VM platform isolates before shutdown.
