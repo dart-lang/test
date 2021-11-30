@@ -17,7 +17,7 @@ late Suite _suite;
 
 void main() {
   setUp(() {
-    _suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: false);
+    _suite = Suite(Group.root([]), suitePlatform);
   });
 
   group('.test()', () {

@@ -91,7 +91,7 @@ Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
+  var suite = Suite(Group.root([test]), suitePlatform);
   return test.load(suite);
 }
 

@@ -18,7 +18,6 @@ import 'package:test_api/scaffolding.dart' show Timeout;
 import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
 import '../util/pair.dart';
-import 'configuration.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
@@ -117,8 +116,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       // If the test is forcibly closed, let it complete, since load tests don't
       // have timeouts.
       invoker.onClose.then((_) => invoker.removeOutstandingCallback());
-    }, completer.future,
-        path: path, ignoreTimeouts: Configuration.current.ignoreTimeouts);
+    }, completer.future, path: path);
   }
 
   /// A utility constructor for a load suite that just throws [exception].
@@ -145,27 +143,23 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   LoadSuite._(String name, this.config, SuitePlatform platform,
-      void Function() body, this._suiteAndZone,
-      {required bool ignoreTimeouts, String? path})
+      void Function() body, this._suiteAndZone, {String? path})
       : super(
             Group.root(
                 [LocalTest(name, Metadata(timeout: Timeout(_timeout)), body)]),
             platform,
-            path: path,
-            ignoreTimeouts: ignoreTimeouts);
+            path: path);
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
       : config = old.config,
-        super(old.group, old.platform,
-            path: old.path, ignoreTimeouts: old.ignoreTimeouts);
+        super(old.group, old.platform, path: old.path);
 
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
       : config = old.config,
         _suiteAndZone = old._suiteAndZone,
-        super(old.group, old.platform,
-            path: old.path, ignoreTimeouts: old.ignoreTimeouts);
+        super(old.group, old.platform, path: old.path);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
