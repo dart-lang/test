@@ -19,7 +19,7 @@ void main() {
   late Suite suite;
   setUp(() {
     lastState = null;
-    suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: false);
+    suite = Suite(Group.root([]), suitePlatform);
   });
 
   group('Invoker.current', () {
@@ -428,7 +428,8 @@ void main() {
         Invoker.current!.addOutstandingCallback();
       },
               metadata: Metadata(
-                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
+                  chainStackTraces: true,
+                  timeout: Timeout(Duration(milliseconds: 100))))
           .load(suite);
 
       expectStates(liveTest, [
@@ -441,23 +442,6 @@ void main() {
           expect(lastState!.status, equals(Status.complete));
           expect(error, TypeMatcher<TimeoutException>());
         }
-      ]);
-
-      liveTest.run();
-    });
-
-    test('can be ignored', () {
-      suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: true);
-      var liveTest = _localTest(() async {
-        await Future.delayed(Duration(milliseconds: 10));
-      },
-              metadata: Metadata(
-                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
-          .load(suite);
-
-      expectStates(liveTest, [
-        const State(Status.running, Result.success),
-        const State(Status.complete, Result.success)
       ]);
 
       liveTest.run();

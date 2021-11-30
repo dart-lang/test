@@ -270,7 +270,6 @@ class Invoker {
   void heartbeat() {
     if (liveTest.isComplete) return;
     if (_timeoutTimer != null) _timeoutTimer!.cancel();
-    if (liveTest.suite.ignoreTimeouts == true) return;
 
     const defaultTimeout = Duration(seconds: 30);
     var timeout = liveTest.test.metadata.timeout.apply(defaultTimeout);

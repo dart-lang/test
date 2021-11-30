@@ -1,9 +1,3 @@
-## 1.20.0-dev
-
-* Add an `--ignore-timeouts` command line flag, which disables all timeouts
-  for all tests. This can be useful when debugging, so tests don't time out
-  during debug sessions.
-
 ## 1.19.4
 
 * Wait for paused VM platform isolates before shutdown.

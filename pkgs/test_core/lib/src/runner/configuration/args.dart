@@ -88,11 +88,9 @@ final ArgParser _parser = (() {
   parser.addOption('timeout',
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
-  parser.addFlag('ignore-timeouts',
-      help: 'Ignore all timeouts (useful if debugging)', negatable: false);
   parser.addFlag('pause-after-load',
       help: 'Pause for debugging before any tests execute.\n'
-          'Implies --concurrency=1, --debug, and --ignore-timeouts.\n'
+          'Implies --concurrency=1, --debug, and --timeout=none.\n'
           'Currently only supported for browser tests.',
       negatable: false);
   parser.addFlag('debug',
@@ -314,7 +312,6 @@ class _Parser {
         noRetry: _ifParsed('no-retry'),
         useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
-        ignoreTimeouts: _ifParsed('ignore-timeouts'),
         // Config that isn't supported on the command line
         addTags: null,
         allowTestRandomization: null,
