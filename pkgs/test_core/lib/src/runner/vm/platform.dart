@@ -230,9 +230,7 @@ Future<Isolate> _spawnPubServeIsolate(
 Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(Uri base, String isolateId, String id) {
-  var inspectUri = Uri(
-      path: '/inspect',
-      queryParameters: {'isolateId': isolateId, 'objectId': id});
-  return base.replace(fragment: inspectUri.toString());
-}
+Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
+    fragment: Uri(
+        path: '/inspect',
+        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
