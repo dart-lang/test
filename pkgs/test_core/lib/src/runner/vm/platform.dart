@@ -81,7 +81,8 @@ class VMPlatform extends PlatformPlugin {
       var isolateID = Service.getIsolateID(isolate)!;
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
-      client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
+      var serverUri = info.serverUri!;
+      client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
           .isolates!
@@ -90,8 +91,7 @@ class VMPlatform extends PlatformPlugin {
       var libraryRef = (await client.getIsolate(isolateRef.id!))
           .libraries!
           .firstWhere((library) => library.uri == libraryPath);
-      var url = _observatoryUrlFor(
-          info.serverUri.toString(), isolateRef.id!, libraryRef.id!);
+      var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -227,9 +227,10 @@ Future<Isolate> _spawnPubServeIsolate(
   }
 }
 
-String _wsUriFor(String observatoryUrl) =>
-    "ws:${observatoryUrl.split(':').sublist(1).join(':')}ws";
+Uri _wsUriFor(Uri observatoryUrl) =>
+    observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(String base, String isolateId, String id) =>
-    Uri.parse('$base#/inspect?isolateId=${Uri.encodeQueryComponent(isolateId)}&'
-        'objectId=${Uri.encodeQueryComponent(id)}');
+Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
+    fragment: Uri(
+        path: '/inspect',
+        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
