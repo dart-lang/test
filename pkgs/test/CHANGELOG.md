@@ -3,6 +3,8 @@
 * Add an `--ignore-timeouts` command line flag, which disables all timeouts
   for all tests. This can be useful when debugging, so tests don't time out
   during debug sessions.
+* Create a trusted types policy when available for assigning the script URL for
+  web tests.
 
 ## 1.19.5
 
