@@ -2,6 +2,9 @@
 
 * Add an `--ignore-timeouts` command line flag, which disables all timeouts
   for all tests.
+* Experimental: Add a VM service extension `ext.test.pauseAfterTests` which
+  configures VM platform tests to pause for debugging after tests are run,
+  before the test isolates are killed.
 
 ## 0.4.9
 
