@@ -69,6 +69,9 @@ class VMPlatform extends PlatformPlugin {
 
     VmService? client;
     StreamSubscription<Event>? eventSub;
+    // Typical test interaction will go across `channel`, `outerChannel` adds
+    // additional communication directly between the test bootstrapping and this
+    // platform to enable pausing after tests for debugging.
     var outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
     var outerQueue = StreamQueue(outerChannel.stream);
     var channelId = (await outerQueue.next) as int;
