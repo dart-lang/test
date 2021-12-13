@@ -352,21 +352,19 @@ void main() {
 
 /// Returns a [StreamMatcher] that asserts that a test emits warnings for [tags]
 /// in order.
-StreamMatcher tagWarnings(List<String> tags) => emitsInOrder(() sync* {
-      yield emitsThrough(
+StreamMatcher tagWarnings(List<String> tags) => emitsInOrder([
+      emitsThrough(
           "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
           "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
-          'dart_test.yaml.');
+          'dart_test.yaml.'),
 
-      for (var tag in tags) {
-        yield emitsThrough(startsWith('  $tag was used in'));
-      }
+      for (var tag in tags) emitsThrough(startsWith('  $tag was used in')),
 
       // Consume until the end of the warning block, and assert that it has no
       // further tags than the ones we specified.
-      yield mayEmitMultiple(isNot(anyOf([contains(' was used in'), isEmpty])));
-      yield isEmpty;
-    }());
+      mayEmitMultiple(isNot(anyOf([contains(' was used in'), isEmpty]))),
+      isEmpty,
+    ]);
 
 /// Returns a [StreamMatcher] that matches the lines of [string] in order.
 StreamMatcher lines(String string) => emitsInOrder(string.split('\n'));
