@@ -191,10 +191,11 @@ class Configuration {
   /// All preset names that are known to be valid.
   ///
   /// This includes presets that have already been resolved.
-  late final Set<String> knownPresets = UnmodifiableSetView({
-    ...presets.keys,
-    for (var configuration in presets.values) ...configuration.knownPresets
-  });
+  Set<String> get knownPresets => _knownPresets ??= UnmodifiableSetView({
+        ...presets.keys,
+        for (var configuration in presets.values) ...configuration.knownPresets
+      });
+  Set<String>? _knownPresets;
 
   /// Whether to use the original `data:` URI isolate spawning strategy for VM
   /// tests.
