@@ -1,5 +1,6 @@
 ## 0.4.10
 
+* Update `analyzer` constraint to `>=2.14.0 <3.0.0`.
 * Add an `--ignore-timeouts` command line flag, which disables all timeouts
   for all tests.
 * Experimental: Add a VM service extension `ext.test.pauseAfterTests` which
