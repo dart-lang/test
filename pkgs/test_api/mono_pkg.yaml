@@ -1,4 +1,4 @@
-dart:
+sdk:
   - dev
   - stable
 
@@ -7,7 +7,7 @@ stages:
     - group:
       - format
       - analyze: --fatal-infos
-      dart:
+      sdk:
       - dev
   - unit_test:
     - group:

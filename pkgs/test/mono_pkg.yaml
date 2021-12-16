@@ -1,4 +1,4 @@
-dart:
+sdk:
   - dev
   - stable
 
@@ -7,7 +7,7 @@ stages:
       - group:
         - format
         - analyze: --fatal-infos
-        dart:
+        sdk:
         - dev
         os:
         - linux
@@ -20,25 +20,25 @@ stages:
       - command: dart test --preset travis --total-shards 5 --shard-index 0
         os:
         - windows
-        dart:
+        sdk:
         - stable
       - command: dart test --preset travis --total-shards 5 --shard-index 1
         os:
         - windows
-        dart:
+        sdk:
         - stable
       - command: dart test --preset travis --total-shards 5 --shard-index 2
         os:
         - windows
-        dart:
+        sdk:
         - stable
       - command: dart test --preset travis --total-shards 5 --shard-index 3
         os:
         - windows
-        dart:
+        sdk:
         - stable
       - command: dart test --preset travis --total-shards 5 --shard-index 4
         os:
         - windows
-        dart:
+        sdk:
         - stable

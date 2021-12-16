@@ -1,5 +1,6 @@
-## 1.20.0-dev
+## 1.20.0
 
+* Update `analyzer` constraint to `>=2.0.0 <4.0.0`.
 * Add an `--ignore-timeouts` command line flag, which disables all timeouts
   for all tests. This can be useful when debugging, so tests don't time out
   during debug sessions.
