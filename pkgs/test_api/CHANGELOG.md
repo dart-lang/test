@@ -1,4 +1,4 @@
-## 0.4.9-dev
+## 0.4.9
 
 * Add `ignoreTimeouts` option to `Suite`, which disables all timeouts for all
   tests in that suite.
