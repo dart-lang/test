@@ -1,5 +1,5 @@
 name: test
-version: 1.20.0-dev
+version: 1.20.0
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/blob/master/pkgs/test
@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=1.0.0 <3.0.0'
+  analyzer: '>=2.0.0 <4.0.0'
   async: ^2.5.0
   boolean_selector: ^2.1.0
   collection: ^1.15.0
