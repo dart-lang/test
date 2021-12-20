@@ -1,3 +1,7 @@
+## 1.20.1
+
+* Allow the latest `vm_service` package.
+
 ## 1.20.0
 
 * Update `analyzer` constraint to `>=2.0.0 <4.0.0`.
