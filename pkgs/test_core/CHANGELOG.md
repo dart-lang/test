@@ -1,4 +1,5 @@
 ## 0.4.11-dev
+* Update `vm_service` constraint to `>=6.0.0 <9.0.0`.
 
 ## 0.4.10
 
