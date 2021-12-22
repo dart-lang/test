@@ -40,8 +40,6 @@ class VMPlatform extends PlatformPlugin {
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
 
-  final _isolateExits = <Future<void>>[];
-
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
@@ -50,20 +48,13 @@ class VMPlatform extends PlatformPlugin {
     _setupPauseAfterTests();
 
     var receivePort = ReceivePort();
-    var onExitPort = ReceivePort();
     Isolate? isolate;
     try {
-      isolate = await _spawnIsolate(
-          path, receivePort.sendPort, suiteConfig.metadata,
-          onExit: onExitPort.sendPort);
-      if (isolate == null) {
-        onExitPort.close();
-        return null;
-      }
-      _isolateExits.add(onExitPort.first.onError((e, st) {}));
+      isolate =
+          await _spawnIsolate(path, receivePort.sendPort, suiteConfig.metadata);
+      if (isolate == null) return null;
     } catch (error) {
       receivePort.close();
-      onExitPort.close();
       rethrow;
     }
 
@@ -82,7 +73,6 @@ class VMPlatform extends PlatformPlugin {
         await outerQueue.next;
       }
       receivePort.close();
-      onExitPort.close();
       isolate!.kill();
       eventSub?.cancel();
       client?.dispose();
@@ -134,29 +124,24 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo
-      .runOnce(() => Future.wait([..._isolateExits, _compiler.dispose()]));
+  Future close() => _closeMemo.runOnce(_compiler.dispose);
 
   /// Spawns an isolate and passes it [message].
   ///
   /// This isolate connects an [IsolateChannel] to [message] and sends the
   /// serialized tests over that channel.
   Future<Isolate?> _spawnIsolate(
-      String path, SendPort message, Metadata suiteMetadata,
-      {required SendPort onExit}) async {
+      String path, SendPort message, Metadata suiteMetadata) async {
     try {
       var precompiledPath = _config.suiteDefaults.precompiledPath;
       if (precompiledPath != null) {
-        return _spawnPrecompiledIsolate(path, message, precompiledPath,
-            onExit: onExit);
+        return _spawnPrecompiledIsolate(path, message, precompiledPath);
       } else if (_config.pubServeUrl != null) {
-        return _spawnPubServeIsolate(path, message, _config.pubServeUrl!,
-            onExit: onExit);
+        return _spawnPubServeIsolate(path, message, _config.pubServeUrl!);
       } else if (_config.useDataIsolateStrategy) {
-        return _spawnDataIsolate(path, message, suiteMetadata, onExit: onExit);
+        return _spawnDataIsolate(path, message, suiteMetadata);
       } else {
-        return _spawnKernelIsolate(path, message, suiteMetadata,
-            onExit: onExit);
+        return _spawnKernelIsolate(path, message, suiteMetadata);
       }
     } catch (_) {
       if (_closeMemo.hasRun) return null;
@@ -167,8 +152,7 @@ class VMPlatform extends PlatformPlugin {
   /// Compiles [path] to kernel using [_compiler] and spawns that in an
   /// isolate.
   Future<Isolate> _spawnKernelIsolate(
-      String path, SendPort message, Metadata suiteMetadata,
-      {required SendPort onExit}) async {
+      String path, SendPort message, Metadata suiteMetadata) async {
     final response =
         await _compiler.compile(File(path).absolute.uri, suiteMetadata);
     var compiledDill = response.kernelOutputUri?.toFilePath();
@@ -176,13 +160,12 @@ class VMPlatform extends PlatformPlugin {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
     }
     return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
-        packageConfig: await packageConfigUri, checked: true, onExit: onExit);
+        packageConfig: await packageConfigUri, checked: true);
   }
 }
 
 Future<Isolate> _spawnDataIsolate(
-    String path, SendPort message, Metadata suiteMetadata,
-    {required SendPort onExit}) async {
+    String path, SendPort message, Metadata suiteMetadata) async {
   return await dart.runInIsolate('''
     ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
@@ -191,12 +174,11 @@ Future<Isolate> _spawnDataIsolate(
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
-  ''', message, onExit: onExit);
+  ''', message);
 }
 
 Future<Isolate> _spawnPrecompiledIsolate(
-    String testPath, SendPort message, String precompiledPath,
-    {required SendPort onExit}) async {
+    String testPath, SendPort message, String precompiledPath) async {
   testPath = p.absolute(p.join(precompiledPath, testPath) + '.vm_test.dart');
   var dillTestpath =
       testPath.substring(0, testPath.length - '.dart'.length) + '.vm.app.dill';
@@ -205,8 +187,7 @@ Future<Isolate> _spawnPrecompiledIsolate(
   }
   return await Isolate.spawnUri(p.toUri(testPath), [], message,
       packageConfig: p.toUri(p.join(precompiledPath, '.packages')),
-      checked: true,
-      onExit: onExit);
+      checked: true);
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
@@ -217,14 +198,12 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
 }
 
 Future<Isolate> _spawnPubServeIsolate(
-    String testPath, SendPort message, Uri pubServeUrl,
-    {required SendPort onExit}) async {
+    String testPath, SendPort message, Uri pubServeUrl) async {
   var url = pubServeUrl.resolveUri(
       p.toUri(p.relative(testPath, from: 'test') + '.vm_test.dart'));
 
   try {
-    return await Isolate.spawnUri(url, [], message,
-        checked: true, onExit: onExit);
+    return await Isolate.spawnUri(url, [], message, checked: true);
   } on IsolateSpawnException catch (error) {
     if (error.message.contains('OS Error: Connection refused') ||
         error.message.contains('The remote computer refused')) {

@@ -1,3 +1,7 @@
+## 0.4.12-dev
+
+* Remove wait for VM platform isolate exits.
+
 ## 0.4.11
 
 * Update `vm_service` constraint to `>=6.0.0 <9.0.0`.
