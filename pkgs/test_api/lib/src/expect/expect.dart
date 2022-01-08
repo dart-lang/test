@@ -62,9 +62,6 @@ Future expectLater(actual, matcher, {String? reason, skip}) =>
     _expect(actual, matcher, reason: reason, skip: skip);
 
 /// The implementation of [expect] and [expectLater].
-///
-// TODO: why is this necessary? Is @alwaysThrows not working in NNBD?
-// ignore: body_might_complete_normally
 Future _expect(actual, matcher,
     {String? reason, skip, bool verbose = false, ErrorFormatter? formatter}) {
   final test = TestHandle.current;

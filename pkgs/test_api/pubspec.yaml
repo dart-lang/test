@@ -1,5 +1,5 @@
 name: test_api
-version: 0.4.9
+version: 0.4.10-dev
 description: A library for writing Dart tests.
 homepage: https://github.com/dart-lang/test/blob/master/pkgs/test_api
 
