@@ -36,6 +36,7 @@ class IterableSet<E> with SetMixin<E>, UnmodifiableSetMixin<E> {
     for (var e in _base) {
       if (e == element) return e;
     }
+    return null;
   }
 
   @override
