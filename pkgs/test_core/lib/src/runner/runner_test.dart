@@ -75,7 +75,7 @@ class RunnerTest extends Test {
             break;
         }
       }, onDone: () {
-        // When the test channel closes—presumably becuase the browser
+        // When the test channel closes—presumably because the browser
         // closed—mark the test as complete no matter what.
         if (controller.completer.isCompleted) return;
         controller.completer.complete();

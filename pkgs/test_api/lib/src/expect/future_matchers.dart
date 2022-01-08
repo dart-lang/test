@@ -21,7 +21,7 @@ import 'util/pretty_print.dart';
 /// [throwsA].
 final Matcher completes = const _Completes(null);
 
-/// Matches a [Future] that completes succesfully with a value that matches
+/// Matches a [Future] that completes successfully with a value that matches
 /// [matcher].
 ///
 /// This creates an asynchronous expectation. The call to [expect] will return

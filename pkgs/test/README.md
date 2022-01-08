@@ -255,7 +255,7 @@ Here's an example of how to run tests and format the collected coverage to LCOV:
 ## Run Dart tests and output them at directory `./coverage`:
 dart run test --coverage=./coverage
 
-## Activate pacakge `coverage` (if needed):
+## Activate package `coverage` (if needed):
 dart pub global activate coverage
 
 ## Format collected coverage to LCOV (only for directory "lib")

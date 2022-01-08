@@ -29,7 +29,7 @@ final int lineLength = () {
     return stdout.terminalColumns;
   } on UnsupportedError {
     // This can throw an [UnsupportedError] if we're running in a JS context
-    // where `dart:io` is unavaiable.
+    // where `dart:io` is unavailable.
     return _defaultLineLength;
   } on StdoutException {
     return _defaultLineLength;

@@ -29,7 +29,7 @@ class Suite {
   /// Whether or not to ignore test timeouts.
   final bool ignoreTimeouts;
 
-  /// Creates a new suite containing [entires].
+  /// Creates a new suite containing [group].
   ///
   /// If [platform] and/or [os] are passed, [group] is filtered to match that
   /// platform information.

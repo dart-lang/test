@@ -107,7 +107,7 @@ class _Handler {
   /// Expects that a single HTTP request with the given [method] and [path] will
   /// be made to [this].
   ///
-  /// The [path] should be root-relative; that is, it shuld start with "/".
+  /// The [path] should be root-relative; that is, it should start with "/".
   ///
   /// When a matching request is made, [handler] is used to handle that request.
   ///
