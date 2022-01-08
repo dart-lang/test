@@ -2,6 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// {@canonicalFor on_platform.OnPlatform}
+/// {@canonicalFor retry.Retry}
+/// {@canonicalFor skip.Skip}
+/// {@canonicalFor tags.Tags}
+/// {@canonicalFor test_on.TestOn}
+/// {@canonicalFor timeout.Timeout}
 @Deprecated('package:test_api is not intended for general use. '
     'Please use package:test.')
 library test_api.scaffolding;
