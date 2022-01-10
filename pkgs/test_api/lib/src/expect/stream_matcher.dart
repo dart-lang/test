@@ -72,7 +72,7 @@ abstract class StreamMatcher extends Matcher {
   /// * If it fails to match, consume no events and return a description of the
   ///   failure.
   /// * The description should be in past tense.
-  /// * The description should be gramatically valid when used after "the
+  /// * The description should be grammatically valid when used after "the
   ///   stream"—"emitted the wrong events", for example.
   ///
   /// The [matchQueue] callback may return the empty string to indicate a

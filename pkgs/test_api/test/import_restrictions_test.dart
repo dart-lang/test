@@ -61,7 +61,7 @@ void main() {
       final entryPoint = _testApiLibrary('expect.dart');
       await for (final source
           in importCheck.transitiveSamePackageSources([entryPoint])) {
-        // Transitive imports through `hooks.dart` don't follow this restrction
+        // Transitive imports through `hooks.dart` don't follow this restriction
         if (!source.uri.path.contains('expect')) continue;
         for (final import in source.imports) {
           expect(import.path,

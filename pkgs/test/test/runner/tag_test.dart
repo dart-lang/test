@@ -3,10 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -89,7 +87,7 @@ void main() {
       await test.shouldExit(0);
     });
 
-    test("doesn't run a test with an exluded tag among others", () async {
+    test("doesn't run a test with an excluded tag among others", () async {
       var test = await runTest(['--exclude-tags=c', 'test.dart']);
       expect(test.stdout, tagWarnings(['a', 'b']));
       expect(test.stdout, emitsThrough(contains(': no tags')));

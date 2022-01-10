@@ -7,14 +7,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:frontend_server_client/frontend_server_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
-import 'package:frontend_server_client/frontend_server_client.dart';
 
-import '../package_version.dart';
 import '../../util/dart.dart';
 import '../../util/package_config.dart';
+import '../package_version.dart';
 
 class CompilationResponse {
   final String? compilerOutput;
@@ -40,7 +40,7 @@ class TestCompiler {
   /// A prefix used for the dill files for each compiler that is created.
   final String _dillCachePrefix;
 
-  /// No work is done until the first call to [compile] is recieved, at which
+  /// No work is done until the first call to [compile] is received, at which
   /// point the compiler process is started.
   TestCompiler(this._dillCachePrefix);
 
@@ -141,7 +141,7 @@ class _TestCompilerForLanguageVersion {
         await outputFile.copy('${tempFile.path}_$_compileNumber.dill');
     // Keep the `_dillToCache` file up-to-date and use the size of the
     // kernel file as an approximation for how many packages are included.
-    // Larger files are prefered, since re-using more packages will reduce the
+    // Larger files are preferred, since re-using more packages will reduce the
     // number of files the frontend server needs to load and parse.
     if (_dillToCache == null ||
         (_dillToCache!.lengthSync() < kernelReadyToRun.lengthSync())) {

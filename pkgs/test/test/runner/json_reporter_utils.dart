@@ -5,10 +5,9 @@
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
 import 'package:test_core/src/runner/version.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 /// Asserts that the outputs from running tests with a JSON reporter match the
 /// given expectations.
@@ -41,7 +40,7 @@ Future<void> expectJsonReport(
   };
   expect(decodeLine(outputLines.first), equals(_start));
 
-  // A single done event is emmited last.
+  // A single done event is emitted last.
   expect(decodeLine(outputLines.last), equals(done));
 
   for (var value in expected) {

@@ -5,6 +5,8 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
@@ -12,8 +14,6 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-// ignore: deprecated_member_use
-import 'package:test_api/scaffolding.dart' show Timeout;
 
 import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
@@ -43,7 +43,7 @@ final _timeout = Duration(minutes: 12);
 ///
 /// A suite is constructed with logic necessary to produce a test suite. As with
 /// a normal test body, this logic isn't run until [LiveTest.run] is called. The
-/// suite itself is returned by [suite] once it's avaialble, but any errors or
+/// suite itself is returned by [suite] once it's available, but any errors or
 /// prints will be emitted through the running [LiveTest].
 class LoadSuite extends Suite implements RunnerSuite {
   @override

@@ -44,7 +44,7 @@ class LocalTest extends Test {
   ///
   /// If [guarded] is `true`, the test is run in its own error zone, and any
   /// errors that escape that zone cause the test to fail. If it's `false`, it's
-  /// the caller's responsiblity to invoke [LiveTest.run] in the context of a
+  /// the caller's responsibility to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
   LocalTest(this.name, this.metadata, this._body,
       {this.trace, bool guarded = true, this.isScaffoldAll = false})

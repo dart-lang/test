@@ -464,7 +464,7 @@
 
 ## 1.6.3
 
-* Depend on latests `package:test_core`.
+* Depend on latest `package:test_core`.
   * This fixes an issue where non-completed tests were considered passing.
 
 ## 1.6.2
@@ -553,7 +553,7 @@
 ## 1.0.0
 
 * No change from `0.12.42`. We are simply signalling to users that this is a
-  well supported package and is the prefered way to write Dart tests.
+  well supported package and is the preferred way to write Dart tests.
 
 ## 0.12.42
 
