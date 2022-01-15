@@ -1,3 +1,32 @@
+## 1.20.1
+
+* Allow the latest `vm_service` package.
+
+## 1.20.0
+
+* Update `analyzer` constraint to `>=2.0.0 <4.0.0`.
+* Add an `--ignore-timeouts` command line flag, which disables all timeouts
+  for all tests. This can be useful when debugging, so tests don't time out
+  during debug sessions.
+* Create a trusted types policy when available for assigning the script URL for
+  web tests.
+
+## 1.19.5
+
+* Try to get more logging from `chrome` on windows to diagnose intermittent
+  failures.
+
+## 1.19.4
+
+* Wait for paused VM platform isolates before shutdown.
+* `TestFailure` implements `Exception` for compatibility with
+  `only_throw_exceptions`.
+
+## 1.19.3
+
+* Remove duplicate logging of suggestion to enable the `chain-stack-traces`
+  flag, a single log will now appear at the end.
+
 ## 1.19.2
 
 * Republish with missing JS file for browser tests.
@@ -435,7 +464,7 @@
 
 ## 1.6.3
 
-* Depend on latests `package:test_core`.
+* Depend on latest `package:test_core`.
   * This fixes an issue where non-completed tests were considered passing.
 
 ## 1.6.2
@@ -524,7 +553,7 @@
 ## 1.0.0
 
 * No change from `0.12.42`. We are simply signalling to users that this is a
-  well supported package and is the prefered way to write Dart tests.
+  well supported package and is the preferred way to write Dart tests.
 
 ## 0.12.42
 

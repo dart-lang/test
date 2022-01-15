@@ -205,7 +205,7 @@ class _ExpectedFunction<T> {
     if (_isDone != null && !_isDone!()) return;
 
     // Mark this callback as complete and remove it from the test case's
-    // oustanding callback count; if that hits zero the test is done.
+    // outstanding callback count; if that hits zero the test is done.
     _complete = true;
     _outstandingWork?.complete();
   }

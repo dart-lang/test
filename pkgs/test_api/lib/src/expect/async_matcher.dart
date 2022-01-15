@@ -24,7 +24,7 @@ abstract class AsyncMatcher extends Matcher {
   /// completes.
   ///
   /// If this returns a [String] synchronously, [expect] will synchronously
-  /// throw a [TestFailure] and [matches] will synchronusly return `false`.
+  /// throw a [TestFailure] and [matches] will synchronously return `false`.
   dynamic /*FutureOr<String>*/ matchAsync(item);
 
   @override

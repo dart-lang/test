@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
@@ -648,8 +647,7 @@ class _ConfigurationLoader {
   }
 
   /// Throws a [SourceSpanFormatException] with [message] about [field].
-  @alwaysThrows
-  void _error(String message, String field) {
+  Never _error(String message, String field) {
     throw SourceSpanFormatException(
         message, _document.nodes[field]!.span, _source);
   }

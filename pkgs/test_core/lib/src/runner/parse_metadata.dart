@@ -403,7 +403,7 @@ class _Parser {
   ///
   /// This can be fooled - for instance the invocation `foo.Bar()` may look like
   /// a prefixed instantiation of a `Bar` even though it is a named constructor
-  /// instantiation of a `foo`, or a method infocation on a variable `foo`, or
+  /// instantiation of a `foo`, or a method invocation on a variable `foo`, or
   /// ...
   ///
   /// Similarly `Baz.another` may look like the named constructor invocation of

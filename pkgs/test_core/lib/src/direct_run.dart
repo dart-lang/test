@@ -113,7 +113,7 @@ Future<Set<String>> enumerateTestCases(
       if (current.metadata.skip) continue;
       unskippedTestNames.add(current.name);
     } else {
-      throw StateError('Unandled Group Entry: ${current.runtimeType}');
+      throw StateError('Unhandled Group Entry: ${current.runtimeType}');
     }
   }
   return unskippedTestNames;

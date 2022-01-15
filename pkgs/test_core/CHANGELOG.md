@@ -1,4 +1,29 @@
-## 0.4.8-dev
+## 0.4.12-dev
+
+* Remove wait for VM platform isolate exits.
+
+## 0.4.11
+
+* Update `vm_service` constraint to `>=6.0.0 <9.0.0`.
+
+## 0.4.10
+
+* Update `analyzer` constraint to `>=2.14.0 <3.0.0`.
+* Add an `--ignore-timeouts` command line flag, which disables all timeouts
+  for all tests.
+* Experimental: Add a VM service extension `ext.test.pauseAfterTests` which
+  configures VM platform tests to pause for debugging after tests are run,
+  before the test isolates are killed.
+
+## 0.4.9
+
+* Wait for paused VM platform isolates before shutdown.
+
+## 0.4.8
+
+* Add logging about enabling stack trace chaining to the compact and expanded
+  reporters (moved from the invoker). This will now only be logged once after
+  all tests have ran.
 
 ## 0.4.7
 

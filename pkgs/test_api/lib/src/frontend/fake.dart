@@ -6,11 +6,11 @@
 /// overridden methods.
 ///
 /// A fake has a default behavior for every field and method of throwing
-/// [UnimplementedError]. Fields and methods that are excersized by the code
+/// [UnimplementedError]. Fields and methods that are exercised by the code
 /// under test should be manually overridden in the implementing class.
 ///
 /// A fake does not have any support for verification or defining behavior from
-/// the test, it cannot be used as a [Mock].
+/// the test, it cannot be used as a mock.
 ///
 /// In most cases a shared full fake implementation without a `noSuchMethod` is
 /// preferable to `extends Fake`, however `extends Fake` is preferred against

@@ -49,6 +49,8 @@ class Chrome extends Browser {
         var args = [
           '--user-data-dir=$dir',
           url.toString(),
+          '--enable-logging=stdout',
+          '--v=1',
           '--disable-extensions',
           '--disable-popup-blocking',
           '--bwsi',

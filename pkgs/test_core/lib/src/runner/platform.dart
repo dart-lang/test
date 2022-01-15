@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:stream_channel/stream_channel.dart';
-
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'suite.dart';
 import 'runner_suite.dart';
@@ -24,25 +22,6 @@ import 'environment.dart';
 /// A platform plugin can be registered by passing it to [new Loader]'s
 /// `plugins` parameter.
 abstract class PlatformPlugin {
-  /// Loads and establishes a connection with the test file at [path] using
-  /// [platform].
-  ///
-  /// This returns a channel that's connected to a remote client. The client
-  /// must connect it to a channel returned by [serializeGroup]. The default
-  /// implementation of [load] will take care of wrapping it up in a
-  /// [RunnerSuite] and running the tests when necessary.
-  ///
-  /// The returned channel may emit exceptions, indicating that the suite failed
-  /// to load or crashed later on. If the channel is closed by the caller, that
-  /// indicates that the suite is no longer needed and its resources may be
-  /// released.
-  ///
-  /// The `platform.platform` is guaranteed to be one of the platforms
-  /// associated with this plugin in [new Loader]'s `plugins` parameter.
-  // TODO(grouma) - Remove this method from the API as no platforms implement
-  // it.
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform);
-
   /// Loads the runner suite for the test file at [path] using [platform], with
   /// [suiteConfig] encoding the suite-specific configuration.
   ///

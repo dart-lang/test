@@ -1,3 +1,19 @@
+## 0.4.10-dev
+
+## 0.4.9
+
+* Add `ignoreTimeouts` option to `Suite`, which disables all timeouts for all
+  tests in that suite.
+
+## 0.4.8
+
+* `TestFailure` implements `Exception` for compatibility with
+  `only_throw_exceptions`.
+
+## 0.4.7
+
+* Remove logging about enabling the chain-stack-traces flag from the invoker.
+
 ## 0.4.6
 
 * Give a better exception when using `markTestSkipped` outside of a test.

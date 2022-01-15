@@ -19,7 +19,7 @@ void main() {
   late Suite suite;
   setUp(() {
     lastState = null;
-    suite = Suite(Group.root([]), suitePlatform);
+    suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: false);
   });
 
   group('Invoker.current', () {
@@ -428,8 +428,7 @@ void main() {
         Invoker.current!.addOutstandingCallback();
       },
               metadata: Metadata(
-                  chainStackTraces: true,
-                  timeout: Timeout(Duration(milliseconds: 100))))
+                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
           .load(suite);
 
       expectStates(liveTest, [
@@ -442,6 +441,23 @@ void main() {
           expect(lastState!.status, equals(Status.complete));
           expect(error, TypeMatcher<TimeoutException>());
         }
+      ]);
+
+      liveTest.run();
+    });
+
+    test('can be ignored', () {
+      suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: true);
+      var liveTest = _localTest(() async {
+        await Future.delayed(Duration(milliseconds: 10));
+      },
+              metadata: Metadata(
+                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
+          .load(suite);
+
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.success)
       ]);
 
       liveTest.run();
@@ -521,25 +537,6 @@ void main() {
       await pumpEventQueue();
       expect(liveTest.state.status, equals(Status.complete));
       expect(isComplete, isFalse);
-    });
-  });
-
-  group('chainStackTraces', () {
-    test(
-        'if disabled, directs users to run with the flag enabled when '
-        'failures occur', () {
-      expect(() async {
-        var liveTest = _localTest(() {
-          expect(true, isFalse);
-        }, metadata: Metadata(chainStackTraces: false))
-            .load(suite);
-        liveTest.onError.listen(expectAsync1((_) {}, count: 1));
-
-        await liveTest.run();
-      },
-          prints('Consider enabling the flag chain-stack-traces to '
-              'receive more detailed exceptions.\n'
-              "For example, 'dart test --chain-stack-traces'.\n"));
     });
   });
 

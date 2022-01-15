@@ -63,7 +63,7 @@ class Engine {
   /// The coverage output directory.
   String? _coverage;
 
-  /// The seed used to generate randomess for test case shuffling.
+  /// The seed used to generate randomness for test case shuffling.
   ///
   /// If null or zero no shuffling will occur.
   /// The same seed will shuffle the tests in the same way every time.

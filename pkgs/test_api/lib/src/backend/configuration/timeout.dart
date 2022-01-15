@@ -96,7 +96,7 @@ class Timeout {
 
       scanner.scan(_whitespace);
 
-      // Scan the next number, if it's avaialble.
+      // Scan the next number, if it's available.
       if (!scanner.scan(_untilUnit)) break;
       number = double.parse((scanner.lastMatch![0])!);
     }

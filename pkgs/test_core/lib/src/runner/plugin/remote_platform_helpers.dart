@@ -11,8 +11,8 @@ import 'package:test_api/backend.dart'
 /// defined in [getMain].
 ///
 /// This channel is used to control the tests. Platform plugins should forward
-/// it to the return value of [PlatformPlugin.loadChannel]. It's guaranteed to
-/// communicate using only JSON-serializable values.
+/// it `deserializeSuite`. It's guaranteed to communicate using only
+/// JSON-serializable values.
 ///
 /// Any errors thrown within [getMain], synchronously or not, will be forwarded
 /// to the load test for this suite. Prints will similarly be forwarded to that

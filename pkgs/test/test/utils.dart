@@ -109,7 +109,7 @@ Matcher isApplicationException(message) =>
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform);
+  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
   return test.load(suite);
 }
 
@@ -229,6 +229,7 @@ SuiteConfiguration suiteConfiguration(
         Map<PlatformSelector, SuiteConfiguration>? onPlatform,
         int? line,
         int? col,
+        bool? ignoreTimeouts,
 
         // Test-level configuration
         Timeout? timeout,
@@ -254,6 +255,7 @@ SuiteConfiguration suiteConfiguration(
         onPlatform: onPlatform,
         line: line,
         col: col,
+        ignoreTimeouts: ignoreTimeouts,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,
@@ -289,6 +291,7 @@ Configuration configuration(
         Map<String, CustomRuntime>? defineRuntimes,
         bool? noRetry,
         bool? useDataIsolateStrategy,
+        bool? ignoreTimeouts,
 
         // Suite-level configuration
         bool? allowDuplicateTestNames,
@@ -340,6 +343,7 @@ Configuration configuration(
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
+        ignoreTimeouts: ignoreTimeouts,
         allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
         jsTrace: jsTrace,

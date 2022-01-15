@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// An exception thrown when a test assertion fails.
-class TestFailure {
+class TestFailure implements Exception {
   final String? message;
 
   TestFailure(this.message);

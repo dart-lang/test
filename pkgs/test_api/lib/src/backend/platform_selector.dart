@@ -76,8 +76,6 @@ class PlatformSelector {
   }
 
   /// Returns whether the selector matches the given [platform].
-  ///
-  /// [os] defaults to [OperatingSystem.none].
   bool evaluate(SuitePlatform platform) {
     return _inner.evaluate((String variable) {
       if (variable == platform.runtime.identifier) return true;

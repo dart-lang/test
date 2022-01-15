@@ -44,7 +44,7 @@ class LocalTest extends Test {
   ///
   /// If [guarded] is `true`, the test is run in its own error zone, and any
   /// errors that escape that zone cause the test to fail. If it's `false`, it's
-  /// the caller's responsiblity to invoke [LiveTest.run] in the context of a
+  /// the caller's responsibility to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
   LocalTest(this.name, this.metadata, this._body,
       {this.trace, bool guarded = true, this.isScaffoldAll = false})
@@ -270,6 +270,7 @@ class Invoker {
   void heartbeat() {
     if (liveTest.isComplete) return;
     if (_timeoutTimer != null) _timeoutTimer!.cancel();
+    if (liveTest.suite.ignoreTimeouts == true) return;
 
     const defaultTimeout = Duration(seconds: 30);
     var timeout = liveTest.test.metadata.timeout.apply(defaultTimeout);
@@ -347,13 +348,6 @@ class Invoker {
 
     _controller.addError(error, stackTrace!);
     zone.run(() => _outstandingCallbacks.complete());
-
-    if (!liveTest.test.metadata.chainStackTraces &&
-        !liveTest.suite.isLoadSuite) {
-      _printsOnFailure.add('Consider enabling the flag chain-stack-traces to '
-          'receive more detailed exceptions.\n'
-          "For example, 'dart test --chain-stack-traces'.");
-    }
 
     if (_printsOnFailure.isNotEmpty) {
       print(_printsOnFailure.join('\n\n'));

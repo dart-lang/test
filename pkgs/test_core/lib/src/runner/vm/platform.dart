@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
@@ -29,6 +30,8 @@ import '../../util/package_config.dart';
 import '../package_version.dart';
 import 'environment.dart';
 
+var _shouldPauseAfterTests = false;
+
 /// A platform that loads tests in isolates spawned within this Dart process.
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
@@ -37,16 +40,12 @@ class VMPlatform extends PlatformPlugin {
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
 
-  VMPlatform();
-
-  @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
-
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     assert(platform.runtime == Runtime.vm);
+
+    _setupPauseAfterTests();
 
     var receivePort = ReceivePort();
     Isolate? isolate;
@@ -61,8 +60,18 @@ class VMPlatform extends PlatformPlugin {
 
     VmService? client;
     StreamSubscription<Event>? eventSub;
-    var channel = IsolateChannel.connectReceive(receivePort)
-        .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
+    // Typical test interaction will go across `channel`, `outerChannel` adds
+    // additional communication directly between the test bootstrapping and this
+    // platform to enable pausing after tests for debugging.
+    var outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
+    var outerQueue = StreamQueue(outerChannel.stream);
+    var channelId = (await outerQueue.next) as int;
+    var channel = outerChannel.virtualChannel(channelId).transformStream(
+        StreamTransformer.fromHandlers(handleDone: (sink) async {
+      if (_shouldPauseAfterTests) {
+        outerChannel.sink.add('debug');
+        await outerQueue.next;
+      }
       receivePort.close();
       isolate!.kill();
       eventSub?.cancel();
@@ -78,7 +87,8 @@ class VMPlatform extends PlatformPlugin {
       var isolateID = Service.getIsolateID(isolate)!;
 
       var libraryPath = p.toUri(p.absolute(path)).toString();
-      client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
+      var serverUri = info.serverUri!;
+      client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
           .isolates!
@@ -87,8 +97,7 @@ class VMPlatform extends PlatformPlugin {
       var libraryRef = (await client.getIsolate(isolateRef.id!))
           .libraries!
           .firstWhere((library) => library.uri == libraryPath);
-      var url = _observatoryUrlFor(
-          info.serverUri.toString(), isolateRef.id!, libraryRef.id!);
+      var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -115,7 +124,7 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() => _compiler.dispose());
+  Future close() => _closeMemo.runOnce(_compiler.dispose);
 
   /// Spawns an isolate and passes it [message].
   ///
@@ -213,9 +222,20 @@ Future<Isolate> _spawnPubServeIsolate(
   }
 }
 
-String _wsUriFor(String observatoryUrl) =>
-    "ws:${observatoryUrl.split(':').sublist(1).join(':')}ws";
+Uri _wsUriFor(Uri observatoryUrl) =>
+    observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(String base, String isolateId, String id) =>
-    Uri.parse('$base#/inspect?isolateId=${Uri.encodeQueryComponent(isolateId)}&'
-        'objectId=${Uri.encodeQueryComponent(id)}');
+Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
+    fragment: Uri(
+        path: '/inspect',
+        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
+
+var _hasRegistered = false;
+void _setupPauseAfterTests() {
+  if (_hasRegistered) return;
+  _hasRegistered = true;
+  registerExtension('ext.test.pauseAfterTests', (_, __) async {
+    _shouldPauseAfterTests = true;
+    return ServiceExtensionResponse.result(jsonEncode({}));
+  });
+}
