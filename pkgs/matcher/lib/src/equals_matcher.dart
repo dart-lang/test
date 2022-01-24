@@ -321,7 +321,7 @@ class _Mismatch {
   _Mismatch(this.location, this.actual, this.describeProblem,
       {this.instead = false});
 
-  _Mismatch.simple(this.location, this.actual, String problem,
-      {this.instead = false})
-      : describeProblem = ((description, verbose) => description.add(problem));
+  _Mismatch.simple(this.location, this.actual, String problem)
+      : describeProblem = ((description, verbose) => description.add(problem)),
+        instead = false;
 }
