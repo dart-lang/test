@@ -120,7 +120,7 @@ class RunnerSuiteController {
         .then((group) => RunnerSuite._(this, group, platform, path: path));
   }
 
-  /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
+  /// Used by [RunnerSuite.new] to create a runner suite that's not loaded from
   /// an external source.
   RunnerSuiteController._local(this._environment, this._config,
       {Function()? onClose,

@@ -3,5 +3,5 @@
 To updated it, run:
 
 ```console
-dart2js tool/host.dart -o lib/src/runner/browser/static/host.dart.js
+dart compile js tool/host.dart -o lib/src/runner/browser/static/host.dart.js
 ```

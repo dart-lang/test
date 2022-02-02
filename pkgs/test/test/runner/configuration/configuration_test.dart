@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:test_core/src/runner/configuration.dart';
@@ -23,7 +22,6 @@ void main() {
         expect(merged.debug, isFalse);
         expect(merged.color, equals(canUseSpecialChars));
         expect(merged.configurationPath, equals('dart_test.yaml'));
-        expect(merged.dart2jsPath, equals(p.join(sdkDir, 'bin', 'dart2js')));
         expect(merged.reporter, equals(defaultReporter));
         expect(merged.fileReporters, isEmpty);
         expect(merged.pubServeUrl, isNull);
@@ -41,7 +39,6 @@ void main() {
             debug: true,
             color: true,
             configurationPath: 'special_test.yaml',
-            dart2jsPath: '/tmp/dart2js',
             reporter: 'json',
             fileReporters: {'json': 'out.json'},
             pubServePort: 1234,
@@ -56,7 +53,6 @@ void main() {
         expect(merged.debug, isTrue);
         expect(merged.color, isTrue);
         expect(merged.configurationPath, equals('special_test.yaml'));
-        expect(merged.dart2jsPath, equals('/tmp/dart2js'));
         expect(merged.reporter, equals('json'));
         expect(merged.fileReporters, equals({'json': 'out.json'}));
         expect(merged.pubServeUrl!.port, equals(1234));
@@ -74,7 +70,6 @@ void main() {
             debug: true,
             color: true,
             configurationPath: 'special_test.yaml',
-            dart2jsPath: '/tmp/dart2js',
             reporter: 'json',
             fileReporters: {'json': 'out.json'},
             pubServePort: 1234,
@@ -89,7 +84,6 @@ void main() {
         expect(merged.debug, isTrue);
         expect(merged.color, isTrue);
         expect(merged.configurationPath, equals('special_test.yaml'));
-        expect(merged.dart2jsPath, equals('/tmp/dart2js'));
         expect(merged.reporter, equals('json'));
         expect(merged.fileReporters, equals({'json': 'out.json'}));
         expect(merged.pubServeUrl!.port, equals(1234));
@@ -109,7 +103,6 @@ void main() {
             debug: true,
             color: false,
             configurationPath: 'special_test.yaml',
-            dart2jsPath: '/tmp/dart2js',
             reporter: 'json',
             fileReporters: {'json': 'old.json'},
             pubServePort: 1234,
@@ -124,7 +117,6 @@ void main() {
             debug: false,
             color: true,
             configurationPath: 'test_special.yaml',
-            dart2jsPath: '../dart2js',
             reporter: 'compact',
             fileReporters: {'json': 'new.json'},
             pubServePort: 5678,
@@ -140,7 +132,6 @@ void main() {
         expect(merged.debug, isFalse);
         expect(merged.color, isTrue);
         expect(merged.configurationPath, equals('test_special.yaml'));
-        expect(merged.dart2jsPath, equals('../dart2js'));
         expect(merged.reporter, equals('compact'));
         expect(merged.fileReporters, equals({'json': 'new.json'}));
         expect(merged.pubServeUrl!.port, equals(5678));

@@ -597,7 +597,7 @@ class _ConfigurationLoader {
   /// Takes a map that contains [Configuration]s and extracts any
   /// preset-specific configuration into a parent [Configuration].
   ///
-  /// This is needed because parameters to [new Configuration] such as
+  /// This is needed because parameters to [Configuration.new] such as
   /// `onPlatform` take maps to [SuiteConfiguration]s. [SuiteConfiguration]
   /// doesn't support preset-specific configuration, so this extracts the preset
   /// logic into a parent [Configuration], leaving only maps to

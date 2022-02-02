@@ -267,7 +267,7 @@ class SuiteConfiguration {
 
   /// Creates new SuiteConfiguration.
   ///
-  /// Unlike [new SuiteConfiguration], this assumes [tags] is already
+  /// Unlike [SuiteConfiguration.new], this assumes [tags] is already
   /// resolved.
   SuiteConfiguration._({
     required bool? allowDuplicateTestNames,

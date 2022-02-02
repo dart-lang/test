@@ -19,7 +19,7 @@ import 'environment.dart';
 /// [RunnerSuite.onDebugging]. The plugin must create this suite by calling the
 /// [deserializeSuite] helper function.
 ///
-/// A platform plugin can be registered by passing it to [new Loader]'s
+/// A platform plugin can be registered by passing it to [Loader.new]'s
 /// `plugins` parameter.
 abstract class PlatformPlugin {
   /// Loads the runner suite for the test file at [path] using [platform], with

@@ -153,8 +153,6 @@ final ArgParser _parser = (() {
 
   parser.addOption('configuration',
       help: 'The path to the configuration file.', hide: true);
-  parser.addOption('dart2js-path',
-      help: 'The path to the dart2js executable.', hide: true);
   parser.addMultiOption('dart2js-args',
       help: 'Extra arguments to pass to dart2js.', hide: true);
 
@@ -293,7 +291,6 @@ class _Parser {
         debug: _ifParsed('debug'),
         color: color,
         configurationPath: _ifParsed('configuration'),
-        dart2jsPath: _ifParsed('dart2js-path'),
         dart2jsArgs: _ifParsed('dart2js-args'),
         precompiledPath: _ifParsed('precompiled'),
         reporter: reporter,
@@ -337,7 +334,7 @@ class _Parser {
   /// Returns the parsed option for [name], or `null` if none was parsed.
   ///
   /// If the user hasn't explicitly chosen a value, we want to pass null values
-  /// to [new Configuration] so that it considers those fields unset when
+  /// to [Configuration.new] so that it considers those fields unset when
   /// merging with configuration from the config file.
   T? _ifParsed<T>(String name) =>
       _options.wasParsed(name) ? _options[name] as T : null;
