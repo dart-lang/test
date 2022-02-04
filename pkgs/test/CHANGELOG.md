@@ -1,3 +1,7 @@
+## 1.20.2-dev
+
+* Drop `dart2js-path` command line argument.
+
 ## 1.20.1
 
 * Allow the latest `vm_service` package.

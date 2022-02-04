@@ -1,6 +1,7 @@
 ## 0.4.12-dev
 
 * Remove wait for VM platform isolate exits.
+* Drop `dart2jsPath` configuration support.
 
 ## 0.4.11
 

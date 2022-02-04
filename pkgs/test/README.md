@@ -877,7 +877,7 @@ safety, and a language version above `2.12` to enable sound null safety. When
 fine-grained configuration is unavoidable, the approach varies by platform.
 
 Compilation for browser and node tests can be configured by passing arguments to
-`dart2js` with `--dart2js-args` options.
+`dart compile js` with `--dart2js-args` options.
 
 Fine-grained compilation configuration is not supported for the VM. Any
 configuration which impacts runtime behavior for the entire VM, such as `-D`

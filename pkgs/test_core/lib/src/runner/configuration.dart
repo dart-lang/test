@@ -91,10 +91,6 @@ class Configuration {
   String get configurationPath => _configurationPath ?? 'dart_test.yaml';
   final String? _configurationPath;
 
-  /// The path to dart2js.
-  String get dart2jsPath => _dart2jsPath ?? p.join(sdkDir, 'bin', 'dart2js');
-  final String? _dart2jsPath;
-
   /// The name of the reporter to use to display results.
   String get reporter => _reporter ?? defaultReporter;
   final String? _reporter;
@@ -266,7 +262,6 @@ class Configuration {
       required bool? debug,
       required bool? color,
       required String? configurationPath,
-      required String? dart2jsPath,
       required String? reporter,
       required Map<String, String>? fileReporters,
       required String? coverage,
@@ -319,7 +314,6 @@ class Configuration {
         debug: debug,
         color: color,
         configurationPath: configurationPath,
-        dart2jsPath: dart2jsPath,
         reporter: reporter,
         fileReporters: fileReporters,
         coverage: coverage,
@@ -379,7 +373,6 @@ class Configuration {
           bool? debug,
           bool? color,
           String? configurationPath,
-          String? dart2jsPath,
           String? reporter,
           Map<String, String>? fileReporters,
           String? coverage,
@@ -431,7 +424,6 @@ class Configuration {
           debug: debug,
           color: color,
           configurationPath: configurationPath,
-          dart2jsPath: dart2jsPath,
           reporter: reporter,
           fileReporters: fileReporters,
           coverage: coverage,
@@ -500,7 +492,6 @@ class Configuration {
         debug: null,
         color: null,
         configurationPath: null,
-        dart2jsPath: null,
         reporter: null,
         fileReporters: null,
         coverage: null,
@@ -566,7 +557,6 @@ class Configuration {
         debug: null,
         color: null,
         configurationPath: null,
-        dart2jsPath: null,
         reporter: null,
         fileReporters: null,
         coverage: null,
@@ -634,7 +624,6 @@ class Configuration {
         debug: null,
         color: null,
         configurationPath: null,
-        dart2jsPath: null,
         coverage: null,
         pubServePort: null,
         shardIndex: null,
@@ -697,7 +686,6 @@ class Configuration {
           debug: null,
           color: null,
           configurationPath: null,
-          dart2jsPath: null,
           reporter: null,
           fileReporters: null,
           coverage: null,
@@ -750,7 +738,7 @@ class Configuration {
 
   /// Creates new Configuration.
   ///
-  /// Unlike [new Configuration], this assumes [presets] is already resolved.
+  /// Unlike [Configuration.new], this assumes [presets] is already resolved.
   Configuration._(
       {required bool? help,
       required this.customHtmlTemplatePath,
@@ -759,7 +747,6 @@ class Configuration {
       required bool? debug,
       required bool? color,
       required String? configurationPath,
-      required String? dart2jsPath,
       required String? reporter,
       required Map<String, String>? fileReporters,
       required this.coverage,
@@ -785,7 +772,6 @@ class Configuration {
         _debug = debug,
         _color = color,
         _configurationPath = configurationPath,
-        _dart2jsPath = dart2jsPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
         pubServeUrl = pubServePort == null
@@ -837,7 +823,6 @@ class Configuration {
         debug: null,
         color: null,
         configurationPath: null,
-        dart2jsPath: null,
         reporter: null,
         fileReporters: null,
         coverage: null,
@@ -945,7 +930,6 @@ class Configuration {
         debug: other._debug ?? _debug,
         color: other._color ?? _color,
         configurationPath: other._configurationPath ?? _configurationPath,
-        dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         reporter: other._reporter ?? _reporter,
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other.coverage ?? coverage,
@@ -993,7 +977,6 @@ class Configuration {
       bool? debug,
       bool? color,
       String? configurationPath,
-      String? dart2jsPath,
       String? reporter,
       Map<String, String>? fileReporters,
       String? coverage,
@@ -1044,7 +1027,6 @@ class Configuration {
         debug: debug ?? _debug,
         color: color ?? _color,
         configurationPath: configurationPath ?? _configurationPath,
-        dart2jsPath: dart2jsPath ?? _dart2jsPath,
         reporter: reporter ?? _reporter,
         fileReporters: fileReporters ?? this.fileReporters,
         coverage: coverage ?? this.coverage,

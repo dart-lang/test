@@ -60,10 +60,9 @@ class CompilerPool {
         var wrapperPath = p.join(dir, 'runInBrowser.dart');
         File(wrapperPath).writeAsStringSync(code);
 
-        var dart2jsPath = _config.dart2jsPath;
-        if (Platform.isWindows) dart2jsPath += '.bat';
-
         var args = [
+          'compile',
+          'js',
           for (var experiment in enabledExperiments)
             '--enable-experiment=$experiment',
           '--enable-asserts',
@@ -76,7 +75,7 @@ class CompilerPool {
 
         if (_config.color) args.add('--enable-diagnostic-colors');
 
-        var process = await Process.start(dart2jsPath, args);
+        var process = await Process.start(Platform.resolvedExecutable, args);
         if (_closed) {
           process.kill();
           return;
