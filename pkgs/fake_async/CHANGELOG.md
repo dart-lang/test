@@ -1,6 +1,8 @@
 ## 1.3.0-dev
 
 * `FakeTimer.tick` will return a value instead of throwing.
+* `FakeAsync.includeTimerStackTrace` allows controlling whether timers created
+   with a FakeAsync will include a creation Stack Trace.
 
 ## 1.2.0
 

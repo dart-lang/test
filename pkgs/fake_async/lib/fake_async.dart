@@ -57,6 +57,10 @@ class FakeAsync {
   Duration get elapsed => _elapsed;
   var _elapsed = Duration.zero;
 
+  /// Whether Timers created by this FakeAsync will include a creation stack
+  /// trace in [FakeAsync.pendingTimersDebugString].
+  final bool includeTimerStackTrace;
+
   /// The fake time at which the current call to [elapse] will finish running.
   ///
   /// This is `null` if there's no current call to [elapse].
@@ -98,7 +102,7 @@ class FakeAsync {
   ///
   /// Note: it's usually more convenient to use [fakeAsync] rather than creating
   /// a [FakeAsync] object and calling [run] manually.
-  FakeAsync({DateTime? initialTime}) {
+  FakeAsync({DateTime? initialTime, this.includeTimerStackTrace = true}) {
     var nonNullInitialTime = initialTime ?? clock.now();
     _clock = Clock(() => nonNullInitialTime.add(elapsed));
   }
@@ -245,7 +249,8 @@ class FakeAsync {
   /// Creates a new timer controlled by `this` that fires [callback] after
   /// [duration] (or every [duration] if [periodic] is `true`).
   Timer _createTimer(Duration duration, Function callback, bool periodic) {
-    var timer = FakeTimer._(duration, callback, periodic, this);
+    var timer = FakeTimer._(duration, callback, periodic, this,
+        includeStackTrace: includeTimerStackTrace);
     _timers.add(timer);
     return timer;
   }
@@ -281,7 +286,11 @@ class FakeTimer implements Timer {
   late Duration _nextCall;
 
   /// The current stack trace when this timer was created.
-  final creationStackTrace = StackTrace.current;
+  ///
+  /// If [FakeAsync.includeTimerStackTrace] is set to false then accessing
+  /// this field will throw a [TypeError].
+  StackTrace get creationStackTrace => _creationStackTrace!;
+  final StackTrace? _creationStackTrace;
 
   var _tick = 0;
 
@@ -290,12 +299,13 @@ class FakeTimer implements Timer {
 
   /// Returns debugging information to try to identify the source of the
   /// [Timer].
-  String get debugString =>
-      'Timer (duration: $duration, periodic: $isPeriodic), created:\n'
-      '$creationStackTrace';
+  String get debugString => 'Timer (duration: $duration, periodic: $isPeriodic)'
+      '${_creationStackTrace != null ? ', created:\n$creationStackTrace' : ''}';
 
-  FakeTimer._(Duration duration, this._callback, this.isPeriodic, this._async)
-      : duration = duration < Duration.zero ? Duration.zero : duration {
+  FakeTimer._(Duration duration, this._callback, this.isPeriodic, this._async,
+      {bool includeStackTrace = true})
+      : duration = duration < Duration.zero ? Duration.zero : duration,
+        _creationStackTrace = includeStackTrace ? StackTrace.current : null {
     _nextCall = _async._elapsed + this.duration;
   }
 
