@@ -2,6 +2,7 @@
 
 * Remove wait for VM platform isolate exits.
 * Drop `dart2jsPath` configuration support.
+* Allow loading tests under a path with the directory named `packages`.
 
 ## 0.4.11
 

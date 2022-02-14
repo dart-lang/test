@@ -1,6 +1,7 @@
 ## 1.20.2-dev
 
 * Drop `dart2js-path` command line argument.
+* Allow loading tests under a path with the directory named `packages`.
 
 ## 1.20.1
 

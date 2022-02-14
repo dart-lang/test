@@ -90,12 +90,6 @@ void main() {
           completion(isEmpty));
     });
 
-    test('ignores files in packages/ directories', () async {
-      await d.dir('packages', [d.file('a_test.dart', _tests)]).create();
-      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
-          completion(isEmpty));
-    });
-
     test("ignores files that don't end in _test.dart", () async {
       await d.file('test.dart', _tests).create();
       expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
