@@ -513,8 +513,8 @@ void main() {
     });
 
     test(
-        'should report debugging information of pending timers excluding stack traces',
-        () {
+        'should report debugging information of pending timers excluding '
+        'stack traces', () {
       FakeAsync(includeTimerStackTrace: false).run((fakeAsync) {
         expect(fakeAsync.pendingTimers, isEmpty);
         var nonPeriodic = Timer(const Duration(seconds: 1), () {}) as FakeTimer;
