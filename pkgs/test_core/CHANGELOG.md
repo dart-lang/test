@@ -3,6 +3,7 @@
 * Remove wait for VM platform isolate exits.
 * Drop `dart2jsPath` configuration support.
 * Allow loading tests under a path with the directory named `packages`.
+* Require analyzer version `3.3.0`.
 
 ## 0.4.11
 
