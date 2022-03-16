@@ -144,7 +144,7 @@ class BrowserManager {
             'Timed out waiting for ${runtime.name} to connect.\n'
             'Browser output: ${utf8.decode(browser.output)}');
       }
-      return _start(runtime, url, future, settings, configuration, attempt++);
+      return _start(runtime, url, future, settings, configuration, ++attempt);
     });
   }
 
