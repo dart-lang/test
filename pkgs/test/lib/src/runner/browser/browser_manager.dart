@@ -137,7 +137,7 @@ class BrowserManager {
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future.timeout(Duration(seconds: 45), onTimeout: () {
+    return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
       browser.close();
       if (attempt >= _maxRetries) {
         throw ApplicationException(
