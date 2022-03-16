@@ -2,6 +2,7 @@
 
 * Drop `dart2js-path` command line argument.
 * Allow loading tests under a path with the directory named `packages`.
+* Add retry for launching browsers. Reduce timeout back to 30 seconds.
 
 ## 1.20.1
 
