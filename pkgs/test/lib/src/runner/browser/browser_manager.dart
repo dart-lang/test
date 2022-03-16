@@ -98,11 +98,21 @@ class BrowserManager {
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
   static Future<BrowserManager> start(
+          Runtime runtime,
+          Uri url,
+          Future<WebSocketChannel> future,
+          ExecutableSettings settings,
+          Configuration configuration) =>
+      _start(runtime, url, future, settings, configuration, 1);
+
+  static const _maxRetries = 3;
+  static Future<BrowserManager> _start(
       Runtime runtime,
       Uri url,
       Future<WebSocketChannel> future,
       ExecutableSettings settings,
-      Configuration configuration) {
+      Configuration configuration,
+      int attempt) {
     var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
@@ -127,11 +137,14 @@ class BrowserManager {
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future.timeout(Duration(seconds: 45), onTimeout: () {
+    return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
       browser.close();
-      throw ApplicationException(
-          'Timed out waiting for ${runtime.name} to connect.\n'
-          'Browser output: ${utf8.decode(browser.output)}');
+      if (attempt >= _maxRetries) {
+        throw ApplicationException(
+            'Timed out waiting for ${runtime.name} to connect.\n'
+            'Browser output: ${utf8.decode(browser.output)}');
+      }
+      return _start(runtime, url, future, settings, configuration, ++attempt);
     });
   }
 
