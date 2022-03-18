@@ -89,8 +89,8 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
   }
 
   if (streamMatchers.length == 1) return streamMatchers.first;
-  var description = 'do one of the following:\n' +
-      bullet(streamMatchers.map((matcher) => matcher.description));
+  var description = 'do one of the following:\n'
+      '${bullet(streamMatchers.map((matcher) => matcher.description))}';
 
   return StreamMatcher((queue) async {
     var transaction = queue.startTransaction();
@@ -166,8 +166,8 @@ StreamMatcher emitsInOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.length == 1) return streamMatchers.first;
 
-  var description = 'do the following in order:\n' +
-      bullet(streamMatchers.map((matcher) => matcher.description));
+  var description = 'do the following in order:\n'
+      '${bullet(streamMatchers.map((matcher) => matcher.description))}';
 
   return StreamMatcher((queue) async {
     for (var i = 0; i < streamMatchers.length; i++) {
@@ -310,8 +310,8 @@ Future<bool> _tryMatch(StreamQueue queue, StreamMatcher matcher) {
 StreamMatcher emitsInAnyOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toSet();
   if (streamMatchers.length == 1) return streamMatchers.first;
-  var description = 'do the following in any order:\n' +
-      bullet(streamMatchers.map((matcher) => matcher.description));
+  var description = 'do the following in any order:\n'
+      '${bullet(streamMatchers.map((matcher) => matcher.description))}';
 
   return StreamMatcher(
       (queue) async => await _tryInAnyOrder(queue, streamMatchers) ? null : '',

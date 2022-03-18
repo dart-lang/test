@@ -27,7 +27,7 @@ dev_dependencies:
   glob: ^2.0.0
   graphs: ^2.0.0
   path: ^1.8.0
-  lints: ^1.0.0
+  lints: '>=1.0.0 <3.0.0'
   test: any
   test_core: any
 

@@ -104,7 +104,7 @@ class CompilerPool {
 
         if (exitCode != 0) throw 'dart2js failed.';
 
-        _fixSourceMap(jsPath + '.map');
+        _fixSourceMap('$jsPath.map');
       });
     });
   }
@@ -117,7 +117,7 @@ class CompilerPool {
     var root = map['sourceRoot'] as String;
 
     map['sources'] = map['sources'].map((source) {
-      var url = Uri.parse(root + '$source');
+      var url = Uri.parse('$root$source');
       if (url.scheme != '' && url.scheme != 'file') return source;
       if (url.path.endsWith('/runInBrowser.dart')) return '';
       return p.toUri(mapPath).resolveUri(url).toString();

@@ -207,9 +207,8 @@ class Runner {
       }
     }
 
-    warn("this package doesn't support running tests on " +
-        toSentence(unsupportedNames, conjunction: 'or') +
-        '.');
+    warn("this package doesn't support running tests on "
+        '${toSentence(unsupportedNames, conjunction: 'or')}.');
   }
 
   /// Closes the runner.

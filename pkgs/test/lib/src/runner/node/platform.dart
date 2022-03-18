@@ -149,7 +149,7 @@ class NodePlatform extends PlatformPlugin
   Future<Pair<Process, StackTraceMapper?>> _spawnNormalProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
+    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
     await _compilers.compile('''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/node.dart";
@@ -169,7 +169,7 @@ class NodePlatform extends PlatformPlugin
 
     StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
-      var mapPath = jsPath + '.map';
+      var mapPath = '$jsPath.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
@@ -190,7 +190,7 @@ class NodePlatform extends PlatformPlugin
     StackTraceMapper? mapper;
     var jsPath = p.join(precompiledPath, '$testPath.node_test.dart.js');
     if (!suiteConfig.jsTrace) {
-      var mapPath = jsPath + '.map';
+      var mapPath = '$jsPath.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
@@ -210,16 +210,16 @@ class NodePlatform extends PlatformPlugin
       SuiteConfiguration suiteConfig,
       int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
+    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
     var url = _config.pubServeUrl!.resolveUri(
-        p.toUri(p.relative(testPath, from: 'test') + '.node_test.dart.js'));
+        p.toUri('${p.relative(testPath, from: 'test')}.node_test.dart.js'));
 
     var js = await _get(url, testPath);
     await File(jsPath).writeAsString(preamble.getPreamble(minified: true) + js);
 
     StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
-      var mapUrl = url.replace(path: url.path + '.map');
+      var mapUrl = url.replace(path: '${url.path}.map');
       mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
           mapUrl: mapUrl,
           sdkRoot: p.toUri('packages/\$sdk'),

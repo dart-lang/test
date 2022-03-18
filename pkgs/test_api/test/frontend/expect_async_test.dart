@@ -377,6 +377,7 @@ void main() {
     });
 
     test("doesn't support a function with 7 arguments", () {
+      // ignore: no_leading_underscores_for_local_identifiers
       expect(() => expectAsync((_a, _b, _c, _d, _e, _f, _g) {}),
           throwsArgumentError);
     });
