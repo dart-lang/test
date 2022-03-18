@@ -41,8 +41,11 @@ class GithubReporter implements Reporter {
   final Map<LiveTest, List<Message>> _testMessages = {};
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static GithubReporter watch(Engine engine, StringSink sink,
-          {required bool printPath}) =>
+  static GithubReporter watch(
+    Engine engine,
+    StringSink sink, {
+    required bool printPath,
+  }) =>
       GithubReporter._(engine, sink, printPath);
 
   GithubReporter._(this._engine, this._sink, this._printPath) {
@@ -158,7 +161,11 @@ class GithubReporter implements Reporter {
       message += ', ${_engine.skipped.length} skipped';
     }
     message += '.';
-    _sink.writeln(hadFailures ? _helper.error(message) : message);
+    _sink.writeln(
+      hadFailures
+          ? _helper.error(message)
+          : '${_GithubHelper.celebrationIcon} $message',
+    );
   }
 
   // todo: do we need to bake in awareness about tests that haven't completed
@@ -177,11 +184,12 @@ class GithubReporter implements Reporter {
 class _GithubHelper {
   static const String passedIcon = '✅';
   static const String failedIcon = '❌';
-  static const String skippedIcon = '☑️';
+  static const String skippedIcon = '❎';
+  static const String celebrationIcon = '🎉';
 
   _GithubHelper();
 
-  String startGroup(String title) => '::group::$title';
+  String startGroup(String title) => '::group::${title.replaceAll('\n', ' ')}';
   final String endGroup = '::endgroup::';
 
   String error(String message) => '::error::$message';
