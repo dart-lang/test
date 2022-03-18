@@ -55,12 +55,13 @@ Null Function(
         .where((argument) => argument != placeholder)
         .toList();
 
+    var argsText = arguments.isEmpty
+        ? ' no arguments.'
+        : ':\n${bullet(arguments.map(prettyPrint))}';
     zone.handleUncaughtError(
         TestFailure(
-            'Callback should never have been called, but it was called with' +
-                (arguments.isEmpty
-                    ? ' no arguments.'
-                    : ':\n${bullet(arguments.map(prettyPrint))}')),
+            'Callback should never have been called, but it was called with'
+            '$argsText'),
         zone.run(() => Chain.current()));
     return null;
   };

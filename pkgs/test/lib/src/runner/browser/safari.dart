@@ -35,7 +35,7 @@ class Safari extends Browser {
     // want it to load.
     var redirect = p.join(dir, 'redirect.html');
     File(redirect).writeAsStringSync(
-        '<script>location = ' + jsonEncode(url.toString()) + '</script>');
+        '<script>location = ${jsonEncode(url.toString())}</script>');
 
     var process = await Process.start(
         settings.executable, settings.arguments.toList()..add(redirect));

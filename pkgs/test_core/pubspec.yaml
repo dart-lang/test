@@ -33,7 +33,7 @@ dependencies:
   test_api: 0.4.9
 
 dev_dependencies:
-  lints: ^1.0.0
+  lints: '>=1.0.0 <3.0.0'
 
 dependency_overrides:
   test_api:
