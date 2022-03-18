@@ -101,6 +101,7 @@ class GithubReporter implements Reporter {
     final failed = errors.isNotEmpty;
 
     void emitMessages(List<Message> messages) {
+      // todo: escape some github commands? ::group::, ::endgroup::, ::error::, ...
       for (var message in messages) {
         _sink.writeln(message.text);
       }
@@ -112,6 +113,9 @@ class GithubReporter implements Reporter {
         _sink.writeln(error.stackTrace.toString().trimRight());
       }
     }
+
+    // TODO: how to recognize (setUpAll) and (tearDownAll)?
+    // And are they reported in the 'passed test' count from the engine?
 
     final isLoadSuite = test.suite is LoadSuite;
     if (isLoadSuite) {
@@ -152,19 +156,18 @@ class GithubReporter implements Reporter {
     _sink.writeln();
 
     final hadFailures = _engine.failed.isNotEmpty;
-    String message =
-        '${_engine.passed.length} ${pluralize('test', _engine.passed.length)} passed';
+    var message = '${_engine.passed.length} '
+        '${pluralize('test', _engine.passed.length)} passed';
     if (_engine.failed.isNotEmpty) {
       message += ', ${_engine.failed.length} failed';
     }
     if (_engine.skipped.isNotEmpty) {
       message += ', ${_engine.skipped.length} skipped';
     }
-    message += '.';
     _sink.writeln(
       hadFailures
           ? _helper.error(message)
-          : '${_GithubHelper.celebrationIcon} $message',
+          : '$message ${_GithubHelper.celebrationIcon}',
     );
   }
 
