@@ -11,6 +11,7 @@ import '../engine.dart';
 import '../reporter.dart';
 import '../reporter/compact.dart';
 import '../reporter/expanded.dart';
+import '../reporter/github.dart';
 import '../reporter/json.dart';
 
 /// Constructs a reporter for the provided engine with the provided
@@ -43,6 +44,11 @@ final _allReporters = <String, ReporterDetails>{
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single.testPath).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
+  'github': ReporterDetails(
+      'Custom output for Github Actions.',
+      (config, engine, sink) => GithubReporter.watch(engine, sink,
+          printPath: config.paths.length > 1 ||
+              Directory(config.paths.single.testPath).existsSync())),
   'json': ReporterDetails(
       'A machine-readable format (see '
       'https://dart.dev/go/test-docs/json_reporter.md).',
@@ -52,9 +58,11 @@ final _allReporters = <String, ReporterDetails>{
 
 final defaultReporter = inTestTests
     ? 'expanded'
-    : canUseSpecialChars
-        ? 'compact'
-        : 'expanded';
+    : githubContext
+        ? 'github'
+        : canUseSpecialChars
+            ? 'compact'
+            : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.
