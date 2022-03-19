@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/state.dart';
+import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart';
 
 import '../engine.dart';
@@ -99,41 +100,27 @@ class GithubReporter implements Reporter {
     final messages = _testMessages[test] ?? [];
     final skipped = test.state.result == Result.skipped;
     final failed = errors.isNotEmpty;
+    final loadSuite = test.suite is LoadSuite;
+    final setUpAll = test.individualName == setUpAllName;
+    final tearDownAll = test.individualName == tearDownAllName;
 
-    void emitMessages(List<Message> messages) {
-      // todo: escape some github commands? ::group::, ::endgroup::, ::error::, ...
-      for (var message in messages) {
-        _sink.writeln(message.text);
-      }
-    }
+    // // Don't emit any info for 'loadSuite' tests unless they contain errors.
+    // if (isLoadSuite && (errors.isEmpty && messages.isEmpty)) {
+    //   return;
+    // }
 
-    void emitErrors(List<AsyncError> errors) {
-      for (var error in errors) {
-        _sink.writeln('${error.error}');
-        _sink.writeln(error.stackTrace.toString().trimRight());
-      }
-    }
-
-    // TODO: how to recognize (setUpAll) and (tearDownAll)?
-    // And are they reported in the 'passed test' count from the engine?
-
-    final isLoadSuite = test.suite is LoadSuite;
-    if (isLoadSuite) {
-      // Don't emit any info for 'loadSuite' tests, unless they contain errors.
-      if (errors.isNotEmpty || messages.isNotEmpty) {
-        _sink.writeln('${test.suite.path}:');
-        emitMessages(messages);
-        emitErrors(errors);
-      }
-
-      return;
-    }
-
+    var defaultIcon = loadSuite
+        ? _GithubHelper.loadSuite
+        : setUpAll
+            ? _GithubHelper.setUpAll
+            : tearDownAll
+                ? _GithubHelper.tearDownAll
+                : _GithubHelper.passed;
     final prefix = failed
-        ? _GithubHelper.failedIcon
+        ? _GithubHelper.failed
         : skipped
-            ? _GithubHelper.skippedIcon
-            : _GithubHelper.passedIcon;
+            ? _GithubHelper.skipped
+            : defaultIcon;
     final statusSuffix = failed
         ? ' (failed)'
         : skipped
@@ -144,9 +131,16 @@ class GithubReporter implements Reporter {
     if (_printPath && test.suite.path != null) {
       name = '${test.suite.path}: $name';
     }
+    // TODO: have a visual indication when passed tests still contain contents
+    // in the group?
     _sink.writeln(_helper.startGroup('$prefix $name$statusSuffix'));
-    emitMessages(messages);
-    emitErrors(errors);
+    for (var message in messages) {
+      _sink.writeln(message.text);
+    }
+    for (var error in errors) {
+      _sink.writeln('${error.error}');
+      _sink.writeln(error.stackTrace.toString().trimRight());
+    }
     _sink.writeln(_helper.endGroup);
   }
 
@@ -156,24 +150,24 @@ class GithubReporter implements Reporter {
     _sink.writeln();
 
     final hadFailures = _engine.failed.isNotEmpty;
-    var message = '${_engine.passed.length} '
-        '${pluralize('test', _engine.passed.length)} passed';
+    final message = StringBuffer('${_engine.passed.length} '
+        '${pluralize('test', _engine.passed.length)} passed');
     if (_engine.failed.isNotEmpty) {
-      message += ', ${_engine.failed.length} failed';
+      message.write(', ${_engine.failed.length} failed');
     }
     if (_engine.skipped.isNotEmpty) {
-      message += ', ${_engine.skipped.length} skipped';
+      message.write(' (${_engine.skipped.length} skipped)');
     }
+    message.write('.');
     _sink.writeln(
       hadFailures
-          ? _helper.error(message)
-          : '$message ${_GithubHelper.celebrationIcon}',
+          ? _helper.error(message.toString())
+          : '${_GithubHelper.passed} $message',
     );
   }
 
   // todo: do we need to bake in awareness about tests that haven't completed
-  // yet?
-
+  // yet? some reporters seem to, but not all
   // ignore: unused_element
   String _normalizeTestResult(LiveTest liveTest) {
     // For backwards-compatibility, report skipped tests as successes.
@@ -185,10 +179,15 @@ class GithubReporter implements Reporter {
 }
 
 class _GithubHelper {
-  static const String passedIcon = '✅';
-  static const String failedIcon = '❌';
-  static const String skippedIcon = '❎';
-  static const String celebrationIcon = '🎉';
+  static const String passed = '✅';
+  static const String skipped = ' ⃞';
+  static const String failed = '❌';
+
+  // char sets avilable at https://www.compart.com/en/unicode/
+  // todo: ⛔ ⊝ ⏹ ⃞, ⏺ ⏩ ⏪ ∅,
+  static const String loadSuite = '⏺';
+  static const String setUpAll = '⏩';
+  static const String tearDownAll = '⏪';
 
   _GithubHelper();
 
