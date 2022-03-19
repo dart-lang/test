@@ -92,6 +92,9 @@ class GithubReporter implements Reporter {
     _subscriptions.add(liveTest.onMessage.listen((message) {
       _testMessages.putIfAbsent(liveTest, () => []).add(message);
     }));
+
+    // Add a spacer between pre-test output and the test results.
+    _sink.writeln();
   }
 
   /// A callback called when [liveTest] finishes running.
@@ -101,19 +104,18 @@ class GithubReporter implements Reporter {
     final skipped = test.state.result == Result.skipped;
     final failed = errors.isNotEmpty;
     final loadSuite = test.suite is LoadSuite;
-    final setUpAll = test.individualName == setUpAllName;
-    final tearDownAll = test.individualName == tearDownAllName;
+    final synthetic = loadSuite ||
+        test.individualName == setUpAllName ||
+        test.individualName == tearDownAllName;
 
-    // Don't emit any info for 'loadSuite' tests unless they contain errors.
-    if (loadSuite && (errors.isEmpty && messages.isEmpty)) {
+    // Don't emit any info for 'loadSuite', setUpAll, or tearDownAll tests
+    // unless they contain errors or other info.
+    if (synthetic && (errors.isEmpty && messages.isEmpty)) {
       return;
     }
 
-    var defaultIcon = setUpAll
-        ? _GithubHelper.setUpAll
-        : tearDownAll
-            ? _GithubHelper.tearDownAll
-            : _GithubHelper.passed;
+    var defaultIcon =
+        synthetic ? _GithubHelper.synthetic : _GithubHelper.passed;
     final prefix = failed
         ? _GithubHelper.failed
         : skipped
@@ -126,8 +128,10 @@ class GithubReporter implements Reporter {
             : '';
 
     var name = test.test.name;
-    if (_printPath && test.suite.path != null) {
-      name = '${test.suite.path}: $name';
+    if (!loadSuite) {
+      if (_printPath && test.suite.path != null) {
+        name = '${test.suite.path}: $name';
+      }
     }
     // TODO: have a visual indication when passed tests still contain contents
     // in the group?
@@ -178,13 +182,13 @@ class GithubReporter implements Reporter {
 
 class _GithubHelper {
   static const String passed = '✅';
-  static const String skipped = '∅';
+  static const String skipped = ' ⃞';
   static const String failed = '❌';
 
   // char sets avilable at https://www.compart.com/en/unicode/
-  // todo: ⛔ ⊝ ⏹ ⃞, ⏺ ⏩ ⏪ ∅,
-  static const String setUpAll = '⏺';
-  static const String tearDownAll = '⏺';
+  // todo: ⛔, ⃞
+  // ⊝, ⏹, ⃞, ⏺, ⏩, ⏪, ∅, ❎
+  static const String synthetic = '⏺';
 
   _GithubHelper();
 
