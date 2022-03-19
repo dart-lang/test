@@ -104,18 +104,16 @@ class GithubReporter implements Reporter {
     final setUpAll = test.individualName == setUpAllName;
     final tearDownAll = test.individualName == tearDownAllName;
 
-    // // Don't emit any info for 'loadSuite' tests unless they contain errors.
-    // if (isLoadSuite && (errors.isEmpty && messages.isEmpty)) {
-    //   return;
-    // }
+    // Don't emit any info for 'loadSuite' tests unless they contain errors.
+    if (loadSuite && (errors.isEmpty && messages.isEmpty)) {
+      return;
+    }
 
-    var defaultIcon = loadSuite
-        ? _GithubHelper.loadSuite
-        : setUpAll
-            ? _GithubHelper.setUpAll
-            : tearDownAll
-                ? _GithubHelper.tearDownAll
-                : _GithubHelper.passed;
+    var defaultIcon = setUpAll
+        ? _GithubHelper.setUpAll
+        : tearDownAll
+            ? _GithubHelper.tearDownAll
+            : _GithubHelper.passed;
     final prefix = failed
         ? _GithubHelper.failed
         : skipped
@@ -180,14 +178,13 @@ class GithubReporter implements Reporter {
 
 class _GithubHelper {
   static const String passed = '✅';
-  static const String skipped = ' ⃞';
+  static const String skipped = '∅';
   static const String failed = '❌';
 
   // char sets avilable at https://www.compart.com/en/unicode/
   // todo: ⛔ ⊝ ⏹ ⃞, ⏺ ⏩ ⏪ ∅,
-  static const String loadSuite = '⏺';
-  static const String setUpAll = '⏩';
-  static const String tearDownAll = '⏪';
+  static const String setUpAll = '⏺';
+  static const String tearDownAll = '⏺';
 
   _GithubHelper();
 
