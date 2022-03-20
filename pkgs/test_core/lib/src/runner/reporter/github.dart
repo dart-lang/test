@@ -52,6 +52,9 @@ class GithubReporter implements Reporter {
   GithubReporter._(this._engine, this._sink, this._printPath) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
+
+    // Add a spacer between pre-test output and the test results.
+    _sink.writeln();
   }
 
   @override
@@ -92,9 +95,6 @@ class GithubReporter implements Reporter {
     _subscriptions.add(liveTest.onMessage.listen((message) {
       _testMessages.putIfAbsent(liveTest, () => []).add(message);
     }));
-
-    // Add a spacer between pre-test output and the test results.
-    _sink.writeln();
   }
 
   /// A callback called when [liveTest] finishes running.
@@ -158,17 +158,17 @@ class GithubReporter implements Reporter {
       message.write(', ${_engine.failed.length} failed');
     }
     if (_engine.skipped.isNotEmpty) {
-      message.write(' (${_engine.skipped.length} skipped)');
+      message.write(', ${_engine.skipped.length} skipped');
     }
     message.write('.');
     _sink.writeln(
       hadFailures
           ? _helper.error(message.toString())
-          : '${_GithubHelper.passed} $message',
+          : '${_GithubHelper.success} $message',
     );
   }
 
-  // todo: do we need to bake in awareness about tests that haven't completed
+  // TODO: Do we need to bake in awareness about tests that haven't completed
   // yet? some reporters seem to, but not all
   // ignore: unused_element
   String _normalizeTestResult(LiveTest liveTest) {
@@ -182,13 +182,14 @@ class GithubReporter implements Reporter {
 
 class _GithubHelper {
   static const String passed = '✅';
-  static const String skipped = ' ⃞';
+  static const String skipped = '❎';
   static const String failed = '❌';
 
-  // char sets avilable at https://www.compart.com/en/unicode/
-  // todo: ⛔, ⃞
-  // ⊝, ⏹, ⃞, ⏺, ⏩, ⏪, ∅, ❎
+  // Char sets avilable at https://www.compart.com/en/unicode/:
+  // ⛔, ⏹, ⏺, ⏩, ⏪, ∅, ❎, 🚫
   static const String synthetic = '⏺';
+
+  static const String success = '🎉';
 
   _GithubHelper();
 
