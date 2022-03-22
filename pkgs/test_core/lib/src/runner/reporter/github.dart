@@ -145,7 +145,6 @@ class GithubReporter implements Reporter {
       }
     }
     _sink.writeln(_helper.startGroup('$prefix $name$statusSuffix'));
-    // TODO: strip out any ::group:: and ::endgroup:: tokens?
     // TODO: Note that printing messages and errors in this manner could display
     // them in a different order than they were generated.
     for (var message in messages) {
