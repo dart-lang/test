@@ -41,6 +41,8 @@ class GithubReporter implements Reporter {
 
   final Map<LiveTest, List<Message>> _testMessages = {};
 
+  final Set<LiveTest> _completedTests = {};
+
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
     Engine engine,
@@ -93,7 +95,13 @@ class GithubReporter implements Reporter {
 
     // Collect messages from tests as they are emitted.
     _subscriptions.add(liveTest.onMessage.listen((message) {
-      _testMessages.putIfAbsent(liveTest, () => []).add(message);
+      if (_completedTests.contains(liveTest)) {
+        // The test has already completed and it's previous messages were
+        // written out; ensure this post-completion output is not lost.
+        _sink.writeln(message.text);
+      } else {
+        _testMessages.putIfAbsent(liveTest, () => []).add(message);
+      }
     }));
   }
 
@@ -108,7 +116,10 @@ class GithubReporter implements Reporter {
         test.individualName == setUpAllName ||
         test.individualName == tearDownAllName;
 
-    // Don't emit any info for 'loadSuite', setUpAll, or tearDownAll tests
+    // Mark this test as having completed.
+    _completedTests.add(test);
+
+    // Don't emit any info for loadSuite, setUpAll, or tearDownAll tests
     // unless they contain errors or other info.
     if (synthetic && (errors.isEmpty && messages.isEmpty)) {
       return;
@@ -133,9 +144,10 @@ class GithubReporter implements Reporter {
         name = '${test.suite.path}: $name';
       }
     }
-    // TODO: have a visual indication when passed tests still contain contents
-    // in the group?
     _sink.writeln(_helper.startGroup('$prefix $name$statusSuffix'));
+    // TODO: strip out any ::group:: and ::endgroup:: tokens?
+    // TODO: Note that printing messages and errors in this manner could display
+    // them in a different order than they were generated.
     for (var message in messages) {
       _sink.writeln(message.text);
     }
@@ -167,33 +179,20 @@ class GithubReporter implements Reporter {
           : '${_GithubHelper.success} $message',
     );
   }
-
-  // TODO: Do we need to bake in awareness about tests that haven't completed
-  // yet? some reporters seem to, but not all
-  // ignore: unused_element
-  String _normalizeTestResult(LiveTest liveTest) {
-    // For backwards-compatibility, report skipped tests as successes.
-    if (liveTest.state.result == Result.skipped) return 'success';
-    // if test is still active, it was probably cancelled
-    if (_engine.active.contains(liveTest)) return 'error';
-    return liveTest.state.result.toString();
-  }
 }
 
 class _GithubHelper {
+  // Char sets avilable at https://www.compart.com/en/unicode/.
   static const String passed = '✅';
   static const String skipped = '❎';
   static const String failed = '❌';
-
-  // Char sets avilable at https://www.compart.com/en/unicode/:
-  // ⛔, ⏹, ⏺, ⏩, ⏪, ∅, ❎, 🚫
   static const String synthetic = '⏺';
-
   static const String success = '🎉';
 
   _GithubHelper();
 
   String startGroup(String title) => '::group::${title.replaceAll('\n', ' ')}';
+
   final String endGroup = '::endgroup::';
 
   String error(String message) => '::error::$message';

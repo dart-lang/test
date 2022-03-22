@@ -45,7 +45,7 @@ final _allReporters = <String, ReporterDetails>{
               Directory(config.paths.single.testPath).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'github': ReporterDetails(
-      'Custom output for Github Actions.',
+      'A custom reporter for GitHub Actions output.',
       (config, engine, sink) => GithubReporter.watch(engine, sink,
           printPath: config.paths.length > 1 ||
               Directory(config.paths.single.testPath).existsSync())),

@@ -107,6 +107,7 @@ Output:
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
+          [github]                    A custom reporter for GitHub Actions output.
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
 
     --file-reporter                   Enable an additional reporter writing test results to a file.
