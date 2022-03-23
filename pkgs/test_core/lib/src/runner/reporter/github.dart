@@ -184,7 +184,7 @@ class _GithubHelper {
   static const String skipped = '\u274E';
   static const String failed = '\u274C';
   static const String synthetic = '\u23FA';
-  static const String success = '\u1F389';
+  static const String success = '🎉';
 
   _GithubHelper();
 
