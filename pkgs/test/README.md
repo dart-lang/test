@@ -238,11 +238,14 @@ specifying it at all, meaning the test order will remain as-is.
 
 ### Selecting a Test Reporter
 
-You can adjust the output format of the test results using the `--reporter=<option>`
+You can adjust the output format of test results using the `--reporter=<option>`
 command line flag. The default format is the `compact` output format - a single
 line, continuously updated as tests are run. When running on the GitHub Actions CI
-however, the default changes to the `github` output format - a reporter customized
-for that CI/CD system. The available options for the `--reporter` flag are:
+however (detected via checking the `GITHUB_ACTIONS` environment variable for `true`),
+the default changes to the `github` output format - a reporter customized
+for that CI/CD system.
+
+The available options for the `--reporter` flag are:
 
 - `compact`: a single, continuously updated line
 - `expanded`: a separate line for each update
