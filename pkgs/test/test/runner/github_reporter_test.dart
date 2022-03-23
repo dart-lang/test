@@ -185,52 +185,6 @@ void main() {
         ::endgroup::
         🎉 2 tests passed.''');
     });
-
-    // todo: fix this
-    //   test('interleaves prints and errors', () {
-    //     return _expectReport('''
-    //       // This completer ensures that the test isolate isn't killed until all
-    //       // prints have happened.
-    //       var completer = Completer();
-    //       test('test', () {
-    //         scheduleMicrotask(() {
-    //           print("three");
-    //           print("four");
-    //           throw "second error";
-    //         });
-
-    //         scheduleMicrotask(() {
-    //           print("five");
-    //           print("six");
-    //           completer.complete();
-    //         });
-
-    //         print("one");
-    //         print("two");
-    //         throw "first error";
-    //       });
-
-    //       test('wait', () => completer.future);''', '''
-    //       +0: test
-    //       one
-    //       two
-    //       +0 -1: test [E]
-    //         first error
-    //         test.dart 24:11  main.<fn>
-
-    //       three
-    //       four
-    //         second error
-    //         test.dart 13:13  main.<fn>.<fn>
-    //         ===== asynchronous gap ===========================
-    //         dart:async       scheduleMicrotask
-    //         test.dart 10:11  main.<fn>
-
-    //       five
-    //       six
-    //       +0 -1: wait
-    //       +1 -1: Some tests failed.''');
-    //   });
   });
 
   group('skip:', () {

@@ -145,8 +145,6 @@ class GithubReporter implements Reporter {
       }
     }
     _sink.writeln(_helper.startGroup('$prefix $name$statusSuffix'));
-    // TODO: Note that printing messages and errors in this manner could display
-    // them in a different order than they were generated.
     for (var message in messages) {
       _sink.writeln(message.text);
     }
@@ -182,11 +180,11 @@ class GithubReporter implements Reporter {
 
 class _GithubHelper {
   // Char sets avilable at https://www.compart.com/en/unicode/.
-  static const String passed = '✅';
-  static const String skipped = '❎';
-  static const String failed = '❌';
-  static const String synthetic = '⏺';
-  static const String success = '🎉';
+  static const String passed = '\u2705';
+  static const String skipped = '\u274E';
+  static const String failed = '\u274C';
+  static const String synthetic = '\u23FA';
+  static const String success = '\u1F389';
 
   _GithubHelper();
 

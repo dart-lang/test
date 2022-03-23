@@ -3,6 +3,8 @@
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
   * [Sharding Tests](#sharding-tests)
+  * [Shuffling Tests](#shuffling-tests)
+  * [Selecting a Test Reporter](#selecting-a-test-reporter)
   * [Collecting Code Coverage](#collecting-code-coverage)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
@@ -209,6 +211,7 @@ the invocation to the `test` function, and are considered a match if
   on platform implementations.
 
 ### Sharding Tests
+
 Tests can also be sharded with the `--total-shards` and `--shard-index` arguments,
 allowing you to split up your test suites and run them separately. For example,
 if you wanted to run 3 shards of your test suite, you could run them as follows:
@@ -232,6 +235,19 @@ dart test --test-randomize-ordering-seed=random
 
 Setting `--test-randomize-ordering-seed=0` will have the same effect as not
 specifying it at all, meaning the test order will remain as-is.
+
+### Selecting a Test Reporter
+
+You can adjust the output format of the test results using the `--reporter=<option>`
+command line flag. The default format is the `compact` output format - a single
+line, continuously updated as tests are run. When running on the GitHub Actions CI
+however, the default changes to the `github` output format - a reporter customized
+for that CI/CD system. The available options for the `--reporter` flag are:
+
+- `compact`: a single, continuously updated line
+- `expanded`: a separate line for each update
+- `github`: a custom reporter for GitHub Actions
+- `json`: a machine-readable format; see https://dart.dev/go/test-docs/json_reporter.md
 
 ### Collecting Code Coverage
 
