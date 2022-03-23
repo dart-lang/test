@@ -15,13 +15,13 @@ import 'package:js/js.dart';
 
 /// A class defined in content shell, used to control its behavior.
 @JS()
-class _TestRunner {
+class TestRunner {
   external void waitUntilDone();
 }
 
 /// Returns the current content shell runner, or `null` if none exists.
 @JS()
-external _TestRunner? get testRunner;
+external TestRunner? get testRunner;
 
 /// A class that exposes the test API to JS.
 ///

@@ -119,10 +119,9 @@ Output:
 
 ''';
 
-final _browsers = '[vm (default), chrome, firefox' +
-    (Platform.isMacOS ? ', safari' : '') +
-    (Platform.isWindows ? ', ie' : '') +
-    ', node]';
+final _browsers = '[vm (default), chrome, firefox'
+    '${Platform.isMacOS ? ', safari' : ''}'
+    '${Platform.isWindows ? ', ie' : ''}, node]';
 
 void main() {
   setUpAll(precompileTestExecutable);
@@ -753,7 +752,7 @@ void main(List<String> args) async {
   });
 
   group('nnbd', () {
-    final _testContents = '''
+    final testContents = '''
 import 'package:test/test.dart';
 import 'opted_out.dart';
 
@@ -773,7 +772,7 @@ final foo = true;''').create();
         () async {
       await d.file('test.dart', '''
 // @dart=2.12
-$_testContents
+$testContents
 ''').create();
       var test = await runTest(['test.dart']);
 
@@ -789,7 +788,7 @@ $_testContents
         () async {
       await d.file('test.dart', '''
 // @dart=2.8
-$_testContents''').create();
+$testContents''').create();
       var test = await runTest(['test.dart']);
 
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -805,7 +804,7 @@ $_testContents''').create();
       });
 
       setUp(() async {
-        await d.file('test.dart', _testContents).create();
+        await d.file('test.dart', testContents).create();
       });
 
       test('sound null safety is enabled if the package is opted in', () async {

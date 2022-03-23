@@ -179,9 +179,9 @@ Future<Isolate> _spawnDataIsolate(
 
 Future<Isolate> _spawnPrecompiledIsolate(
     String testPath, SendPort message, String precompiledPath) async {
-  testPath = p.absolute(p.join(precompiledPath, testPath) + '.vm_test.dart');
+  testPath = p.absolute('${p.join(precompiledPath, testPath)}.vm_test.dart');
   var dillTestpath =
-      testPath.substring(0, testPath.length - '.dart'.length) + '.vm.app.dill';
+      '${testPath.substring(0, testPath.length - '.dart'.length)}.vm.app.dill';
   if (await File(dillTestpath).exists()) {
     testPath = dillTestpath;
   }
@@ -200,7 +200,7 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
 Future<Isolate> _spawnPubServeIsolate(
     String testPath, SendPort message, Uri pubServeUrl) async {
   var url = pubServeUrl.resolveUri(
-      p.toUri(p.relative(testPath, from: 'test') + '.vm_test.dart'));
+      p.toUri('${p.relative(testPath, from: 'test')}.vm_test.dart'));
 
   try {
     return await Isolate.spawnUri(url, [], message, checked: true);

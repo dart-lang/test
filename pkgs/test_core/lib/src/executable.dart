@@ -60,7 +60,7 @@ Future<void> _execute(List<String> args) async {
   /// Signals will only be captured as long as this has an active subscription.
   /// Otherwise, they'll be handled by Dart's default signal handler, which
   /// terminates the program immediately.
-  final _signals = Platform.isWindows
+  final signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
       : Platform.isFuchsia // Signals don't exist on Fuchsia.
           ? Stream.empty()
@@ -139,7 +139,7 @@ Future<void> _execute(List<String> args) async {
 
   Runner? runner;
 
-  signalSubscription ??= _signals.listen((signal) async {
+  signalSubscription ??= signals.listen((signal) async {
     completeShutdown();
     await runner?.close();
   });

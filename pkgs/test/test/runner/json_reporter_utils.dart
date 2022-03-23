@@ -32,13 +32,13 @@ Future<void> expectJsonReport(
   expect(outputLines.map(decodeLine), containsAll([allSuitesJson()]));
 
   // A single start event is emitted first.
-  final _start = {
+  final start = {
     'type': 'start',
     'protocolVersion': '0.1.1',
     'runnerVersion': testVersion,
     'pid': testPid,
   };
-  expect(decodeLine(outputLines.first), equals(_start));
+  expect(decodeLine(outputLines.first), equals(start));
 
   // A single done event is emitted last.
   expect(decodeLine(outputLines.last), equals(done));
