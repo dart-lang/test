@@ -160,7 +160,8 @@ void warn(String message, {bool? color, bool print = false}) {
 ///
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
-Future<T> getUnusedPort<T>(FutureOr<T> Function(int port) tryPort) async {
+Future<T> getUnusedPort<T extends Object>(
+    FutureOr<T> Function(int port) tryPort) async {
   T? value;
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());
