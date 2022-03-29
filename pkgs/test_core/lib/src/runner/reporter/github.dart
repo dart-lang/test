@@ -37,7 +37,6 @@ class GithubReporter implements Reporter {
   final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
-  final _helper = _GithubHelper();
 
   final Map<LiveTest, List<Message>> _testMessages = {};
 
@@ -126,11 +125,11 @@ class GithubReporter implements Reporter {
     }
 
     var defaultIcon =
-        synthetic ? _GithubHelper.synthetic : _GithubHelper.passed;
+        synthetic ? _GithubMarkup.synthetic : _GithubMarkup.passed;
     final prefix = failed
-        ? _GithubHelper.failed
+        ? _GithubMarkup.failed
         : skipped
-            ? _GithubHelper.skipped
+            ? _GithubMarkup.skipped
             : defaultIcon;
     final statusSuffix = failed
         ? ' (failed)'
@@ -144,7 +143,7 @@ class GithubReporter implements Reporter {
         name = '${test.suite.path}: $name';
       }
     }
-    _sink.writeln(_helper.startGroup('$prefix $name$statusSuffix'));
+    _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
     for (var message in messages) {
       _sink.writeln(message.text);
     }
@@ -152,7 +151,7 @@ class GithubReporter implements Reporter {
       _sink.writeln('${error.error}');
       _sink.writeln(error.stackTrace.toString().trimRight());
     }
-    _sink.writeln(_helper.endGroup);
+    _sink.writeln(_GithubMarkup.endGroup);
   }
 
   void _onDone(bool? success) {
@@ -172,25 +171,24 @@ class GithubReporter implements Reporter {
     message.write('.');
     _sink.writeln(
       hadFailures
-          ? _helper.error(message.toString())
-          : '${_GithubHelper.success} $message',
+          ? _GithubMarkup.error(message.toString())
+          : '${_GithubMarkup.success} $message',
     );
   }
 }
 
-class _GithubHelper {
+abstract class _GithubMarkup {
   // Char sets avilable at https://www.compart.com/en/unicode/.
-  static const String passed = '\u2705';
-  static const String skipped = '\u274E';
-  static const String failed = '\u274C';
-  static const String synthetic = '\u23FA';
+  static const String passed = '✅';
+  static const String skipped = '❎';
+  static const String failed = '❌';
+  static const String synthetic = '⏺';
   static const String success = '🎉';
 
-  _GithubHelper();
+  static String startGroup(String title) =>
+      '::group::${title.replaceAll('\n', ' ')}';
 
-  String startGroup(String title) => '::group::${title.replaceAll('\n', ' ')}';
+  static final String endGroup = '::endgroup::';
 
-  final String endGroup = '::endgroup::';
-
-  String error(String message) => '::error::$message';
+  static String error(String message) => '::error::$message';
 }

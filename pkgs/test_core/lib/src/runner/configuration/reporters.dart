@@ -58,7 +58,7 @@ final _allReporters = <String, ReporterDetails>{
 
 final defaultReporter = inTestTests
     ? 'expanded'
-    : githubContext
+    : inGithubContext
         ? 'github'
         : canUseSpecialChars
             ? 'compact'

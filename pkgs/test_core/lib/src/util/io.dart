@@ -91,7 +91,7 @@ bool get canUseSpecialChars =>
 ///
 /// See
 /// https://docs.github.com/en/actions/learn-github-actions/environment-variables.
-bool get githubContext => Platform.environment['GITHUB_ACTIONS'] == 'true';
+bool get inGithubContext => Platform.environment['GITHUB_ACTIONS'] == 'true';
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() =>
