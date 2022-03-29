@@ -124,8 +124,9 @@ class GithubReporter implements Reporter {
       return;
     }
 
-    var defaultIcon =
-        synthetic ? _GithubMarkup.synthetic : _GithubMarkup.passed;
+    // For now, we use the same icon for both tests and test-like structures
+    // (loadSuite, setUpAll, tearDownAll).
+    var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
     final prefix = failed
         ? _GithubMarkup.failed
         : skipped
@@ -182,7 +183,10 @@ abstract class _GithubMarkup {
   static const String passed = '✅';
   static const String skipped = '❎';
   static const String failed = '❌';
-  static const String synthetic = '⏺';
+  // The 'synthetic' icon is currently not used but is something to consider in
+  // order to draw a distinction between user tests and test-like supporting
+  // infrastructure.
+  // static const String synthetic = '⏺';
   static const String success = '🎉';
 
   static String startGroup(String title) =>

@@ -295,12 +295,12 @@ void main() {
             tearDownAll(() { print('two'); });
             test('test 1', () {});
           });''', '''
-          ::group::⏺ one (setUpAll)
+          ::group::✅ one (setUpAll)
           one
           ::endgroup::
           ::group::✅ one test 1
           ::endgroup::
-          ::group::⏺ one (tearDownAll)
+          ::group::✅ one (tearDownAll)
           two
           ::endgroup::
           🎉 1 test passed.''');
