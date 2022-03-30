@@ -103,10 +103,11 @@ Running Tests:
                                       If not passed, do not randomize test case execution order.
 
 Output:
--r, --reporter                        Set how to print test results.
+-r, --reporter=<option>               Set how to print test results.
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
+          [github]                    A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
 
     --file-reporter                   Enable an additional reporter writing test results to a file.
@@ -720,8 +721,14 @@ void main(List<String> args) async {
   await test.runTests(args);
   test.completeShutdown();
 }''').create();
-      var test = await runDart(['runner.dart', '--no-color', '--', 'test.dart'],
-          description: 'dart runner.dart -- test.dart');
+      var test = await runDart([
+        'runner.dart',
+        '--no-color',
+        '--reporter',
+        'compact',
+        '--',
+        'test.dart',
+      ], description: 'dart runner.dart -- test.dart');
       expect(
           test.stdout,
           emitsThrough(containsInOrder([

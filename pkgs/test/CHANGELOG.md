@@ -1,4 +1,8 @@
-## 1.20.3-dev
+## 1.21.0-dev
+
+* Add a `github` reporter option for use with GitHub Actions.
+* Make the `github` test reporter the default when we detect we're running on
+  GitHub Actions.
 
 ## 1.20.2
 

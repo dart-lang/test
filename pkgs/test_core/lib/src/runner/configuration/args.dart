@@ -135,7 +135,8 @@ final ArgParser _parser = (() {
       help: 'Set how to print test results.',
       defaultsTo: defaultReporter,
       allowed: reporterDescriptions.keys.toList(),
-      allowedHelp: reporterDescriptions);
+      allowedHelp: reporterDescriptions,
+      valueHelp: 'option');
   parser.addOption('file-reporter',
       help: 'Enable an additional reporter writing test results to a file.\n'
           'Should be in the form <reporter>:<filepath>, '

@@ -87,6 +87,12 @@ final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
 bool get canUseSpecialChars =>
     (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
 
+/// Detect whether we're running in a Github Actions context.
+///
+/// See
+/// https://docs.github.com/en/actions/learn-github-actions/environment-variables.
+bool get inGithubContext => Platform.environment['GITHUB_ACTIONS'] == 'true';
+
 /// Creates a temporary directory and returns its path.
 String createTempDir() =>
     Directory(_tempDir).createTempSync('dart_test_').resolveSymbolicLinksSync();
