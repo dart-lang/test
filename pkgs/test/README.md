@@ -600,25 +600,25 @@ The following built-in stream matchers are available:
 
 You can also define your own custom stream matchers with [`StreamMatcher()`].
 
-[`emits()`]: https://pub.dev/documentation/test_api/latest/test_api/emits.html
+[`emits()`]: https://pub.dev/documentation/test_api/latest/expect/emits.html
 
-[`emitsError()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsError.html
+[`emitsError()`]: https://pub.dev/documentation/test_api/latest/expect/emitsError.html
 
-[`emitsDone`]: https://pub.dev/documentation/test_api/latest/test_api/emitsDone.html
+[`emitsDone`]: https://pub.dev/documentation/test_api/latest/expect/emitsDone.html
 
-[`mayEmit()`]: https://pub.dev/documentation/test_api/latest/test_api/mayEmit.html
+[`mayEmit()`]: https://pub.dev/documentation/test_api/latest/expect/mayEmit.html
 
-[`mayEmitMultiple()`]: https://pub.dev/documentation/test_api/latest/test_api/mayEmitMultiple.html
+[`mayEmitMultiple()`]: https://pub.dev/documentation/test_api/latest/expect/mayEmitMultiple.html
 
-[`emitsAnyOf()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsAnyOf.html
+[`emitsAnyOf()`]: https://pub.dev/documentation/test_api/latest/expect/emitsAnyOf.html
 
-[`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInOrder.html
+[`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/expect/emitsInOrder.html
 
-[`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInAnyOrder.html
+[`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/expect/emitsInAnyOrder.html
 
-[`neverEmits()`]: https://pub.dev/documentation/test_api/latest/test_api/neverEmits.html
+[`neverEmits()`]: https://pub.dev/documentation/test_api/latest/expect/neverEmits.html
 
-[`StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/test_api/StreamMatcher-class.html
+[`StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/expect/StreamMatcher-class.html
 
 ## Running Tests With Custom HTML
 
