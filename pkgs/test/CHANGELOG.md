@@ -1,5 +1,6 @@
-## 1.21.0-dev
+## 1.21.0
 
+* Allow analyzer version `4.x`.
 * Add a `github` reporter option for use with GitHub Actions.
 * Make the `github` test reporter the default when we detect we're running on
   GitHub Actions.

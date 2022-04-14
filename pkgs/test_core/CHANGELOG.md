@@ -1,9 +1,9 @@
-## 0.4.12-dev
+## 0.4.12
 
 * Remove wait for VM platform isolate exits.
 * Drop `dart2jsPath` configuration support.
 * Allow loading tests under a path with the directory named `packages`.
-* Require analyzer version `3.3.0`.
+* Require analyzer version `3.3.0`, and allow version `4.x`.
 
 ## 0.4.11
 
