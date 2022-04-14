@@ -1,4 +1,9 @@
-## 0.4.12
+## 0.4.13
+
+* Re-publish changes from 0.4.12.
+* Stop relying on setUpAllName and tearDownAllName constants from test_api.
+
+## 0.4.12 (retracted)
 
 * Remove wait for VM platform isolate exits.
 * Drop `dart2jsPath` configuration support.

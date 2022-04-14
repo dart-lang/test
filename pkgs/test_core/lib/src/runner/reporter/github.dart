@@ -9,7 +9,6 @@ import 'dart:async';
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart';
 
 import '../engine.dart';
@@ -112,8 +111,8 @@ class GithubReporter implements Reporter {
     final failed = errors.isNotEmpty;
     final loadSuite = test.suite is LoadSuite;
     final synthetic = loadSuite ||
-        test.individualName == setUpAllName ||
-        test.individualName == tearDownAllName;
+        test.individualName == '(setUpAll)' ||
+        test.individualName == '(tearDownAll)';
 
     // Mark this test as having completed.
     _completedTests.add(test);

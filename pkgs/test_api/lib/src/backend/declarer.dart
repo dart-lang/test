@@ -14,9 +14,6 @@ import 'invoker.dart';
 import 'metadata.dart';
 import 'test.dart';
 
-const setUpAllName = '(setUpAll)';
-const tearDownAllName = '(tearDownAll)';
-
 /// A class that manages the state of tests as they're declared.
 ///
 /// A nested tree of Declarers tracks the current group, set-up, and tear-down
@@ -360,7 +357,7 @@ class Declarer {
   Test? get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
-    return LocalTest(_prefix(setUpAllName), _metadata.change(timeout: _timeout),
+    return LocalTest(_prefix('(setUpAll)'), _metadata.change(timeout: _timeout),
         () {
       return runZoned(
           () => Future.forEach<Function>(_setUpAlls, (setUp) => setUp()),
@@ -377,7 +374,7 @@ class Declarer {
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
     return LocalTest(
-        _prefix(tearDownAllName), _metadata.change(timeout: _timeout), () {
+        _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
       return runZoned(() => Invoker.current!.runTearDowns(_tearDownAlls),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
