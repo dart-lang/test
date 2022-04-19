@@ -196,8 +196,9 @@ Future<WipConnection> _connect(
 extension on HttpClient {
   Encoding determineEncoding(HttpHeaders headers) {
     final contentType = headers.contentType?.charset;
+
     /// Using the `charset` property of the `contentType` if available.
-    /// If it's unavailable or if the encoding name is unknown, [latin1] is used by default, 
+    /// If it's unavailable or if the encoding name is unknown, [latin1] is used by default,
     /// as per [RFC 2616][].
     ///
     /// [RFC 2616]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
