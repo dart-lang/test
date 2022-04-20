@@ -1,7 +1,7 @@
 ## 1.21.1
 
-* Fix a bug loading sources and source maps while parsing coverage information
-  from chrome.
+* Fix a bug loading JS sources with non-utf8 content while parsing coverage
+  information from chrome.
 
 ## 1.21.0
 
