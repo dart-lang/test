@@ -62,5 +62,70 @@ void main() {
           ['--coverage', coverageDirectory.path, 'test.dart', '-p', 'chrome']);
       await _validateCoverage(test, 'test.dart.chrome.json');
     });
+
+    test(
+        'gathers coverage for Chrome tests when JS files contain unicode characters',
+        () async {
+      final sourceMapFileContent =
+          '{"version":3,"file":"","sources":[],"names":[],"mappings":""}';
+      final jsContent = '''
+        (function() {
+          '© '
+          window.foo = function foo() {
+            return 'foo';
+          };
+        })({
+        
+          '© ': ''
+          });
+      ''';
+      await d.file('file_with_unicode.js', jsContent).create();
+      await d.file('file_with_unicode.js.map', sourceMapFileContent).create();
+
+      await d.file('js_with_unicode_test.dart', '''
+        import 'dart:html';
+        import 'dart:js';
+        
+        import 'package:test/test.dart';
+        
+        Future<void> loadScript(String src) async {
+          final script = ScriptElement()..src = src;
+          final scriptLoaded = script.onLoad.first;
+          document.body!.append(script);
+          await scriptLoaded.timeout(Duration(seconds: 1));
+        }
+
+        void main() {
+          test("test 1", () async {
+            await loadScript('file_with_unicode.js');
+            expect(context['foo'], isNotNull);
+            context.callMethod('foo', []);
+            expect(true, isTrue);
+          });
+        }
+      ''').create();
+
+      final jsBytes = utf8.encode(jsContent);
+      final jsLatin1 = latin1.decode(jsBytes);
+      final jsUtf8 = utf8.decode(jsBytes);
+      expect(jsLatin1, isNot(jsUtf8),
+          reason: 'test setup: should have decoded differently');
+
+      const functionPattern = 'function foo';
+      expect([jsLatin1, jsUtf8], everyElement(contains(functionPattern)));
+      expect(jsLatin1.indexOf(functionPattern),
+          isNot(jsUtf8.indexOf(functionPattern)),
+          reason:
+              'test setup: decoding should have shifted the position of the function');
+
+      var test = await runTest([
+        '--coverage',
+        coverageDirectory.path,
+        'js_with_unicode_test.dart',
+        '-p',
+        'chrome'
+      ]);
+      await _validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
+    });
   });
 }
