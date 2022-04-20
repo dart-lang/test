@@ -1,3 +1,8 @@
+## 1.21.1
+
+* Fix a bug loading sources and source maps while parsing coverage information
+  from chrome.
+
 ## 1.21.0
 
 * Allow analyzer version `4.x`.
