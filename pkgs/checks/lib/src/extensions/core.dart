@@ -80,7 +80,9 @@ extension EqualityChecks<T> on Check<T> {
   void equals(T other) {
     context.expect(() => ['equals ${literal(other)}'], (actual) {
       if (actual == other) return null;
-      return Rejection(actual: literal(actual), which: ['is not equal']);
+      return Rejection(
+          actual: literal(actual),
+          which: ['is not equal according to `operator ==`']);
     });
   }
 
