@@ -191,14 +191,14 @@ class Extracted<T> {
   }
 }
 
-abstract class _Value<T> {
+abstract class _Optional<T> {
   R? apply<R extends FutureOr<Rejection?>>(R Function(T) callback);
-  Future<Extracted<_Value<R>>> mapAsync<R>(
+  Future<Extracted<_Optional<R>>> mapAsync<R>(
       FutureOr<Extracted<R>> Function(T) transform);
-  Extracted<_Value<R>> map<R>(Extracted<R> Function(T) transform);
+  Extracted<_Optional<R>> map<R>(Extracted<R> Function(T) transform);
 }
 
-class _Present<T> implements _Value<T> {
+class _Present<T> implements _Optional<T> {
   final T value;
   _Present(this.value);
 
@@ -206,33 +206,33 @@ class _Present<T> implements _Value<T> {
   R? apply<R extends FutureOr<Rejection?>>(R Function(T) c) => c(value);
 
   @override
-  Future<Extracted<_Value<R>>> mapAsync<R>(
+  Future<Extracted<_Present<R>>> mapAsync<R>(
       FutureOr<Extracted<R>> Function(T) transform) async {
     final transformed = await transform(value);
     return transformed._map((v) => _Present(v));
   }
 
   @override
-  Extracted<_Value<R>> map<R>(Extracted<R> Function(T) transform) =>
+  Extracted<_Present<R>> map<R>(Extracted<R> Function(T) transform) =>
       transform(value)._map((v) => _Present(v));
 }
 
-class _Absent<T> implements _Value<T> {
+class _Absent<T> implements _Optional<T> {
   @override
   R? apply<R extends FutureOr<Rejection?>>(R Function(T) c) => null;
 
   @override
-  Future<Extracted<_Value<R>>> mapAsync<R>(
+  Future<Extracted<_Absent<R>>> mapAsync<R>(
           FutureOr<Extracted<R>> Function(T) transform) async =>
       Extracted.value(_Absent<R>());
 
   @override
-  Extracted<_Value<R>> map<R>(FutureOr<Extracted<R>> Function(T) transform) =>
+  Extracted<_Absent<R>> map<R>(FutureOr<Extracted<R>> Function(T) transform) =>
       Extracted.value(_Absent<R>());
 }
 
 class _TestContext<T> implements Context<T>, _ClauseDescription {
-  final _Value<T> _value;
+  final _Optional<T> _value;
   final _TestContext<dynamic>? _parent;
 
   final List<_ClauseDescription> _clauses;
@@ -247,7 +247,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   final bool _allowAsync;
 
   _TestContext._({
-    required _Value<T> value,
+    required _Optional<T> value,
     required void Function(String, Rejection?) fail,
     required bool allowAsync,
     String? label,
@@ -352,7 +352,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       _fail(_failure(rejection), rejection);
     }
     // TODO - does this need null fallback instead?
-    final value = result.value as _Value<R>;
+    final value = result.value as _Optional<R>;
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
     return Check._(context);
