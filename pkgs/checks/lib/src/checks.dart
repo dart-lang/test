@@ -59,7 +59,7 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._(
     fail: (m, _) => throw TestFailure(m),
     allowAsync: true));
 
-/// Checks whether [value] satifies all expectations invoked in [condition].
+/// Checks whether [value] satisfies all expectations invoked in [condition].
 ///
 /// Returns `null` if all expectations are satisfied, otherwise returns the
 /// [Rejection] for the first expectation that fails.
@@ -81,7 +81,7 @@ Rejection? softCheck<T>(T value, void Function(Check<T>) condition) {
 /// Creates a description of the expectations checked by [condition].
 ///
 /// The strings are individual lines of a description.
-/// The description of an expectation may be one or more adjactent lines.
+/// The description of an expectation may be one or more adjacent lines.
 ///
 /// Matches the "Expected: " lines in the output of a failure message if a value
 /// did not meet the last expectation in [condition], without the first labeled
@@ -116,7 +116,7 @@ abstract class Context<T> {
   ///
   /// The property that is asserted by this expectation is described by
   /// [clause]. Often this is a single statement like "equals <1>" or "is
-  /// greather than 10", but it may be multiple lines such as describing that an
+  /// greater than 10", but it may be multiple lines such as describing that an
   /// Iterable contains an element meeting a complex expectation. If any element
   /// in the returned iterable contains a newline it may cause problems with
   /// indentation in the output.
@@ -128,7 +128,7 @@ abstract class Context<T> {
   ///
   /// The property that is asserted by this expectation is described by
   /// [clause]. Often this is a single statement like "equals <1>" or "is
-  /// greather than 10", but it may be multiple lines such as describing that an
+  /// greater than 10", but it may be multiple lines such as describing that an
   /// Iterable contains an element meeting a complex expectation. If any element
   /// in the returned iterable contains a newline it may cause problems with
   /// indentation in the output.

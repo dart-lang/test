@@ -68,7 +68,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
       } catch (e) {
         return Extracted.rejection(
             actual: 'A stream with error ${literal(e)}',
-            which: ['emittid an error instead of a value']);
+            which: ['emitted an error instead of a value']);
       }
     });
   }
@@ -108,7 +108,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   /// Fails if the stream emits any even that satisfies [condition].
   Future<void> neverEmits(void Function(Check<T>) condition) async {
     await context.expectAsync(
-        () => ['Never emis a value that:', ...indent(describe(condition))],
+        () => ['Never emits a value that:', ...indent(describe(condition))],
         (actual) async {
       var count = 0;
       await for (var emitted in actual.rest) {
