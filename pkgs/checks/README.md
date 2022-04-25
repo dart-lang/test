@@ -17,7 +17,7 @@
     `package:test/scaffolding.dart`.
 
 1.  For an incremental migration within the test, add an import to
-    `package:test/expect.dart`. Remove it to surface errors in tests that stil
+    `package:test/expect.dart`. Remove it to surface errors in tests that still
     need to be migrated, or keep it in so the tests work without being fully
     migrated.
 
@@ -43,5 +43,5 @@ checkThat(actual).deepEquals(expected);
 ## Differences in behavior from matcher
 
 - The `equals` Matcher performed a deep equality check on collections.
-  `.equals()` check will only correspon to [operator ==] so some tests may need
+  `.equals()` check will only correspond to [operator ==] so some tests may need
   to replace `.equals()` with `.deepEquals()`. **TODO: implement `deepEquals`**
