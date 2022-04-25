@@ -65,17 +65,13 @@ extension HasField<T> on Check<T> {
 
 extension BoolChecks on Check<bool> {
   void isTrue() {
-    context.expect(() => ['is true'], (actual) {
-      if (actual) return null;
-      return Rejection(actual: literal(actual));
-    });
+    context.expect(() => ['is true'],
+        (actual) => actual ? null : Rejection(actual: literal(actual)));
   }
 
   void isFalse() {
-    context.expect(() => ['is false'], (actual) {
-      if (!actual) return null;
-      return Rejection(actual: literal(actual));
-    });
+    context.expect(() => ['is false'],
+        (actual) => !actual ? null : Rejection(actual: literal(actual)));
   }
 }
 

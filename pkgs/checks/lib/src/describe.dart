@@ -1,8 +1,7 @@
 String literal(Object? o) {
-  if (o == null) return '<null>';
-  if (o is num || o is bool) return '<$o>';
+  if (o == null || o is num || o is bool) return '<$o>';
   // TODO Truncate long strings?
-  if (o is String) return '\'$o\'';
+  if (o is String) return "'$o'";
   // TODO Truncate long collections?
   return '$o';
 }
