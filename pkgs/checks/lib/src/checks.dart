@@ -1,3 +1,4 @@
+// TODO Add doc about how failure strings work.
 import 'dart:async';
 
 import 'package:test_api/hooks.dart';
@@ -76,10 +77,10 @@ Rejection? softCheck<T>(T value, void Function(Check<T>) condition) {
   return rejection;
 }
 
-/// Return a String describing the expectations checked by [condition].
+/// Creates a description of the expectations checked by [condition].
 ///
-/// Elements in the returned value are individual lines in the description. An
-/// expectation may be a single line, or multiple lines.
+/// The strings are individual lines of a description.
+/// The description of an expectation may be one or more adjactent lines.
 ///
 /// Matches the "Expected: " lines in the output of a failure message if a value
 /// did not meet the last expectation in [condition], without the first labeled
@@ -105,8 +106,8 @@ extension ContextExtension<T> on Check<T> {
 /// This is the surface of interaction for expectation extension method
 /// implementations.
 ///
-/// `expect` and `expectAsync` can test the value and optionally reject it.
-/// `nest` and `nestAsync` can test the value, and also extract some other
+/// The `expect` and `expectAsync` can test the value and optionally reject it.
+/// The `nest` and `nestAsync` can test the value, and also extract some other
 /// property from it for further checking.
 abstract class Context<T> {
   /// Expect that [predicate] will not return a [Rejection] for the checked
