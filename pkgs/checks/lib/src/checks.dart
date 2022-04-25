@@ -53,6 +53,7 @@ class Check<T> {
 /// ```
 Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._(
     value: _Present(value),
+    // TODO - switch between "a" and "an"
     label: 'a $T',
     reason: because,
     fail: (m, _) => throw TestFailure(m),
