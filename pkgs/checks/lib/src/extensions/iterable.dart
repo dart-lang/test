@@ -38,9 +38,9 @@ extension IterableChecks<T> on Check<Iterable<T>> {
     });
   }
 
-  /// Expects that the iterable contains any element such that
+  /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
-  void containsThat(void Function(Check<T>) elementCondition) {
+  void any(void Function(Check<T>) elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
