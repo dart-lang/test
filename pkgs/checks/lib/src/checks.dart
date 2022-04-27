@@ -40,7 +40,7 @@ class Check<T> {
   }
 }
 
-/// Returns a [Check] that can be used to validate expectations against [value].
+/// Creates a [Check] that can be used to validate expectations against [value].
 ///
 /// Expectations that are not satisfied throw a [TestFailure] to interrupt the
 /// currently running test and mark it as failed.

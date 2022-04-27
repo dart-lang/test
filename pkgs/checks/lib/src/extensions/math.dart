@@ -1,7 +1,7 @@
 import 'package:checks/context.dart';
 
 extension NumChecks on Check<num> {
-  void isGreaterThan(num other) {
+  void operator >(num other) {
     context.expect(() => ['is greater than ${literal(other)}'], (actual) {
       if (actual > other) return null;
       return Rejection(
@@ -10,7 +10,7 @@ extension NumChecks on Check<num> {
     });
   }
 
-  void isLessThan(num other) {
+  void operator <(num other) {
     context.expect(() => ['is less than ${literal(other)}'], (actual) {
       if (actual < other) return null;
       return Rejection(
