@@ -8,7 +8,9 @@
         git:
           url: git@github.com:dart-lang/test.git
           path: pkgs/checks
-          ref: checks
+          # Omit to try the latest, or pin to a commit to avoid
+          # breaking changes while the library is experimental.
+          ref: <sha>
     ```
 
 1.  Add an import to `package:checks/checks.dart`.
