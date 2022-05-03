@@ -1,3 +1,7 @@
+## 2.0.3-dev
+
+* Populate the pubspec `repository` field.
+
 ## 2.0.2
 
 * Reverted `meta` constraint to `^1.3.0`.

@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/test_process/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/test_process/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/test_process.svg)](https://pub.dev/packages/test_process)
+[![package publisher](https://img.shields.io/pub/publisher/test_process.svg)](https://pub.dev/packages/test_process/publisher)
+
 A package for testing subprocesses.
 
 This exposes a [`TestProcess`][TestProcess] class that wraps `dart:io`'s
