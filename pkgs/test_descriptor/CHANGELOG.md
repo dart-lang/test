@@ -1,5 +1,8 @@
 ## 2.0.1-dev
 
+* Populate the pubspec `repository` field.
+* Migrate to `package:lints`.
+
 ## 2.0.0
 
 * Null safety stable release.
