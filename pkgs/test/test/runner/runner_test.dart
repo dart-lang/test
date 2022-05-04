@@ -303,11 +303,11 @@ $_usage''');
 
       expect(
           test.stdout,
-          containsInOrder([
-            '-1: loading nonexistent.dart [E]',
-            'Failed to load "nonexistent.dart": Does not exist',
-            '-2: loading test.dart [E]',
-            'Failed to load "test.dart"',
+          emitsInAnyOrder([
+            contains('loading nonexistent.dart [E]'),
+            contains('Failed to load "nonexistent.dart": Does not exist'),
+            contains('loading test.dart [E]'),
+            contains('Failed to load "test.dart"'),
           ]));
 
       await test.shouldExit(1);
