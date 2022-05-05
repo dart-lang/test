@@ -302,12 +302,12 @@ $_usage''');
       var test = await runTest(['test.dart', 'nonexistent.dart']);
 
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading nonexistent.dart [E]',
-            'Failed to load "nonexistent.dart": Does not exist',
-            '-2: loading test.dart [E]',
-            'Failed to load "test.dart"',
+          await test.stdoutStream().toList(),
+          containsAll([
+            contains('loading nonexistent.dart [E]'),
+            contains('Failed to load "nonexistent.dart": Does not exist'),
+            contains('loading test.dart [E]'),
+            contains('Failed to load "test.dart"'),
           ]));
 
       await test.shouldExit(1);
