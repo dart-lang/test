@@ -5,11 +5,10 @@
 @TestOn('vm')
 @Tags(['safari'])
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/src/runner/browser/safari.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 import '../../utils.dart';

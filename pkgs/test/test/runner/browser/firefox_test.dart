@@ -1,15 +1,13 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
 @TestOn('vm')
 @Tags(['firefox'])
-
-import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:test/src/runner/browser/firefox.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 import '../../utils.dart';

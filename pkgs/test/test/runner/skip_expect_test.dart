@@ -2,11 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:test/test.dart';
 @TestOn('vm')
 
 import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:test/test.dart';
 
 import '../io.dart';
 

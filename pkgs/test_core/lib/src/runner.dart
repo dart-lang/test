@@ -20,7 +20,6 @@ import 'package:test_api/src/backend/test.dart'; // ignore: implementation_impor
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/reporter/multiplex.dart';
 
-import 'runner/no_tests_found_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
@@ -28,6 +27,7 @@ import 'runner/engine.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_suite.dart';
 import 'runner/loader.dart';
+import 'runner/no_tests_found_exception.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';

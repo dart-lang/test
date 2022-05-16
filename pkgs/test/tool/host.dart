@@ -9,9 +9,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
+import 'package:js/js.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:js/js.dart';
 
 /// A class defined in content shell, used to control its behavior.
 @JS()

@@ -7,6 +7,7 @@ import 'dart:collection';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
@@ -28,7 +29,6 @@ import 'package:test_core/src/runner/plugin/environment.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test_core/src/runner/runtime_selection.dart';
 import 'package:test_core/src/runner/suite.dart';
-import 'package:test/test.dart';
 
 /// A dummy suite platform to use for testing suites.
 final suitePlatform = SuitePlatform(Runtime.vm);

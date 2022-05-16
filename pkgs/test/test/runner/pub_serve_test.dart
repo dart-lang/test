@@ -9,9 +9,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 

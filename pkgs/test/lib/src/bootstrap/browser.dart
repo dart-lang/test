@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/remote_platform_helpers.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 
 import '../runner/browser/post_message_channel.dart';
 
