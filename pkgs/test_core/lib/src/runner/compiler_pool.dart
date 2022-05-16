@@ -9,9 +9,9 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 
+import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/package_config.dart';
-import '../util/dart.dart';
 import 'configuration.dart';
 import 'suite.dart';
 

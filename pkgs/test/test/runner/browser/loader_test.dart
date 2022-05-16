@@ -7,19 +7,18 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
+import 'package:test/src/runner/browser/platform.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/test.dart';
+import 'package:test_core/src/runner/hack_register_platform.dart';
+import 'package:test_core/src/runner/loader.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
+import 'package:test_core/src/runner/runner_test.dart';
 import 'package:test_core/src/runner/runtime_selection.dart';
 import 'package:test_core/src/runner/suite.dart';
-import 'package:test_core/src/runner/loader.dart';
-import 'package:test_core/src/runner/runner_test.dart';
-import 'package:test_core/src/runner/hack_register_platform.dart';
-import 'package:test/src/runner/browser/platform.dart';
-import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../utils.dart';
 

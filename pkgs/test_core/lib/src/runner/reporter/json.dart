@@ -9,15 +9,15 @@ import 'dart:io' show pid;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
+import 'package:test_api/hooks.dart' // ignore: implementation_imports
+    show
+        TestFailure;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/hooks.dart' // ignore: implementation_imports
-    show
-        TestFailure;
 
 import '../engine.dart';
 import '../load_suite.dart';

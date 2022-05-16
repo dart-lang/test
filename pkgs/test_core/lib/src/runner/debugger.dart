@@ -8,12 +8,12 @@ import 'package:async/async.dart';
 
 import '../util/async.dart';
 import '../util/io.dart';
-import 'runner_suite.dart';
 import 'configuration.dart';
 import 'console.dart';
 import 'engine.dart';
 import 'load_suite.dart';
 import 'reporter.dart';
+import 'runner_suite.dart';
 
 /// Runs [loadSuite] in debugging mode.
 ///

@@ -4,6 +4,7 @@
 
 import 'dart:collection';
 
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
@@ -16,9 +17,8 @@ import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
-import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
-import 'package:test/test.dart';
+import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
 final suitePlatform = SuitePlatform(Runtime.vm);

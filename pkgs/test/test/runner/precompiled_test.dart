@@ -12,11 +12,10 @@ import 'dart:isolate';
 import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/src/util/package_map.dart';
+import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
-
-import 'package:test/test.dart';
-import 'package:test/src/util/package_map.dart';
 
 import '../io.dart';
 

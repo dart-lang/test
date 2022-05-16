@@ -3,9 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'suite.dart';
-import 'runner_suite.dart';
+
 import 'environment.dart';
+import 'runner_suite.dart';
+import 'suite.dart';
 
 /// A class that defines a platform for which test suites can be loaded.
 ///

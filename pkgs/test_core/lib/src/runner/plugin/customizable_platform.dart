@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import './../platform.dart';
 
 /// An interface for [PlatformPlugin]s that support per-platform customization.
