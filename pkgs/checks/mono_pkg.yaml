@@ -2,17 +2,9 @@
 
 sdk:
   - dev
-  - stable
 
 stages:
     - analyze_and_format:
       - group:
         - format
         - analyze: --fatal-infos
-        sdk:
-        - dev
-    - unit_test:
-      - test: -p chrome,vm,node
-        os:
-        - linux
-        - windows
