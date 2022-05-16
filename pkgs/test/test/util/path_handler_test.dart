@@ -12,17 +12,17 @@ void main() {
   late PathHandler handler;
   setUp(() => handler = PathHandler());
 
-  Future<shelf.Response> _handle(shelf.Request request) =>
+  Future<shelf.Response> localHandler(shelf.Request request) =>
       Future.sync(() => handler.handler(request));
 
   test('returns a 404 for a root URL', () async {
     var request = shelf.Request('GET', Uri.parse('http://localhost/'));
-    expect((await _handle(request)).statusCode, equals(404));
+    expect((await localHandler(request)).statusCode, equals(404));
   });
 
   test('returns a 404 for an unregistered URL', () async {
     var request = shelf.Request('GET', Uri.parse('http://localhost/foo'));
-    expect((await _handle(request)).statusCode, equals(404));
+    expect((await localHandler(request)).statusCode, equals(404));
   });
 
   test('runs a handler for an exact URL', () async {
@@ -33,7 +33,7 @@ void main() {
       return shelf.Response.ok('good job!');
     }));
 
-    var response = await _handle(request);
+    var response = await localHandler(request);
     expect(response.statusCode, equals(200));
     expect(response.readAsString(), completion(equals('good job!')));
   });
@@ -46,7 +46,7 @@ void main() {
       return shelf.Response.ok('good job!');
     }));
 
-    var response = await _handle(request);
+    var response = await localHandler(request);
     expect(response.statusCode, equals(200));
     expect(response.readAsString(), completion(equals('good job!')));
   });
@@ -71,7 +71,7 @@ void main() {
           return shelf.Response.notFound('fake');
         }, count: 0));
 
-    var response = await _handle(request);
+    var response = await localHandler(request);
     expect(response.statusCode, equals(200));
     expect(response.readAsString(), completion(equals('good job!')));
   });

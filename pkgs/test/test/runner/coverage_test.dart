@@ -7,10 +7,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
 import '../io.dart';
@@ -21,8 +20,7 @@ void main() {
   group('with the --coverage flag,', () {
     late Directory coverageDirectory;
 
-    Future<void> _validateCoverage(
-        TestProcess test, String coveragePath) async {
+    Future<void> validateCoverage(TestProcess test, String coveragePath) async {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
 
@@ -54,13 +52,13 @@ void main() {
     test('gathers coverage for VM tests', () async {
       var test =
           await runTest(['--coverage', coverageDirectory.path, 'test.dart']);
-      await _validateCoverage(test, 'test.dart.vm.json');
+      await validateCoverage(test, 'test.dart.vm.json');
     });
 
     test('gathers coverage for Chrome tests', () async {
       var test = await runTest(
           ['--coverage', coverageDirectory.path, 'test.dart', '-p', 'chrome']);
-      await _validateCoverage(test, 'test.dart.chrome.json');
+      await validateCoverage(test, 'test.dart.chrome.json');
     });
 
     test(
@@ -125,7 +123,7 @@ void main() {
         '-p',
         'chrome'
       ]);
-      await _validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
+      await validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
     });
   });
 }
