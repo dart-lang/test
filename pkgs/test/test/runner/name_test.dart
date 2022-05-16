@@ -2,10 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/test.dart';
-import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 @TestOn('vm')
 
+import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
