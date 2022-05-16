@@ -154,7 +154,7 @@ class Metadata {
       Map<BooleanSelector, Metadata>? forTag,
       String? languageVersionComment}) {
     // Returns metadata without forTag resolved at all.
-    Metadata _unresolved() => Metadata._(
+    Metadata unresolved() => Metadata._(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -169,7 +169,7 @@ class Metadata {
 
     // If there's no tag-specific metadata, or if none of it applies, just
     // return the metadata as-is.
-    if (forTag == null || tags == null) return _unresolved();
+    if (forTag == null || tags == null) return unresolved();
     tags = Set.from(tags);
     forTag = Map.from(forTag);
 
@@ -182,8 +182,8 @@ class Metadata {
       return merged.merge(forTag!.remove(selector)!);
     });
 
-    if (merged == empty) return _unresolved();
-    return merged.merge(_unresolved());
+    if (merged == empty) return unresolved();
+    return merged.merge(unresolved());
   }
 
   /// Creates new Metadata.
