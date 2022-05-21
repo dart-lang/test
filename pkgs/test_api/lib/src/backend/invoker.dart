@@ -254,8 +254,11 @@ class Invoker {
     runZoned(() async {
       zone = Zone.current;
       _outstandingCallbackZones.add(zone!);
-      await fn();
-      counter.decrement();
+      try {
+        await fn();
+      } finally {
+        counter.decrement();
+      }
     }, zoneValues: {_counterKey: counter});
 
     return counter.onZero.whenComplete(() {
@@ -286,6 +289,7 @@ class Invoker {
     _timeoutTimer = Zone.root.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         _handleError(Zone.current, TimeoutException(message(), timeout));
+        _outstandingCallbacks.complete();
       });
     });
   }
@@ -347,7 +351,6 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace!);
-    zone.run(() => _outstandingCallbacks.complete());
 
     if (_printsOnFailure.isNotEmpty) {
       _print(_printsOnFailure.join('\n\n'));
