@@ -1,5 +1,7 @@
 ## 0.4.10-dev
 
+* Add `Target` to restrict `TestOn` annotation to library level.
+
 ## 0.4.9
 
 * Add `ignoreTimeouts` option to `Suite`, which disables all timeouts for all

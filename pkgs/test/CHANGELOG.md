@@ -1,5 +1,7 @@
 ## 1.21.2-dev
 
+* Add `Target` to restrict `TestOn` annotation to library level.
+
 ## 1.21.1
 
 * Fix a bug loading JS sources with non-utf8 content while parsing coverage
