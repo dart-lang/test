@@ -713,7 +713,6 @@ void main() {
     test('defined in a single file', () async {
       await d.file('test.dart', _success).create();
       await d.file('runner.dart', '''
-// @dart=2.8
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
