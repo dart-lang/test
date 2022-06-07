@@ -5,7 +5,7 @@
 /// A private file used for testing `spawnHybridUri` through a package Uri i.e.
 /// package:test/src/_package_hybrid_test_helper.dart`
 
-import "package:stream_channel/stream_channel.dart";
+import 'package:stream_channel/stream_channel.dart';
 
 void hybridMain(StreamChannel channel) {
   channel.sink
