@@ -5,6 +5,7 @@
 @TestOn('vm')
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
@@ -31,5 +32,14 @@ void main() {
     expect(socket.listen(null).asFuture(), completes);
 
     await channel.sink.close();
+  });
+
+  test('spawnHybridUri(): supports absolute file: URIs', () async {
+    expect(
+        spawnHybridUri(p.toUri(p.absolute(
+                p.relative(p.join('test', 'util', 'emits_numbers.dart')))))
+            .stream
+            .toList(),
+        completion(equals([1, 2, 3])));
   });
 }

@@ -22,15 +22,6 @@ void main() {
           completion(equals([1, 2, 3])));
     });
 
-    test('supports absolute file: URIs', () async {
-      expect(
-          spawnHybridUri(p.toUri(p.absolute(
-                  p.relative(p.join('test', 'util', 'emits_numbers.dart')))))
-              .stream
-              .toList(),
-          completion(equals([1, 2, 3])));
-    });
-
     test('supports Uri objects', () async {
       expect(
           spawnHybridUri(Uri.parse('util/emits_numbers.dart')).stream.toList(),
@@ -108,7 +99,7 @@ void main() {
     });
 
     test('can use dart:io even when run from a browser', () async {
-      var path = p.join(p.current, 'test', 'hybrid_test.dart');
+      var path = p.join('test', 'hybrid_test.dart');
       expect(spawnHybridCode("""
               import 'dart:io';
 
