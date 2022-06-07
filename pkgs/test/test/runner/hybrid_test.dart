@@ -573,6 +573,58 @@ void _spawnHybridUriTests([Iterable<String> arguments = const []]) {
     await test.shouldExit(0);
   });
 
+  test('supports package: URIs', () async {
+    await d.file('test.dart', '''
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(
+              spawnHybridUri(Uri(
+                scheme: 'package',
+                path: 'test/src/_package_hybrid_test_helper.dart'))
+                  .stream.toList(),
+              completion(equals([1, 2, 3])));
+          });
+        }
+      ''').create();
+
+    var test = await runTest(['test.dart', ...arguments]);
+    expect(test.stdout,
+        containsInOrder(['+0: hybrid emits numbers', '+1: All tests passed!']));
+    await test.shouldExit(0);
+  });
+
+  test('invalid package: URI', () async {
+    await d.file('test.dart', '''
+        import "package:test/test.dart";
+
+        void main() {
+          test("hybrid emits numbers", () {
+            expect(
+              spawnHybridUri(Uri(
+                scheme: 'package',
+                path: 'not a real package'))
+                  .stream.toList(),
+              completion(equals([1, 2, 3])));
+          });
+        }
+      ''').create();
+
+    var test = await runTest(['test.dart', ...arguments]);
+    expect(
+        test.stdout,
+        containsInOrder([
+          '+0: hybrid emits numbers',
+        ]));
+
+    expect(
+        test.stderr,
+        containsInOrder([
+          'Invalid argument (uri): Could not resolve the package URI:',
+        ]));
+  });
+
   test('supports Uri objects', () async {
     await d.file('test.dart', '''
         import "package:test/test.dart";

@@ -32,8 +32,8 @@ import 'package_version.dart';
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
 StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
-  url = _normalizeUrl(url, suite);
   return StreamChannelCompleter.fromFuture(() async {
+    url = await _normalizeUrl(url, suite);
     var port = ReceivePort();
     var onExitPort = ReceivePort();
     try {
@@ -86,7 +86,7 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
 /// scheme.
 ///
 /// Follows the rules for relative/absolute paths outlined in [spawnHybridUri].
-String _normalizeUrl(String url, Suite suite) {
+Future<String> _normalizeUrl(String url, Suite suite) async {
   final parsedUri = Uri.parse(url);
 
   if (parsedUri.scheme.isEmpty) {
@@ -104,6 +104,13 @@ String _normalizeUrl(String url, Suite suite) {
           p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
           parsedUri.toString());
     }
+  } else if (parsedUri.scheme == 'package') {
+    final resolvedUri = await Isolate.resolvePackageUri(parsedUri);
+    if (resolvedUri == null) {
+      throw ArgumentError.value(
+          url, 'uri', 'Could not resolve the package URI');
+    }
+    return resolvedUri.toString();
   } else {
     return url;
   }
