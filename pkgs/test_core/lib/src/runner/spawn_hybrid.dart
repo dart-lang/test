@@ -32,8 +32,8 @@ import 'package_version.dart';
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
 StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
-  url = _normalizeUrl(url, suite);
   return StreamChannelCompleter.fromFuture(() async {
+    url = await _normalizeUrl(url, suite);
     var port = ReceivePort();
     var onExitPort = ReceivePort();
     try {
@@ -82,30 +82,40 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
   }());
 }
 
-/// Normalizes [url] to an absolute url, or returns it as is if it has a
-/// scheme.
+/// Normalizes [url] to an absolute url, resolving `package:` urls with the
+/// current package config.
+///
+/// If [url] has a scheme other than `package:`, then it is returned as is.
 ///
 /// Follows the rules for relative/absolute paths outlined in [spawnHybridUri].
-String _normalizeUrl(String url, Suite suite) {
+Future<String> _normalizeUrl(String url, Suite suite) async {
   final parsedUri = Uri.parse(url);
 
-  if (parsedUri.scheme.isEmpty) {
-    var isRootRelative = parsedUri.path.startsWith('/');
+  switch (parsedUri.scheme) {
+    case '':
+      var isRootRelative = parsedUri.path.startsWith('/');
 
-    if (isRootRelative) {
-      // We assume that the current path is the package root. `pub run`
-      // enforces this currently, but at some point it would probably be good
-      // to pass in an explicit root.
-      return p.url
-          .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
-    } else {
-      var suitePath = suite.path!;
-      return p.url.join(
-          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-          parsedUri.toString());
-    }
-  } else {
-    return url;
+      if (isRootRelative) {
+        // We assume that the current path is the package root. `pub run`
+        // enforces this currently, but at some point it would probably be good
+        // to pass in an explicit root.
+        return p.url
+            .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
+      } else {
+        var suitePath = suite.path!;
+        return p.url.join(
+            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+            parsedUri.toString());
+      }
+    case 'package':
+      final resolvedUri = await Isolate.resolvePackageUri(parsedUri);
+      if (resolvedUri == null) {
+        throw ArgumentError.value(
+            url, 'uri', 'Could not resolve the package URI');
+      }
+      return resolvedUri.toString();
+    default:
+      return url;
   }
 }
 

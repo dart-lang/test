@@ -37,6 +37,14 @@ void main() {
           completion(equals([1, 2, 3])));
     });
 
+    test('supports Uri objects with package: scheme', () async {
+      expect(
+          spawnHybridUri(Uri.parse('package:spawn_hybrid/emits_numbers.dart'))
+              .stream
+              .toList(),
+          completion(equals([1, 2, 3])));
+    });
+
     test('rejects non-String, non-Uri objects', () {
       expect(() => spawnHybridUri(123), throwsArgumentError);
     });
