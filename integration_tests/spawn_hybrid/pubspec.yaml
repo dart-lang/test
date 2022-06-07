@@ -8,6 +8,8 @@ dependencies:
   stream_channel: ^2.1.0
 dev_dependencies:
   lints: '>=1.0.0 <3.0.0'
+  other_package:
+    path: other_package/
   test: any
 dependency_overrides:
   test:

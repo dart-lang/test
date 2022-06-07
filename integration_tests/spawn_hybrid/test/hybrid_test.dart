@@ -28,9 +28,17 @@ void main() {
           completion(equals([1, 2, 3])));
     });
 
-    test('supports Uri objects with package: scheme', () async {
+    test('supports package: uris referencing the root package', () async {
       expect(
           spawnHybridUri(Uri.parse('package:spawn_hybrid/emits_numbers.dart'))
+              .stream
+              .toList(),
+          completion(equals([1, 2, 3])));
+    });
+
+    test('supports package: uris referencing dependency packages', () async {
+      expect(
+          spawnHybridUri(Uri.parse('package:other_package/emits_numbers.dart'))
               .stream
               .toList(),
           completion(equals([1, 2, 3])));
