@@ -2,6 +2,7 @@
 
 * Update the github reporter to output the platform in the test names when
   multiple platforms are used.
+* Fix `spawnHybridUri` support for `package:` uris.
 
 ## 0.4.13
 
