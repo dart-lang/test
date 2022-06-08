@@ -374,7 +374,4 @@ $tests
 }
 
 /// Removes all leading space from [line].
-String _unindent(String line) {
-  if (line.isEmpty) return line;
-  return line.substring(line.indexOf(RegExp('[^ ]')));
-}
+String _unindent(String line) => line.trimLeft();
