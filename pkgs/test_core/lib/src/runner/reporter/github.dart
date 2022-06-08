@@ -29,6 +29,9 @@ class GithubReporter implements Reporter {
   /// Whether the path to each test's suite should be printed.
   final bool _printPath;
 
+  /// Whether the platform each test is running on should be printed.
+  final bool _printPlatform;
+
   /// Whether the reporter is paused.
   var _paused = false;
 
@@ -46,10 +49,12 @@ class GithubReporter implements Reporter {
     Engine engine,
     StringSink sink, {
     required bool printPath,
+    required bool printPlatform,
   }) =>
-      GithubReporter._(engine, sink, printPath);
+      GithubReporter._(engine, sink, printPath, printPlatform);
 
-  GithubReporter._(this._engine, this._sink, this._printPath) {
+  GithubReporter._(
+      this._engine, this._sink, this._printPath, this._printPlatform) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
@@ -142,6 +147,9 @@ class GithubReporter implements Reporter {
       if (_printPath && test.suite.path != null) {
         name = '${test.suite.path}: $name';
       }
+    }
+    if (_printPlatform) {
+      name = '[${test.suite.platform.runtime.name}] $name';
     }
     _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
     for (var message in messages) {

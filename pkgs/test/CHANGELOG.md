@@ -1,6 +1,8 @@
 ## 1.21.2-dev
 
 * Add `Target` to restrict `TestOn` annotation to library level.
+* Update the github reporter to output the platform in the test names when
+  multiple platforms are used.
 * Fix `spawnHybridUri` support for `package:` uris.
 
 ## 1.21.1

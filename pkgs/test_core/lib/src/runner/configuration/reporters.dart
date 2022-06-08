@@ -48,7 +48,8 @@ final _allReporters = <String, ReporterDetails>{
       'A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).',
       (config, engine, sink) => GithubReporter.watch(engine, sink,
           printPath: config.paths.length > 1 ||
-              Directory(config.paths.single.testPath).existsSync())),
+              Directory(config.paths.single.testPath).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
       'A machine-readable format (see '
       'https://dart.dev/go/test-docs/json_reporter.md).',

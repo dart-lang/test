@@ -36,6 +36,20 @@ void main() {
         🎉 3 tests passed.''');
   });
 
+  test('includes the platform name when multiple platforms are ran', () {
+    return _expectReportLines('''
+        test('success 1', () {});''', [
+      '::group::✅ [VM] success 1',
+      '::endgroup::',
+      '::group::✅ [Chrome] success 1',
+      '::endgroup::',
+      '🎉 2 tests passed.',
+    ], args: [
+      '-p',
+      'vm,chrome'
+    ]);
+  });
+
   test('runs several failing tests and reports when each fails', () {
     return _expectReport('''
         test('failure 1', () => throw TestFailure('oh no'));
@@ -306,12 +320,36 @@ void main() {
   });
 }
 
+/// Expects exactly [expected] to appear in the test output.
+///
+/// If [useContains] is passed, then the output only must contain [expected].
 Future<void> _expectReport(
   String tests,
   String expected, {
   List<String> args = const [],
   bool useContains = false,
 }) async {
+  expected = expected.split('\n').map(_unindent).join('\n');
+
+  var actual = (await _reportLines(tests, args)).join('\n');
+
+  expect(actual, useContains ? contains(expected) : equals(expected));
+}
+
+/// Expects all of [expected] lines to appear in the test output, but additional
+/// output is allowed.
+Future<void> _expectReportLines(
+  String tests,
+  List<String> expected, {
+  List<String> args = const [],
+}) async {
+  expected = [for (var line in expected) _unindent(line)];
+  var actual = await _reportLines(tests, args);
+  expect(actual, containsAllInOrder(expected));
+}
+
+/// All the output lines from running [tests].
+Future<List<String>> _reportLines(String tests, List<String> args) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -329,17 +367,11 @@ $tests
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();
-  var actual = stdoutLines
+  return stdoutLines
       .map((line) => line.trim())
       .where((line) => line.isNotEmpty)
-      .join('\n');
-
-  // Un-indent the expected string.
-  var indentation = expected.indexOf(RegExp('[^ ]'));
-  expected = expected.split('\n').map((line) {
-    if (line.isEmpty) return line;
-    return line.substring(indentation);
-  }).join('\n');
-
-  expect(actual, useContains ? contains(expected) : equals(expected));
+      .toList();
 }
+
+/// Removes all leading space from [line].
+String _unindent(String line) => line.trimLeft();
