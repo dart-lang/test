@@ -1,5 +1,8 @@
 ## 0.4.14-dev
 
+* Update the github reporter to output the platform in the test names when
+  multiple platforms are used.
+
 ## 0.4.13
 
 * Re-publish changes from 0.4.12.
