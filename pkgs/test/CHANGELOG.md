@@ -1,6 +1,7 @@
 ## 1.21.2-dev
 
 * Add `Target` to restrict `TestOn` annotation to library level.
+* Fix `spawnHybridUri` support for `package:` uris.
 
 ## 1.21.1
 
