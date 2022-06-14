@@ -1,4 +1,4 @@
-## 1.21.2-dev
+## 1.21.2
 
 * Add `Target` to restrict `TestOn` annotation to library level.
 * Update the github reporter to output the platform in the test names when
