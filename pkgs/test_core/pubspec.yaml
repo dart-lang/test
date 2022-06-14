@@ -38,5 +38,3 @@ dev_dependencies:
 dependency_overrides:
   test_api:
     path: ../test_api
-  # Temporary to force testing with the latest version
-  vm_service: 9.0.0
