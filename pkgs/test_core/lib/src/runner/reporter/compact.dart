@@ -298,6 +298,12 @@ class CompactReporter implements Reporter {
             suffix: ' - did not complete $_bold$_red[E]$_noColor');
         _sink.writeln('');
       }
+      for (var failedTest in _engine.failed) {
+        _progressLine(_description(failedTest),
+            truncate: false,
+            suffix: ' - $_bold${_red}failed$_noColor $_bold$_red[E]$_noColor');
+        _sink.writeln('');
+      }
       _progressLine('Some tests failed.', color: _red);
       _sink.writeln('');
     } else if (_engine.passed.isEmpty) {
