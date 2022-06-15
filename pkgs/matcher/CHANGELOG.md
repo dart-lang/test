@@ -1,4 +1,7 @@
-## 0.12.12-dev
+## 0.12.12
+
+* Add a best practices section to readme.
+* Populate the pubspec `repository` field.
 
 ## 0.12.11
 
