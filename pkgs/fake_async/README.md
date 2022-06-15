@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/fake_async/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/fake_async/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/fake_async.svg)](https://pub.dev/packages/fake_async)
+[![package publisher](https://img.shields.io/pub/publisher/fake_async.svg)](https://pub.dev/packages/fake_async/publisher)
+
 This package provides a [`FakeAsync`][] class, which makes it easy to
 deterministically test code that uses asynchronous features like `Future`s,
 `Stream`s, `Timer`s, and microtasks. It creates an environment in which the user
