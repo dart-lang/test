@@ -118,7 +118,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, startsWith("Expected: throws <${NullThrownError()}>"));
+          liveTest, startsWith('Expected: throws <${NullThrownError()}>'));
     });
   });
 
