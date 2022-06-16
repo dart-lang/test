@@ -117,8 +117,8 @@ void main() {
         expect(() => throw Exception(), throwsNullThrownError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'NullThrownError'>"));
+      expectTestFailed(
+          liveTest, startsWith("Expected: throws <${NullThrownError()}>"));
     });
   });
 
