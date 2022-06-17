@@ -118,7 +118,7 @@ void main() {
       });
 
       expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'NullThrownError'>"));
+          startsWith("Expected: throws <Instance of '$NullThrownError'>"));
     });
   });
 
