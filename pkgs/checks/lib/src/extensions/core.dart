@@ -118,4 +118,46 @@ extension StringChecks on Check<String> {
           actual: literal(actual), which: ['Does not contain $pattern']);
     });
   }
+
+  Check<int> get length => has((m) => m.length, 'length');
+
+  void isEmpty() {
+    context.expect(() => const ['is empty'], (actual) {
+      if (actual.isEmpty) return null;
+      return Rejection(actual: literal(actual), which: ['is not empty']);
+    });
+  }
+
+  void isNotEmpty() {
+    context.expect(() => const ['is not empty'], (actual) {
+      if (actual.isNotEmpty) return null;
+      return Rejection(actual: literal(actual), which: ['is empty']);
+    });
+  }
+
+  void startsWith(String other) {
+    context.expect(
+      () => ['starts with ${literal(other)}'],
+      (actual) {
+        if (actual.startsWith(other)) return null;
+        return Rejection(
+          actual: literal(actual),
+          which: ['does not start with ${literal(other)}'],
+        );
+      },
+    );
+  }
+
+  void endsWith(String other) {
+    context.expect(
+      () => ['ends with ${literal(other)}'],
+      (actual) {
+        if (actual.endsWith(other)) return null;
+        return Rejection(
+          actual: literal(actual),
+          which: ['does not end with ${literal(other)}'],
+        );
+      },
+    );
+  }
 }
