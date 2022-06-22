@@ -90,7 +90,7 @@ class Metadata {
 
       Timeout? timeout;
       dynamic skip;
-      for (var metadatum in metadata) {
+      for (var metadatum in metadata as List) {
         if (metadatum is Timeout) {
           if (timeout != null) {
             throw ArgumentError('Only a single Timeout may be declared for '
@@ -263,7 +263,7 @@ class Metadata {
         _retry = serialized['retry'] as int?,
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
-          for (var pair in serialized['onPlatform'])
+          for (var pair in serialized['onPlatform'] as List)
             PlatformSelector.parse(pair.first as String):
                 Metadata.deserialize(pair.last)
         },
