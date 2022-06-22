@@ -1,3 +1,7 @@
+## 1.21.3
+
+* Support the latest `package:test_api` and `package:test_core`.
+
 ## 1.21.2
 
 * Add `Target` to restrict `TestOn` annotation to library level.

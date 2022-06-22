@@ -1,3 +1,7 @@
+## 0.4.15
+
+* Support the latest `package:test_api`.
+
 ## 0.4.14
 
 * Update the github reporter to output the platform in the test names when
