@@ -1,3 +1,7 @@
+## 0.4.11
+
+* Support the latest version of `package:matcher`.
+
 ## 0.4.10
 
 * Add `Target` to restrict `TestOn` annotation to library level.
