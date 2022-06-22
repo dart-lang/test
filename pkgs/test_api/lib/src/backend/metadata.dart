@@ -84,9 +84,10 @@ class Metadata {
         result[selector] = _parsePlatformOptions(platform, [metadata]);
       } else if (metadata is List) {
         result[selector] = _parsePlatformOptions(platform, metadata);
+      } else {
+        throw ArgumentError('Metadata for platform "$platform" must be a '
+            'Timeout, Skip, or List of those; was "$metadata".');
       }
-      throw ArgumentError('Metadata for platform "$platform" must be a '
-          'Timeout, Skip, or List of those; was "$metadata".');
     });
     return result;
   }
