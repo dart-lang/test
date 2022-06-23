@@ -79,41 +79,45 @@ class Metadata {
 
     var result = <PlatformSelector, Metadata>{};
     onPlatform.forEach((platform, metadata) {
+      var selector = PlatformSelector.parse(platform);
       if (metadata is Timeout || metadata is Skip) {
-        metadata = [metadata];
-      } else if (metadata is! List) {
+        result[selector] = _parsePlatformOptions(platform, [metadata]);
+      } else if (metadata is List) {
+        result[selector] = _parsePlatformOptions(platform, metadata);
+      } else {
         throw ArgumentError('Metadata for platform "$platform" must be a '
             'Timeout, Skip, or List of those; was "$metadata".');
       }
-
-      var selector = PlatformSelector.parse(platform);
-
-      Timeout? timeout;
-      dynamic skip;
-      for (var metadatum in metadata) {
-        if (metadatum is Timeout) {
-          if (timeout != null) {
-            throw ArgumentError('Only a single Timeout may be declared for '
-                '"$platform".');
-          }
-
-          timeout = metadatum;
-        } else if (metadatum is Skip) {
-          if (skip != null) {
-            throw ArgumentError('Only a single Skip may be declared for '
-                '"$platform".');
-          }
-
-          skip = metadatum.reason ?? true;
-        } else {
-          throw ArgumentError('Metadata for platform "$platform" must be a '
-              'Timeout, Skip, or List of those; was "$metadata".');
-        }
-      }
-
-      result[selector] = Metadata.parse(timeout: timeout, skip: skip);
     });
     return result;
+  }
+
+  static Metadata _parsePlatformOptions(
+      String platform, List<dynamic> metadata) {
+    Timeout? timeout;
+    dynamic skip;
+    for (var metadatum in metadata) {
+      if (metadatum is Timeout) {
+        if (timeout != null) {
+          throw ArgumentError('Only a single Timeout may be declared for '
+              '"$platform".');
+        }
+
+        timeout = metadatum;
+      } else if (metadatum is Skip) {
+        if (skip != null) {
+          throw ArgumentError('Only a single Skip may be declared for '
+              '"$platform".');
+        }
+
+        skip = metadatum.reason ?? true;
+      } else {
+        throw ArgumentError('Metadata for platform "$platform" must be a '
+            'Timeout, Skip, or List of those; was "$metadata".');
+      }
+    }
+
+    return Metadata.parse(timeout: timeout, skip: skip);
   }
 
   /// Parses a user-provided [String] or [Iterable] into the value for [tags].
@@ -263,7 +267,7 @@ class Metadata {
         _retry = serialized['retry'] as int?,
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
-          for (var pair in serialized['onPlatform'])
+          for (var pair in serialized['onPlatform'] as List)
             PlatformSelector.parse(pair.first as String):
                 Metadata.deserialize(pair.last)
         },

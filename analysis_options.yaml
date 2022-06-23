@@ -1,7 +1,7 @@
 include: package:lints/recommended.yaml
 analyzer:
-  strong-mode:
-    implicit-casts: false
+  language:
+    strict-casts: true
   errors:
     # There are a number of deprecated members used through this package
     deprecated_member_use_from_same_package: ignore
