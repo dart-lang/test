@@ -52,26 +52,36 @@ extension HasField<T> on Check<T> {
   ///
   /// Asynchronous expectations are not allowed in [condition].
   void not(void Function(Check<T>) condition) {
-    context.expect(() {
-      return ['is not a value that:', ...indent(describe(condition))];
-    }, (actual) {
-      if (softCheck(actual, condition) != null) return null;
-      return Rejection(
+    context.expect(
+      () => ['is not a value that:', ...indent(describe(condition))],
+      (actual) {
+        if (softCheck(actual, condition) != null) return null;
+        return Rejection(
           actual: literal(actual),
-          which: ['is a value that: ', ...indent(describe(condition))]);
-    });
+          which: ['is a value that: ', ...indent(describe(condition))],
+        );
+      },
+    );
   }
 }
 
 extension BoolChecks on Check<bool> {
   void isTrue() {
-    context.expect(() => ['is true'],
-        (actual) => actual ? null : Rejection(actual: literal(actual)));
+    context.expect(
+      () => ['is true'],
+      (actual) => actual
+          ? null // force coverage
+          : Rejection(actual: literal(actual)),
+    );
   }
 
   void isFalse() {
-    context.expect(() => ['is false'],
-        (actual) => !actual ? null : Rejection(actual: literal(actual)));
+    context.expect(
+      () => ['is false'],
+      (actual) => !actual
+          ? null // force coverage
+          : Rejection(actual: literal(actual)),
+    );
   }
 }
 
@@ -112,10 +122,12 @@ extension NullabilityChecks<T> on Check<T?> {
 extension StringChecks on Check<String> {
   /// Expects that the value contains [pattern] according to [String.contains];
   void contains(Pattern pattern) {
-    context.expect(() => ['contains $pattern'], (actual) {
+    context.expect(() => ['contains ${literal(pattern)}'], (actual) {
       if (actual.contains(pattern)) return null;
       return Rejection(
-          actual: literal(actual), which: ['Does not contain $pattern']);
+        actual: literal(actual),
+        which: ['Does not contain ${literal(pattern)}'],
+      );
     });
   }
 
