@@ -6,6 +6,8 @@ import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
+import '../test_shared.dart';
+
 void main() {
   group('TypeChecks', () {
     test('isA', () {
@@ -139,25 +141,4 @@ void main() {
           .isARejection(actual: "'bob'", which: ["does not end with 'kayleb'"]);
     });
   });
-}
-
-extension on Check<Iterable<String>?> {
-  // TODO: remove this once we have a deepEquals or equivalent
-  void toStringEquals(List<String>? other) {
-    final otherToString = other.toString();
-    context.expect(() => ['toString equals'], (actual) {
-      final actualToString = actual.toString();
-      return actual.toString() == otherToString
-          ? null
-          : Rejection(actual: actualToString);
-    });
-  }
-}
-
-extension on Check<Rejection?> {
-  void isARejection({List<String>? which, required String actual}) {
-    this.isNotNull()
-      ..has((p0) => p0.actual, 'actual').equals(actual)
-      ..has((p0) => p0.which, 'which').toStringEquals(which);
-  }
 }
