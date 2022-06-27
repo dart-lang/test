@@ -9,12 +9,18 @@ extension TestIterableCheck on Check<Iterable<String>?> {
   // TODO: remove this once we have a deepEquals or equivalent
   void toStringEquals(List<String>? other) {
     final otherToString = other.toString();
-    context.expect(() => ['toString equals'], (actual) {
-      final actualToString = actual.toString();
-      return actual.toString() == otherToString
-          ? null
-          : Rejection(actual: actualToString);
-    });
+    context.expect(
+      () => ['toString equals ${literal(otherToString)}'],
+      (actual) {
+        final actualToString = actual.toString();
+        return actualToString == otherToString
+            ? null
+            : Rejection(
+                actual: actualToString,
+                which: ['does not have a matching toString'],
+              );
+      },
+    );
   }
 }
 
