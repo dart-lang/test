@@ -21,7 +21,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
 
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
-      if (actual.isEmpty) return null;
+      if (actual.isNotEmpty) return null;
       return Rejection(actual: literal(actual), which: ['is not empty']);
     });
   }
