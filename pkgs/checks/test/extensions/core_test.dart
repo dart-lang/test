@@ -139,7 +139,7 @@ void main() {
 
 extension on Check<Iterable<String>?> {
   // TODO: remove this once we have a deepEquals or equivalent
-  void toStringEquals(Iterable<String>? other) {
+  void toStringEquals(List<String>? other) {
     final otherToString = other.toString();
     context.expect(() => ['toString equals'], (actual) {
       final actualToString = actual.toString();
@@ -151,7 +151,7 @@ extension on Check<Iterable<String>?> {
 }
 
 extension on Check<Rejection?> {
-  void isARejection({Iterable<String>? which, required String actual}) {
+  void isARejection({List<String>? which, required String actual}) {
     this.isNotNull()
       ..has((p0) => p0.actual, 'actual').equals(actual)
       ..has((p0) => p0.which, 'which').toStringEquals(which);
