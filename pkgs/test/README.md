@@ -104,7 +104,7 @@ void main() {
 ```
 
 You can also test exceptions with the [`throwsA()`] function or a matcher
-such as [`throwsException`]:
+such as [`throwsFormatException`]:
 
 [`throwsA()`]: https://pub.dev/documentation/test_api/latest/expect/throwsA.html
 
