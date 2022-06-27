@@ -151,7 +151,7 @@ extension StringChecks on Check<String> {
     });
   }
 
-  void startsWith(String other) {
+  void startsWith(Pattern other) {
     context.expect(
       () => ['starts with ${literal(other)}'],
       (actual) {
