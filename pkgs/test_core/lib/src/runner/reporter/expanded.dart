@@ -114,7 +114,7 @@ class ExpandedReporter implements Reporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[1;30m' : '',
+        _gray = color ? '\u001b[90m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));

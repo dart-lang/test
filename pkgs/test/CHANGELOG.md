@@ -1,5 +1,8 @@
 ## 1.21.4-dev
 
+* Make the labels for test loading more readable in the compact and expanded
+  reporters, use gray instead of black.
+
 ## 1.21.3
 
 * Support the latest `package:test_api` and `package:test_core`.
