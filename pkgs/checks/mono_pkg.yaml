@@ -1,10 +1,10 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-  - dev
+- dev
 
 stages:
-    - analyze_and_format:
-      - group:
-        - format
-        - analyze: --fatal-infos
+- analyze_and_format:
+  - group:
+    - format
+    - analyze: --fatal-infos
