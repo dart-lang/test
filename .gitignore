@@ -8,3 +8,6 @@ packages
 # Include when developing application packages.
 pubspec.lock
 .packages
+
+# Ignore common coverage directory
+coverage/
