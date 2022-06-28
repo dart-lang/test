@@ -40,6 +40,10 @@ class CompactReporter implements Reporter {
   /// Windows or not outputting to a terminal.
   final String _gray;
 
+  /// The terminal escape code for cyan text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _cyan;
+
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
   final String _bold;
@@ -132,6 +136,7 @@ class CompactReporter implements Reporter {
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
         _gray = color ? '\u001b[90m' : '',
+        _cyan = color ? '\u001b[36m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -214,6 +219,16 @@ class CompactReporter implements Reporter {
       if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
       _sink.writeln(text);
     }));
+
+    liveTest.onComplete.then((_) {
+      var result = liveTest.state.result;
+      if (result != Result.error && result != Result.failure) return;
+      _sink.writeln('');
+      _sink.writeln('$_bold${_cyan}To run this test again:$_noColor '
+          '${Platform.executable} test ${liveTest.suite.path} '
+          '-p ${liveTest.suite.platform.runtime.identifier} '
+          "--plain-name '${liveTest.test.name.replaceAll("'", r"'\''")}'");
+    });
   }
 
   /// A callback called when [liveTest]'s state becomes [state].
