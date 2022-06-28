@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -429,6 +430,8 @@ void main() {
   });
 
   group('gives users a way to re-run failed tests', () {
+    final executablePath = p.absolute(Platform.resolvedExecutable);
+
     test('with simple names', () {
       return _expectReport('''
         test('failure', () {
@@ -440,7 +443,7 @@ void main() {
           Expected: <2>
             Actual: <1>
 
-        To run this test again: ${Platform.executable} test test.dart -p vm --plain-name 'failure'
+        To run this test again: $executablePath test test.dart -p vm --plain-name 'failure'
 
         +0 -1: Some tests failed.''');
     });
@@ -456,7 +459,7 @@ void main() {
           Expected: <2>
             Actual: <1>
 
-        To run this test again: ${Platform.executable} test test.dart -p vm --plain-name 'failure with a '\\'' in the name'
+        To run this test again: $executablePath test test.dart -p vm --plain-name 'failure with a '\\'' in the name'
 
         +0 -1: Some tests failed.''');
     });
