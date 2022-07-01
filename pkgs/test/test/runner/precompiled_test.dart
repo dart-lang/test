@@ -236,18 +236,6 @@ void main() {
 
 Future<void> _writePackagesFile() async {
   var config = (await findPackageConfig(Directory.current))!;
-  // TODO: remove try/catch when this issue is resolved:
-  // https://github.com/dart-lang/package_config/issues/66
-  try {
-    await d.dir('.dart_tool').create();
-    await savePackageConfig(config, Directory(d.sandbox));
-  } catch (_) {
-    // If it fails, just write a `.packages` file.
-    var packageMap = config.toPackageMap();
-    var packagesFileContent = StringBuffer();
-    packageMap.forEach((package, location) {
-      packagesFileContent.writeln('$package:$location');
-    });
-    await d.file('.packages', '$packagesFileContent').create();
-  }
+  await d.dir('.dart_tool').create();
+  await savePackageConfig(config, Directory(d.sandbox));
 }

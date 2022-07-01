@@ -2,6 +2,7 @@
 
 * Make the labels for test loading more readable in the compact and expanded
   reporters, use gray instead of black.
+* Fix the package config path used when running pre-compiled vm tests.
 
 ## 1.21.3
 
