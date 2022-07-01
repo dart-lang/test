@@ -185,9 +185,16 @@ Future<Isolate> _spawnPrecompiledIsolate(
   if (await File(dillTestpath).exists()) {
     testPath = dillTestpath;
   }
+  File? packageConfig =
+      File(p.join(precompiledPath, '.dart_tool/package_config.json'));
+  if (!(await packageConfig.exists())) {
+    packageConfig = File(p.join(precompiledPath, '.packages'));
+    if (!(await packageConfig.exists())) {
+      packageConfig = null;
+    }
+  }
   return await Isolate.spawnUri(p.toUri(testPath), [], message,
-      packageConfig: p.toUri(p.join(precompiledPath, '.packages')),
-      checked: true);
+      packageConfig: packageConfig?.uri, checked: true);
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
