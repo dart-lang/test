@@ -2,6 +2,8 @@
 
 * Make the labels for test loading more readable in the compact and expanded
   reporters, use gray instead of black.
+* Print a command to re-run the failed test after each failure in the compact
+  reporter.
 * Fix the package config path used when running pre-compiled vm tests.
 
 ## 0.4.15
