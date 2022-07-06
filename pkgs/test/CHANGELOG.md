@@ -1,4 +1,4 @@
-## 1.21.4-dev
+## 1.21.4
 
 * Make the labels for test loading more readable in the compact and expanded
   reporters, use gray instead of black.
