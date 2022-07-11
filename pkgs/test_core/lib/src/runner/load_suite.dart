@@ -29,7 +29,7 @@ import 'suite.dart';
 /// compiled with dart2js doesn't trigger it, but short enough that it fires
 /// before the host kills it. For example, Google's Forge service has a
 /// 15-minute timeout.
-final _timeout = Duration(minutes: 12);
+final _timeout = Duration(minutes: 1);
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
