@@ -94,7 +94,7 @@ class Chrome extends Browser {
         return process;
       }
 
-      if (!configuration.debug) return tryPort();
+      // if (!configuration.debug) return tryPort();
       return getUnusedPort<Process>(tryPort);
     }, remoteDebuggerCompleter.future, connectionCompleter.future, idToUrl);
   }
@@ -175,6 +175,10 @@ Future<WipConnection> _connect(
     }
   }
   var tabConnection = await tab.connect();
+  await tabConnection.log.enable();
+  tabConnection.log.onEntryAdded.listen((event) {
+    print('Log: ${event.level}: ${event.text}');
+  });
 
   // Enable debugging.
   await tabConnection.debugger.enable();
