@@ -176,6 +176,7 @@ Future<WipConnection> _connect(
   }
   var tabConnection = await tab.connect();
   await tabConnection.log.enable();
+  print('connected to tab, listening for logs');
   tabConnection.log.onEntryAdded.listen((event) {
     print('Log: ${event.level}: ${event.text}');
   });
