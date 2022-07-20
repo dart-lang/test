@@ -15,7 +15,7 @@ dependencies:
   coverage: ^1.0.1
   http_multi_server: ^3.0.0
   io: ^1.0.0
-  js: ^0.6.3
+  js: ^0.6.4
   node_preamble: ^2.0.0
   package_config: ^2.0.0
   path: ^1.8.0

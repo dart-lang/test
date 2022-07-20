@@ -200,7 +200,7 @@ Future<void> _writeTestFile(String filename,
     bool loadable = true}) {
   var buffer = StringBuffer();
   if (suiteTestOn != null) buffer.writeln("@TestOn('$suiteTestOn')");
-  if (!loadable) buffer.writeln("import 'dart:html';");
+  if (!loadable) buffer.writeln("import 'dart:js_util';");
 
   buffer
     ..writeln("import 'package:test/test.dart';")
