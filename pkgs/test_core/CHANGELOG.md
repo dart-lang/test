@@ -1,7 +1,3 @@
-# 0.4.17-dev
-
-* Support the latest `package:test_api`.
-
 ## 0.4.16
 
 * Make the labels for test loading more readable in the compact and expanded

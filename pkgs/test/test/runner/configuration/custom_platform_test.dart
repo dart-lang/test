@@ -107,12 +107,13 @@ void main() {
         ''').create();
 
         await d.file('test.dart', '''
-          import 'package:test/src/runner/browser/dom.dart' as dom;
+          import 'dart:html';
+
           import 'package:test/test.dart';
 
           void main() {
             test("is not headless", () {
-              expect(dom.window.navigator.userAgent,
+              expect(window.navigator.userAgent,
                   isNot(contains('HeadlessChrome')));
             });
           }

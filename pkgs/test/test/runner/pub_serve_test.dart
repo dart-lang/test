@@ -167,12 +167,13 @@ void main() {
     setUp(() async {
       await d.dir('test', [
         d.file('test.dart', '''
-import 'package:test/src/runner/browser/dom.dart' as dom;
+import 'dart:html';
+
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () {
-    expect(dom.document.querySelector('#foo'), isNull);
+    expect(document.querySelector('#foo'), isNull);
   });
 }
 '''),
@@ -201,7 +202,8 @@ void main() {
   group('with a failing test', () {
     setUp(() async {
       await d.file('test/my_test.dart', '''
-import 'package:test/src/runner/browser/dom.dart' as dom;
+import 'dart:html';
+
 import 'package:test/test.dart';
 
 void main() {
