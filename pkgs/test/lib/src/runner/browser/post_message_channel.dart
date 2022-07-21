@@ -30,7 +30,7 @@ StreamChannel<Object?> postMessageChannel() {
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
     // running, but it's good practice to check the origin anyway.
-    dom.MessageEvent message = event as dom.MessageEvent;
+    final message = event as dom.MessageEvent;
     if (message.origin == dom.window.location.origin &&
         message.data == 'port') {
       subscription.cancel();
