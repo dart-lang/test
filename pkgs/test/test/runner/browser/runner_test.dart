@@ -447,12 +447,13 @@ void main() {
   ''').create();
 
           await d.file('test.dart', '''
-  import 'package:test/src/runner/browser/dom.dart' as dom;
+  import 'dart:html';
+
   import 'package:test/test.dart';
 
   void main() {
     test("success", () {
-      expect(dom.document.querySelector('#foo'), isNotNull);
+      expect(document.querySelector('#foo'), isNotNull);
     });
   }
   ''').create();
@@ -488,15 +489,16 @@ void main() {
   ''').create();
 
           await d.file('test-with-title.dart', '''
-  import 'package:test/src/runner/browser/dom.dart' as dom;
+  import 'dart:html';
+
   import 'package:test/test.dart';
 
   void main() {
     test("success", () {
-      expect(dom.document.querySelector('#foo'), isNotNull);
+      expect(document.querySelector('#foo'), isNotNull);
     });
     test("title", () {
-      expect(dom.document.title, 'test-with-title.dart');
+      expect(document.title, 'test-with-title.dart');
     });
   }
   ''').create();
@@ -514,12 +516,13 @@ void main() {
     group('with a custom HTML file', () {
       setUp(() async {
         await d.file('test.dart', '''
-import 'package:test/src/runner/browser/dom.dart' as dom;
+import 'dart:html';
+
 import 'package:test/test.dart';
 
 void main() {
   test("success", () {
-    expect(dom.document.querySelector('#foo'), isNotNull);
+    expect(document.querySelector('#foo'), isNotNull);
   });
 }
 ''').create();
@@ -633,12 +636,13 @@ void main() {
     group('with a custom HTML file', () {
       setUp(() async {
         await d.file('test.dart', '''
-import 'package:test/src/runner/browser/dom.dart' as dom;
+import 'dart:html';
+
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () {
-    expect(dom.document.querySelector('#foo'), isNull);
+    expect(document.querySelector('#foo'), isNull);
   });
 }
 ''').create();

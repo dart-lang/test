@@ -148,285 +148,6 @@ jobs:
         working-directory: pkgs/test_core
         run: dart analyze --fatal-infos
   job_003:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: integration_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:integration_tests/nnbd_opted_in;commands:test"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:integration_tests/nnbd_opted_in
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: integration_tests_nnbd_opted_in_pub_upgrade
-        name: integration_tests/nnbd_opted_in; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: integration_tests/nnbd_opted_in
-        run: dart pub upgrade
-      - name: "integration_tests/nnbd_opted_in; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/nnbd_opted_in
-        run: "dart test -p chrome,vm,node"
-    needs:
-      - job_001
-      - job_002
-  job_004:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: integration_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:integration_tests/nnbd_opted_out;commands:test"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:integration_tests/nnbd_opted_out
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: integration_tests_nnbd_opted_out_pub_upgrade
-        name: integration_tests/nnbd_opted_out; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: integration_tests/nnbd_opted_out
-        run: dart pub upgrade
-      - name: "integration_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/nnbd_opted_out
-        run: "dart test -p chrome,vm,node"
-    needs:
-      - job_001
-      - job_002
-  job_005:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:integration_tests/spawn_hybrid;commands:test"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:integration_tests/spawn_hybrid
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: integration_tests_spawn_hybrid_pub_upgrade
-        name: integration_tests/spawn_hybrid; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: integration_tests/spawn_hybrid
-        run: dart pub upgrade
-      - name: "integration_tests/spawn_hybrid; dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/spawn_hybrid
-        run: "dart test -p chrome,vm,node"
-    needs:
-      - job_001
-      - job_002
-  job_006:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test;commands:command_01"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: dart pub upgrade
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
-    needs:
-      - job_001
-      - job_002
-  job_007:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test;commands:command_02"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: dart pub upgrade
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
-    needs:
-      - job_001
-      - job_002
-  job_008:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test;commands:command_03"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: dart pub upgrade
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
-    needs:
-      - job_001
-      - job_002
-  job_009:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test;commands:command_04"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: dart pub upgrade
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
-    needs:
-      - job_001
-      - job_002
-  job_010:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test;commands:command_05"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: dart pub upgrade
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
-    needs:
-      - job_001
-      - job_002
-  job_011:
-    name: "unit_test; linux; Dart 2.18.0-146.0.dev; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test_api;commands:command_11"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev;packages:pkgs/test_api
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0-146.0.dev
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.18.0-146.0.dev"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_test_api_pub_upgrade
-        name: pkgs/test_api; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test_api
-        run: dart pub upgrade
-      - name: "pkgs/test_api; dart test --preset travis -x browser"
-        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test_api
-        run: dart test --preset travis -x browser
-    needs:
-      - job_001
-      - job_002
-  job_012:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -457,7 +178,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_013:
+  job_004:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -488,7 +209,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_014:
+  job_005:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -519,7 +240,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_015:
+  job_006:
     name: "unit_test; linux; Dart dev; PKG: pkgs/checks; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -550,7 +271,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_016:
+  job_007:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
@@ -581,7 +302,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_017:
+  job_008:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
@@ -612,7 +333,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_018:
+  job_009:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
@@ -643,7 +364,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_019:
+  job_010:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
@@ -674,7 +395,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_020:
+  job_011:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
@@ -705,7 +426,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_021:
+  job_012:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
@@ -736,13 +457,23 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_022:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: integration_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
-    runs-on: windows-latest
+  job_013:
+    name: "unit_test; linux; Dart stable; PKG: integration_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:integration_tests/nnbd_opted_in;commands:test"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:integration_tests/nnbd_opted_in
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: integration_tests_nnbd_opted_in_pub_upgrade
@@ -757,13 +488,23 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_023:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: integration_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
-    runs-on: windows-latest
+  job_014:
+    name: "unit_test; linux; Dart stable; PKG: integration_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:integration_tests/nnbd_opted_out;commands:test"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:integration_tests/nnbd_opted_out
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: integration_tests_nnbd_opted_out_pub_upgrade
@@ -778,13 +519,23 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_024:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
-    runs-on: windows-latest
+  job_015:
+    name: "unit_test; linux; Dart stable; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:integration_tests/spawn_hybrid;commands:test"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:integration_tests/spawn_hybrid
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: integration_tests_spawn_hybrid_pub_upgrade
@@ -799,13 +550,23 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_025:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
-    runs-on: windows-latest
+  job_016:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test;commands:command_01"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: pkgs_test_pub_upgrade
@@ -813,20 +574,30 @@ jobs:
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test
         run: dart pub upgrade
-      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 0"
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
-        run: dart test --preset travis --total-shards 5 --shard-index 0
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
     needs:
       - job_001
       - job_002
-  job_026:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
-    runs-on: windows-latest
+  job_017:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test;commands:command_02"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: pkgs_test_pub_upgrade
@@ -834,20 +605,30 @@ jobs:
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test
         run: dart pub upgrade
-      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 1"
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
-        run: dart test --preset travis --total-shards 5 --shard-index 1
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
     needs:
       - job_001
       - job_002
-  job_027:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
-    runs-on: windows-latest
+  job_018:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test;commands:command_03"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: pkgs_test_pub_upgrade
@@ -855,20 +636,30 @@ jobs:
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test
         run: dart pub upgrade
-      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 2"
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
-        run: dart test --preset travis --total-shards 5 --shard-index 2
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
     needs:
       - job_001
       - job_002
-  job_028:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
-    runs-on: windows-latest
+  job_019:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test;commands:command_04"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: pkgs_test_pub_upgrade
@@ -876,20 +667,30 @@ jobs:
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test
         run: dart pub upgrade
-      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 3"
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
-        run: dart test --preset travis --total-shards 5 --shard-index 3
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
     needs:
       - job_001
       - job_002
-  job_029:
-    name: "unit_test; windows; Dart 2.18.0-146.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
-    runs-on: windows-latest
+  job_020:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
+    runs-on: ubuntu-latest
     steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test;commands:command_05"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
         with:
-          sdk: "2.18.0-146.0.dev"
+          sdk: stable
       - id: checkout
         uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
       - id: pkgs_test_pub_upgrade
@@ -897,14 +698,45 @@ jobs:
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test
         run: dart pub upgrade
-      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 4"
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
-        run: dart test --preset travis --total-shards 5 --shard-index 4
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
     needs:
       - job_001
       - job_002
-  job_030:
+  job_021:
+    name: "unit_test; linux; Dart stable; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test_api;commands:command_11"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable;packages:pkgs/test_api
+            os:ubuntu-latest;pub-cache-hosted;sdk:stable
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: pkgs_test_api_pub_upgrade
+        name: pkgs/test_api; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: dart pub upgrade
+      - name: "pkgs/test_api; dart test --preset travis -x browser"
+        if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test_api
+        run: dart test --preset travis -x browser
+    needs:
+      - job_001
+      - job_002
+  job_022:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -925,7 +757,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_031:
+  job_023:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -946,7 +778,7 @@ jobs:
     needs:
       - job_001
       - job_002
-  job_032:
+  job_024:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -964,6 +796,174 @@ jobs:
         if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/spawn_hybrid
         run: "dart test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_025:
+    name: "unit_test; windows; Dart stable; PKG: integration_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: integration_tests_nnbd_opted_in_pub_upgrade
+        name: integration_tests/nnbd_opted_in; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_in
+        run: dart pub upgrade
+      - name: "integration_tests/nnbd_opted_in; dart test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_in
+        run: "dart test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_026:
+    name: "unit_test; windows; Dart stable; PKG: integration_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: integration_tests_nnbd_opted_out_pub_upgrade
+        name: integration_tests/nnbd_opted_out; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_out
+        run: dart pub upgrade
+      - name: "integration_tests/nnbd_opted_out; dart test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/nnbd_opted_out
+        run: "dart test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_027:
+    name: "unit_test; windows; Dart stable; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: integration_tests_spawn_hybrid_pub_upgrade
+        name: integration_tests/spawn_hybrid; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/spawn_hybrid
+        run: dart pub upgrade
+      - name: "integration_tests/spawn_hybrid; dart test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/spawn_hybrid
+        run: "dart test -p chrome,vm,node"
+    needs:
+      - job_001
+      - job_002
+  job_028:
+    name: "unit_test; windows; Dart stable; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart pub upgrade
+      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 0"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart test --preset travis --total-shards 5 --shard-index 0
+    needs:
+      - job_001
+      - job_002
+  job_029:
+    name: "unit_test; windows; Dart stable; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart pub upgrade
+      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 1"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart test --preset travis --total-shards 5 --shard-index 1
+    needs:
+      - job_001
+      - job_002
+  job_030:
+    name: "unit_test; windows; Dart stable; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart pub upgrade
+      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 2"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart test --preset travis --total-shards 5 --shard-index 2
+    needs:
+      - job_001
+      - job_002
+  job_031:
+    name: "unit_test; windows; Dart stable; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart pub upgrade
+      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 3"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart test --preset travis --total-shards 5 --shard-index 3
+    needs:
+      - job_001
+      - job_002
+  job_032:
+    name: "unit_test; windows; Dart stable; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
+    runs-on: windows-latest
+    steps:
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: stable
+      - id: checkout
+        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart pub upgrade
+      - name: "pkgs/test; dart test --preset travis --total-shards 5 --shard-index 4"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+        run: dart test --preset travis --total-shards 5 --shard-index 4
     needs:
       - job_001
       - job_002

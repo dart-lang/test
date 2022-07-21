@@ -20,7 +20,7 @@ final _whitespace = RegExp(r'\s+');
 
 /// A class representing a modification to the default timeout for a test.
 ///
-/// By default, a test will time out after 30 seconds. With [Timeout], that
+/// By default, a test will time out after 30 seconds. With [new Timeout], that
 /// can be overridden entirely; with [Timeout.factor], it can be scaled
 /// relative to the default.
 @Target({TargetKind.library})
