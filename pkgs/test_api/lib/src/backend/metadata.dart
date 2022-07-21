@@ -192,7 +192,7 @@ class Metadata {
 
   /// Creates new Metadata.
   ///
-  /// Unlike [new Metadata], this assumes [forTag] is already resolved.
+  /// Unlike [Metadata], this assumes [forTag] is already resolved.
   Metadata._({
     PlatformSelector? testOn,
     Timeout? timeout,
