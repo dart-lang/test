@@ -53,7 +53,7 @@ import 'util/pretty_print.dart';
 /// await expectLater(stdout, emits('Waiting for connection...'));
 /// ```
 ///
-/// Users can call [new StreamMatcher] to create custom matchers.
+/// Users can call [StreamMatcher] to create custom matchers.
 abstract class StreamMatcher extends Matcher {
   /// The description of this matcher.
   ///

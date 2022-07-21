@@ -2,7 +2,7 @@
 
 sdk:
 - dev
-- stable
+- 2.18.0-146.0.dev
 
 stages:
 - analyze_and_format:
@@ -23,24 +23,24 @@ stages:
     os:
     - windows
     sdk:
-    - stable
+    - 2.18.0-146.0.dev
   - command: dart test --preset travis --total-shards 5 --shard-index 1
     os:
     - windows
     sdk:
-    - stable
+    - 2.18.0-146.0.dev
   - command: dart test --preset travis --total-shards 5 --shard-index 2
     os:
     - windows
     sdk:
-    - stable
+    - 2.18.0-146.0.dev
   - command: dart test --preset travis --total-shards 5 --shard-index 3
     os:
     - windows
     sdk:
-    - stable
+    - 2.18.0-146.0.dev
   - command: dart test --preset travis --total-shards 5 --shard-index 4
     os:
     - windows
     sdk:
-    - stable
+    - 2.18.0-146.0.dev
