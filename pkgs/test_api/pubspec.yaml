@@ -4,7 +4,7 @@ description: A library for writing Dart tests.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
 
 environment:
-  sdk: ">=2.18.0-165.1.beta <3.0.0"
+  sdk: ">=2.18.0-146.0.dev <3.0.0"
 
 dependencies:
   async: ^2.5.0
