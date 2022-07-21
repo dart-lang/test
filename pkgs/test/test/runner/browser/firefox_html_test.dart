@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('firefox')
-import 'dart:html';
 
+import 'package:test/src/runner/browser/dom.dart' as dom;
 import 'package:test/test.dart';
 
 void main() {
@@ -12,6 +12,6 @@ void main() {
   // iframes (https://bugzilla.mozilla.org/show_bug.cgi?id=548397), so we have
   // to do some special stuff to make sure tests that care about that work.
   test('getComputedStyle() works', () {
-    expect(document.body!.getComputedStyle(), isNotNull);
+    expect(dom.window.getComputedStyle(dom.document.body!), isNotNull);
   });
 }

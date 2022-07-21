@@ -1,3 +1,7 @@
+## 1.21.5-dev
+
+* Migrate all dom interactions to static interop.
+
 ## 1.21.4
 
 * Make the labels for test loading more readable in the compact and expanded
