@@ -2,7 +2,7 @@
 
 sdk:
 - dev
-- stable
+- 2.18.0-165.1.beta
 
 stages:
 - analyze_and_format:
