@@ -192,6 +192,10 @@ Future<WipConnection> _connect(
   tabConnection.log.onEntryAdded.listen((event) {
     print('Log: ${event.level}: ${event.text}');
   });
+  await tabConnection.runtime.enable();
+  tabConnection.runtime.onExceptionThrown.listen((event) {
+    print('Exception: $event');
+  });
 
   // Enable debugging.
   await tabConnection.debugger.enable();
