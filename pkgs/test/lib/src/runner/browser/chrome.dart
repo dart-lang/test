@@ -155,10 +155,21 @@ class Chrome extends Browser {
 Future<WipConnection> _connect(
     Process process, int port, Map<String, String> idToUrl, Uri url) async {
   // Wait for Chrome to be in a ready state.
-  await process.stderr
+  var done = Completer();
+  process.stderr
       .transform(utf8.decoder)
       .transform(LineSplitter())
-      .firstWhere((line) => line.startsWith('DevTools listening'));
+      .listen((line) {
+    if (line.startsWith('DevTools listening')) done.complete();
+    print('stderr: $line');
+  });
+  process.stdout
+      .transform(utf8.decoder)
+      .transform(LineSplitter())
+      .listen((line) {
+    print('stdout: $line');
+  });
+  await done.future;
 
   var chromeConnection = ChromeConnection('localhost', port);
   ChromeTab? tab;
