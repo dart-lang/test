@@ -118,6 +118,7 @@ void main() {
   runZonedGuarded(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
+      print(message);
       if (message['command'] == 'loadSuite') {
         var suiteChannel =
             serverChannel.virtualChannel(message['channel'] as int);
@@ -200,6 +201,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
   _subscriptions[id] = subscriptions;
 
   subscriptions.add(window.onMessage.listen((message) {
+    print('window message $message');
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
@@ -226,10 +228,12 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
   }));
 
   subscriptions.add(channel.port1.onMessage.listen((message) {
+    print('port1 onMessage $message');
     controller.local.sink.add(message.data['data']);
   }));
 
   subscriptions.add(controller.local.stream.listen((message) async {
+    print('controller.local.stream $message');
     await readyCompleter.future;
 
     channel.port1.postMessage(message);

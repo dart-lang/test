@@ -4683,6 +4683,14 @@
       t2 = $.$get$_hashSeed();
       return A.SystemHash_finish(A.SystemHash_combine(A.SystemHash_combine(t2, t1), object2));
     },
+    print(object) {
+      var line = A.S(object),
+        toZone = $.printToZone;
+      if (toZone == null)
+        A.printString(line);
+      else
+        toZone.call$1(line);
+    },
     Uri_Uri$dataFromString($content) {
       var t1, _null = null,
         buffer = new A.StringBuffer(""),
@@ -15150,9 +15158,10 @@
   };
   A.main__closure.prototype = {
     call$1(message) {
-      var suiteChannel, t2, t3,
-        _s7_ = "command",
-        t1 = J.getInterceptor$asx(message);
+      var t1, suiteChannel, t2, t3,
+        _s7_ = "command";
+      A.print(message);
+      t1 = J.getInterceptor$asx(message);
       if (J.$eq$(t1.$index(message, _s7_), "loadSuite")) {
         suiteChannel = this.serverChannel.virtualChannel$1(A._asInt(t1.$index(message, "channel")));
         t1 = suiteChannel.$ti._eval$1("StreamChannel<1>")._as(A._connectToIframe(A._asString(t1.$index(message, "url")), A._asInt(t1.$index(message, "id"))));
@@ -15242,15 +15251,9 @@
   };
   A.main_closure0.prototype = {
     call$2(error, stackTrace) {
-      var line, toZone;
       type$.Object._as(error);
       type$.StackTrace._as(stackTrace);
-      line = A.S(error) + "\n" + A.Trace_Trace$from(stackTrace).get$terse().toString$0(0);
-      toZone = $.printToZone;
-      if (toZone == null)
-        A.printString(line);
-      else
-        toZone.call$1(line);
+      A.print(A.S(error) + "\n" + A.Trace_Trace$from(stackTrace).get$terse().toString$0(0));
     },
     $signature: 9
   };
@@ -15276,6 +15279,7 @@
     call$1(message) {
       var t1, t2, _this = this;
       type$.MessageEvent._as(message);
+      A.print("window message " + A.S(message));
       t1 = type$.Location;
       if (message.origin !== B.Location_methods.get$origin(t1._as(window.location)))
         return;
@@ -15302,6 +15306,7 @@
     call$1(message) {
       var t1;
       type$.MessageEvent._as(message);
+      A.print("port1 onMessage " + A.S(message));
       t1 = this.controller.__StreamChannelController__local_F;
       t1 === $ && A.throwLateFieldNI("_local");
       t1 = t1.__GuaranteeChannel__sink_F;
@@ -15322,6 +15327,7 @@
           switch ($async$goto) {
             case 0:
               // Function start
+              A.print("controller.local.stream " + A.S(message));
               $async$goto = 2;
               return A._asyncAwait($async$self.readyCompleter.future, $async$call$1);
             case 2:
