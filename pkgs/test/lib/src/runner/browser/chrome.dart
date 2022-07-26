@@ -195,6 +195,11 @@ Future<WipConnection> _connect(
   await tabConnection.runtime.enable();
   tabConnection.runtime.onExceptionThrown.listen((event) {
     print('Exception: $event');
+    print('''
+line: ${event.exceptionDetails.lineNumber}
+url: ${event.exceptionDetails.url}
+stack: ${event.exceptionDetails.stackTrace}
+''');
   });
 
   // Enable debugging.
