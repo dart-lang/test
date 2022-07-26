@@ -177,6 +177,7 @@ Future<WipConnection> _connect(
   var tabConnection = await tab.connect();
   await tabConnection.log.enable();
   print('connected to tab, listening for logs');
+  print('tab.url: ${tab.url}');
   tabConnection.log.onEntryAdded.listen((event) {
     print('Log: ${event.level}: ${event.text}');
   });
@@ -186,6 +187,7 @@ Future<WipConnection> _connect(
 
   // Coverage reports are in terms of scriptIds so keep note of URLs.
   tabConnection.debugger.onScriptParsed.listen((data) {
+    print(data.script.url);
     var script = data.script;
     if (script.url.isNotEmpty) idToUrl[script.scriptId] = script.url;
   });
