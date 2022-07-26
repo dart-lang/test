@@ -198,7 +198,6 @@ Future<WipConnection> _connect(
 
   // Coverage reports are in terms of scriptIds so keep note of URLs.
   tabConnection.debugger.onScriptParsed.listen((data) {
-    print(data.script.url);
     var script = data.script;
     if (script.url.isNotEmpty) idToUrl[script.scriptId] = script.url;
   });
