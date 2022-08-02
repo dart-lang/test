@@ -203,7 +203,7 @@ extension WebSocketExtension on WebSocket {
 }
 
 WebSocket createWebSocket(String url) =>
-    callConstructorString('WebSocket', <Object>[url])! as WebSocket;
+    _callConstructor('WebSocket', <Object>[url])! as WebSocket;
 
 @JS()
 @staticInterop
@@ -215,13 +215,13 @@ extension MessageChannelExtension on MessageChannel {
 }
 
 MessageChannel createMessageChannel() =>
-    callConstructorString('MessageChannel', <Object>[])! as MessageChannel;
+    _callConstructor('MessageChannel', <Object>[])! as MessageChannel;
 
-Object? getConstructor(String constructorName) =>
+Object? _findConstructor(String constructorName) =>
     js_util.getProperty(window, constructorName);
 
-Object? callConstructorString(String constructorName, List<Object?> args) {
-  final Object? constructor = getConstructor(constructorName);
+Object? _callConstructor(String constructorName, List<Object?> args) {
+  final Object? constructor = _findConstructor(constructorName);
   if (constructor == null) {
     return null;
   }
