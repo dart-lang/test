@@ -315,7 +315,7 @@ class Invoker {
   void printOnFailure(String message) {
     message = message.trim();
     if (liveTest.state.result.isFailing) {
-      print('\n$message');
+      _print('\n$message');
     } else {
       _printsOnFailure.add(message);
     }
@@ -350,7 +350,7 @@ class Invoker {
     zone.run(() => _outstandingCallbacks.complete());
 
     if (_printsOnFailure.isNotEmpty) {
-      print(_printsOnFailure.join('\n\n'));
+      _print(_printsOnFailure.join('\n\n'));
       _printsOnFailure.clear();
     }
 

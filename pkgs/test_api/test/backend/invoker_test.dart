@@ -541,27 +541,30 @@ void main() {
   });
 
   group('printOnFailure:', () {
-    test("doesn't print anything if the test succeeds", () {
-      expect(() async {
-        var liveTest = _localTest(() {
-          Invoker.current!.printOnFailure('only on failure');
-        }).load(suite);
-        liveTest.onError.listen(expectAsync1((_) {}, count: 0));
+    test("doesn't print anything if the test succeeds", () async {
+      var liveTest = _localTest(() {
+        Invoker.current!.printOnFailure('only on failure');
+      }).load(suite);
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
-        await liveTest.run();
-      }, prints(isEmpty));
+      liveTest.onMessage.listen(expectAsync1((_) {}, count: 0));
+
+      await liveTest.run();
     });
 
-    test('prints if the test fails', () {
-      expect(() async {
-        var liveTest = _localTest(() {
-          Invoker.current!.printOnFailure('only on failure');
-          expect(true, isFalse);
-        }).load(suite);
-        liveTest.onError.listen(expectAsync1((_) {}, count: 1));
+    test('prints if the test fails', () async {
+      var liveTest = _localTest(() {
+        Invoker.current!.printOnFailure('only on failure');
+        expect(true, isFalse);
+      }).load(suite);
+      liveTest.onError.listen(expectAsync1((_) {}, count: 1));
 
-        await liveTest.run();
-      }, prints('only on failure\n'));
+      liveTest.onMessage.listen(expectAsync1((message) {
+        expect(message.type, equals(MessageType.print));
+        expect(message.text, equals('only on failure'));
+      }, count: 1));
+
+      await liveTest.run();
     });
   });
 }

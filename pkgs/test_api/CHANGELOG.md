@@ -1,6 +1,6 @@
 ## 0.4.13-dev
 
-* Internal cleanup.
+* Fix `printOnFailure` output to be associated with the correct test.
 
 ## 0.4.12
 
