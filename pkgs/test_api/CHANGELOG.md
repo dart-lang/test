@@ -1,7 +1,6 @@
 ## 0.4.13-dev
 
-* Fix `printOnFailure` output to forward through json output instead of being
-  printed directly.
+* Fix `printOnFailure` output to be associated with the correct test.
 
 ## 0.4.12
 
