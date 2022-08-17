@@ -1,6 +1,7 @@
 ## 0.4.13-dev
 
-* Internal cleanup.
+* Fix `printOnFailure` output to forward through json output instead of being
+  printed directly.
 
 ## 0.4.12
 

@@ -1,5 +1,7 @@
 ## 1.21.5-dev
 
+* Fix `printOnFailure` output to forward through json output instead of being
+  printed directly.
 * Migrate all dom interactions to static interop.
 
 ## 1.21.4
