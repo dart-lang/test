@@ -1,4 +1,4 @@
-## 0.4.13-dev
+## 0.4.13
 
 * Fix `printOnFailure` output to be associated with the correct test.
 
