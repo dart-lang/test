@@ -1,4 +1,4 @@
-## 1.21.5-dev
+## 1.21.5
 
 * Fix `printOnFailure` output to be associated with the correct test.
 * Migrate all dom interactions to static interop.
