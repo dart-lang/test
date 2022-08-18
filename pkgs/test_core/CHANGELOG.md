@@ -1,6 +1,7 @@
 # 0.4.17-dev
 
 * Support the latest `package:test_api`.
+* Support the latest `package:frontend_server_client`.
 
 ## 0.4.16
 
