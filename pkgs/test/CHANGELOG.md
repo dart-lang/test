@@ -1,3 +1,7 @@
+## 1.21.6
+
+* Fix the coverage usage example in the README.md
+
 ## 1.21.5
 
 * Fix `printOnFailure` output to be associated with the correct test.
