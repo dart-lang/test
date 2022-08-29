@@ -1,3 +1,7 @@
+## 0.12.13-dev
+
+* Require Dart 2.17 or greater.
+
 ## 0.12.12
 
 * Add a best practices section to readme.

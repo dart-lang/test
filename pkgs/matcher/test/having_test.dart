@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:matcher/matcher.dart';
 import 'package:test/test.dart' show test, expect, throwsA, group;
 
@@ -115,8 +117,9 @@ Matcher _badCustomMatcher() => const TypeMatcher<Widget>()
     .having((e) => throw Exception('bang'), 'feature', {1: 'a'});
 
 class CustomRangeError extends RangeError {
-  CustomRangeError.range(num invalidValue, int minValue, int maxValue)
-      : super.range(invalidValue, minValue, maxValue);
+  CustomRangeError.range(
+      super.invalidValue, int super.minValue, int super.maxValue)
+      : super.range();
 
   @override
   String toString() => 'RangeError: Invalid value: details';

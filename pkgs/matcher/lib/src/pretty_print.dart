@@ -16,7 +16,8 @@ import 'util.dart';
 /// If [maxItems] is passed, [Iterable]s and [Map]s will only print their first
 /// [maxItems] members or key/value pairs, respectively.
 String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
-  String _prettyPrint(Object? object, int indent, Set<Object?> seen, bool top) {
+  String prettyPrintImpl(
+      Object? object, int indent, Set<Object?> seen, bool top) {
     // If the object is a matcher, use its description.
     if (object is Matcher) {
       var description = StringDescription();
@@ -27,11 +28,11 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
     // Avoid looping infinitely on recursively-nested data structures.
     if (seen.contains(object)) return '(recursive)';
     seen = seen.union({object});
-    String pp(Object? child) => _prettyPrint(child, indent + 2, seen, false);
+    String pp(Object? child) => prettyPrintImpl(child, indent + 2, seen, false);
 
     if (object is Iterable) {
       // Print the type name for non-List iterables.
-      var type = object is List ? '' : _typeName(object) + ':';
+      var type = object is List ? '' : '${_typeName(object)}:';
 
       // Truncate the list of strings if it's longer than [maxItems].
       var strings = object.map(pp).toList();
@@ -49,13 +50,9 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
       }
 
       // Otherwise, print each member on its own line.
-      return '$type[\n' +
-          strings.map((string) {
-            return _indent(indent + 2) + string;
-          }).join(',\n') +
-          '\n' +
-          _indent(indent) +
-          ']';
+      return '$type[\n${strings.map((string) {
+        return _indent(indent + 2) + string;
+      }).join(',\n')}\n${_indent(indent)}]';
     } else if (object is Map) {
       // Convert the contents of the map to string representations.
       var strings = object.keys.map((key) {
@@ -77,21 +74,18 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
       }
 
       // Otherwise, print each key/value pair on its own line.
-      return '{\n' +
-          strings.map((string) {
-            return _indent(indent + 2) + string;
-          }).join(',\n') +
-          '\n' +
-          _indent(indent) +
-          '}';
+      return '{\n${strings.map((string) {
+        return _indent(indent + 2) + string;
+      }).join(',\n')}\n${_indent(indent)}}';
     } else if (object is String) {
       // Escape strings and print each line on its own line.
-      var lines = object.split('\n');
-      return "'" +
-          lines.map(_escapeString).join("\\n'\n${_indent(indent + 2)}'") +
-          "'";
+      var value = object
+          .split('\n')
+          .map(_escapeString)
+          .join("\\n'\n${_indent(indent + 2)}'");
+      return "'$value'";
     } else {
-      var value = object.toString().replaceAll('\n', _indent(indent) + '\n');
+      var value = object.toString().replaceAll('\n', '${_indent(indent)}\n');
       var defaultToString = value.startsWith('Instance of ');
 
       // If this is the top-level call to [prettyPrint], wrap the value on angle
@@ -116,7 +110,7 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
     }
   }
 
-  return _prettyPrint(object, 0, <Object?>{}, true);
+  return prettyPrintImpl(object, 0, <Object?>{}, true);
 }
 
 String _indent(int length) => List.filled(length, ' ').join('');

@@ -23,7 +23,7 @@ final _escapeRegExp = RegExp(
 
 /// Useful utility for nesting match states.
 void addStateInfo(Map matchState, Map values) {
-  var innerState = Map.from(matchState);
+  var innerState = Map.of(matchState);
   matchState.clear();
   matchState['state'] = innerState;
   matchState.addAll(values);
