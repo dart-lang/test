@@ -1,6 +1,7 @@
 ## 1.21.6-dev
 
 * Require Dart >= 2.18.0
+* Fix the coverage usage example in the README.md
 
 ## 1.21.5
 
