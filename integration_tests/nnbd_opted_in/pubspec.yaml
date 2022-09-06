@@ -1,6 +1,6 @@
 name: nnbd_opted_in
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.18.0 <3.0.0'
 dev_dependencies:
   lints: '>=1.0.0 <3.0.0'
   test: any

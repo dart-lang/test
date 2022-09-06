@@ -1,3 +1,7 @@
+## 1.21.6-dev
+
+* Require Dart >= 2.18.0
+
 ## 1.21.5
 
 * Fix `printOnFailure` output to be associated with the correct test.
