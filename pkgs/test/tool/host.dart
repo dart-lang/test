@@ -9,6 +9,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:js/js.dart';
+import 'package:js/js_util.dart' as js_util;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/src/runner/browser/dom.dart' as dom;
@@ -236,8 +237,13 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
       // This message indicates that the iframe is actively listening for
       // events, so the message channel's second port can now be transferred.
       channel.port2.start();
-      iframe.contentWindow
-          .postMessage('port', dom.window.location.origin, [channel.port2]);
+      // TODO(#1758): This is a work around for a crash in package:build.
+      js_util.callMethod(
+          js_util.getProperty(iframe, 'contentWindow'), 'postMessage', [
+        'port',
+        dom.window.location.origin,
+        [channel.port2]
+      ]);
       readyCompleter.complete();
     } else if (message.data['exception'] == true) {
       // This message from `dart.js` indicates that an exception occurred
