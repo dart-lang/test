@@ -38,11 +38,9 @@ Before you send your pull request, make sure all the tests pass!
 
 ### File headers
 
-All files in the project must start with the following header.
-
-    // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
-    // for details. All rights reserved. Use of this source code is governed by a
-    // BSD-style license that can be found in the LICENSE file.
+When creating new source files, please copy the file header from 
+https://github.com/dart-lang/fake_async/blob/master/lib/fake_async.dart and
+update the year for the copyright to the current year.
 
 ### The small print
 
