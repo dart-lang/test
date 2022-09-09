@@ -7,11 +7,9 @@ import 'type_matcher.dart';
 /// A matcher for [ArgumentError].
 const isArgumentError = TypeMatcher<ArgumentError>();
 
-/// A matcher for [CastError].
-@Deprecated('CastError has been deprecated in favor of TypeError. '
-    'Use `isA<TypeError>()` or, if you need compatibility with older SDKs, '
-    'use `isA<CastError>()` and ignore the deprecation.')
-const isCastError = TypeMatcher<CastError>();
+/// A matcher for [TypeError].
+@Deprecated('CastError has been deprecated in favor of TypeError. ')
+const isCastError = TypeMatcher<TypeError>();
 
 /// A matcher for [ConcurrentModificationError].
 const isConcurrentModificationError =

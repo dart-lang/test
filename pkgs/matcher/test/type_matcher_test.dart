@@ -12,7 +12,7 @@ void main() {
   _test(isList, [], name: 'List');
   _test(isArgumentError, ArgumentError());
   // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-  _test(isCastError, CastError());
+  _test(isCastError, TypeError());
   _test<Exception>(isException, const FormatException());
   _test(isFormatException, const FormatException());
   _test(isStateError, StateError('oops'));
