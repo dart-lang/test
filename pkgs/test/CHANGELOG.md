@@ -1,7 +1,8 @@
-## 1.21.6-dev
+## 1.21.6
 
 * Require Dart >= 2.18.0
 * Fix the coverage usage example in the README.md
+* Support the latest `package:test_api` and `package:test_core`.
 
 ## 1.21.5
 

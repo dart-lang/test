@@ -10,3 +10,11 @@ dependencies:
 
 dev_dependencies:
   test: ^1.21.3
+
+dependency_overrides:
+  test_api:
+    path: ../test_api
+  test_core:
+    path: ../test_core
+  test:
+    path: ../test

@@ -1,3 +1,8 @@
+# 0.4.18
+
+* Support the latest `package:test_api`.
+* Support the latest `package:analyzer`.
+
 # 0.4.17
 
 * Support the latest `package:test_api`.
