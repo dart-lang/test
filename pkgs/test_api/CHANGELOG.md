@@ -1,6 +1,7 @@
-## 0.4.14-dev
+## 0.4.14
 
 * Require Dart >= 2.18.0
+* Support the latest `package:analyzer`.
 
 ## 0.4.13
 
