@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:meta/meta.dart';
-
 import 'custom_matcher.dart';
 import 'interfaces.dart';
 import 'type_matcher.dart';
@@ -13,21 +11,30 @@ import 'util.dart';
 /// by calls to [TypeMatcher.having].
 class HavingMatcher<T> implements TypeMatcher<T> {
   final TypeMatcher<T> _parent;
-  final List<FunctionMatcher<T>> _functionMatchers;
+  final List<_FunctionMatcher<T>> _functionMatchers;
 
-  HavingMatcher(TypeMatcher<T> parent, String description,
-      Object? Function(T) feature, dynamic matcher,
-      [Iterable<FunctionMatcher<T>>? existing])
-      : _parent = parent,
-        _functionMatchers = [
+  HavingMatcher(this._parent, String description, Object? Function(T) feature,
+      dynamic matcher)
+      : _functionMatchers = [
+          _FunctionMatcher<T>(description, feature, matcher)
+        ];
+
+  HavingMatcher._fromExisting(
+      this._parent,
+      String description,
+      Object? Function(T) feature,
+      dynamic matcher,
+      Iterable<_FunctionMatcher<T>>? existing)
+      : _functionMatchers = [
           ...?existing,
-          FunctionMatcher<T>(description, feature, matcher)
+          _FunctionMatcher<T>(description, feature, matcher)
         ];
 
   @override
   TypeMatcher<T> having(
           Object? Function(T) feature, String description, dynamic matcher) =>
-      HavingMatcher(_parent, description, feature, matcher, _functionMatchers);
+      HavingMatcher._fromExisting(
+          _parent, description, feature, matcher, _functionMatchers);
 
   @override
   bool matches(dynamic item, Map matchState) {
@@ -57,11 +64,10 @@ class HavingMatcher<T> implements TypeMatcher<T> {
       .addAll('', ' and ', '', _functionMatchers);
 }
 
-@visibleForTesting
-class FunctionMatcher<T> extends CustomMatcher {
+class _FunctionMatcher<T> extends CustomMatcher {
   final Object? Function(T value) _feature;
 
-  FunctionMatcher(String name, this._feature, Object? matcher)
+  _FunctionMatcher(String name, this._feature, Object? matcher)
       : super('`$name`:', '`$name`', matcher);
 
   @override
