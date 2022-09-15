@@ -2,6 +2,7 @@
 
 * Require Dart 2.17 or greater.
 * Make `isCastError` no longer depend on the deprecated `CastError` type.
+* Annotate `TypeMatcher.having` with `useResult`.
 
 ## 0.12.12
 

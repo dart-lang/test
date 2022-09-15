@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:meta/meta.dart';
+
 import 'having_matcher.dart';
 import 'interfaces.dart';
 
@@ -79,6 +81,7 @@ class TypeMatcher<T> extends Matcher {
   ///    .having((e) => e.start, 'start', isNull)
   ///    .having((e) => e.end, 'end', isNull);
   /// ```
+  @useResult
   TypeMatcher<T> having(
           Object? Function(T) feature, String description, dynamic matcher) =>
       HavingMatcher(this, description, feature, matcher);
