@@ -2,11 +2,11 @@
 
 1.  Add a git dependency on this package:
 
-    ```
+    ```yaml
     dev_dependencies:
       checks:
         git:
-          url: git@github.com:dart-lang/test.git
+          url: https://github.com/dart-lang/test
           path: pkgs/checks
           # Omit to try the latest, or pin to a commit to avoid
           # breaking changes while the library is experimental.
