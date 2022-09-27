@@ -29,6 +29,10 @@ class Runtime {
   /// The command-line Node.js VM.
   static const Runtime nodeJS = Runtime('Node.js', 'node', isJS: true);
 
+  /// Google Chrome.
+  static const Runtime chromeWasm = Runtime('ChromeWasm', 'chrome-wasm',
+      isBrowser: true, isJS: false, isBlink: true);
+
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [
     Runtime.vm,
@@ -36,7 +40,8 @@ class Runtime {
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer,
-    Runtime.nodeJS
+    Runtime.nodeJS,
+    Runtime.chromeWasm,
   ];
 
   /// The human-friendly name of the platform.

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2022, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:http_multi_server/http_multi_server.dart';
 import 'package:path/path.dart' as p;
-import 'package:pool/pool.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
@@ -19,44 +18,40 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test_api/backend.dart'
     show Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/wasm_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../util/math.dart';
 import '../../util/one_off_handler.dart';
-import '../../util/package_map.dart';
 import '../../util/path_handler.dart';
+import '../browser/browser_manager.dart';
 import '../executable_settings.dart';
-import 'browser_manager.dart';
 import 'default_settings.dart';
 
-class BrowserPlatform extends PlatformPlugin
+class BrowserWasmPlatform extends PlatformPlugin
     implements CustomizablePlatform<ExecutableSettings> {
   /// Starts the server.
   ///
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
-  static Future<BrowserPlatform> start({String? root}) async {
+  static Future<BrowserWasmPlatform> start({String? root}) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     var packageConfig = await currentPackageConfig;
-    return BrowserPlatform._(
+    return BrowserWasmPlatform._(
         server,
         Configuration.current,
         p.fromUri(packageConfig.resolve(
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
-        p.fromUri(packageConfig.resolve(Uri.parse(
-            'package:test/src/runner/browser/static/default.html.tpl'))),
+        p.fromUri(packageConfig.resolve(
+            Uri.parse('package:test/src/runner/wasm/static/default.html.tpl'))),
         root: root);
   }
 
@@ -82,26 +77,17 @@ class BrowserPlatform extends PlatformPlugin
   /// WebSocket,
   final _webSocketHandler = OneOffHandler();
 
-  /// A [PathHandler] used to serve compiled JS.
-  final _jsHandler = PathHandler();
+  /// A [PathHandler] used to serve compiled WASM tests.
+  final _wasmHandler = PathHandler();
 
-  /// The [Dart2JsCompilerPool] managing active instances of `dart2js`.
-  final _compilers = Dart2JsCompilerPool();
+  /// The [WasmCompilerPool] managing active instances of `dart2wasm`.
+  final _compilers = WasmCompilerPool();
 
-  /// The temporary directory in which compiled JS is emitted.
-  final String? _compiledDir;
+  /// The temporary directory in which compiled WASM is emitted.
+  final _compiledDir = createTempDir();
 
   /// The root directory served statically by this server.
   final String _root;
-
-  /// The pool of active `pub serve` compilations.
-  ///
-  /// Pub itself ensures that only one compilation runs at a time; we just use
-  /// this pool to make sure that the output is nice and linear.
-  final _pubServePool = Pool(1);
-
-  /// The HTTP client to use when caching JS files in `pub serve`.
-  final HttpClient? _http;
 
   /// Whether [close] has been called.
   bool get _closed => _closeMemo.hasRun;
@@ -131,26 +117,26 @@ class BrowserPlatform extends PlatformPlugin
   /// The default template for html tests.
   final String _defaultTemplatePath;
 
-  BrowserPlatform._(this._server, Configuration config, String faviconPath,
+  BrowserWasmPlatform._(this._server, Configuration config, String faviconPath,
       this._defaultTemplatePath,
       {String? root})
       : _config = config,
-        _root = root ?? p.current,
-        _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
-        _http = config.pubServeUrl == null ? null : HttpClient() {
+        _root = root ?? p.current {
     var cascade = shelf.Cascade().add(_webSocketHandler.handler);
 
-    if (_config.pubServeUrl == null) {
-      cascade = cascade
-          .add(packagesDirHandler())
-          .add(_jsHandler.handler)
-          .add(createStaticHandler(
-              config.suiteDefaults.precompiledPath ?? _root,
-              // Precompiled directories often contain symlinks
-              serveFilesOutsidePath:
-                  config.suiteDefaults.precompiledPath != null))
-          .add(_wrapperHandler);
+    if (_config.pubServeUrl != null) {
+      throw UnsupportedError(
+          'WASM browser tests don\'t support the `--pub-serve` argument');
     }
+
+    cascade = cascade
+        .add(packagesDirHandler())
+        .add(_wasmHandler.handler)
+        .add(createStaticHandler(config.suiteDefaults.precompiledPath ?? _root,
+            // Precompiled directories often contain symlinks
+            serveFilesOutsidePath:
+                config.suiteDefaults.precompiledPath != null))
+        .add(_wrapperHandler);
 
     var pipeline = shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
@@ -208,6 +194,11 @@ class BrowserPlatform extends PlatformPlugin
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
+    if (suiteConfig.precompiledPath != null) {
+      throw UnsupportedError(
+          'The wasm platform doesn\'t support precompiled suites');
+    }
+
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
@@ -215,55 +206,14 @@ class BrowserPlatform extends PlatformPlugin
       throw ArgumentError('$browser is not a browser.');
     }
 
-    var htmlPathFromTestPath = '${p.withoutExtension(path)}.html';
-    if (File(htmlPathFromTestPath).existsSync()) {
-      if (_config.customHtmlTemplatePath != null &&
-          p.basename(htmlPathFromTestPath) ==
-              p.basename(_config.customHtmlTemplatePath!)) {
-        throw LoadException(
-            path,
-            'template file "${p.basename(_config.customHtmlTemplatePath!)}" cannot be named '
-            'like the test file.');
-      }
-      _checkHtmlCorrectness(htmlPathFromTestPath, path);
-    } else if (_config.customHtmlTemplatePath != null) {
-      var htmlTemplatePath = _config.customHtmlTemplatePath!;
-      if (!File(htmlTemplatePath).existsSync()) {
-        throw LoadException(
-            path, '"$htmlTemplatePath" does not exist or is not readable');
-      }
-
-      final templateFileContents = File(htmlTemplatePath).readAsStringSync();
-      if ('{{testScript}}'.allMatches(templateFileContents).length != 1) {
-        throw LoadException(path,
-            '"$htmlTemplatePath" must contain exactly one {{testScript}} placeholder');
-      }
-      _checkHtmlCorrectness(htmlTemplatePath, path);
-    }
+    // TODO: Support custom html?
 
     Uri suiteUrl;
-    if (_config.pubServeUrl != null) {
-      var suitePrefix = p
-          .toUri(
-              p.withoutExtension(p.relative(path, from: p.join(_root, 'test'))))
-          .path;
+    await _compileSuite(path, suiteConfig);
 
-      var dartUrl =
-          _config.pubServeUrl!.resolve('$suitePrefix.dart.browser_test.dart');
-
-      await _pubServeSuite(path, dartUrl, browser, suiteConfig);
-      suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
-    } else {
-      if (suiteConfig.precompiledPath == null) {
-        await _compileSuite(path, suiteConfig);
-      } else {
-        await _addPrecompiledStackTraceMapper(path, suiteConfig);
-      }
-
-      if (_closed) return null;
-      suiteUrl = url.resolveUri(
-          p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'));
-    }
+    if (_closed) return null;
+    suiteUrl = url.resolveUri(
+        p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'));
 
     if (_closed) return null;
 
@@ -277,77 +227,23 @@ class BrowserPlatform extends PlatformPlugin
     return suite;
   }
 
-  void _checkHtmlCorrectness(String htmlPath, String path) {
-    if (!File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
-      throw LoadException(
-          path,
-          '"$htmlPath" must contain <script src="packages/test/dart.js">'
-          '</script>.');
-    }
-  }
-
-  /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
+  /// Compile the test suite at [dartPath] to WASM.
   ///
-  /// This ensures that only one suite is loaded at a time, and that any errors
-  /// are exposed as [LoadException]s.
-  Future<void> _pubServeSuite(String path, Uri dartUrl, Runtime browser,
-      SuiteConfiguration suiteConfig) {
-    return _pubServePool.withResource(() async {
-      var timer = Timer(Duration(seconds: 1), () {
-        print('"pub serve" is compiling $path...');
-      });
-
-      var sourceMapUrl = dartUrl.replace(path: '${dartUrl.path}.js.map');
-
-      try {
-        var request = await _http!.getUrl(sourceMapUrl);
-        var response = await request.close();
-
-        if (response.statusCode != 200) {
-          // Drain response to avoid VM hang.
-          response.drain();
-
-          throw LoadException(
-              path,
-              'Error getting $sourceMapUrl: ${response.statusCode} '
-              '${response.reasonPhrase}\n'
-              'Make sure "pub serve" is serving the test/ directory.');
-        }
-
-        if (suiteConfig.jsTrace) {
-          // Drain response to avoid VM hang.
-          response.drain();
-          return;
-        }
-        _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
-            mapUrl: sourceMapUrl,
-            sdkRoot: p.toUri('packages/\$sdk'),
-            packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
-      } on IOException catch (error) {
-        var message = getErrorMessage(error);
-        if (error is SocketException) {
-          message = '${error.osError?.message} '
-              '(errno ${error.osError?.errorCode})';
-        }
-
-        throw LoadException(
-            path,
-            'Error getting $sourceMapUrl: $message\n'
-            'Make sure "pub serve" is running.');
-      } finally {
-        timer.cancel();
-      }
-    });
-  }
-
-  /// Compile the test suite at [dartPath] to JavaScript.
-  ///
-  /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
+  /// Once the suite has been compiled, it's added to [_wasmHandler] so it can be
   /// served.
   Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = Directory(_compiledDir!).createTempSync('test_').path;
-      var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
+      var dir = Directory(_compiledDir).createTempSync('test_').path;
+
+      // TODO: Update this path to the actual wasm output file path.
+      var wasmCompiledPath =
+          p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
+      // TODO: Update this to the actual url we want to serve the compiled WASM
+      // file(s).
+      var wasmUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+          '.browser_test.dart.js';
+
+      // TODO: This may need to be specialized, or it may just work. Not sure.
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/browser.dart";
@@ -359,56 +255,29 @@ class BrowserPlatform extends PlatformPlugin
         }
       ''';
 
-      await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
+      await _compilers.compile(bootstrapContent, wasmCompiledPath, suiteConfig);
       if (_closed) return;
 
       var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart';
-      _jsHandler.add(bootstrapUrl, (request) {
+      _wasmHandler.add(bootstrapUrl, (request) {
         return shelf.Response.ok(bootstrapContent,
             headers: {'Content-Type': 'application/dart'});
       });
 
-      var jsUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js';
-      _jsHandler.add(jsUrl, (request) {
-        return shelf.Response.ok(File(jsPath).readAsStringSync(),
+      _wasmHandler.add(wasmUrl, (request) {
+        // TODO: Update this with proper headers at a minimum.
+        return shelf.Response.ok(File(wasmCompiledPath).readAsBytesSync(),
             headers: {'Content-Type': 'application/javascript'});
       });
-
-      var mapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js.map';
-      _jsHandler.add(mapUrl, (request) {
-        return shelf.Response.ok(File('$jsPath.map').readAsStringSync(),
-            headers: {'Content-Type': 'application/json'});
-      });
-
-      if (suiteConfig.jsTrace) return;
-      var mapPath = '$jsPath.map';
-      _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
     });
   }
 
-  Future<void> _addPrecompiledStackTraceMapper(
-      String dartPath, SuiteConfiguration suiteConfig) async {
-    if (suiteConfig.jsTrace) return;
-    var mapPath = p.join(
-        suiteConfig.precompiledPath!, '$dartPath.browser_test.dart.js.map');
-    var mapFile = File(mapPath);
-    if (mapFile.existsSync()) {
-      _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse(r'/packages/$sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
-    }
-  }
-
-  /// Returns the [BrowserManager] for [runtime], which should be a browser.
+  /// Returns the [BrowserManager] for [browser].
   ///
   /// If no browser manager is running yet, starts one.
+  ///
+  /// TODO: Share a browser manager with the regular browser platform.
   Future<BrowserManager?> _browserManagerFor(Runtime browser) {
     var managerFuture = _browserManagers[browser];
     if (managerFuture != null) return managerFuture;
@@ -416,7 +285,7 @@ class BrowserPlatform extends PlatformPlugin
     var completer = Completer<WebSocketChannel>.sync();
     var path = _webSocketHandler.create(webSocketHandler(completer.complete));
     var webSocketUrl = url.replace(scheme: 'ws').resolve(path);
-    var hostUrl = (_config.pubServeUrl ?? url)
+    var hostUrl = url
         .resolve('packages/test/src/runner/browser/static/index.html')
         .replace(queryParameters: {
       'managerUrl': webSocketUrl.toString(),
@@ -462,11 +331,7 @@ class BrowserPlatform extends PlatformPlugin
           _compilers.close(),
         ]);
 
-        if (_config.pubServeUrl == null) {
-          Directory(_compiledDir!).deleteSync(recursive: true);
-        } else {
-          _http!.close();
-        }
+        Directory(_compiledDir).deleteSync(recursive: true);
       });
   final _closeMemo = AsyncMemoizer<void>();
 }
