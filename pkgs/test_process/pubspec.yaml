@@ -1,10 +1,11 @@
 name: test_process
-version: 2.0.3-dev
-description: A package for testing subprocesses.
+version: 2.0.3
+description:
+  "Test processes: starting; validating stdout and stderr; checking exit code"
 repository: https://github.com/dart-lang/test_process
 
 environment:
-  sdk: ">=2.12.0-0 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   async: ^2.5.0
@@ -13,5 +14,5 @@ dependencies:
   test: ^1.16.0
 
 dev_dependencies:
-  pedantic: ^1.10.0
+  lints: ^2.0.0
   test_descriptor: ^2.0.0

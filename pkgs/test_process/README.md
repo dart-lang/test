@@ -30,19 +30,19 @@ import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 void main() {
-  test("pub get gets dependencies", () async {
+  test('pub get gets dependencies', () async {
     // TestProcess.start() works just like Process.start() from dart:io.
-    var process = await TestProcess.start("pub", ["get"]);
+    var process = await TestProcess.start('dart', ['pub', 'get']);
 
     // StreamQueue.next returns the next line emitted on standard out.
     var firstLine = await process.stdout.next;
-    expect(firstLine, equals("Resolving dependencies..."));
+    expect(firstLine, equals('Resolving dependencies...'));
 
     // Each call to StreamQueue.next moves one line further.
     String next;
     do {
       next = await process.stdout.next;
-    } while (next != "Got dependencies!");
+    } while (next != 'Got dependencies!');
 
     // Assert that the process exits with code 0.
     await process.shouldExit(0);
@@ -61,16 +61,16 @@ import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 void main() {
-  test("pub get gets dependencies", () async {
-    var process = await TestProcess.start("pub", ["get"]);
+  test('pub get gets dependencies', () async {
+    var process = await TestProcess.start('dart', ['pub', 'get']);
 
     // Each stream matcher will consume as many lines as it matches from a
     // StreamQueue, and no more, so it's safe to use them in sequence.
-    await expectLater(process.stdout, emits("Resolving dependencies..."));
+    await expectLater(process.stdout, emits('Resolving dependencies...'));
 
     // The emitsThrough matcher matches and consumes any number of lines, as
     // long as they end with one matching the argument.
-    await expectLater(process.stdout, emitsThrough("Got dependencies!"));
+    await expectLater(process.stdout, emitsThrough('Got dependencies!'));
 
     await process.shouldExit(0);
   });
