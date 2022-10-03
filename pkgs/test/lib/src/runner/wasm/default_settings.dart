@@ -10,8 +10,13 @@ import '../executable_settings.dart';
 /// Default settings for starting browser executables with the wasm runtime.
 final defaultSettings = UnmodifiableMapView({
   Runtime.chromeWasm: ExecutableSettings(
-      linuxExecutable: 'google-chrome',
+      linuxExecutable: 'google-chrome-beta',
       macOSExecutable:
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      windowsExecutable: r'Google\Chrome\Application\chrome.exe'),
+      windowsExecutable: r'Google\Chrome\Application\chrome.exe',
+      arguments:[
+          '--js-flags=--experimental-wasm-gc --wasm-gc-js-interop '
+                      '--experimental-wasm-stack-switching '
+                      '--experimental-wasm-type-reflection'
+        ]),
 });

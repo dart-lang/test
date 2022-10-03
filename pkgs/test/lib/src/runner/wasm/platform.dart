@@ -52,6 +52,8 @@ class BrowserWasmPlatform extends PlatformPlugin
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
         p.fromUri(packageConfig.resolve(
             Uri.parse('package:test/src/runner/wasm/static/default.html.tpl'))),
+        p.fromUri(packageConfig.resolve(
+            Uri.parse('package:test/src/runner/wasm/static/run_wasm_chrome.js'))),
         root: root);
   }
 
@@ -117,8 +119,11 @@ class BrowserWasmPlatform extends PlatformPlugin
   /// The default template for html tests.
   final String _defaultTemplatePath;
 
+  /// The `package:test` side wrapper for the Dart2Wasm runtime.
+  final String _jsRuntimeWrapper;
+
   BrowserWasmPlatform._(this._server, Configuration config, String faviconPath,
-      this._defaultTemplatePath,
+      this._defaultTemplatePath, this._jsRuntimeWrapper,
       {String? root})
       : _config = config,
         _root = root ?? p.current {
@@ -159,9 +164,13 @@ class BrowserWasmPlatform extends PlatformPlugin
       var testName = htmlEscape.convert(test);
       var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
       var contents = File(template).readAsStringSync();
+      var jsRuntime = 'dart2wasm_runtime.mjs';
       var processedContents = contents
           // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', link)
+          .replaceFirst('{{jsRuntimeUrl}}', jsRuntime)
+          .replaceFirst('{{wasmUrl}}',
+              p.basename('$test.browser_test.dart.wasm'))
           .replaceAll('{{testName}}', testName);
       return shelf.Response.ok(processedContents,
           headers: {'Content-Type': 'text/html'});
@@ -235,13 +244,14 @@ class BrowserWasmPlatform extends PlatformPlugin
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
 
-      // TODO: Update this path to the actual wasm output file path.
-      var wasmCompiledPath =
-          p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
-      // TODO: Update this to the actual url we want to serve the compiled WASM
-      // file(s).
-      var wasmUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js';
+      var baseCompiledPath =
+          p.join(dir, '${p.basename(dartPath)}.browser_test.dart');
+      var baseUrl =
+          '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
+      var wasmUrl = '$baseUrl.wasm';
+      var jsRuntimeWrapperUrl = '$baseUrl.js';
+      var jsRuntimeUrl = p.join(p.dirname(dartPath), 'dart2wasm_runtime.mjs');
+      var htmlUrl = '$baseUrl.html';
 
       // TODO: This may need to be specialized, or it may just work. Not sure.
       var bootstrapContent = '''
@@ -255,20 +265,30 @@ class BrowserWasmPlatform extends PlatformPlugin
         }
       ''';
 
-      await _compilers.compile(bootstrapContent, wasmCompiledPath, suiteConfig);
+      await _compilers.compile(bootstrapContent, baseCompiledPath, suiteConfig);
       if (_closed) return;
 
-      var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart';
-      _wasmHandler.add(bootstrapUrl, (request) {
-        return shelf.Response.ok(bootstrapContent,
-            headers: {'Content-Type': 'application/dart'});
+      var wasmPath = '$baseCompiledPath.wasm';
+      _wasmHandler.add(wasmUrl, (request) {
+        return shelf.Response.ok(File(wasmPath).readAsBytesSync(),
+            headers: {'Content-Type': 'application/wasm'});
       });
 
-      _wasmHandler.add(wasmUrl, (request) {
-        // TODO: Update this with proper headers at a minimum.
-        return shelf.Response.ok(File(wasmCompiledPath).readAsBytesSync(),
+      _wasmHandler.add(jsRuntimeWrapperUrl, (request) {
+        return shelf.Response.ok(File(_jsRuntimeWrapper).readAsBytesSync(),
             headers: {'Content-Type': 'application/javascript'});
+      });
+
+      var jsRuntimePath = p.join(dir, 'dart2wasm_runtime.mjs');
+      _wasmHandler.add(jsRuntimeUrl, (request) {
+        return shelf.Response.ok(File(jsRuntimePath).readAsBytesSync(),
+            headers: {'Content-Type': 'application/javascript'});
+      });
+
+      var htmlPath = '$baseCompiledPath.html';
+      _wasmHandler.add(htmlUrl, (request) {
+        return shelf.Response.ok(File(htmlPath).readAsBytesSync(),
+            headers: {'Content-Type': 'text/html'});
       });
     });
   }

@@ -24,29 +24,35 @@ class WasmCompilerPool extends CompilerPool {
   ///
   /// This wraps the Dart code in the standard browser-testing wrapper.
   ///
-  /// The returned [Future] will complete once the `dart2js` process completes
+  /// The returned [Future] will complete once the `dart2wasm` process completes
   /// *and* all its output has been printed to the command line.
   @override
   Future compileInternal(
       String code, String path, SuiteConfiguration suiteConfig) {
     return withTempDir((dir) async {
-      var wrapperPath = p.join(dir, 'runInBrowser.dart');
+      var wrapperPath = p.join(dir, 'main.dart');
       File(wrapperPath).writeAsStringSync(code);
-
-      // TODO: Update args to be appropriate, just a starting point.
+      var outWasmPath = '$path.wasm';
+      var outJSPath = p.join(p.dirname(path), 'dart2wasm_runtime.mjs');
+      var dartBinPath = Platform.resolvedExecutable;
+      var sdkRoot = p.join(p.dirname(dartBinPath), '../');
+      var platformRoot = p.join(sdkRoot, '../');
+      var jsRuntimePath = p.join(sdkRoot, 'bin', 'dart2wasm_runtime.mjs');
+      File(jsRuntimePath).copy(outJSPath);
+      var platformDill = p.join(platformRoot, 'dart2wasm_platform.dill');
+      var dartPrecompiledRuntimePath = p.join(platformRoot,
+          'dart_precompiled_runtime');
+      var dart2wasmSnapshotPath = p.join(sdkRoot, 'bin/snapshots',
+          'dart2wasm.snapshot');
       var process = await Process.start(
-          // This is the Dart executable, you may want to change it if dart2wasm
-          // is spawned a different way.
-          Platform.resolvedExecutable,
+          dartPrecompiledRuntimePath,
           [
-            // These are just some likely args you will want, in no particular
-            // order and also total guesses.
-            for (var experiment in enabledExperiments)
-              '--enable-experiment=$experiment',
-            '--enable-asserts',
-            '--out=$path',
-            '--packages=${await packageConfigUri}',
-            wrapperPath, // Path of the thing to actually compile
+            dart2wasmSnapshotPath,
+            '--dart-sdk=$sdkRoot',
+            '--platform=$platformDill',
+            '--packages=${(await packageConfigUri).path}',
+            wrapperPath,
+            outWasmPath,
           ]);
       if (closed) {
         process.kill();

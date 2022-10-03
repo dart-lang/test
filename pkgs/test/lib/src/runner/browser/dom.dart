@@ -21,7 +21,7 @@ extension WindowExtension on Window {
   void postMessage(Object message, String targetOrigin,
           [List<MessagePort>? messagePorts]) =>
       js_util.callMethod(this, 'postMessage', <Object?>[
-        message,
+        js_util.jsify(message),
         targetOrigin,
         if (messagePorts != null) js_util.jsify(messagePorts)
       ]);
