@@ -1,5 +1,11 @@
+[![Dart CI](https://github.com/dart-lang/test_descriptor/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/test_descriptor/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/test_descriptor.svg)](https://pub.dev/packages/test_descriptor)
+[![package publisher](https://img.shields.io/pub/publisher/test_descriptor.svg)](https://pub.dev/packages/test_descriptor/publisher)
+
 The `test_descriptor` package provides a convenient, easy-to-read API for
 defining and verifying directory structures in tests.
+
+## Usage
 
 We recommend that you import this library with the `d` prefix. The
 [`d.dir()`][dir] and [`d.file()`][file] functions are the main entrypoints. They

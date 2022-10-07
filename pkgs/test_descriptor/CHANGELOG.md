@@ -1,7 +1,8 @@
-## 2.0.1-dev
+## 2.0.1
 
 * Populate the pubspec `repository` field.
 * Migrate to `package:lints`.
+* Update the package's markdown badges.
 
 ## 2.0.0
 
