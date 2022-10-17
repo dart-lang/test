@@ -1,3 +1,5 @@
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dart-lang/test/badge)](https://api.securityscorecards.dev/projects/github.com/dart-lang/test)
+
 `test` provides a standard way of writing and running tests in Dart.
 
 * [Writing Tests](#writing-tests)
