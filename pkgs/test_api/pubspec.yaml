@@ -1,6 +1,7 @@
 name: test_api
-version: 0.4.14
-description: A library for writing Dart tests.
+version: 0.4.15
+description: >-
+  The user facing API for structuring Dart tests and checking expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
 
 environment:

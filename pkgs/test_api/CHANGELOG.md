@@ -1,3 +1,7 @@
+## 0.4.15
+
+* Expand the pubspec description.
+
 ## 0.4.14
 
 * Require Dart >= 2.18.0
