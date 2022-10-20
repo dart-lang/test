@@ -1,3 +1,8 @@
+# 0.4.19
+
+* Support the latest `package:test_api`.
+* Refactor `CompilerPool` to be abstract, add wasm compiler pool.
+
 # 0.4.18
 
 * Support the latest `package:test_api`.

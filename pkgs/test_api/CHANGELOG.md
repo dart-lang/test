@@ -1,3 +1,11 @@
+## 0.4.15
+
+* Add the `experimental-chrome-wasm` runtime. This is very unstable and will
+  eventually be deleted, to be replaced by a `--compiler` flag. See
+  https://github.com/dart-lang/test/issues/1776 for more information on future
+  plans
+* Add `isWasm` field to `Runtime` (defaults to `false`).
+
 ## 0.4.14
 
 * Require Dart >= 2.18.0
