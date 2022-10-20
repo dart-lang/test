@@ -224,7 +224,6 @@ class BrowserWasmPlatform extends PlatformPlugin
 
     if (_closed) return null;
 
-    // TODO(nweiz): Don't start the browser until all the suites are compiled.
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
@@ -250,7 +249,6 @@ class BrowserWasmPlatform extends PlatformPlugin
       var jsRuntimeUrl = p.join(p.dirname(dartPath), 'dart2wasm_runtime.mjs');
       var htmlUrl = '$baseUrl.html';
 
-      // TODO: This may need to be specialized, or it may just work. Not sure.
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/browser.dart";
