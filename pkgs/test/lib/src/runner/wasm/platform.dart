@@ -43,6 +43,11 @@ class BrowserWasmPlatform extends PlatformPlugin
   /// [root] is the root directory that the server should serve. It defaults to
   /// the working directory.
   static Future<BrowserWasmPlatform> start({String? root}) async {
+    print('WARNING: Running with the experimental wasm platform. This platform '
+        'is temporary and will be removed in the future, without a breaking '
+        'change release, in favor of a different method of running wasm tests.'
+        'This platform should only be used for experimentation at this time.'
+        '\n');
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     var packageConfig = await currentPackageConfig;
     return BrowserWasmPlatform._(
@@ -52,8 +57,8 @@ class BrowserWasmPlatform extends PlatformPlugin
             Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
         p.fromUri(packageConfig.resolve(
             Uri.parse('package:test/src/runner/wasm/static/default.html.tpl'))),
-        p.fromUri(packageConfig.resolve(
-            Uri.parse('package:test/src/runner/wasm/static/run_wasm_chrome.js'))),
+        p.fromUri(packageConfig.resolve(Uri.parse(
+            'package:test/src/runner/wasm/static/run_wasm_chrome.js'))),
         root: root);
   }
 
@@ -169,8 +174,8 @@ class BrowserWasmPlatform extends PlatformPlugin
           // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', link)
           .replaceFirst('{{jsRuntimeUrl}}', jsRuntime)
-          .replaceFirst('{{wasmUrl}}',
-              p.basename('$test.browser_test.dart.wasm'))
+          .replaceFirst(
+              '{{wasmUrl}}', p.basename('$test.browser_test.dart.wasm'))
           .replaceAll('{{testName}}', testName);
       return shelf.Response.ok(processedContents,
           headers: {'Content-Type': 'text/html'});
@@ -313,7 +318,14 @@ class BrowserWasmPlatform extends PlatformPlugin
     });
 
     var future = BrowserManager.start(browser, hostUrl, completer.future,
-        _browserSettings[browser]!, _config);
+            _browserSettings[browser]!, _config)
+        .onError((error, _) {
+      throw StateError('Unable to spawn Chrome Beta, which is required by the '
+          'experimental-chrome-wasm platform. You may also need to set the '
+          'executable path in your dart_test.yaml file, documented here: '
+          'https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#override_platforms'
+          '\n\n$error\n');
+    });
 
     // Store null values for browsers that error out so we know not to load them
     // again.

@@ -30,7 +30,8 @@ class Runtime {
   static const Runtime nodeJS = Runtime('Node.js', 'node', isJS: true);
 
   /// Google Chrome.
-  static const Runtime chromeWasm = Runtime('ChromeWasm', 'chrome-wasm',
+  static const Runtime experimentalChromeWasm = Runtime(
+      'ExperimentalChromeWasm', 'experimental-chrome-wasm',
       isBrowser: true, isJS: false, isBlink: true);
 
   /// The platforms that are supported by the test runner by default.
@@ -41,7 +42,7 @@ class Runtime {
     Runtime.safari,
     Runtime.internetExplorer,
     Runtime.nodeJS,
-    Runtime.chromeWasm,
+    Runtime.experimentalChromeWasm,
   ];
 
   /// The human-friendly name of the platform.

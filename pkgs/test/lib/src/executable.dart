@@ -8,8 +8,8 @@ import 'package:test_core/src/executable.dart' as executable;
 import 'package:test_core/src/runner/hack_register_platform.dart'; // ignore: implementation_imports
 
 import 'runner/browser/platform.dart';
-import 'runner/wasm/platform.dart';
 import 'runner/node/platform.dart';
+import 'runner/wasm/platform.dart';
 
 void main(List<String> args) async {
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
@@ -20,7 +20,7 @@ void main(List<String> args) async {
     Runtime.internetExplorer
   ], () => BrowserPlatform.start());
   registerPlatformPlugin([
-    Runtime.chromeWasm,
+    Runtime.experimentalChromeWasm,
   ], () => BrowserWasmPlatform.start());
 
   await executable.main(args);

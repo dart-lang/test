@@ -1,1 +1,1 @@
-platforms: [chrome-wasm]
+platforms: [experimental-chrome-wasm]

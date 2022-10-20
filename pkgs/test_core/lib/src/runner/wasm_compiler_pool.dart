@@ -1,4 +1,4 @@
-// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2022, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/package_config.dart';
 import 'compiler_pool.dart';
@@ -40,20 +39,18 @@ class WasmCompilerPool extends CompilerPool {
       var jsRuntimePath = p.join(sdkRoot, 'bin', 'dart2wasm_runtime.mjs');
       File(jsRuntimePath).copy(outJSPath);
       var platformDill = p.join(platformRoot, 'dart2wasm_platform.dill');
-      var dartPrecompiledRuntimePath = p.join(platformRoot,
-          'dart_precompiled_runtime');
-      var dart2wasmSnapshotPath = p.join(sdkRoot, 'bin/snapshots',
-          'dart2wasm.snapshot');
-      var process = await Process.start(
-          dartPrecompiledRuntimePath,
-          [
-            dart2wasmSnapshotPath,
-            '--dart-sdk=$sdkRoot',
-            '--platform=$platformDill',
-            '--packages=${(await packageConfigUri).path}',
-            wrapperPath,
-            outWasmPath,
-          ]);
+      var dartPrecompiledRuntimePath =
+          p.join(platformRoot, 'dart_precompiled_runtime');
+      var dart2wasmSnapshotPath =
+          p.join(sdkRoot, 'bin/snapshots', 'dart2wasm.snapshot');
+      var process = await Process.start(dartPrecompiledRuntimePath, [
+        dart2wasmSnapshotPath,
+        '--dart-sdk=$sdkRoot',
+        '--platform=$platformDill',
+        '--packages=${(await packageConfigUri).path}',
+        wrapperPath,
+        outWasmPath,
+      ]);
       if (closed) {
         process.kill();
         return;

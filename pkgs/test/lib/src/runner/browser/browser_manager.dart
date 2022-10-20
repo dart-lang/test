@@ -155,7 +155,7 @@ class BrowserManager {
       ExecutableSettings settings, Configuration configuration) {
     switch (browser.root) {
       case Runtime.chrome:
-      case Runtime.chromeWasm:
+      case Runtime.experimentalChromeWasm:
         return Chrome(url, configuration, settings: settings);
       case Runtime.firefox:
         return Firefox(url, settings: settings);
