@@ -966,7 +966,7 @@ jobs:
       - job_004
       - job_005
   job_026:
-    name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd`, `dart test`"
+    name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -991,8 +991,8 @@ jobs:
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: integration_tests/wasm
-      - name: "integration_tests/wasm; pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd"
-        run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd"
+      - name: "integration_tests/wasm; pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
       - name: integration_tests/wasm; dart test
