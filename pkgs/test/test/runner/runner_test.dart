@@ -73,7 +73,7 @@ Selecting Tests:
 
 Running Tests:
 -p, --platform                        The platform(s) on which to run the tests.
-                                      $_browsers
+                                      $_runtimes
 -P, --preset                          The configuration preset(s) to use.
 -j, --concurrency=<threads>           The number of concurrent test suites run.
                                       (defaults to "$_defaultConcurrency")
@@ -119,9 +119,10 @@ Output:
 
 ''';
 
-final _browsers = '[vm (default), chrome, firefox'
+final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
-    '${Platform.isWindows ? ', ie' : ''}, node]';
+    '${Platform.isWindows ? ', ie' : ''}, node, '
+    'experimental-chrome-wasm]';
 
 void main() {
   setUpAll(precompileTestExecutable);
