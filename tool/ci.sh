@@ -127,7 +127,7 @@ for PKG in ${PKGS}; do
         echo 'dart format --output=none --set-exit-if-changed .'
         dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
-      test)
+      test_0)
         echo 'dart test -p chrome,vm,node'
         dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
