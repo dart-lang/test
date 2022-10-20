@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 // TODO(joshualitt): Investigate making this a module. Currently, Dart2Wasm is
-// borken in D8 with modules because of an issue with async. This may or may not
+// broken in D8 with modules because of an issue with async. This may or may not
 // affect chrome.
 (async () => {
   // Fetch and compile Wasm binary.
