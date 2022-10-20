@@ -5,7 +5,7 @@
 // TODO(joshualitt): Investigate making this a module. Currently, Dart2Wasm is
 // borken in D8 with modules because of an issue with async. This may or may not
 // affect chrome.
-const main = async () => {
+(async () => {
   // Fetch and compile Wasm binary.
   let data = document.getElementById('WasmBootstrapInfo').dataset;
   let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
@@ -18,6 +18,4 @@ const main = async () => {
   // explicitly or awaiting Futures), these will automatically keep the script
   // alive even after `main` returns.
   await dart2wasm.invoke(dartInstance);
-};
-main();
-
+})();
