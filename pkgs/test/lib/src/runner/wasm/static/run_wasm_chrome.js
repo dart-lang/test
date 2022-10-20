@@ -7,12 +7,11 @@
 // affect chrome.
 const main = async () => {
   // Fetch and compile Wasm binary.
-  let wasmUrl = document.getElementById('WasmUrl').textContent;
-  let modulePromise = WebAssembly.compileStreaming(fetch(wasmUrl));
+  let data = document.getElementById('WasmBootstrapInfo').dataset;
+  let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
 
   // Instantiate the Dart module, importing from the global scope.
-  let jsRuntimeUrl = document.getElementById('JSRuntimeUrl').textContent;
-  let dart2wasm = await import('./' + jsRuntimeUrl);
+  let dart2wasm = await import('./' + data.jsruntimeurl);
   let dartInstance = await dart2wasm.instantiate(modulePromise, {});
 
   // Call `main`. If tasks are placed into the event loop (by scheduling tasks

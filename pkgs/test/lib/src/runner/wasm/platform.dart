@@ -118,9 +118,6 @@ class BrowserWasmPlatform extends PlatformPlugin
   /// per run, rather than once per browser per run.
   final _compileFutures = <String, Future<void>>{};
 
-  /// Mappers for Dartifying stack traces, indexed by test path.
-  final _mappers = <String, StackTraceMapper>{};
-
   /// The default template for html tests.
   final String _defaultTemplatePath;
 
@@ -142,10 +139,7 @@ class BrowserWasmPlatform extends PlatformPlugin
     cascade = cascade
         .add(packagesDirHandler())
         .add(_wasmHandler.handler)
-        .add(createStaticHandler(config.suiteDefaults.precompiledPath ?? _root,
-            // Precompiled directories often contain symlinks
-            serveFilesOutsidePath:
-                config.suiteDefaults.precompiledPath != null))
+        .add(createStaticHandler(_root))
         .add(_wrapperHandler);
 
     var pipeline = shelf.Pipeline()
@@ -235,8 +229,7 @@ class BrowserWasmPlatform extends PlatformPlugin
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
-    var suite = await browserManager.load(path, suiteUrl, suiteConfig, message,
-        mapper: _mappers[path]);
+    var suite = await browserManager.load(path, suiteUrl, suiteConfig, message);
     if (_closed) return null;
     return suite;
   }
