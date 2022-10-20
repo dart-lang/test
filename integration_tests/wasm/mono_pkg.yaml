@@ -9,6 +9,8 @@ stages:
     - format
     - analyze: --fatal-infos
 - unit_test:
-  - test:
-    os:
-    - linux
+  - group:
+    - command: sudo apt-get install google-chrome-beta && which google-chrome-beta
+    - test:
+      os:
+      - linux
