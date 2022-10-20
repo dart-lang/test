@@ -15,8 +15,7 @@ import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 // ignore: deprecated_member_use
-import 'package:test_api/backend.dart'
-    show Runtime, StackTraceMapper, SuitePlatform;
+import 'package:test_api/backend.dart' show Runtime, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
