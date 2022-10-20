@@ -35,13 +35,12 @@ class WasmCompilerPool extends CompilerPool {
       var outJSPath = p.join(p.dirname(path), 'dart2wasm_runtime.mjs');
       var dartBinPath = Platform.resolvedExecutable;
       var sdkRoot = p.join(p.dirname(dartBinPath), '../');
-      var platformRoot = p.join(sdkRoot, '../');
       var jsRuntimePath = p.join(sdkRoot, 'bin', 'dart2wasm_runtime.mjs');
       File(jsRuntimePath).copy(outJSPath);
       var platformDill =
           p.join(sdkRoot, 'lib', '_internal', 'dart2wasm_platform.dill');
       var dartPrecompiledRuntimePath =
-          p.join(platformRoot, 'dart_precompiled_runtime');
+          p.join(sdkRoot, 'bin', 'dart_precompiled_runtime');
       var dart2wasmSnapshotPath =
           p.join(sdkRoot, 'bin/snapshots', 'dart2wasm.snapshot');
       var process = await Process.start(dartPrecompiledRuntimePath, [
