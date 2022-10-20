@@ -10,7 +10,13 @@ stages:
     - analyze: --fatal-infos
 - unit_test:
   - group:
-    - command: sudo apt-get install google-chrome-beta && which google-chrome-beta
+    - command:
+      - pushd /tmp
+      - wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+      - sudo dpkg -i google-chrome-beta_current_amd64.deb
+      - popd
+      os:
+        - linux
     - test:
       os:
       - linux
