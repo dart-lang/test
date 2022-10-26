@@ -1,3 +1,7 @@
+## 1.21.7
+
+* Support `package:matcher` version `0.12.13`.
+
 ## 1.21.6
 
 * Require Dart >= 2.18.0

@@ -1,6 +1,7 @@
 ## 0.4.15
 
 * Expand the pubspec description.
+* Support `package:matcher` version `0.12.13`.
 
 ## 0.4.14
 
