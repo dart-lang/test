@@ -1,3 +1,8 @@
+# 0.4.19
+
+* Support `package:matcher` version `0.12.13`.
+* Require Dart SDK version 2.18.
+
 # 0.4.18
 
 * Support the latest `package:test_api`.
