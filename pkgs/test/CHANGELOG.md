@@ -1,4 +1,4 @@
-## 1.22.0
+## 1.22.0-dev
 
 * Add the `experimental-chrome-wasm` platform. This is very unstable and will
   eventually be deleted, to be replaced by a `--compiler` flag. See
