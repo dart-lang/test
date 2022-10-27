@@ -42,7 +42,7 @@ class WasmCompilerPool extends CompilerPool {
       var dartPrecompiledRuntimePath =
           p.join(sdkRoot, 'bin', 'dart_precompiled_runtime');
       var dart2wasmSnapshotPath =
-          p.join(sdkRoot, 'bin/snapshots', 'dart2wasm.snapshot');
+          p.join(sdkRoot, 'bin/snapshots', 'dart2wasm_product.snapshot');
       var process = await Process.start(dartPrecompiledRuntimePath, [
         dart2wasmSnapshotPath,
         '--dart-sdk=$sdkRoot',
