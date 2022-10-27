@@ -15,8 +15,8 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
     show Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
@@ -41,8 +41,8 @@ class NodePlatform extends PlatformPlugin
   /// The test runner configuration.
   final Configuration _config;
 
-  /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = CompilerPool(['-Dnode=true', '--server-mode']);
+  /// The [Dart2JsCompilerPool] managing active instances of `dart2js`.
+  final _compilers = Dart2JsCompilerPool(['-Dnode=true', '--server-mode']);
 
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();

@@ -1,3 +1,10 @@
+## 1.22.0-dev
+
+* Add the `experimental-chrome-wasm` platform. This is very unstable and will
+  eventually be deleted, to be replaced by a `--compiler` flag. See
+  https://github.com/dart-lang/test/issues/1776 for more information on future
+  plans.
+
 ## 1.21.7
 
 * Support `package:matcher` version `0.12.13`.

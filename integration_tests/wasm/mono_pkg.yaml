@@ -1,0 +1,23 @@
+# See https://pub.dev/packages/mono_repo
+
+sdk:
+- main
+
+stages:
+- analyze_and_format:
+  - group:
+    - format
+    - analyze: --fatal-infos
+- unit_test:
+  - group:
+    - command:
+      - pushd /tmp
+      - wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+      - sudo dpkg -i google-chrome-beta_current_amd64.deb
+      - popd
+      - which google-chrome-beta
+      os:
+        - linux
+    - test:
+      os:
+      - linux

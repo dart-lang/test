@@ -1,3 +1,8 @@
+# 0.4.20-dev
+
+* Support the latest `package:test_api`.
+* Refactor `CompilerPool` to be abstract, add wasm compiler pool.
+
 # 0.4.19
 
 * Support `package:matcher` version `0.12.13`.

@@ -76,50 +76,54 @@ for PKG in ${PKGS}; do
         dart analyze || EXIT_CODE=$?
         ;;
       command_00)
+        echo 'pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta'
+        pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta || EXIT_CODE=$?
+        ;;
+      command_01)
         echo 'dart test'
         dart test || EXIT_CODE=$?
         ;;
-      command_01)
+      command_02)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
-      command_02)
+      command_03)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
-      command_03)
+      command_04)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
-      command_04)
+      command_05)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
-      command_05)
+      command_06)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
-      command_06)
+      command_07)
         echo 'dart test --preset travis --total-shards 5 --shard-index 0'
         dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
-      command_07)
+      command_08)
         echo 'dart test --preset travis --total-shards 5 --shard-index 1'
         dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
-      command_08)
+      command_09)
         echo 'dart test --preset travis --total-shards 5 --shard-index 2'
         dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
-      command_09)
+      command_10)
         echo 'dart test --preset travis --total-shards 5 --shard-index 3'
         dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
-      command_10)
+      command_11)
         echo 'dart test --preset travis --total-shards 5 --shard-index 4'
         dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
-      command_11)
+      command_12)
         echo 'dart test --preset travis -x browser'
         dart test --preset travis -x browser || EXIT_CODE=$?
         ;;
@@ -127,7 +131,7 @@ for PKG in ${PKGS}; do
         echo 'dart format --output=none --set-exit-if-changed .'
         dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
-      test)
+      test_0)
         echo 'dart test -p chrome,vm,node'
         dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
