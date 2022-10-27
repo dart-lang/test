@@ -5,6 +5,10 @@
   https://github.com/dart-lang/test/issues/1776 for more information on future
   plans.
 
+## 1.21.7
+
+* Support `package:matcher` version `0.12.13`.
+
 ## 1.21.6
 
 * Require Dart >= 2.18.0
