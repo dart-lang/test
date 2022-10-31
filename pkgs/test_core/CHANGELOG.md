@@ -1,5 +1,7 @@
 # 0.4.20-dev
 
+* Fix an issue with the github reporter where tests that fail asynchronously
+  after they've completed would show up as succeeded tests.
 * Support the latest `package:test_api`.
 * Refactor `CompilerPool` to be abstract, add wasm compiler pool.
 
