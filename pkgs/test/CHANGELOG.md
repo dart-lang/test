@@ -1,5 +1,7 @@
 ## 1.22.0-dev
 
+* Fix an issue with the github reporter where tests that fail asynchronously
+  after they've completed would show up as succeeded tests.
 * Add the `experimental-chrome-wasm` platform. This is very unstable and will
   eventually be deleted, to be replaced by a `--compiler` flag. See
   https://github.com/dart-lang/test/issues/1776 for more information on future

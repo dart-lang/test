@@ -36,7 +36,7 @@ void main() {
         🎉 3 tests passed.''');
   });
 
-  test('includes the platform name when multiple platforms are ran', () {
+  test('includes the platform name when multiple platforms are run', () {
     return _expectReportLines('''
         test('success 1', () {});''', [
       '::group::✅ [VM] success 1',
@@ -145,6 +145,34 @@ void main() {
         ::group::✅ wait
         ::endgroup::
         ::error::1 test passed, 1 failed.''');
+  });
+
+  test('displays failures occuring after a test completes', () {
+    return _expectReport(
+      '''
+      test('fail after completion', () {
+        Future(() {
+          Zone.current.handleUncaughtError('foo', StackTrace.current);
+        });
+      });
+
+      test('second test so that the first failure is reported', () {});''',
+      '''
+        ::group::✅ fail after completion
+        ::endgroup::
+        ::group::❌ fail after completion (failed after test completion)
+        foo
+        test.dart 8:62  main.<fn>.<fn>
+        ::endgroup::
+        ::group::❌ fail after completion (failed after test completion)
+        This test failed after it had already completed. Make sure to use [expectAsync]
+        or the [completes] matcher when testing async code.
+        test.dart 8:62  main.<fn>.<fn>
+        ::endgroup::
+        ::group::✅ second test so that the first failure is reported
+        ::endgroup::
+        ::error::1 test passed, 1 failed.''',
+    );
   });
 
   group('print:', () {

@@ -96,6 +96,9 @@ class GithubReporter implements Reporter {
     _subscriptions.add(
         liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)));
 
+    _subscriptions.add(liveTest.onError
+        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+
     // Collect messages from tests as they are emitted.
     _subscriptions.add(liveTest.onMessage.listen((message) {
       if (_completedTests.contains(liveTest)) {
@@ -160,6 +163,31 @@ class GithubReporter implements Reporter {
       _sink.writeln(error.stackTrace.toString().trimRight());
     }
     _sink.writeln(_GithubMarkup.endGroup);
+  }
+
+  /// A callback called when [test] throws [error].
+  void _onError(LiveTest test, Object error, StackTrace stackTrace) {
+    if (_completedTests.contains(test)) {
+      final loadSuite = test.suite is LoadSuite;
+
+      final prefix = _GithubMarkup.failed;
+      final statusSuffix = ' (failed after test completion)';
+
+      var name = test.test.name;
+      if (!loadSuite) {
+        if (_printPath && test.suite.path != null) {
+          name = '${test.suite.path}: $name';
+        }
+      }
+      if (_printPlatform) {
+        name = '[${test.suite.platform.runtime.name}] $name';
+      }
+
+      _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
+      _sink.writeln('$error');
+      _sink.writeln(stackTrace.toString().trimRight());
+      _sink.writeln(_GithubMarkup.endGroup);
+    }
   }
 
   void _onDone(bool? success) {
