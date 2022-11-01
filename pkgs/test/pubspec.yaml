@@ -1,5 +1,5 @@
 name: test
-version: 1.22.0-dev
+version: 1.22.0
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test

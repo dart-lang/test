@@ -1,4 +1,4 @@
-## 1.22.0-dev
+## 1.22.0
 
 * Fix an issue with the github reporter where tests that fail asynchronously
   after they've completed would show up as succeeded tests.
