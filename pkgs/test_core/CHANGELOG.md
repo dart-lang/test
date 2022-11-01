@@ -1,4 +1,4 @@
-# 0.4.20-dev
+# 0.4.20
 
 * Fix an issue with the github reporter where tests that fail asynchronously
   after they've completed would show up as succeeded tests.

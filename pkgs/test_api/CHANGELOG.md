@@ -1,4 +1,4 @@
-## 0.4.16-dev
+## 0.4.16
 
 * Add the `experimental-chrome-wasm` runtime. This is very unstable and will
   eventually be deleted, to be replaced by a `--compiler` flag. See
