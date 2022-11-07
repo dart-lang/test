@@ -13,11 +13,6 @@ import 'descriptor.dart';
 import 'sandbox.dart';
 import 'utils.dart';
 
-/// A function that takes a name for a [Descriptor] and returns a [Descriptor].
-/// This is used for [PatternDescriptor]s, where the name isn't known
-/// ahead-of-time.
-typedef _EntryCreator = Descriptor Function(String name);
-
 /// A descriptor that matches filesystem entity names by [Pattern] rather than
 /// by exact [String].
 ///
@@ -29,7 +24,7 @@ class PatternDescriptor extends Descriptor {
 
   /// The function used to generate the [Descriptor] for filesystem entities
   /// matching [pattern].
-  final _EntryCreator _fn;
+  final Descriptor Function(String) _fn;
 
   PatternDescriptor(this.pattern, Descriptor Function(String basename) child)
       : _fn = child,
@@ -42,39 +37,44 @@ class PatternDescriptor extends Descriptor {
   /// `this` is considered valid.
   @override
   Future<void> validate([String? parent]) async {
-    var inSandbox = parent == null;
+    final inSandbox = parent == null;
     parent ??= sandbox;
-    var matchingEntries = await Directory(parent)
+    final matchingEntries = await Directory(parent)
         .list()
-        .map((entry) =>
-            entry is File ? entry.resolveSymbolicLinksSync() : entry.path)
+        .map(
+          (entry) =>
+              entry is File ? entry.resolveSymbolicLinksSync() : entry.path,
+        )
         .where((entry) => matchesAll(pattern, p.basename(entry)))
         .toList();
     matchingEntries.sort();
 
-    var location = inSandbox ? 'sandbox' : '"${prettyPath(parent)}"';
+    final location = inSandbox ? 'sandbox' : '"${prettyPath(parent)}"';
     if (matchingEntries.isEmpty) {
       fail('No entries found in $location matching $_patternDescription.');
     }
 
-    var results = await Future.wait(matchingEntries
-        .map((entry) {
-          var basename = p.basename(entry);
-          return runZonedGuarded(() {
-            return Result.capture(Future.sync(() async {
-              await _fn(basename).validate(parent);
-              return basename;
-            }));
-          }, (_, __) {
-            // Validate may produce multiple errors, but we ignore all but the first
-            // to avoid cluttering the user with many different errors from many
-            // different un-matched entries.
-          });
-        })
-        .whereType<Future<Result<String>>>()
-        .toList());
+    final results = await Future.wait(
+      matchingEntries
+          .map((entry) {
+            final basename = p.basename(entry);
+            return runZonedGuarded(
+                () => Result.capture(
+                      Future.sync(() async {
+                        await _fn(basename).validate(parent);
+                        return basename;
+                      }),
+                    ), (_, __) {
+              // Validate may produce multiple errors, but we ignore all but the
+              // first to avoid cluttering the user with many different errors
+              // from many different un-matched entries.
+            });
+          })
+          .whereType<Future<Result<String>>>()
+          .toList(),
+    );
 
-    var successes = results.where((result) => result.isValue).toList();
+    final successes = results.where((result) => result.isValue).toList();
     if (successes.isEmpty) {
       await waitAndReportErrors(results.map((result) => result.asFuture));
     } else if (successes.length > 1) {
@@ -91,8 +91,8 @@ class PatternDescriptor extends Descriptor {
     if (pattern is String) return '"$pattern"';
     if (pattern is! RegExp) return '$pattern';
 
-    var regExp = pattern as RegExp;
-    var flags = StringBuffer();
+    final regExp = pattern as RegExp;
+    final flags = StringBuffer();
     if (!regExp.isCaseSensitive) flags.write('i');
     if (regExp.isMultiLine) flags.write('m');
     return '/${regExp.pattern}/$flags';

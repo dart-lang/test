@@ -16,12 +16,12 @@ String get sandbox {
   if (_sandbox != null) return _sandbox!;
   // Resolve symlinks so we don't end up with inconsistent paths on Mac OS where
   // /tmp is symlinked.
-  var sandbox = _sandbox = Directory.systemTemp
+  final sandbox = _sandbox = Directory.systemTemp
       .createTempSync('dart_test_')
       .resolveSymbolicLinksSync();
 
   addTearDown(() async {
-    var sandbox = _sandbox!;
+    final sandbox = _sandbox!;
     _sandbox = null;
     await Directory(sandbox).delete(recursive: true);
   });

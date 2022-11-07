@@ -21,25 +21,22 @@ define a filesystem structure that can be created using
 ```dart
 import 'dart:io';
 
+import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 void main() {
-  test("Directory.rename", () async {
-    await d.dir("parent", [
-      d.file("sibling", "sibling-contents"),
-      d.dir("old-name", [
-        d.file("child", "child-contents")
-      ])
+  test('Directory.rename', () async {
+    await d.dir('parent', [
+      d.file('sibling', 'sibling-contents'),
+      d.dir('old-name', [d.file('child', 'child-contents')])
     ]).create();
 
-    await new Directory("${d.sandbox}/parent/old-name")
-        .rename("${d.sandbox}/parent/new-name");
+    await Directory('${d.sandbox}/parent/old-name')
+        .rename('${d.sandbox}/parent/new-name');
 
-    await d.dir("parent", [
-      d.file("sibling", "sibling-contents"),
-      d.dir("new-name", [
-        d.file("child", "child-contents")
-      ])
+    await d.dir('parent', [
+      d.file('sibling', 'sibling-contents'),
+      d.dir('new-name', [d.file('child', 'child-contents')])
     ]).validate();
   });
 }

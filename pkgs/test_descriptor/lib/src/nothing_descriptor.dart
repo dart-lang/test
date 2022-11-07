@@ -15,15 +15,15 @@ import 'utils.dart';
 ///
 /// Calling [create] does nothing.
 class NothingDescriptor extends Descriptor {
-  NothingDescriptor(String name) : super(name);
+  NothingDescriptor(super.name);
 
   @override
   Future<void> create([String? parent]) async {}
 
   @override
   Future<void> validate([String? parent]) async {
-    var fullPath = p.join(parent ?? sandbox, name);
-    var pretty = prettyPath(fullPath);
+    final fullPath = p.join(parent ?? sandbox, name);
+    final pretty = prettyPath(fullPath);
     if (File(fullPath).existsSync()) {
       fail('Expected nothing to exist at "$pretty", but found a file.');
     } else if (Directory(fullPath).existsSync()) {

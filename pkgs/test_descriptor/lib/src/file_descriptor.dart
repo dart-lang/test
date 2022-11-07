@@ -33,8 +33,8 @@ abstract class FileDescriptor extends Descriptor {
   /// If [contents] isn't passed, [create] creates an empty file and [validate]
   /// verifies that the file is empty.
   ///
-  /// To match a [Matcher] against a file's binary contents, use [new
-  /// FileDescriptor.binaryMatcher] instead.
+  /// To match a [Matcher] against a file's binary contents, use
+  /// [FileDescriptor.binaryMatcher] instead.
   factory FileDescriptor(String name, Object? contents) {
     if (contents is String) return _StringFileDescriptor(name, contents);
     if (contents is List) {
@@ -57,15 +57,15 @@ abstract class FileDescriptor extends Descriptor {
       _MatcherFileDescriptor(name, matcher, isBinary: true);
 
   /// A protected constructor that's only intended for subclasses.
-  FileDescriptor.protected(String name) : super(name);
+  FileDescriptor.protected(super.name);
 
   @override
   Future<void> create([String? parent]) async {
     // Create the stream before we call [File.openWrite] because it may fail
     // fast (e.g. if this is a matcher file).
-    var file = File(p.join(parent ?? sandbox, name)).openWrite();
+    final file = File(p.join(parent ?? sandbox, name)).openWrite();
     try {
-      await readAsBytes().listen(file.add).asFuture();
+      await readAsBytes().forEach(file.add);
     } finally {
       await file.close();
     }
@@ -73,8 +73,8 @@ abstract class FileDescriptor extends Descriptor {
 
   @override
   Future<void> validate([String? parent]) async {
-    var fullPath = p.join(parent ?? sandbox, name);
-    var pretty = prettyPath(fullPath);
+    final fullPath = p.join(parent ?? sandbox, name);
+    final pretty = prettyPath(fullPath);
     if (!(await File(fullPath).exists())) {
       fail('File not found: "$pretty".');
     }
@@ -107,14 +107,14 @@ class _BinaryFileDescriptor extends FileDescriptor {
   /// The contents of this descriptor's file.
   final List<int> _contents;
 
-  _BinaryFileDescriptor(String name, this._contents) : super.protected(name);
+  _BinaryFileDescriptor(super.name, this._contents) : super.protected();
 
   @override
   Stream<List<int>> readAsBytes() => Stream.fromIterable([_contents]);
 
   @override
   Future<void> _validate(String prettPath, List<int> actualContents) async {
-    if (const IterableEquality().equals(_contents, actualContents)) return;
+    if (const IterableEquality<int>().equals(_contents, actualContents)) return;
     // TODO(nweiz): show a hex dump here if the data is small enough.
     fail('File "$prettPath" didn\'t contain the expected binary data.');
   }
@@ -124,7 +124,7 @@ class _StringFileDescriptor extends FileDescriptor {
   /// The contents of this descriptor's file.
   final String _contents;
 
-  _StringFileDescriptor(String name, this._contents) : super.protected(name);
+  _StringFileDescriptor(super.name, this._contents) : super.protected();
 
   @override
   Future<String> read() async => _contents;
@@ -135,20 +135,23 @@ class _StringFileDescriptor extends FileDescriptor {
 
   @override
   void _validate(String prettyPath, List<int> actualContents) {
-    var actualContentsText = utf8.decode(actualContents);
+    final actualContentsText = utf8.decode(actualContents);
     if (_contents == actualContentsText) return;
     fail(_textMismatchMessage(prettyPath, _contents, actualContentsText));
   }
 
   String _textMismatchMessage(
-      String prettyPath, String expected, String actual) {
+    String prettyPath,
+    String expected,
+    String actual,
+  ) {
     final expectedLines = expected.split('\n');
     final actualLines = actual.split('\n');
 
-    var results = [];
+    final results = <String>[];
 
     // Compare them line by line to see which ones match.
-    var length = math.max(expectedLines.length, actualLines.length);
+    final length = math.max(expectedLines.length, actualLines.length);
     for (var i = 0; i < length; i++) {
       if (i >= actualLines.length) {
         // Missing output.
@@ -157,8 +160,8 @@ class _StringFileDescriptor extends FileDescriptor {
         // Unexpected extra output.
         results.add('X ${actualLines[i]}');
       } else {
-        var expectedLine = expectedLines[i];
-        var actualLine = actualLines[i];
+        final expectedLine = expectedLines[i];
+        final actualLine = actualLines[i];
 
         if (expectedLine != actualLine) {
           // Mismatched lines.
@@ -185,9 +188,9 @@ class _MatcherFileDescriptor extends FileDescriptor {
   /// contents.
   final bool _isBinary;
 
-  _MatcherFileDescriptor(String name, this._matcher, {bool isBinary = false})
+  _MatcherFileDescriptor(super.name, this._matcher, {bool isBinary = false})
       : _isBinary = isBinary,
-        super.protected(name);
+        super.protected();
 
   @override
   Stream<List<int>> readAsBytes() =>
@@ -197,7 +200,9 @@ class _MatcherFileDescriptor extends FileDescriptor {
   Future<void> _validate(String prettyPath, List<int> actualContents) async {
     try {
       expect(
-          _isBinary ? actualContents : utf8.decode(actualContents), _matcher);
+        _isBinary ? actualContents : utf8.decode(actualContents),
+        _matcher,
+      );
     } on TestFailure catch (error) {
       fail('Invalid contents for file "$prettyPath":\n${error.message}');
     }

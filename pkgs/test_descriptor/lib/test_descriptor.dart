@@ -30,9 +30,10 @@ export 'src/sandbox.dart' show sandbox;
 /// If [contents] isn't passed, [Descriptor.create] creates an empty file and
 /// [Descriptor.validate] verifies that the file is empty.
 ///
-/// To match a [Matcher] against a file's binary contents, use [new
-/// FileDescriptor.binaryMatcher] instead.
-FileDescriptor file(String name, [contents]) => FileDescriptor(name, contents);
+/// To match a [Matcher] against a file's binary contents, use
+/// [FileDescriptor.binaryMatcher] instead.
+FileDescriptor file(String name, [Object? contents]) =>
+    FileDescriptor(name, contents);
 
 /// Creates a new [DirectoryDescriptor] descriptor with [name] and [contents].
 ///
@@ -60,12 +61,14 @@ NothingDescriptor nothing(String name) => NothingDescriptor(name);
 ///
 /// [Descriptor.create] is not supported for this descriptor.
 PatternDescriptor pattern(
-        Pattern name, Descriptor Function(String basename) child) =>
+  Pattern name,
+  Descriptor Function(String basename) child,
+) =>
     PatternDescriptor(name, child);
 
 /// A convenience method for creating a [PatternDescriptor] descriptor that
 /// constructs a [FileDescriptor] descriptor.
-PatternDescriptor filePattern(Pattern name, [contents]) =>
+PatternDescriptor filePattern(Pattern name, [Object? contents]) =>
     pattern(name, (realName) => file(realName, contents));
 
 /// A convenience method for creating a [PatternDescriptor] descriptor that

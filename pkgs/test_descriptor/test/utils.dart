@@ -5,18 +5,18 @@
 import 'package:test/test.dart';
 
 /// Converts a [Stream<List<int>>] to a flat byte future.
-Future<List<int>> byteStreamToList(Stream<List<int>> stream) {
-  return stream.fold(<int>[], (buffer, chunk) {
-    buffer.addAll(chunk);
-    return buffer;
-  });
-}
+Future<List<int>> byteStreamToList(Stream<List<int>> stream) =>
+    stream.fold(<int>[], (buffer, chunk) {
+      buffer.addAll(chunk);
+      return buffer;
+    });
 
 /// Returns a matcher that verifies that the result of calling `toString()`
 /// matches [matcher].
-Matcher toString(matcher) {
-  return predicate((object) {
-    expect(object.toString(), matcher);
-    return true;
-  }, 'toString() matches $matcher');
-}
+Matcher toString(Object? matcher) => predicate(
+      (object) {
+        expect(object.toString(), matcher);
+        return true;
+      },
+      'toString() matches $matcher',
+    );

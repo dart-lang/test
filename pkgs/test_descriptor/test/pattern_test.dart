@@ -15,14 +15,14 @@ void main() {
     test("succeeds if there's a file matching the pattern and the child",
         () async {
       await d.file('foo', 'blap').create();
-      await d.filePattern(RegExp(r'f..'), 'blap').validate();
+      await d.filePattern(RegExp('f..'), 'blap').validate();
     });
 
     test("succeeds if there's a directory matching the pattern and the child",
         () async {
       await d.dir('foo', [d.file('bar', 'baz')]).create();
 
-      await d.dirPattern(RegExp(r'f..'), [d.file('bar', 'baz')]).validate();
+      await d.dirPattern(RegExp('f..'), [d.file('bar', 'baz')]).validate();
     });
 
     test(
@@ -32,29 +32,35 @@ void main() {
       await d.file('fee', 'blak').create();
       await d.file('faa', 'blut').create();
 
-      await d.filePattern(RegExp(r'f..'), 'blap').validate();
+      await d.filePattern(RegExp('f..'), 'blap').validate();
     });
 
     test("fails if there's no file matching the pattern", () {
       expect(
-          d.filePattern(RegExp(r'f..'), 'bar').validate(),
-          throwsA(
-              toString(equals('No entries found in sandbox matching /f../.'))));
+        d.filePattern(RegExp('f..'), 'bar').validate(),
+        throwsA(
+          toString(equals('No entries found in sandbox matching /f../.')),
+        ),
+      );
     });
 
     test("fails if there's a file matching the pattern but not the entry",
         () async {
       await d.file('foo', 'bap').create();
-      expect(d.filePattern(RegExp(r'f..'), 'bar').validate(),
-          throwsA(toString(startsWith('File "foo" should contain:'))));
+      expect(
+        d.filePattern(RegExp('f..'), 'bar').validate(),
+        throwsA(toString(startsWith('File "foo" should contain:'))),
+      );
     });
 
     test("fails if there's a dir matching the pattern but not the entry",
         () async {
       await d.dir('foo', [d.file('bar', 'bap')]).create();
 
-      expect(d.dirPattern(RegExp(r'f..'), [d.file('bar', 'baz')]).validate(),
-          throwsA(toString(startsWith('File "foo/bar" should contain:'))));
+      expect(
+        d.dirPattern(RegExp('f..'), [d.file('bar', 'baz')]).validate(),
+        throwsA(toString(startsWith('File "foo/bar" should contain:'))),
+      );
     });
 
     test(
@@ -64,9 +70,15 @@ void main() {
       await d.file('fee', 'bar').create();
       await d.file('faa', 'bar').create();
       expect(
-          d.filePattern(RegExp(r'f..'), 'bar').validate(),
-          throwsA(toString(startsWith(
-              'Multiple valid entries found in sandbox matching /f../:'))));
+        d.filePattern(RegExp('f..'), 'bar').validate(),
+        throwsA(
+          toString(
+            startsWith(
+              'Multiple valid entries found in sandbox matching /f../:',
+            ),
+          ),
+        ),
+      );
     });
   });
 }

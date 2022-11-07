@@ -28,25 +28,43 @@ void main() {
     test("fails if there's a file", () async {
       await d.file('name.txt', 'contents').create();
       expect(
-          d.nothing('name.txt').validate(),
-          throwsA(toString(equals(
-              'Expected nothing to exist at "name.txt", but found a file.'))));
+        d.nothing('name.txt').validate(),
+        throwsA(
+          toString(
+            equals(
+              'Expected nothing to exist at "name.txt", but found a file.',
+            ),
+          ),
+        ),
+      );
     });
 
     test("fails if there's a directory", () async {
       await d.dir('dir').create();
       expect(
-          d.nothing('dir').validate(),
-          throwsA(toString(equals(
-              'Expected nothing to exist at "dir", but found a directory.'))));
+        d.nothing('dir').validate(),
+        throwsA(
+          toString(
+            equals(
+              'Expected nothing to exist at "dir", but found a directory.',
+            ),
+          ),
+        ),
+      );
     });
 
     test("fails if there's a broken link", () async {
       await Link(p.join(d.sandbox, 'link')).create('nonexistent');
       expect(
-          d.nothing('link').validate(),
-          throwsA(toString(equals(
-              'Expected nothing to exist at "link", but found a link.'))));
+        d.nothing('link').validate(),
+        throwsA(
+          toString(
+            equals(
+              'Expected nothing to exist at "link", but found a link.',
+            ),
+          ),
+        ),
+      );
     });
   });
 }
