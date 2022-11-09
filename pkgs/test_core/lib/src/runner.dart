@@ -145,12 +145,12 @@ class Runner {
                     ? 'regular expression "${pattern.pattern}"'
                     : '"$pattern"'));
             throw NoTestsFoundException('No tests match $patterns.');
-          } else if (_config.suiteDefaults.includeTags != BooleanSelector.all ||
-              _config.suiteDefaults.excludeTags != BooleanSelector.none) {
+          } else if (_config.includeTags != BooleanSelector.all ||
+              _config.excludeTags != BooleanSelector.none) {
             throw NoTestsFoundException(
                 'No tests match the requested tag selectors:\n'
-                '  include: "${_config.suiteDefaults.includeTags}"\n'
-                '  exclude: "${_config.suiteDefaults.excludeTags}"');
+                '  include: "${_config.includeTags}"\n'
+                '  exclude: "${_config.excludeTags}"');
           } else {
             throw NoTestsFoundException('No tests were found.');
           }
@@ -290,12 +290,12 @@ class Runner {
           }
 
           // If the user provided tags, skip tests that don't match all of them.
-          if (!suite.config.includeTags.evaluate(test.metadata.tags.contains)) {
+          if (!_config.includeTags.evaluate(test.metadata.tags.contains)) {
             return false;
           }
 
           // Skip tests that do match any tags the user wants to exclude.
-          if (suite.config.excludeTags.evaluate(test.metadata.tags.contains)) {
+          if (_config.excludeTags.evaluate(test.metadata.tags.contains)) {
             return false;
           }
 

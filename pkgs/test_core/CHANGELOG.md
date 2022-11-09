@@ -1,3 +1,8 @@
+# 0.4.21-dev
+
+* Move `includeTags` and `excludeTags` from `SuiteConfiguration` to
+  `Configuration`.
+
 # 0.4.20
 
 * Fix an issue with the github reporter where tests that fail asynchronously

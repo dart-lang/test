@@ -72,49 +72,6 @@ void main() {
       });
     });
 
-    group('for include and excludeTags', () {
-      test('if neither is defined, preserves the default', () {
-        var merged = suiteConfiguration().merge(suiteConfiguration());
-        expect(merged.includeTags, equals(BooleanSelector.all));
-        expect(merged.excludeTags, equals(BooleanSelector.none));
-      });
-
-      test("if only the old configuration's is defined, uses it", () {
-        var merged = suiteConfiguration(
-                includeTags: BooleanSelector.parse('foo || bar'),
-                excludeTags: BooleanSelector.parse('baz || bang'))
-            .merge(suiteConfiguration());
-
-        expect(merged.includeTags, equals(BooleanSelector.parse('foo || bar')));
-        expect(
-            merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
-      });
-
-      test("if only the configuration's is defined, uses it", () {
-        var merged = suiteConfiguration().merge(suiteConfiguration(
-            includeTags: BooleanSelector.parse('foo || bar'),
-            excludeTags: BooleanSelector.parse('baz || bang')));
-
-        expect(merged.includeTags, equals(BooleanSelector.parse('foo || bar')));
-        expect(
-            merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
-      });
-
-      test('if both are defined, unions or intersects them', () {
-        var older = suiteConfiguration(
-            includeTags: BooleanSelector.parse('foo || bar'),
-            excludeTags: BooleanSelector.parse('baz || bang'));
-        var newer = suiteConfiguration(
-            includeTags: BooleanSelector.parse('blip'),
-            excludeTags: BooleanSelector.parse('qux'));
-        var merged = older.merge(newer);
-
-        expect(merged.includeTags,
-            equals(BooleanSelector.parse('(foo || bar) && blip')));
-        expect(merged.excludeTags,
-            equals(BooleanSelector.parse('(baz || bang) || qux')));
-      });
-    });
 
     group('for sets', () {
       test('if neither is defined, preserves the default', () {
