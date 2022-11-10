@@ -32,8 +32,6 @@ class SuiteConfiguration {
       precompiledPath: null,
       patterns: null,
       runtimes: null,
-      includeTags: null,
-      excludeTags: null,
       tags: null,
       onPlatform: null,
       metadata: null,
@@ -88,18 +86,6 @@ class SuiteConfiguration {
       : List.unmodifiable(_runtimes!.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
-  /// Only run tests whose tags match this selector.
-  ///
-  /// When [merge]d, this is intersected with the other configuration's included
-  /// tags.
-  final BooleanSelector includeTags;
-
-  /// Do not run tests whose tags match this selector.
-  ///
-  /// When [merge]d, this is unioned with the other configuration's
-  /// excluded tags.
-  final BooleanSelector excludeTags;
-
   /// Configuration for particular tags.
   ///
   /// The keys are tag selectors, and the values are configurations for tests
@@ -126,8 +112,6 @@ class SuiteConfiguration {
 
   /// The set of tags that have been declared in any way in this configuration.
   late final Set<String> knownTags = UnmodifiableSetView({
-    ...includeTags.variables,
-    ...excludeTags.variables,
     ..._metadata.tags,
     for (var selector in tags.keys) ...selector.variables,
     for (var configuration in tags.values) ...configuration.knownTags,
@@ -153,8 +137,6 @@ class SuiteConfiguration {
       required String? precompiledPath,
       required Iterable<Pattern>? patterns,
       required Iterable<RuntimeSelection>? runtimes,
-      required BooleanSelector? includeTags,
-      required BooleanSelector? excludeTags,
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       required int? line,
@@ -179,8 +161,6 @@ class SuiteConfiguration {
         precompiledPath: precompiledPath,
         patterns: patterns,
         runtimes: runtimes,
-        includeTags: includeTags,
-        excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
         line: line,
@@ -211,8 +191,6 @@ class SuiteConfiguration {
           String? precompiledPath,
           Iterable<Pattern>? patterns,
           Iterable<RuntimeSelection>? runtimes,
-          BooleanSelector? includeTags,
-          BooleanSelector? excludeTags,
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
           int? line,
@@ -237,8 +215,6 @@ class SuiteConfiguration {
           precompiledPath: precompiledPath,
           patterns: patterns,
           runtimes: runtimes,
-          includeTags: includeTags,
-          excludeTags: excludeTags,
           tags: tags,
           onPlatform: onPlatform,
           line: line,
@@ -278,8 +254,6 @@ class SuiteConfiguration {
     required this.precompiledPath,
     required Iterable<Pattern>? patterns,
     required Iterable<RuntimeSelection>? runtimes,
-    required BooleanSelector? includeTags,
-    required BooleanSelector? excludeTags,
     required Map<BooleanSelector, SuiteConfiguration>? tags,
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required Metadata? metadata,
@@ -293,8 +267,6 @@ class SuiteConfiguration {
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
         patterns = UnmodifiableSetView(patterns?.toSet() ?? {}),
         _runtimes = _list(runtimes),
-        includeTags = includeTags ?? BooleanSelector.all,
-        excludeTags = excludeTags ?? BooleanSelector.none,
         tags = _map(tags),
         onPlatform = _map(onPlatform),
         _ignoreTimeouts = ignoreTimeouts,
@@ -317,8 +289,6 @@ class SuiteConfiguration {
         precompiledPath: null,
         patterns: null,
         runtimes: null,
-        includeTags: null,
-        excludeTags: null,
         line: null,
         col: null,
         ignoreTimeouts: null,
@@ -360,8 +330,6 @@ class SuiteConfiguration {
         precompiledPath: other.precompiledPath ?? precompiledPath,
         patterns: patterns.union(other.patterns),
         runtimes: other._runtimes ?? _runtimes,
-        includeTags: includeTags.intersection(other.includeTags),
-        excludeTags: excludeTags.union(other.excludeTags),
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
         line: other.line ?? line,
@@ -384,8 +352,6 @@ class SuiteConfiguration {
       String? precompiledPath,
       Iterable<Pattern>? patterns,
       Iterable<RuntimeSelection>? runtimes,
-      BooleanSelector? includeTags,
-      BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       int? line,
@@ -412,8 +378,6 @@ class SuiteConfiguration {
         precompiledPath: precompiledPath ?? this.precompiledPath,
         patterns: patterns ?? this.patterns,
         runtimes: runtimes ?? _runtimes,
-        includeTags: includeTags ?? this.includeTags,
-        excludeTags: excludeTags ?? this.excludeTags,
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
         line: line ?? this.line,

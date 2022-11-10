@@ -170,9 +170,23 @@ class Configuration {
 
   /// The set of tags that have been declared in any way in this configuration.
   late final Set<String> knownTags = UnmodifiableSetView({
+    ...includeTags.variables,
+    ...excludeTags.variables,
     ...suiteDefaults.knownTags,
     for (var configuration in presets.values) ...configuration.knownTags
   });
+
+  /// Only run tests whose tags match this selector.
+  ///
+  /// When [merge]d, this is intersected with the other configuration's included
+  /// tags.
+  final BooleanSelector includeTags;
+
+  /// Do not run tests whose tags match this selector.
+  ///
+  /// When [merge]d, this is unioned with the other configuration's
+  /// excluded tags.
+  final BooleanSelector excludeTags;
 
   /// Configuration presets.
   ///
@@ -332,6 +346,8 @@ class Configuration {
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
         suiteDefaults: SuiteConfiguration(
             allowDuplicateTestNames: allowDuplicateTestNames,
             allowTestRandomization: allowTestRandomization,
@@ -341,8 +357,6 @@ class Configuration {
             precompiledPath: precompiledPath,
             patterns: patterns,
             runtimes: runtimes,
-            includeTags: includeTags,
-            excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
             line: null, // Only configurable from the command line
@@ -765,6 +779,8 @@ class Configuration {
       required bool? noRetry,
       required bool? useDataIsolateStrategy,
       required this.testRandomizeOrderingSeed,
+      required BooleanSelector? includeTags,
+      required BooleanSelector? excludeTags,
       required SuiteConfiguration? suiteDefaults})
       : _help = help,
         _version = version,
@@ -788,6 +804,8 @@ class Configuration {
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
         _useDataIsolateStrategy = useDataIsolateStrategy,
+        includeTags = includeTags ?? BooleanSelector.all,
+        excludeTags = excludeTags ?? BooleanSelector.none,
         suiteDefaults = (() {
           var config = suiteDefaults ?? SuiteConfiguration.empty;
           if (pauseAfterLoad == true) {
@@ -841,6 +859,8 @@ class Configuration {
         noRetry: null,
         useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        includeTags: null,
+        excludeTags: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -956,6 +976,8 @@ class Configuration {
             other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
+        includeTags: includeTags.intersection(other.includeTags),
+        excludeTags: excludeTags.union(other.excludeTags),
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -1047,6 +1069,8 @@ class Configuration {
             useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
         suiteDefaults: suiteDefaults.change(
           allowDuplicateTestNames: allowDuplicateTestNames,
           jsTrace: jsTrace,
@@ -1055,8 +1079,6 @@ class Configuration {
           precompiledPath: precompiledPath,
           patterns: patterns,
           runtimes: runtimes,
-          includeTags: includeTags,
-          excludeTags: excludeTags,
           tags: tags,
           onPlatform: onPlatform,
           timeout: timeout,

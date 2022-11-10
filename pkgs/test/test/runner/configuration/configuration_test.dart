@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
 
 import 'package:test_core/src/runner/configuration.dart';
@@ -244,6 +245,50 @@ void main() {
         expect(config.chosenPresets, equals(['foo']));
         expect(config.knownPresets, equals(['foo']));
         expect(config.color, isTrue);
+      });
+    });
+
+    group('for include and excludeTags', () {
+      test('if neither is defined, preserves the default', () {
+        var merged = configuration().merge(configuration());
+        expect(merged.includeTags, equals(BooleanSelector.all));
+        expect(merged.excludeTags, equals(BooleanSelector.none));
+      });
+
+      test("if only the old configuration's is defined, uses it", () {
+        var merged = configuration(
+                includeTags: BooleanSelector.parse('foo || bar'),
+                excludeTags: BooleanSelector.parse('baz || bang'))
+            .merge(configuration());
+
+        expect(merged.includeTags, equals(BooleanSelector.parse('foo || bar')));
+        expect(
+            merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
+      });
+
+      test("if only the configuration's is defined, uses it", () {
+        var merged = configuration().merge(configuration(
+            includeTags: BooleanSelector.parse('foo || bar'),
+            excludeTags: BooleanSelector.parse('baz || bang')));
+
+        expect(merged.includeTags, equals(BooleanSelector.parse('foo || bar')));
+        expect(
+            merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
+      });
+
+      test('if both are defined, unions or intersects them', () {
+        var older = configuration(
+            includeTags: BooleanSelector.parse('foo || bar'),
+            excludeTags: BooleanSelector.parse('baz || bang'));
+        var newer = configuration(
+            includeTags: BooleanSelector.parse('blip'),
+            excludeTags: BooleanSelector.parse('qux'));
+        var merged = older.merge(newer);
+
+        expect(merged.includeTags,
+            equals(BooleanSelector.parse('(foo || bar) && blip')));
+        expect(merged.excludeTags,
+            equals(BooleanSelector.parse('(baz || bang) || qux')));
       });
     });
   });
