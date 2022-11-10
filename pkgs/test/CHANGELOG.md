@@ -1,5 +1,7 @@
 ## 1.22.1-dev
 
+* Add documentation for the `--ignore-timeouts` argument.
+
 ## 1.22.0
 
 * Fix an issue with the github reporter where tests that fail asynchronously

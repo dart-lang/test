@@ -26,6 +26,7 @@ tags:
 
 * [Test Configuration](#test-configuration)
   * [`timeout`](#timeout)
+  * [`ignore-timeouts`](#ignore-timeouts)
   * [`verbose_trace`](#verbose_trace)
   * [`chain_stack_traces`](#chain_stack_traces)
   * [`js_trace`](#js_trace)
@@ -95,6 +96,14 @@ formats:
 
 ```yaml
 timeout: 1m
+```
+
+###  `ignore-timeouts`
+
+This field disables all timeouts for all tests. This can be useful when debugging, so tests don't time out during debug sessions. It defaults to `false`.
+
+```yaml
+ignore-timeouts: true
 ```
 
 ### `verbose_trace`
