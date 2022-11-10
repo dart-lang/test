@@ -72,7 +72,6 @@ void main() {
       });
     });
 
-
     group('for sets', () {
       test('if neither is defined, preserves the default', () {
         var merged = suiteConfiguration().merge(suiteConfiguration());

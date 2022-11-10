@@ -86,7 +86,6 @@ class SuiteConfiguration {
       : List.unmodifiable(_runtimes!.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
-
   /// Configuration for particular tags.
   ///
   /// The keys are tag selectors, and the values are configurations for tests
