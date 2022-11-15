@@ -350,10 +350,7 @@ class _ConfigurationLoader {
       _validate(pathNode, 'Paths must be strings.', (value) => value is String);
       _validate(pathNode, 'Paths must be relative.',
           (value) => p.url.isRelative(value as String));
-
-      return PathConfiguration(
-        testPath: _parseNode(pathNode, 'path', p.fromUri),
-      );
+      return _parseNode(pathNode, 'path', p.fromUri);
     });
 
     var filename = _parseValue('filename', (value) => Glob(value));
@@ -365,8 +362,10 @@ class _ConfigurationLoader {
 
     return Configuration.localRunner(
         pubServePort: pubServePort,
-        patterns: patterns,
-        paths: paths,
+        globalPatterns: patterns,
+        testSelections: {
+          for (var path in paths) path: const {TestSelection()}
+        },
         filename: filename,
         includeTags: includeTags,
         excludeTags: excludeTags,

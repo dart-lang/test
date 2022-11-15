@@ -175,37 +175,46 @@ String get usage => _parser.usage;
 /// Throws a [FormatException] if [args] are invalid.
 Configuration parse(List<String> args) => _Parser(args).parse();
 
-PathConfiguration _parsePathConfiguration(String option) {
+void _parseTestSelection(
+    String option, Map<String, Set<TestSelection>> selections) {
   var firstQuestion = option.indexOf('?');
+  TestSelection selection;
+  String path;
   if (firstQuestion == -1) {
-    return PathConfiguration(testPath: option);
+    path = option;
+    selection = TestSelection();
   } else if (option.substring(0, firstQuestion).contains('\\')) {
     throw FormatException(
         'When passing test path queries, you must pass the path in URI '
         'format (use `/` for directory separators instead of `\\`).');
-  }
+  } else {
+    final uri = Uri.parse(option);
 
-  final uri = Uri.parse(option);
+    final names = uri.queryParametersAll['name'];
+    final fullName = uri.queryParameters['full-name'];
+    final line = uri.queryParameters['line'];
+    final col = uri.queryParameters['col'];
 
-  final names = uri.queryParametersAll['name'];
-  final fullName = uri.queryParameters['full-name'];
-  final line = uri.queryParameters['line'];
-  final col = uri.queryParameters['col'];
-
-  if (names != null && names.isNotEmpty && fullName != null) {
-    throw FormatException(
-      'Cannot specify both "name=<...>" and "full-name=<...>".',
+    if (names != null && names.isNotEmpty && fullName != null) {
+      throw FormatException(
+        'Cannot specify both "name=<...>" and "full-name=<...>".',
+      );
+    }
+    path = uri.path;
+    selection = TestSelection(
+      testPatterns: fullName != null
+          ? {RegExp('^${RegExp.escape(fullName)}\$')}
+          : {
+              if (names != null)
+                for (var name in names) RegExp(name)
+            },
+      line: line == null ? null : int.parse(line),
+      col: col == null ? null : int.parse(col),
     );
   }
 
-  return PathConfiguration(
-    testPath: uri.path,
-    testPatterns: fullName != null
-        ? [RegExp('^${RegExp.escape(fullName)}\$')]
-        : names?.map((name) => RegExp(name)).toList(),
-    line: line == null ? null : int.parse(line),
-    col: col == null ? null : int.parse(col),
-  );
+  selections.update(path, (selections) => selections..add(selection),
+      ifAbsent: () => {selection});
 }
 
 /// A class for parsing an argument list.
@@ -277,10 +286,13 @@ class _Parser {
 
     final paths = _options.rest.isEmpty ? null : _options.rest;
 
-    final pathConfigurations = paths
-        ?.map((value) =>
-            _wrapFormatException(value, () => _parsePathConfiguration(value)))
-        .toList();
+    Map<String, Set<TestSelection>>? selections;
+    if (paths != null) {
+      selections = {};
+      for (final path in paths) {
+        _parseTestSelection(path, selections);
+      }
+    }
 
     return Configuration(
         help: _ifParsed('help'),
@@ -302,11 +314,11 @@ class _Parser {
         shardIndex: shardIndex,
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
-        patterns: patterns,
+        globalPatterns: patterns,
         runtimes: platform,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
-        paths: pathConfigurations,
+        testSelections: selections,
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),

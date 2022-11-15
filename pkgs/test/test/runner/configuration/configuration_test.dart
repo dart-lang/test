@@ -6,8 +6,8 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
 
-import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/reporters.dart';
+import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/util/io.dart';
 
 import '../../utils.dart';
@@ -29,7 +29,7 @@ void main() {
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
         expect(merged.testRandomizeOrderingSeed, isNull);
-        expect(merged.paths.single.testPath, 'test');
+        expect(merged.testSelections.keys.single, 'test');
       });
 
       test("if only the old configuration's is defined, uses it", () {
@@ -46,7 +46,9 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: [PathConfiguration(testPath: 'bar')]).merge(configuration());
+            testSelections: const {
+              'bar': {TestSelection()}
+            }).merge(configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -60,7 +62,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths.single.testPath, 'bar');
+        expect(merged.testSelections.keys.single, 'bar');
       });
 
       test("if only the new configuration's is defined, uses it", () {
@@ -77,7 +79,9 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: [PathConfiguration(testPath: 'bar')]));
+            testSelections: const {
+              'bar': {TestSelection()}
+            }));
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -91,7 +95,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths.single.testPath, 'bar');
+        expect(merged.testSelections.keys.single, 'bar');
       });
 
       test(
@@ -110,7 +114,9 @@ void main() {
             shardIndex: 2,
             totalShards: 4,
             testRandomizeOrderingSeed: 0,
-            paths: [PathConfiguration(testPath: 'bar')]);
+            testSelections: const {
+              'bar': {TestSelection()}
+            });
         var newer = configuration(
             help: false,
             version: true,
@@ -124,7 +130,9 @@ void main() {
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
-            paths: [PathConfiguration(testPath: 'blech')]);
+            testSelections: const {
+              'blech': {TestSelection()}
+            });
         var merged = older.merge(newer);
 
         expect(merged.help, isFalse);
@@ -139,7 +147,7 @@ void main() {
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
-        expect(merged.paths.single.testPath, 'blech');
+        expect(merged.testSelections.keys.single, 'blech');
       });
     });
 
@@ -289,6 +297,36 @@ void main() {
             equals(BooleanSelector.parse('(foo || bar) && blip')));
         expect(merged.excludeTags,
             equals(BooleanSelector.parse('(baz || bang) || qux')));
+      });
+    });
+
+    group('for globalPatterns', () {
+      test('if neither is defined, preserves the default', () {
+        var merged = configuration().merge(configuration());
+        expect(merged.globalPatterns, isEmpty);
+      });
+
+      test("if only the old configuration's is defined, uses it", () {
+        var merged = configuration(globalPatterns: ['beep', 'boop'])
+            .merge(configuration());
+
+        expect(merged.globalPatterns, equals(['beep', 'boop']));
+      });
+
+      test("if only the new configuration's is defined, uses it", () {
+        var merged = configuration()
+            .merge(configuration(globalPatterns: ['beep', 'boop']));
+
+        expect(merged.globalPatterns, equals(['beep', 'boop']));
+      });
+
+      test('if both are defined, unions them', () {
+        var older = configuration(globalPatterns: ['beep', 'boop']);
+        var newer = configuration(globalPatterns: ['bonk']);
+        var merged = older.merge(newer);
+
+        expect(
+            merged.globalPatterns, unorderedEquals(['beep', 'boop', 'bonk']));
       });
     });
   });

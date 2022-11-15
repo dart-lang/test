@@ -109,8 +109,8 @@ class RunnerSuiteController {
   /// Collects a hit-map containing merged coverage.
   final Future<Map<String, dynamic>> Function()? _gatherCoverage;
 
-  RunnerSuiteController(this._environment, this._config, this._suiteChannel,
-      Future<Group> groupFuture, SuitePlatform platform,
+  RunnerSuiteController(this._environment, this._config,
+      this._suiteChannel, Future<Group> groupFuture, SuitePlatform platform,
       {String? path,
       Function()? onClose,
       Future<Map<String, dynamic>> Function()? gatherCoverage})
