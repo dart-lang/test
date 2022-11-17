@@ -1,3 +1,7 @@
+## 0.12.14
+
+* Add `containsOnce` matcher.
+
 ## 0.12.13
 
 * Require Dart 2.17 or greater.

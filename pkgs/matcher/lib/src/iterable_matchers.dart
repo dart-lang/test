@@ -368,3 +368,49 @@ class _ContainsAllInOrder extends _IterableMatcher {
           Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item, matchState)!);
 }
+
+/// Matches [Iterable]s where exactly one element matches the expected
+/// value, and all other elements don't match.
+Matcher containsOnce(Object? expected) => _ContainsOnce(expected);
+
+class _ContainsOnce extends _IterableMatcher {
+  final Object? _expected;
+
+  _ContainsOnce(this._expected);
+
+  String? _test(Iterable item, Map matchState) {
+    var matcher = wrapMatcher(_expected);
+    var matches = [
+      for (var value in item)
+        if (matcher.matches(value, matchState)) value,
+    ];
+    if (matches.length == 1) {
+      return null;
+    }
+    if (matches.isEmpty) {
+      return StringDescription()
+          .add('did not find a value matching ')
+          .addDescriptionOf(matcher)
+          .toString();
+    }
+    return StringDescription()
+        .add('expected only one value matching ')
+        .addDescriptionOf(matcher)
+        .add(' but found multiple: ')
+        .addAll('', ', ', '', matches)
+        .toString();
+  }
+
+  @override
+  bool typedMatches(Iterable item, Map matchState) =>
+      _test(item, matchState) == null;
+
+  @override
+  Description describe(Description description) =>
+      description.add('contains once(').addDescriptionOf(_expected).add(')');
+
+  @override
+  Description describeTypedMismatch(Iterable item,
+          Description mismatchDescription, Map matchState, bool verbose) =>
+      mismatchDescription.add(_test(item, matchState)!);
+}

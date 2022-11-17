@@ -288,6 +288,37 @@ void main() {
         "Which: not an <Instance of 'Iterable'>");
   });
 
+  test('containsOnce', () {
+    shouldPass([1, 2, 3, 4], containsOnce(2));
+    shouldPass([1, 2, 11, 3], containsOnce(greaterThan(10)));
+    shouldFail(
+        [1, 2, 3, 4],
+        containsOnce(10),
+        'Expected: contains once(<10>) '
+        'Actual: [1, 2, 3, 4] '
+        'Which: did not find a value matching <10>');
+    shouldFail(
+        [1, 2, 3, 4],
+        containsOnce(greaterThan(10)),
+        'Expected: contains once(a value greater than <10>) '
+        'Actual: [1, 2, 3, 4] '
+        'Which: did not find a value matching a value greater than <10>');
+    shouldFail(
+        [1, 2, 1, 2],
+        containsOnce(2),
+        'Expected: contains once(<2>) '
+        'Actual: [1, 2, 1, 2] '
+        'Which: expected only one value matching <2> '
+        'but found multiple: <2>, <2>');
+    shouldFail(
+        [1, 2, 10, 20],
+        containsOnce(greaterThan(5)),
+        'Expected: contains once(a value greater than <5>) '
+        'Actual: [1, 2, 10, 20] '
+        'Which: expected only one value matching a value greater than <5> '
+        'but found multiple: <10>, <20>');
+  });
+
   test('pairwise compare', () {
     var c = [1, 2];
     var d = [1, 2, 3];
