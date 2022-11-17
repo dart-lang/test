@@ -80,7 +80,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   /// Expects that the `Stream` emits any number of events before emitting an
   /// event that satisfies [condition].
   ///
-  /// Returns a `Future` that completes after the stream has emitted an even
+  /// Returns a `Future` that completes after the stream has emitted an event
   /// that satisfies [condition].
   ///
   /// Fails if the stream emits an error or closes before emitting a matching
