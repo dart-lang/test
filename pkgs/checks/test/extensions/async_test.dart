@@ -4,6 +4,7 @@
 
 import 'package:async/async.dart';
 import 'package:checks/checks.dart';
+import 'package:checks/src/checks.dart' show softCheckAsync;
 import 'package:test/scaffolding.dart';
 
 void main() {
@@ -11,7 +12,15 @@ void main() {
     test('completes', () async {
       (await checkThat(_futureSuccess()).completes()).equals(42);
 
-      // TODO: validate the failure case
+      final rejection = await softCheckAsync(_futureFail(), (f) async {
+        await f.completes();
+      });
+      checkThat(rejection)
+          .isNotNull()
+          .has((r) => r.which, 'which')
+          .isNotNull()
+          .single
+          .contains('Threw UnimplementedError');
     });
 
     test('throws', () async {

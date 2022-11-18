@@ -82,6 +82,27 @@ Rejection? softCheck<T>(T value, void Function(Check<T>) condition) {
   return rejection;
 }
 
+/// Checks whether [value] satisfies all expectations invoked in [condition].
+///
+/// The future will complete to `null` if all expectations are satisfied,
+/// otherwise it will complete to the [Rejection] for the first expectation that
+/// fails.
+///
+/// In contrast to [softCheck], asynchronous expectations are allowed in
+/// [condition].
+Future<Rejection?> softCheckAsync<T>(
+    T value, Future<void> Function(Check<T>) condition) async {
+  Rejection? rejection;
+  final check = Check<T>._(_TestContext._(
+      value: _Present(value),
+      fail: (_, r) {
+        rejection = r;
+      },
+      allowAsync: true));
+  await condition(check);
+  return rejection;
+}
+
 /// Creates a description of the expectations checked by [condition].
 ///
 /// The strings are individual lines of a description.
@@ -356,8 +377,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       _clauses.add(_StringClause(() => [label]));
       _fail(_failure(rejection), rejection);
     }
-    // TODO - does this need null fallback instead?
-    final value = result.value as _Optional<R>;
+    final value = result.value ?? _Absent<R>();
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
     return Check._(context);
