@@ -297,9 +297,10 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _aliases = original._aliases,
         _fail = original._fail,
         _allowAsync = original._allowAsync,
-        // Properties that are never read from an aliased context because they
-        // are never present in `_clauses`.
+        // Never read from an aliased context because they are never present in
+        // `_clauses`.
         _label = '',
+        // Never read from any context other than the root.
         _reason = null;
 
   _TestContext._child(this._value, this._label, _TestContext<dynamic> parent)
@@ -308,7 +309,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _allowAsync = parent._allowAsync,
         _clauses = [],
         _aliases = [],
-        // Properties that are never read from any context other than root
+        // Never read from any context other than the root.
         _reason = null;
 
   @override
