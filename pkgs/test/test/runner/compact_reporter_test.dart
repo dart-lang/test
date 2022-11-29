@@ -486,7 +486,7 @@ void main() {
 
     test('escapes names containing double quotes', () {
       return _expectReport('''
-        test("failure with a " in the name", () {
+        test('failure with a " in the name', () {
           expect(1, equals(2));
         });''', '''
         +0: loading test.dart
