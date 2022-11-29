@@ -429,7 +429,7 @@ void main() {
         chainStackTraces: false);
   });
 
-  group('gives users a way to re-run failed tests', () {
+  group('gives non-windows users a way to re-run failed tests', () {
     final executablePath = p.absolute(Platform.resolvedExecutable);
 
     test('with simple names', () {
@@ -463,7 +463,43 @@ void main() {
 
         +0 -1: Some tests failed.''');
     });
-  });
+  }, testOn: '!windows');
+
+  group('gives windows users a way to re-run failed tests', () {
+    final executablePath = p.absolute(Platform.resolvedExecutable);
+
+    test('with simple names', () {
+      return _expectReport('''
+        test('failure', () {
+          expect(1, equals(2));
+        });''', '''
+        +0: loading test.dart
+        +0: failure
+        +0 -1: failure [E]
+          Expected: <2>
+            Actual: <1>
+
+        To run this test again: $executablePath test test.dart -p vm --plain-name "failure"
+
+        +0 -1: Some tests failed.''');
+    });
+
+    test('escapes names containing double quotes', () {
+      return _expectReport('''
+        test('failure with a " in the name', () {
+          expect(1, equals(2));
+        });''', '''
+        +0: loading test.dart
+        +0: failure with a " in the name
+        +0 -1: failure with a " in the name [E]
+          Expected: <2>
+            Actual: <1>
+
+        To run this test again: $executablePath test test.dart -p vm --plain-name "failure with a """ in the name"
+
+        +0 -1: Some tests failed.''');
+    });
+  }, testOn: 'windows');
 }
 
 Future<void> _expectReport(String tests, String expected,
