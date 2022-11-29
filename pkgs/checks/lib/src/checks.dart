@@ -55,7 +55,7 @@ class Check<T> {
 /// ```dart
 /// checkThat(actual).equals(expected);
 /// ```
-Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._(
+Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
     value: _Present(value),
     // TODO - switch between "a" and "an"
     label: 'a $T',
@@ -72,7 +72,7 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._(
 /// runtime error if they are used.
 Rejection? softCheck<T>(T value, void Function(Check<T>) condition) {
   Rejection? rejection;
-  final check = Check<T>._(_TestContext._(
+  final check = Check<T>._(_TestContext._root(
       value: _Present(value),
       fail: (_, r) {
         rejection = r;
@@ -93,7 +93,7 @@ Rejection? softCheck<T>(T value, void Function(Check<T>) condition) {
 Future<Rejection?> softCheckAsync<T>(
     T value, Future<void> Function(Check<T>) condition) async {
   Rejection? rejection;
-  final check = Check<T>._(_TestContext._(
+  final check = Check<T>._(_TestContext._root(
       value: _Present(value),
       fail: (_, r) {
         rejection = r;
@@ -112,7 +112,7 @@ Future<Rejection?> softCheckAsync<T>(
 /// did not meet the last expectation in [condition], without the first labeled
 /// line.
 Iterable<String> describe<T>(void Function(Check<T>) condition) {
-  final context = _TestContext<T>._(
+  final context = _TestContext<T>._root(
       value: _Absent(),
       fail: (_, __) {
         throw UnimplementedError();
@@ -259,6 +259,10 @@ class _Absent<T> implements _Optional<T> {
 
 class _TestContext<T> implements Context<T>, _ClauseDescription {
   final _Optional<T> _value;
+
+  /// A reference to find the root context which this context is nested under.
+  ///
+  /// null only for the root context.
   final _TestContext<dynamic>? _parent;
 
   final List<_ClauseDescription> _clauses;
@@ -272,7 +276,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   final bool _allowAsync;
 
-  _TestContext._({
+  _TestContext._root({
     required _Optional<T> value,
     required void Function(String, Rejection?) fail,
     required bool allowAsync,
@@ -288,13 +292,15 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _aliases = [];
 
   _TestContext._alias(_TestContext original, this._value)
-      : _parent = original._parent,
+      : _parent = original,
         _clauses = original._clauses,
         _aliases = original._aliases,
         _fail = original._fail,
         _allowAsync = original._allowAsync,
-        // Properties that are never read from an aliased context
+        // Never read from an aliased context because they are never present in
+        // `_clauses`.
         _label = '',
+        // Never read from any context other than the root.
         _reason = null;
 
   _TestContext._child(this._value, this._label, _TestContext<dynamic> parent)
@@ -303,7 +309,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _allowAsync = parent._allowAsync,
         _clauses = [],
         _aliases = [],
-        // Properties that are never read from any context other than root
+        // Never read from any context other than the root.
         _reason = null;
 
   @override
@@ -333,10 +339,11 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   String _failure(Rejection rejection) {
     final root = _root;
+    final reason = root._reason;
     return [
       ..._prefixFirst('Expected: ', root.expected),
       ..._prefixFirst('Actual: ', root.actual(rejection, this)),
-      if (_reason != null) 'Reason: $_reason',
+      if (reason != null) 'Reason: $reason',
     ].join('\n');
   }
 
