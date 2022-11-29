@@ -16,29 +16,29 @@ env:
 permissions: read-all
 
 jobs:
-  job_001:
-    name: mono_repo self validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: stable
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.4.2
-      - name: mono_repo self validate
-        run: dart pub global run mono_repo generate --validate
+  # job_001:
+  #   name: mono_repo self validate
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Cache Pub hosted dependencies
+  #       uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+  #       with:
+  #         path: "~/.pub-cache/hosted"
+  #         key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
+  #         restore-keys: |
+  #           os:ubuntu-latest;pub-cache-hosted
+  #           os:ubuntu-latest
+  #     - name: Setup Dart SDK
+  #       uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+  #       with:
+  #         sdk: stable
+  #     - id: checkout
+  #       name: Checkout repository
+  #       uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+  #     - name: mono_repo self validate
+  #       run: dart pub global activate mono_repo 6.4.2
+  #     - name: mono_repo self validate
+  #       run: dart pub global run mono_repo generate --validate
   job_002:
     name: "analyze_and_format; linux; Dart 2.18.0; PKGS: pkgs/checks, pkgs/test_core; `dart analyze`"
     runs-on: ubuntu-latest
@@ -255,7 +255,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_in
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -290,7 +290,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_out
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -325,7 +325,7 @@ jobs:
         if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/spawn_hybrid
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -360,13 +360,13 @@ jobs:
         if: "always() && steps.pkgs_checks_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/checks
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_009:
     name: "unit_test; linux; Dart 2.18.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -395,13 +395,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_010:
     name: "unit_test; linux; Dart 2.18.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -430,13 +430,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_011:
     name: "unit_test; linux; Dart 2.18.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -465,13 +465,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_012:
     name: "unit_test; linux; Dart 2.18.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -500,13 +500,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_013:
     name: "unit_test; linux; Dart 2.18.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -535,7 +535,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -570,7 +570,7 @@ jobs:
         if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_api
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -605,7 +605,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_in
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -640,7 +640,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_out
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -675,7 +675,7 @@ jobs:
         if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/spawn_hybrid
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -710,13 +710,13 @@ jobs:
         if: "always() && steps.pkgs_checks_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/checks
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_019:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -745,13 +745,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_020:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -780,13 +780,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_021:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -815,13 +815,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_022:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -850,13 +850,13 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
   job_023:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
@@ -885,7 +885,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -920,7 +920,7 @@ jobs:
         if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_api
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -945,7 +945,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_in
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -970,7 +970,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_out
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -995,7 +995,7 @@ jobs:
         if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/spawn_hybrid
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1020,7 +1020,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1045,7 +1045,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1070,7 +1070,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1095,7 +1095,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1120,7 +1120,7 @@ jobs:
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1145,7 +1145,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_in_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_in
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1170,7 +1170,7 @@ jobs:
         if: "always() && steps.integration_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/nnbd_opted_out
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1195,7 +1195,7 @@ jobs:
         if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/spawn_hybrid
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
@@ -1211,7 +1211,7 @@ jobs:
         env:
           CHAT_WEBHOOK_URL: "${{ secrets.BUILD_AND_TEST_TEAM_CHAT_WEBHOOK_URL }}"
     needs:
-      - job_001
+      # - job_001
       - job_002
       - job_003
       - job_004
