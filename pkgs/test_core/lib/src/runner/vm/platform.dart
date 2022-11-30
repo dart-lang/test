@@ -39,6 +39,7 @@ class VMPlatform extends PlatformPlugin {
   final _compiler = TestCompiler(
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
+  final _workingDirectory = Directory.current.uri;
 
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
@@ -86,7 +87,7 @@ class VMPlatform extends PlatformPlugin {
           await Service.controlWebServer(enable: true, silenceOutput: true);
       var isolateID = Service.getIsolateID(isolate)!;
 
-      var libraryPath = p.toUri(p.absolute(path)).toString();
+      var libraryPath = _absolute(path).toString();
       var serverUri = info.serverUri!;
       client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
@@ -126,6 +127,12 @@ class VMPlatform extends PlatformPlugin {
   @override
   Future close() => _closeMemo.runOnce(_compiler.dispose);
 
+  Uri _absolute(String path) {
+    final uri = p.toUri(path);
+    if (uri.isAbsolute) return uri;
+    return _workingDirectory.resolve(path);
+  }
+
   /// Spawns an isolate and passes it [message].
   ///
   /// This isolate connects an [IsolateChannel] to [message] and sends the
@@ -153,8 +160,7 @@ class VMPlatform extends PlatformPlugin {
   /// isolate.
   Future<Isolate> _spawnKernelIsolate(
       String path, SendPort message, Metadata suiteMetadata) async {
-    final response =
-        await _compiler.compile(File(path).absolute.uri, suiteMetadata);
+    final response = await _compiler.compile(_absolute(path), suiteMetadata);
     var compiledDill = response.kernelOutputUri?.toFilePath();
     if (compiledDill == null || response.errorCount > 0) {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
@@ -162,39 +168,40 @@ class VMPlatform extends PlatformPlugin {
     return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
         packageConfig: await packageConfigUri, checked: true);
   }
-}
 
-Future<Isolate> _spawnDataIsolate(
-    String path, SendPort message, Metadata suiteMetadata) async {
-  return await dart.runInIsolate('''
+  Future<Isolate> _spawnDataIsolate(
+      String path, SendPort message, Metadata suiteMetadata) async {
+    return await dart.runInIsolate('''
     ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "${p.toUri(p.absolute(path))}" as test;
+    import "${_absolute(path)}" as test;
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
   ''', message);
-}
+  }
 
-Future<Isolate> _spawnPrecompiledIsolate(
-    String testPath, SendPort message, String precompiledPath) async {
-  testPath = p.absolute('${p.join(precompiledPath, testPath)}.vm_test.dart');
-  var dillTestpath =
-      '${testPath.substring(0, testPath.length - '.dart'.length)}.vm.app.dill';
-  if (await File(dillTestpath).exists()) {
-    testPath = dillTestpath;
-  }
-  File? packageConfig =
-      File(p.join(precompiledPath, '.dart_tool/package_config.json'));
-  if (!(await packageConfig.exists())) {
-    packageConfig = File(p.join(precompiledPath, '.packages'));
-    if (!(await packageConfig.exists())) {
-      packageConfig = null;
+  Future<Isolate> _spawnPrecompiledIsolate(
+      String testPath, SendPort message, String precompiledPath) async {
+    testPath =
+        _absolute('${p.join(precompiledPath, testPath)}.vm_test.dart').path;
+    var dillTestpath =
+        '${testPath.substring(0, testPath.length - '.dart'.length)}.vm.app.dill';
+    if (await File(dillTestpath).exists()) {
+      testPath = dillTestpath;
     }
+    File? packageConfig =
+        File(p.join(precompiledPath, '.dart_tool/package_config.json'));
+    if (!(await packageConfig.exists())) {
+      packageConfig = File(p.join(precompiledPath, '.packages'));
+      if (!(await packageConfig.exists())) {
+        packageConfig = null;
+      }
+    }
+    return await Isolate.spawnUri(p.toUri(testPath), [], message,
+        packageConfig: packageConfig?.uri, checked: true);
   }
-  return await Isolate.spawnUri(p.toUri(testPath), [], message,
-      packageConfig: packageConfig?.uri, checked: true);
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
