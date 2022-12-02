@@ -362,8 +362,8 @@ void main() {
     });
   });
 
-  test('bundles runs by suite, deduplicates tests that match multiple times', ()
-    async {
+  test('bundles runs by suite, deduplicates tests that match multiple times',
+      () async {
     await d.file('test.dart', '''
         import 'package:test/test.dart';
 
