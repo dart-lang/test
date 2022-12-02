@@ -42,6 +42,7 @@ void main() {
 
   group('[throwsCyclicInitializationError]', () {
     test('passes when a CyclicInitializationError is thrown', () {
+      // ignore: deprecated_member_use
       expect(() => throw CyclicInitializationError(''),
           throwsCyclicInitializationError);
     });
@@ -109,6 +110,7 @@ void main() {
     test('passes when a NullThrownError is thrown', () {
       // Throwing null is no longer allowed with NNBD, but we do want to allow
       // it from legacy code and should be able to catch those errors.
+      // ignore: deprecated_member_use
       expect(() => throw NullThrownError(), throwsNullThrownError);
     });
 
@@ -117,7 +119,9 @@ void main() {
         expect(() => throw Exception(), throwsNullThrownError);
       });
 
-      expectTestFailed(liveTest,
+      expectTestFailed(
+          liveTest,
+          // ignore: deprecated_member_use
           startsWith("Expected: throws <Instance of '$NullThrownError'>"));
     });
   });
