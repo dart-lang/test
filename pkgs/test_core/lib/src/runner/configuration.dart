@@ -779,7 +779,8 @@ class Configuration {
             ? null
             : Uri.parse('http://localhost:$pubServePort'),
         _concurrency = concurrency,
-        _testSelections = _map(testSelections),
+        _testSelections =
+            testSelections == null ? null : Map.unmodifiable(testSelections),
         _foldTraceExcept = _set(foldTraceExcept),
         _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
