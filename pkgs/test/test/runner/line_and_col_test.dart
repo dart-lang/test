@@ -373,7 +373,7 @@ void main() {
         }
       ''').create();
 
-    var test = await runTest(['test.dart?line=6', 'test.dart?line=6']);
+    var test = await runTest(['test.dart?line=4', 'test.dart?full-name=a']);
 
     expect(
       test.stdout,
