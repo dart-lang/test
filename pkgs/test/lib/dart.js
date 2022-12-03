@@ -67,6 +67,9 @@ script.onerror = function(event) {
   sendLoadException(message);
 }
 
+var firstScript = document.querySelector('script');
+script.nonce = firstScript.nonce;
+
 var parent = link.parentNode;
 document.currentScript = script;
 parent.replaceChild(script, link);
