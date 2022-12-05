@@ -27,30 +27,10 @@ import 'configuration/values.dart';
 import 'runtime_selection.dart';
 import 'suite.dart';
 
+export 'suite.dart' show TestSelection;
+
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = Object();
-
-/// Encapsulates a file/directory path and filter options specific to this path.
-class PathConfiguration {
-  const PathConfiguration({
-    required this.testPath,
-    this.testPatterns,
-    this.line,
-    this.col,
-  });
-
-  /// The explicit path to a test suite.
-  final String testPath;
-
-  /// Name filters specific to [testPath].
-  final List<Pattern>? testPatterns;
-
-  /// Only run tests that originate from this line in the test suite.
-  final int? line;
-
-  /// Only run tests that originate from this column in the test suite.
-  final int? col;
-}
 
 /// A class that encapsulates the command-line configuration of the test runner.
 class Configuration {
@@ -146,13 +126,16 @@ class Configuration {
   Set<String> get foldTraceOnly => _foldTraceOnly ?? {};
   final Set<String>? _foldTraceOnly;
 
-  /// The paths from which to load tests.
-  List<PathConfiguration> get paths =>
-      _paths ?? const [PathConfiguration(testPath: 'test')];
-  final List<PathConfiguration>? _paths;
+  /// The paths from which to load tests, and the test cases to run.
+  Map<String, Set<TestSelection>> get testSelections =>
+      _testSelections ??
+      const {
+        'test': {TestSelection()}
+      };
+  final Map<String, Set<TestSelection>>? _testSelections;
 
   /// Whether the load paths were passed explicitly or the default was used.
-  bool get explicitPaths => _paths != null;
+  bool get explicitPaths => _testSelections != null;
 
   /// The glob matching the basename of tests to run.
   ///
@@ -224,6 +207,9 @@ class Configuration {
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
+  /// The set of patterns to check test names against in all suites that run.
+  final Set<Pattern> globalPatterns;
+
   /// The seed used to generate randomness for test case shuffling.
   ///
   /// If null or zero no shuffling will occur.
@@ -283,7 +269,7 @@ class Configuration {
       required int? concurrency,
       required int? shardIndex,
       required int? totalShards,
-      required Iterable<PathConfiguration>? paths,
+      required Map<String, Set<TestSelection>>? testSelections,
       required Iterable<String>? foldTraceExcept,
       required Iterable<String>? foldTraceOnly,
       required Glob? filename,
@@ -302,7 +288,7 @@ class Configuration {
       required bool? runSkipped,
       required Iterable<String>? dart2jsArgs,
       required String? precompiledPath,
-      required Iterable<Pattern>? patterns,
+      required Iterable<Pattern>? globalPatterns,
       required Iterable<RuntimeSelection>? runtimes,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
@@ -335,7 +321,7 @@ class Configuration {
         concurrency: concurrency,
         shardIndex: shardIndex,
         totalShards: totalShards,
-        paths: paths,
+        testSelections: testSelections,
         foldTraceExcept: foldTraceExcept,
         foldTraceOnly: foldTraceOnly,
         filename: filename,
@@ -348,6 +334,7 @@ class Configuration {
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         includeTags: includeTags,
         excludeTags: excludeTags,
+        globalPatterns: globalPatterns,
         suiteDefaults: SuiteConfiguration(
             allowDuplicateTestNames: allowDuplicateTestNames,
             allowTestRandomization: allowTestRandomization,
@@ -355,12 +342,9 @@ class Configuration {
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
             precompiledPath: precompiledPath,
-            patterns: patterns,
             runtimes: runtimes,
             tags: tags,
             onPlatform: onPlatform,
-            line: null, // Only configurable from the command line
-            col: null, // Only configurable from the command line
             ignoreTimeouts: ignoreTimeouts,
 
             // Test-level configuration
@@ -394,7 +378,7 @@ class Configuration {
           int? concurrency,
           int? shardIndex,
           int? totalShards,
-          Iterable<PathConfiguration>? paths,
+          Map<String, Set<TestSelection>>? testSelections,
           Iterable<String>? foldTraceExcept,
           Iterable<String>? foldTraceOnly,
           Glob? filename,
@@ -413,7 +397,7 @@ class Configuration {
           bool? runSkipped,
           Iterable<String>? dart2jsArgs,
           String? precompiledPath,
-          Iterable<Pattern>? patterns,
+          Iterable<Pattern>? globalPatterns,
           Iterable<RuntimeSelection>? runtimes,
           BooleanSelector? includeTags,
           BooleanSelector? excludeTags,
@@ -445,7 +429,7 @@ class Configuration {
           concurrency: concurrency,
           shardIndex: shardIndex,
           totalShards: totalShards,
-          paths: paths,
+          testSelections: testSelections,
           foldTraceExcept: foldTraceExcept,
           foldTraceOnly: foldTraceOnly,
           filename: filename,
@@ -462,7 +446,7 @@ class Configuration {
           runSkipped: runSkipped,
           dart2jsArgs: dart2jsArgs,
           precompiledPath: precompiledPath,
-          patterns: patterns,
+          globalPatterns: globalPatterns,
           runtimes: runtimes,
           includeTags: includeTags,
           excludeTags: excludeTags,
@@ -513,7 +497,7 @@ class Configuration {
         concurrency: null,
         shardIndex: null,
         totalShards: null,
-        paths: null,
+        testSelections: null,
         filename: null,
         chosenPresets: null,
         presets: presets,
@@ -528,7 +512,7 @@ class Configuration {
         runSkipped: null,
         dart2jsArgs: null,
         precompiledPath: null,
-        patterns: null,
+        globalPatterns: null,
         runtimes: null,
         includeTags: null,
         excludeTags: null,
@@ -578,7 +562,7 @@ class Configuration {
         concurrency: null,
         shardIndex: null,
         totalShards: null,
-        paths: null,
+        testSelections: null,
         foldTraceExcept: null,
         foldTraceOnly: null,
         filename: null,
@@ -593,7 +577,7 @@ class Configuration {
         runSkipped: null,
         dart2jsArgs: null,
         precompiledPath: null,
-        patterns: null,
+        globalPatterns: null,
         runtimes: null,
         includeTags: null,
         excludeTags: null,
@@ -642,7 +626,7 @@ class Configuration {
         pubServePort: null,
         shardIndex: null,
         totalShards: null,
-        paths: null,
+        testSelections: null,
         foldTraceExcept: null,
         foldTraceOnly: null,
         filename: null,
@@ -656,7 +640,7 @@ class Configuration {
         jsTrace: null,
         dart2jsArgs: null,
         precompiledPath: null,
-        patterns: null,
+        globalPatterns: null,
         includeTags: null,
         excludeTags: null,
         tags: null,
@@ -679,16 +663,16 @@ class Configuration {
   /// config is user specific).
   factory Configuration.localRunner(
           {required int? pubServePort,
-          required Iterable<Pattern>? patterns,
-          required Iterable<PathConfiguration>? paths,
+          required Iterable<Pattern>? globalPatterns,
+          required Map<String, Set<TestSelection>>? testSelections,
           required Glob? filename,
           required BooleanSelector? includeTags,
           required BooleanSelector? excludeTags,
           required Map<String, CustomRuntime>? defineRuntimes}) =>
       Configuration(
           pubServePort: pubServePort,
-          patterns: patterns,
-          paths: paths,
+          globalPatterns: globalPatterns,
+          testSelections: testSelections,
           filename: filename,
           includeTags: includeTags,
           excludeTags: excludeTags,
@@ -768,7 +752,7 @@ class Configuration {
       required int? concurrency,
       required this.shardIndex,
       required this.totalShards,
-      required Iterable<PathConfiguration>? paths,
+      required Map<String, Set<TestSelection>>? testSelections,
       required Iterable<String>? foldTraceExcept,
       required Iterable<String>? foldTraceOnly,
       required Glob? filename,
@@ -781,6 +765,7 @@ class Configuration {
       required this.testRandomizeOrderingSeed,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
+      required Iterable<Pattern>? globalPatterns,
       required SuiteConfiguration? suiteDefaults})
       : _help = help,
         _version = version,
@@ -794,7 +779,9 @@ class Configuration {
             ? null
             : Uri.parse('http://localhost:$pubServePort'),
         _concurrency = concurrency,
-        _paths = _list(paths),
+        _testSelections = testSelections == null || testSelections.isEmpty
+            ? null
+            : Map.unmodifiable(testSelections),
         _foldTraceExcept = _set(foldTraceExcept),
         _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
@@ -806,6 +793,9 @@ class Configuration {
         _useDataIsolateStrategy = useDataIsolateStrategy,
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
+        globalPatterns = globalPatterns == null
+            ? const {}
+            : UnmodifiableSetView(globalPatterns.toSet()),
         suiteDefaults = (() {
           var config = suiteDefaults ?? SuiteConfiguration.empty;
           if (pauseAfterLoad == true) {
@@ -834,6 +824,7 @@ class Configuration {
           SuiteConfiguration suiteConfig) =>
       Configuration._(
         suiteDefaults: suiteConfig,
+        globalPatterns: null,
         help: null,
         customHtmlTemplatePath: null,
         version: null,
@@ -848,7 +839,7 @@ class Configuration {
         concurrency: null,
         shardIndex: null,
         totalShards: null,
-        paths: null,
+        testSelections: null,
         foldTraceExcept: null,
         foldTraceOnly: null,
         filename: null,
@@ -862,16 +853,6 @@ class Configuration {
         includeTags: null,
         excludeTags: null,
       );
-
-  /// Returns an unmodifiable copy of [input].
-  ///
-  /// If [input] is `null` or empty, this returns `null`.
-  static List<T>? _list<T>(Iterable<T>? input) {
-    if (input == null) return null;
-    var list = List<T>.unmodifiable(input);
-    if (list.isEmpty) return null;
-    return list;
-  }
 
   /// Returns a set from [input].
   ///
@@ -957,7 +938,7 @@ class Configuration {
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
-        paths: other._paths ?? _paths,
+        testSelections: other._testSelections ?? _testSelections,
         foldTraceExcept: foldTraceExcept,
         foldTraceOnly: foldTraceOnly,
         filename: other._filename ?? _filename,
@@ -978,6 +959,7 @@ class Configuration {
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
+        globalPatterns: globalPatterns.union(other.globalPatterns),
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -1006,7 +988,7 @@ class Configuration {
       int? concurrency,
       int? shardIndex,
       int? totalShards,
-      Iterable<PathConfiguration>? paths,
+      Map<String, Set<TestSelection>>? testSelections,
       Iterable<String>? exceptPackages,
       Iterable<String>? onlyPackages,
       Glob? filename,
@@ -1025,7 +1007,6 @@ class Configuration {
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
       String? precompiledPath,
-      Iterable<Pattern>? patterns,
       Iterable<RuntimeSelection>? runtimes,
       BooleanSelector? includeTags,
       BooleanSelector? excludeTags,
@@ -1056,7 +1037,7 @@ class Configuration {
         concurrency: concurrency ?? _concurrency,
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,
-        paths: paths ?? _paths,
+        testSelections: testSelections ?? _testSelections,
         foldTraceExcept: exceptPackages ?? _foldTraceExcept,
         foldTraceOnly: onlyPackages ?? _foldTraceOnly,
         filename: filename ?? _filename,
@@ -1071,13 +1052,13 @@ class Configuration {
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
         includeTags: includeTags,
         excludeTags: excludeTags,
+        globalPatterns: globalPatterns,
         suiteDefaults: suiteDefaults.change(
           allowDuplicateTestNames: allowDuplicateTestNames,
           jsTrace: jsTrace,
           runSkipped: runSkipped,
           dart2jsArgs: dart2jsArgs,
           precompiledPath: precompiledPath,
-          patterns: patterns,
           runtimes: runtimes,
           tags: tags,
           onPlatform: onPlatform,

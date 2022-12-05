@@ -72,35 +72,6 @@ void main() {
       });
     });
 
-    group('for sets', () {
-      test('if neither is defined, preserves the default', () {
-        var merged = suiteConfiguration().merge(suiteConfiguration());
-        expect(merged.patterns, isEmpty);
-      });
-
-      test("if only the old configuration's is defined, uses it", () {
-        var merged = suiteConfiguration(patterns: ['beep', 'boop'])
-            .merge(suiteConfiguration());
-
-        expect(merged.patterns, equals(['beep', 'boop']));
-      });
-
-      test("if only the configuration's is defined, uses it", () {
-        var merged = suiteConfiguration()
-            .merge(suiteConfiguration(patterns: ['beep', 'boop']));
-
-        expect(merged.patterns, equals(['beep', 'boop']));
-      });
-
-      test('if both are defined, unions them', () {
-        var older = suiteConfiguration(patterns: ['beep', 'boop']);
-        var newer = suiteConfiguration(patterns: ['bonk']);
-        var merged = older.merge(newer);
-
-        expect(merged.patterns, unorderedEquals(['beep', 'boop', 'bonk']));
-      });
-    });
-
     group('for dart2jsArgs', () {
       test('if neither is defined, preserves the default', () {
         var merged = suiteConfiguration().merge(suiteConfiguration());
