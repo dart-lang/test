@@ -1,6 +1,8 @@
 ## 1.22.1-dev
 
 * Add documentation for the `--ignore-timeouts` argument.
+* Merge command lines args repeating the same test path to run the suite one
+  time with all the test cases across the different arguments.
 
 ## 1.22.0
 

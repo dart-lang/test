@@ -2,6 +2,8 @@
 
 * Move `includeTags` and `excludeTags` from `SuiteConfiguration` to
   `Configuration`.
+* Merge command lines args repeating the same test path to run the suite one
+  time with all the test cases across the different arguments.
 
 # 0.4.20
 
