@@ -294,9 +294,7 @@ class Runner {
           }
 
           final testSelections = suite.config.testSelections;
-          if (testSelections!.isEmpty) {
-            return true;
-          }
+          assert(testSelections.isNotEmpty, 'Tests should have been selected');
           return testSelections.any((selection) {
             // Skip tests that don't match all the suite specific patterns.
             if (!selection.testPatterns

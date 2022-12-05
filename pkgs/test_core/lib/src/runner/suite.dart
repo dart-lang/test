@@ -51,7 +51,7 @@ class SuiteConfiguration {
       jsTrace: null,
       runSkipped: null,
       dart2jsArgs: null,
-      testSelections: null,
+      testSelections: const {},
       precompiledPath: null,
       runtimes: null,
       tags: null,
@@ -95,8 +95,14 @@ class SuiteConfiguration {
 
   /// The selections for which tests to run in a suite.
   ///
-  /// A test should run if it matches any selection in [testSelections].
-  final Set<TestSelection>? testSelections;
+  /// If empty, no tests have been selected for this suite.
+  /// Tests must be selected once for a suite before the suite can run.
+  /// When merging suite configurations, only one, or neither, should have tests
+  /// already selected.
+  ///
+  /// A test should run within a suite if it matches any selection in
+  /// [testSelections].
+  final Set<TestSelection> testSelections;
 
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
@@ -167,7 +173,7 @@ class SuiteConfiguration {
         jsTrace: jsTrace,
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
-        testSelections: null,
+        testSelections: const {},
         precompiledPath: precompiledPath,
         runtimes: runtimes,
         tags: tags,
@@ -284,7 +290,7 @@ class SuiteConfiguration {
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,
-        testSelections: null,
+        testSelections: const {},
         precompiledPath: null,
         runtimes: null,
         ignoreTimeouts: null,
@@ -314,6 +320,7 @@ class SuiteConfiguration {
   SuiteConfiguration merge(SuiteConfiguration other) {
     if (this == SuiteConfiguration.empty) return other;
     if (other == SuiteConfiguration.empty) return this;
+    assert(testSelections.isEmpty || other.testSelections.isEmpty);
 
     var config = SuiteConfiguration._(
         allowDuplicateTestNames:
@@ -323,7 +330,8 @@ class SuiteConfiguration {
         jsTrace: other._jsTrace ?? _jsTrace,
         runSkipped: other._runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
-        testSelections: other.testSelections ?? testSelections,
+        testSelections:
+            testSelections.isEmpty ? other.testSelections : testSelections,
         precompiledPath: other.precompiledPath ?? precompiledPath,
         runtimes: other._runtimes ?? _runtimes,
         tags: _mergeConfigMaps(tags, other.tags),
@@ -384,7 +392,16 @@ class SuiteConfiguration {
     return config._resolveTags();
   }
 
-  SuiteConfiguration selectTests(Set<TestSelection>? testSelections) {
+  /// Assign the selection of tests that should run for this suite.
+  ///
+  /// Test selections must be chosen only once per suite, once a
+  /// SuiteConfiguration has test slections this method should not be called
+  /// again.
+  ///
+  /// [testSelections] must not be empty.
+  SuiteConfiguration selectTests(Set<TestSelection> testSelections) {
+    assert(this.testSelections.isEmpty);
+    assert(testSelections.isNotEmpty);
     return SuiteConfiguration._(
         testSelections: testSelections,
         allowDuplicateTestNames: _allowDuplicateTestNames,
