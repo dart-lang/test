@@ -891,4 +891,44 @@ void main() {
       }
     });
   });
+
+  group('runs tests after changing directories', () {
+    setUp(() async {
+      await d.file('a_test.dart', '''
+@TestOn('vm')
+import 'dart:io';
+
+import 'package:test/test.dart';
+
+void main() {
+  test('changes directory', () {
+    Directory.current = Directory.current.parent;
+  });
+}
+''').create();
+      await d.file('b_test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test('passes', () {
+    expect(true, true);
+  });
+}
+''').create();
+    });
+    test('on the VM platform', () async {
+      var test = await runTest(['-p', 'vm', 'a_test.dart', 'b_test.dart']);
+      await expectLater(
+          test.stdout, emitsThrough(contains('+2: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('on the browser platform', () async {
+      var test =
+          await runTest(['-p', 'vm,chrome', 'a_test.dart', 'b_test.dart']);
+      await expectLater(
+          test.stdout, emitsThrough(contains('+3: All tests passed!')));
+      await test.shouldExit(0);
+    }, skip: 'https://github.com/dart-lang/test/issues/1803');
+  });
 }
