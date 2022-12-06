@@ -361,4 +361,25 @@ void main() {
       await test.shouldExit(0);
     });
   });
+
+  test('bundles runs by suite, deduplicates tests that match multiple times',
+      () async {
+    await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test('a', () {});
+          test('b', () => throw TestFailure('oh no'));
+        }
+      ''').create();
+
+    var test = await runTest(['test.dart?line=4', 'test.dart?full-name=a']);
+
+    expect(
+      test.stdout,
+      emitsThrough(contains('+1: All tests passed!')),
+    );
+
+    await test.shouldExit(0);
+  });
 }

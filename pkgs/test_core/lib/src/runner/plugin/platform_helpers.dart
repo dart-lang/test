@@ -56,8 +56,8 @@ RunnerSuiteController deserializeSuite(
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json' ||
         Configuration.current.fileReporters.containsKey('json') ||
-        suiteConfig.line != null ||
-        suiteConfig.col != null,
+        suiteConfig.testSelections.any(
+            (selection) => selection.line != null || selection.col != null),
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),

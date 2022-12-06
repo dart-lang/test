@@ -139,9 +139,9 @@ class Runner {
         if (_engine.passed.isEmpty &&
             _engine.failed.isEmpty &&
             _engine.skipped.isEmpty) {
-          if (_config.suiteDefaults.patterns.isNotEmpty) {
-            var patterns = toSentence(_config.suiteDefaults.patterns.map(
-                (pattern) => pattern is RegExp
+          if (_config.globalPatterns.isNotEmpty) {
+            var patterns = toSentence(_config.globalPatterns.map((pattern) =>
+                pattern is RegExp
                     ? 'regular expression "${pattern.pattern}"'
                     : '"$pattern"'));
             throw NoTestsFoundException('No tests match $patterns.');
@@ -251,29 +251,23 @@ class Runner {
         _sinks.clear();
       });
 
-  /// Return a stream of [LoadSuite]s in [_config.paths].
+  /// Return a stream of [LoadSuite]s in [_config.testSelections].
   ///
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return StreamGroup.merge(_config.paths.map((pathConfig) {
-      final suiteConfig = _config.suiteDefaults.change(
-        patterns: [
-          ..._config.suiteDefaults.patterns,
-          ...?pathConfig.testPatterns
-        ],
-        line: pathConfig.line,
-        col: pathConfig.col,
-      );
-
-      if (Directory(pathConfig.testPath).existsSync()) {
-        return _loader.loadDir(pathConfig.testPath, suiteConfig);
-      } else if (File(pathConfig.testPath).existsSync()) {
-        return _loader.loadFile(pathConfig.testPath, suiteConfig);
+    return StreamGroup.merge(_config.testSelections.entries.map((pathEntry) {
+      final testPath = pathEntry.key;
+      final testSelections = pathEntry.value;
+      final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+      if (Directory(testPath).existsSync()) {
+        return _loader.loadDir(testPath, suiteConfig);
+      } else if (File(testPath).existsSync()) {
+        return _loader.loadFile(testPath, suiteConfig);
       } else {
         return Stream.fromIterable([
           LoadSuite.forLoadException(
-            LoadException(pathConfig.testPath, 'Does not exist.'),
+            LoadException(testPath, 'Does not exist.'),
             suiteConfig,
           ),
         ]);
@@ -283,8 +277,8 @@ class Runner {
         _warnForUnknownTags(suite);
 
         return _shardSuite(suite.filter((test) {
-          // Skip any tests that don't match all the given patterns.
-          if (!suite.config.patterns
+          // Skip any tests that don't match all the global patterns.
+          if (!_config.globalPatterns
               .every((pattern) => test.name.contains(pattern))) {
             return false;
           }
@@ -299,10 +293,18 @@ class Runner {
             return false;
           }
 
-          // Skip tests that don't start on `line` or `col` if specified.
-          var line = suite.config.line;
-          var col = suite.config.col;
-          if (line != null || col != null) {
+          final testSelections = suite.config.testSelections;
+          assert(testSelections.isNotEmpty, 'Tests should have been selected');
+          return testSelections.any((selection) {
+            // Skip tests that don't match all the suite specific patterns.
+            if (!selection.testPatterns
+                .every((pattern) => test.name.contains(pattern))) {
+              return false;
+            }
+            // Skip tests that don't start on `line` or `col` if specified.
+            var line = selection.line;
+            var col = selection.col;
+            if (line == null && col == null) return true;
             var trace = test.trace;
             if (trace == null) {
               throw StateError(
@@ -331,12 +333,8 @@ class Runner {
               return true;
             }
 
-            if (!trace.frames.any(matchLineAndCol)) {
-              return false;
-            }
-          }
-
-          return true;
+            return trace.frames.any(matchLineAndCol);
+          });
         }));
       });
     });

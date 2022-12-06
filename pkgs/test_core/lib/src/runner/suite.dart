@@ -15,6 +15,28 @@ import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementa
 
 import 'runtime_selection.dart';
 
+/// A filter on tests cases to run within a test suite.
+///
+/// The tests that match a test selection should match all available criteria. A
+/// suite run may include multiple test selections, and a test should run if it
+/// matches any test selection.
+///
+/// An empty [TestSelection()] will run all tests in the suite.
+class TestSelection {
+  /// The patterns to check against test case names.
+  ///
+  /// Only run tests which match all the patterns.
+  final Set<Pattern> testPatterns;
+
+  /// Only run tests that originate from this line in the test suite.
+  final int? line;
+
+  /// Only run tests that originate from this column in the test suite.
+  final int? col;
+
+  const TestSelection({this.testPatterns = const {}, this.line, this.col});
+}
+
 /// Suite-level configuration.
 ///
 /// This tracks configuration that can differ from suite to suite.
@@ -29,14 +51,12 @@ class SuiteConfiguration {
       jsTrace: null,
       runSkipped: null,
       dart2jsArgs: null,
+      testSelections: const {},
       precompiledPath: null,
-      patterns: null,
       runtimes: null,
       tags: null,
       onPlatform: null,
       metadata: null,
-      line: null,
-      col: null,
       ignoreTimeouts: null);
 
   /// Whether or not duplicate test (or group) names are allowed within the same
@@ -73,12 +93,16 @@ class SuiteConfiguration {
   /// suite's arguments will be used.
   final List<String> dart2jsArgs;
 
-  /// The patterns to match against test names to decide which to run.
+  /// The selections for which tests to run in a suite.
   ///
-  /// All patterns must match in order for a test to be run.
+  /// If empty, no tests have been selected for this suite.
+  /// Tests must be selected once for a suite before the suite can run.
+  /// When merging suite configurations, only one, or neither, should have tests
+  /// already selected.
   ///
-  /// If empty, all tests should be run.
-  final Set<Pattern> patterns;
+  /// A test should run within a suite if it matches any selection in
+  /// [testSelections].
+  final Set<TestSelection> testSelections;
 
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
@@ -118,12 +142,6 @@ class SuiteConfiguration {
     for (var configuration in onPlatform.values) ...configuration.knownTags,
   });
 
-  /// Only run tests that originate from this line in a test file.
-  final int? line;
-
-  /// Only run tests that original from this column in a test file.
-  final int? col;
-
   /// Whether or not timeouts should be ignored.
   final bool? _ignoreTimeouts;
   bool get ignoreTimeouts => _ignoreTimeouts ?? false;
@@ -135,12 +153,9 @@ class SuiteConfiguration {
       required bool? runSkipped,
       required Iterable<String>? dart2jsArgs,
       required String? precompiledPath,
-      required Iterable<Pattern>? patterns,
       required Iterable<RuntimeSelection>? runtimes,
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      required int? line,
-      required int? col,
       required bool? ignoreTimeouts,
 
       // Test-level configuration
@@ -158,13 +173,11 @@ class SuiteConfiguration {
         jsTrace: jsTrace,
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
+        testSelections: const {},
         precompiledPath: precompiledPath,
-        patterns: patterns,
         runtimes: runtimes,
         tags: tags,
         onPlatform: onPlatform,
-        line: line,
-        col: col,
         ignoreTimeouts: ignoreTimeouts,
         metadata: Metadata(
             timeout: timeout,
@@ -189,12 +202,9 @@ class SuiteConfiguration {
           bool? runSkipped,
           Iterable<String>? dart2jsArgs,
           String? precompiledPath,
-          Iterable<Pattern>? patterns,
           Iterable<RuntimeSelection>? runtimes,
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-          int? line,
-          int? col,
           bool? ignoreTimeouts,
 
           // Test-level configuration
@@ -213,12 +223,9 @@ class SuiteConfiguration {
           runSkipped: runSkipped,
           dart2jsArgs: dart2jsArgs,
           precompiledPath: precompiledPath,
-          patterns: patterns,
           runtimes: runtimes,
           tags: tags,
           onPlatform: onPlatform,
-          line: line,
-          col: col,
           ignoreTimeouts: ignoreTimeouts,
           timeout: timeout,
           verboseTrace: verboseTrace,
@@ -251,21 +258,18 @@ class SuiteConfiguration {
     required bool? jsTrace,
     required bool? runSkipped,
     required Iterable<String>? dart2jsArgs,
+    required this.testSelections,
     required this.precompiledPath,
-    required Iterable<Pattern>? patterns,
     required Iterable<RuntimeSelection>? runtimes,
     required Map<BooleanSelector, SuiteConfiguration>? tags,
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required Metadata? metadata,
-    required this.line,
-    required this.col,
     required bool? ignoreTimeouts,
   })  : _allowDuplicateTestNames = allowDuplicateTestNames,
         _allowTestRandomization = allowTestRandomization,
         _jsTrace = jsTrace,
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
-        patterns = UnmodifiableSetView(patterns?.toSet() ?? {}),
         _runtimes = _list(runtimes),
         tags = _map(tags),
         onPlatform = _map(onPlatform),
@@ -286,11 +290,9 @@ class SuiteConfiguration {
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,
+        testSelections: const {},
         precompiledPath: null,
-        patterns: null,
         runtimes: null,
-        line: null,
-        col: null,
         ignoreTimeouts: null,
       );
 
@@ -318,6 +320,7 @@ class SuiteConfiguration {
   SuiteConfiguration merge(SuiteConfiguration other) {
     if (this == SuiteConfiguration.empty) return other;
     if (other == SuiteConfiguration.empty) return this;
+    assert(testSelections.isEmpty || other.testSelections.isEmpty);
 
     var config = SuiteConfiguration._(
         allowDuplicateTestNames:
@@ -327,13 +330,12 @@ class SuiteConfiguration {
         jsTrace: other._jsTrace ?? _jsTrace,
         runSkipped: other._runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
+        testSelections:
+            testSelections.isEmpty ? other.testSelections : testSelections,
         precompiledPath: other.precompiledPath ?? precompiledPath,
-        patterns: patterns.union(other.patterns),
         runtimes: other._runtimes ?? _runtimes,
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
-        line: other.line ?? line,
-        col: other.col ?? col,
         ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
         metadata: metadata.merge(other.metadata));
     return config._resolveTags();
@@ -350,12 +352,9 @@ class SuiteConfiguration {
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
       String? precompiledPath,
-      Iterable<Pattern>? patterns,
       Iterable<RuntimeSelection>? runtimes,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? line,
-      int? col,
       bool? ignoreTimeouts,
 
       // Test-level configuration
@@ -375,13 +374,11 @@ class SuiteConfiguration {
         jsTrace: jsTrace ?? _jsTrace,
         runSkipped: runSkipped ?? _runSkipped,
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
+        testSelections: testSelections,
         precompiledPath: precompiledPath ?? this.precompiledPath,
-        patterns: patterns ?? this.patterns,
         runtimes: runtimes ?? _runtimes,
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
-        line: line ?? this.line,
-        col: col ?? this.col,
         ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
         metadata: _metadata.change(
             timeout: timeout,
@@ -393,6 +390,31 @@ class SuiteConfiguration {
             testOn: testOn,
             tags: addTags?.toSet()));
     return config._resolveTags();
+  }
+
+  /// Assign the selection of tests that should run for this suite.
+  ///
+  /// Test selections must be chosen only once per suite, once a
+  /// SuiteConfiguration has test slections this method should not be called
+  /// again.
+  ///
+  /// [testSelections] must not be empty.
+  SuiteConfiguration selectTests(Set<TestSelection> testSelections) {
+    assert(this.testSelections.isEmpty);
+    assert(testSelections.isNotEmpty);
+    return SuiteConfiguration._(
+        testSelections: testSelections,
+        allowDuplicateTestNames: _allowDuplicateTestNames,
+        allowTestRandomization: _allowTestRandomization,
+        jsTrace: _jsTrace,
+        runSkipped: _runSkipped,
+        dart2jsArgs: dart2jsArgs,
+        precompiledPath: precompiledPath,
+        runtimes: _runtimes,
+        tags: tags,
+        onPlatform: onPlatform,
+        ignoreTimeouts: _ignoreTimeouts,
+        metadata: _metadata);
   }
 
   /// Throws a [FormatException] if this refers to any undefined runtimes.
