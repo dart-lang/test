@@ -4,6 +4,8 @@
   `Configuration`.
 * Merge command lines args repeating the same test path to run the suite one
   time with all the test cases across the different arguments.
+* Fix VM tests which run after some test has changed the working directory.
+  There are still issues with browser tests after changing directory.
 
 # 0.4.20
 
