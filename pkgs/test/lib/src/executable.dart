@@ -11,7 +11,7 @@ import 'runner/browser/platform.dart';
 import 'runner/node/platform.dart';
 import 'runner/wasm/platform.dart';
 
-void main(List<String> args) async {
+Future<void> main(List<String> args) async {
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
   registerPlatformPlugin([
     Runtime.chrome,
