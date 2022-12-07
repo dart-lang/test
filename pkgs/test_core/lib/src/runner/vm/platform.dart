@@ -130,7 +130,7 @@ class VMPlatform extends PlatformPlugin {
   Uri _absolute(String path) {
     final uri = p.toUri(path);
     if (uri.isAbsolute) return uri;
-    return _workingDirectory.resolve(path);
+    return _workingDirectory.resolveUri(uri);
   }
 
   /// Spawns an isolate and passes it [message].
