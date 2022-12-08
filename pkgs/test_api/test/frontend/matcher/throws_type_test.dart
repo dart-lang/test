@@ -56,7 +56,7 @@ void main() {
       expectTestFailed(
           liveTest,
           startsWith(
-              "Expected: throws <Instance of 'CyclicInitializationError'>"));
+              "Expected: throws <Instance of 'Error'>"));
     });
   });
 
