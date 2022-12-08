@@ -1,5 +1,8 @@
 ## 0.4.17-dev
 
+* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>)` instead. The
+  implementation has been changed to ease migrations.
+
 ## 0.4.16
 
 * Add the `experimental-chrome-wasm` runtime. This is very unstable and will

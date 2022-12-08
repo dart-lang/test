@@ -41,7 +41,10 @@ const Matcher throwsNoSuchMethodError = Throws(isNoSuchMethodError);
 /// A matcher for functions that throw NullThrownError.
 ///
 /// See [throwsA] for objects that this can be matched against.
-const Matcher throwsNullThrownError = Throws(isNullThrownError);
+@Deprecated('throwsNullThrownError has been deprecated, because '
+    'NullThrownError has been replaced with TypeError. '
+    'Use `throwsA(isA<TypeError>())` instead.')
+const Matcher throwsNullThrownError = Throws(TypeMatcher<TypeError>());
 
 /// A matcher for functions that throw RangeError.
 ///

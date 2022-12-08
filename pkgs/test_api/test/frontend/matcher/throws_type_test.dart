@@ -110,7 +110,6 @@ void main() {
     test('passes when a NullThrownError is thrown', () {
       // Throwing null is no longer allowed with NNBD, but we do want to allow
       // it from legacy code and should be able to catch those errors.
-      // ignore: deprecated_member_use
       expect(() => throw NullThrownError(), throwsNullThrownError);
     });
 
