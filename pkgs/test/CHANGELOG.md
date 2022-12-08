@@ -1,4 +1,4 @@
-## 1.22.1-dev
+## 1.22.1
 
 * Add documentation for the `--ignore-timeouts` argument.
 * Merge command lines args repeating the same test path to run the suite one

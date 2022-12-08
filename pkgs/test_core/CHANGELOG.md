@@ -1,4 +1,4 @@
-# 0.4.21-dev
+# 0.4.21
 
 * Move `includeTags` and `excludeTags` from `SuiteConfiguration` to
   `Configuration`.
