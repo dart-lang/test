@@ -1,0 +1,18 @@
+# See https://pub.dev/packages/mono_repo
+
+sdk:
+- stable # Will need to change to 2.19 once 3.x is out.
+- pubspec
+
+stages:
+- analyze_and_format:
+  - group:
+    - format
+    - analyze: --fatal-infos
+    sdk:
+    - stable
+- unit_test:
+  - test: -p chrome,vm,node
+    os:
+    - linux
+    - windows
