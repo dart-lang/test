@@ -4,7 +4,6 @@
 
 // @dart=2.9
 
-@TestOn('expression')
 import 'package:test/test.dart';
 
 import 'common/is_opted_out.dart';
