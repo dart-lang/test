@@ -25,6 +25,7 @@ const Matcher throwsConcurrentModificationError =
     'error, not only CyclicInitializationError (depending on your version'
     'of package:matcher).')
 const Matcher throwsCyclicInitializationError =
+    // ignore: deprecated_member_use
     Throws(isCyclicInitializationError);
 
 /// A matcher for functions that throw Exception.

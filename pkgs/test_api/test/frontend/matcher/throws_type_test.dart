@@ -42,8 +42,9 @@ void main() {
 
   group('[throwsCyclicInitializationError]', () {
     test('passes when a CyclicInitializationError is thrown', () {
-      // ignore: deprecated_member_use
-      expect(() => _CyclicInitializationFailure().x,
+      expect(
+          () => _CyclicInitializationFailure().x,
+          // ignore: deprecated_member_use
           throwsCyclicInitializationError);
     });
 
