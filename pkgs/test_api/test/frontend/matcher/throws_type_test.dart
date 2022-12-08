@@ -43,7 +43,7 @@ void main() {
   group('[throwsCyclicInitializationError]', () {
     test('passes when a CyclicInitializationError is thrown', () {
       // ignore: deprecated_member_use
-      expect(() => throw CyclicInitializationError(''),
+      expect(() => _CyclicInitializationFailure().x,
           throwsCyclicInitializationError);
     });
 
@@ -106,25 +106,6 @@ void main() {
     });
   });
 
-  group('[throwsNullThrownError]', () {
-    test('passes when a NullThrownError is thrown', () {
-      // Throwing null is no longer allowed with NNBD, but we do want to allow
-      // it from legacy code and should be able to catch those errors.
-      expect(() => throw NullThrownError(), throwsNullThrownError);
-    });
-
-    test('fails when a non-NullThrownError is thrown', () async {
-      var liveTest = await runTestBody(() {
-        expect(() => throw Exception(), throwsNullThrownError);
-      });
-
-      expectTestFailed(
-          liveTest,
-          // ignore: deprecated_member_use
-          startsWith("Expected: throws <Instance of '$NullThrownError'>"));
-    });
-  });
-
   group('[throwsRangeError]', () {
     test('passes when a RangeError is thrown', () {
       expect(() => throw RangeError(''), throwsRangeError);
@@ -184,4 +165,9 @@ void main() {
           startsWith("Expected: throws <Instance of 'UnsupportedError'>"));
     });
   });
+}
+
+class _CyclicInitializationFailure {
+  late int x = y;
+  late int y = x;
 }

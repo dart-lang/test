@@ -1,8 +1,8 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-- dev
 - 2.18.0
+- stable # Will be replaced with 2.19 once 3.0 comes out
 
 stages:
 - analyze_and_format:
@@ -10,7 +10,7 @@ stages:
     - format
     - analyze: --fatal-infos
     sdk:
-    - dev
+    - stable
 - unit_test:
   - test: -p chrome,vm,node
     os:
