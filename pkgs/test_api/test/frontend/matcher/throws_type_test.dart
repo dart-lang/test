@@ -54,9 +54,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
-          startsWith(
-              "Expected: throws <Instance of 'Error'>"));
+          liveTest, startsWith("Expected: throws <Instance of 'Error'>"));
     });
   });
 
