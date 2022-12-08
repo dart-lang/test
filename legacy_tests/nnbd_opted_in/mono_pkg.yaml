@@ -1,7 +1,6 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-- dev
 - pubspec
 
 stages:

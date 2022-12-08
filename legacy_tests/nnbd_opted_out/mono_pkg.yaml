@@ -1,8 +1,7 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-- 2.18.0
-- stable # Will be replaced with 2.19 once 3.0 comes out
+- pubspec
 
 stages:
 - analyze_and_format:

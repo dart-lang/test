@@ -2,7 +2,6 @@
 
 sdk:
 - pubspec
-- stable # We will want to hardcode 2.19 once 3.x comes out
 
 stages:
 - analyze_and_format:

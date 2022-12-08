@@ -1,7 +1,6 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-- stable # Will need to change to 2.19 once 3.x is out.
 - pubspec
 
 stages:
