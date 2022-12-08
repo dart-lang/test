@@ -1,6 +1,8 @@
 ## 0.12.14
 
 * Add `containsOnce` matcher.
+* Deprecate `isCyclicInitializationError` and `NullThrownError`. These errors
+  will be removed from the SDK. Update them to catch more general errors.
 
 ## 0.12.13
 

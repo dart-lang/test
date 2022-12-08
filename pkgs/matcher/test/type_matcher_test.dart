@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:matcher/matcher.dart';
 import 'package:test/test.dart' show test, group;
 
@@ -11,7 +12,6 @@ void main() {
   _test(isMap, {}, name: 'Map');
   _test(isList, [], name: 'List');
   _test(isArgumentError, ArgumentError());
-  // ignore: deprecated_member_use, deprecated_member_use_from_same_package
   _test(isCastError, TypeError());
   _test<Exception>(isException, const FormatException());
   _test(isFormatException, const FormatException());
@@ -20,13 +20,12 @@ void main() {
   _test(isUnimplementedError, UnimplementedError('oops'));
   _test(isUnsupportedError, UnsupportedError('oops'));
   _test(isConcurrentModificationError, ConcurrentModificationError());
-  _test(isCyclicInitializationError, CyclicInitializationError());
+  _test(isCyclicInitializationError, Error());
   _test<NoSuchMethodError?>(isNoSuchMethodError, null,
       name: 'NoSuchMethodError');
-  _test(isNullThrownError, NullThrownError());
+  _test(isNullThrownError, TypeError());
 
   group('custom `TypeMatcher`', () {
-    // ignore: deprecated_member_use_from_same_package
     _test(const isInstanceOf<String>(), 'hello');
     _test(const _StringMatcher(), 'hello');
     _test(const TypeMatcher<String>(), 'hello');
@@ -56,9 +55,7 @@ void _test<T>(Matcher typeMatcher, T matchingInstance, {String? name}) {
 
 // Validate that existing implementations continue to work.
 class _StringMatcher extends TypeMatcher {
-  const _StringMatcher() : super(
-            // ignore: deprecated_member_use_from_same_package
-            'String');
+  const _StringMatcher() : super('String');
 
   @override
   bool matches(dynamic item, Map matchState) => item is String;
