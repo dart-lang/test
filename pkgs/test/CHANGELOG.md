@@ -5,6 +5,11 @@
   time with all the test cases across the different arguments.
 * Fix VM tests which run after some test has changed the working directory.
   There are still issues with browser tests after changing directory.
+* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>())` instead. The
+  implementation has been changed to ease migrations.
+* Deprecate `throwsCyclicInitializationError` and replace the implementation
+  with `Throws(TypeMatcher<Error>())`. The specific exception no longer exists
+  and there is no guarantee about what type of error will be thrown.
 
 ## 1.22.0
 

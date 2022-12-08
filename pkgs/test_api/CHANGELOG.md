@@ -1,5 +1,11 @@
 ## 0.4.17-dev
 
+* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>())` instead.
+  The implementation has been changed to ease migrations.
+* Deprecate `throwsCyclicInitializationError` and replace the implementation
+  with `Throws(TypeMatcher<Error>())`. The specific exception no longer exists
+  and there is no guarantee about what type of error will be thrown.
+
 ## 0.4.16
 
 * Add the `experimental-chrome-wasm` runtime. This is very unstable and will

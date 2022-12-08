@@ -20,8 +20,10 @@ const Matcher throwsConcurrentModificationError =
 /// A matcher for functions that throw CyclicInitializationError.
 ///
 /// See [throwsA] for objects that this can be matched against.
-const Matcher throwsCyclicInitializationError =
-    Throws(isCyclicInitializationError);
+@Deprecated('throwsCyclicInitializationError has been deprecated, because '
+    'the type will longer exists in Dart 3.0. It will now catch any kind of '
+    'error, not only CyclicInitializationError.')
+const Matcher throwsCyclicInitializationError = Throws(TypeMatcher<Error>());
 
 /// A matcher for functions that throw Exception.
 ///
@@ -41,7 +43,10 @@ const Matcher throwsNoSuchMethodError = Throws(isNoSuchMethodError);
 /// A matcher for functions that throw NullThrownError.
 ///
 /// See [throwsA] for objects that this can be matched against.
-const Matcher throwsNullThrownError = Throws(isNullThrownError);
+@Deprecated('throwsNullThrownError has been deprecated, because '
+    'NullThrownError has been replaced with TypeError. '
+    'Use `throwsA(isA<TypeError>())` instead.')
+const Matcher throwsNullThrownError = Throws(TypeMatcher<TypeError>());
 
 /// A matcher for functions that throw RangeError.
 ///

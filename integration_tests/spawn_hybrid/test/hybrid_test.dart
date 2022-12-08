@@ -341,20 +341,6 @@ void main() {
       });
     });
 
-    test('can opt out of null safety', () async {
-      expect(spawnHybridCode('''
-        // @dart=2.9
-        import "package:stream_channel/stream_channel.dart";
-
-        // Would cause an error in null safety mode.
-        int x;
-
-        void hybridMain(StreamChannel channel) {
-          channel.sink..add(1)..add(2)..add(3)..close();
-        }
-      ''').stream.toList(), completion(equals([1, 2, 3])));
-    });
-
     test('opts in to null safety by default', () async {
       expect(spawnHybridCode('''
         import "package:stream_channel/stream_channel.dart";
