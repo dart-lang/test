@@ -293,43 +293,6 @@ jobs:
         if: "always() && steps.legacy_tests_spawn_hybrid_with_optout_pub_upgrade.conclusion == 'success'"
         working-directory: legacy_tests/spawn_hybrid_with_optout
   job_007:
-    name: "unit_test; linux; Dart 2.10.0; PKG: legacy_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.10.0;packages:legacy_tests/nnbd_opted_out;commands:test"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.10.0;packages:legacy_tests/nnbd_opted_out
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.10.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.10.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - id: legacy_tests_nnbd_opted_out_pub_upgrade
-        name: legacy_tests/nnbd_opted_out; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: legacy_tests/nnbd_opted_out
-      - name: "legacy_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        run: "dart test -p chrome,vm,node"
-        if: "always() && steps.legacy_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
-        working-directory: legacy_tests/nnbd_opted_out
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-      - job_006
-  job_008:
     name: "unit_test; linux; Dart 2.18.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -366,7 +329,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_009:
+  job_008:
     name: "unit_test; linux; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -403,7 +366,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_010:
+  job_009:
     name: "unit_test; linux; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_in_with_optout; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -433,6 +396,43 @@ jobs:
         run: "dart test -p chrome,vm,node"
         if: "always() && steps.legacy_tests_nnbd_opted_in_with_optout_pub_upgrade.conclusion == 'success'"
         working-directory: legacy_tests/nnbd_opted_in_with_optout
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+  job_010:
+    name: "unit_test; linux; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_out;commands:test"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_out
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: "2.18.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - id: legacy_tests_nnbd_opted_out_pub_upgrade
+        name: legacy_tests/nnbd_opted_out; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: legacy_tests/nnbd_opted_out
+      - name: "legacy_tests/nnbd_opted_out; dart test -p chrome,vm,node"
+        run: "dart test -p chrome,vm,node"
+        if: "always() && steps.legacy_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        working-directory: legacy_tests/nnbd_opted_out
     needs:
       - job_001
       - job_002
@@ -1033,33 +1033,6 @@ jobs:
       - job_005
       - job_006
   job_027:
-    name: "unit_test; windows; Dart 2.10.0; PKG: legacy_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
-    runs-on: windows-latest
-    steps:
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.10.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - id: legacy_tests_nnbd_opted_out_pub_upgrade
-        name: legacy_tests/nnbd_opted_out; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: legacy_tests/nnbd_opted_out
-      - name: "legacy_tests/nnbd_opted_out; dart test -p chrome,vm,node"
-        run: "dart test -p chrome,vm,node"
-        if: "always() && steps.legacy_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
-        working-directory: legacy_tests/nnbd_opted_out
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-      - job_006
-  job_028:
     name: "unit_test; windows; Dart 2.18.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1086,7 +1059,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_029:
+  job_028:
     name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1113,7 +1086,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_030:
+  job_029:
     name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_in_with_optout; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1133,6 +1106,33 @@ jobs:
         run: "dart test -p chrome,vm,node"
         if: "always() && steps.legacy_tests_nnbd_opted_in_with_optout_pub_upgrade.conclusion == 'success'"
         working-directory: legacy_tests/nnbd_opted_in_with_optout
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+  job_030:
+    name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
+    runs-on: windows-latest
+    steps:
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: "2.18.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - id: legacy_tests_nnbd_opted_out_pub_upgrade
+        name: legacy_tests/nnbd_opted_out; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: legacy_tests/nnbd_opted_out
+      - name: "legacy_tests/nnbd_opted_out; dart test -p chrome,vm,node"
+        run: "dart test -p chrome,vm,node"
+        if: "always() && steps.legacy_tests_nnbd_opted_out_pub_upgrade.conclusion == 'success'"
+        working-directory: legacy_tests/nnbd_opted_out
     needs:
       - job_001
       - job_002
