@@ -21,12 +21,9 @@ const Matcher throwsConcurrentModificationError =
 ///
 /// See [throwsA] for objects that this can be matched against.
 @Deprecated('throwsCyclicInitializationError has been deprecated, because '
-    'the type will longer exists in Dart 3.0. It may now catch any kind of '
-    'error, not only CyclicInitializationError (depending on your version'
-    'of package:matcher).')
-const Matcher throwsCyclicInitializationError =
-    // ignore: deprecated_member_use
-    Throws(isCyclicInitializationError);
+    'the type will longer exists in Dart 3.0. It will now catch any kind of '
+    'error, not only CyclicInitializationError.')
+const Matcher throwsCyclicInitializationError = Throws(TypeMatcher<Error>());
 
 /// A matcher for functions that throw Exception.
 ///
