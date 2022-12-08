@@ -1,7 +1,7 @@
 ## 0.4.17-dev
 
-* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>)` instead. The
-  implementation has been changed to ease migrations.
+* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>())` instead.
+  The implementation has been changed to ease migrations.
 
 ## 0.4.16
 
