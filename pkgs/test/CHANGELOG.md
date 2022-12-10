@@ -1,3 +1,8 @@
+## 1.22.2-dev
+
+* Don't run `tearDown` until the test body and outstanding work is complete,
+  even if the test has already failed.
+
 ## 1.22.1
 
 * Add documentation for the `--ignore-timeouts` argument.
