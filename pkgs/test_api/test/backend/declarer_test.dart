@@ -218,6 +218,27 @@ void main() {
       expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
     });
 
+    test("isn't run until test body completes after out-of-band error",
+        () async {
+      var hasTestFinished = false;
+      var hasTestFinishedBeforeTeardown = false;
+      var tests = declare(() {
+        tearDown(() {
+          hasTestFinishedBeforeTeardown = hasTestFinished;
+        });
+
+        test('description', () {
+          Future.error('oh no');
+          return pumpEventQueue().then((_) {
+            hasTestFinished = true;
+          });
+        });
+      });
+
+      await _runTest(tests.single as Test, shouldFail: true);
+      expect(hasTestFinishedBeforeTeardown, isTrue);
+    });
+
     test("doesn't complete until there are no outstanding callbacks", () async {
       var outstandingCallbackRemoved = false;
       var tests = declare(() {
