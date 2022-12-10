@@ -141,7 +141,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => registerException(TestFailure('oh no')));
+        Future(() => registerException(TestFailure('oh no')))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -152,7 +153,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => throw TestFailure('oh no'));
+        Future(() => throw TestFailure('oh no'))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -198,7 +200,8 @@ void main() {
         Future(() => throw TestFailure('one'));
         Future(() => throw TestFailure('two'));
         Future(() => throw TestFailure('three'));
-        Future(() => throw TestFailure('four'));
+        Future(() => throw TestFailure('four'))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectStates(liveTest, [
@@ -273,7 +276,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => registerException('oh no'));
+        Future(() => registerException('oh no'))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -284,7 +288,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => throw 'oh no');
+        Future(() => throw 'oh no')
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -327,7 +332,8 @@ void main() {
         Future(() => throw 'one');
         Future(() => throw 'two');
         Future(() => throw 'three');
-        Future(() => throw 'four');
+        Future(() => throw 'four')
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectStates(liveTest, [
