@@ -170,7 +170,8 @@ void main() {
             'description 1',
             expectAsync0(() {
               Invoker.current!.addOutstandingCallback();
-              Future(() => throw TestFailure('oh no'));
+              Future(() => throw TestFailure('oh no'))
+                  .whenComplete(Invoker.current!.removeOutstandingCallback);
             }, max: 1));
       });
 
