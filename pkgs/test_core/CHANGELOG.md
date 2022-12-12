@@ -1,3 +1,8 @@
+# 0.4.22-dev
+
+* Don't run `tearDown` until the test body and outstanding work is complete,
+  even if the test has already failed.
+
 # 0.4.21
 
 * Move `includeTags` and `excludeTags` from `SuiteConfiguration` to

@@ -170,7 +170,8 @@ void main() {
             'description 1',
             expectAsync0(() {
               Invoker.current!.addOutstandingCallback();
-              Future(() => throw TestFailure('oh no'));
+              Future(() => throw TestFailure('oh no'))
+                  .whenComplete(Invoker.current!.removeOutstandingCallback);
             }, max: 1));
       });
 
@@ -215,6 +216,27 @@ void main() {
 
       await _runTest(tests.single as Test);
       expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
+    });
+
+    test("isn't run until test body completes after out-of-band error",
+        () async {
+      var hasTestFinished = false;
+      var hasTestFinishedBeforeTeardown = false;
+      var tests = declare(() {
+        tearDown(() {
+          hasTestFinishedBeforeTeardown = hasTestFinished;
+        });
+
+        test('description', () {
+          Future.error('oh no');
+          return pumpEventQueue().then((_) {
+            hasTestFinished = true;
+          });
+        });
+      });
+
+      await _runTest(tests.single as Test, shouldFail: true);
+      expect(hasTestFinishedBeforeTeardown, isTrue);
     });
 
     test("doesn't complete until there are no outstanding callbacks", () async {

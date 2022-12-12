@@ -94,7 +94,13 @@ class LoadSuite extends Suite implements RunnerSuite {
       invoker!.addOutstandingCallback();
 
       unawaited(() async {
-        var suite = await body();
+        RunnerSuite? suite;
+        try {
+          suite = await body();
+        } catch (_) {
+          invoker.removeOutstandingCallback();
+          rethrow;
+        }
         if (completer.isCompleted) {
           // If the load test has already been closed, close the suite it
           // generated.

@@ -1,3 +1,8 @@
+## 0.4.18-dev
+
+* Don't run `tearDown` until the test body and outstanding work is complete,
+  even if the test has already failed.
+
 ## 0.4.17
 
 * Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>())` instead.
