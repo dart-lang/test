@@ -6,11 +6,11 @@ import 'dart:math' as math;
 
 final _rand = math.Random();
 
-/// Returns a random alphanumeric string ([a-zA-Z0-9]), which is suitable as
-/// a url secret.
-String randomUrlSecret(int length) {
+/// Returns a random 32 character alphanumeric string ([a-zA-Z0-9]), which is
+/// suitable as a url secret.
+String randomUrlSecret() {
   var buffer = StringBuffer();
-  while (buffer.length < length) {
+  while (buffer.length < 32) {
     buffer.write(_alphaChars[_rand.nextInt(_alphaChars.length)]);
   }
   return buffer.toString();
