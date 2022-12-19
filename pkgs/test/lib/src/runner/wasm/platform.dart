@@ -71,7 +71,7 @@ class BrowserWasmPlatform extends PlatformPlugin
   ///
   /// This is used to ensure that other users on the same system can't snoop
   /// on data being served through this server.
-  final _secret = Uri.encodeComponent(randomBase64(24));
+  final _secret = randomUrlSecret();
 
   /// The URL for this server.
   Uri get url => _server.url.resolve('$_secret/');

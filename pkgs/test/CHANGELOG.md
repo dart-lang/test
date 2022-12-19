@@ -2,6 +2,7 @@
 
 * Don't run `tearDown` until the test body and outstanding work is complete,
   even if the test has already failed.
+* Change URL secrets for browser tests to always be alphanumeric characters.
 
 ## 1.22.1
 
