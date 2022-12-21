@@ -23,6 +23,7 @@ void main() {
             .isARejection(actual: '<42>', which: ['is not greater than <42>']);
       });
     });
+
     group('greater than or equal', () {
       test('succeeds for happy case', () {
         checkThat(42) >= 7;
@@ -35,6 +36,7 @@ void main() {
         checkThat(42) >= 42;
       });
     });
+
     group('less than', () {
       test('succeeds for happy case', () {
         checkThat(42) < 50;
@@ -48,6 +50,7 @@ void main() {
             .isARejection(actual: '<42>', which: ['is not less than <42>']);
       });
     });
+
     group('less than or equal', () {
       test('succeeds for happy case', () {
         checkThat(42) <= 50;
@@ -60,6 +63,7 @@ void main() {
         checkThat(42) <= 42;
       });
     });
+
     group('isNan', () {
       test('succeeds for happy case', () {
         checkThat(double.nan).isNaN();
@@ -73,6 +77,7 @@ void main() {
             .isARejection(actual: '<42.1>', which: ['is a number']);
       });
     });
+
     group('isNan', () {
       test('succeeds for ints', () {
         checkThat(42).isNotNaN();
@@ -85,6 +90,7 @@ void main() {
             .isARejection(actual: '<NaN>', which: ['is not a number (NaN)']);
       });
     });
+
     group('isNegative', () {
       test('succeeds for negative ints', () {
         checkThat(-1).isNegative();
@@ -97,6 +103,7 @@ void main() {
             .isARejection(actual: '<0>', which: ['is not negative']);
       });
     });
+
     group('isNotNegative', () {
       test('succeeds for positive ints', () {
         checkThat(1).isNotNegative();
@@ -113,6 +120,7 @@ void main() {
             .isARejection(actual: '<-1>', which: ['is negative']);
       });
     });
+
     group('isFinite', () {
       test('succeeds for finite numbers', () {
         checkThat(1).isFinite();
@@ -130,6 +138,7 @@ void main() {
             .isARejection(actual: '<-Infinity>', which: ['is not finite']);
       });
     });
+
     group('isNotFinite', () {
       test('succeeds for infinity', () {
         checkThat(double.infinity).isNotFinite();
@@ -145,6 +154,7 @@ void main() {
             .isARejection(actual: '<1>', which: ['is finite']);
       });
     });
+
     group('isInfinite', () {
       test('succeeds for infinity', () {
         checkThat(double.infinity).isInfinite();
@@ -161,6 +171,7 @@ void main() {
             .isARejection(actual: '<1>', which: ['is not infinite']);
       });
     });
+
     group('isNotInfinite', () {
       test('succeeds for finite numbers', () {
         checkThat(1).isNotInfinite();
@@ -178,6 +189,7 @@ void main() {
             .isARejection(actual: '<-Infinity>', which: ['is infinite']);
       });
     });
+
     group('closeTo', () {
       test('succeeds for equal numbers', () {
         checkThat(1).isCloseTo(1, 1);
