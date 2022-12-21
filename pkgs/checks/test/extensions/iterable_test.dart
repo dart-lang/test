@@ -54,6 +54,21 @@ void main() {
     ).isARejection(actual: '(0, 1)', which: ['Contains no matching element']);
   });
 
+  group('every', () {
+    test('succeeds for the happy path', () {
+      checkThat(_testIterable).every((e) => e > -1);
+    });
+
+    test('includes details of first failing element', () async {
+      checkThat(softCheck(_testIterable, (i) => i.every((e) => e < 0)))
+          .isARejection(actual: '(0, 1)', which: [
+        'has an element at index 0 that:',
+        '  Actual: <0>',
+        '  Which: Is not less than <0>',
+      ]);
+    });
+  });
+
   group('pairwiseComparesTo', () {
     test('succeeds for the happy path', () {
       checkThat(_testIterable).pairwiseComparesTo([1, 2], (check, expected) {
