@@ -16,3 +16,15 @@ Iterable<String> indent(Iterable<String> lines, [int depth = 1]) {
   final indent = '  ' * depth;
   return lines.map((line) => '$indent$line');
 }
+
+Iterable<String> prefixFirst(String prefix, Iterable<String> lines) sync* {
+  var isFirst = true;
+  for (var line in lines) {
+    if (isFirst) {
+      yield '$prefix$line';
+      isFirst = false;
+    } else {
+      yield line;
+    }
+  }
+}
