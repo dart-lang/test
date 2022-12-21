@@ -193,11 +193,21 @@ extension StringChecks on Check<String> {
       }
       if (i == minLength) {
         if (escapedExpected.length < escapedActual.length) {
+          if (expected.isEmpty) {
+            return Rejection(
+                actual: literal(actual), which: ['is not the empty string']);
+          }
           return Rejection(actual: literal(actual), which: [
             'is too long with unexpected trailing characters:',
             _trailing(escapedActual, i)
           ]);
         } else {
+          if (actual.isEmpty) {
+            return Rejection(actual: 'an empty string', which: [
+              'is missing all expected characters:',
+              _trailing(escapedExpected, 0)
+            ]);
+          }
           return Rejection(actual: literal(actual), which: [
             'is too short with missing trailing characters:',
             _trailing(escapedExpected, i)
