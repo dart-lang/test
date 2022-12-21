@@ -64,7 +64,7 @@ void main() {
           .isARejection(actual: '(0, 1)', which: [
         'has an element at index 0 that:',
         '  Actual: <0>',
-        '  Which: Is not less than <0>',
+        '  Which: is not less than <0>',
       ]);
     });
   });
