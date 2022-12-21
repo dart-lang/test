@@ -11,7 +11,7 @@ void main() {
 Expected: a int that:
   is greater than <2>
 Actual: <1>
-Which: Is not greater than <2>''');
+Which: is not greater than <2>''');
     });
 
     test('includes matching portions of actual', () {

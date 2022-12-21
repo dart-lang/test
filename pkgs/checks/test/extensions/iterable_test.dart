@@ -85,7 +85,7 @@ void main() {
         'does not have an element at index 1 that:',
         '  is less than <1>',
         'Actual element at index 1: <1>',
-        'Which: Is not less than <1>'
+        'Which: is not less than <1>'
       ]);
     });
     test('fails for too few elements', () {
