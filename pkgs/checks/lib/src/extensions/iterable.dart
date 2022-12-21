@@ -62,4 +62,36 @@ extension IterableChecks<T> on Check<Iterable<T>> {
           which: ['Contains no matching element']);
     });
   }
+
+  /// Expects there are no elements in the iterable which fail to satisfy
+  /// [elementCondition].
+  ///
+  /// Empty iterables will pass always pass this check.
+  void every(void Function(Check<T>) elementCondition) {
+    context.expect(() {
+      final conditionDescription = describe(elementCondition);
+      assert(conditionDescription.isNotEmpty);
+      return [
+        'only has values that:',
+        ...conditionDescription,
+      ];
+    }, (actual) {
+      final iterator = actual.iterator;
+      for (var i = 0; iterator.moveNext(); i++) {
+        final element = iterator.current;
+        final failure = softCheck(element, elementCondition);
+        if (failure == null) continue;
+        final which = failure.rejection.which;
+        return Rejection(actual: literal(actual), which: [
+          'has an element at index $i that:',
+          ...indent(failure.detail.actual.skip(1)),
+          ...indent(['Actual: ${failure.rejection.actual}'],
+              failure.detail.depth + 1),
+          if (which != null && which.isNotEmpty)
+            ...indent(prefixFirst('Which: ', which), failure.detail.depth + 1),
+        ]);
+      }
+      return null;
+    });
+  }
 }
