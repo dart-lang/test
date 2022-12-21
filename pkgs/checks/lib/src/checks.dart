@@ -341,8 +341,8 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final root = _root;
     final reason = root._reason;
     return [
-      ..._prefixFirst('Expected: ', root.expected),
-      ..._prefixFirst('Actual: ', root.actual(rejection, this)),
+      ...prefixFirst('Expected: ', root.expected),
+      ...prefixFirst('Actual: ', root.actual(rejection, this)),
       if (reason != null) 'Reason: $reason',
     ].join('\n');
   }
@@ -414,7 +414,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       return [
         if (_parent != null) '$_label that:',
         '${_parent != null ? 'Actual: ' : ''}${rejection.actual}',
-        if (which != null && which.isNotEmpty) ..._prefixFirst('Which: ', which)
+        if (which != null && which.isNotEmpty) ...prefixFirst('Which: ', which)
       ];
     } else {
       return [
@@ -501,16 +501,4 @@ class Rejection {
   final Iterable<String>? which;
 
   Rejection({required this.actual, this.which});
-}
-
-Iterable<String> _prefixFirst(String prefix, Iterable<String> lines) sync* {
-  var isFirst = true;
-  for (var line in lines) {
-    if (isFirst) {
-      yield '$prefix$line';
-      isFirst = false;
-    } else {
-      yield line;
-    }
-  }
 }
