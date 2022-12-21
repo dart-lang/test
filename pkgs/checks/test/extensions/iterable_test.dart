@@ -68,4 +68,44 @@ void main() {
       ]);
     });
   });
+
+  group('pairwiseComparesTo', () {
+    test('succeeds for the happy path', () {
+      checkThat(_testIterable).pairwiseComparesTo([1, 2], (check, expected) {
+        check < expected;
+      }, 'is less than');
+    });
+    test('fails for mismatched element', () async {
+      checkThat(softCheck(
+          _testIterable,
+          (i) => i.pairwiseComparesTo(
+              [1, 1],
+              (check, expected) => check < expected,
+              'is less than'))).isARejection(actual: '(0, 1)', which: [
+        'does not have an element at index 1 that:',
+        '  is less than <1>',
+        'Actual element at index 1: <1>',
+        'Which: Is not less than <1>'
+      ]);
+    });
+    test('fails for too few elements', () {
+      checkThat(softCheck(
+          _testIterable,
+          (i) => i.pairwiseComparesTo(
+              [1, 2, 3],
+              (check, expected) => check < expected,
+              'is less than'))).isARejection(actual: '(0, 1)', which: [
+        'has too few elements, there is no element to match at index 2'
+      ]);
+    });
+    test('fails for too many elements', () {
+      checkThat(softCheck(
+              _testIterable,
+              (i) => i.pairwiseComparesTo(
+                  [1], (check, expected) => check < expected, 'is less than')))
+          .isARejection(
+              actual: '(0, 1)',
+              which: ['has too many elements, expected exactly 1']);
+    });
+  });
 }

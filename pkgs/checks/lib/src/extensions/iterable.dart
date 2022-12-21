@@ -94,4 +94,50 @@ extension IterableChecks<T> on Check<Iterable<T>> {
       return null;
     });
   }
+
+  /// Expects that the iterable contains elements that correspond by the
+  /// [elementCondition] exactly to each element in [expected].
+  ///
+  /// Fails if the iterable has a different length than [expected].
+  ///
+  /// For each element in the iterable, calls [elementCondition] with the
+  /// corresponding element from [expected] to get the specific condition for
+  /// that index.
+  ///
+  /// [description] is used in the Expected clause. It should be a predicate
+  /// without the object, for example with the description 'is less than' the
+  /// full expectation will be: "pairwise is less than $expected"
+  void pairwiseComparesTo<S>(List<S> expected,
+      void Function(Check<T>, S) elementCondition, String description) {
+    context.expect(() {
+      return ['pairwise $description ${literal(expected)}'];
+    }, (actual) {
+      final iterator = actual.iterator;
+      for (var i = 0; i < expected.length; i++) {
+        final expectedValue = expected[i];
+        if (!iterator.moveNext()) {
+          return Rejection(actual: literal(actual), which: [
+            'has too few elements, there is no element to match at index $i'
+          ]);
+        }
+        final actualValue = iterator.current;
+        final failure = softCheck(
+            actualValue, (check) => elementCondition(check, expectedValue));
+        if (failure == null) continue;
+        final innerDescription =
+            describe<T>((check) => elementCondition(check, expectedValue));
+        final which = failure.rejection.which;
+        return Rejection(actual: literal(actual), which: [
+          'does not have an element at index $i that:',
+          ...innerDescription,
+          'Actual element at index $i: ${failure.rejection.actual}',
+          if (which != null) ...prefixFirst('Which: ', which),
+        ]);
+      }
+      if (!iterator.moveNext()) return null;
+      return Rejection(actual: literal(actual), which: [
+        'has too many elements, expected exactly ${expected.length}'
+      ]);
+    });
+  }
 }
