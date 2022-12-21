@@ -25,9 +25,11 @@ extension TestIterableCheck on Check<Iterable<String>?> {
 }
 
 extension RejectionCheck on Check<CheckFailure?> {
-  void isARejection({List<String>? which, required String actual}) {
-    this.isNotNull().has((f) => f.rejection, 'rejection')
-      ..has((p0) => p0.actual, 'actual').equals(actual)
-      ..has((p0) => p0.which, 'which').toStringEquals(which);
+  void isARejection({List<String>? which, String? actual}) {
+    final rejection = this.isNotNull().has((f) => f.rejection, 'rejection');
+    if (actual != null) {
+      rejection.has((p0) => p0.actual, 'actual').equals(actual);
+    }
+    rejection.has((p0) => p0.which, 'which').toStringEquals(which);
   }
 }

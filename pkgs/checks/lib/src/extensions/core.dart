@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math' as math;
+
 import 'package:checks/context.dart';
 
 extension TypeChecks on Check<Object?> {
@@ -176,4 +178,49 @@ extension StringChecks on Check<String> {
       },
     );
   }
+
+  void equals(String expected) {
+    context.expect(() => ['equals ${literal(expected)}'], (actual) {
+      if (actual == expected) return null;
+      final escapedActual = escape(actual);
+      final escapedExpected = escape(expected);
+      final minLength = math.min(escapedActual.length, escapedExpected.length);
+      var i = 0;
+      for (; i < minLength; i++) {
+        if (escapedActual.codeUnitAt(i) != escapedExpected.codeUnitAt(i)) {
+          break;
+        }
+      }
+      if (i == minLength) {
+        if (escapedExpected.length < escapedActual.length) {
+          return Rejection(actual: literal(actual), which: [
+            'is too long with unexpected trailing characters:',
+            _trailing(escapedActual, i)
+          ]);
+        } else {
+          return Rejection(actual: literal(actual), which: [
+            'is too short with missing trailing characters:',
+            _trailing(escapedExpected, i)
+          ]);
+        }
+      } else {
+        final indentation = ' ' * (i > 10 ? 14 : i);
+        return Rejection(actual: literal(actual), which: [
+          'differs at offset $i:',
+          '${_leading(escapedExpected, i)}${_trailing(escapedExpected, i)}',
+          '${_leading(escapedActual, i)}${_trailing(escapedActual, i)}',
+          '$indentation^'
+        ]);
+      }
+    });
+  }
 }
+
+/// The truncated beginning of [s] up to the [end] character.
+String _leading(String s, int end) =>
+    (end > 10) ? '... ${s.substring(end - 10, end)}' : s.substring(0, end);
+
+/// The truncated remainder of [s] starting at the [start] character.
+String _trailing(String s, int start) => (start + 10 > s.length)
+    ? s.substring(start)
+    : '${s.substring(start, start + 10)} ...';

@@ -140,5 +140,56 @@ void main() {
       checkThat(softCheck<String>('bob', (p0) => p0.endsWith('kayleb')))
           .isARejection(actual: "'bob'", which: ["does not end with 'kayleb'"]);
     });
+
+    group('equals', () {
+      test('succeeeds for happy case', () {
+        checkThat('foo').equals('foo');
+      });
+      test('reports extra characters for long string', () {
+        checkThat(softCheck<String>('foobar', (c) => c.equals('foo')))
+            .isARejection(which: [
+          'is too long with unexpected trailing characters:',
+          'bar'
+        ]);
+      });
+      test('reports truncated extra characters for very long string', () {
+        checkThat(softCheck<String>(
+                'foobar baz more stuff', (c) => c.equals('foo')))
+            .isARejection(which: [
+          'is too long with unexpected trailing characters:',
+          'bar baz mo ...'
+        ]);
+      });
+      test('reports missing characters for short string', () {
+        checkThat(softCheck<String>('foo', (c) => c.equals('foobar')))
+            .isARejection(which: [
+          'is too short with missing trailing characters:',
+          'bar'
+        ]);
+      });
+      test('reports truncated missing characters for very short string', () {
+        checkThat(softCheck<String>(
+                'foo', (c) => c.equals('foobar baz more stuff')))
+            .isARejection(which: [
+          'is too short with missing trailing characters:',
+          'bar baz mo ...'
+        ]);
+      });
+      test('reports index of different character', () {
+        checkThat(softCheck<String>('hit', (c) => c.equals('hat')))
+            .isARejection(which: ['differs at offset 1:', 'hat', 'hit', ' ^']);
+      });
+      test('reports truncated index of different character in large string',
+          () {
+        checkThat(softCheck<String>('blah blah blah hit blah blah blah',
+                (c) => c.equals('blah blah blah hat blah blah blah')))
+            .isARejection(which: [
+          'differs at offset 16:',
+          '... lah blah hat blah bl ...',
+          '... lah blah hit blah bl ...',
+          '              ^',
+        ]);
+      });
+    });
   });
 }
