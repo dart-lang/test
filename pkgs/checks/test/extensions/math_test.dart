@@ -85,6 +85,99 @@ void main() {
             .isARejection(actual: '<NaN>', which: ['is not a number (NaN)']);
       });
     });
+    group('isNegative', () {
+      test('succeeds for negative ints', () {
+        checkThat(-1).isNegative();
+      });
+      test('succeeds for -0.0', () {
+        checkThat(-0.0).isNegative();
+      });
+      test('fails for zero', () {
+        checkThat(softCheck<num>(0, (c) => c.isNegative()))
+            .isARejection(actual: '<0>', which: ['is not negative']);
+      });
+    });
+    group('isNotNegative', () {
+      test('succeeds for positive ints', () {
+        checkThat(1).isNotNegative();
+      });
+      test('succeeds for 0', () {
+        checkThat(0).isNotNegative();
+      });
+      test('fails for -0.0', () {
+        checkThat(softCheck<num>(-0.0, (c) => c.isNotNegative()))
+            .isARejection(actual: '<-0.0>', which: ['is negative']);
+      });
+      test('fails for negative numbers', () {
+        checkThat(softCheck<num>(-1, (c) => c.isNotNegative()))
+            .isARejection(actual: '<-1>', which: ['is negative']);
+      });
+    });
+    group('isFinite', () {
+      test('succeeds for finite numbers', () {
+        checkThat(1).isFinite();
+      });
+      test('fails for NaN', () {
+        checkThat(softCheck<num>(double.nan, (c) => c.isFinite()))
+            .isARejection(actual: '<NaN>', which: ['is not finite']);
+      });
+      test('fails for infinity', () {
+        checkThat(softCheck<num>(double.infinity, (c) => c.isFinite()))
+            .isARejection(actual: '<Infinity>', which: ['is not finite']);
+      });
+      test('fails for negative infinity', () {
+        checkThat(softCheck<num>(double.negativeInfinity, (c) => c.isFinite()))
+            .isARejection(actual: '<-Infinity>', which: ['is not finite']);
+      });
+    });
+    group('isNotFinite', () {
+      test('succeeds for infinity', () {
+        checkThat(double.infinity).isNotFinite();
+      });
+      test('succeeds for negative infinity', () {
+        checkThat(double.negativeInfinity).isNotFinite();
+      });
+      test('succeeds for NaN', () {
+        checkThat(double.nan).isNotFinite();
+      });
+      test('fails for finite numbers', () {
+        checkThat(softCheck<num>(1, (c) => c.isNotFinite()))
+            .isARejection(actual: '<1>', which: ['is finite']);
+      });
+    });
+    group('isInfinite', () {
+      test('succeeds for infinity', () {
+        checkThat(double.infinity).isInfinite();
+      });
+      test('succeeds for negative infinity', () {
+        checkThat(double.negativeInfinity).isInfinite();
+      });
+      test('fails for NaN', () {
+        checkThat(softCheck<num>(double.nan, (c) => c.isInfinite()))
+            .isARejection(actual: '<NaN>', which: ['is not infinite']);
+      });
+      test('fails for finite numbers', () {
+        checkThat(softCheck<num>(1, (c) => c.isInfinite()))
+            .isARejection(actual: '<1>', which: ['is not infinite']);
+      });
+    });
+    group('isNotInfinite', () {
+      test('succeeds for finite numbers', () {
+        checkThat(1).isNotInfinite();
+      });
+      test('succeeds for NaN', () {
+        checkThat(double.nan).isNotInfinite();
+      });
+      test('fails for infinity', () {
+        checkThat(softCheck<num>(double.infinity, (c) => c.isNotInfinite()))
+            .isARejection(actual: '<Infinity>', which: ['is infinite']);
+      });
+      test('fails for negative infinity', () {
+        checkThat(softCheck<num>(
+                double.negativeInfinity, (c) => c.isNotInfinite()))
+            .isARejection(actual: '<-Infinity>', which: ['is infinite']);
+      });
+    });
     group('closeTo', () {
       test('succeeds for equal numbers', () {
         checkThat(1).isCloseTo(1, 1);
