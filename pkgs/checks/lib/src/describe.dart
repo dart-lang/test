@@ -12,7 +12,10 @@ String literal(Object? o) {
   return '$o';
 }
 
-Iterable<String> indent(Iterable<String> lines) => lines.map((l) => '  $l');
+Iterable<String> indent(Iterable<String> lines, [int depth = 1]) {
+  final indent = '  ' * depth;
+  return lines.map((line) => '$indent$line');
+}
 
 Iterable<String> prefixFirst(String prefix, Iterable<String> lines) sync* {
   var isFirst = true;

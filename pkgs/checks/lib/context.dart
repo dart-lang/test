@@ -5,10 +5,12 @@
 export 'src/checks.dart'
     show
         Check,
+        CheckFailure,
         Context,
+        ContextExtension,
         Extracted,
+        FailureDetail,
         Rejection,
         describe,
-        softCheck,
-        ContextExtension;
+        softCheck;
 export 'src/describe.dart' show indent, literal, prefixFirst;

@@ -113,9 +113,10 @@ Future<void> _rejectionWhichCheck<T>(
   Future<void> Function(Check<T>) condition,
   void Function(Check<Iterable<String>>) whichCheck,
 ) async {
-  final rejection = await softCheckAsync(value, condition);
-  whichCheck(checkThat(rejection)
+  final failure = await softCheckAsync(value, condition);
+  whichCheck(checkThat(failure)
       .isNotNull()
+      .has((f) => f.rejection, 'rejection')
       .has((r) => r.which, 'which')
       .isNotNull());
 }
