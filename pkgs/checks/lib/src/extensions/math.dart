@@ -17,7 +17,8 @@ extension NumChecks on Check<num> {
 
   /// Expects that this number is greater than or equal to [other].
   void operator >=(num other) {
-    context.expect(() => ['is greater than ${literal(other)}'], (actual) {
+    context.expect(() => ['is greater than or equal to ${literal(other)}'],
+        (actual) {
       if (actual >= other) return null;
       return Rejection(
           actual: literal(actual),
@@ -37,7 +38,8 @@ extension NumChecks on Check<num> {
 
   /// Expects that this number is less than or equal to [other].
   void operator <=(num other) {
-    context.expect(() => ['is less than ${literal(other)}'], (actual) {
+    context.expect(() => ['is less than or equal to ${literal(other)}'],
+        (actual) {
       if (actual <= other) return null;
       return Rejection(
           actual: literal(actual),
