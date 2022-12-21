@@ -177,7 +177,12 @@ void main() {
       });
       test('reports index of different character', () {
         checkThat(softCheck<String>('hit', (c) => c.equals('hat')))
-            .isARejection(which: ['differs at offset 1:', 'hat', 'hit', ' ^']);
+            .isARejection(which: [
+          'differs at offset 1:',
+          'hat',
+          'hit',
+          ' ^',
+        ]);
       });
       test('reports truncated index of different character in large string',
           () {
