@@ -91,7 +91,7 @@ extension NumChecks on Check<num> {
   /// Satisfied by [double.nan], [double.infinity] and
   /// [double.negativeInfinity].
   void isNotFinite() {
-    context.expect(() => ['is finite'], (actual) {
+    context.expect(() => ['is not finite'], (actual) {
       if (!actual.isFinite) return null;
       return Rejection(actual: literal(actual), which: ['is finite']);
     });
@@ -111,7 +111,7 @@ extension NumChecks on Check<num> {
   ///
   /// Satisfied by [double.nan] and finite numbers.
   void isNotInfinite() {
-    context.expect(() => ['is infinite'], (actual) {
+    context.expect(() => ['is not infinite'], (actual) {
       if (!actual.isInfinite) return null;
       return Rejection(actual: literal(actual), which: ['is infinite']);
     });

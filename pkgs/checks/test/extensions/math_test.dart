@@ -55,7 +55,7 @@ void main() {
       test('succeeds for happy case', () {
         checkThat(42) <= 50;
       });
-      test('fails for less than', () {
+      test('fails for greater than', () {
         checkThat(softCheck<int>(42, (p0) => p0 <= 7)).isARejection(
             actual: '<42>', which: ['is not less than or equal to <7>']);
       });
@@ -64,7 +64,7 @@ void main() {
       });
     });
 
-    group('isNan', () {
+    group('isNaN', () {
       test('succeeds for happy case', () {
         checkThat(double.nan).isNaN();
       });
@@ -78,7 +78,7 @@ void main() {
       });
     });
 
-    group('isNan', () {
+    group('isNotNan', () {
       test('succeeds for ints', () {
         checkThat(42).isNotNaN();
       });
