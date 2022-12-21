@@ -62,11 +62,11 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
     fail: (f) {
       final which = f.rejection.which;
       throw TestFailure([
-        ..._prefixFirst('Expected: ', f.detail.expected),
-        ..._prefixFirst('Actual: ', f.detail.actual),
+        ...prefixFirst('Expected: ', f.detail.expected),
+        ...prefixFirst('Actual: ', f.detail.actual),
         ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
         if (which != null && which.isNotEmpty)
-          ...indent(_prefixFirst('Which: ', which), f.detail.depth),
+          ...indent(prefixFirst('Which: ', which), f.detail.depth),
         if (because != null) 'Reason: $because',
       ].join('\n'));
     },
