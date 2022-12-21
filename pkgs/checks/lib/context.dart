@@ -11,4 +11,4 @@ export 'src/checks.dart'
         describe,
         softCheck,
         ContextExtension;
-export 'src/describe.dart' show literal, indent;
+export 'src/describe.dart' show indent, literal, prefixFirst;

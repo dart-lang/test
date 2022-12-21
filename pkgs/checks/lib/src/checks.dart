@@ -502,15 +502,3 @@ class Rejection {
 
   Rejection({required this.actual, this.which});
 }
-
-Iterable<String> _prefixFirst(String prefix, Iterable<String> lines) sync* {
-  var isFirst = true;
-  for (var line in lines) {
-    if (isFirst) {
-      yield '$prefix$line';
-      isFirst = false;
-    } else {
-      yield line;
-    }
-  }
-}

@@ -13,3 +13,15 @@ String literal(Object? o) {
 }
 
 Iterable<String> indent(Iterable<String> lines) => lines.map((l) => '  $l');
+
+Iterable<String> prefixFirst(String prefix, Iterable<String> lines) sync* {
+  var isFirst = true;
+  for (var line in lines) {
+    if (isFirst) {
+      yield '$prefix$line';
+      isFirst = false;
+    } else {
+      yield line;
+    }
+  }
+}
