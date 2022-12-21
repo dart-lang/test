@@ -59,48 +59,57 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
     value: _Present(value),
     // TODO - switch between "a" and "an"
     label: 'a $T',
-    reason: because,
-    fail: (m, _) => throw TestFailure(m),
+    fail: (f) {
+      final which = f.rejection.which;
+      throw TestFailure([
+        ..._prefixFirst('Expected: ', f.detail.expected),
+        ..._prefixFirst('Actual: ', f.detail.actual),
+        ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
+        if (which != null && which.isNotEmpty)
+          ...indent(_prefixFirst('Which: ', which), f.detail.depth),
+        if (because != null) 'Reason: $because',
+      ].join('\n'));
+    },
     allowAsync: true));
 
 /// Checks whether [value] satisfies all expectations invoked in [condition].
 ///
 /// Returns `null` if all expectations are satisfied, otherwise returns the
-/// [Rejection] for the first expectation that fails.
+/// [CheckFailure] for the first expectation that fails.
 ///
 /// Asynchronous expectations are not allowed in [condition] and will cause a
 /// runtime error if they are used.
-Rejection? softCheck<T>(T value, void Function(Check<T>) condition) {
-  Rejection? rejection;
+CheckFailure? softCheck<T>(T value, void Function(Check<T>) condition) {
+  CheckFailure? failure;
   final check = Check<T>._(_TestContext._root(
       value: _Present(value),
-      fail: (_, r) {
-        rejection = r;
+      fail: (f) {
+        failure = f;
       },
       allowAsync: false));
   condition(check);
-  return rejection;
+  return failure;
 }
 
 /// Checks whether [value] satisfies all expectations invoked in [condition].
 ///
 /// The future will complete to `null` if all expectations are satisfied,
-/// otherwise it will complete to the [Rejection] for the first expectation that
-/// fails.
+/// otherwise it will complete to the [CheckFailure] for the first expectation
+/// that fails.
 ///
 /// In contrast to [softCheck], asynchronous expectations are allowed in
 /// [condition].
-Future<Rejection?> softCheckAsync<T>(
+Future<CheckFailure?> softCheckAsync<T>(
     T value, Future<void> Function(Check<T>) condition) async {
-  Rejection? rejection;
+  CheckFailure? failure;
   final check = Check<T>._(_TestContext._root(
       value: _Present(value),
-      fail: (_, r) {
-        rejection = r;
+      fail: (f) {
+        failure = f;
       },
       allowAsync: true));
   await condition(check);
-  return rejection;
+  return failure;
 }
 
 /// Creates a description of the expectations checked by [condition].
@@ -114,12 +123,12 @@ Future<Rejection?> softCheckAsync<T>(
 Iterable<String> describe<T>(void Function(Check<T>) condition) {
   final context = _TestContext<T>._root(
       value: _Absent(),
-      fail: (_, __) {
+      fail: (_) {
         throw UnimplementedError();
       },
       allowAsync: false);
   condition(Check._(context));
-  return context.expected.skip(1);
+  return context.detail(context).expected.skip(1);
 }
 
 extension ContextExtension<T> on Check<T> {
@@ -270,21 +279,18 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   // The "a value" in "a value that:".
   final String _label;
-  final String? _reason;
 
-  final void Function(String, Rejection?) _fail;
+  final void Function(CheckFailure) _fail;
 
   final bool _allowAsync;
 
   _TestContext._root({
     required _Optional<T> value,
-    required void Function(String, Rejection?) fail,
+    required void Function(CheckFailure) fail,
     required bool allowAsync,
     String? label,
-    String? reason,
   })  : _value = value,
         _label = label ?? '',
-        _reason = reason,
         _fail = fail,
         _allowAsync = allowAsync,
         _parent = null,
@@ -299,18 +305,14 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _allowAsync = original._allowAsync,
         // Never read from an aliased context because they are never present in
         // `_clauses`.
-        _label = '',
-        // Never read from any context other than the root.
-        _reason = null;
+        _label = '';
 
   _TestContext._child(this._value, this._label, _TestContext<dynamic> parent)
       : _parent = parent,
         _fail = parent._fail,
         _allowAsync = parent._allowAsync,
         _clauses = [],
-        _aliases = [],
-        // Never read from any context other than the root.
-        _reason = null;
+        _aliases = [];
 
   @override
   void expect(
@@ -318,7 +320,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     _clauses.add(_StringClause(clause));
     final rejection = _value.apply(predicate);
     if (rejection != null) {
-      _fail(_failure(rejection), rejection);
+      _fail(_failure(rejection));
     }
   }
 
@@ -334,17 +336,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final rejection = await _value.apply(predicate);
     outstandingWork.complete();
     if (rejection == null) return;
-    _fail(_failure(rejection), rejection);
-  }
-
-  String _failure(Rejection rejection) {
-    final root = _root;
-    final reason = root._reason;
-    return [
-      ..._prefixFirst('Expected: ', root.expected),
-      ..._prefixFirst('Actual: ', root.actual(rejection, this)),
-      if (reason != null) 'Reason: $reason',
-    ].join('\n');
+    _fail(_failure(rejection));
   }
 
   @override
@@ -354,7 +346,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final rejection = result.rejection;
     if (rejection != null) {
       _clauses.add(_StringClause(() => [label]));
-      _fail(_failure(rejection), rejection);
+      _fail(_failure(rejection));
     }
     final value = result.value ?? _Absent<R>();
     final _TestContext<R> context;
@@ -382,13 +374,16 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final rejection = result.rejection;
     if (rejection != null) {
       _clauses.add(_StringClause(() => [label]));
-      _fail(_failure(rejection), rejection);
+      _fail(_failure(rejection));
     }
     final value = result.value ?? _Absent<R>();
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
     return Check._(context);
   }
+
+  CheckFailure _failure(Rejection rejection) =>
+      CheckFailure(rejection, () => _root.detail(this));
 
   _TestContext get _root {
     _TestContext<dynamic> current = this;
@@ -399,30 +394,29 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   @override
-  Iterable<String> get expected {
+  FailureDetail detail(_TestContext failingContext) {
     assert(_clauses.isNotEmpty);
-    return [
-      '$_label that:',
-      for (var clause in _clauses) ...indent(clause.expected),
-    ];
-  }
-
-  @override
-  Iterable<String> actual(Rejection rejection, Context<dynamic> failedContext) {
-    if (identical(failedContext, this) || _aliases.contains(failedContext)) {
-      final which = rejection.which;
-      return [
-        if (_parent != null) '$_label that:',
-        '${_parent != null ? 'Actual: ' : ''}${rejection.actual}',
-        if (which != null && which.isNotEmpty) ..._prefixFirst('Which: ', which)
-      ];
-    } else {
-      return [
-        '$_label that:',
-        for (var clause in _clauses)
-          ...indent(clause.actual(rejection, failedContext))
-      ];
+    final thisContextFailed =
+        identical(failingContext, this) || _aliases.contains(failingContext);
+    var foundDepth = thisContextFailed ? 0 : -1;
+    var foundOverlap = thisContextFailed ? 0 : -1;
+    var successfulOverlap = 0;
+    final expected = ['$_label that:'];
+    for (var clause in _clauses) {
+      final details = clause.detail(failingContext);
+      expected.addAll(indent(details.expected));
+      if (details.depth >= 0) {
+        assert(foundDepth == -1);
+        assert(foundOverlap == -1);
+        foundDepth = details.depth + 1;
+        foundOverlap = details._actualOverlap + successfulOverlap + 1;
+      } else {
+        if (foundDepth == -1) {
+          successfulOverlap += details.expected.length;
+        }
+      }
     }
+    return FailureDetail(expected, foundOverlap, foundDepth);
   }
 }
 
@@ -453,22 +447,101 @@ class _SkippedContext<T> implements Context<T> {
 }
 
 abstract class _ClauseDescription {
-  Iterable<String> get expected;
-  Iterable<String> actual(Rejection rejection, Context<dynamic> context);
+  FailureDetail detail(_TestContext failingContext);
 }
 
 class _StringClause implements _ClauseDescription {
   final Iterable<String> Function() _expected;
-  @override
-  Iterable<String> get expected => _expected();
   _StringClause(this._expected);
-  // Assumes this will never get called when it was this clause that failed
-  // because the TestContext that fails never inspect it's clauses and just
-  // prints the failed one.
-  // TODO: better way to model this?
   @override
-  Iterable<String> actual(Rejection rejection, Context<dynamic> context) =>
-      expected;
+  FailureDetail detail(_TestContext failingContext) =>
+      FailureDetail(_expected(), -1, -1);
+}
+
+/// The result of a Check which is rejected by some expectation.
+class CheckFailure {
+  /// The specific rejected value within the overall check that caused the
+  /// failure.
+  ///
+  /// The [Rejection.actual] may be a property derived from the value at the
+  /// root of the check, for instance a field or an element in a collection.
+  final Rejection rejection;
+
+  /// The context within the overall check where an expectation resulted in the
+  /// [rejection].
+  late final FailureDetail detail = _readDetail();
+
+  final FailureDetail Function() _readDetail;
+
+  CheckFailure(this.rejection, this._readDetail);
+}
+
+/// The context of a Check that failed.
+///
+/// A check may have some number of succeeding expectations, and the failure may
+/// be for an expectation against a property derived from the value at the root
+/// fo the check. For example, in `checkThat([]).length.equals(1)` the specific
+/// value that gets rejected is `0` from the length of the list, and the `Check`
+/// that sees the rejection is nested with the label "has length".
+class FailureDetail {
+  /// A description of all the conditions the checked value was expected to
+  /// satisfy.
+  ///
+  /// Each Check has a label. At the root the label is typically "a <Type>" and
+  /// nested conditions get a label based on the condition which extracted a
+  /// property for further checks. Each level of nesting is described as
+  /// "<label> that:" followed by an indented list of the expectations for that
+  /// property.
+  ///
+  /// For example:
+  ///
+  ///   a List that:
+  ///     has length that:
+  ///       equals <3>
+  final Iterable<String> expected;
+
+  /// A description of the conditions the checked value satisfied.
+  ///
+  /// Matches the format of [expected], except it will be cut off after the
+  /// label for the check that had a failing expectation. For example, if the
+  /// equality check for the length of a list fails:
+  ///
+  ///   a List that:
+  ///     has length that:
+  ///
+  /// If the check with a failing expectation is the root, returns an empty
+  /// list. Instead the "Actual: " value from the rejection can be used without
+  /// indentation.
+  Iterable<String> get actual =>
+      _actualOverlap > 0 ? expected.take(_actualOverlap + 1) : const [];
+
+  /// The number of lines from [expected] which describe conditions that were
+  /// successful.
+  ///
+  /// A check which fails due to a derived property may have some number of
+  /// expectations that were checked and satisfied. This field indicates how
+  /// many lines of expectations were successful.
+  final int _actualOverlap;
+
+  /// The number of times the failing check was nested from the root check.
+  ///
+  /// Indicates how far the "Actual: " and "Which: " lines from the [Rejection]
+  /// should be indented so that they are at the same level of indentation as
+  /// the label for the check where the expectation failed.
+  ///
+  /// For example, if a `List` is expected to and have a certain length
+  /// [expected] may be:
+  ///
+  ///   a List that:
+  ///     has length that:
+  ///       equals <3>
+  ///
+  /// If the actual value had an incorrect length, the [depth] will be `1` to
+  /// indicate that the failure occurred checking one of the expectations
+  /// against the `has length` label.
+  final int depth;
+
+  FailureDetail(this.expected, this._actualOverlap, this.depth);
 }
 
 /// A description of a value that failed an expectation.
