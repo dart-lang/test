@@ -145,12 +145,19 @@ void main() {
       test('succeeeds for happy case', () {
         checkThat('foo').equals('foo');
       });
+      test('succeeeds for equal empty strings', () {
+        checkThat('').equals('');
+      });
       test('reports extra characters for long string', () {
         checkThat(softCheck<String>('foobar', (c) => c.equals('foo')))
             .isARejection(which: [
           'is too long with unexpected trailing characters:',
           'bar'
         ]);
+      });
+      test('reports extra characters for long string against empty', () {
+        checkThat(softCheck<String>('foo', (c) => c.equals(''))).isARejection(
+            which: ['is too long with unexpected trailing characters:', 'foo']);
       });
       test('reports truncated extra characters for very long string', () {
         checkThat(softCheck<String>(
@@ -166,6 +173,10 @@ void main() {
           'is too short with missing trailing characters:',
           'bar'
         ]);
+      });
+      test('reports missing characters for empty string', () {
+        checkThat(softCheck<String>('', (c) => c.equals('foo'))).isARejection(
+            which: ['is too short with missing trailing characters:', 'foo']);
       });
       test('reports truncated missing characters for very short string', () {
         checkThat(softCheck<String>(
