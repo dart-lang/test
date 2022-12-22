@@ -56,22 +56,23 @@ class Check<T> {
 /// checkThat(actual).equals(expected);
 /// ```
 Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
-    value: _Present(value),
-    // TODO - switch between "a" and "an"
-    label: 'a $T',
-    fail: (f) {
-      final which = f.rejection.which;
-      throw TestFailure([
-        ...prefixFirst('Expected: ', f.detail.expected),
-        ...prefixFirst('Actual: ', f.detail.actual),
-        ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
-        if (which != null && which.isNotEmpty)
-          ...indent(prefixFirst('Which: ', which), f.detail.depth),
-        if (because != null) 'Reason: $because',
-      ].join('\n'));
-    },
-    allowAsync: true,
-    allowLate: true));
+      value: _Present(value),
+      // TODO - switch between "a" and "an"
+      label: 'a $T',
+      fail: (f) {
+        final which = f.rejection.which;
+        throw TestFailure([
+          ...prefixFirst('Expected: ', f.detail.expected),
+          ...prefixFirst('Actual: ', f.detail.actual),
+          ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
+          if (which != null && which.isNotEmpty)
+            ...indent(prefixFirst('Which: ', which), f.detail.depth),
+          if (because != null) 'Reason: $because',
+        ].join('\n'));
+      },
+      allowAsync: true,
+      allowLate: true,
+    ));
 
 /// Checks whether [value] satisfies all expectations invoked in [condition].
 ///
@@ -127,12 +128,13 @@ Future<CheckFailure?> softCheckAsync<T>(
 /// line.
 Iterable<String> describe<T>(void Function(Check<T>) condition) {
   final context = _TestContext<T>._root(
-      value: _Absent(),
-      fail: (_) {
-        throw UnimplementedError();
-      },
-      allowAsync: false,
-      allowLate: true);
+    value: _Absent(),
+    fail: (_) {
+      throw UnimplementedError();
+    },
+    allowAsync: false,
+    allowLate: true,
+  );
   condition(Check._(context));
   return context.detail(context).expected.skip(1);
 }
