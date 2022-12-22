@@ -13,4 +13,4 @@ export 'src/checks.dart'
         Rejection,
         describe,
         softCheck;
-export 'src/describe.dart' show indent, literal, prefixFirst;
+export 'src/describe.dart' show escape, indent, literal, prefixFirst;
