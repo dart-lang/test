@@ -189,7 +189,7 @@ abstract class Context<T> {
   ///
   /// May not be used from the context for a [Check] created by [softCheck] or
   /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
-  /// `TestFailure` when used with a [checkThat] check.
+  /// [TestFailure] when used with a [checkThat] check.
   void expectLate(Iterable<String> Function() clause,
       void Function(T, void Function(Rejection)) predicate);
 
