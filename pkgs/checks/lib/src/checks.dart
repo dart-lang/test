@@ -207,6 +207,18 @@ abstract class Context<T> {
   /// this method will throw.
   Future<Check<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T) extract);
+
+  /// Report that a check failed after the condition has already succeeded.
+  ///
+  /// A condition that some event _never_ happens will not have any point at
+  /// which it can be considered "complete", so a rejection may occur at any
+  /// time.
+  ///
+  /// Late rejections are ignored in [softCheck] and [softCheckAsync], so a
+  /// condition which use this method may not be useful within those method.
+  /// The only useful effect of a late rejections to throw a `TestFailure` when
+  /// used with a [checkThat] check.
+  void lateReject(Rejection rejection);
 }
 
 /// A property extracted from a value being checked, or a rejection.
@@ -418,6 +430,11 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     return FailureDetail(expected, foundOverlap, foundDepth);
   }
+
+  @override
+  void lateReject(Rejection rejection) {
+    _fail(_failure(rejection));
+  }
 }
 
 class _SkippedContext<T> implements Context<T> {
@@ -443,6 +460,10 @@ class _SkippedContext<T> implements Context<T> {
   Future<Check<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T p1) extract) async {
     return Check._(_SkippedContext());
+  }
+
+  void lateReject(Rejection rejection) {
+    // Ignore
   }
 }
 

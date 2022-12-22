@@ -26,6 +26,30 @@ extension FutureChecks<T> on Check<Future<T>> {
     });
   }
 
+  /// Expectst that the `Future` never completes as a value or an error.
+  ///
+  /// Immediately returns and does not cause the test to remain running if it
+  /// ends.
+  /// If the future completes at any time, raises a test failure. This may
+  /// happen after the test has already appeared to succeed.
+  ///
+  /// Not compatible with [softCheck] or [softCheckAsync] since there is no
+  /// concrete end point where this condition has definitely succeeded. Will
+  /// never cause a soft check to fail.
+  void doesNotComplete() {
+    context.expect(() => ['does not complete as value or error'], (actual) {
+      unawaited(actual.then((r) {
+        context.lateReject(
+            Rejection(actual: 'A future that completed to ${literal(r)}'));
+      }, onError: (e, st) {
+        context.lateReject(Rejection(
+            actual: 'A future that completed as an error:',
+            which: ['threw ${literal(e)}', ...st.toString().split('\n')]));
+      }));
+      return null;
+    });
+  }
+
   /// Expects that the `Future` completes as an error.
   ///
   /// Returns a future that completes to a [Check<E>] on the error once the

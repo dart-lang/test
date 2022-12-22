@@ -2,10 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:async/async.dart';
 import 'package:checks/checks.dart';
 import 'package:checks/src/checks.dart' show softCheckAsync;
 import 'package:test/scaffolding.dart';
+import 'package:test_api/hooks.dart';
 
 void main() {
   group('FutureChecks', () {
@@ -35,6 +38,52 @@ void main() {
         (f) async => await f.throws<StateError>(),
         (check) => check.single.equals('Is not an StateError'),
       );
+    });
+
+    group('doesNotComplete', () {
+      test('succeeds for a Future that never completes', () async {
+        checkThat(Completer<void>().future).doesNotComplete();
+      });
+      test('fails for a Future that completes as a value', () async {
+        Object? testFailure;
+        runZonedGuarded(() {
+          final completer = Completer<String>();
+          checkThat(completer.future).doesNotComplete();
+          completer.complete('value');
+        }, (e, st) {
+          testFailure = e;
+        });
+        await pumpEventQueue();
+        checkThat(testFailure)
+            .isA<TestFailure>()
+            .has((f) => f.message, 'message')
+            .isNotNull()
+            .equals('''
+Expected: a Future<String> that:
+  does not complete as value or error
+Actual: A future that completed to 'value\'''');
+      });
+      test('fails for a Future that completes as an error', () async {
+        Object? testFailure;
+        runZonedGuarded(() {
+          final completer = Completer<String>();
+          checkThat(completer.future).doesNotComplete();
+          completer.completeError('error', StackTrace.fromString('fake trace'));
+        }, (e, st) {
+          testFailure = e;
+        });
+        await pumpEventQueue();
+        checkThat(testFailure)
+            .isA<TestFailure>()
+            .has((f) => f.message, 'message')
+            .isNotNull()
+            .equals('''
+Expected: a Future<String> that:
+  does not complete as value or error
+Actual: A future that completed as an error:
+Which: threw 'error'
+fake trace''');
+      });
     });
   });
 
