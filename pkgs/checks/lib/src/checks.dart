@@ -179,6 +179,18 @@ abstract class Context<T> {
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate);
 
+  /// Report that this check may fail asynchronously at any point in the future.
+  ///
+  /// A condition that some event _never_ happens will not have any point at
+  /// which it can be considered "complete", so a rejection may occur at any
+  /// time.
+  ///
+  /// May not be used from the context for a [Check] created by [softCheck] or
+  /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
+  /// `TestFailure` when used with a [checkThat] check.
+  void expectLate(Iterable<String> Function() clause,
+      void Function(T, void Function(Rejection)) predicate);
+
   /// Extract a property from the value for further checking.
   ///
   /// If the property cannot be extracted, [extract] should return an
@@ -213,18 +225,6 @@ abstract class Context<T> {
   /// this method will throw.
   Future<Check<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T) extract);
-
-  /// Report that this check may fail asynchronously at any point in the future.
-  ///
-  /// A condition that some event _never_ happens will not have any point at
-  /// which it can be considered "complete", so a rejection may occur at any
-  /// time.
-  ///
-  /// May not be used from the context for a [Check] created by [softCheck] or
-  /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
-  /// `TestFailure` when used with a [checkThat] check.
-  void expectLate(Iterable<String> Function() clause,
-      void Function(T, void Function(Rejection)) predicate);
 }
 
 /// A property extracted from a value being checked, or a rejection.
@@ -363,6 +363,18 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   @override
+  void expectLate(Iterable<String> Function() clause,
+      void Function(T actual, void Function(Rejection) reject) predicate) {
+    if (!_allowLate) {
+      throw StateError('Late expectations cannot be used for soft checks');
+    }
+    _clauses.add(_StringClause(clause));
+    _value.apply((actual) {
+      predicate(actual, (r) => _fail(_failure(r)));
+    });
+  }
+
+  @override
   Check<R> nest<R>(String label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false}) {
     final result = _value.map(extract);
@@ -441,31 +453,26 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     return FailureDetail(expected, foundOverlap, foundDepth);
   }
-
-  @override
-  void expectLate(Iterable<String> Function() clause,
-      void Function(T actual, void Function(Rejection) reject) predicate) {
-    if (!_allowLate) {
-      throw StateError('Late expectations cannot be used for soft checks');
-    }
-    _clauses.add(_StringClause(clause));
-    _value.apply((actual) {
-      predicate(actual, (r) => _fail(_failure(r)));
-    });
-  }
 }
 
+/// A context which never runs expectations and can never fail.
 class _SkippedContext<T> implements Context<T> {
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
-    // Ignore
+    // no-op
   }
 
   @override
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate) async {
-    // Ignore
+    // no-op
+  }
+
+  @override
+  void expectLate(Iterable<String> Function() clause,
+      void Function(T actual, void Function(Rejection) reject) predicate) {
+    // no-op
   }
 
   @override
@@ -478,12 +485,6 @@ class _SkippedContext<T> implements Context<T> {
   Future<Check<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T p1) extract) async {
     return Check._(_SkippedContext());
-  }
-
-  @override
-  void expectLate(Iterable<String> Function() clause,
-      void Function(T actual, void Function(Rejection) reject) predicate) {
-    // Ignore
   }
 }
 
