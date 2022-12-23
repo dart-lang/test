@@ -179,50 +179,71 @@ extension StringChecks on Check<String> {
     );
   }
 
+  /// Expects that the `String` contains exactly the same code units as
+  /// [expected].
   void equals(String expected) {
-    context.expect(() => ['equals ${literal(expected)}'], (actual) {
-      if (actual == expected) return null;
-      final escapedActual = escape(actual);
-      final escapedExpected = escape(expected);
-      final minLength = math.min(escapedActual.length, escapedExpected.length);
-      var i = 0;
-      for (; i < minLength; i++) {
-        if (escapedActual.codeUnitAt(i) != escapedExpected.codeUnitAt(i)) {
-          break;
-        }
+    context.expect(() => ['equals ${literal(expected)}'],
+        (actual) => _findDifference(actual, expected));
+  }
+
+  /// Expects that the `String` contains the same characters as [expected] if
+  /// both were lower case.
+  void equalsIgnoringCase(String expected) {
+    context.expect(
+        () => ['equals ignoring case ${literal(expected)}'],
+        (actual) => _findDifference(
+            actual.toLowerCase(), expected.toLowerCase(), actual, expected));
+  }
+}
+
+Rejection? _findDifference(String actual, String expected,
+    [String? actualDisplay, String? expectedDisplay]) {
+  if (actual == expected) return null;
+  final escapedActual = escape(actual);
+  final escapedExpected = escape(expected);
+  final escapedActualDisplay =
+      actualDisplay != null ? escape(actualDisplay) : escapedActual;
+  final escapedExpectedDisplay =
+      expectedDisplay != null ? escape(expectedDisplay) : escapedExpected;
+  final minLength = math.min(escapedActual.length, escapedExpected.length);
+  var i = 0;
+  for (; i < minLength; i++) {
+    if (escapedActual.codeUnitAt(i) != escapedExpected.codeUnitAt(i)) {
+      break;
+    }
+  }
+  if (i == minLength) {
+    if (escapedExpected.length < escapedActual.length) {
+      if (expected.isEmpty) {
+        return Rejection(
+            actual: literal(actual), which: ['is not the empty string']);
       }
-      if (i == minLength) {
-        if (escapedExpected.length < escapedActual.length) {
-          if (expected.isEmpty) {
-            return Rejection(
-                actual: literal(actual), which: ['is not the empty string']);
-          }
-          return Rejection(actual: literal(actual), which: [
-            'is too long with unexpected trailing characters:',
-            _trailing(escapedActual, i)
-          ]);
-        } else {
-          if (actual.isEmpty) {
-            return Rejection(actual: 'an empty string', which: [
-              'is missing all expected characters:',
-              _trailing(escapedExpected, 0)
-            ]);
-          }
-          return Rejection(actual: literal(actual), which: [
-            'is too short with missing trailing characters:',
-            _trailing(escapedExpected, i)
-          ]);
-        }
-      } else {
-        final indentation = ' ' * (i > 10 ? 14 : i);
-        return Rejection(actual: literal(actual), which: [
-          'differs at offset $i:',
-          '${_leading(escapedExpected, i)}${_trailing(escapedExpected, i)}',
-          '${_leading(escapedActual, i)}${_trailing(escapedActual, i)}',
-          '$indentation^'
+      return Rejection(actual: literal(actual), which: [
+        'is too long with unexpected trailing characters:',
+        _trailing(escapedActualDisplay, i)
+      ]);
+    } else {
+      if (actual.isEmpty) {
+        return Rejection(actual: 'an empty string', which: [
+          'is missing all expected characters:',
+          _trailing(escapedExpectedDisplay, 0)
         ]);
       }
-    });
+      return Rejection(actual: literal(actual), which: [
+        'is too short with missing trailing characters:',
+        _trailing(escapedExpectedDisplay, i)
+      ]);
+    }
+  } else {
+    final indentation = ' ' * (i > 10 ? 14 : i);
+    return Rejection(actual: literal(actual), which: [
+      'differs at offset $i:',
+      '${_leading(escapedExpectedDisplay, i)}'
+          '${_trailing(escapedExpectedDisplay, i)}',
+      '${_leading(escapedActualDisplay, i)}'
+          '${_trailing(escapedActualDisplay, i)}',
+      '$indentation^'
+    ]);
   }
 }
 
