@@ -216,11 +216,12 @@ class Extracted<T> {
   Extracted.rejection({required String actual, Iterable<String>? which})
       : this.rejection = Rejection(actual: actual, which: which),
         this.value = null;
-  Extracted.value(this.value) : this.rejection = null;
+  Extracted.value(T this.value) : this.rejection = null;
 
-  Extracted._(this.rejection) : this.value = null;
+  Extracted._(Rejection this.rejection) : this.value = null;
 
   Extracted<R> _map<R>(R Function(T) transform) {
+    final rejection = this.rejection;
     if (rejection != null) return Extracted._(rejection);
     return Extracted.value(transform(value as T));
   }
