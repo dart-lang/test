@@ -210,5 +210,37 @@ void main() {
         ]);
       });
     });
+
+    group('equalsIgnoringCase', () {
+      test('succeeeds for happy case', () {
+        checkThat('FOO').equalsIgnoringCase('foo');
+        checkThat('foo').equalsIgnoringCase('FOO');
+      });
+      test('reports original extra characters for long string', () {
+        checkThat(
+                softCheck<String>('FOOBAR', (c) => c.equalsIgnoringCase('foo')))
+            .isARejection(which: [
+          'is too long with unexpected trailing characters:',
+          'BAR'
+        ]);
+      });
+      test('reports original missing characters for short string', () {
+        checkThat(
+                softCheck<String>('FOO', (c) => c.equalsIgnoringCase('fooBAR')))
+            .isARejection(which: [
+          'is too short with missing trailing characters:',
+          'BAR'
+        ]);
+      });
+      test('reports index of different character with original characters', () {
+        checkThat(softCheck<String>('HiT', (c) => c.equalsIgnoringCase('hAt')))
+            .isARejection(which: [
+          'differs at offset 1:',
+          'hAt',
+          'HiT',
+          ' ^',
+        ]);
+      });
+    });
   });
 }
