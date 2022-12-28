@@ -658,6 +658,10 @@ class ConditionCheck<T> implements Check<T>, Condition<T> {
 
   @override
   final _ReplayContext<T> _context = _ReplayContext();
+
+  String toString() {
+    return ['A value that:', ...describe(_context)].join('\n');
+  }
 }
 
 class _ReplayContext<T> implements Context<T>, Condition<T> {
