@@ -56,9 +56,9 @@ extension CoreChecks<T> on Check<T> {
   /// Expects that the value is assignable to type [T].
   ///
   /// If the value is a [T], returns a [Check<T>] for further expectations.
-  Check<T> isA<T>() {
-    return context.nest<T>('is a $T', (actual) {
-      if (actual is! T) {
+  Check<R> isA<R>() {
+    return context.nest<R>('is a $R', (actual) {
+      if (actual is! R) {
         return Extracted.rejection(
             actual: literal(actual), which: ['Is a ${actual.runtimeType}']);
       }
