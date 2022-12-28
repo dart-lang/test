@@ -6,7 +6,7 @@ import 'dart:math' as math;
 
 import 'package:checks/context.dart';
 
-import 'core.dart' show CoreChecks;
+import 'core.dart';
 
 extension StringChecks on Check<String> {
   /// Expects that the value contains [pattern] according to [String.contains];

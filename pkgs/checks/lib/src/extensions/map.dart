@@ -4,7 +4,7 @@
 
 import 'package:checks/context.dart';
 
-import 'core.dart' show HasField;
+import 'core.dart';
 
 extension MapChecks<K, V> on Check<Map<K, V>> {
   Check<Iterable<MapEntry<K, V>>> get entries =>
