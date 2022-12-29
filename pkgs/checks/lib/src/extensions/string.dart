@@ -62,6 +62,31 @@ extension StringChecks on Check<String> {
     );
   }
 
+  /// Expects that the `String` contains each of the sub strings in [expected]
+  /// in the given order, with any content between them.
+  ///
+  /// For example, the following will succeed:
+  ///
+  ///     checkThat('abcdefg').containsInOrder(['a','e']);
+  void containsInOrder(Iterable<String> expected) {
+    context.expect(() => ['contains, in order: ${literal(expected)}'],
+        (actual) {
+      var fromIndex = 0;
+      for (var s in expected) {
+        var index = actual.indexOf(s, fromIndex);
+        if (index < 0) {
+          return Rejection(actual: literal(actual), which: [
+            'does not have a match for the substring ${literal(s)}',
+            if (fromIndex != 0)
+              'following the other matches up to character $fromIndex'
+          ]);
+        }
+        fromIndex = index + s.length;
+      }
+      return null;
+    });
+  }
+
   /// Expects that the `String` contains exactly the same code units as
   /// [expected].
   void equals(String expected) {
