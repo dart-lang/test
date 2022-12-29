@@ -4,7 +4,7 @@
 
 import 'package:checks/context.dart';
 
-import 'core.dart' show HasField;
+import 'core.dart';
 
 extension IterableChecks<T> on Check<Iterable<T>> {
   Check<int> get length => has((l) => l.length, 'length');
