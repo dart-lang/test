@@ -9,20 +9,43 @@ import 'package:test/scaffolding.dart';
 import '../test_shared.dart';
 
 void main() {
-  test('throws', () {
-    checkThat(() => throw StateError('oops!')).throws<StateError>();
+  group('ThrowsChecks', () {
+    group('throws', () {
+      test('succeeds for happy case', () {
+        checkThat(() => throw StateError('oops!')).throws<StateError>();
+      });
+      test('fails for functions that return normally', () {
+        checkThat(
+          softCheck<void Function()>(() {}, (p0) => p0.throws<StateError>()),
+        ).isARejection(
+            actual: 'a function that returned <null>',
+            which: ['did not throw']);
+      });
+      test('fails for functions that throw the wrong type', () {
+        checkThat(
+          softCheck<void Function()>(
+            () => throw StateError('oops!'),
+            (p0) => p0.throws<ArgumentError>(),
+          ),
+        ).isARejection(
+          actual: 'a function that threw error Bad state: oops!',
+          which: ['did not throw an ArgumentError'],
+        );
+      });
+    });
 
-    checkThat(
-      softCheck<void Function()>(() {}, (p0) => p0.throws<StateError>()),
-    ).isARejection(actual: 'Returned <null>', which: ['Did not throw']);
-    checkThat(
-      softCheck<void Function()>(
-        () => throw StateError('oops!'),
-        (p0) => p0.throws<ArgumentError>(),
-      ),
-    ).isARejection(
-      actual: 'Completed to error Bad state: oops!',
-      which: ['Is not an ArgumentError'],
-    );
+    group('returnsNormally', () {
+      test('succeeds for happy case', () {
+        checkThat(() => 1).returnsNormally().equals(1);
+      });
+      test('fails for functions that throw', () {
+        checkThat(softCheck<int Function()>(() {
+          Error.throwWithStackTrace(
+              StateError('oops!'), StackTrace.fromString('fake trace'));
+        }, (c) => c.returnsNormally())).isARejection(
+            actual: 'a function that throws',
+            which: ['threw Bad state: oops!', 'fake trace']);
+      });
+    });
   });
 }

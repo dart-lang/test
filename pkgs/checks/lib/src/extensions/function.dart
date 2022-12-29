@@ -17,18 +17,36 @@ extension ThrowsCheck<T> on Check<T Function()> {
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
   Check<E> throws<E>() {
-    return context.nest<E>('Completes as an error of type $E', (actual) {
+    return context.nest<E>('throws an error of type $E', (actual) {
       try {
         final result = actual();
         return Extracted.rejection(
-          actual: 'Returned ${literal(result)}',
-          which: ['Did not throw'],
+          actual: 'a function that returned ${literal(result)}',
+          which: ['did not throw'],
         );
       } catch (e) {
         if (e is E) return Extracted.value(e as E);
         return Extracted.rejection(
-            actual: 'Completed to error ${literal(e)}',
-            which: ['Is not an $E']);
+            actual: 'a function that threw error ${literal(e)}',
+            which: ['did not throw an $E']);
+      }
+    });
+  }
+
+  /// Expects that the function returns without throwing.
+  ///
+  /// If the function runs without exception, return a [Check<T>] to check
+  /// further expecations on the returned value.
+  ///
+  /// If the function throws synchronously, this expectation will fail.
+  Check<T> returnsNormally() {
+    return context.nest<T>('returns a value', (actual) {
+      try {
+        return Extracted.value(actual());
+      } catch (e, st) {
+        return Extracted.rejection(
+            actual: 'a function that throws',
+            which: ['threw ${literal(e)}', ...st.toString().split('\n')]);
       }
     });
   }
