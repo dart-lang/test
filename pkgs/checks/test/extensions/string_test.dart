@@ -144,5 +144,42 @@ void main() {
         ]);
       });
     });
+
+    group('equalsIgnoringWhitespace', () {
+      test('allows differing internal whitespace', () {
+        checkThat('foo \t\n bar').equalsIgnoringWhitespace('foo bar');
+      });
+      test('allows extra leading/trailing whitespace', () {
+        checkThat(' foo ').equalsIgnoringWhitespace('foo');
+      });
+      test('allows missing leading/trailing whitespace', () {
+        checkThat('foo').equalsIgnoringWhitespace(' foo ');
+      });
+      test('reports original extra characters for long string', () {
+        checkThat(softCheck<String>('foo \t bar \n baz',
+            (c) => c.equalsIgnoringWhitespace('foo bar'))).isARejection(which: [
+          'is too long with unexpected trailing characters:',
+          ' baz'
+        ]);
+      });
+      test('reports original missing characters for short string', () {
+        checkThat(softCheck<String>(
+                'foo  bar', (c) => c.equalsIgnoringWhitespace('foo bar baz')))
+            .isARejection(which: [
+          'is too short with missing trailing characters:',
+          ' baz'
+        ]);
+      });
+      test('reports index of different character with original characters', () {
+        checkThat(softCheck<String>(
+                'x  hit  x', (c) => c.equalsIgnoringWhitespace('x hat x')))
+            .isARejection(which: [
+          'differs at offset 3:',
+          'x hat x',
+          'x hit x',
+          '   ^',
+        ]);
+      });
+    });
   });
 }
