@@ -102,6 +102,30 @@ extension StringChecks on Check<String> {
         (actual) => _findDifference(
             actual.toLowerCase(), expected.toLowerCase(), actual, expected));
   }
+
+  /// Expects that the `String` contains the same content as [expected],
+  /// ignoring differences in whitsepace.
+  ///
+  /// All runs of whitespace characters are collapsed to a single space, and
+  /// leading and traiilng whitespace are removed before comparison.
+  ///
+  /// For example the following will succeed:
+  ///
+  ///     checkThat(' hello   world ').equalsIgnoringWhitespace('hello world');
+  ///
+  /// While the following will fail:
+  ///
+  ///     checkThat('helloworld').equalsIgnoringWhitespace('hello world');
+  ///     checkThat('he llo world').equalsIgnoringWhitespace('hello world');
+  void equalsIgnoringWhitespace(String expected) {
+    context.expect(() => ['equals ignoring whitespace ${literal(expected)}'],
+        (actual) {
+      final collapsedActual = _collapseWhitespace(actual);
+      final collapsedExpected = _collapseWhitespace(expected);
+      return _findDifference(collapsedActual, collapsedExpected,
+          collapsedActual, collapsedExpected);
+    });
+  }
 }
 
 Rejection? _findDifference(String actual, String expected,
@@ -163,3 +187,26 @@ String _leading(String s, int end) =>
 String _trailing(String s, int start) => (start + 10 > s.length)
     ? s.substring(start)
     : '${s.substring(start, start + 10)} ...';
+
+/// Utility function to collapse whitespace runs to single spaces
+/// and strip leading/trailing whitespace.
+String _collapseWhitespace(String string) {
+  var result = StringBuffer();
+  var skipSpace = true;
+  for (var i = 0; i < string.length; i++) {
+    var character = string[i];
+    if (_isWhitespace(character)) {
+      if (!skipSpace) {
+        result.write(' ');
+        skipSpace = true;
+      }
+    } else {
+      result.write(character);
+      skipSpace = false;
+    }
+  }
+  return result.toString().trim();
+}
+
+bool _isWhitespace(String ch) =>
+    ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t';
