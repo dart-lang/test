@@ -43,6 +43,26 @@ void main() {
           .isARejection(actual: "'bob'", which: ["does not end with 'kayleb'"]);
     });
 
+    group('containsInOrder', () {
+      test('happy case', () {
+        checkThat('foo bar baz').containsInOrder(['foo', 'baz']);
+      });
+      test('reports when first substring is missing', () {
+        checkThat(softCheck<String>(
+                'baz', (c) => c.containsInOrder(['foo', 'baz'])))
+            .isARejection(
+                which: ['does not have a match for the substring \'foo\'']);
+      });
+      test('reports when substring is missing following a match', () {
+        checkThat(softCheck<String>(
+                'foo bar', (c) => c.containsInOrder(['foo', 'baz'])))
+            .isARejection(which: [
+          'does not have a match for the substring \'baz\'',
+          'following the other matches up to character 3'
+        ]);
+      });
+    });
+
     group('equals', () {
       test('succeeeds for happy case', () {
         checkThat('foo').equals('foo');
