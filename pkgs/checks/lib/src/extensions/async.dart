@@ -37,7 +37,7 @@ extension FutureChecks<T> on Check<Future<T>> {
   /// concrete end point where this condition has definitely succeeded. Will
   /// never cause a soft check to fail.
   void doesNotComplete() {
-    context.expectLate(() => ['does not complete as value or error'],
+    context.expectLateFailure(() => ['does not complete as value or error'],
         (actual, reject) {
       unawaited(actual.then((r) {
         reject(Rejection(actual: 'A future that completed to ${literal(r)}'));
