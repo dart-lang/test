@@ -35,8 +35,7 @@ extension FutureChecks<T> on Check<Future<T>> {
   /// happen after the test has already appeared to succeed.
   ///
   /// Not compatible with [softCheck] or [softCheckAsync] since there is no
-  /// concrete end point where this condition has definitely succeeded. Will
-  /// never cause a soft check to fail.
+  /// concrete end point where this condition has definitely succeeded.
   void doesNotComplete() {
     context.expectLateFailure(() => ['does not complete as value or error'],
         (actual, reject) {
