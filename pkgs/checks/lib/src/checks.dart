@@ -190,8 +190,8 @@ abstract class Context<T> {
   ///
   /// This may be useful for a condition checking that some event _never_
   /// happens. If there is no specific point where it is know to be safe to stop
-  /// monitoring for the condition, there is no way to complete a returned
-  /// future and consider the check "complete".
+  /// listening for the event, there is no way to complete a returned future and
+  /// consider the check "complete".
   ///
   /// May not be used from the context for a [Check] created by [softCheck] or
   /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
