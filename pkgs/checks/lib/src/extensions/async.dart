@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:checks/context.dart';
@@ -44,7 +45,10 @@ extension FutureChecks<T> on Check<Future<T>> {
       }, onError: (e, st) {
         reject(Rejection(
             actual: 'A future that completed as an error:',
-            which: ['threw ${literal(e)}', ...st.toString().split('\n')]));
+            which: [
+              'threw ${literal(e)}',
+              ...LineSplitter().convert(st.toString())
+            ]));
       }));
     });
   }
