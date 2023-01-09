@@ -56,21 +56,23 @@ class Check<T> {
 /// checkThat(actual).equals(expected);
 /// ```
 Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
-    value: _Present(value),
-    // TODO - switch between "a" and "an"
-    label: 'a $T',
-    fail: (f) {
-      final which = f.rejection.which;
-      throw TestFailure([
-        ...prefixFirst('Expected: ', f.detail.expected),
-        ...prefixFirst('Actual: ', f.detail.actual),
-        ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
-        if (which != null && which.isNotEmpty)
-          ...indent(prefixFirst('Which: ', which), f.detail.depth),
-        if (because != null) 'Reason: $because',
-      ].join('\n'));
-    },
-    allowAsync: true));
+      value: _Present(value),
+      // TODO - switch between "a" and "an"
+      label: 'a $T',
+      fail: (f) {
+        final which = f.rejection.which;
+        throw TestFailure([
+          ...prefixFirst('Expected: ', f.detail.expected),
+          ...prefixFirst('Actual: ', f.detail.actual),
+          ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
+          if (which != null && which.isNotEmpty)
+            ...indent(prefixFirst('Which: ', which), f.detail.depth),
+          if (because != null) 'Reason: $because',
+        ].join('\n'));
+      },
+      allowAsync: true,
+      allowLateFailure: true,
+    ));
 
 /// Checks whether [value] satisfies all expectations invoked in [condition].
 ///
@@ -82,11 +84,13 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
 CheckFailure? softCheck<T>(T value, void Function(Check<T>) condition) {
   CheckFailure? failure;
   final check = Check<T>._(_TestContext._root(
-      value: _Present(value),
-      fail: (f) {
-        failure = f;
-      },
-      allowAsync: false));
+    value: _Present(value),
+    fail: (f) {
+      failure = f;
+    },
+    allowAsync: false,
+    allowLateFailure: false,
+  ));
   condition(check);
   return failure;
 }
@@ -103,11 +107,13 @@ Future<CheckFailure?> softCheckAsync<T>(
     T value, Future<void> Function(Check<T>) condition) async {
   CheckFailure? failure;
   final check = Check<T>._(_TestContext._root(
-      value: _Present(value),
-      fail: (f) {
-        failure = f;
-      },
-      allowAsync: true));
+    value: _Present(value),
+    fail: (f) {
+      failure = f;
+    },
+    allowAsync: true,
+    allowLateFailure: false,
+  ));
   await condition(check);
   return failure;
 }
@@ -122,11 +128,13 @@ Future<CheckFailure?> softCheckAsync<T>(
 /// line.
 Iterable<String> describe<T>(void Function(Check<T>) condition) {
   final context = _TestContext<T>._root(
-      value: _Absent(),
-      fail: (_) {
-        throw UnimplementedError();
-      },
-      allowAsync: false);
+    value: _Absent(),
+    fail: (_) {
+      throw UnimplementedError();
+    },
+    allowAsync: false,
+    allowLateFailure: true,
+  );
   condition(Check._(context));
   return context.detail(context).expected.skip(1);
 }
@@ -172,6 +180,25 @@ abstract class Context<T> {
   /// this method will throw.
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate);
+
+  /// Expect that [predicate] will not invoke the passed callback with a
+  /// [Rejection] at any point.
+  ///
+  /// In contrast to [expectAsync], a rejection is reported through a
+  /// callback instead of through a returned Future. The callback may be invoked
+  /// at any point that the failure surfaces.
+  ///
+  /// This may be useful for a condition checking that some event _never_
+  /// happens. If there is no specific point where it is know to be safe to stop
+  /// listening for the event, there is no way to complete a returned future and
+  /// consider the check "complete".
+  ///
+  /// May not be used from the context for a [Check] created by [softCheck] or
+  /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
+  /// [TestFailure] when used with a [checkThat] check. Most conditions should
+  /// prefer to use [expect] or [expectAsync].
+  void expectUnawaited(Iterable<String> Function() clause,
+      void Function(T, void Function(Rejection)) predicate);
 
   /// Extract a property from the value for further checking.
   ///
@@ -284,16 +311,19 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   final void Function(CheckFailure) _fail;
 
   final bool _allowAsync;
+  final bool _allowLateFailure;
 
   _TestContext._root({
     required _Optional<T> value,
     required void Function(CheckFailure) fail,
     required bool allowAsync,
+    required bool allowLateFailure,
     String? label,
   })  : _value = value,
         _label = label ?? '',
         _fail = fail,
         _allowAsync = allowAsync,
+        _allowLateFailure = allowLateFailure,
         _parent = null,
         _clauses = [],
         _aliases = [];
@@ -304,6 +334,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _aliases = original._aliases,
         _fail = original._fail,
         _allowAsync = original._allowAsync,
+        _allowLateFailure = original._allowLateFailure,
         // Never read from an aliased context because they are never present in
         // `_clauses`.
         _label = '';
@@ -312,6 +343,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       : _parent = parent,
         _fail = parent._fail,
         _allowAsync = parent._allowAsync,
+        _allowLateFailure = parent._allowLateFailure,
         _clauses = [],
         _aliases = [];
 
@@ -338,6 +370,18 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     outstandingWork.complete();
     if (rejection == null) return;
     _fail(_failure(rejection));
+  }
+
+  @override
+  void expectUnawaited(Iterable<String> Function() clause,
+      void Function(T actual, void Function(Rejection) reject) predicate) {
+    if (!_allowLateFailure) {
+      throw StateError('Late expectations cannot be used for soft checks');
+    }
+    _clauses.add(_StringClause(clause));
+    _value.apply((actual) {
+      predicate(actual, (r) => _fail(_failure(r)));
+    });
   }
 
   @override
@@ -421,17 +465,24 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 }
 
+/// A context which never runs expectations and can never fail.
 class _SkippedContext<T> implements Context<T> {
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
-    // Ignore
+    // no-op
   }
 
   @override
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate) async {
-    // Ignore
+    // no-op
+  }
+
+  @override
+  void expectUnawaited(Iterable<String> Function() clause,
+      void Function(T actual, void Function(Rejection) reject) predicate) {
+    // no-op
   }
 
   @override
@@ -481,7 +532,7 @@ class CheckFailure {
 ///
 /// A check may have some number of succeeding expectations, and the failure may
 /// be for an expectation against a property derived from the value at the root
-/// fo the check. For example, in `checkThat([]).length.equals(1)` the specific
+/// of the check. For example, in `checkThat([]).length.equals(1)` the specific
 /// value that gets rejected is `0` from the length of the list, and the `Check`
 /// that sees the rejection is nested with the label "has length".
 class FailureDetail {

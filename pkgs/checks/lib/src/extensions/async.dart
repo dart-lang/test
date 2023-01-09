@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:checks/context.dart';
@@ -23,6 +24,31 @@ extension FutureChecks<T> on Check<Future<T>> {
             actual: 'A future that completes as an error',
             which: ['Threw ${literal(e)}']);
       }
+    });
+  }
+
+  /// Expectst that the `Future` never completes as a value or an error.
+  ///
+  /// Immediately returns and does not cause the test to remain running if it
+  /// ends.
+  /// If the future completes at any time, raises a test failure. This may
+  /// happen after the test has already appeared to succeed.
+  ///
+  /// Not compatible with [softCheck] or [softCheckAsync] since there is no
+  /// concrete end point where this condition has definitely succeeded.
+  void doesNotComplete() {
+    context.expectUnawaited(() => ['does not complete as value or error'],
+        (actual, reject) {
+      unawaited(actual.then((r) {
+        reject(Rejection(actual: 'A future that completed to ${literal(r)}'));
+      }, onError: (e, st) {
+        reject(Rejection(
+            actual: 'A future that completed as an error:',
+            which: [
+              'threw ${literal(e)}',
+              ...LineSplitter().convert(st.toString())
+            ]));
+      }));
     });
   }
 
