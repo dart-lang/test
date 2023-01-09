@@ -33,7 +33,7 @@ void main() {
     checkThat(_testMap).values.contains(1);
   });
 
-  test('index operator', () async {
+  test('operator []', () async {
     checkThat(_testMap)['a'].equals(1);
     checkThat(softCheck<Map<String, int>>(_testMap, (c) => c['z']))
         .isARejection(which: ['does not contain the key \'z\'']);
