@@ -12,6 +12,15 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
   Check<Iterable<K>> get keys => has((m) => m.keys, 'keys');
   Check<Iterable<V>> get values => has((m) => m.values, 'values');
   Check<int> get length => has((m) => m.length, 'length');
+  Check<V> operator [](K key) =>
+      context.nest('contains a value for ${literal(key)}', (actual) {
+        if (!actual.containsKey(key)) {
+          return Extracted.rejection(
+              actual: literal(actual),
+              which: ['does not contain the key ${literal(key)}']);
+        }
+        return Extracted.value(actual[key] as V);
+      });
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
