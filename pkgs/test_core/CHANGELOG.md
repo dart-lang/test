@@ -2,6 +2,7 @@
 
 * Don't run `tearDown` until the test body and outstanding work is complete,
   even if the test has already failed.
+* Update `vm_service` constraint to `>=6.0.0 <11.0.0`.
 
 # 0.4.21
 
