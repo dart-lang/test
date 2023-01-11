@@ -1,4 +1,4 @@
-## 1.22.2-dev
+## 1.22.2
 
 * Don't run `tearDown` until the test body and outstanding work is complete,
   even if the test has already failed.
