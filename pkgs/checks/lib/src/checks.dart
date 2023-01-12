@@ -143,21 +143,8 @@ Iterable<String> describe<T>(Condition<T> condition) {
 /// A set of expectations that are checked against the value when applied to a
 /// [Check].
 abstract class Condition<T> {
-  factory Condition(FutureOr<void> Function(Check<T>) c) = _CallbackCondition;
   void apply(Check<T> check);
   Future<void> applyAsync(Check<T> check);
-}
-
-class _CallbackCondition<T> implements Condition<T> {
-  FutureOr<void> Function(Check<T>) _callback;
-  _CallbackCondition(this._callback);
-  void apply(Check<T> check) {
-    _callback(check);
-  }
-
-  Future<void> applyAsync(Check<T> check) async {
-    await _callback(check);
-  }
 }
 
 ConditionCheck<T> it<T>() => ConditionCheck._();
