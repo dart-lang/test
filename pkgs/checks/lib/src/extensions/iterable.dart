@@ -44,7 +44,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
 
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
-  void any(void Function(Check<T>) elementCondition) {
+  void any(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
@@ -67,7 +67,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
   /// [elementCondition].
   ///
   /// Empty iterables will pass always pass this check.
-  void every(void Function(Check<T>) elementCondition) {
+  void every(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
@@ -108,7 +108,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
   void pairwiseComparesTo<S>(List<S> expected,
-      void Function(Check<T>, S) elementCondition, String description) {
+      Condition<T> Function(S) elementCondition, String description) {
     context.expect(() {
       return ['pairwise $description ${literal(expected)}'];
     }, (actual) {
@@ -121,11 +121,9 @@ extension IterableChecks<T> on Check<Iterable<T>> {
           ]);
         }
         final actualValue = iterator.current;
-        final failure = softCheck(
-            actualValue, (check) => elementCondition(check, expectedValue));
+        final failure = softCheck(actualValue, elementCondition(expectedValue));
         if (failure == null) continue;
-        final innerDescription =
-            describe<T>((check) => elementCondition(check, expectedValue));
+        final innerDescription = describe<T>(elementCondition(expectedValue));
         final which = failure.rejection.which;
         return Rejection(actual: literal(actual), which: [
           'does not have an element at index $i that:',

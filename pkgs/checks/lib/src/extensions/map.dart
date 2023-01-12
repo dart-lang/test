@@ -48,7 +48,7 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
 
   /// Expects that the map contains some key such that [keyCondition] is
   /// satisfied.
-  void containsKeyThat(void Function(Check<K>) keyCondition) {
+  void containsKeyThat(Condition<K> keyCondition) {
     context.expect(() {
       final conditionDescription = describe(keyCondition);
       assert(conditionDescription.isNotEmpty);
@@ -78,7 +78,7 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
 
   /// Expects that the map contains some value such that [valueCondition] is
   /// satisfied.
-  void containsValueThat(void Function(Check<V>) valueCondition) {
+  void containsValueThat(Condition<V> valueCondition) {
     context.expect(() {
       final conditionDescription = describe(valueCondition);
       assert(conditionDescription.isNotEmpty);

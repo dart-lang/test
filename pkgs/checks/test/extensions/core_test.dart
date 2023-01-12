@@ -14,7 +14,7 @@ void main() {
       checkThat(1).isA<int>();
 
       checkThat(
-        softCheck(1, (p0) => p0.isA<String>()),
+        softCheck(1, it()..isA<String>()),
       ).isARejection(actual: '<1>', which: ['Is a int']);
     });
   });
@@ -26,7 +26,7 @@ void main() {
       checkThat(
         softCheck<int>(
           2,
-          (p0) => p0.has((v) => throw UnimplementedError(), 'isOdd'),
+          it()..has((v) => throw UnimplementedError(), 'isOdd'),
         ),
       ).isARejection(
         actual: '<2>',
@@ -35,16 +35,16 @@ void main() {
     });
 
     test('that', () {
-      checkThat(true).that((p0) => p0.isTrue());
+      checkThat(true).that(it()..isTrue());
     });
 
     test('not', () {
-      checkThat(false).not((p0) => p0.isTrue());
+      checkThat(false).not(it()..isTrue());
 
       checkThat(
         softCheck<bool>(
           true,
-          (p0) => p0.not((p0) => p0.isTrue()),
+          it()..not(it()..isTrue()),
         ),
       ).isARejection(
         actual: '<true>',
@@ -60,7 +60,7 @@ void main() {
       checkThat(
         softCheck<bool>(
           false,
-          (p0) => p0.isTrue(),
+          it()..isTrue(),
         ),
       ).isARejection(actual: '<false>');
     });
@@ -70,7 +70,7 @@ void main() {
 
       checkThat(softCheck<bool>(
         true,
-        (p0) => p0.isFalse(),
+        it()..isFalse(),
       )).isARejection(actual: '<true>');
     });
   });
@@ -80,14 +80,14 @@ void main() {
       checkThat(1).equals(1);
 
       checkThat(
-        softCheck(1, (p0) => p0.equals(2)),
+        softCheck(1, it()..equals(2)),
       ).isARejection(actual: '<1>', which: ['are not equal']);
     });
 
     test('identical', () {
       checkThat(1).identicalTo(1);
 
-      checkThat(softCheck(1, (p0) => p0.identicalTo(2)))
+      checkThat(softCheck(1, it()..identicalTo(2)))
           .isARejection(actual: '<1>', which: ['is not identical']);
     });
   });
@@ -96,14 +96,14 @@ void main() {
     test('isNotNull', () {
       checkThat(1).isNotNull();
 
-      checkThat(softCheck(null, (p0) => p0.isNotNull()))
+      checkThat(softCheck(null, it()..isNotNull()))
           .isARejection(actual: '<null>');
     });
 
     test('isNull', () {
       checkThat(null).isNull();
 
-      checkThat(softCheck(1, (p0) => p0.isNull())).isARejection(actual: '<1>');
+      checkThat(softCheck(1, it()..isNull())).isARejection(actual: '<1>');
     });
   });
 }

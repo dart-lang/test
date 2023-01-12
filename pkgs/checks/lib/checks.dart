@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-export 'src/checks.dart' show checkThat, Check;
+export 'src/checks.dart' show checkThat, Check, Skip, it;
 export 'src/extensions/async.dart' show ChainAsync, FutureChecks, StreamChecks;
 export 'src/extensions/core.dart'
     show BoolChecks, CoreChecks, NullabilityChecks;

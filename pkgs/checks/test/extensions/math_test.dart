@@ -15,11 +15,11 @@ void main() {
         checkThat(42) > 7;
       });
       test('fails for less than', () {
-        checkThat(softCheck<int>(42, (p0) => p0 > 50))
+        checkThat(softCheck<int>(42, Condition((p0) => p0 > 50)))
             .isARejection(actual: '<42>', which: ['is not greater than <50>']);
       });
       test('fails for equal', () {
-        checkThat(softCheck<int>(42, (p0) => p0 > 42))
+        checkThat(softCheck<int>(42, Condition((p0) => p0 > 42)))
             .isARejection(actual: '<42>', which: ['is not greater than <42>']);
       });
     });
@@ -29,7 +29,7 @@ void main() {
         checkThat(42) >= 7;
       });
       test('fails for less than', () {
-        checkThat(softCheck<int>(42, (p0) => p0 >= 50)).isARejection(
+        checkThat(softCheck<int>(42, Condition((p0) => p0 >= 50))).isARejection(
             actual: '<42>', which: ['is not greater than or equal to <50>']);
       });
       test('succeeds for equal', () {
@@ -42,11 +42,11 @@ void main() {
         checkThat(42) < 50;
       });
       test('fails for greater than', () {
-        checkThat(softCheck<int>(42, (p0) => p0 < 7))
+        checkThat(softCheck<int>(42, Condition((p0) => p0 < 7)))
             .isARejection(actual: '<42>', which: ['is not less than <7>']);
       });
       test('fails for equal', () {
-        checkThat(softCheck<int>(42, (p0) => p0 < 42))
+        checkThat(softCheck<int>(42, Condition((p0) => p0 < 42)))
             .isARejection(actual: '<42>', which: ['is not less than <42>']);
       });
     });
@@ -56,7 +56,7 @@ void main() {
         checkThat(42) <= 50;
       });
       test('fails for greater than', () {
-        checkThat(softCheck<int>(42, (p0) => p0 <= 7)).isARejection(
+        checkThat(softCheck<int>(42, Condition((p0) => p0 <= 7))).isARejection(
             actual: '<42>', which: ['is not less than or equal to <7>']);
       });
       test('succeeds for equal', () {
@@ -69,11 +69,11 @@ void main() {
         checkThat(double.nan).isNaN();
       });
       test('fails for ints', () {
-        checkThat(softCheck<num>(42, (c) => c.isNaN()))
+        checkThat(softCheck<num>(42, it()..isNaN()))
             .isARejection(actual: '<42>', which: ['is a number']);
       });
       test('fails for numeric doubles', () {
-        checkThat(softCheck<num>(42.1, (c) => c.isNaN()))
+        checkThat(softCheck<num>(42.1, it()..isNaN()))
             .isARejection(actual: '<42.1>', which: ['is a number']);
       });
     });
@@ -86,7 +86,7 @@ void main() {
         checkThat(42.1).isNotNaN();
       });
       test('fails for NaN', () {
-        checkThat(softCheck<num>(double.nan, (c) => c.isNotNaN()))
+        checkThat(softCheck<num>(double.nan, it()..isNotNaN()))
             .isARejection(actual: '<NaN>', which: ['is not a number (NaN)']);
       });
     });
@@ -99,7 +99,7 @@ void main() {
         checkThat(-0.0).isNegative();
       });
       test('fails for zero', () {
-        checkThat(softCheck<num>(0, (c) => c.isNegative()))
+        checkThat(softCheck<num>(0, it()..isNegative()))
             .isARejection(actual: '<0>', which: ['is not negative']);
       });
     });
@@ -112,11 +112,11 @@ void main() {
         checkThat(0).isNotNegative();
       });
       test('fails for -0.0', () {
-        checkThat(softCheck<num>(-0.0, (c) => c.isNotNegative()))
+        checkThat(softCheck<num>(-0.0, it()..isNotNegative()))
             .isARejection(actual: '<-0.0>', which: ['is negative']);
       });
       test('fails for negative numbers', () {
-        checkThat(softCheck<num>(-1, (c) => c.isNotNegative()))
+        checkThat(softCheck<num>(-1, it()..isNotNegative()))
             .isARejection(actual: '<-1>', which: ['is negative']);
       });
     });
@@ -126,15 +126,15 @@ void main() {
         checkThat(1).isFinite();
       });
       test('fails for NaN', () {
-        checkThat(softCheck<num>(double.nan, (c) => c.isFinite()))
+        checkThat(softCheck<num>(double.nan, it()..isFinite()))
             .isARejection(actual: '<NaN>', which: ['is not finite']);
       });
       test('fails for infinity', () {
-        checkThat(softCheck<num>(double.infinity, (c) => c.isFinite()))
+        checkThat(softCheck<num>(double.infinity, it()..isFinite()))
             .isARejection(actual: '<Infinity>', which: ['is not finite']);
       });
       test('fails for negative infinity', () {
-        checkThat(softCheck<num>(double.negativeInfinity, (c) => c.isFinite()))
+        checkThat(softCheck<num>(double.negativeInfinity, it()..isFinite()))
             .isARejection(actual: '<-Infinity>', which: ['is not finite']);
       });
     });
@@ -150,7 +150,7 @@ void main() {
         checkThat(double.nan).isNotFinite();
       });
       test('fails for finite numbers', () {
-        checkThat(softCheck<num>(1, (c) => c.isNotFinite()))
+        checkThat(softCheck<num>(1, it()..isNotFinite()))
             .isARejection(actual: '<1>', which: ['is finite']);
       });
     });
@@ -163,11 +163,11 @@ void main() {
         checkThat(double.negativeInfinity).isInfinite();
       });
       test('fails for NaN', () {
-        checkThat(softCheck<num>(double.nan, (c) => c.isInfinite()))
+        checkThat(softCheck<num>(double.nan, it()..isInfinite()))
             .isARejection(actual: '<NaN>', which: ['is not infinite']);
       });
       test('fails for finite numbers', () {
-        checkThat(softCheck<num>(1, (c) => c.isInfinite()))
+        checkThat(softCheck<num>(1, it()..isInfinite()))
             .isARejection(actual: '<1>', which: ['is not infinite']);
       });
     });
@@ -180,12 +180,12 @@ void main() {
         checkThat(double.nan).isNotInfinite();
       });
       test('fails for infinity', () {
-        checkThat(softCheck<num>(double.infinity, (c) => c.isNotInfinite()))
+        checkThat(softCheck<num>(double.infinity, it()..isNotInfinite()))
             .isARejection(actual: '<Infinity>', which: ['is infinite']);
       });
       test('fails for negative infinity', () {
-        checkThat(softCheck<num>(
-                double.negativeInfinity, (c) => c.isNotInfinite()))
+        checkThat(
+                softCheck<num>(double.negativeInfinity, it()..isNotInfinite()))
             .isARejection(actual: '<-Infinity>', which: ['is infinite']);
       });
     });
@@ -201,11 +201,11 @@ void main() {
         checkThat(1).isCloseTo(2, 1);
       });
       test('fails for low values', () {
-        checkThat(softCheck<num>(1, (c) => c.isCloseTo(3, 1)))
+        checkThat(softCheck<num>(1, it()..isCloseTo(3, 1)))
             .isARejection(actual: '<1>', which: ['differs by <2>']);
       });
       test('fails for high values', () {
-        checkThat(softCheck<num>(5, (c) => c.isCloseTo(3, 1)))
+        checkThat(softCheck<num>(5, it()..isCloseTo(3, 1)))
             .isARejection(actual: '<5>', which: ['differs by <2>']);
       });
     });

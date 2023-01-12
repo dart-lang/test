@@ -27,40 +27,41 @@ void main() {
   test('isEmpty', () {
     checkThat([]).isEmpty();
     checkThat(
-      softCheck<Iterable<int>>(_testIterable, (p0) => p0.isEmpty()),
+      softCheck<Iterable<int>>(_testIterable, it()..isEmpty()),
     ).isARejection(actual: '(0, 1)', which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
     checkThat(_testIterable).isNotEmpty();
     checkThat(
-      softCheck<Iterable<int>>(Iterable<int>.empty(), (p0) => p0.isNotEmpty()),
+      softCheck<Iterable<int>>(Iterable<int>.empty(), it()..isNotEmpty()),
     ).isARejection(actual: '()', which: ['is not empty']);
   });
 
   test('contains', () {
     checkThat(_testIterable).contains(0);
     checkThat(
-      softCheck<Iterable<int>>(_testIterable, (p0) => p0.contains(2)),
+      softCheck<Iterable<int>>(_testIterable, it()..contains(2)),
     ).isARejection(actual: '(0, 1)', which: ['does not contain <2>']);
   });
   test('contains', () {
-    checkThat(_testIterable).any((p0) => p0.equals(1));
+    checkThat(_testIterable).any(it()..equals(1));
     checkThat(
       softCheck<Iterable<int>>(
         _testIterable,
-        (p0) => p0.any((p1) => p1.equals(2)),
+        it()..any(it()..equals(2)),
       ),
     ).isARejection(actual: '(0, 1)', which: ['Contains no matching element']);
   });
 
   group('every', () {
     test('succeeds for the happy path', () {
-      checkThat(_testIterable).every((e) => e > -1);
+      checkThat(_testIterable).every(Condition((e) => e > -1));
     });
 
     test('includes details of first failing element', () async {
-      checkThat(softCheck(_testIterable, (i) => i.every((e) => e < 0)))
+      checkThat(softCheck<Iterable<int>>(
+              _testIterable, it()..every(Condition((e) => e < 0))))
           .isARejection(actual: '(0, 1)', which: [
         'has an element at index 0 that:',
         '  Actual: <0>',
@@ -71,17 +72,18 @@ void main() {
 
   group('pairwiseComparesTo', () {
     test('succeeds for the happy path', () {
-      checkThat(_testIterable).pairwiseComparesTo([1, 2], (check, expected) {
-        check < expected;
-      }, 'is less than');
+      checkThat(_testIterable).pairwiseComparesTo(
+          [1, 2], (expected) => Condition((c) => c < expected), 'is less than');
     });
     test('fails for mismatched element', () async {
-      checkThat(softCheck(
-          _testIterable,
-          (i) => i.pairwiseComparesTo(
-              [1, 1],
-              (check, expected) => check < expected,
-              'is less than'))).isARejection(actual: '(0, 1)', which: [
+      checkThat(softCheck<Iterable<int>>(
+              _testIterable,
+              it()
+                ..pairwiseComparesTo(
+                    [1, 1],
+                    (expected) => Condition((c) => c < expected),
+                    'is less than')))
+          .isARejection(actual: '(0, 1)', which: [
         'does not have an element at index 1 that:',
         '  is less than <1>',
         'Actual element at index 1: <1>',
@@ -89,20 +91,25 @@ void main() {
       ]);
     });
     test('fails for too few elements', () {
-      checkThat(softCheck(
-          _testIterable,
-          (i) => i.pairwiseComparesTo(
-              [1, 2, 3],
-              (check, expected) => check < expected,
-              'is less than'))).isARejection(actual: '(0, 1)', which: [
+      checkThat(softCheck<Iterable<int>>(
+              _testIterable,
+              it()
+                ..pairwiseComparesTo(
+                    [1, 2, 3],
+                    (expected) => Condition((c) => c < expected),
+                    'is less than')))
+          .isARejection(actual: '(0, 1)', which: [
         'has too few elements, there is no element to match at index 2'
       ]);
     });
     test('fails for too many elements', () {
-      checkThat(softCheck(
+      checkThat(softCheck<Iterable<int>>(
               _testIterable,
-              (i) => i.pairwiseComparesTo(
-                  [1], (check, expected) => check < expected, 'is less than')))
+              it()
+                ..pairwiseComparesTo(
+                    [1],
+                    (expected) => Condition((c) => c < expected),
+                    'is less than')))
           .isARejection(
               actual: '(0, 1)',
               which: ['has too many elements, expected exactly 1']);

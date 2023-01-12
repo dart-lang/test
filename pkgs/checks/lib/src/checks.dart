@@ -21,7 +21,9 @@ import 'describe.dart';
 class Check<T> {
   final Context<T> _context;
   Check._(this._context);
+}
 
+extension Skip<T> on Check<T> {
   /// Mark the currently running test as skipped and return a [Check] that will
   /// ignore all expectations.
   ///
@@ -81,7 +83,7 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
 ///
 /// Asynchronous expectations are not allowed in [condition] and will cause a
 /// runtime error if they are used.
-CheckFailure? softCheck<T>(T value, void Function(Check<T>) condition) {
+CheckFailure? softCheck<T>(T value, Condition<T> condition) {
   CheckFailure? failure;
   final check = Check<T>._(_TestContext._root(
     value: _Present(value),
@@ -91,7 +93,7 @@ CheckFailure? softCheck<T>(T value, void Function(Check<T>) condition) {
     allowAsync: false,
     allowLateFailure: false,
   ));
-  condition(check);
+  condition.apply(check);
   return failure;
 }
 
@@ -103,8 +105,7 @@ CheckFailure? softCheck<T>(T value, void Function(Check<T>) condition) {
 ///
 /// In contrast to [softCheck], asynchronous expectations are allowed in
 /// [condition].
-Future<CheckFailure?> softCheckAsync<T>(
-    T value, Future<void> Function(Check<T>) condition) async {
+Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
   CheckFailure? failure;
   final check = Check<T>._(_TestContext._root(
     value: _Present(value),
@@ -114,7 +115,7 @@ Future<CheckFailure?> softCheckAsync<T>(
     allowAsync: true,
     allowLateFailure: false,
   ));
-  await condition(check);
+  await condition.applyAsync(check);
   return failure;
 }
 
@@ -126,7 +127,7 @@ Future<CheckFailure?> softCheckAsync<T>(
 /// Matches the "Expected: " lines in the output of a failure message if a value
 /// did not meet the last expectation in [condition], without the first labeled
 /// line.
-Iterable<String> describe<T>(void Function(Check<T>) condition) {
+Iterable<String> describe<T>(Condition<T> condition) {
   final context = _TestContext<T>._root(
     value: _Absent(),
     fail: (_) {
@@ -135,9 +136,31 @@ Iterable<String> describe<T>(void Function(Check<T>) condition) {
     allowAsync: false,
     allowLateFailure: true,
   );
-  condition(Check._(context));
+  condition.apply(Check._(context));
   return context.detail(context).expected.skip(1);
 }
+
+/// A set of expectations that are checked against the value when applied to a
+/// [Check].
+abstract class Condition<T> {
+  factory Condition(FutureOr<void> Function(Check<T>) c) = _CallbackCondition;
+  void apply(Check<T> check);
+  Future<void> applyAsync(Check<T> check);
+}
+
+class _CallbackCondition<T> implements Condition<T> {
+  FutureOr<void> Function(Check<T>) _callback;
+  _CallbackCondition(this._callback);
+  void apply(Check<T> check) {
+    _callback(check);
+  }
+
+  Future<void> applyAsync(Check<T> check) async {
+    await _callback(check);
+  }
+}
+
+ConditionCheck<T> it<T>() => ConditionCheck._();
 
 extension ContextExtension<T> on Check<T> {
   /// The expectations and nesting context for this check.
@@ -626,4 +649,85 @@ class Rejection {
   final Iterable<String>? which;
 
   Rejection({required this.actual, this.which});
+}
+
+class ConditionCheck<T> implements Check<T>, Condition<T> {
+  ConditionCheck._();
+
+  @override
+  void apply(Check<T> check) {
+    _context.apply(check);
+  }
+
+  @override
+  Future<void> applyAsync(Check<T> check) async {
+    await _context.applyAsync(check);
+  }
+
+  @override
+  final _ReplayContext<T> _context = _ReplayContext();
+}
+
+class _ReplayContext<T> implements Context<T>, Condition<T> {
+  final _interactions = <FutureOr<void> Function(Context<T>)>[];
+
+  @override
+  void apply(Check<T> check) {
+    for (var interaction in _interactions) {
+      interaction(check.context);
+    }
+  }
+
+  @override
+  Future<void> applyAsync(Check<T> check) async {
+    for (var interaction in _interactions) {
+      await interaction(check.context);
+    }
+  }
+
+  @override
+  void expect(
+      Iterable<String> Function() clause, Rejection? Function(T) predicate) {
+    _interactions.add((c) {
+      c.expect(clause, predicate);
+    });
+  }
+
+  @override
+  Future<void> expectAsync<R>(Iterable<String> Function() clause,
+      FutureOr<Rejection?> Function(T) predicate) async {
+    _interactions.add((c) async {
+      await c.expectAsync(clause, predicate);
+    });
+  }
+
+  @override
+  void expectUnawaited(Iterable<String> Function() clause,
+      void Function(T, void Function(Rejection)) predicate) {
+    _interactions.add((c) {
+      c.expectUnawaited(clause, predicate);
+    });
+  }
+
+  @override
+  Check<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
+      {bool atSameLevel = false}) {
+    final nestedContext = _ReplayContext<R>();
+    _interactions.add((c) {
+      var result = c.nest(label, extract, atSameLevel: atSameLevel);
+      nestedContext.apply(result);
+    });
+    return Check._(nestedContext);
+  }
+
+  @override
+  Future<Check<R>> nestAsync<R>(
+      String label, FutureOr<Extracted<R>> Function(T) extract) async {
+    final nestedContext = _ReplayContext<R>();
+    _interactions.add((c) async {
+      var result = await c.nestAsync(label, extract);
+      await nestedContext.applyAsync(result);
+    });
+    return Check._(nestedContext);
+  }
 }

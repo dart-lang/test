@@ -16,7 +16,7 @@ void main() {
       });
       test('fails for functions that return normally', () {
         checkThat(
-          softCheck<void Function()>(() {}, (p0) => p0.throws<StateError>()),
+          softCheck<void Function()>(() {}, it()..throws<StateError>()),
         ).isARejection(
             actual: 'a function that returned <null>',
             which: ['did not throw']);
@@ -25,7 +25,7 @@ void main() {
         checkThat(
           softCheck<void Function()>(
             () => throw StateError('oops!'),
-            (p0) => p0.throws<ArgumentError>(),
+            it()..throws<ArgumentError>(),
           ),
         ).isARejection(
           actual: 'a function that threw error Bad state: oops!',
@@ -42,9 +42,10 @@ void main() {
         checkThat(softCheck<int Function()>(() {
           Error.throwWithStackTrace(
               StateError('oops!'), StackTrace.fromString('fake trace'));
-        }, (c) => c.returnsNormally())).isARejection(
-            actual: 'a function that throws',
-            which: ['threw Bad state: oops!', 'fake trace']);
+        }, it()..returnsNormally()))
+            .isARejection(
+                actual: 'a function that throws',
+                which: ['threw Bad state: oops!', 'fake trace']);
       });
     });
   });
