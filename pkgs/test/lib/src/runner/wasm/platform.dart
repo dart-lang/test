@@ -162,7 +162,7 @@ class BrowserWasmPlatform extends PlatformPlugin
       var testName = htmlEscape.convert(test);
       var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
       var contents = File(template).readAsStringSync();
-      var jsRuntime = 'dart2wasm_runtime.mjs';
+      var jsRuntime = p.basename('$test.browser_test.dart.mjs');
       var processedContents = contents
           // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', link)
@@ -246,7 +246,7 @@ class BrowserWasmPlatform extends PlatformPlugin
           '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
       var wasmUrl = '$baseUrl.wasm';
       var jsRuntimeWrapperUrl = '$baseUrl.js';
-      var jsRuntimeUrl = p.join(p.dirname(dartPath), 'dart2wasm_runtime.mjs');
+      var jsRuntimeUrl = '$baseUrl.mjs';
       var htmlUrl = '$baseUrl.html';
 
       var bootstrapContent = '''
@@ -274,7 +274,7 @@ class BrowserWasmPlatform extends PlatformPlugin
             headers: {'Content-Type': 'application/javascript'});
       });
 
-      var jsRuntimePath = p.join(dir, 'dart2wasm_runtime.mjs');
+      var jsRuntimePath = '$baseCompiledPath.mjs';
       _wasmHandler.add(jsRuntimeUrl, (request) {
         return shelf.Response.ok(File(jsRuntimePath).readAsBytesSync(),
             headers: {'Content-Type': 'application/javascript'});
