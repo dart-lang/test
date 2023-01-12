@@ -14,7 +14,7 @@ final defaultSettings = UnmodifiableMapView({
       macOSExecutable: null,
       windowsExecutable: null,
       arguments: [
-        '--js-flags=--experimental-wasm-gc --wasm-gc-js-interop '
+        '--js-flags=--experimental-wasm-gc '
             '--experimental-wasm-stack-switching '
             '--experimental-wasm-type-reflection'
       ]),
