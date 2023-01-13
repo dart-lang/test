@@ -18,7 +18,7 @@ void main() {
         checkThat(
           softCheck<void Function()>(() {}, it()..throws<StateError>()),
         ).isARejection(
-            actual: 'a function that returned <null>',
+            actual: ['a function that returned <null>'],
             which: ['did not throw']);
       });
       test('fails for functions that throw the wrong type', () {
@@ -28,7 +28,7 @@ void main() {
             it()..throws<ArgumentError>(),
           ),
         ).isARejection(
-          actual: 'a function that threw error Bad state: oops!',
+          actual: ['a function that threw error <Bad state: oops!>'],
           which: ['did not throw an ArgumentError'],
         );
       });
@@ -44,8 +44,8 @@ void main() {
               StateError('oops!'), StackTrace.fromString('fake trace'));
         }, it()..returnsNormally()))
             .isARejection(
-                actual: 'a function that throws',
-                which: ['threw Bad state: oops!', 'fake trace']);
+                actual: ['a function that throws'],
+                which: ['threw <Bad state: oops!>', 'fake trace']);
       });
     });
   });

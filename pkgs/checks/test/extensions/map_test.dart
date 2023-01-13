@@ -13,7 +13,7 @@ const _testMap = {
   'b': 2,
 };
 
-const _testMapString = '{a: 1, b: 2}';
+const _testMapString = "{'a': 1, 'b': 2}";
 
 void main() {
   test('length', () {
@@ -43,14 +43,14 @@ void main() {
     checkThat(<String, int>{}).isEmpty();
     checkThat(
       softCheck<Map<String, int>>(_testMap, it()..isEmpty()),
-    ).isARejection(actual: _testMapString, which: ['is not empty']);
+    ).isARejection(actual: [_testMapString], which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
     checkThat(_testMap).isNotEmpty();
     checkThat(
       softCheck<Map<String, int>>({}, it()..isNotEmpty()),
-    ).isARejection(actual: '{}', which: ['is not empty']);
+    ).isARejection(actual: ['{}'], which: ['is not empty']);
   });
 
   test('containsKey', () {
@@ -59,7 +59,7 @@ void main() {
     checkThat(
       softCheck<Map<String, int>>(_testMap, it()..containsKey('c')),
     ).isARejection(
-      actual: _testMapString,
+      actual: [_testMapString],
       which: ["does not contain key 'c'"],
     );
   });
@@ -71,7 +71,7 @@ void main() {
         it()..containsKeyThat(it()..equals('c')),
       ),
     ).isARejection(
-      actual: _testMapString,
+      actual: [_testMapString],
       which: ['Contains no matching key'],
     );
   });
@@ -80,7 +80,7 @@ void main() {
     checkThat(
       softCheck<Map<String, int>>(_testMap, it()..containsValue(3)),
     ).isARejection(
-      actual: _testMapString,
+      actual: [_testMapString],
       which: ['does not contain value <3>'],
     );
   });
@@ -90,7 +90,7 @@ void main() {
       softCheck<Map<String, int>>(
           _testMap, it()..containsValueThat(it()..equals(3))),
     ).isARejection(
-      actual: _testMapString,
+      actual: [_testMapString],
       which: ['Contains no matching value'],
     );
   });

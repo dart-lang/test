@@ -21,8 +21,8 @@ extension FutureChecks<T> on Check<Future<T>> {
         return Extracted.value(await actual);
       } catch (e) {
         return Extracted.rejection(
-            actual: 'A future that completes as an error',
-            which: ['Threw ${literal(e)}']);
+            actual: ['A future that completes as an error'],
+            which: prefixFirst('Threw ', literal(e)));
       }
     });
   }
@@ -40,14 +40,15 @@ extension FutureChecks<T> on Check<Future<T>> {
     context.expectUnawaited(() => ['does not complete as value or error'],
         (actual, reject) {
       unawaited(actual.then((r) {
-        reject(Rejection(actual: 'A future that completed to ${literal(r)}'));
-      }, onError: (e, st) {
         reject(Rejection(
-            actual: 'A future that completed as an error:',
-            which: [
-              'threw ${literal(e)}',
-              ...LineSplitter().convert(st.toString())
-            ]));
+            actual: prefixFirst('A future that completed to ', literal(r))));
+      }, onError: (e, st) {
+        reject(Rejection(actual: [
+          'A future that completed as an error:'
+        ], which: [
+          ...prefixFirst('threw ', literal(e)),
+          ...(const LineSplitter()).convert(st.toString())
+        ]));
       }));
     });
   }
@@ -63,12 +64,12 @@ extension FutureChecks<T> on Check<Future<T>> {
         (actual) async {
       try {
         return Extracted.rejection(
-            actual: 'Completed to ${literal(await actual)}',
+            actual: prefixFirst('Completed to ', literal(await actual)),
             which: ['Did not throw']);
       } catch (e) {
         if (e is E) return Extracted.value(e as E);
         return Extracted.rejection(
-            actual: 'Completed to error ${literal(e)}',
+            actual: prefixFirst('Completed to error ', literal(e)),
             which: ['Is not an $E']);
       }
     });
@@ -91,13 +92,13 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
     return await context.nestAsync<T>('Emits a value', (actual) async {
       if (!await actual.hasNext) {
         return Extracted.rejection(
-            actual: 'an empty stream', which: ['did not emit any value']);
+            actual: ['an empty stream'], which: ['did not emit any value']);
       }
       try {
         return Extracted.value(await actual.next);
       } catch (e) {
         return Extracted.rejection(
-            actual: 'A stream with error ${literal(e)}',
+            actual: prefixFirst('A stream with error ', literal(e)),
             which: ['emitted an error instead of a value']);
       }
     });
@@ -125,7 +126,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
         count++;
       }
       return Rejection(
-          actual: 'a stream',
+          actual: ['a stream'],
           which: ['ended after emitting $count elements with none matching']);
     });
   }
@@ -143,8 +144,10 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
       var count = 0;
       await for (var emitted in actual.rest) {
         if (softCheck(emitted, condition) == null) {
-          return Rejection(actual: 'a stream', which: [
-            'emitted ${literal(emitted)}',
+          return Rejection(actual: [
+            'a stream'
+          ], which: [
+            ...prefixFirst('emitted ', literal(emitted)),
             if (count > 0) 'following $count other items'
           ]);
         }

@@ -7,43 +7,39 @@ import 'package:checks/context.dart';
 extension NumChecks on Check<num> {
   /// Expects that this number is greater than [other].
   void isGreaterThan(num other) {
-    context.expect(() => ['is greater than ${literal(other)}'], (actual) {
+    context.expect(() => ['is greater than <$other>'], (actual) {
       if (actual > other) return null;
       return Rejection(
-          actual: literal(actual),
-          which: ['is not greater than ${literal(other)}']);
+          actual: literal(actual), which: ['is not greater than <$other>']);
     });
   }
 
   /// Expects that this number is greater than or equal to [other].
   void isGreaterOrEqual(num other) {
-    context.expect(() => ['is greater than or equal to ${literal(other)}'],
-        (actual) {
+    context.expect(() => ['is greater than or equal to <$other>'], (actual) {
       if (actual >= other) return null;
       return Rejection(
           actual: literal(actual),
-          which: ['is not greater than or equal to ${literal(other)}']);
+          which: ['is not greater than or equal to <$other>']);
     });
   }
 
   /// Expects that this number is less than [other].
   void isLessThan(num other) {
-    context.expect(() => ['is less than ${literal(other)}'], (actual) {
+    context.expect(() => ['is less than <$other>'], (actual) {
       if (actual < other) return null;
       return Rejection(
-          actual: literal(actual),
-          which: ['is not less than ${literal(other)}']);
+          actual: literal(actual), which: ['is not less than <$other>']);
     });
   }
 
   /// Expects that this number is less than or equal to [other].
   void isLessOrEqual(num other) {
-    context.expect(() => ['is less than or equal to ${literal(other)}'],
-        (actual) {
+    context.expect(() => ['is less than or equal to <$other>'], (actual) {
       if (actual <= other) return null;
       return Rejection(
           actual: literal(actual),
-          which: ['is not less than or equal to ${literal(other)}']);
+          which: ['is not less than or equal to <$other>']);
     });
   }
 
@@ -122,13 +118,11 @@ extension NumChecks on Check<num> {
   /// Expects that the difference between this number and [other] is less than
   /// or equal to [delta].
   void isCloseTo(num other, num delta) {
-    context.expect(() => ['is within ${literal(delta)} of ${literal(other)}'],
-        (actual) {
+    context.expect(() => ['is within <$delta> of <$other>'], (actual) {
       final difference = (other - actual).abs();
       if (difference <= delta) return null;
       return Rejection(
-          actual: literal(actual),
-          which: ['differs by ${literal(difference)}']);
+          actual: literal(actual), which: ['differs by <$difference>']);
     });
   }
 }
