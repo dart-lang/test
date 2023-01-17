@@ -12,55 +12,55 @@ void main() {
   group('num checks', () {
     group('greater than', () {
       test('succeeds for happy case', () {
-        checkThat(42) > 7;
+        checkThat(42).isGreaterThan(7);
       });
       test('fails for less than', () {
-        checkThat(softCheck<int>(42, Condition((p0) => p0 > 50)))
+        checkThat(softCheck<int>(42, it()..isGreaterThan(50)))
             .isARejection(actual: '<42>', which: ['is not greater than <50>']);
       });
       test('fails for equal', () {
-        checkThat(softCheck<int>(42, Condition((p0) => p0 > 42)))
+        checkThat(softCheck<int>(42, it()..isGreaterThan(42)))
             .isARejection(actual: '<42>', which: ['is not greater than <42>']);
       });
     });
 
     group('greater than or equal', () {
       test('succeeds for happy case', () {
-        checkThat(42) >= 7;
+        checkThat(42).isGreaterOrEqual(7);
       });
       test('fails for less than', () {
-        checkThat(softCheck<int>(42, Condition((p0) => p0 >= 50))).isARejection(
+        checkThat(softCheck<int>(42, it()..isGreaterOrEqual(50))).isARejection(
             actual: '<42>', which: ['is not greater than or equal to <50>']);
       });
       test('succeeds for equal', () {
-        checkThat(42) >= 42;
+        checkThat(42).isGreaterOrEqual(42);
       });
     });
 
     group('less than', () {
       test('succeeds for happy case', () {
-        checkThat(42) < 50;
+        checkThat(42).isLessThan(50);
       });
       test('fails for greater than', () {
-        checkThat(softCheck<int>(42, Condition((p0) => p0 < 7)))
+        checkThat(softCheck<int>(42, it()..isLessThan(7)))
             .isARejection(actual: '<42>', which: ['is not less than <7>']);
       });
       test('fails for equal', () {
-        checkThat(softCheck<int>(42, Condition((p0) => p0 < 42)))
+        checkThat(softCheck<int>(42, it()..isLessThan(42)))
             .isARejection(actual: '<42>', which: ['is not less than <42>']);
       });
     });
 
     group('less than or equal', () {
       test('succeeds for happy case', () {
-        checkThat(42) <= 50;
+        checkThat(42).isLessOrEqual(50);
       });
       test('fails for greater than', () {
-        checkThat(softCheck<int>(42, Condition((p0) => p0 <= 7))).isARejection(
+        checkThat(softCheck<int>(42, it()..isLessOrEqual(7))).isARejection(
             actual: '<42>', which: ['is not less than or equal to <7>']);
       });
       test('succeeds for equal', () {
-        checkThat(42) <= 42;
+        checkThat(42).isLessOrEqual(42);
       });
     });
 

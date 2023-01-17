@@ -6,7 +6,7 @@ void main() {
   group('failures', () {
     test('includes expected, actual, and which', () {
       checkThat(() {
-        checkThat(1) > 2;
+        checkThat(1).isGreaterThan(2);
       }).throwsFailure().equals('''
 Expected: a int that:
   is greater than <2>
@@ -29,19 +29,19 @@ Actual: a List<dynamic> that:
 
     test('include a reason when provided', () {
       checkThat(() {
-        checkThat(because: 'Some reason', 1) > 2;
+        checkThat(because: 'Some reason', 1).isGreaterThan(2);
       }).throwsFailure().endsWith('Reason: Some reason');
     });
 
     test('retain type label following isNotNull', () {
       checkThat(() {
-        checkThat<int?>(1).isNotNull() > 2;
+        checkThat<int?>(1).isNotNull().isGreaterThan(2);
       }).throwsFailure().startsWith('Expected: a int? that:\n');
     });
 
     test('retain reason following isNotNull', () {
       checkThat(() {
-        checkThat<int?>(because: 'Some reason', 1).isNotNull() > 2;
+        checkThat<int?>(because: 'Some reason', 1).isNotNull().isGreaterThan(2);
       }).throwsFailure().endsWith('Reason: Some reason');
     });
   });
