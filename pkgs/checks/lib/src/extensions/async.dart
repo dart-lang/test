@@ -111,7 +111,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   ///
   /// Fails if the stream emits an error or closes before emitting a matching
   /// event.
-  Future<void> emitsThrough(void Function(Check<T>) condition) async {
+  Future<void> emitsThrough(Condition<T> condition) async {
     await context.expectAsync(
         () => [
               'Emits any values then a value that:',
@@ -136,7 +136,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   /// Returns a `Future` that completes after the stream has closed.
   ///
   /// Fails if the stream emits any even that satisfies [condition].
-  Future<void> neverEmits(void Function(Check<T>) condition) async {
+  Future<void> neverEmits(Condition<T> condition) async {
     await context.expectAsync(
         () => ['Never emits a value that:', ...indent(describe(condition))],
         (actual) async {
@@ -167,7 +167,7 @@ extension ChainAsync<T> on Future<Check<T>> {
   /// // or, with the intermediate `await`:
   /// (await checkThat(someFuture).completes()).equals('expected');
   /// ```
-  Future<void> that(FutureOr<void> Function(Check<T>) condition) async {
-    await condition(await this);
+  Future<void> that(Condition<T> condition) async {
+    await condition.applyAsync(await this);
   }
 }

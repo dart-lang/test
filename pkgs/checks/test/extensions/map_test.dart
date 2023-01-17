@@ -21,7 +21,7 @@ void main() {
   });
   test('entries', () {
     checkThat(_testMap).entries.any(
-          (p0) => p0
+          it()
             ..has((p0) => p0.key, 'key').equals('a')
             ..has((p0) => p0.value, 'value').equals(1),
         );
@@ -35,21 +35,21 @@ void main() {
 
   test('operator []', () async {
     checkThat(_testMap)['a'].equals(1);
-    checkThat(softCheck<Map<String, int>>(_testMap, (c) => c['z']))
+    checkThat(softCheck<Map<String, int>>(_testMap, it()..['z']))
         .isARejection(which: ['does not contain the key \'z\'']);
   });
 
   test('isEmpty', () {
     checkThat(<String, int>{}).isEmpty();
     checkThat(
-      softCheck<Map<String, int>>(_testMap, (p0) => p0.isEmpty()),
+      softCheck<Map<String, int>>(_testMap, it()..isEmpty()),
     ).isARejection(actual: _testMapString, which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
     checkThat(_testMap).isNotEmpty();
     checkThat(
-      softCheck<Map<String, int>>({}, (p0) => p0.isNotEmpty()),
+      softCheck<Map<String, int>>({}, it()..isNotEmpty()),
     ).isARejection(actual: '{}', which: ['is not empty']);
   });
 
@@ -57,18 +57,18 @@ void main() {
     checkThat(_testMap).containsKey('a');
 
     checkThat(
-      softCheck<Map<String, int>>(_testMap, (p0) => p0.containsKey('c')),
+      softCheck<Map<String, int>>(_testMap, it()..containsKey('c')),
     ).isARejection(
       actual: _testMapString,
       which: ["does not contain key 'c'"],
     );
   });
   test('containsKeyThat', () {
-    checkThat(_testMap).containsKeyThat((p0) => p0.equals('a'));
+    checkThat(_testMap).containsKeyThat(it()..equals('a'));
     checkThat(
       softCheck<Map<String, int>>(
         _testMap,
-        (p0) => p0.containsKeyThat((p1) => p1.equals('c')),
+        it()..containsKeyThat(it()..equals('c')),
       ),
     ).isARejection(
       actual: _testMapString,
@@ -78,17 +78,17 @@ void main() {
   test('containsValue', () {
     checkThat(_testMap).containsValue(1);
     checkThat(
-      softCheck<Map<String, int>>(_testMap, (p0) => p0.containsValue(3)),
+      softCheck<Map<String, int>>(_testMap, it()..containsValue(3)),
     ).isARejection(
       actual: _testMapString,
       which: ['does not contain value <3>'],
     );
   });
   test('containsValueThat', () {
-    checkThat(_testMap).containsValueThat((p0) => p0.equals(1));
+    checkThat(_testMap).containsValueThat(it()..equals(1));
     checkThat(
       softCheck<Map<String, int>>(
-          _testMap, (p0) => p0.containsValueThat((p1) => p1.equals(3))),
+          _testMap, it()..containsValueThat(it()..equals(3))),
     ).isARejection(
       actual: _testMapString,
       which: ['Contains no matching value'],

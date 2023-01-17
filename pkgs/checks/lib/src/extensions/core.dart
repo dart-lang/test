@@ -34,13 +34,13 @@ extension CoreChecks<T> on Check<T> {
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  R that<R>(R Function(Check<T>) condition) => condition(this);
+  void that(Condition<T> condition) => condition.apply(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.
   ///
   /// Asynchronous expectations are not allowed in [condition].
-  void not(void Function(Check<T>) condition) {
+  void not(Condition<T> condition) {
     context.expect(
       () => ['is not a value that:', ...indent(describe(condition))],
       (actual) {
