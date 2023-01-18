@@ -617,10 +617,13 @@ class Rejection {
   /// expectation that a Future completes to a value may describe the actual as
   /// "A Future that completes to an error".
   ///
+  /// Lines should be split to separate elements, and individual strings should
+  /// not contain newlines.
+  ///
   /// This is printed following an "Actual: " label in the output of a failure
-  /// message. The message will be indented to the level of the expectation in
-  /// the description, and printed following the descriptions of any
-  /// expectations that have already passed.
+  /// message. All lines in the message will be indented to the level of the
+  /// expectation in the description, and printed following the descriptions of
+  /// any expectations that have already passed.
   final Iterable<String> actual;
 
   /// A description of the way that [actual] failed to meet the expectation.
