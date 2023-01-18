@@ -19,7 +19,7 @@ void main() {
       await _rejectionWhichCheck<Future>(
         _futureFail(),
         it()..completes(),
-        it()..single.equals('Threw UnimplementedError'),
+        it()..single.equals('Threw <UnimplementedError>'),
       );
     });
 

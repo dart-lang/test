@@ -68,7 +68,7 @@ extension CoreChecks<T> on Check<T> {
 
   /// Expects that the value is equal to [other] according to [operator ==].
   void equals(T other) {
-    context.expect(() => ['equals ${literal(other)}'], (actual) {
+    context.expect(() => prefixFirst('equals ', literal(other)), (actual) {
       if (actual == other) return null;
       return Rejection(actual: literal(actual), which: ['are not equal']);
     });
@@ -76,7 +76,8 @@ extension CoreChecks<T> on Check<T> {
 
   /// Expects that the value is [identical] to [other].
   void identicalTo(T other) {
-    context.expect(() => ['is identical to ${literal(other)}'], (actual) {
+    context.expect(() => prefixFirst('is identical to ', literal(other)),
+        (actual) {
       if (identical(actual, other)) return null;
       return Rejection(actual: literal(actual), which: ['is not identical']);
     });

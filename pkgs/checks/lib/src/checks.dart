@@ -66,7 +66,8 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
         throw TestFailure([
           ...prefixFirst('Expected: ', f.detail.expected),
           ...prefixFirst('Actual: ', f.detail.actual),
-          ...indent(['Actual: ${f.rejection.actual}'], f.detail.depth),
+          ...indent(
+              prefixFirst('Actual: ', f.rejection.actual), f.detail.depth),
           if (which != null && which.isNotEmpty)
             ...indent(prefixFirst('Which: ', which), f.detail.depth),
           if (because != null) 'Reason: $because',
@@ -250,7 +251,8 @@ abstract class Context<T> {
 class Extracted<T> {
   final Rejection? rejection;
   final T? value;
-  Extracted.rejection({required String actual, Iterable<String>? which})
+  Extracted.rejection(
+      {required Iterable<String> actual, Iterable<String>? which})
       : this.rejection = Rejection(actual: actual, which: which),
         this.value = null;
   Extracted.value(T this.value) : this.rejection = null;
@@ -615,11 +617,14 @@ class Rejection {
   /// expectation that a Future completes to a value may describe the actual as
   /// "A Future that completes to an error".
   ///
+  /// Lines should be split to separate elements, and individual strings should
+  /// not contain newlines.
+  ///
   /// This is printed following an "Actual: " label in the output of a failure
-  /// message. The message will be indented to the level of the expectation in
-  /// the description, and printed following the descriptions of any
-  /// expectations that have already passed.
-  final String actual;
+  /// message. All lines in the message will be indented to the level of the
+  /// expectation in the description, and printed following the descriptions of
+  /// any expectations that have already passed.
+  final Iterable<String> actual;
 
   /// A description of the way that [actual] failed to meet the expectation.
   ///

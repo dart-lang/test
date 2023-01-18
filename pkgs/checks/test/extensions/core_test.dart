@@ -15,7 +15,7 @@ void main() {
 
       checkThat(
         softCheck(1, it()..isA<String>()),
-      ).isARejection(actual: '<1>', which: ['Is a int']);
+      ).isARejection(actual: ['<1>'], which: ['Is a int']);
     });
   });
 
@@ -29,7 +29,7 @@ void main() {
           it()..has((v) => throw UnimplementedError(), 'isOdd'),
         ),
       ).isARejection(
-        actual: '<2>',
+        actual: ['<2>'],
         which: ['threw while trying to read property'],
       );
     });
@@ -47,7 +47,7 @@ void main() {
           it()..not(it()..isTrue()),
         ),
       ).isARejection(
-        actual: '<true>',
+        actual: ['<true>'],
         which: ['is a value that: ', '    is true'],
       );
     });
@@ -62,7 +62,7 @@ void main() {
           false,
           it()..isTrue(),
         ),
-      ).isARejection(actual: '<false>');
+      ).isARejection(actual: ['<false>']);
     });
 
     test('isFalse', () {
@@ -71,7 +71,7 @@ void main() {
       checkThat(softCheck<bool>(
         true,
         it()..isFalse(),
-      )).isARejection(actual: '<true>');
+      )).isARejection(actual: ['<true>']);
     });
   });
 
@@ -81,14 +81,14 @@ void main() {
 
       checkThat(
         softCheck(1, it()..equals(2)),
-      ).isARejection(actual: '<1>', which: ['are not equal']);
+      ).isARejection(actual: ['<1>'], which: ['are not equal']);
     });
 
     test('identical', () {
       checkThat(1).identicalTo(1);
 
       checkThat(softCheck(1, it()..identicalTo(2)))
-          .isARejection(actual: '<1>', which: ['is not identical']);
+          .isARejection(actual: ['<1>'], which: ['is not identical']);
     });
   });
 
@@ -97,13 +97,13 @@ void main() {
       checkThat(1).isNotNull();
 
       checkThat(softCheck(null, it()..isNotNull()))
-          .isARejection(actual: '<null>');
+          .isARejection(actual: ['<null>']);
     });
 
     test('isNull', () {
       checkThat(null).isNull();
 
-      checkThat(softCheck(1, it()..isNull())).isARejection(actual: '<1>');
+      checkThat(softCheck(1, it()..isNull())).isARejection(actual: ['<1>']);
     });
   });
 }

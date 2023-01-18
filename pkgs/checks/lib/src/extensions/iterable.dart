@@ -30,15 +30,13 @@ extension IterableChecks<T> on Check<Iterable<T>> {
   /// [Iterable.contains].
   void contains(T element) {
     context.expect(() {
-      return [
-        'contains ${literal(element)}',
-      ];
+      return prefixFirst('contains ', literal(element));
     }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: 'an empty iterable');
+      if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
       if (actual.contains(element)) return null;
       return Rejection(
           actual: literal(actual),
-          which: ['does not contain ${literal(element)}']);
+          which: prefixFirst('does not contain ', literal(element)));
     });
   }
 
@@ -53,13 +51,12 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         ...conditionDescription,
       ];
     }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: 'an empty iterable');
+      if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
       for (var e in actual) {
         if (softCheck(e, elementCondition) == null) return null;
       }
       return Rejection(
-          actual: '${literal(actual)}',
-          which: ['Contains no matching element']);
+          actual: literal(actual), which: ['Contains no matching element']);
     });
   }
 
@@ -85,7 +82,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         return Rejection(actual: literal(actual), which: [
           'has an element at index $i that:',
           ...indent(failure.detail.actual.skip(1)),
-          ...indent(['Actual: ${failure.rejection.actual}'],
+          ...indent(prefixFirst('Actual: ', failure.rejection.actual),
               failure.detail.depth + 1),
           if (which != null && which.isNotEmpty)
             ...indent(prefixFirst('Which: ', which), failure.detail.depth + 1),
@@ -110,7 +107,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
   void pairwiseComparesTo<S>(List<S> expected,
       Condition<T> Function(S) elementCondition, String description) {
     context.expect(() {
-      return ['pairwise $description ${literal(expected)}'];
+      return prefixFirst('pairwise $description ', literal(expected));
     }, (actual) {
       final iterator = actual.iterator;
       for (var i = 0; i < expected.length; i++) {
@@ -128,7 +125,8 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         return Rejection(actual: literal(actual), which: [
           'does not have an element at index $i that:',
           ...innerDescription,
-          'Actual element at index $i: ${failure.rejection.actual}',
+          ...prefixFirst(
+              'Actual element at index $i: ', failure.rejection.actual),
           if (which != null) ...prefixFirst('Which: ', which),
         ]);
       }

@@ -11,11 +11,11 @@ import 'core.dart';
 extension StringChecks on Check<String> {
   /// Expects that the value contains [pattern] according to [String.contains];
   void contains(Pattern pattern) {
-    context.expect(() => ['contains ${literal(pattern)}'], (actual) {
+    context.expect(() => prefixFirst('contains ', literal(pattern)), (actual) {
       if (actual.contains(pattern)) return null;
       return Rejection(
         actual: literal(actual),
-        which: ['Does not contain ${literal(pattern)}'],
+        which: prefixFirst('Does not contain ', literal(pattern)),
       );
     });
   }
@@ -38,12 +38,12 @@ extension StringChecks on Check<String> {
 
   void startsWith(Pattern other) {
     context.expect(
-      () => ['starts with ${literal(other)}'],
+      () => prefixFirst('starts with ', literal(other)),
       (actual) {
         if (actual.startsWith(other)) return null;
         return Rejection(
           actual: literal(actual),
-          which: ['does not start with ${literal(other)}'],
+          which: prefixFirst('does not start with ', literal(other)),
         );
       },
     );
@@ -51,32 +51,33 @@ extension StringChecks on Check<String> {
 
   void endsWith(String other) {
     context.expect(
-      () => ['ends with ${literal(other)}'],
+      () => prefixFirst('ends with ', literal(other)),
       (actual) {
         if (actual.endsWith(other)) return null;
         return Rejection(
           actual: literal(actual),
-          which: ['does not end with ${literal(other)}'],
+          which: prefixFirst('does not end with ', literal(other)),
         );
       },
     );
   }
 
-  /// Expects that the `String` contains each of the sub strings in [expected]
+  /// Expects that the `String` contains each of the sub strings in expected
   /// in the given order, with any content between them.
   ///
   /// For example, the following will succeed:
   ///
   ///     checkThat('abcdefg').containsInOrder(['a','e']);
   void containsInOrder(Iterable<String> expected) {
-    context.expect(() => ['contains, in order: ${literal(expected)}'],
+    context.expect(() => prefixFirst('contains, in order: ', literal(expected)),
         (actual) {
       var fromIndex = 0;
       for (var s in expected) {
         var index = actual.indexOf(s, fromIndex);
         if (index < 0) {
           return Rejection(actual: literal(actual), which: [
-            'does not have a match for the substring ${literal(s)}',
+            ...prefixFirst(
+                'does not have a match for the substring ', literal(s)),
             if (fromIndex != 0)
               'following the other matches up to character $fromIndex'
           ]);
@@ -90,7 +91,7 @@ extension StringChecks on Check<String> {
   /// Expects that the `String` contains exactly the same code units as
   /// [expected].
   void equals(String expected) {
-    context.expect(() => ['equals ${literal(expected)}'],
+    context.expect(() => prefixFirst('equals ', literal(expected)),
         (actual) => _findDifference(actual, expected));
   }
 
@@ -98,7 +99,7 @@ extension StringChecks on Check<String> {
   /// both were lower case.
   void equalsIgnoringCase(String expected) {
     context.expect(
-        () => ['equals ignoring case ${literal(expected)}'],
+        () => prefixFirst('equals ignoring case ', literal(expected)),
         (actual) => _findDifference(
             actual.toLowerCase(), expected.toLowerCase(), actual, expected));
   }
@@ -118,7 +119,8 @@ extension StringChecks on Check<String> {
   ///     checkThat('helloworld').equalsIgnoringWhitespace('hello world');
   ///     checkThat('he llo world').equalsIgnoringWhitespace('hello world');
   void equalsIgnoringWhitespace(String expected) {
-    context.expect(() => ['equals ignoring whitespace ${literal(expected)}'],
+    context.expect(
+        () => prefixFirst('equals ignoring whitespace ', literal(expected)),
         (actual) {
       final collapsedActual = _collapseWhitespace(actual);
       final collapsedExpected = _collapseWhitespace(expected);
@@ -156,7 +158,9 @@ Rejection? _findDifference(String actual, String expected,
       ]);
     } else {
       if (actual.isEmpty) {
-        return Rejection(actual: 'an empty string', which: [
+        return Rejection(actual: [
+          'an empty string'
+        ], which: [
           'is missing all expected characters:',
           _trailing(escapedExpectedDisplay, 0)
         ]);

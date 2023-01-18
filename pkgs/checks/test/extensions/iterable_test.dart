@@ -28,21 +28,21 @@ void main() {
     checkThat([]).isEmpty();
     checkThat(
       softCheck<Iterable<int>>(_testIterable, it()..isEmpty()),
-    ).isARejection(actual: '(0, 1)', which: ['is not empty']);
+    ).isARejection(actual: ['(0, 1)'], which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
     checkThat(_testIterable).isNotEmpty();
     checkThat(
       softCheck<Iterable<int>>(Iterable<int>.empty(), it()..isNotEmpty()),
-    ).isARejection(actual: '()', which: ['is not empty']);
+    ).isARejection(actual: ['()'], which: ['is not empty']);
   });
 
   test('contains', () {
     checkThat(_testIterable).contains(0);
     checkThat(
       softCheck<Iterable<int>>(_testIterable, it()..contains(2)),
-    ).isARejection(actual: '(0, 1)', which: ['does not contain <2>']);
+    ).isARejection(actual: ['(0, 1)'], which: ['does not contain <2>']);
   });
   test('contains', () {
     checkThat(_testIterable).any(it()..equals(1));
@@ -51,7 +51,7 @@ void main() {
         _testIterable,
         it()..any(it()..equals(2)),
       ),
-    ).isARejection(actual: '(0, 1)', which: ['Contains no matching element']);
+    ).isARejection(actual: ['(0, 1)'], which: ['Contains no matching element']);
   });
 
   group('every', () {
@@ -62,7 +62,9 @@ void main() {
     test('includes details of first failing element', () async {
       checkThat(softCheck<Iterable<int>>(
               _testIterable, it()..every(it()..isLessThan(0))))
-          .isARejection(actual: '(0, 1)', which: [
+          .isARejection(actual: [
+        '(0, 1)'
+      ], which: [
         'has an element at index 0 that:',
         '  Actual: <0>',
         '  Which: is not less than <0>',
@@ -81,7 +83,9 @@ void main() {
               it()
                 ..pairwiseComparesTo([1, 1],
                     (expected) => it()..isLessThan(expected), 'is less than')))
-          .isARejection(actual: '(0, 1)', which: [
+          .isARejection(actual: [
+        '(0, 1)'
+      ], which: [
         'does not have an element at index 1 that:',
         '  is less than <1>',
         'Actual element at index 1: <1>',
@@ -94,7 +98,9 @@ void main() {
               it()
                 ..pairwiseComparesTo([1, 2, 3],
                     (expected) => it()..isLessThan(expected), 'is less than')))
-          .isARejection(actual: '(0, 1)', which: [
+          .isARejection(actual: [
+        '(0, 1)'
+      ], which: [
         'has too few elements, there is no element to match at index 2'
       ]);
     });
@@ -105,7 +111,7 @@ void main() {
                 ..pairwiseComparesTo([1],
                     (expected) => it()..isLessThan(expected), 'is less than')))
           .isARejection(
-              actual: '(0, 1)',
+              actual: ['(0, 1)'],
               which: ['has too many elements, expected exactly 1']);
     });
   });

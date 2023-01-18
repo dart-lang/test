@@ -14,7 +14,7 @@ void main() {
       checkThat('bob').contains('bo');
       checkThat(
         softCheck<String>('bob', it()..contains('kayleb')),
-      ).isARejection(actual: "'bob'", which: ["Does not contain 'kayleb'"]);
+      ).isARejection(actual: ["'bob'"], which: ["Does not contain 'kayleb'"]);
     });
     test('length', () {
       checkThat('bob').length.equals(3);
@@ -23,24 +23,26 @@ void main() {
       checkThat('').isEmpty();
       checkThat(
         softCheck<String>('bob', it()..isEmpty()),
-      ).isARejection(actual: "'bob'", which: ['is not empty']);
+      ).isARejection(actual: ["'bob'"], which: ['is not empty']);
     });
     test('isNotEmpty', () {
       checkThat('bob').isNotEmpty();
       checkThat(
         softCheck<String>('', it()..isNotEmpty()),
-      ).isARejection(actual: "''", which: ['is empty']);
+      ).isARejection(actual: ["''"], which: ['is empty']);
     });
     test('startsWith', () {
       checkThat('bob').startsWith('bo');
       checkThat(
         softCheck<String>('bob', it()..startsWith('kayleb')),
-      ).isARejection(actual: "'bob'", which: ["does not start with 'kayleb'"]);
+      ).isARejection(
+          actual: ["'bob'"], which: ["does not start with 'kayleb'"]);
     });
     test('endsWith', () {
       checkThat('bob').endsWith('ob');
       checkThat(softCheck<String>('bob', it()..endsWith('kayleb')))
-          .isARejection(actual: "'bob'", which: ["does not end with 'kayleb'"]);
+          .isARejection(
+              actual: ["'bob'"], which: ["does not end with 'kayleb'"]);
     });
 
     group('containsInOrder', () {
@@ -98,7 +100,9 @@ void main() {
       });
       test('reports missing characters for empty string', () {
         checkThat(softCheck<String>('', it()..equals('foo bar baz')))
-            .isARejection(actual: 'an empty string', which: [
+            .isARejection(actual: [
+          'an empty string'
+        ], which: [
           'is missing all expected characters:',
           'foo bar ba ...'
         ]);

@@ -10,13 +10,13 @@ extension TestIterableCheck on Check<Iterable<String>?> {
   void toStringEquals(List<String>? other) {
     final otherToString = other.toString();
     context.expect(
-      () => ['toString equals ${literal(otherToString)}'],
+      () => prefixFirst('toString equals ', literal(otherToString)),
       (actual) {
         final actualToString = actual.toString();
         return actualToString == otherToString
             ? null
             : Rejection(
-                actual: actualToString,
+                actual: literal(actualToString),
                 which: ['does not have a matching toString'],
               );
       },
@@ -25,11 +25,13 @@ extension TestIterableCheck on Check<Iterable<String>?> {
 }
 
 extension RejectionCheck on Check<CheckFailure?> {
-  void isARejection({List<String>? which, String? actual}) {
+  void isARejection({List<String>? which, List<String>? actual}) {
     final rejection = this.isNotNull().has((f) => f.rejection, 'rejection');
     if (actual != null) {
-      rejection.has((p0) => p0.actual, 'actual').equals(actual);
+      rejection
+          .has((p0) => p0.actual.toList(), 'actual')
+          .toStringEquals(actual);
     }
-    rejection.has((p0) => p0.which, 'which').toStringEquals(which);
+    rejection.has((p0) => p0.which?.toList(), 'which').toStringEquals(which);
   }
 }

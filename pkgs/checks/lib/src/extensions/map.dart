@@ -12,15 +12,17 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
   Check<Iterable<K>> get keys => has((m) => m.keys, 'keys');
   Check<Iterable<V>> get values => has((m) => m.values, 'values');
   Check<int> get length => has((m) => m.length, 'length');
-  Check<V> operator [](K key) =>
-      context.nest('contains a value for ${literal(key)}', (actual) {
-        if (!actual.containsKey(key)) {
-          return Extracted.rejection(
-              actual: literal(actual),
-              which: ['does not contain the key ${literal(key)}']);
-        }
-        return Extracted.value(actual[key] as V);
-      });
+  Check<V> operator [](K key) {
+    final keyString = literal(key).join(r'\n');
+    return context.nest('contains a value for $keyString', (actual) {
+      if (!actual.containsKey(key)) {
+        return Extracted.rejection(
+            actual: literal(actual),
+            which: ['does not contain the key $keyString']);
+      }
+      return Extracted.value(actual[key] as V);
+    });
+  }
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
@@ -38,11 +40,11 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
 
   /// Expects that the map contains [key] according to [Map.containsKey].
   void containsKey(K key) {
-    context.expect(() => ['contains key ${literal(key)}'], (actual) {
+    final keyString = literal(key).join(r'\n');
+    context.expect(() => ['contains key $keyString'], (actual) {
       if (actual.containsKey(key)) return null;
       return Rejection(
-          actual: literal(actual),
-          which: ['does not contain key ${literal(key)}']);
+          actual: literal(actual), which: ['does not contain key $keyString']);
     });
   }
 
@@ -57,22 +59,23 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
         ...conditionDescription,
       ];
     }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: 'an empty map');
+      if (actual.isEmpty) return Rejection(actual: ['an empty map']);
       for (var k in actual.keys) {
         if (softCheck(k, keyCondition) == null) return null;
       }
       return Rejection(
-          actual: '${literal(actual)}', which: ['Contains no matching key']);
+          actual: literal(actual), which: ['Contains no matching key']);
     });
   }
 
   /// Expects that the map contains [value] according to [Map.containsValue].
   void containsValue(V value) {
-    context.expect(() => ['contains value ${literal(value)}'], (actual) {
+    final valueString = literal(value).join(r'\n');
+    context.expect(() => ['contains value $valueString'], (actual) {
       if (actual.containsValue(value)) return null;
       return Rejection(
           actual: literal(actual),
-          which: ['does not contain value ${literal(value)}']);
+          which: ['does not contain value $valueString']);
     });
   }
 
@@ -87,12 +90,12 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
         ...conditionDescription,
       ];
     }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: 'an empty map');
+      if (actual.isEmpty) return Rejection(actual: ['an empty map']);
       for (var v in actual.values) {
         if (softCheck(v, valueCondition) == null) return null;
       }
       return Rejection(
-          actual: '${literal(actual)}', which: ['Contains no matching value']);
+          actual: literal(actual), which: ['Contains no matching value']);
     });
   }
 }
