@@ -12,7 +12,7 @@ import 'util/pretty_print.dart';
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
 typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
-    String? reason, Map matchState, bool verbose);
+    String? reason, Map<Object?, Object?> matchState, bool verbose);
 
 /// Assert that [actual] matches [matcher].
 ///
@@ -58,11 +58,11 @@ void expect(actual, matcher,
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
-Future expectLater(actual, matcher, {String? reason, skip}) =>
+Future<void> expectLater(actual, matcher, {String? reason, skip}) =>
     _expect(actual, matcher, reason: reason, skip: skip);
 
 /// The implementation of [expect] and [expectLater].
-Future _expect(actual, matcher,
+Future<void> _expect(actual, matcher,
     {String? reason, skip, bool verbose = false, ErrorFormatter? formatter}) {
   final test = TestHandle.current;
   formatter ??= (actual, matcher, reason, matchState, verbose) {
@@ -96,8 +96,10 @@ Future _expect(actual, matcher,
   if (matcher is AsyncMatcher) {
     // Avoid async/await so that expect() throws synchronously when possible.
     var result = matcher.matchAsync(actual);
-    expect(result,
-        anyOf([equals(null), TypeMatcher<Future>(), TypeMatcher<String>()]),
+    expect(
+        result,
+        anyOf(
+            [equals(null), TypeMatcher<Future<void>>(), TypeMatcher<String>()]),
         reason: 'matchAsync() may only return a String, a Future, or null.');
 
     if (result is String) {

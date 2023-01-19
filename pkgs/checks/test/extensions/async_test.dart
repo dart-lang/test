@@ -16,7 +16,7 @@ void main() {
     test('completes', () async {
       (await checkThat(_futureSuccess()).completes()).equals(42);
 
-      await _rejectionWhichCheck<Future>(
+      await _rejectionWhichCheck<Future<void>>(
         _futureFail(),
         it()..completes(),
         it()..single.equals('Threw <UnimplementedError>'),
@@ -28,13 +28,13 @@ void main() {
           .has((p0) => p0.message, 'message')
           .isNull();
 
-      await _rejectionWhichCheck<Future>(
+      await _rejectionWhichCheck<Future<void>>(
         _futureSuccess(),
         it()..throws(),
         it()..single.equals('Did not throw'),
       );
 
-      await _rejectionWhichCheck<Future>(
+      await _rejectionWhichCheck<Future<void>>(
         _futureFail(),
         it()..throws<StateError>(),
         it()..single.equals('Is not an StateError'),
@@ -92,19 +92,19 @@ fake trace''');
     test('emits', () async {
       (await checkThat(_countingStream(5)).emits()).equals(0);
 
-      await _rejectionWhichCheck<StreamQueue>(
+      await _rejectionWhichCheck<StreamQueue<int>>(
         _countingStream(0),
         it()..emits(),
         it()..single.equals('did not emit any value'),
       );
 
-      await _rejectionWhichCheck<StreamQueue>(
+      await _rejectionWhichCheck<StreamQueue<int>>(
         _countingStream(0),
         it()..emits(),
         it()..single.equals('did not emit any value'),
       );
 
-      await _rejectionWhichCheck<StreamQueue>(
+      await _rejectionWhichCheck<StreamQueue<int>>(
         _countingStream(1, errorAt: 0),
         it()..emits(),
         it()..single.equals('emitted an error instead of a value'),
@@ -114,7 +114,7 @@ fake trace''');
     test('emitsThrough', () async {
       await checkThat(_countingStream(5)).emitsThrough(it()..equals(4));
 
-      await _rejectionWhichCheck<StreamQueue>(
+      await _rejectionWhichCheck<StreamQueue<int>>(
         _countingStream(4),
         it()..emitsThrough(it()..equals(5)),
         it()
@@ -125,7 +125,7 @@ fake trace''');
     test('neverEmits', () async {
       await checkThat(_countingStream(5)).neverEmits(it()..equals(5));
 
-      await _rejectionWhichCheck<StreamQueue>(
+      await _rejectionWhichCheck<StreamQueue<int>>(
         _countingStream(6),
         it()..neverEmits(it()..equals(5)),
         it()

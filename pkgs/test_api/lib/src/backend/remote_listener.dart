@@ -45,7 +45,7 @@ class RemoteListener {
   /// for this worker.
   static StreamChannel<Object?> start(Function Function() getMain,
       {bool hidePrints = true,
-      Future Function(
+      Future<void> Function(
               StreamChannel<Object?> Function(String name) suiteChannel)?
           beforeLoad}) {
     // Synchronous in order to allow `print` output to show up immediately, even
@@ -86,7 +86,7 @@ class RemoteListener {
         var message = await queue.next as Map;
         assert(message['type'] == 'initial');
 
-        queue.rest.cast<Map>().listen((message) {
+        queue.rest.cast<Map<Object?, Object?>>().listen((message) {
           if (message['type'] == 'close') {
             controller.local.sink.close();
             return;
@@ -144,7 +144,7 @@ class RemoteListener {
 
   /// Returns a [Set] from a JSON serialized list of strings, or `null` if the
   /// list is empty or `null`.
-  static Set<String>? _deserializeSet(List? list) {
+  static Set<String>? _deserializeSet(List<Object?>? list) {
     if (list == null) return null;
     if (list.isEmpty) return null;
     return Set.from(list);
@@ -153,12 +153,12 @@ class RemoteListener {
   /// Sends a message over [channel] indicating that the tests failed to load.
   ///
   /// [message] should describe the failure.
-  static void _sendLoadException(StreamChannel channel, String message) {
+  static void _sendLoadException(StreamChannel<Object?> channel, String message) {
     channel.sink.add({'type': 'loadException', 'message': message});
   }
 
   /// Sends a message over [channel] indicating an error from user code.
-  static void _sendError(StreamChannel channel, Object error,
+  static void _sendError(StreamChannel<Object?> channel, Object error,
       StackTrace stackTrace, bool verboseChain) {
     channel.sink.add({
       'type': 'error',
@@ -173,7 +173,7 @@ class RemoteListener {
 
   /// Send information about [_suite] across [channel] and start listening for
   /// commands to run the tests.
-  void _listen(MultiChannel channel) {
+  void _listen(MultiChannel<Object?> channel) {
     channel.sink.add({
       'type': 'success',
       'root': _serializeGroup(channel, _suite.group, [])
@@ -183,8 +183,8 @@ class RemoteListener {
   /// Serializes [group] into a JSON-safe map.
   ///
   /// [parents] lists the groups that contain [group].
-  Map _serializeGroup(
-      MultiChannel channel, Group group, Iterable<Group> parents) {
+  Map<String, Object?> _serializeGroup(
+      MultiChannel<Object?> channel, Group group, Iterable<Group> parents) {
     parents = parents.toList()..add(group);
     return {
       'type': 'group',
@@ -210,12 +210,13 @@ class RemoteListener {
   ///
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
-  Map? _serializeTest(
-      MultiChannel channel, Test? test, Iterable<Group>? groups) {
+  Map<String, Object?>? _serializeTest(
+      MultiChannel<Object?> channel, Test? test, Iterable<Group>? groups) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
     testChannel.stream.listen((message) {
+      message as Map<Object?, Object?>;
       assert(message['command'] == 'run');
       _runLiveTest(test.load(_suite, groups: groups),
           channel.virtualChannel((message['channel'] as num).toInt()));
@@ -236,8 +237,9 @@ class RemoteListener {
   }
 
   /// Runs [liveTest] and sends the results across [channel].
-  void _runLiveTest(LiveTest liveTest, MultiChannel channel) {
+  void _runLiveTest(LiveTest liveTest, MultiChannel<Object?> channel) {
     channel.stream.listen((message) {
+      message as Map<Object?, Object?>;
       assert(message['command'] == 'close');
       liveTest.close();
     });

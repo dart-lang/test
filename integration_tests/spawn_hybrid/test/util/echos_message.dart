@@ -4,7 +4,7 @@
 
 import 'package:stream_channel/stream_channel.dart';
 
-void hybridMain(StreamChannel channel, Object message) {
+void hybridMain(StreamChannel<Object?> channel, Object message) {
   channel.sink
     ..add(message)
     ..close();

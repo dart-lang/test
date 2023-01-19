@@ -26,7 +26,7 @@ class WasmCompilerPool extends CompilerPool {
   /// The returned [Future] will complete once the `dart2wasm` process completes
   /// *and* all its output has been printed to the command line.
   @override
-  Future compileInternal(
+  Future<void> compileInternal(
       String code, String path, SuiteConfiguration suiteConfig) {
     return withTempDir((dir) async {
       var wrapperPath = p.join(dir, 'main.dart');

@@ -312,10 +312,10 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// A reference to find the root context which this context is nested under.
   ///
   /// null only for the root context.
-  final _TestContext<dynamic>? _parent;
+  final _TestContext<void>? _parent;
 
   final List<_ClauseDescription> _clauses;
-  final List<_TestContext> _aliases;
+  final List<_TestContext<void>> _aliases;
 
   // The "a value" in "a value that:".
   final String _label;
@@ -340,7 +340,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _clauses = [],
         _aliases = [];
 
-  _TestContext._alias(_TestContext original, this._value)
+  _TestContext._alias(_TestContext<void> original, this._value)
       : _parent = original,
         _clauses = original._clauses,
         _aliases = original._aliases,
@@ -442,7 +442,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   CheckFailure _failure(Rejection rejection) =>
       CheckFailure(rejection, () => _root.detail(this));
 
-  _TestContext get _root {
+  _TestContext<void> get _root {
     _TestContext<dynamic> current = this;
     while (current._parent != null) {
       current = current._parent!;
@@ -451,7 +451,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   @override
-  FailureDetail detail(_TestContext failingContext) {
+  FailureDetail detail(_TestContext<void> failingContext) {
     assert(_clauses.isNotEmpty);
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
@@ -511,14 +511,14 @@ class _SkippedContext<T> implements Context<T> {
 }
 
 abstract class _ClauseDescription {
-  FailureDetail detail(_TestContext failingContext);
+  FailureDetail detail(_TestContext<void> failingContext);
 }
 
 class _StringClause implements _ClauseDescription {
   final Iterable<String> Function() _expected;
   _StringClause(this._expected);
   @override
-  FailureDetail detail(_TestContext failingContext) =>
+  FailureDetail detail(_TestContext<void> failingContext) =>
       FailureDetail(_expected(), -1, -1);
 }
 

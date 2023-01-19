@@ -134,7 +134,7 @@ extension MessageEventExtension on MessageEvent {
   dynamic get data => js_util.dartify(js_util.getProperty(this, 'data'));
   external String get origin;
   List<MessagePort> get ports =>
-      js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+      js_util.getProperty<List<dynamic>>(this, 'ports').cast<MessagePort>();
 }
 
 @JS()

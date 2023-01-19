@@ -17,7 +17,7 @@ String pluralize(String name, int number, {String? plural}) {
 /// This converts each element of [iter] to a string and separates them with
 /// commas and/or [conjunction] where appropriate. The [conjunction] defaults to
 /// "and".
-String toSentence(Iterable iter, {String conjunction = 'and'}) {
+String toSentence(Iterable<Object> iter, {String conjunction = 'and'}) {
   if (iter.length == 1) return iter.first.toString();
 
   var result = iter.take(iter.length - 1).join(', ');

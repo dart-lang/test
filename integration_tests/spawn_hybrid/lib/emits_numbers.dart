@@ -4,7 +4,7 @@
 
 import 'package:stream_channel/stream_channel.dart';
 
-void hybridMain(StreamChannel channel) {
+void hybridMain(StreamChannel<Object?> channel) {
   channel.sink
     ..add(1)
     ..add(2)

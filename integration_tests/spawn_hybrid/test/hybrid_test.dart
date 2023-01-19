@@ -295,7 +295,7 @@ void main() {
     });
 
     group('closes the channel when the test finishes by default', () {
-      late StreamChannel channel;
+      late StreamChannel<Object?> channel;
 
       test('test 1', () {
         channel = spawnHybridCode('''
@@ -314,8 +314,8 @@ void main() {
     });
 
     group('persists across multiple tests with stayAlive: true', () {
-      late StreamQueue queue;
-      late StreamSink sink;
+      late StreamQueue<Object?> queue;
+      late StreamSink<Object?> sink;
       setUpAll(() {
         var channel = spawnHybridCode('''
               import "package:stream_channel/stream_channel.dart";
