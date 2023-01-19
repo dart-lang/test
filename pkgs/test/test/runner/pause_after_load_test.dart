@@ -3,17 +3,19 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+@OnPlatform({'windows': Skip('https://github.com/dart-lang/test/issues/1613')})
 
 import 'dart:async';
 import 'dart:io';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('pauses the test runner for each file until the user presses enter',
       () async {
     await d.file('test1.dart', '''

@@ -6,17 +6,18 @@
 
 import 'dart:io';
 
+import 'package:test/src/runner/browser/default_settings.dart';
+import 'package:test/test.dart';
+import 'package:test_api/src/backend/runtime.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
-
-import 'package:test_api/src/backend/runtime.dart';
-import 'package:test/src/runner/browser/default_settings.dart';
-import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
-import 'package:test/test.dart';
 
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() async {
     await d.file('test.dart', '''
         import 'package:test/test.dart';
@@ -106,13 +107,12 @@ void main() {
         ''').create();
 
         await d.file('test.dart', '''
-          import 'dart:html';
-
+          import 'package:test/src/runner/browser/dom.dart' as dom;
           import 'package:test/test.dart';
 
           void main() {
             test("is not headless", () {
-              expect(window.navigator.userAgent,
+              expect(dom.window.navigator.userAgent,
                   isNot(contains('HeadlessChrome')));
             });
           }
@@ -437,7 +437,7 @@ void main() {
 
           test = await runTest(['-p', 'chrome', 'test.dart']);
           expect(test.stdout, emitsThrough(contains('No tests ran.')));
-          await test.shouldExit(1);
+          await test.shouldExit(79);
         }, tags: 'chrome');
 
         test('that counts as its parent', () async {

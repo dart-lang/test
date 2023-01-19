@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
@@ -36,7 +35,7 @@ class Safari extends Browser {
     // want it to load.
     var redirect = p.join(dir, 'redirect.html');
     File(redirect).writeAsStringSync(
-        '<script>location = ' + jsonEncode(url.toString()) + '</script>');
+        '<script>location = ${jsonEncode(url.toString())}</script>');
 
     var process = await Process.start(
         settings.executable, settings.arguments.toList()..add(redirect));

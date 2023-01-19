@@ -17,6 +17,7 @@ final _universalValidVariables = {
   'js',
   'blink',
   'google',
+  'wasm',
   for (var runtime in Runtime.builtIn) runtime.identifier,
   for (var os in OperatingSystem.all) os.identifier,
 };
@@ -76,8 +77,6 @@ class PlatformSelector {
   }
 
   /// Returns whether the selector matches the given [platform].
-  ///
-  /// [os] defaults to [OperatingSystem.none].
   bool evaluate(SuitePlatform platform) {
     return _inner.evaluate((String variable) {
       if (variable == platform.runtime.identifier) return true;
@@ -96,6 +95,8 @@ class PlatformSelector {
           return platform.os.isPosix;
         case 'google':
           return platform.inGoogle;
+        case 'wasm':
+          return platform.runtime.isWasm;
         default:
           return false;
       }

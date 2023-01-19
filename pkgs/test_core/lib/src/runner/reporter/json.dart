@@ -9,15 +9,16 @@ import 'dart:io' show pid;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
+import 'package:test_api/hooks.dart' // ignore: implementation_imports
+    show
+        TestFailure;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/frontend/expect.dart'; // ignore: implementation_imports
 
-import '../configuration.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
@@ -27,8 +28,8 @@ import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
-  /// The global configuration that applies to this reporter.
-  final Configuration _config;
+  /// Whether the test runner will pause for debugging.
+  final bool _isDebugRun;
 
   /// The engine used to run the tests.
   final Engine _engine;
@@ -63,10 +64,11 @@ class JsonReporter implements Reporter {
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine, StringSink sink) =>
-      JsonReporter._(engine, sink);
+  static JsonReporter watch(Engine engine, StringSink sink,
+          {required bool isDebugRun}) =>
+      JsonReporter._(engine, sink, isDebugRun);
 
-  JsonReporter._(this._engine, this._sink) : _config = Configuration.current {
+  JsonReporter._(this._engine, this._sink, this._isDebugRun) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
@@ -74,7 +76,10 @@ class JsonReporter implements Reporter {
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
     _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
-      _emit('allSuites', {'count': _engine.addedSuites.length});
+      _emit('allSuites', {
+        'count': _engine.addedSuites.length,
+        'time': _stopwatch.elapsed.inMilliseconds
+      });
     }));
 
     _emit('start',
@@ -124,7 +129,7 @@ class JsonReporter implements Reporter {
     // Don't emit groups for load suites. They're always empty and they provide
     // unnecessary clutter.
     var groupIDs = liveTest.suite is LoadSuite
-        ? []
+        ? <int>[]
         : _idsForGroups(liveTest.groups, liveTest.suite);
 
     var suiteConfig = _configFor(liveTest.suite);
@@ -175,7 +180,7 @@ class JsonReporter implements Reporter {
       suite.suite.then((runnerSuite) {
         if (runnerSuite == null) return;
         _suiteIDs[runnerSuite] = id;
-        if (!_config.debug) return;
+        if (!_isDebugRun) return;
 
         // TODO(nweiz): test this when we have a library for communicating with
         // the Chrome remote debugger, or when we have VM debug support.
@@ -242,13 +247,18 @@ class JsonReporter implements Reporter {
   void _onComplete(LiveTest liveTest) {
     _emit('testDone', {
       'testID': _liveTestIDs[liveTest],
-      // For backwards-compatibility, report skipped tests as successes.
-      'result': liveTest.state.result == Result.skipped
-          ? 'success'
-          : liveTest.state.result.toString(),
+      'result': _normalizeTestResult(liveTest),
       'skipped': liveTest.state.result == Result.skipped,
       'hidden': !_engine.liveTests.contains(liveTest)
     });
+  }
+
+  String _normalizeTestResult(LiveTest liveTest) {
+    // For backwards-compatibility, report skipped tests as successes.
+    if (liveTest.state.result == Result.skipped) return 'success';
+    // if test is still active, it was probably cancelled
+    if (_engine.active.contains(liveTest)) return 'error';
+    return liveTest.state.result.toString();
   }
 
   /// A callback called when [liveTest] throws [error].

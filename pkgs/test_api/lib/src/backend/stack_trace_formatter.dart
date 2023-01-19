@@ -6,8 +6,8 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../util/stack_trace_mapper.dart';
 import 'invoker.dart';
+import 'stack_trace_mapper.dart';
 
 /// The key used to look up [StackTraceFormatter.current] in a zone.
 final _currentKey = Object();

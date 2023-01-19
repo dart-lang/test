@@ -6,9 +6,6 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../frontend/expect.dart';
-import '../util/test.dart';
-import '../util/pretty_print.dart';
 import 'closed_exception.dart';
 import 'declarer.dart';
 import 'group.dart';
@@ -20,6 +17,8 @@ import 'state.dart';
 import 'suite.dart';
 import 'suite_platform.dart';
 import 'test.dart';
+import 'test_failure.dart';
+import 'util/pretty_print.dart';
 
 /// A test in this isolate.
 class LocalTest extends Test {
@@ -45,7 +44,7 @@ class LocalTest extends Test {
   ///
   /// If [guarded] is `true`, the test is run in its own error zone, and any
   /// errors that escape that zone cause the test to fail. If it's `false`, it's
-  /// the caller's responsiblity to invoke [LiveTest.run] in the context of a
+  /// the caller's responsibility to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
   LocalTest(this.name, this.metadata, this._body,
       {this.trace, bool guarded = true, this.isScaffoldAll = false})
@@ -84,29 +83,34 @@ class Invoker {
   /// Whether to run this test in its own error zone.
   final bool _guarded;
 
-  /// Whether the test can be closed in the current zone.
-  bool get _closable => Zone.current[_closableKey] as bool;
+  /// Whether the user code is allowed to interact with the invoker despite it
+  /// being closed.
+  ///
+  /// A test is generally closed because the runner is shutting down (in
+  /// response to a signal) or because the test's suite is finished.
+  /// Typically calls to [addTearDown] and [addOutstandingCallback] are only
+  /// allowed before the test is closed. Tear down callbacks, however, are
+  /// allowed to perform these interactions to facilitate resource cleanup on a
+  /// best-effort basis, so the invoker is made to appear open only within the
+  /// zones running the teardown callbacks.
+  bool get _forceOpen => Zone.current[_forceOpenForTearDownKey] as bool;
 
   /// An opaque object used as a key in the zone value map to identify
-  /// [_closable].
+  /// [_forceOpen].
   ///
   /// This is an instance variable to ensure that multiple invokers don't step
   /// on one anothers' toes.
-  final _closableKey = Object();
+  final _forceOpenForTearDownKey = Object();
 
   /// Whether the test has been closed.
   ///
   /// Once the test is closed, [expect] and [expectAsync] will throw
   /// [ClosedException]s whenever accessed to help the test stop executing as
   /// soon as possible.
-  bool get closed => _closable && _onCloseCompleter.isCompleted;
+  bool get closed => !_forceOpen && _onCloseCompleter.isCompleted;
 
   /// A future that completes once the test has been closed.
-  Future<void> get onClose => _closable
-      ? _onCloseCompleter.future
-      // If we're in an unclosable block, return a future that will never
-      // complete.
-      : Completer<void>().future;
+  Future<void> get onClose => _onCloseCompleter.future;
   final _onCloseCompleter = Completer<void>();
 
   /// The test being run.
@@ -120,7 +124,7 @@ class Invoker {
         'of a test body.');
   }
 
-  /// All the zones created by [waitForOutstandingCallbacks], in the order they
+  /// All the zones created by [_waitForOutstandingCallbacks], in the order they
   /// were created.
   ///
   /// This is used to throw timeout errors in the most recent zone.
@@ -215,12 +219,34 @@ class Invoker {
     _outstandingCallbacks.decrement();
   }
 
+  /// Run [tearDowns] in reverse order.
+  ///
+  /// An exception thrown in a tearDown callback will cause the test to fail, if
+  /// it isn't already failing, but it won't prevent the remaining callbacks
+  /// from running. This invoker will not be closeable within the zone that the
+  /// teardowns are running in.
+  Future<void> runTearDowns(List<FutureOr<void> Function()> tearDowns) {
+    heartbeat();
+    return runZoned(() async {
+      while (tearDowns.isNotEmpty) {
+        var completer = Completer();
+
+        addOutstandingCallback();
+        _waitForOutstandingCallbacks(() {
+          Future.sync(tearDowns.removeLast()).whenComplete(completer.complete);
+        }).then((_) => removeOutstandingCallback()).unawaited;
+
+        await completer.future;
+      }
+    }, zoneValues: {_forceOpenForTearDownKey: true});
+  }
+
   /// Runs [fn] and completes once [fn] and all outstanding callbacks registered
   /// within [fn] have completed.
   ///
   /// Outstanding callbacks registered within [fn] will *not* be registered as
   /// outstanding callback outside of [fn].
-  Future<void> waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
+  Future<void> _waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
     Zone? zone;
@@ -228,24 +254,16 @@ class Invoker {
     runZoned(() async {
       zone = Zone.current;
       _outstandingCallbackZones.add(zone!);
-      await fn();
-      counter.decrement();
+      try {
+        await fn();
+      } finally {
+        counter.decrement();
+      }
     }, zoneValues: {_counterKey: counter});
 
     return counter.onZero.whenComplete(() {
       _outstandingCallbackZones.remove(zone!);
     });
-  }
-
-  /// Runs [fn] in a zone where [closed] is always `false`.
-  ///
-  /// This is useful for running code that should be able to register callbacks
-  /// and interact with the test framework normally even when the invoker is
-  /// closed, for example cleanup code.
-  T unclosable<T>(T Function() fn) {
-    heartbeat();
-
-    return runZoned(fn, zoneValues: {_closableKey: false});
   }
 
   /// Notifies the invoker that progress is being made.
@@ -255,6 +273,7 @@ class Invoker {
   void heartbeat() {
     if (liveTest.isComplete) return;
     if (_timeoutTimer != null) _timeoutTimer!.cancel();
+    if (liveTest.suite.ignoreTimeouts == true) return;
 
     const defaultTimeout = Duration(seconds: 30);
     var timeout = liveTest.test.metadata.timeout.apply(defaultTimeout);
@@ -270,6 +289,7 @@ class Invoker {
     _timeoutTimer = Zone.root.createTimer(timeout, () {
       _outstandingCallbackZones.last.run(() {
         _handleError(Zone.current, TimeoutException(message(), timeout));
+        _outstandingCallbacks.complete();
       });
     });
   }
@@ -299,7 +319,7 @@ class Invoker {
   void printOnFailure(String message) {
     message = message.trim();
     if (liveTest.state.result.isFailing) {
-      print('\n$message');
+      _print('\n$message');
     } else {
       _printsOnFailure.add(message);
     }
@@ -331,17 +351,9 @@ class Invoker {
     }
 
     _controller.addError(error, stackTrace!);
-    zone.run(() => _outstandingCallbacks.complete());
-
-    if (!liveTest.test.metadata.chainStackTraces &&
-        !liveTest.suite.isLoadSuite) {
-      _printsOnFailure.add('Consider enabling the flag chain-stack-traces to '
-          'receive more detailed exceptions.\n'
-          "For example, 'pub run test --chain-stack-traces'.");
-    }
 
     if (_printsOnFailure.isNotEmpty) {
-      print(_printsOnFailure.join('\n\n'));
+      _print(_printsOnFailure.join('\n\n'));
       _printsOnFailure.clear();
     }
 
@@ -369,8 +381,6 @@ class Invoker {
     Chain.capture(() {
       _guardIfGuarded(() {
         runZoned(() async {
-          _outstandingCallbackZones.add(Zone.current);
-
           // Run the test asynchronously so that the "running" state change
           // has a chance to hit its event handler(s) before the test produces
           // an error. If an error is emitted before the first state change is
@@ -381,8 +391,8 @@ class Invoker {
           // Use the event loop over the microtask queue to avoid starvation.
           await Future(() {});
 
-          await waitForOutstandingCallbacks(_test._body);
-          await waitForOutstandingCallbacks(() => unclosable(_runTearDowns));
+          await _waitForOutstandingCallbacks(_test._body);
+          await _waitForOutstandingCallbacks(() => runTearDowns(_tearDowns));
 
           if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
@@ -399,7 +409,7 @@ class Invoker {
         },
             zoneValues: {
               #test.invoker: this,
-              _closableKey: true,
+              _forceOpenForTearDownKey: false,
               #runCount: _runCount,
             },
             zoneSpecification:
@@ -419,13 +429,6 @@ class Invoker {
 
   /// Prints [text] as a message to [_controller].
   void _print(String text) => _controller.message(Message.print(text));
-
-  /// Run [_tearDowns] in reverse order.
-  Future<void> _runTearDowns() async {
-    while (_tearDowns.isNotEmpty) {
-      await errorsDontStopTest(_tearDowns.removeLast());
-    }
-  }
 }
 
 /// A manually incremented/decremented counter that completes a [Future] the
@@ -454,4 +457,8 @@ class _AsyncCounter {
   void complete() {
     if (!_completer.isCompleted) _completer.complete();
   }
+}
+
+extension<T> on Future<T> {
+  void get unawaited {}
 }

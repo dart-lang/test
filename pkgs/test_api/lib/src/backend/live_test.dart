@@ -79,7 +79,7 @@ abstract class LiveTest {
 
   /// A stream that emits a new [AsyncError] whenever an error is caught.
   ///
-  /// This will be emit an event after [errors] is updated. These errors are not
+  /// This will emit an event after [errors] is updated. These errors are not
   /// guaranteed to have the same types as when they were thrown; for example,
   /// they may need to be serialized across isolate boundaries. The stack traces
   /// will be [Chain]s.

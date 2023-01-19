@@ -2,19 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:pedantic/pedantic.dart';
+import 'dart:async';
+
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 import 'spawn_hybrid.dart';
 
@@ -27,12 +28,10 @@ class RunnerTest extends Test {
   @override
   final Trace? trace;
 
-  /// The channel used to communicate with the test's [IframeListener].
+  /// The channel used to communicate with the test's `RemoteListener`.
   final MultiChannel<Object?> _channel;
 
   RunnerTest(this.name, this.metadata, this.trace, this._channel);
-
-  RunnerTest._(this.name, this.metadata, this.trace, this._channel);
 
   @override
   LiveTest load(Suite suite, {Iterable<Group>? groups}) {
@@ -44,8 +43,8 @@ class RunnerTest extends Test {
       testChannel = _channel.virtualChannel();
       _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
-      testChannel.stream.listen((event) {
-        var message = event as Map<String, Object?>;
+      testChannel.stream.listen((message) {
+        message as Map<String, Object?>;
         switch (message['type'] as String) {
           case 'error':
             var asyncError = RemoteException.deserialize(message['error']);
@@ -77,7 +76,7 @@ class RunnerTest extends Test {
             break;
         }
       }, onDone: () {
-        // When the test channel closes—presumably becuase the browser
+        // When the test channel closes—presumably because the browser
         // closed—mark the test as complete no matter what.
         if (controller.completer.isCompleted) return;
         controller.completer.complete();
@@ -104,6 +103,6 @@ class RunnerTest extends Test {
   @override
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return RunnerTest._(name, metadata.forPlatform(platform), trace, _channel);
+    return RunnerTest(name, metadata.forPlatform(platform), trace, _channel);
   }
 }

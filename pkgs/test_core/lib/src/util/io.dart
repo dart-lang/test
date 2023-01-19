@@ -29,7 +29,7 @@ final int lineLength = () {
     return stdout.terminalColumns;
   } on UnsupportedError {
     // This can throw an [UnsupportedError] if we're running in a JS context
-    // where `dart:io` is unavaiable.
+    // where `dart:io` is unavailable.
     return _defaultLineLength;
   } on StdoutException {
     return _defaultLineLength;
@@ -86,6 +86,12 @@ final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
 /// Otherwise only printable ASCII characters should be used.
 bool get canUseSpecialChars =>
     (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
+
+/// Detect whether we're running in a Github Actions context.
+///
+/// See
+/// https://docs.github.com/en/actions/learn-github-actions/environment-variables.
+bool get inGithubContext => Platform.environment['GITHUB_ACTIONS'] == 'true';
 
 /// Creates a temporary directory and returns its path.
 String createTempDir() =>
@@ -160,7 +166,8 @@ void warn(String message, {bool? color, bool print = false}) {
 ///
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
-Future<T> getUnusedPort<T>(FutureOr<T> Function(int port) tryPort) async {
+Future<T> getUnusedPort<T extends Object>(
+    FutureOr<T> Function(int port) tryPort) async {
   T? value;
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());

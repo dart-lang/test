@@ -5,20 +5,23 @@
 @TestOn('vm')
 
 import 'dart:async';
+import 'dart:io';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('reports when no tests are run', () async {
     await d.file('test.dart', 'void main() {}').create();
 
     var test = await runTest(['test.dart'], reporter: 'compact');
     expect(test.stdout, emitsThrough(contains('No tests ran.')));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
   });
 
   test('runs several successful tests and reports when each completes', () {
@@ -411,10 +414,96 @@ void main() {
           +2: All tests passed!''', args: ['--run-skipped']);
     });
   });
+
+  test('Directs users to enable stack trace chaining if disabled', () async {
+    await _expectReport(
+        '''test('failure 1', () => throw TestFailure('oh no'));''', '''
+        +0: loading test.dart
+        +0: failure 1
+        +0 -1: failure 1 [E]
+          oh no
+          test.dart 6:25  main.<fn>
+        +0 -1: Some tests failed.
+        Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+        For example, 'dart test --chain-stack-traces'.''',
+        chainStackTraces: false);
+  });
+
+  group('gives non-windows users a way to re-run failed tests', () {
+    final executablePath = p.absolute(Platform.resolvedExecutable);
+
+    test('with simple names', () {
+      return _expectReport('''
+        test('failure', () {
+          expect(1, equals(2));
+        });''', '''
+        +0: loading test.dart
+        +0: failure
+        +0 -1: failure [E]
+          Expected: <2>
+            Actual: <1>
+
+        To run this test again: $executablePath test test.dart -p vm --plain-name 'failure'
+
+        +0 -1: Some tests failed.''');
+    });
+
+    test('escapes names containing single quotes', () {
+      return _expectReport('''
+        test("failure with a ' in the name", () {
+          expect(1, equals(2));
+        });''', '''
+        +0: loading test.dart
+        +0: failure with a ' in the name
+        +0 -1: failure with a ' in the name [E]
+          Expected: <2>
+            Actual: <1>
+
+        To run this test again: $executablePath test test.dart -p vm --plain-name 'failure with a '\\'' in the name'
+
+        +0 -1: Some tests failed.''');
+    });
+  }, testOn: '!windows');
+
+  group('gives windows users a way to re-run failed tests', () {
+    final executablePath = p.absolute(Platform.resolvedExecutable);
+
+    test('with simple names', () {
+      return _expectReport('''
+        test('failure', () {
+          expect(1, equals(2));
+        });''', '''
+        +0: loading test.dart
+        +0: failure
+        +0 -1: failure [E]
+          Expected: <2>
+            Actual: <1>
+
+        To run this test again: $executablePath test test.dart -p vm --plain-name "failure"
+
+        +0 -1: Some tests failed.''');
+    });
+
+    test('escapes names containing double quotes', () {
+      return _expectReport('''
+        test('failure with a " in the name', () {
+          expect(1, equals(2));
+        });''', '''
+        +0: loading test.dart
+        +0: failure with a " in the name
+        +0 -1: failure with a " in the name [E]
+          Expected: <2>
+            Actual: <1>
+
+        To run this test again: $executablePath test test.dart -p vm --plain-name "failure with a """ in the name"
+
+        +0 -1: Some tests failed.''');
+    });
+  }, testOn: 'windows');
 }
 
 Future<void> _expectReport(String tests, String expected,
-    {List<String> args = const []}) async {
+    {List<String> args = const [], bool chainStackTraces = true}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -425,8 +514,11 @@ $tests
     }
   ''').create();
 
-  var test = await runTest(['test.dart', '--chain-stack-traces', ...args],
-      reporter: 'compact');
+  var test = await runTest([
+    'test.dart',
+    if (chainStackTraces) '--chain-stack-traces',
+    ...args,
+  ], reporter: 'compact');
   await test.shouldExit();
 
   var stdoutLines = await test.stdout.rest.toList();

@@ -6,10 +6,12 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
+import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
+    show
+        Timeout;
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
-import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
 
 import '../util/dart.dart';
 import '../util/pair.dart';
@@ -401,7 +403,7 @@ class _Parser {
   ///
   /// This can be fooled - for instance the invocation `foo.Bar()` may look like
   /// a prefixed instantiation of a `Bar` even though it is a named constructor
-  /// instantiation of a `foo`, or a method infocation on a variable `foo`, or
+  /// instantiation of a `foo`, or a method invocation on a variable `foo`, or
   /// ...
   ///
   /// Similarly `Baz.another` may look like the named constructor invocation of

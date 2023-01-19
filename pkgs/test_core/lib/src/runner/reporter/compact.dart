@@ -40,6 +40,10 @@ class CompactReporter implements Reporter {
   /// Windows or not outputting to a terminal.
   final String _gray;
 
+  /// The terminal escape code for cyan text, or the empty string if this is
+  /// Windows or not outputting to a terminal.
+  final String _cyan;
+
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
   final String _bold;
@@ -98,6 +102,10 @@ class CompactReporter implements Reporter {
   /// Whether the reporter is paused.
   var _paused = false;
 
+  // Whether a notice should be logged about enabling stack trace chaining at
+  // the end of all tests running.
+  var _shouldPrintStackTraceChainingNotice = false;
+
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription<void>>{};
 
@@ -127,7 +135,8 @@ class CompactReporter implements Reporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[1;30m' : '',
+        _gray = color ? '\u001b[90m' : '',
+        _cyan = color ? '\u001b[36m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -186,10 +195,12 @@ class CompactReporter implements Reporter {
           .listen((_) => _progressLine(_lastProgressMessage ?? '')));
     }
 
-    // If this is the first test to start, print a progress line so the user
-    // knows what's running. It's possible that the active test may not be
-    // [liveTest] because the engine doesn't always surface load tests.
-    if (_engine.active.length == 1 && _engine.active.first == liveTest) {
+    // If this is the first test or suite load to start, print a progress line
+    // so the user knows what's running.
+    if ((_engine.active.length == 1 && _engine.active.first == liveTest) ||
+        (_engine.active.isEmpty &&
+            _engine.activeSuiteLoads.length == 1 &&
+            _engine.activeSuiteLoads.first == liveTest)) {
       _progressLine(_description(liveTest));
     }
 
@@ -208,6 +219,19 @@ class CompactReporter implements Reporter {
       if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
       _sink.writeln(text);
     }));
+
+    liveTest.onComplete.then((_) {
+      var result = liveTest.state.result;
+      if (result != Result.error && result != Result.failure) return;
+      var quotedName = Platform.isWindows
+          ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
+          : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
+      _sink.writeln('');
+      _sink.writeln('$_bold${_cyan}To run this test again:$_noColor '
+          '${Platform.executable} test ${liveTest.suite.path} '
+          '-p ${liveTest.suite.platform.runtime.identifier} '
+          '--plain-name $quotedName');
+    });
   }
 
   /// A callback called when [liveTest]'s state becomes [state].
@@ -229,6 +253,11 @@ class CompactReporter implements Reporter {
 
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+    if (!liveTest.test.metadata.chainStackTraces &&
+        !liveTest.suite.isLoadSuite) {
+      _shouldPrintStackTraceChainingNotice = true;
+    }
+
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest),
@@ -295,6 +324,14 @@ class CompactReporter implements Reporter {
     } else {
       _progressLine('All tests passed!');
       _sink.writeln('');
+    }
+
+    if (_shouldPrintStackTraceChainingNotice) {
+      _sink
+        ..writeln('')
+        ..writeln('Consider enabling the flag chain-stack-traces to '
+            'receive more detailed exceptions.\n'
+            "For example, 'dart test --chain-stack-traces'.");
     }
   }
 

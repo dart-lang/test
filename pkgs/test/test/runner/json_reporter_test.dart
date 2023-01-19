@@ -7,14 +7,15 @@
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 import 'json_reporter_utils.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('runs several successful tests and reports when each completes', () {
     return _expectReport('''
       test('success 1', () {});
@@ -188,8 +189,8 @@ void main() {
           });
         });
 
-        test('success', () {});
-        test('success', () {});
+        test('success1', () {});
+        test('success2', () {});
       });
     ''', [
       [
@@ -206,10 +207,10 @@ void main() {
         testStartJson(6, 'group 1 .2 .3 success',
             groupIDs: [2, 3, 4, 5], line: 9, column: 13),
         testDoneJson(6),
-        testStartJson(7, 'group 1 success',
+        testStartJson(7, 'group 1 success1',
             groupIDs: [2, 3], line: 13, column: 9),
         testDoneJson(7),
-        testStartJson(8, 'group 1 success',
+        testStartJson(8, 'group 1 success2',
             groupIDs: [2, 3], line: 14, column: 9),
         testDoneJson(8),
       ]
@@ -494,7 +495,10 @@ void main() {
             [
               suiteJson(0, platform: 'chrome'),
               testStartJson(1, 'compiling test.dart', groupIDs: []),
-              printJson(1, startsWith('Compiled')),
+              printJson(
+                  1,
+                  isA<String>().having((s) => s.split('\n'), 'lines',
+                      contains(startsWith('Compiled')))),
               testDoneJson(1, hidden: true),
             ],
             [
@@ -525,9 +529,9 @@ void main() {
                   line: 3,
                   column: 60,
                   url: p.toUri(p.join(d.sandbox, 'common.dart')).toString(),
-                  root_column: 7,
-                  root_line: 7,
-                  root_url: p.toUri(p.join(d.sandbox, 'test.dart')).toString()),
+                  rootColumn: 7,
+                  rootLine: 7,
+                  rootUrl: p.toUri(p.join(d.sandbox, 'test.dart')).toString()),
               testDoneJson(3),
               testStartJson(4, 'success 2', line: 8, column: 7),
               testDoneJson(4),
@@ -555,7 +559,10 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
           [
             suiteJson(0, platform: 'chrome'),
             testStartJson(1, 'compiling test.dart', groupIDs: []),
-            printJson(1, startsWith('Compiled')),
+            printJson(
+                1,
+                isA<String>().having((s) => s.split('\n'), 'lines',
+                    contains(startsWith('Compiled')))),
             testDoneJson(1, hidden: true),
           ],
           [
@@ -589,7 +596,10 @@ import 'package:test/test.dart';
     testContent.writeln("import '${entry.key}';");
     await d.file(entry.key, entry.value).create();
   }
-  testContent..writeln('void main() {')..writeln(tests)..writeln('}');
+  testContent
+    ..writeln('void main() {')
+    ..writeln(tests)
+    ..writeln('}');
 
   await d.file('test.dart', testContent.toString()).create();
 

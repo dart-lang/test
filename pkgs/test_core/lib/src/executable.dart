@@ -9,7 +9,8 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/src/util/pretty_print.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/no_tests_found_exception.dart';
 
 import 'runner.dart';
 import 'runner/application_exception.dart';
@@ -59,7 +60,7 @@ Future<void> _execute(List<String> args) async {
   /// Signals will only be captured as long as this has an active subscription.
   /// Otherwise, they'll be handled by Dart's default signal handler, which
   /// terminates the program immediately.
-  final _signals = Platform.isWindows
+  final signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
       : Platform.isFuchsia // Signals don't exist on Fuchsia.
           ? Stream<ProcessSignal>.empty()
@@ -129,7 +130,7 @@ Future<void> _execute(List<String> args) async {
   }
 
   if (!configuration.explicitPaths &&
-      !Directory(configuration.paths.single).existsSync()) {
+      !Directory(configuration.testSelections.keys.single).existsSync()) {
     _printUsage('No test files were passed and the default "test/" '
         "directory doesn't exist.");
     exitCode = exit_codes.data;
@@ -138,7 +139,7 @@ Future<void> _execute(List<String> args) async {
 
   Runner? runner;
 
-  signalSubscription ??= _signals.listen((signal) async {
+  signalSubscription ??= signals.listen((signal) async {
     completeShutdown();
     await runner?.close();
   });
@@ -155,6 +156,9 @@ Future<void> _execute(List<String> args) async {
   } on FormatException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
+  } on NoTestsFoundException catch (error) {
+    stderr.writeln(error.message);
+    exitCode = exit_codes.noTestsRan;
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(Trace.from(stackTrace).terse);
@@ -164,12 +168,6 @@ Future<void> _execute(List<String> args) async {
     exitCode = exit_codes.software;
   } finally {
     await runner?.close();
-  }
-
-  // TODO(grouma) - figure out why the executable can hang in the travis
-  // environment. https://github.com/dart-lang/test/issues/599
-  if (Platform.environment['FORCE_TEST_EXIT'] == 'true') {
-    exit(exitCode);
   }
 
   return;
@@ -190,7 +188,7 @@ void _printUsage([String? error]) {
 
   output.write('''${wordWrap(message)}
 
-Usage: pub run test [files or directories...]
+Usage: dart test [files or directories...]
 
 ${Configuration.usage}
 ''');

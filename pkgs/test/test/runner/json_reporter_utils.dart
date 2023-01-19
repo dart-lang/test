@@ -5,10 +5,9 @@
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
 import 'package:test_core/src/runner/version.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 /// Asserts that the outputs from running tests with a JSON reporter match the
 /// given expectations.
@@ -22,26 +21,26 @@ Future<void> expectJsonReport(
     Map<Object, Object> done) async {
   // Ensure the output is of the same length, including start, done and all
   // suites messages.
-  expect(
-      outputLines.length, equals(expected.fold(3, (int a, m) => a + m.length)),
-      reason: 'Expected $outputLines to match $expected.');
+  expect(outputLines,
+      hasLength(expected.fold<int>(3, (int a, m) => a + m.length)));
 
-  dynamic decodeLine(String l) =>
-      jsonDecode(l)..remove('time')..remove('stackTrace');
+  dynamic decodeLine(String l) => jsonDecode(l)
+    ..remove('time')
+    ..remove('stackTrace');
 
   // Should contain all suites message.
   expect(outputLines.map(decodeLine), containsAll([allSuitesJson()]));
 
   // A single start event is emitted first.
-  final _start = {
+  final start = {
     'type': 'start',
     'protocolVersion': '0.1.1',
     'runnerVersion': testVersion,
     'pid': testPid,
   };
-  expect(decodeLine(outputLines.first), equals(_start));
+  expect(decodeLine(outputLines.first), equals(start));
 
-  // A single done event is emmited last.
+  // A single done event is emitted last.
   expect(decodeLine(outputLines.last), equals(done));
 
   for (var value in expected) {
@@ -127,9 +126,9 @@ Map<String, Object> testStartJson(int id, String name,
     int? column,
     String? url,
     Object? skip,
-    int? root_line,
-    int? root_column,
-    String? root_url}) {
+    int? rootLine,
+    int? rootColumn,
+    String? rootUrl}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(
         'line and column must either both be null or both be passed');
@@ -151,14 +150,14 @@ Map<String, Object> testStartJson(int id, String name,
     }
   };
   var testObj = expected['test'] as Map<String, dynamic>;
-  if (root_line != null) {
-    testObj['root_line'] = root_line;
+  if (rootLine != null) {
+    testObj['root_line'] = rootLine;
   }
-  if (root_column != null) {
-    testObj['root_column'] = root_column;
+  if (rootColumn != null) {
+    testObj['root_column'] = rootColumn;
   }
-  if (root_url != null) {
-    testObj['root_url'] = root_url;
+  if (rootUrl != null) {
+    testObj['root_url'] = rootUrl;
   }
   return expected;
 }

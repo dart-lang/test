@@ -5,23 +5,30 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:boolean_selector/boolean_selector.dart';
+import 'package:glob/glob.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
 import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/metadata.dart';
+import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/application_exception.dart';
-import 'package:test_core/src/runner/suite.dart';
+import 'package:test_core/src/runner/configuration.dart';
+import 'package:test_core/src/runner/configuration/custom_runtime.dart';
+import 'package:test_core/src/runner/configuration/runtime_settings.dart';
 import 'package:test_core/src/runner/engine.dart';
-import 'package:test_core/src/runner/plugin/environment.dart';
 import 'package:test_core/src/runner/load_suite.dart';
+import 'package:test_core/src/runner/plugin/environment.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
-import 'package:test/test.dart';
+import 'package:test_core/src/runner/runtime_selection.dart';
+import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
 final suitePlatform = SuitePlatform(Runtime.vm);
@@ -102,7 +109,7 @@ Matcher isApplicationException(message) =>
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform);
+  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
   return test.load(suite);
 }
 
@@ -193,7 +200,7 @@ Engine declareEngine(void Function() body,
   return Engine.withSuites([
     RunnerSuite(
         const PluginEnvironment(),
-        SuiteConfiguration(runSkipped: runSkipped),
+        SuiteConfiguration.runSkipped(runSkipped),
         declarer.build(),
         suitePlatform)
   ], coverage: coverage);
@@ -206,3 +213,143 @@ RunnerSuite runnerSuite(Group root) => RunnerSuite(
 /// Returns a [LoadSuite] with a default configuration.
 LoadSuite loadSuite(String name, FutureOr<RunnerSuite> Function() body) =>
     LoadSuite(name, SuiteConfiguration.empty, suitePlatform, body);
+
+SuiteConfiguration suiteConfiguration(
+        {bool? allowDuplicateTestNames,
+        bool? allowTestRandomization,
+        bool? jsTrace,
+        bool? runSkipped,
+        Iterable<String>? dart2jsArgs,
+        String? precompiledPath,
+        Iterable<RuntimeSelection>? runtimes,
+        Map<BooleanSelector, SuiteConfiguration>? tags,
+        Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+        bool? ignoreTimeouts,
+
+        // Test-level configuration
+        Timeout? timeout,
+        bool? verboseTrace,
+        bool? chainStackTraces,
+        bool? skip,
+        int? retry,
+        String? skipReason,
+        PlatformSelector? testOn,
+        Iterable<String>? addTags}) =>
+    SuiteConfiguration(
+        allowDuplicateTestNames: allowDuplicateTestNames,
+        allowTestRandomization: allowTestRandomization,
+        jsTrace: jsTrace,
+        runSkipped: runSkipped,
+        dart2jsArgs: dart2jsArgs,
+        precompiledPath: precompiledPath,
+        runtimes: runtimes,
+        tags: tags,
+        onPlatform: onPlatform,
+        ignoreTimeouts: ignoreTimeouts,
+        timeout: timeout,
+        verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
+        skip: skip,
+        retry: retry,
+        skipReason: skipReason,
+        testOn: testOn,
+        addTags: addTags);
+
+Configuration configuration(
+        {bool? help,
+        String? customHtmlTemplatePath,
+        bool? version,
+        bool? pauseAfterLoad,
+        bool? debug,
+        bool? color,
+        String? configurationPath,
+        String? reporter,
+        Map<String, String>? fileReporters,
+        String? coverage,
+        int? pubServePort,
+        int? concurrency,
+        int? shardIndex,
+        int? totalShards,
+        Map<String, Set<TestSelection>>? testSelections,
+        Iterable<String>? foldTraceExcept,
+        Iterable<String>? foldTraceOnly,
+        Glob? filename,
+        Iterable<String>? chosenPresets,
+        Map<String, Configuration>? presets,
+        Map<String, RuntimeSettings>? overrideRuntimes,
+        Map<String, CustomRuntime>? defineRuntimes,
+        bool? noRetry,
+        bool? useDataIsolateStrategy,
+        bool? ignoreTimeouts,
+
+        // Suite-level configuration
+        bool? allowDuplicateTestNames,
+        bool? allowTestRandomization,
+        bool? jsTrace,
+        bool? runSkipped,
+        Iterable<String>? dart2jsArgs,
+        String? precompiledPath,
+        Iterable<Pattern>? globalPatterns,
+        Iterable<RuntimeSelection>? runtimes,
+        BooleanSelector? includeTags,
+        BooleanSelector? excludeTags,
+        Map<BooleanSelector, SuiteConfiguration>? tags,
+        Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+        int? testRandomizeOrderingSeed,
+
+        // Test-level configuration
+        Timeout? timeout,
+        bool? verboseTrace,
+        bool? chainStackTraces,
+        bool? skip,
+        int? retry,
+        String? skipReason,
+        PlatformSelector? testOn,
+        Iterable<String>? addTags}) =>
+    Configuration(
+        help: help,
+        customHtmlTemplatePath: customHtmlTemplatePath,
+        version: version,
+        pauseAfterLoad: pauseAfterLoad,
+        debug: debug,
+        color: color,
+        configurationPath: configurationPath,
+        reporter: reporter,
+        fileReporters: fileReporters,
+        coverage: coverage,
+        pubServePort: pubServePort,
+        concurrency: concurrency,
+        shardIndex: shardIndex,
+        totalShards: totalShards,
+        testSelections: testSelections,
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
+        filename: filename,
+        chosenPresets: chosenPresets,
+        presets: presets,
+        overrideRuntimes: overrideRuntimes,
+        defineRuntimes: defineRuntimes,
+        noRetry: noRetry,
+        useDataIsolateStrategy: useDataIsolateStrategy,
+        ignoreTimeouts: ignoreTimeouts,
+        allowDuplicateTestNames: allowDuplicateTestNames,
+        allowTestRandomization: allowTestRandomization,
+        jsTrace: jsTrace,
+        runSkipped: runSkipped,
+        dart2jsArgs: dart2jsArgs,
+        precompiledPath: precompiledPath,
+        globalPatterns: globalPatterns,
+        runtimes: runtimes,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
+        tags: tags,
+        onPlatform: onPlatform,
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        timeout: timeout,
+        verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
+        skip: skip,
+        retry: retry,
+        skipReason: skipReason,
+        testOn: testOn,
+        addTags: addTags);

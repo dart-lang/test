@@ -6,14 +6,15 @@
 
 import 'dart:convert';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('adds the specified tags', () async {
     await d
         .file(
@@ -33,11 +34,11 @@ void main() {
 
     var test = await runTest(['--exclude-tag', 'foo', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('No tests ran.')));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
 
     test = await runTest(['--exclude-tag', 'bar', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('No tests ran.')));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
 
     test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));

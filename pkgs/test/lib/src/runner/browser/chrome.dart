@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -45,11 +44,13 @@ class Chrome extends Browser {
     var connectionCompleter = Completer<WipConnection>();
     var idToUrl = <String, String>{};
     return Chrome._(() async {
-      var tryPort = ([int? port]) async {
+      Future<Process> tryPort([int? port]) async {
         var dir = createTempDir();
         var args = [
           '--user-data-dir=$dir',
           url.toString(),
+          '--enable-logging=stdout',
+          '--v=1',
           '--disable-extensions',
           '--disable-popup-blocking',
           '--bwsi',
@@ -91,7 +92,7 @@ class Chrome extends Browser {
             .then((_) => Directory(dir).deleteSync(recursive: true)));
 
         return process;
-      };
+      }
 
       if (!configuration.debug) return tryPort();
       return getUnusedPort<Process>(tryPort);
@@ -193,11 +194,23 @@ Future<WipConnection> _connect(
 }
 
 extension on HttpClient {
+  Encoding determineEncoding(HttpHeaders headers) {
+    final contentType = headers.contentType?.charset;
+
+    /// Using the `charset` property of the `contentType` if available.
+    /// If it's unavailable or if the encoding name is unknown, [latin1] is used by default,
+    /// as per [RFC 2616][].
+    ///
+    /// [RFC 2616]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
+    return Encoding.getByName(contentType) ?? latin1;
+  }
+
   Future<String?> getString(String url) async {
     final request = await getUrl(Uri.parse(url));
     final response = await request.close();
     if (response.statusCode != HttpStatus.ok) return null;
     var bytes = [await for (var chunk in response) ...chunk];
-    return utf8.decode(bytes);
+    final encoding = determineEncoding(response.headers);
+    return encoding.decode(bytes);
   }
 }

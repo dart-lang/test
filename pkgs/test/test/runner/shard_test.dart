@@ -4,14 +4,17 @@
 
 @TestOn('vm')
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'dart:io';
 
-import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('divides all the tests among the available shards', () async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';
@@ -92,10 +95,14 @@ void main() {
         test.stdout,
         emitsInOrder([
           emitsAnyOf([
-            containsInOrder(
-                ['+0: ./1_test.dart: test 1.1', '+1: ./2_test.dart: test 2.1']),
-            containsInOrder(
-                ['+0: ./2_test.dart: test 2.1', '+1: ./1_test.dart: test 1.1'])
+            containsInOrder([
+              '+0: .${Platform.pathSeparator}1_test.dart: test 1.1',
+              '+1: .${Platform.pathSeparator}2_test.dart: test 2.1'
+            ]),
+            containsInOrder([
+              '+0: .${Platform.pathSeparator}2_test.dart: test 2.1',
+              '+1: .${Platform.pathSeparator}1_test.dart: test 1.1'
+            ])
           ]),
           contains('+2: All tests passed!')
         ]));
@@ -106,10 +113,14 @@ void main() {
         test.stdout,
         emitsInOrder([
           emitsAnyOf([
-            containsInOrder(
-                ['+0: ./1_test.dart: test 1.2', '+1: ./2_test.dart: test 2.2']),
-            containsInOrder(
-                ['+0: ./2_test.dart: test 2.2', '+1: ./1_test.dart: test 1.2'])
+            containsInOrder([
+              '+0: .${Platform.pathSeparator}1_test.dart: test 1.2',
+              '+1: .${Platform.pathSeparator}2_test.dart: test 2.2'
+            ]),
+            containsInOrder([
+              '+0: .${Platform.pathSeparator}2_test.dart: test 2.2',
+              '+1: .${Platform.pathSeparator}1_test.dart: test 1.2'
+            ])
           ]),
           contains('+2: All tests passed!')
         ]));
@@ -120,10 +131,14 @@ void main() {
         test.stdout,
         emitsInOrder([
           emitsAnyOf([
-            containsInOrder(
-                ['+0: ./1_test.dart: test 1.3', '+1: ./2_test.dart: test 2.3']),
-            containsInOrder(
-                ['+0: ./2_test.dart: test 2.3', '+1: ./1_test.dart: test 1.3'])
+            containsInOrder([
+              '+0: .${Platform.pathSeparator}1_test.dart: test 1.3',
+              '+1: .${Platform.pathSeparator}2_test.dart: test 2.3'
+            ]),
+            containsInOrder([
+              '+0: .${Platform.pathSeparator}2_test.dart: test 2.3',
+              '+1: .${Platform.pathSeparator}1_test.dart: test 1.3'
+            ])
           ]),
           contains('+2: All tests passed!')
         ]));
@@ -143,7 +158,7 @@ void main() {
     var test =
         await runTest(['test.dart', '--shard-index=1', '--total-shards=3']);
     expect(test.stdout, emitsThrough('No tests ran.'));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
   });
 
   group('reports an error if', () {

@@ -6,13 +6,14 @@ import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
+import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
+    show
+        Timeout;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
-import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
-import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
 import '../../util/errors.dart';
@@ -22,7 +23,6 @@ import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
 import 'custom_runtime.dart';
-import 'load.dart' as self;
 import 'reporters.dart';
 import 'runtime_settings.dart';
 
@@ -39,15 +39,7 @@ final _identifierRegExp = RegExp(r'[a-zA-Z_]\w*');
 final _packageName =
     RegExp('^${_identifierRegExp.pattern}(\\.${_identifierRegExp.pattern})*\$');
 
-/// Loads configuration information from a YAML file at [path].
-///
-/// See [loadFromString] for further documentation.
-Configuration load(String path, {bool global = false}) {
-  var source = File(path).readAsStringSync();
-  return loadFromString(source, global: global, sourceUrl: p.toUri(path));
-}
-
-/// Loads configuration information from YAML formatted [source].
+/// Parses configuration from YAML formatted [content].
 ///
 /// If [global] is `true`, this restricts the configuration file to only rules
 /// that are supported globally.
@@ -56,19 +48,18 @@ Configuration load(String path, {bool global = false}) {
 /// the yaml document.
 ///
 /// Throws a [FormatException] if the configuration is invalid.
-Configuration loadFromString(String source,
-    {bool global = false, Uri? sourceUrl}) {
-  var document = loadYamlNode(source, sourceUrl: sourceUrl);
+Configuration parse(String content, {Uri? sourceUrl, bool global = false}) {
+  var document = loadYamlNode(content, sourceUrl: sourceUrl);
 
   if (document.value == null) return Configuration.empty;
 
   if (document is! Map) {
     throw SourceSpanFormatException(
-        'The configuration must be a YAML map.', document.span, source);
+        'The configuration must be a YAML map.', document.span, content);
   }
 
   var loader =
-      _ConfigurationLoader(document as YamlMap, source, global: global);
+      _ConfigurationLoader(document as YamlMap, content, global: global);
   return loader.load();
 }
 
@@ -114,7 +105,7 @@ class _ConfigurationLoader {
     var basePath =
         p.join(p.dirname(p.fromUri(_document.span.sourceUrl)), includePath);
     try {
-      return self.load(basePath);
+      return Configuration.load(basePath);
     } on FileSystemException catch (error) {
       throw SourceSpanFormatException(
           getErrorMessage(error), includeNode.span, _source);
@@ -155,7 +146,7 @@ class _ConfigurationLoader {
         key: (keyNode) => _parseIdentifierLike(keyNode, 'presets key'),
         value: (valueNode) => _nestedConfig(valueNode, 'presets value'));
 
-    var config = Configuration(
+    var config = Configuration.globalTest(
             verboseTrace: verboseTrace,
             jsTrace: jsTrace,
             timeout: timeout,
@@ -164,7 +155,7 @@ class _ConfigurationLoader {
             foldTraceExcept: foldStackFrames['except'],
             foldTraceOnly: foldStackFrames['only'])
         .merge(_extractPresets<PlatformSelector>(
-            onPlatform, (map) => Configuration(onPlatform: map)));
+            onPlatform, (map) => Configuration.onPlatform(map)));
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -182,6 +173,8 @@ class _ConfigurationLoader {
       _disallow('test_on');
       _disallow('add_tags');
       _disallow('tags');
+      _disallow('allow_test_randomization');
+      _disallow('allow_duplicate_test_names');
       return Configuration.empty;
     }
 
@@ -209,14 +202,20 @@ class _ConfigurationLoader {
 
     var retry = _getNonNegativeInt('retry');
 
-    return Configuration(
+    var allowTestRandomization = _getBool('allow_test_randomization');
+
+    var allowDuplicateTestNames = _getBool('allow_duplicate_test_names');
+
+    return Configuration.localTest(
             skip: skip,
             retry: retry,
             skipReason: skipReason,
             testOn: testOn,
-            addTags: addTags)
+            addTags: addTags,
+            allowTestRandomization: allowTestRandomization,
+            allowDuplicateTestNames: allowDuplicateTestNames)
         .merge(_extractPresets<BooleanSelector>(
-            tags, (map) => Configuration(tags: map)));
+            tags, (map) => Configuration.tags(map)));
   }
 
   /// Loads runner configuration that's allowed in the global configuration
@@ -280,7 +279,7 @@ class _ConfigurationLoader {
 
     var customHtmlTemplatePath = _getString('custom_html_template_path');
 
-    return Configuration(
+    return Configuration.globalRunner(
         pauseAfterLoad: pauseAfterLoad,
         customHtmlTemplatePath: customHtmlTemplatePath,
         runSkipped: runSkipped,
@@ -351,7 +350,6 @@ class _ConfigurationLoader {
       _validate(pathNode, 'Paths must be strings.', (value) => value is String);
       _validate(pathNode, 'Paths must be relative.',
           (value) => p.url.isRelative(value as String));
-
       return _parseNode(pathNode, 'path', p.fromUri);
     });
 
@@ -362,10 +360,12 @@ class _ConfigurationLoader {
 
     var defineRuntimes = _loadDefineRuntimes();
 
-    return Configuration(
+    return Configuration.localRunner(
         pubServePort: pubServePort,
-        patterns: patterns,
-        paths: paths,
+        globalPatterns: patterns,
+        testSelections: {
+          for (var path in paths) path: const {TestSelection()}
+        },
         filename: filename,
         includeTags: includeTags,
         excludeTags: excludeTags,
@@ -596,7 +596,7 @@ class _ConfigurationLoader {
   /// Takes a map that contains [Configuration]s and extracts any
   /// preset-specific configuration into a parent [Configuration].
   ///
-  /// This is needed because parameters to [new Configuration] such as
+  /// This is needed because parameters to [Configuration.new] such as
   /// `onPlatform` take maps to [SuiteConfiguration]s. [SuiteConfiguration]
   /// doesn't support preset-specific configuration, so this extracts the preset
   /// logic into a parent [Configuration], leaving only maps to
@@ -646,8 +646,7 @@ class _ConfigurationLoader {
   }
 
   /// Throws a [SourceSpanFormatException] with [message] about [field].
-  @alwaysThrows
-  void _error(String message, String field) {
+  Never _error(String message, String field) {
     throw SourceSpanFormatException(
         message, _document.nodes[field]!.span, _source);
   }

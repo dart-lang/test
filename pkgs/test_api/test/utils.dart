@@ -4,6 +4,7 @@
 
 import 'dart:collection';
 
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
@@ -14,12 +15,10 @@ import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
-import 'package:test_core/src/runner/application_exception.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
-import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
-import 'package:test/test.dart';
+import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
 final suitePlatform = SuitePlatform(Runtime.vm);
@@ -89,18 +88,10 @@ Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
 Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
-/// Returns a matcher that matches a [ApplicationException] with the given
-/// [message].
-///
-/// [message] can be a string or a [Matcher].
-Matcher isApplicationException(message) =>
-    const TypeMatcher<ApplicationException>()
-        .having((e) => e.message, 'message', message);
-
 /// Returns a local [LiveTest] that runs [body].
 LiveTest createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform);
+  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
   return test.load(suite);
 }
 
@@ -179,8 +170,13 @@ Future<void> expectTestsPass(void Function() body) async {
 }
 
 /// Runs [body] with a declarer and returns the declared entries.
-List<GroupEntry> declare(void Function() body) {
-  var declarer = Declarer()..declare(body);
+List<GroupEntry> declare(
+  void Function() body, {
+  // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+  bool allowDuplicateTestNames = true,
+}) {
+  var declarer = Declarer(allowDuplicateTestNames: allowDuplicateTestNames)
+    ..declare(body);
   return declarer.build().entries;
 }
 
@@ -190,12 +186,8 @@ Engine declareEngine(void Function() body, {bool runSkipped = false}) {
   return Engine.withSuites([
     RunnerSuite(
         const PluginEnvironment(),
-        SuiteConfiguration(runSkipped: runSkipped),
+        SuiteConfiguration.runSkipped(runSkipped),
         declarer.build(),
         suitePlatform)
   ]);
 }
-
-/// Returns a [RunnerSuite] with a default environment and configuration.
-RunnerSuite runnerSuite(Group root) => RunnerSuite(
-    const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);

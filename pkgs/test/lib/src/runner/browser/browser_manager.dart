@@ -8,8 +8,8 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart' show Runtime, StackTraceMapper;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
@@ -69,7 +69,7 @@ class BrowserManager {
   CancelableCompleter<void>? _pauseCompleter;
 
   /// The controller for [_BrowserEnvironment.onRestart].
-  final _onRestartController = StreamController<Null>.broadcast();
+  final _onRestartController = StreamController<void>.broadcast();
 
   /// The environment to attach to each suite.
   late final Future<_BrowserEnvironment> _environment;
@@ -98,20 +98,31 @@ class BrowserManager {
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
   static Future<BrowserManager> start(
+          Runtime runtime,
+          Uri url,
+          Future<WebSocketChannel> future,
+          ExecutableSettings settings,
+          Configuration configuration) =>
+      _start(runtime, url, future, settings, configuration, 1);
+
+  static const _maxRetries = 3;
+  static Future<BrowserManager> _start(
       Runtime runtime,
       Uri url,
       Future<WebSocketChannel> future,
       ExecutableSettings settings,
-      Configuration configuration) {
+      Configuration configuration,
+      int attempt) {
     var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
-    browser.onExit.then<void>((_) {
-      throw ApplicationException('${runtime.name} exited before connecting.');
-    }).onError<Object>((error, stackTrace) {
+    browser.onExit
+        .then<void>((_) => throw ApplicationException(
+            '${runtime.name} exited before connecting.'))
+        .onError<Object>((error, stackTrace) {
       if (!completer.isCompleted) {
         completer.completeError(error, stackTrace);
       }
@@ -128,8 +139,12 @@ class BrowserManager {
 
     return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
       browser.close();
-      throw ApplicationException(
-          'Timed out waiting for ${runtime.name} to connect.');
+      if (attempt >= _maxRetries) {
+        throw ApplicationException(
+            'Timed out waiting for ${runtime.name} to connect.\n'
+            'Browser output: ${utf8.decode(browser.output)}');
+      }
+      return _start(runtime, url, future, settings, configuration, ++attempt);
     });
   }
 
@@ -140,6 +155,7 @@ class BrowserManager {
       ExecutableSettings settings, Configuration configuration) {
     switch (browser.root) {
       case Runtime.chrome:
+      case Runtime.experimentalChromeWasm:
         return Chrome(url, configuration, settings: settings);
       case Runtime.firefox:
         return Firefox(url, settings: settings);
@@ -202,8 +218,8 @@ class BrowserManager {
   ///
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
-  Future<RunnerSuite> load(
-      String path, Uri url, SuiteConfiguration suiteConfig, Object message,
+  Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
+      Map<String, Object?> message,
       {StackTraceMapper? mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
@@ -332,7 +348,7 @@ class _BrowserEnvironment implements Environment {
   final Uri? remoteDebuggerUrl;
 
   @override
-  final Stream<Null> onRestart;
+  final Stream<void> onRestart;
 
   _BrowserEnvironment(this._manager, this.observatoryUrl,
       this.remoteDebuggerUrl, this.onRestart);

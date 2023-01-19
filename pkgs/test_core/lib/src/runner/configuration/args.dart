@@ -7,8 +7,10 @@ import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
+    show
+        Timeout;
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
 
 import '../../util/io.dart';
 import '../configuration.dart';
@@ -86,9 +88,11 @@ final ArgParser _parser = (() {
   parser.addOption('timeout',
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
+  parser.addFlag('ignore-timeouts',
+      help: 'Ignore all timeouts (useful if debugging)', negatable: false);
   parser.addFlag('pause-after-load',
       help: 'Pause for debugging before any tests execute.\n'
-          'Implies --concurrency=1, --debug, and --timeout=none.\n'
+          'Implies --concurrency=1, --debug, and --ignore-timeouts.\n'
           'Currently only supported for browser tests.',
       negatable: false);
   parser.addFlag('debug',
@@ -131,9 +135,10 @@ final ArgParser _parser = (() {
       help: 'Set how to print test results.',
       defaultsTo: defaultReporter,
       allowed: reporterDescriptions.keys.toList(),
-      allowedHelp: reporterDescriptions);
+      allowedHelp: reporterDescriptions,
+      valueHelp: 'option');
   parser.addOption('file-reporter',
-      help: 'Set the reporter used to write test results to a file.\n'
+      help: 'Enable an additional reporter writing test results to a file.\n'
           'Should be in the form <reporter>:<filepath>, '
           'Example: "json:reports/tests.json"');
   parser.addFlag('verbose-trace',
@@ -149,8 +154,6 @@ final ArgParser _parser = (() {
 
   parser.addOption('configuration',
       help: 'The path to the configuration file.', hide: true);
-  parser.addOption('dart2js-path',
-      help: 'The path to the dart2js executable.', hide: true);
   parser.addMultiOption('dart2js-args',
       help: 'Extra arguments to pass to dart2js.', hide: true);
 
@@ -172,6 +175,48 @@ String get usage => _parser.usage;
 /// Throws a [FormatException] if [args] are invalid.
 Configuration parse(List<String> args) => _Parser(args).parse();
 
+void _parseTestSelection(
+    String option, Map<String, Set<TestSelection>> selections) {
+  var firstQuestion = option.indexOf('?');
+  TestSelection selection;
+  String path;
+  if (firstQuestion == -1) {
+    path = option;
+    selection = TestSelection();
+  } else if (option.substring(0, firstQuestion).contains('\\')) {
+    throw FormatException(
+        'When passing test path queries, you must pass the path in URI '
+        'format (use `/` for directory separators instead of `\\`).');
+  } else {
+    final uri = Uri.parse(option);
+
+    final names = uri.queryParametersAll['name'];
+    final fullName = uri.queryParameters['full-name'];
+    final line = uri.queryParameters['line'];
+    final col = uri.queryParameters['col'];
+
+    if (names != null && names.isNotEmpty && fullName != null) {
+      throw FormatException(
+        'Cannot specify both "name=<...>" and "full-name=<...>".',
+      );
+    }
+    path = uri.path;
+    selection = TestSelection(
+      testPatterns: fullName != null
+          ? {RegExp('^${RegExp.escape(fullName)}\$')}
+          : {
+              if (names != null)
+                for (var name in names) RegExp(name)
+            },
+      line: line == null ? null : int.parse(line),
+      col: col == null ? null : int.parse(col),
+    );
+  }
+
+  selections.update(path, (selections) => selections..add(selection),
+      ifAbsent: () => {selection});
+}
+
 /// A class for parsing an argument list.
 ///
 /// This is used to provide access to the arg results across helper methods.
@@ -181,30 +226,26 @@ class _Parser {
 
   _Parser(List<String> args) : _options = _parser.parse(args);
 
+  List<String> _readMulti(String name) => _options[name] as List<String>;
+
   /// Returns the parsed configuration.
   Configuration parse() {
-    var patterns = (_options['name'] as List<String>)
-        .map<Pattern>(
-            (value) => _wrapFormatException('name', () => RegExp(value)))
-        .toList()
-          ..addAll(_options['plain-name'] as List<String>);
+    var patterns = [
+      for (var value in _readMulti('name'))
+        _wrapFormatException(value, () => RegExp(value), optionName: 'name'),
+      ..._readMulti('plain-name'),
+    ];
 
-    var includeTagSet = Set.from(_options['tags'] as Iterable? ?? [])
-      ..addAll(_options['tag'] as Iterable? ?? []);
-
-    var includeTags = includeTagSet.fold(BooleanSelector.all,
-        (BooleanSelector selector, tag) {
-      var tagSelector = BooleanSelector.parse(tag as String);
-      return selector.intersection(tagSelector);
+    var includeTags = {..._readMulti('tags'), ..._readMulti('tag')}
+        .fold<BooleanSelector>(BooleanSelector.all, (selector, tag) {
+      return selector.intersection(BooleanSelector.parse(tag));
     });
 
-    var excludeTagSet = Set.from(_options['exclude-tags'] as Iterable? ?? [])
-      ..addAll(_options['exclude-tag'] as Iterable? ?? []);
-
-    var excludeTags = excludeTagSet.fold(BooleanSelector.none,
-        (BooleanSelector selector, tag) {
-      var tagSelector = BooleanSelector.parse(tag as String);
-      return selector.union(tagSelector);
+    var excludeTags = {
+      ..._readMulti('exclude-tags'),
+      ..._readMulti('exclude-tag')
+    }.fold<BooleanSelector>(BooleanSelector.none, (selector, tag) {
+      return selector.union(BooleanSelector.parse(tag));
     });
 
     var shardIndex = _parseOption('shard-index', int.parse);
@@ -221,12 +262,18 @@ class _Parser {
       }
     }
 
+    var reporter = _ifParsed('reporter') as String?;
+
     var testRandomizeOrderingSeed =
         _parseOption('test-randomize-ordering-seed', (value) {
       var seed = value == 'random'
           ? Random().nextInt(4294967295)
           : int.parse(value).toUnsigned(32);
-      print('Shuffling test order with --test-randomize-ordering-seed=$seed');
+
+      // TODO(#1547): Less hacky way of not breaking the json reporter
+      if (reporter != 'json') {
+        print('Shuffling test order with --test-randomize-ordering-seed=$seed');
+      }
 
       return seed;
     });
@@ -236,6 +283,17 @@ class _Parser {
     var platform = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
         .toList();
+
+    final paths = _options.rest.isEmpty ? null : _options.rest;
+
+    Map<String, Set<TestSelection>>? selections;
+    if (paths != null) {
+      selections = {};
+      for (final path in paths) {
+        _parseTestSelection(path, selections);
+      }
+    }
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -246,10 +304,9 @@ class _Parser {
         debug: _ifParsed('debug'),
         color: color,
         configurationPath: _ifParsed('configuration'),
-        dart2jsPath: _ifParsed('dart2js-path'),
         dart2jsArgs: _ifParsed('dart2js-args'),
         precompiledPath: _ifParsed('precompiled'),
-        reporter: _ifParsed('reporter'),
+        reporter: reporter,
         fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),
         pubServePort: _parseOption('pub-serve', int.parse),
@@ -257,22 +314,40 @@ class _Parser {
         shardIndex: shardIndex,
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
-        patterns: patterns,
+        globalPatterns: patterns,
         runtimes: platform,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
-        paths: _options.rest.isEmpty ? null : _options.rest,
+        testSelections: selections,
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),
         useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
-        testRandomizeOrderingSeed: testRandomizeOrderingSeed);
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        ignoreTimeouts: _ifParsed('ignore-timeouts'),
+        // Config that isn't supported on the command line
+        addTags: null,
+        allowTestRandomization: null,
+        allowDuplicateTestNames: null,
+        customHtmlTemplatePath: null,
+        defineRuntimes: null,
+        filename: null,
+        foldTraceExcept: null,
+        foldTraceOnly: null,
+        onPlatform: null,
+        overrideRuntimes: null,
+        presets: null,
+        retry: null,
+        skip: null,
+        skipReason: null,
+        testOn: null,
+        tags: null);
   }
 
   /// Returns the parsed option for [name], or `null` if none was parsed.
   ///
   /// If the user hasn't explicitly chosen a value, we want to pass null values
-  /// to [new Configuration] so that it considers those fields unset when
+  /// to [Configuration.new] so that it considers those fields unset when
   /// merging with configuration from the config file.
   T? _ifParsed<T>(String name) =>
       _options.wasParsed(name) ? _options[name] as T : null;
@@ -285,7 +360,8 @@ class _Parser {
     var value = _options[name];
     if (value == null) return null;
 
-    return _wrapFormatException(name, () => parse(value as String));
+    return _wrapFormatException(value, () => parse(value as String),
+        optionName: name);
   }
 
   Map<String, String>? _parseFileReporterOption() =>
@@ -305,11 +381,13 @@ class _Parser {
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.
-  T _wrapFormatException<T>(String name, T Function() parse) {
+  T _wrapFormatException<T>(Object? value, T Function() parse,
+      {String? optionName}) {
     try {
       return parse();
     } on FormatException catch (error) {
-      throw FormatException('Couldn\'t parse --$name "${_options[name]}": '
+      throw FormatException(
+          'Couldn\'t parse ${optionName == null ? '' : '--$optionName '}"$value": '
           '${error.message}');
     }
   }

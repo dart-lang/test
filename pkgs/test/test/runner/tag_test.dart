@@ -3,14 +3,14 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';
@@ -72,7 +72,7 @@ void main() {
     test('prints no warnings when all tags are specified', () async {
       var test = await runTest(['--tags=a,b,c', 'test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
   });
 
@@ -87,7 +87,7 @@ void main() {
       await test.shouldExit(0);
     });
 
-    test("doesn't run a test with an exluded tag among others", () async {
+    test("doesn't run a test with an excluded tag among others", () async {
       var test = await runTest(['--exclude-tags=c', 'test.dart']);
       expect(test.stdout, tagWarnings(['a', 'b']));
       expect(test.stdout, emitsThrough(contains(': no tags')));
@@ -110,7 +110,7 @@ void main() {
 
       var test = await runTest(['--exclude-tags=a', 'test.dart']);
       expect(test.stdout, emits('No tests ran.'));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('allows unused tags', () async {
@@ -182,7 +182,7 @@ void main() {
 
     var test = await runTest(['-x', 'a', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('No tests ran')));
-    await test.shouldExit(1);
+    await test.shouldExit(79);
   });
 
   group('warning formatting', () {
@@ -350,21 +350,19 @@ void main() {
 
 /// Returns a [StreamMatcher] that asserts that a test emits warnings for [tags]
 /// in order.
-StreamMatcher tagWarnings(List<String> tags) => emitsInOrder(() sync* {
-      yield emitsThrough(
+StreamMatcher tagWarnings(List<String> tags) => emitsInOrder([
+      emitsThrough(
           "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
           "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
-          'dart_test.yaml.');
+          'dart_test.yaml.'),
 
-      for (var tag in tags) {
-        yield emitsThrough(startsWith('  $tag was used in'));
-      }
+      for (var tag in tags) emitsThrough(startsWith('  $tag was used in')),
 
       // Consume until the end of the warning block, and assert that it has no
       // further tags than the ones we specified.
-      yield mayEmitMultiple(isNot(anyOf([contains(' was used in'), isEmpty])));
-      yield isEmpty;
-    }());
+      mayEmitMultiple(isNot(anyOf([contains(' was used in'), isEmpty]))),
+      isEmpty,
+    ]);
 
 /// Returns a [StreamMatcher] that matches the lines of [string] in order.
 StreamMatcher lines(String string) => emitsInOrder(string.split('\n'));

@@ -8,16 +8,16 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 import 'json_reporter_utils.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('runs successful tests with a stdout reporter and file reporter', () {
     return _expectReports('''
       test('success 1', () {});

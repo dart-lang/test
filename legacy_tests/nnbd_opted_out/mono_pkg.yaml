@@ -1,0 +1,17 @@
+# See https://pub.dev/packages/mono_repo
+
+sdk:
+- 2.18.0
+
+stages:
+- analyze_and_format:
+  - group:
+    - format
+    - analyze: --fatal-infos
+    sdk:
+    - stable
+- unit_test:
+  - test: -p chrome,vm,node
+    os:
+    - linux
+    - windows

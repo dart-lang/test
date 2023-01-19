@@ -2,9 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test/test.dart';
 
 import '../utils.dart';
 
@@ -25,7 +28,7 @@ void main() {
     test('1', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
-        expectAsync1((arg) {
+        expectAsync1((int arg) {
           expect(arg, equals(1));
           callbackRun = true;
         })(1);
@@ -306,6 +309,24 @@ void main() {
     expectTestPassed(liveTest);
   });
 
+  test('may be called in a non-test zone', () async {
+    var liveTest = await runTestBody(() {
+      var callback = expectAsync0(() {});
+      Zone.root.run(callback);
+    });
+    expectTestPassed(liveTest);
+  });
+
+  test('may be called in a FakeAsync zone that does not run further', () async {
+    var liveTest = await runTestBody(() {
+      FakeAsync().run((_) {
+        var callback = expectAsync0(() {});
+        callback();
+      });
+    });
+    expectTestPassed(liveTest);
+  });
+
   group('old-style expectAsync()', () {
     test('works with no arguments', () async {
       var callbackRun = false;
@@ -319,7 +340,7 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
-    test('works with arguments', () async {
+    test('works with dynamic arguments', () async {
       var callbackRun = false;
       var liveTest = await runTestBody(() {
         expectAsync((arg1, arg2) {
@@ -331,8 +352,33 @@ void main() {
       expect(callbackRun, isTrue);
     });
 
+    test('works with non-nullable arguments', () async {
+      var callbackRun = false;
+      var liveTest = await runTestBody(() {
+        expectAsync((int arg1, int arg2) {
+          callbackRun = true;
+        })(1, 2);
+      });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
+    });
+
+    test('works with 6 arguments', () async {
+      var callbackRun = false;
+      var liveTest = await runTestBody(() {
+        expectAsync((arg1, arg2, arg3, arg4, arg5, arg6) {
+          callbackRun = true;
+        })(1, 2, 3, 4, 5, 6);
+      });
+
+      expectTestPassed(liveTest);
+      expect(callbackRun, isTrue);
+    });
+
     test("doesn't support a function with 7 arguments", () {
-      expect(() => expectAsync((_1, _2, _3, _4, _5, _6, _7) {}),
+      // ignore: no_leading_underscores_for_local_identifiers
+      expect(() => expectAsync((_a, _b, _c, _d, _e, _f, _g) {}),
           throwsArgumentError);
     });
   });

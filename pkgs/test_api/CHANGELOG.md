@@ -1,7 +1,103 @@
-## 0.4.0-dev
+## 0.4.18
 
+* Don't run `tearDown` until the test body and outstanding work is complete,
+  even if the test has already failed.
+
+## 0.4.17
+
+* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>())` instead.
+  The implementation has been changed to ease migrations.
+* Deprecate `throwsCyclicInitializationError` and replace the implementation
+  with `Throws(TypeMatcher<Error>())`. The specific exception no longer exists
+  and there is no guarantee about what type of error will be thrown.
+
+## 0.4.16
+
+* Add the `experimental-chrome-wasm` runtime. This is very unstable and will
+  eventually be deleted, to be replaced by a `--compiler` flag. See
+  https://github.com/dart-lang/test/issues/1776 for more information on future
+  plans
+* Add `isWasm` field to `Runtime` (defaults to `false`).
+
+## 0.4.15
+
+* Expand the pubspec description.
+* Support `package:matcher` version `0.12.13`.
+
+## 0.4.14
+
+* Require Dart >= 2.18.0
+* Support the latest `package:analyzer`.
+
+## 0.4.13
+
+* Fix `printOnFailure` output to be associated with the correct test.
+
+## 0.4.12
+
+* Internal cleanup.
+
+## 0.4.11
+
+* Support the latest version of `package:matcher`.
+
+## 0.4.10
+
+* Add `Target` to restrict `TestOn` annotation to library level.
+
+## 0.4.9
+
+* Add `ignoreTimeouts` option to `Suite`, which disables all timeouts for all
+  tests in that suite.
+
+## 0.4.8
+
+* `TestFailure` implements `Exception` for compatibility with
+  `only_throw_exceptions`.
+
+## 0.4.7
+
+* Remove logging about enabling the chain-stack-traces flag from the invoker.
+
+## 0.4.6
+
+* Give a better exception when using `markTestSkipped` outside of a test.
+* Format stack traces if a formatter is available when serializing tests
+  and groups from the remote listener.
+
+## 0.4.5
+
+* Add defaulting for older test backends that don't pass a configuration for
+  the `allow_duplicate_test_names` parameter to the remote listener.
+
+## 0.4.4
+
+* Allow disabling duplicate test or group names in the `Declarer`.
+
+## 0.4.3
+
+* Use the latest `package:matcher`.
+
+## 0.4.2
+
+* Update `analyzer` constraint to `>=1.5.0 <3.0.0`.
+
+## 0.4.1
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 0.4.0
+
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing as
+  subset of the normal surface area.
+* Add new APIs in `hooks.dart` to allow writing custom expectation frameworks
+  which integrate with the test runner.
 * Add examples to `throwsA` and make top-level `throws...` matchers refer to it.
 * Disable stack trace chaining by default.
+* Fix `expectAsync` function type checks.
+* Add `RemoteException`, `RemoteListener`, `StackTraceFormatter`, and
+  `StackTraceMapper` to `backend.dart`.
 * **Breaking** remove `Runtime.phantomJS`
 * **Breaking** Add callback to get the suite channel in the `beforeLoad`
   callback of `RemoteListener.start`. This is now used in place of using zones

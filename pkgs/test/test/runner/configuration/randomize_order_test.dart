@@ -3,14 +3,17 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
-import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('shuffles test order when passed a seed', () async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';
@@ -74,6 +77,49 @@ void main() {
               'Shuffling test order with --test-randomize-ordering-seed=0'))
         ]));
     await test.shouldExit(0);
+
+    // Doesn't log about shuffling with the json reporter
+    test = await runTest(
+        ['test.dart', '--test-randomize-ordering-seed=random', '-r', 'json']);
+    expect(test.stdout, neverEmits(contains('Shuffling test order')));
+    await test.shouldExit(0);
+  });
+
+  test('test shuffling can be disabled in dart_test.yml', () async {
+    await d
+        .file(
+            'dart_test.yaml',
+            jsonEncode({
+              'tags': {
+                'doNotShuffle': {'allow_test_randomization': false}
+              }
+            }))
+        .create();
+
+    await d.file('test.dart', '''
+      @Tags(['doNotShuffle'])
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test 1", () {});
+        test("test 2", () {});
+        test("test 3", () {});
+        test("test 4", () {});
+      }
+    ''').create();
+
+    var test =
+        await runTest(['test.dart', '--test-randomize-ordering-seed=987654']);
+    expect(
+        test.stdout,
+        containsInOrder([
+          '+0: test 1',
+          '+1: test 2',
+          '+2: test 3',
+          '+3: test 4',
+          '+4: All tests passed!'
+        ]));
+    await test.shouldExit(0);
   });
 
   test('shuffles each suite with the same seed', () async {
@@ -102,14 +148,14 @@ void main() {
         test.stdout,
         emitsInAnyOrder([
           containsInOrder([
-            './1_test.dart: test 1.2',
-            './1_test.dart: test 1.3',
-            './1_test.dart: test 1.1'
+            '.${Platform.pathSeparator}1_test.dart: test 1.2',
+            '.${Platform.pathSeparator}1_test.dart: test 1.3',
+            '.${Platform.pathSeparator}1_test.dart: test 1.1'
           ]),
           containsInOrder([
-            './2_test.dart: test 2.2',
-            './2_test.dart: test 2.3',
-            './2_test.dart: test 2.1'
+            '.${Platform.pathSeparator}2_test.dart: test 2.2',
+            '.${Platform.pathSeparator}2_test.dart: test 2.3',
+            '.${Platform.pathSeparator}2_test.dart: test 2.1'
           ]),
           contains('+6: All tests passed!')
         ]));
@@ -132,7 +178,7 @@ void main() {
         test("test 2.2", () {});
         test("test 2.3", () {});
         test("test 2.4", () {});
-       }); 
+       });
       }
     ''').create();
 

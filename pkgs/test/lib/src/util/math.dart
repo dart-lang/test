@@ -2,18 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
-/// Returns a random base64 string containing [bytes] bytes of data.
-///
-/// [seed] is passed to [math.Random].
-String randomBase64(int bytes, {int? seed}) {
-  var random = math.Random(seed);
-  var data = Uint8List(bytes);
-  for (var i = 0; i < bytes; i++) {
-    data[i] = random.nextInt(256);
+final _rand = math.Random();
+
+/// Returns a random 32 character alphanumeric string ([a-zA-Z0-9]), which is
+/// suitable as a url secret.
+String randomUrlSecret() {
+  var buffer = StringBuffer();
+  while (buffer.length < 32) {
+    buffer.write(_alphaChars[_rand.nextInt(_alphaChars.length)]);
   }
-  return base64Encode(data);
+  return buffer.toString();
 }
+
+const _alphaChars =
+    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';

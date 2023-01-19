@@ -1,0 +1,18 @@
+name: legacy_unit_tests
+publish_to: none
+environment:
+  sdk: '>=2.18.0 <3.0.0'
+dev_dependencies:
+  lints: '>=1.0.0 <3.0.0'
+  package_config: ^2.0.0
+  path: ^1.8.0
+  test: any
+  test_descriptor: ^2.0.0
+  test_process: ^2.0.0
+dependency_overrides:
+  test:
+    path: ../../pkgs/test
+  test_api:
+    path: ../../pkgs/test_api
+  test_core:
+    path: ../../pkgs/test_core

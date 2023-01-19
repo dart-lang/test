@@ -5,15 +5,16 @@
 @TestOn('vm')
 import 'dart:convert';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
+import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_core/src/util/io.dart';
-import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('presets', () {
     test("don't do anything by default", () async {
       await d

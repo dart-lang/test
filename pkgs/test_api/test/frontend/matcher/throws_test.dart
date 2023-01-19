@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import '../../utils.dart';
@@ -17,9 +16,9 @@ void main() {
       });
 
       test("with a function that doesn't throw", () async {
-        var closure = () {};
+        void local() {}
         var liveTest = await runTestBody(() {
-          expect(closure, throws);
+          expect(local, throws);
         });
 
         expectTestFailed(
@@ -55,9 +54,9 @@ void main() {
       });
 
       test("with a function that doesn't throw", () async {
-        var closure = () {};
+        void local() {}
         var liveTest = await runTestBody(() {
-          expect(closure, throwsA('oh no'));
+          expect(local, throwsA('oh no'));
         });
 
         expectTestFailed(

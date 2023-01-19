@@ -4,13 +4,14 @@
 
 @TestOn('vm')
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('respects top-level @Timeout declarations', () async {
     await d.file('test.dart', '''
 @Timeout(const Duration(seconds: 0))
@@ -159,5 +160,25 @@ void main() {
         containsInOrder(
             ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
     await test.shouldExit(1);
+  });
+
+  test('are ignored with --ignore-timeouts', () async {
+    await d.file('test.dart', '''
+@Timeout(const Duration(seconds: 0))
+
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("timeout", () async {
+    await Future.delayed(Duration(milliseconds: 10));
+  });
+}
+''').create();
+
+    var test = await runTest(['test.dart', '--ignore-timeouts']);
+    expect(test.stdout, containsInOrder(['+1: All tests passed!']));
+    await test.shouldExit(0);
   });
 }

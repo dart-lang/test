@@ -5,10 +5,9 @@
 @TestOn('vm')
 @Tags(['node'])
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
@@ -29,6 +28,8 @@ final _failure = '''
 ''';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('fails gracefully if', () {
     test('a test file fails to compile', () async {
       await d.file('test.dart', 'invalid Dart file').create();

@@ -44,14 +44,6 @@ class RunnerSuite extends Suite {
   /// The event is `true` when debugging starts and `false` when it ends.
   Stream<bool> get onDebugging => _controller._onDebuggingController.stream;
 
-  /// Returns a channel that communicates with the remote suite.
-  ///
-  /// This connects to a channel created by code in the test worker calling the
-  /// `suiteChannel` argument from a `beforeLoad` callback to `serializeSuite`
-  /// with the same name.
-  /// It can be used used to send and receive any JSON-serializable object.
-  StreamChannel<Object?> channel(String name) => _controller.channel(name);
-
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode and doesn't support suite channels.
   factory RunnerSuite(Environment environment, SuiteConfiguration config,
@@ -66,7 +58,8 @@ class RunnerSuite extends Suite {
 
   RunnerSuite._(this._controller, Group group, SuitePlatform platform,
       {String? path})
-      : super(group, platform, path: path);
+      : super(group, platform,
+            path: path, ignoreTimeouts: _controller._config.ignoreTimeouts);
 
   @override
   RunnerSuite filter(bool Function(Test) callback) {
@@ -127,7 +120,7 @@ class RunnerSuiteController {
         .then((group) => RunnerSuite._(this, group, platform, path: path));
   }
 
-  /// Used by [new RunnerSuite] to create a runner suite that's not loaded from
+  /// Used by [RunnerSuite.new] to create a runner suite that's not loaded from
   /// an external source.
   RunnerSuiteController._local(this._environment, this._config,
       {Function()? onClose,

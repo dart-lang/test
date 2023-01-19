@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
@@ -20,7 +19,7 @@ void main() {
   late Suite suite;
   setUp(() {
     lastState = null;
-    suite = Suite(Group.root([]), suitePlatform);
+    suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: false);
   });
 
   group('Invoker.current', () {
@@ -142,7 +141,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => registerException(TestFailure('oh no')));
+        Future(() => registerException(TestFailure('oh no')))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -153,7 +153,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => throw TestFailure('oh no'));
+        Future(() => throw TestFailure('oh no'))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleFailure(liveTest);
@@ -199,7 +200,8 @@ void main() {
         Future(() => throw TestFailure('one'));
         Future(() => throw TestFailure('two'));
         Future(() => throw TestFailure('three'));
-        Future(() => throw TestFailure('four'));
+        Future(() => throw TestFailure('four'))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectStates(liveTest, [
@@ -274,7 +276,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => registerException('oh no'));
+        Future(() => registerException('oh no'))
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -285,7 +288,8 @@ void main() {
         () {
       var liveTest = _localTest(() {
         Invoker.current!.addOutstandingCallback();
-        Future(() => throw 'oh no');
+        Future(() => throw 'oh no')
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectSingleError(liveTest);
@@ -328,7 +332,8 @@ void main() {
         Future(() => throw 'one');
         Future(() => throw 'two');
         Future(() => throw 'three');
-        Future(() => throw 'four');
+        Future(() => throw 'four')
+            .whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectStates(liveTest, [
@@ -429,8 +434,7 @@ void main() {
         Invoker.current!.addOutstandingCallback();
       },
               metadata: Metadata(
-                  chainStackTraces: true,
-                  timeout: Timeout(Duration(milliseconds: 100))))
+                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
           .load(suite);
 
       expectStates(liveTest, [
@@ -447,51 +451,86 @@ void main() {
 
       liveTest.run();
     });
+
+    test('can be ignored', () {
+      suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: true);
+      var liveTest = _localTest(() async {
+        await Future.delayed(Duration(milliseconds: 10));
+      },
+              metadata: Metadata(
+                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
+          .load(suite);
+
+      expectStates(liveTest, [
+        const State(Status.running, Result.success),
+        const State(Status.complete, Result.success)
+      ]);
+
+      liveTest.run();
+    });
   });
 
-  group('waitForOutstandingCallbacks:', () {
-    test('waits for the wrapped function to complete', () async {
-      var functionCompleted = false;
-      await Invoker.current!.waitForOutstandingCallbacks(() async {
-        await pumpEventQueue();
-        functionCompleted = true;
-      });
-
-      expect(functionCompleted, isTrue);
+  group('runTearDowns', () {
+    test('runs multiple tear downs', () async {
+      var firstTearDownStarted = false;
+      var secondTearDownStarted = false;
+      await Invoker.current!.runTearDowns([
+        () {
+          firstTearDownStarted = true;
+        },
+        () {
+          secondTearDownStarted = true;
+        }
+      ]);
+      expect(secondTearDownStarted, isTrue);
+      expect(firstTearDownStarted, isTrue);
     });
 
-    test('waits for registered callbacks in the wrapped function to run',
+    test('waits for the future returned tear downs to complete', () async {
+      var firstTearDownWork = Completer<void>();
+      var secondTearDownStarted = false;
+      var result = Invoker.current!.runTearDowns([
+        () {
+          secondTearDownStarted = true;
+        },
         () async {
-      var callbackRun = false;
-      await Invoker.current!.waitForOutstandingCallbacks(() {
-        pumpEventQueue().then(expectAsync1((_) {
-          callbackRun = true;
-        }));
-      });
-
-      expect(callbackRun, isTrue);
+          await firstTearDownWork.future;
+        },
+      ]);
+      await pumpEventQueue();
+      expect(secondTearDownStarted, isFalse);
+      firstTearDownWork.complete();
+      await result;
+      expect(secondTearDownStarted, isTrue);
     });
 
-    test("doesn't automatically block the enclosing context", () async {
-      var innerFunctionCompleted = false;
-      await Invoker.current!.waitForOutstandingCallbacks(() {
-        Invoker.current!.waitForOutstandingCallbacks(() async {
-          await pumpEventQueue();
-          innerFunctionCompleted = true;
-        });
-      });
-
-      expect(innerFunctionCompleted, isFalse);
+    test('allows next tear down to run while there are still prior callbacks',
+        () async {
+      var firstTearDownAsyncWork = Completer<void>();
+      var secondTearDownStarted = false;
+      unawaited(Invoker.current!.runTearDowns([
+        () {
+          secondTearDownStarted = true;
+        },
+        () {
+          Invoker.current!.addOutstandingCallback();
+          firstTearDownAsyncWork.future
+              .whenComplete(Invoker.current!.removeOutstandingCallback);
+        },
+      ]));
+      await pumpEventQueue();
+      expect(secondTearDownStarted, isTrue);
+      firstTearDownAsyncWork.complete();
     });
 
-    test(
-        "forwards errors to the enclosing test but doesn't remove its "
-        'outstanding callbacks', () async {
+    test('forwards errors to the enclosing test but does not end it', () async {
       var liveTest = _localTest(() async {
         Invoker.current!.addOutstandingCallback();
-        await Invoker.current!.waitForOutstandingCallbacks(() {
-          throw 'oh no';
-        });
+        await Invoker.current!.runTearDowns([
+          () {
+            throw 'oh no';
+          }
+        ]);
       }).load(suite);
 
       expectStates(liveTest, [
@@ -507,47 +546,31 @@ void main() {
     });
   });
 
-  group('chainStackTraces', () {
-    test(
-        'if disabled, directs users to run with the flag enabled when '
-        'failures occur', () {
-      expect(() async {
-        var liveTest = _localTest(() {
-          expect(true, isFalse);
-        }, metadata: Metadata(chainStackTraces: false))
-            .load(suite);
-        liveTest.onError.listen(expectAsync1((_) {}, count: 1));
-
-        await liveTest.run();
-      },
-          prints('Consider enabling the flag chain-stack-traces to '
-              'receive more detailed exceptions.\n'
-              "For example, 'pub run test --chain-stack-traces'.\n"));
-    });
-  });
-
   group('printOnFailure:', () {
-    test("doesn't print anything if the test succeeds", () {
-      expect(() async {
-        var liveTest = _localTest(() {
-          Invoker.current!.printOnFailure('only on failure');
-        }).load(suite);
-        liveTest.onError.listen(expectAsync1((_) {}, count: 0));
+    test("doesn't print anything if the test succeeds", () async {
+      var liveTest = _localTest(() {
+        Invoker.current!.printOnFailure('only on failure');
+      }).load(suite);
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
-        await liveTest.run();
-      }, prints(isEmpty));
+      liveTest.onMessage.listen(expectAsync1((_) {}, count: 0));
+
+      await liveTest.run();
     });
 
-    test('prints if the test fails', () {
-      expect(() async {
-        var liveTest = _localTest(() {
-          Invoker.current!.printOnFailure('only on failure');
-          expect(true, isFalse);
-        }).load(suite);
-        liveTest.onError.listen(expectAsync1((_) {}, count: 1));
+    test('prints if the test fails', () async {
+      var liveTest = _localTest(() {
+        Invoker.current!.printOnFailure('only on failure');
+        expect(true, isFalse);
+      }).load(suite);
+      liveTest.onError.listen(expectAsync1((_) {}, count: 1));
 
-        await liveTest.run();
-      }, prints('only on failure\n'));
+      liveTest.onMessage.listen(expectAsync1((message) {
+        expect(message.type, equals(MessageType.print));
+        expect(message.text, equals('only on failure'));
+      }, count: 1));
+
+      await liveTest.run();
     });
   });
 }

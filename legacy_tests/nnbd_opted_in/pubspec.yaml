@@ -1,0 +1,13 @@
+name: nnbd_opted_in
+environment:
+  sdk: '>=2.18.0 <3.0.0'
+dev_dependencies:
+  lints: '>=1.0.0 <3.0.0'
+  test: any
+dependency_overrides:
+  test:
+    path: ../../pkgs/test
+  test_api:
+    path: ../../pkgs/test_api
+  test_core:
+    path: ../../pkgs/test_core

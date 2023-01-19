@@ -26,12 +26,15 @@ tags:
 
 * [Test Configuration](#test-configuration)
   * [`timeout`](#timeout)
+  * [`ignore-timeouts`](#ignore-timeouts)
   * [`verbose_trace`](#verbose_trace)
   * [`chain_stack_traces`](#chain_stack_traces)
   * [`js_trace`](#js_trace)
   * [`skip`](#skip)
   * [`retry`](#retry)
   * [`test_on`](#test_on)
+  * [`allow_test_randomization`](#allow_test_randomization)
+  * [`allow_duplicate_test_names`](#allow_duplicate_test_names)
 * [Runner Configuration](#runner-configuration)
   * [`include`](#include)
   * [`paths`](#paths)
@@ -46,6 +49,7 @@ tags:
   * [`run_skipped`](#run_skipped)
   * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
+  * [`file_reporters`](#file_reporters)
   * [`fold_stack_frames`](#fold_stack_frames)
   * [`custom_html_template_path`](#custom_html_template_path)
 * [Configuring Tags](#configuring-tags)
@@ -56,13 +60,13 @@ tags:
   * [`on_platform`](#on_platform)
   * [`override_platforms`](#override_platforms)
   * [`define_platforms`](#define_platforms)
-  * [Browser/Node.js Settings](#browser-and-node-js-settings)
+  * [Browser and Node.js Settings](#browser-and-nodejs-settings)
     * [`arguments`](#arguments)
     * [`executable`](#executable)
     * [`headless`](#headless)
 * [Configuration Presets](#configuration-presets)
   * [`presets`](#presets)
-  * [`add_preset`](#add_preset)
+  * [`add_presets`](#add_presets)
 * [Global Configuration](#global-configuration)
 
 ## Test Configuration
@@ -92,6 +96,14 @@ formats:
 
 ```yaml
 timeout: 1m
+```
+
+###  `ignore-timeouts`
+
+This field disables all timeouts for all tests. This can be useful when debugging, so tests don't time out during debug sessions. It defaults to `false`.
+
+```yaml
+ignore-timeouts: true
 ```
 
 ### `verbose_trace`
@@ -170,7 +182,7 @@ platforms that match the selector. It's often used with
 [specific tags](#configuring-tags) to ensure that certain features will only be
 tested on supported platforms.
 
-[platform selectors]: https://github.com/dart-lang/test/blob/master/README.md#platform-selectors
+[platform selectors]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-selectors
 
 ```yaml
 tags:
@@ -190,6 +202,44 @@ test_on: vm
 
 This field is not supported in the
 [global configuration file](#global-configuration).
+
+### `allow_test_randomization`
+
+This can be used to disable test randomization for certain tests, regardless
+of the `--test-randomize-ordering-seed` configuration.
+
+This is typically useful when a subset of your tests are order dependent, but
+you want to run the other ones with randomized ordering.
+
+```yaml
+tags:
+  doNotRandomize:
+    allow_test_randomization: false
+```
+
+### `allow_duplicate_test_names`
+
+This can be used to allow multiple tests in the same suite to have the same
+name. This is disabled by default because it is usually an indication of a
+mistake, and it causes problems with IDE integrations which run tests by name.
+
+It can be disabled for all tests:
+
+```yaml
+allow_duplicate_test_names: true
+```
+
+Or for tagged tests only (useful if migrating to enable this):
+
+```yaml
+tags:
+  allowDuplicates:
+    allow_duplicate_test_names: true
+```
+
+It cannot be globally enabled or configured on the command line - this would
+make it so that tests might pass on one users machine but not anothers which
+should be avoided.
 
 ## Runner Configuration
 
@@ -668,7 +718,7 @@ define_platforms:
       executable: chromium
 ```
 
-Once this is defined, you can run `pub run test -p chromium` and it will run
+Once this is defined, you can run `dart test -p chromium` and it will run
 those tests in the Chromium browser, using the same logic it normally uses for
 Chrome. You can even use `chromium` in platform selectors; for example, you
 might pass `testOn: "chromium"` to declare that a test is Chromium-specific.

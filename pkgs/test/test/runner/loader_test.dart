@@ -5,18 +5,16 @@
 @TestOn('vm')
 import 'dart:async';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
+import 'package:test/test.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/test.dart';
-import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/runner/loader.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test_core/src/runner/runner_test.dart';
-import 'package:test/test.dart';
+import 'package:test_core/src/runner/suite.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../utils.dart';
 
@@ -87,12 +85,6 @@ void main() {
   group('.loadDir()', () {
     test('ignores non-Dart files', () async {
       await d.file('a_test.txt', _tests).create();
-      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
-          completion(isEmpty));
-    });
-
-    test('ignores files in packages/ directories', () async {
-      await d.dir('packages', [d.file('a_test.dart', _tests)]).create();
       expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
           completion(isEmpty));
     });
@@ -177,7 +169,7 @@ void main() {
       await runZoned(() async {
         var suites = await _loader
             .loadFile(p.join(d.sandbox, 'a_test.dart'),
-                SuiteConfiguration(retry: numRetries))
+                suiteConfiguration(retry: numRetries))
             .toList();
         expect(suites, hasLength(1));
         var loadSuite = suites.first;

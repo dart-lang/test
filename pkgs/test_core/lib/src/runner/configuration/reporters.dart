@@ -11,6 +11,7 @@ import '../engine.dart';
 import '../reporter.dart';
 import '../reporter/compact.dart';
 import '../reporter/expanded.dart';
+import '../reporter/github.dart';
 import '../reporter/json.dart';
 
 /// Constructs a reporter for the provided engine with the provided
@@ -33,27 +34,36 @@ final _allReporters = <String, ReporterDetails>{
       'A separate line for each update.',
       (config, engine, sink) => ExpandedReporter.watch(engine, sink,
           color: config.color,
-          printPath: config.paths.length > 1 ||
-              Directory(config.paths.single).existsSync(),
+          printPath: config.testSelections.length > 1 ||
+              Directory(config.testSelections.keys.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'compact': ReporterDetails(
       'A single line, updated continuously.',
       (config, engine, sink) => CompactReporter.watch(engine, sink,
           color: config.color,
-          printPath: config.paths.length > 1 ||
-              Directory(config.paths.single).existsSync(),
+          printPath: config.testSelections.length > 1 ||
+              Directory(config.testSelections.keys.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1)),
+  'github': ReporterDetails(
+      'A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).',
+      (config, engine, sink) => GithubReporter.watch(engine, sink,
+          printPath: config.testSelections.length > 1 ||
+              Directory(config.testSelections.keys.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1)),
   'json': ReporterDetails(
       'A machine-readable format (see '
       'https://dart.dev/go/test-docs/json_reporter.md).',
-      (_, engine, sink) => JsonReporter.watch(engine, sink)),
+      (config, engine, sink) =>
+          JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
 };
 
 final defaultReporter = inTestTests
     ? 'expanded'
-    : canUseSpecialChars
-        ? 'compact'
-        : 'expanded';
+    : inGithubContext
+        ? 'github'
+        : canUseSpecialChars
+            ? 'compact'
+            : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.

@@ -4,13 +4,9 @@
 
 @TestOn('vm')
 
-import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:math' as math;
 
-import 'package:package_config/package_config.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -54,7 +50,7 @@ void main() {
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
 final _usage = '''
-Usage: pub run test [files or directories...]
+Usage: dart test [files or directories...]
 
 -h, --help                            Show this usage information.
     --version                         Show the package:test version.
@@ -73,7 +69,7 @@ Selecting Tests:
 
 Running Tests:
 -p, --platform                        The platform(s) on which to run the tests.
-                                      $_browsers
+                                      $_runtimes
 -P, --preset                          The configuration preset(s) to use.
 -j, --concurrency=<threads>           The number of concurrent test suites run.
                                       (defaults to "$_defaultConcurrency")
@@ -82,8 +78,9 @@ Running Tests:
     --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
+    --ignore-timeouts                 Ignore all timeouts (useful if debugging)
     --pause-after-load                Pause for debugging before any tests execute.
-                                      Implies --concurrency=1, --debug, and --timeout=none.
+                                      Implies --concurrency=1, --debug, and --ignore-timeouts.
                                       Currently only supported for browser tests.
     --debug                           Run the VM and Chrome tests in debug mode.
     --coverage=<directory>            Gather coverage and output it to the specified directory.
@@ -102,13 +99,14 @@ Running Tests:
                                       If not passed, do not randomize test case execution order.
 
 Output:
--r, --reporter                        Set how to print test results.
+-r, --reporter=<option>               Set how to print test results.
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
+          [github]                    A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
 
-    --file-reporter                   Set the reporter used to write test results to a file.
+    --file-reporter                   Enable an additional reporter writing test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
     --verbose-trace                   Emit stack traces with core library frames.
     --js-trace                        Emit raw JavaScript stack traces for browser tests.
@@ -117,12 +115,14 @@ Output:
 
 ''';
 
-final _browsers = '[vm (default), chrome, firefox' +
-    (Platform.isMacOS ? ', safari' : '') +
-    (Platform.isWindows ? ', ie' : '') +
-    ', node]';
+final _runtimes = '[vm (default), chrome, firefox'
+    '${Platform.isMacOS ? ', safari' : ''}'
+    '${Platform.isWindows ? ', ie' : ''}, node, '
+    'experimental-chrome-wasm]';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('prints help information', () async {
     var test = await runTest(['--help']);
     expectStdoutEquals(test, '''
@@ -247,10 +247,15 @@ $_usage''');
 
       expect(
           test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            "Error: Getter not found: 'main'",
-          ]));
+          emitsThrough(
+            contains('-1: loading test.dart [E]'),
+          ));
+      expect(
+          test.stdout,
+          emitsThrough(anyOf([
+            contains("Error: Getter not found: 'main'"),
+            contains("Error: Undefined name 'main'"),
+          ])));
 
       await test.shouldExit(1);
     });
@@ -294,12 +299,12 @@ $_usage''');
       var test = await runTest(['test.dart', 'nonexistent.dart']);
 
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading nonexistent.dart [E]',
-            'Failed to load "nonexistent.dart": Does not exist',
-            '-2: loading test.dart [E]',
-            'Failed to load "test.dart"',
+          await test.stdoutStream().toList(),
+          containsAll([
+            contains('loading nonexistent.dart [E]'),
+            contains('Failed to load "nonexistent.dart": Does not exist'),
+            contains('loading test.dart [E]'),
+            contains('Failed to load "test.dart"'),
           ]));
 
       await test.shouldExit(1);
@@ -705,7 +710,6 @@ void main() {
     test('defined in a single file', () async {
       await d.file('test.dart', _success).create();
       await d.file('runner.dart', '''
-// @dart=2.8
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
@@ -713,9 +717,14 @@ void main(List<String> args) async {
   await test.runTests(args);
   test.completeShutdown();
 }''').create();
-      var test = await runDart(['runner.dart', '--no-color', '--', 'test.dart'],
-          description: 'dart runner.dart -- test.dart',
-          environment: {'FORCE_TEST_EXIT': 'false'});
+      var test = await runDart([
+        'runner.dart',
+        '--no-color',
+        '--reporter',
+        'compact',
+        '--',
+        'test.dart',
+      ], description: 'dart runner.dart -- test.dart');
       expect(
           test.stdout,
           emitsThrough(containsInOrder([
@@ -734,110 +743,83 @@ void main(List<String> args) async {
           ])));
       await test.shouldExit(0);
     });
+  }, onPlatform: const {
+    'windows': Skip('https://github.com/dart-lang/test/issues/1615')
   });
 
-  group('nnbd', () {
-    final _testContents = '''
+  group('language experiments', () {
+    group('are inherited from the executable arguments', () {
+      setUp(() async {
+        await d.file('test.dart', '''
+// @dart=2.10
 import 'package:test/test.dart';
-import 'opted_out.dart';
+
+// Compile time error if the experiment is enabled
+int x;
 
 void main() {
-  test("success", () {
-    expect(foo, true);
+  test('x is null', () {
+    expect(x, isNull);
   });
-}''';
-
-    setUp(() async {
-      await d.file('opted_out.dart', '''
-// @dart=2.8
-final foo = true;''').create();
-    });
-
-    test('sound null safety is enabled if the entrypoint opts in explicitly',
-        () async {
-      await d.file('test.dart', '''
-// @dart=2.12
-$_testContents
+}
 ''').create();
-      var test = await runTest(['test.dart']);
+      });
 
-      expect(
-          test.stdout,
-          emitsThrough(contains(
-              'Error: A library can\'t opt out of null safety by default, '
-              'when using sound null safety.')));
-      await test.shouldExit(1);
+      for (var platform in ['vm', 'chrome']) {
+        test('on the $platform platform', () async {
+          var test = await runTest(['test.dart', '-p', platform],
+              vmArgs: ['--enable-experiment=non-nullable']);
+
+          await expectLater(test.stdout, emitsThrough(contains('int x;')));
+          await test.shouldExit(1);
+
+          // Test that they can be removed on subsequent runs as well
+          test = await runTest(['test.dart', '-p', platform]);
+          await expectLater(
+              test.stdout, emitsThrough(contains('+1: All tests passed!')));
+          await test.shouldExit(0);
+        }, skip: 'https://github.com/dart-lang/test/issues/1813');
+      }
     });
+  });
 
-    test('sound null safety is disabled if the entrypoint opts out explicitly',
-        () async {
-      await d.file('test.dart', '''
-// @dart=2.8
-$_testContents''').create();
-      var test = await runTest(['test.dart']);
+  group('runs tests after changing directories', () {
+    setUp(() async {
+      await d.file('a_test.dart', '''
+@TestOn('vm')
+import 'dart:io';
 
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+import 'package:test/test.dart';
+
+void main() {
+  test('changes directory', () {
+    Directory.current = Directory.current.parent;
+  });
+}
+''').create();
+      await d.file('b_test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test('passes', () {
+    expect(true, true);
+  });
+}
+''').create();
+    });
+    test('on the VM platform', () async {
+      var test = await runTest(['-p', 'vm', 'a_test.dart', 'b_test.dart']);
+      await expectLater(
+          test.stdout, emitsThrough(contains('+2: All tests passed!')));
       await test.shouldExit(0);
     });
 
-    group('defaults', () {
-      late PackageConfig currentPackageConfig;
-
-      setUpAll(() async {
-        currentPackageConfig =
-            await loadPackageConfigUri((await Isolate.packageConfig)!);
-      });
-
-      setUp(() async {
-        await d.file('test.dart', _testContents).create();
-      });
-
-      test('sound null safety is enabled if the package is opted in', () async {
-        var newPackageConfig = PackageConfig([
-          ...currentPackageConfig.packages,
-          Package('example', Uri.file('${d.sandbox}/'),
-              languageVersion: LanguageVersion(2, 12),
-              // TODO: https://github.com/dart-lang/package_config/issues/81
-              packageUriRoot: Uri.file('${d.sandbox}/')),
-        ]);
-
-        await d
-            .file('package_config.json',
-                jsonEncode(PackageConfig.toJson(newPackageConfig)))
-            .create();
-
-        var test = await runTest(['test.dart'],
-            packageConfig: p.join(d.sandbox, 'package_config.json'));
-
-        expect(
-            test.stdout,
-            emitsThrough(contains(
-                'Error: A library can\'t opt out of null safety by default, '
-                'when using sound null safety.')));
-        await test.shouldExit(1);
-      });
-
-      test('sound null safety is disabled if the package is opted out',
-          () async {
-        var newPackageConfig = PackageConfig([
-          ...currentPackageConfig.packages,
-          Package('example', Uri.file('${d.sandbox}/'),
-              languageVersion: LanguageVersion(2, 8),
-              // TODO: https://github.com/dart-lang/package_config/issues/81
-              packageUriRoot: Uri.file('${d.sandbox}/')),
-        ]);
-
-        await d
-            .file('package_config.json',
-                jsonEncode(PackageConfig.toJson(newPackageConfig)))
-            .create();
-
-        var test = await runTest(['test.dart'],
-            packageConfig: p.join(d.sandbox, 'package_config.json'));
-
-        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-        await test.shouldExit(0);
-      });
-    });
+    test('on the browser platform', () async {
+      var test =
+          await runTest(['-p', 'vm,chrome', 'a_test.dart', 'b_test.dart']);
+      await expectLater(
+          test.stdout, emitsThrough(contains('+3: All tests passed!')));
+      await test.shouldExit(0);
+    }, skip: 'https://github.com/dart-lang/test/issues/1803');
   });
 }

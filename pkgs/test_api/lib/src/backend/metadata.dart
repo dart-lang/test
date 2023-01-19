@@ -5,12 +5,12 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 
-import '../frontend/skip.dart';
-import '../frontend/timeout.dart';
-import '../util/pretty_print.dart';
-import '../utils.dart';
+import 'configuration/skip.dart';
+import 'configuration/timeout.dart';
 import 'platform_selector.dart';
 import 'suite_platform.dart';
+import 'util/identifier_regex.dart';
+import 'util/pretty_print.dart';
 
 /// Metadata for a test or test suite.
 ///
@@ -79,41 +79,45 @@ class Metadata {
 
     var result = <PlatformSelector, Metadata>{};
     onPlatform.forEach((platform, metadata) {
+      var selector = PlatformSelector.parse(platform);
       if (metadata is Timeout || metadata is Skip) {
-        metadata = [metadata];
-      } else if (metadata is! List) {
+        result[selector] = _parsePlatformOptions(platform, [metadata]);
+      } else if (metadata is List) {
+        result[selector] = _parsePlatformOptions(platform, metadata);
+      } else {
         throw ArgumentError('Metadata for platform "$platform" must be a '
             'Timeout, Skip, or List of those; was "$metadata".');
       }
-
-      var selector = PlatformSelector.parse(platform);
-
-      Timeout? timeout;
-      dynamic skip;
-      for (var metadatum in metadata) {
-        if (metadatum is Timeout) {
-          if (timeout != null) {
-            throw ArgumentError('Only a single Timeout may be declared for '
-                '"$platform".');
-          }
-
-          timeout = metadatum;
-        } else if (metadatum is Skip) {
-          if (skip != null) {
-            throw ArgumentError('Only a single Skip may be declared for '
-                '"$platform".');
-          }
-
-          skip = metadatum.reason ?? true;
-        } else {
-          throw ArgumentError('Metadata for platform "$platform" must be a '
-              'Timeout, Skip, or List of those; was "$metadata".');
-        }
-      }
-
-      result[selector] = Metadata.parse(timeout: timeout, skip: skip);
     });
     return result;
+  }
+
+  static Metadata _parsePlatformOptions(
+      String platform, List<dynamic> metadata) {
+    Timeout? timeout;
+    dynamic skip;
+    for (var metadatum in metadata) {
+      if (metadatum is Timeout) {
+        if (timeout != null) {
+          throw ArgumentError('Only a single Timeout may be declared for '
+              '"$platform".');
+        }
+
+        timeout = metadatum;
+      } else if (metadatum is Skip) {
+        if (skip != null) {
+          throw ArgumentError('Only a single Skip may be declared for '
+              '"$platform".');
+        }
+
+        skip = metadatum.reason ?? true;
+      } else {
+        throw ArgumentError('Metadata for platform "$platform" must be a '
+            'Timeout, Skip, or List of those; was "$metadata".');
+      }
+    }
+
+    return Metadata.parse(timeout: timeout, skip: skip);
   }
 
   /// Parses a user-provided [String] or [Iterable] into the value for [tags].
@@ -154,7 +158,7 @@ class Metadata {
       Map<BooleanSelector, Metadata>? forTag,
       String? languageVersionComment}) {
     // Returns metadata without forTag resolved at all.
-    Metadata _unresolved() => Metadata._(
+    Metadata unresolved() => Metadata._(
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -169,7 +173,7 @@ class Metadata {
 
     // If there's no tag-specific metadata, or if none of it applies, just
     // return the metadata as-is.
-    if (forTag == null || tags == null) return _unresolved();
+    if (forTag == null || tags == null) return unresolved();
     tags = Set.from(tags);
     forTag = Map.from(forTag);
 
@@ -182,13 +186,13 @@ class Metadata {
       return merged.merge(forTag!.remove(selector)!);
     });
 
-    if (merged == empty) return _unresolved();
-    return merged.merge(_unresolved());
+    if (merged == empty) return unresolved();
+    return merged.merge(unresolved());
   }
 
   /// Creates new Metadata.
   ///
-  /// Unlike [new Metadata], this assumes [forTag] is already resolved.
+  /// Unlike [Metadata], this assumes [forTag] is already resolved.
   Metadata._({
     PlatformSelector? testOn,
     Timeout? timeout,
@@ -263,7 +267,7 @@ class Metadata {
         _retry = serialized['retry'] as int?,
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
-          for (var pair in serialized['onPlatform'])
+          for (var pair in serialized['onPlatform'] as List)
             PlatformSelector.parse(pair.first as String):
                 Metadata.deserialize(pair.last)
         },

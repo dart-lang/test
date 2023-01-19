@@ -4,13 +4,14 @@
 
 @TestOn('vm')
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('an error causes the run to fail', () async {
     await d.file('test.dart', r'''
         import 'package:test/test.dart';
@@ -55,13 +56,13 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          group("group", () {
+          group("group1", () {
             setUpAll(() => throw "oh no");
 
             test("with", () {}, testOn: "browser");
           });
 
-          group("group", () {
+          group("group2", () {
             test("without", () {});
           });
         }
@@ -77,13 +78,13 @@ void main() {
         import 'package:test/test.dart';
 
         void main() {
-          group("group", () {
+          group("group1", () {
             setUpAll(() => throw "oh no");
 
             test("with", () {});
           }, testOn: "browser");
 
-          group("group", () {
+          group("group2", () {
             test("without", () {});
           });
         }

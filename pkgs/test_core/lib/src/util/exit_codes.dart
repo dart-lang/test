@@ -54,3 +54,6 @@ const noPerm = 77;
 
 /// Something was unconfigured or mis-configured.
 const config = 78;
+
+/// No tests were ran.
+const noTestsRan = 79;

@@ -9,9 +9,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -19,6 +18,8 @@ import '../io.dart';
 String get _pubServeArg => '--pub-serve=$pubServePort';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() async {
     await d.file('pubspec.yaml', '''
 name: myapp
@@ -166,13 +167,12 @@ void main() {
     setUp(() async {
       await d.dir('test', [
         d.file('test.dart', '''
-import 'dart:html';
-
+import 'package:test/src/runner/browser/dom.dart' as dom;
 import 'package:test/test.dart';
 
 void main() {
   test("failure", () {
-    expect(document.querySelector('#foo'), isNull);
+    expect(dom.document.querySelector('#foo'), isNull);
   });
 }
 '''),
@@ -201,8 +201,7 @@ void main() {
   group('with a failing test', () {
     setUp(() async {
       await d.file('test/my_test.dart', '''
-import 'dart:html';
-
+import 'package:test/src/runner/browser/dom.dart' as dom;
 import 'package:test/test.dart';
 
 void main() {

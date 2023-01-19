@@ -8,12 +8,12 @@ import 'package:async/async.dart';
 
 import '../util/async.dart';
 import '../util/io.dart';
-import 'runner_suite.dart';
 import 'configuration.dart';
 import 'console.dart';
 import 'engine.dart';
 import 'load_suite.dart';
 import 'reporter.dart';
+import 'runner_suite.dart';
 
 /// Runs [loadSuite] in debugging mode.
 ///
@@ -29,8 +29,6 @@ CancelableOperation<void> debug(
   _Debugger? debugger;
   var canceled = false;
   return CancelableOperation.fromFuture(() async {
-    // Make the underlying suite null so that the engine doesn't start running
-    // it immediately.
     engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
       engine.pause();
       return runnerSuite;

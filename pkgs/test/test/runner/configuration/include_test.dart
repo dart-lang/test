@@ -4,8 +4,8 @@
 
 @TestOn('vm')
 import 'package:path/path.dart' as p;
-import 'package:test_core/src/runner/configuration.dart';
 import 'package:test/test.dart';
+import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 void main() {

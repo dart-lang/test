@@ -4,16 +4,18 @@
 
 @TestOn('vm')
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
+import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_core/src/util/io.dart';
-import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   group('on_platform', () {
     test('applies platform-specific configuration to matching tests', () async {
       await d
@@ -203,8 +205,10 @@ void main() {
       var test = await runTest(['.']);
       expect(
           test.stdout,
-          containsInOrder(
-              ['+0: ./test_foo.dart: test_foo', '+1: All tests passed!']));
+          containsInOrder([
+            '+0: .${Platform.pathSeparator}test_foo.dart: test_foo',
+            '+1: All tests passed!'
+          ]));
       await test.shouldExit(0);
     });
 
@@ -239,8 +243,10 @@ void main() {
       var test = await runTest(['.']);
       expect(
           test.stdout,
-          containsInOrder(
-              ['+0: ./foo_test.dart: foo_test', '+1: All tests passed!']));
+          containsInOrder([
+            '+0: .${Platform.pathSeparator}foo_test.dart: foo_test',
+            '+1: All tests passed!'
+          ]));
       await test.shouldExit(0);
     });
 

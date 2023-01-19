@@ -5,8 +5,8 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:vm_service/vm_service.dart';
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
+import 'package:vm_service/vm_service.dart';
 
 /// The environment in which VM tests are loaded.
 class VMEnvironment implements Environment {

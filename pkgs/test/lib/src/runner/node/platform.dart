@@ -10,14 +10,13 @@ import 'package:async/async.dart';
 import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
@@ -42,8 +41,8 @@ class NodePlatform extends PlatformPlugin
   /// The test runner configuration.
   final Configuration _config;
 
-  /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = CompilerPool(['-Dnode=true', '--server-mode']);
+  /// The [Dart2JsCompilerPool] managing active instances of `dart2js`.
+  final _compilers = Dart2JsCompilerPool(['-Dnode=true', '--server-mode']);
 
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();
@@ -81,12 +80,8 @@ class NodePlatform extends PlatformPlugin
   }
 
   @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
-
-  @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     var pair = await _loadChannel(path, platform.runtime, suiteConfig);
     var controller = deserializeSuite(
         path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
@@ -154,7 +149,7 @@ class NodePlatform extends PlatformPlugin
   Future<Pair<Process, StackTraceMapper?>> _spawnNormalProcess(String testPath,
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
+    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
     await _compilers.compile('''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/node.dart";
@@ -174,7 +169,7 @@ class NodePlatform extends PlatformPlugin
 
     StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
-      var mapPath = jsPath + '.map';
+      var mapPath = '$jsPath.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
@@ -195,7 +190,7 @@ class NodePlatform extends PlatformPlugin
     StackTraceMapper? mapper;
     var jsPath = p.join(precompiledPath, '$testPath.node_test.dart.js');
     if (!suiteConfig.jsTrace) {
-      var mapPath = jsPath + '.map';
+      var mapPath = '$jsPath.map';
       mapper = JSStackTraceMapper(await File(mapPath).readAsString(),
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
@@ -215,16 +210,16 @@ class NodePlatform extends PlatformPlugin
       SuiteConfiguration suiteConfig,
       int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, p.basename(testPath) + '.node_test.dart.js');
+    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
     var url = _config.pubServeUrl!.resolveUri(
-        p.toUri(p.relative(testPath, from: 'test') + '.node_test.dart.js'));
+        p.toUri('${p.relative(testPath, from: 'test')}.node_test.dart.js'));
 
     var js = await _get(url, testPath);
     await File(jsPath).writeAsString(preamble.getPreamble(minified: true) + js);
 
     StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
-      var mapUrl = url.replace(path: url.path + '.map');
+      var mapUrl = url.replace(path: '${url.path}.map');
       mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
           mapUrl: mapUrl,
           sdkRoot: p.toUri('packages/\$sdk'),
@@ -244,8 +239,11 @@ class NodePlatform extends PlatformPlugin
     nodePath = nodePath == null ? nodeModules : '$nodePath:$nodeModules';
 
     try {
-      return await Process.start(settings.executable,
-          settings.arguments.toList()..add(jsPath)..add(socketPort.toString()),
+      return await Process.start(
+          settings.executable,
+          settings.arguments.toList()
+            ..add(jsPath)
+            ..add(socketPort.toString()),
           environment: {'NODE_PATH': nodePath});
     } catch (error, stackTrace) {
       await Future<Never>.error(

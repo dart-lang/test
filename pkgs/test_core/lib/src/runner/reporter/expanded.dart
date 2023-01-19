@@ -81,6 +81,10 @@ class ExpandedReporter implements Reporter {
   /// Whether the reporter is paused.
   var _paused = false;
 
+  // Whether a notice should be logged about enabling stack trace chaining at
+  // the end of all tests running.
+  var _shouldPrintStackTraceChainingNotice = false;
+
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription<void>>{};
 
@@ -110,7 +114,7 @@ class ExpandedReporter implements Reporter {
         _green = color ? '\u001b[32m' : '',
         _red = color ? '\u001b[31m' : '',
         _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[1;30m' : '',
+        _gray = color ? '\u001b[90m' : '',
         _bold = color ? '\u001b[1m' : '',
         _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -164,8 +168,9 @@ class ExpandedReporter implements Reporter {
       // emit information about them unless they fail.
       _subscriptions.add(liveTest.onStateChange
           .listen((state) => _onStateChange(liveTest, state)));
-    } else if (_engine.active.length == 1 &&
-        _engine.active.first == liveTest &&
+    } else if (_engine.active.isEmpty &&
+        _engine.activeSuiteLoads.length == 1 &&
+        _engine.activeSuiteLoads.first == liveTest &&
         liveTest.test.name.startsWith('compiling ')) {
       // Print a progress line for load tests that come from compiling JS, since
       // that takes a long time.
@@ -196,12 +201,19 @@ class ExpandedReporter implements Reporter {
 
   /// A callback called when [liveTest] throws [error].
   void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+    if (!liveTest.test.metadata.chainStackTraces &&
+        !liveTest.suite.isLoadSuite) {
+      _shouldPrintStackTraceChainingNotice = true;
+    }
+
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
 
     if (error is! LoadException) {
-      _sink..writeln(indent('$error'))..writeln(indent('$stackTrace'));
+      _sink
+        ..writeln(indent('$error'))
+        ..writeln(indent('$stackTrace'));
       return;
     }
 
@@ -237,6 +249,14 @@ class ExpandedReporter implements Reporter {
       _progressLine('All tests skipped.');
     } else {
       _progressLine('All tests passed!');
+    }
+
+    if (_shouldPrintStackTraceChainingNotice) {
+      _sink
+        ..writeln('')
+        ..writeln('Consider enabling the flag chain-stack-traces to '
+            'receive more detailed exceptions.\n'
+            "For example, 'dart test --chain-stack-traces'.");
     }
   }
 

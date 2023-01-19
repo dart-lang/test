@@ -6,18 +6,20 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
+import 'package:stack_trace/stack_trace.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/pretty_print.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/reporter/multiplex.dart';
 
-import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
@@ -25,6 +27,7 @@ import 'runner/engine.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_suite.dart';
 import 'runner/loader.dart';
+import 'runner/no_tests_found_exception.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
@@ -73,8 +76,10 @@ class Runner {
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
-        var engine =
-            Engine(concurrency: config.concurrency, coverage: config.coverage);
+        var engine = Engine(
+            concurrency: config.concurrency,
+            coverage: config.coverage,
+            testRandomizeOrderingSeed: config.testRandomizeOrderingSeed);
 
         var sinks = <IOSink>[];
         Reporter createFileReporter(String reporterName, String filepath) {
@@ -133,14 +138,22 @@ class Runner {
 
         if (_engine.passed.isEmpty &&
             _engine.failed.isEmpty &&
-            _engine.skipped.isEmpty &&
-            _config.suiteDefaults.patterns.isNotEmpty) {
-          var patterns = toSentence(_config.suiteDefaults.patterns.map(
-              (pattern) => pattern is RegExp
-                  ? 'regular expression "${pattern.pattern}"'
-                  : '"$pattern"'));
-
-          throw ApplicationException('No tests match $patterns.');
+            _engine.skipped.isEmpty) {
+          if (_config.globalPatterns.isNotEmpty) {
+            var patterns = toSentence(_config.globalPatterns.map((pattern) =>
+                pattern is RegExp
+                    ? 'regular expression "${pattern.pattern}"'
+                    : '"$pattern"'));
+            throw NoTestsFoundException('No tests match $patterns.');
+          } else if (_config.includeTags != BooleanSelector.all ||
+              _config.excludeTags != BooleanSelector.none) {
+            throw NoTestsFoundException(
+                'No tests match the requested tag selectors:\n'
+                '  include: "${_config.includeTags}"\n'
+                '  exclude: "${_config.excludeTags}"');
+          } else {
+            throw NoTestsFoundException('No tests were found.');
+          }
         }
 
         return (success ?? false) &&
@@ -194,9 +207,8 @@ class Runner {
       }
     }
 
-    warn("this package doesn't support running tests on " +
-        toSentence(unsupportedNames, conjunction: 'or') +
-        '.');
+    warn("this package doesn't support running tests on "
+        '${toSentence(unsupportedNames, conjunction: 'or')}.');
   }
 
   /// Closes the runner.
@@ -239,20 +251,25 @@ class Runner {
         _sinks.clear();
       });
 
-  /// Return a stream of [LoadSuite]s in [_config.paths].
+  /// Return a stream of [LoadSuite]s in [_config.testSelections].
   ///
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return StreamGroup.merge(_config.paths.map((path) {
-      if (Directory(path).existsSync()) {
-        return _loader.loadDir(path, _config.suiteDefaults);
-      } else if (File(path).existsSync()) {
-        return _loader.loadFile(path, _config.suiteDefaults);
+    return StreamGroup.merge(_config.testSelections.entries.map((pathEntry) {
+      final testPath = pathEntry.key;
+      final testSelections = pathEntry.value;
+      final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+      if (Directory(testPath).existsSync()) {
+        return _loader.loadDir(testPath, suiteConfig);
+      } else if (File(testPath).existsSync()) {
+        return _loader.loadFile(testPath, suiteConfig);
       } else {
         return Stream.fromIterable([
           LoadSuite.forLoadException(
-              LoadException(path, 'Does not exist.'), _config.suiteDefaults)
+            LoadException(testPath, 'Does not exist.'),
+            suiteConfig,
+          ),
         ]);
       }
     })).map((loadSuite) {
@@ -260,23 +277,64 @@ class Runner {
         _warnForUnknownTags(suite);
 
         return _shardSuite(suite.filter((test) {
-          // Skip any tests that don't match all the given patterns.
-          if (!suite.config.patterns
+          // Skip any tests that don't match all the global patterns.
+          if (!_config.globalPatterns
               .every((pattern) => test.name.contains(pattern))) {
             return false;
           }
 
           // If the user provided tags, skip tests that don't match all of them.
-          if (!suite.config.includeTags.evaluate(test.metadata.tags.contains)) {
+          if (!_config.includeTags.evaluate(test.metadata.tags.contains)) {
             return false;
           }
 
           // Skip tests that do match any tags the user wants to exclude.
-          if (suite.config.excludeTags.evaluate(test.metadata.tags.contains)) {
+          if (_config.excludeTags.evaluate(test.metadata.tags.contains)) {
             return false;
           }
 
-          return true;
+          final testSelections = suite.config.testSelections;
+          assert(testSelections.isNotEmpty, 'Tests should have been selected');
+          return testSelections.any((selection) {
+            // Skip tests that don't match all the suite specific patterns.
+            if (!selection.testPatterns
+                .every((pattern) => test.name.contains(pattern))) {
+              return false;
+            }
+            // Skip tests that don't start on `line` or `col` if specified.
+            var line = selection.line;
+            var col = selection.col;
+            if (line == null && col == null) return true;
+            var trace = test.trace;
+            if (trace == null) {
+              throw StateError(
+                  'Cannot filter by line/column for this test suite, no stack'
+                  'trace available.');
+            }
+            var path = suite.path;
+            if (path == null) {
+              throw StateError(
+                  'Cannot filter by line/column for this test suite, no suite'
+                  'path available.');
+            }
+            var absoluteSuitePath = p.absolute(path);
+
+            bool matchLineAndCol(Frame frame) {
+              if (frame.uri.scheme != 'file' ||
+                  frame.uri.toFilePath() != absoluteSuitePath) {
+                return false;
+              }
+              if (line != null && frame.line != line) {
+                return false;
+              }
+              if (col != null && frame.column != col) {
+                return false;
+              }
+              return true;
+            }
+
+            return trace.frames.any(matchLineAndCol);
+          });
         }));
       });
     });

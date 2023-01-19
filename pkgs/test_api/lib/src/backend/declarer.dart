@@ -7,8 +7,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import '../frontend/timeout.dart';
-import '../util/test.dart';
+import 'configuration/timeout.dart';
 import 'group.dart';
 import 'group_entry.dart';
 import 'invoker.dart';
@@ -80,6 +79,8 @@ class Declarer {
   Trace? _tearDownAllTrace;
 
   /// The children of this group, either tests or sub-groups.
+  ///
+  /// All modifications to this must go through [_addEntry].
   final _entries = <GroupEntry>[];
 
   /// Whether [build] has been called for this declarer.
@@ -105,6 +106,12 @@ class Declarer {
   /// The current zone-scoped declarer.
   static Declarer? get current => Zone.current[#test.declarer] as Declarer?;
 
+  /// All the test and group names that have been declared in the entire suite.
+  ///
+  /// If duplicate test names are allowed, this is not tracked and it will be
+  /// `null`.
+  final Set<String>? _seenNames;
+
   /// Creates a new declarer for the root group.
   ///
   /// This is the implicit group that exists outside of any calls to `group()`.
@@ -120,13 +127,19 @@ class Declarer {
   /// thousands of tests are being declared (see #457).
   ///
   /// If [noRetry] is `true` tests will be run at most once.
-  Declarer(
-      {Metadata? metadata,
-      Set<String>? platformVariables,
-      bool collectTraces = false,
-      bool noRetry = false,
-      String? fullTestName})
-      : this._(
+  ///
+  /// If [allowDuplicateTestNames] is `false`, then a
+  /// [DuplicateTestNameException] will be thrown if two tests (or groups) have
+  /// the same name.
+  Declarer({
+    Metadata? metadata,
+    Set<String>? platformVariables,
+    bool collectTraces = false,
+    bool noRetry = false,
+    String? fullTestName,
+    // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+    bool allowDuplicateTestNames = true,
+  }) : this._(
             null,
             null,
             metadata ?? Metadata(),
@@ -134,7 +147,8 @@ class Declarer {
             collectTraces,
             null,
             noRetry,
-            fullTestName);
+            fullTestName,
+            allowDuplicateTestNames ? null : <String>{});
 
   Declarer._(
     this._parent,
@@ -145,6 +159,7 @@ class Declarer {
     this._trace,
     this._noRetry,
     this._fullTestName,
+    this._seenNames,
   );
 
   /// Runs [body] with this declarer as [Declarer.current].
@@ -178,7 +193,7 @@ class Declarer {
         retry: _noRetry ? 0 : retry);
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
-    _entries.add(LocalTest(fullName, metadata, () async {
+    _addEntry(LocalTest(fullName, metadata, () async {
       var parents = <Declarer>[];
       for (Declarer? declarer = this;
           declarer != null;
@@ -236,8 +251,16 @@ class Declarer {
     var metadata = _metadata.merge(newMetadata);
     var trace = _collectTraces ? Trace.current(2) : null;
 
-    var declarer = Declarer._(this, fullTestPrefix, metadata,
-        _platformVariables, _collectTraces, trace, _noRetry, _fullTestName);
+    var declarer = Declarer._(
+        this,
+        fullTestPrefix,
+        metadata,
+        _platformVariables,
+        _collectTraces,
+        trace,
+        _noRetry,
+        _fullTestName,
+        _seenNames);
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
@@ -245,7 +268,7 @@ class Declarer {
       if (result is! Future) return;
       throw ArgumentError('Groups may not be async.');
     });
-    _entries.add(declarer.build());
+    _addEntry(declarer.build());
 
     if (solo || declarer._solo) {
       _soloEntries.add(_entries.last);
@@ -352,16 +375,30 @@ class Declarer {
 
     return LocalTest(
         _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
-      return runZoned(() {
-        return Invoker.current!.unclosable(() async {
-          while (_tearDownAlls.isNotEmpty) {
-            await errorsDontStopTest(_tearDownAlls.removeLast());
-          }
-        });
-      },
+      return runZoned(() => Invoker.current!.runTearDowns(_tearDownAlls),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
           zoneValues: {#test.declarer: this});
     }, trace: _tearDownAllTrace, guarded: false, isScaffoldAll: true);
   }
+
+  void _addEntry(GroupEntry entry) {
+    if (_seenNames?.add(entry.name) == false) {
+      throw DuplicateTestNameException(entry.name);
+    }
+    _entries.add(entry);
+  }
+}
+
+/// An exception thrown when two test cases in the same test suite (same `main`)
+/// have an identical name.
+class DuplicateTestNameException implements Exception {
+  final String name;
+  DuplicateTestNameException(this.name);
+
+  @override
+  String toString() => 'A test with the name "$name" was already declared. '
+      'Test cases must have unique names.\n\n'
+      'See https://github.com/dart-lang/test/blob/master/pkgs/test/doc/'
+      'configuration.md#allow_test_randomization for info on enabling this.';
 }

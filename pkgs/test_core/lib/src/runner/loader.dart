@@ -8,24 +8,23 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:yaml/yaml.dart';
-
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:yaml/yaml.dart';
 
-import 'hack_register_platform.dart';
-import 'platform.dart';
-import 'runner_suite.dart';
-import 'suite.dart';
+import '../util/io.dart';
 import 'configuration.dart';
+import 'hack_register_platform.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
 import 'parse_metadata.dart';
+import 'platform.dart';
 import 'plugin/customizable_platform.dart';
 import 'plugin/environment.dart';
+import 'runner_suite.dart';
+import 'suite.dart';
 import 'vm/platform.dart';
-import '../util/io.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
@@ -140,9 +139,7 @@ class Loader {
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
     return StreamGroup.merge(
         Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File ||
-          !_config.filename.matches(p.basename(entry.path)) ||
-          p.split(entry.path).contains('packages')) {
+      if (entry is! File || !_config.filename.matches(p.basename(entry.path))) {
         return Stream.empty();
       }
 
@@ -171,8 +168,7 @@ class Loader {
       return;
     }
 
-    if (_config.suiteDefaults.excludeTags
-        .evaluate(suiteConfig.metadata.tags.contains)) {
+    if (_config.excludeTags.evaluate(suiteConfig.metadata.tags.contains)) {
       return;
     }
 

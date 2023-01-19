@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:analyzer/dart/ast/ast.dart';
@@ -68,3 +69,23 @@ SourceSpan? contextualizeSpan(
 
   return file.span(start, contextRunes.offset);
 }
+
+/// Parses and returns the currently enabled experiments from
+/// [Platform.executableArguments].
+final List<String> enabledExperiments = () {
+  var experiments = <String>[];
+  var itr = Platform.executableArguments.iterator;
+  while (itr.moveNext()) {
+    var arg = itr.current;
+    if (arg == '--enable-experiment') {
+      if (!itr.moveNext()) break;
+      experiments.add(itr.current);
+    } else if (arg.startsWith('--enable-experiment=')) {
+      var parts = arg.split('=');
+      if (parts.length == 2) {
+        experiments.addAll(parts[1].split(','));
+      }
+    }
+  }
+  return experiments;
+}();

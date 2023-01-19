@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import './../platform.dart';
 
 /// An interface for [PlatformPlugin]s that support per-platform customization.
@@ -20,7 +20,7 @@ import './../platform.dart';
 /// [define_platforms]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#define_platforms
 ///
 /// Plugins that implement this **must** support children of recognized runtimes
-/// (created by [Runtime.extend]) in their [loadChannel] or [load] methods.
+/// (created by [Runtime.extend]) in their [load] methods.
 abstract class CustomizablePlatform<T extends Object> extends PlatformPlugin {
   /// Parses user-provided [settings] for a custom platform into a
   /// plugin-defined format.

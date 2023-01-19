@@ -9,10 +9,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
-
-import 'package:test/test.dart';
 
 import '../io.dart';
 
@@ -23,6 +22,8 @@ String get _tempDir => p.join(d.sandbox, 'tmp');
 // represent a best effort to kill the test runner at certain times during its
 // execution.
 void main() {
+  setUpAll(precompileTestExecutable);
+
   setUp(() => d.dir('tmp').create());
 
   group('during loading,', () {
@@ -179,41 +180,6 @@ void main() {
       // one. Remove this hack when issue 23047 is fixed.
       await Future.delayed(Duration(seconds: 1));
       await signalAndQuit(test);
-    });
-
-    test('causes expect() to always throw an error immediately', () async {
-      await d.file('test.dart', '''
-import 'dart:async';
-import 'dart:io';
-
-import 'package:test/test.dart';
-
-void main() {
-  var expectThrewError = false;
-
-  tearDown(() {
-    File("output").writeAsStringSync(expectThrewError.toString());
-  });
-
-  test("test", () async {
-    print("running test");
-
-    await Future.delayed(Duration(seconds: 1));
-    try {
-      expect(true, isTrue);
-    } catch (_) {
-      expectThrewError = true;
-    }
-  });
-}
-''').create();
-
-      var test = await _runTest(['test.dart']);
-      await expectLater(test.stdout, emitsThrough('running test'));
-      await signalAndQuit(test);
-
-      await d.file('output', 'true').validate();
-      expectTempDirEmpty();
     });
 
     test('causes expectAsync() to always throw an error immediately', () async {

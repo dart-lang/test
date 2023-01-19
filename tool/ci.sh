@@ -1,26 +1,35 @@
 #!/bin/bash
-# Created with package:mono_repo v3.4.7
+# Created with package:mono_repo v6.4.2
 
 # Support built in commands on windows out of the box.
+# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
+# then "flutter" is called instead of "pub".
+# This assumes that the Flutter SDK has been installed in a previous step.
 function pub() {
-  if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    command pub.bat "$@"
+  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
+    command flutter pub "$@"
   else
-    command pub "$@"
+    command dart pub "$@"
   fi
 }
-function dartfmt() {
-  if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    command dartfmt.bat "$@"
+# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
+# then "flutter" is called instead of "pub".
+# This assumes that the Flutter SDK has been installed in a previous step.
+function format() {
+  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
+    command flutter format "$@"
   else
-    command dartfmt "$@"
+    command dart format "$@"
   fi
 }
-function dartanalyzer() {
-  if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    command dartanalyzer.bat "$@"
+# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
+# then "flutter" is called instead of "pub".
+# This assumes that the Flutter SDK has been installed in a previous step.
+function analyze() {
+  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
+    command flutter analyze "$@"
   else
-    command dartanalyzer "$@"
+    command dart analyze "$@"
   fi
 }
 
@@ -47,52 +56,80 @@ for PKG in ${PKGS}; do
     exit 64
   fi
 
-  pub upgrade --no-precompile || EXIT_CODE=$?
+  dart pub upgrade || EXIT_CODE=$?
 
   if [[ ${EXIT_CODE} -ne 0 ]]; then
-    echo -e "\033[31mPKG: ${PKG}; 'pub upgrade' - FAILED  (${EXIT_CODE})\033[0m"
-    FAILURES+=("${PKG}; 'pub upgrade'")
+    echo -e "\033[31mPKG: ${PKG}; 'dart pub upgrade' - FAILED  (${EXIT_CODE})\033[0m"
+    FAILURES+=("${PKG}; 'dart pub upgrade'")
   else
     for TASK in "$@"; do
       EXIT_CODE=0
       echo
       echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
       case ${TASK} in
-      command_0)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 0'
-        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
+      analyze_0)
+        echo 'dart analyze --fatal-infos'
+        dart analyze --fatal-infos || EXIT_CODE=$?
         ;;
-      command_1)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 1'
-        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
+      analyze_1)
+        echo 'dart analyze'
+        dart analyze || EXIT_CODE=$?
         ;;
-      command_2)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 2'
-        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
+      command_00)
+        echo 'dart test'
+        dart test || EXIT_CODE=$?
         ;;
-      command_3)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 3'
-        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
+      command_01)
+        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0'
+        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
-      command_4)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 4'
-        xvfb-run -s "-screen 0 1024x768x24" pub run test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
+      command_02)
+        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1'
+        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
-      command_5)
-        echo 'pub run test --preset travis -x browser'
-        pub run test --preset travis -x browser || EXIT_CODE=$?
+      command_03)
+        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2'
+        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
-      dartanalyzer)
-        echo 'dartanalyzer --fatal-infos --fatal-warnings .'
-        dartanalyzer --fatal-infos --fatal-warnings . || EXIT_CODE=$?
+      command_04)
+        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3'
+        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
-      dartfmt)
-        echo 'dartfmt -n --set-exit-if-changed .'
-        dartfmt -n --set-exit-if-changed . || EXIT_CODE=$?
+      command_05)
+        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4'
+        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
+        ;;
+      command_06)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 0'
+        dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
+        ;;
+      command_07)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 1'
+        dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
+        ;;
+      command_08)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 2'
+        dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
+        ;;
+      command_09)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 3'
+        dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
+        ;;
+      command_10)
+        echo 'dart test --preset travis --total-shards 5 --shard-index 4'
+        dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
+        ;;
+      command_11)
+        echo 'dart test --preset travis -x browser'
+        dart test --preset travis -x browser || EXIT_CODE=$?
+        ;;
+      format)
+        echo 'dart format --output=none --set-exit-if-changed .'
+        dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
       test)
-        echo 'pub run test -p chrome,vm,node'
-        pub run test -p chrome,vm,node || EXIT_CODE=$?
+        echo 'dart test -p chrome,vm,node'
+        dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

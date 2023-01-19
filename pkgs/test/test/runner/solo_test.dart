@@ -10,6 +10,8 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('only runs the tests marked as solo', () async {
     await d.file('test.dart', '''
           import 'dart:async';

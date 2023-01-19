@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 import 'package:typed_data/typed_data.dart';
@@ -53,6 +52,8 @@ abstract class Browser {
   /// Standard IO streams for the underlying browser process.
   final _ioSubscriptions = <StreamSubscription<List<int>>>[];
 
+  final output = Uint8Buffer();
+
   /// Creates a new browser.
   ///
   /// This is intended to be called by subclasses. They pass in [startBrowser],
@@ -67,7 +68,6 @@ abstract class Browser {
       var process = await startBrowser();
       _processCompleter.complete(process);
 
-      var output = Uint8Buffer();
       void drainOutput(Stream<List<int>> stream) {
         try {
           _ioSubscriptions

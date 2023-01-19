@@ -1,0 +1,24 @@
+# See https://pub.dev/packages/mono_repo
+
+sdk:
+- main
+
+stages:
+- analyze_and_format:
+  - group:
+    - format
+    - analyze: --fatal-infos
+# TODO: restore after https://github.com/dart-lang/test/issues/1790
+# - unit_test:
+#   - group:
+#     - command:
+#       - pushd /tmp
+#       - wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+#       - sudo dpkg -i google-chrome-beta_current_amd64.deb
+#       - popd
+#       - which google-chrome-beta
+#       os:
+#         - linux
+#     - test:
+#       os:
+#       - linux

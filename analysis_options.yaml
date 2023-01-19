@@ -1,8 +1,7 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
 analyzer:
-  strong-mode:
-    implicit-casts: false
   language:
+    strict-casts: true
     strict-raw-types: true
   errors:
     # There are a number of deprecated members used through this package
@@ -11,10 +10,5 @@ analyzer:
 linter:
   rules:
     - avoid_private_typedef_functions
-    - await_only_futures
-    - implementation_imports
-    - prefer_generic_function_type_aliases
+    - directives_ordering
     - prefer_single_quotes
-    - prefer_typing_uninitialized_variables
-    - unnecessary_const
-    - unnecessary_new

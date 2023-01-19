@@ -8,7 +8,6 @@
 import 'package:test/src/runner/browser/chrome.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
-import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
@@ -16,6 +15,8 @@ import '../../utils.dart';
 import 'code_server.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('starts Chrome with the given URL', () async {
     var server = await CodeServer.start();
 
@@ -27,7 +28,7 @@ webSocket.addEventListener("open", function() {
 ''');
     var webSocket = server.handleWebSocket();
 
-    var chrome = Chrome(server.url, Configuration());
+    var chrome = Chrome(server.url, configuration());
     addTearDown(() => chrome.close());
 
     expect(await (await webSocket).stream.first, equals('loaded!'));
@@ -38,12 +39,12 @@ webSocket.addEventListener("open", function() {
 
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
-    var chrome = Chrome(server.url, Configuration());
+    var chrome = Chrome(server.url, configuration());
     await chrome.close();
   });
 
   test('reports an error in onExit', () {
-    var chrome = Chrome(Uri.parse('http://dart-lang.org'), Configuration(),
+    var chrome = Chrome(Uri.parse('http://dart-lang.org'), configuration(),
         settings: ExecutableSettings(
             linuxExecutable: '_does_not_exist',
             macOSExecutable: '_does_not_exist',

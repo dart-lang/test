@@ -4,12 +4,12 @@
 
 import 'dart:async';
 
+import 'package:test/test.dart';
+import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/test.dart';
-import 'package:test_api/src/frontend/timeout.dart';
-import 'package:test/test.dart';
 
 import '../utils.dart';
 
@@ -17,7 +17,7 @@ late Suite _suite;
 
 void main() {
   setUp(() {
-    _suite = Suite(Group.root([]), suitePlatform);
+    _suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: false);
   });
 
   group('.test()', () {
@@ -170,7 +170,8 @@ void main() {
             'description 1',
             expectAsync0(() {
               Invoker.current!.addOutstandingCallback();
-              Future(() => throw TestFailure('oh no'));
+              Future(() => throw TestFailure('oh no'))
+                  .whenComplete(Invoker.current!.removeOutstandingCallback);
             }, max: 1));
       });
 
@@ -215,6 +216,27 @@ void main() {
 
       await _runTest(tests.single as Test);
       expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
+    });
+
+    test("isn't run until test body completes after out-of-band error",
+        () async {
+      var hasTestFinished = false;
+      var hasTestFinishedBeforeTeardown = false;
+      var tests = declare(() {
+        tearDown(() {
+          hasTestFinishedBeforeTeardown = hasTestFinished;
+        });
+
+        test('description', () {
+          Future.error('oh no');
+          return pumpEventQueue().then((_) {
+            hasTestFinished = true;
+          });
+        });
+      });
+
+      await _runTest(tests.single as Test, shouldFail: true);
+      expect(hasTestFinishedBeforeTeardown, isTrue);
     });
 
     test("doesn't complete until there are no outstanding callbacks", () async {
@@ -639,6 +661,27 @@ void main() {
         await _runTest(innerGroup.entries.single as Test, shouldFail: true);
         expect(outerTearDownRun, isTrue);
       });
+    });
+  });
+
+  group('duplicate names', () {
+    test('can be enabled', () {
+      expect(
+          () => declare(() {
+                test('a', expectAsync0(() {}, count: 0));
+                test('a', expectAsync0(() {}, count: 0));
+              }, allowDuplicateTestNames: false),
+          throwsA(isA<DuplicateTestNameException>()
+              .having((e) => e.name, 'name', 'a')));
+    });
+
+    test('are allowed by default', () {
+      expect(
+          declare(() {
+            test('a', expectAsync0(() {}, count: 0));
+            test('a', expectAsync0(() {}, count: 0));
+          }).map((e) => e.name),
+          equals(['a', 'a']));
     });
   });
 }

@@ -3,18 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:stream_channel/stream_channel.dart';
-
-import 'package:test_api/src/backend/stack_trace_formatter.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-
-import 'package:test_api/src/remote_listener.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show RemoteListener, StackTraceFormatter, StackTraceMapper;
 
 /// Returns a channel that will emit a serialized representation of the tests
 /// defined in [getMain].
 ///
 /// This channel is used to control the tests. Platform plugins should forward
-/// it to the return value of [PlatformPlugin.loadChannel]. It's guaranteed to
-/// communicate using only JSON-serializable values.
+/// it `deserializeSuite`. It's guaranteed to communicate using only
+/// JSON-serializable values.
 ///
 /// Any errors thrown within [getMain], synchronously or not, will be forwarded
 /// to the load test for this suite. Prints will similarly be forwarded to that

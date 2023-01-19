@@ -5,7 +5,8 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
@@ -13,8 +14,6 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-// ignore: deprecated_member_use
-import 'package:test_api/test_api.dart' show Timeout;
 
 import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
@@ -44,7 +43,7 @@ final _timeout = Duration(minutes: 12);
 ///
 /// A suite is constructed with logic necessary to produce a test suite. As with
 /// a normal test body, this logic isn't run until [LiveTest.run] is called. The
-/// suite itself is returned by [suite] once it's avaialble, but any errors or
+/// suite itself is returned by [suite] once it's available, but any errors or
 /// prints will be emitted through the running [LiveTest].
 class LoadSuite extends Suite implements RunnerSuite {
   @override
@@ -95,7 +94,13 @@ class LoadSuite extends Suite implements RunnerSuite {
       invoker!.addOutstandingCallback();
 
       unawaited(() async {
-        var suite = await body();
+        RunnerSuite? suite;
+        try {
+          suite = await body();
+        } catch (_) {
+          invoker.removeOutstandingCallback();
+          rethrow;
+        }
         if (completer.isCompleted) {
           // If the load test has already been closed, close the suite it
           // generated.
@@ -117,7 +122,7 @@ class LoadSuite extends Suite implements RunnerSuite {
       // If the test is forcibly closed, let it complete, since load tests don't
       // have timeouts.
       invoker.onClose.then((_) => invoker.removeOutstandingCallback());
-    }, completer.future, path: path);
+    }, completer.future, path: path, ignoreTimeouts: config.ignoreTimeouts);
   }
 
   /// A utility constructor for a load suite that just throws [exception].
@@ -144,23 +149,27 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   LoadSuite._(String name, this.config, SuitePlatform platform,
-      void Function() body, this._suiteAndZone, {String? path})
+      void Function() body, this._suiteAndZone,
+      {required bool ignoreTimeouts, String? path})
       : super(
             Group.root(
                 [LocalTest(name, Metadata(timeout: Timeout(_timeout)), body)]),
             platform,
-            path: path);
+            path: path,
+            ignoreTimeouts: ignoreTimeouts);
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
       : config = old.config,
-        super(old.group, old.platform, path: old.path);
+        super(old.group, old.platform,
+            path: old.path, ignoreTimeouts: old.ignoreTimeouts);
 
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
       : config = old.config,
         _suiteAndZone = old._suiteAndZone,
-        super(old.group, old.platform, path: old.path);
+        super(old.group, old.platform,
+            path: old.path, ignoreTimeouts: old.ignoreTimeouts);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
@@ -203,10 +212,6 @@ class LoadSuite extends Suite implements RunnerSuite {
     filtered ??= Group.root([], metadata: metadata);
     return LoadSuite._filtered(this, filtered);
   }
-
-  @override
-  StreamChannel<Object?> channel(String name) =>
-      throw UnsupportedError('LoadSuite.channel() is not supported.');
 
   @override
   Future<void> close() async {}

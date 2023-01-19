@@ -7,11 +7,11 @@ import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 import '../configuration.dart';
 import '../environment.dart';
@@ -43,8 +43,8 @@ RunnerSuiteController deserializeSuite(
     SuiteConfiguration suiteConfig,
     Environment environment,
     StreamChannel<Object?> channel,
-    Object message,
-    {Future<Map<String, Object?>> Function()? gatherCoverage}) {
+    Object /*Map<String, Object?>*/ message,
+    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
   var disconnector = Disconnector<Object?>();
   var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
 
@@ -55,11 +55,16 @@ RunnerSuiteController deserializeSuite(
     'asciiGlyphs': Platform.isWindows,
     'path': path,
     'collectTraces': Configuration.current.reporter == 'json' ||
-        Configuration.current.fileReporters.containsKey('json'),
+        Configuration.current.fileReporters.containsKey('json') ||
+        suiteConfig.testSelections.any(
+            (selection) => selection.line != null || selection.col != null),
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
-  }..addAll(message as Map<String, Object?>));
+    'allowDuplicateTestNames': suiteConfig.allowDuplicateTestNames,
+    'ignoreTimeouts': suiteConfig.ignoreTimeouts,
+    ...(message as Map<String, dynamic>),
+  });
 
   var completer = Completer<Group>();
 

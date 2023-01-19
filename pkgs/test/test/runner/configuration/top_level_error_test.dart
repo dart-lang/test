@@ -5,14 +5,15 @@
 @TestOn('vm')
 import 'dart:convert';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('rejects an invalid fold_stack_frames', () async {
     await d
         .file('dart_test.yaml', jsonEncode({'fold_stack_frames': 'flup'}))

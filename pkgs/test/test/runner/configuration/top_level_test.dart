@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -16,6 +15,8 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../../io.dart';
 
 void main() {
+  setUpAll(precompileTestExecutable);
+
   test('ignores an empty file', () async {
     await d.file('dart_test.yaml', '').create();
 
@@ -97,7 +98,9 @@ void main() {
     await expectLater(
         test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
-  }, tags: 'chrome');
+  }, tags: 'chrome', onPlatform: const {
+    'windows': Skip('https://github.com/dart-lang/test/issues/1613')
+  });
 
   test('runs skipped tests with run_skipped: true', () async {
     await d.file('dart_test.yaml', jsonEncode({'run_skipped': true})).create();
@@ -282,7 +285,7 @@ void main() {
               "Warning: this package doesn't support running tests on the Dart "
               'VM.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('warns about the OS when some OSes are supported', () async {
@@ -302,7 +305,7 @@ void main() {
           emits("Warning: this package doesn't support running tests on "
               '${currentOS.name}.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('warns about browsers in general when no browsers are supported',
@@ -323,7 +326,7 @@ void main() {
           emits(
               "Warning: this package doesn't support running tests on browsers."));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test(
@@ -347,7 +350,7 @@ void main() {
           emits("Warning: this package doesn't support running tests on Chrome "
               'or Firefox.'));
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
   });
 

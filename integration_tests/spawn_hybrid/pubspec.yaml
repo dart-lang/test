@@ -1,0 +1,20 @@
+name: spawn_hybrid
+publish_to: none
+environment:
+  sdk: '>=2.18.0 <3.0.0'
+dependencies:
+  async: ^2.9.0
+  path: ^1.8.2
+  stream_channel: ^2.1.0
+dev_dependencies:
+  lints: '>=1.0.0 <3.0.0'
+  other_package:
+    path: other_package/
+  test: any
+dependency_overrides:
+  test:
+    path: ../../pkgs/test
+  test_api:
+    path: ../../pkgs/test_api
+  test_core:
+    path: ../../pkgs/test_core

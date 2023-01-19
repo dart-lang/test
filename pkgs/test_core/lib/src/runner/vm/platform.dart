@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
@@ -13,8 +14,6 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/vm/test_compiler.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
 import 'package:vm_service/vm_service_io.dart';
@@ -31,24 +30,23 @@ import '../../util/package_config.dart';
 import '../package_version.dart';
 import 'environment.dart';
 
+var _shouldPauseAfterTests = false;
+
 /// A platform that loads tests in isolates spawned within this Dart process.
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
-  final _compiler =
-      TestCompiler(p.join(p.current, '.dart_tool', 'pkg_test_kernel.bin'));
+  final _compiler = TestCompiler(
+      p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
-
-  VMPlatform();
-
-  @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
+  final _workingDirectory = Directory.current.uri;
 
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     assert(platform.runtime == Runtime.vm);
+
+    _setupPauseAfterTests();
 
     var receivePort = ReceivePort();
     Isolate? isolate;
@@ -63,8 +61,19 @@ class VMPlatform extends PlatformPlugin {
 
     VmService? client;
     StreamSubscription<Event>? eventSub;
-    var channel = IsolateChannel.connectReceive(receivePort)
-        .transformStream(StreamTransformer.fromHandlers(handleDone: (sink) {
+    // Typical test interaction will go across `channel`, `outerChannel` adds
+    // additional communication directly between the test bootstrapping and this
+    // platform to enable pausing after tests for debugging.
+    var outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
+    var outerQueue = StreamQueue(outerChannel.stream);
+    var channelId = (await outerQueue.next) as int;
+    var channel = outerChannel.virtualChannel(channelId).transformStream(
+        StreamTransformer.fromHandlers(handleDone: (sink) async {
+      if (_shouldPauseAfterTests) {
+        outerChannel.sink.add('debug');
+        await outerQueue.next;
+      }
+      receivePort.close();
       isolate!.kill();
       eventSub?.cancel();
       client?.dispose();
@@ -78,8 +87,9 @@ class VMPlatform extends PlatformPlugin {
           await Service.controlWebServer(enable: true, silenceOutput: true);
       var isolateID = Service.getIsolateID(isolate)!;
 
-      var libraryPath = p.toUri(p.absolute(path)).toString();
-      client = await vmServiceConnectUri(_wsUriFor(info.serverUri.toString()));
+      var libraryPath = _absolute(path).toString();
+      var serverUri = info.serverUri!;
+      client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
           .isolates!
@@ -88,8 +98,7 @@ class VMPlatform extends PlatformPlugin {
       var libraryRef = (await client.getIsolate(isolateRef.id!))
           .libraries!
           .firstWhere((library) => library.uri == libraryPath);
-      var url = _observatoryUrlFor(
-          info.serverUri.toString(), isolateRef.id!, libraryRef.id!);
+      var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -116,7 +125,13 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future<void> close() => _closeMemo.runOnce(() => _compiler.dispose());
+  Future<void> close() => _closeMemo.runOnce(_compiler.dispose);
+
+  Uri _absolute(String path) {
+    final uri = p.toUri(path);
+    if (uri.isAbsolute) return uri;
+    return _workingDirectory.resolveUri(uri);
+  }
 
   /// Spawns an isolate and passes it [message].
   ///
@@ -145,8 +160,7 @@ class VMPlatform extends PlatformPlugin {
   /// isolate.
   Future<Isolate> _spawnKernelIsolate(
       String path, SendPort message, Metadata suiteMetadata) async {
-    final response =
-        await _compiler.compile(File(path).absolute.uri, suiteMetadata);
+    final response = await _compiler.compile(_absolute(path), suiteMetadata);
     var compiledDill = response.kernelOutputUri?.toFilePath();
     if (compiledDill == null || response.errorCount > 0) {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
@@ -154,32 +168,40 @@ class VMPlatform extends PlatformPlugin {
     return await Isolate.spawnUri(p.toUri(compiledDill), [], message,
         packageConfig: await packageConfigUri, checked: true);
   }
-}
 
-Future<Isolate> _spawnDataIsolate(
-    String path, SendPort message, Metadata suiteMetadata) async {
-  return await dart.runInIsolate('''
+  Future<Isolate> _spawnDataIsolate(
+      String path, SendPort message, Metadata suiteMetadata) async {
+    return await dart.runInIsolate('''
     ${suiteMetadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "${p.toUri(p.absolute(path))}" as test;
+    import "${_absolute(path)}" as test;
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
   ''', message);
-}
-
-Future<Isolate> _spawnPrecompiledIsolate(
-    String testPath, SendPort message, String precompiledPath) async {
-  testPath = p.absolute(p.join(precompiledPath, testPath) + '.vm_test.dart');
-  var dillTestpath =
-      testPath.substring(0, testPath.length - '.dart'.length) + '.vm.app.dill';
-  if (await File(dillTestpath).exists()) {
-    testPath = dillTestpath;
   }
-  return await Isolate.spawnUri(p.toUri(testPath), [], message,
-      packageConfig: p.toUri(p.join(precompiledPath, '.packages')),
-      checked: true);
+
+  Future<Isolate> _spawnPrecompiledIsolate(
+      String testPath, SendPort message, String precompiledPath) async {
+    testPath =
+        _absolute('${p.join(precompiledPath, testPath)}.vm_test.dart').path;
+    var dillTestpath =
+        '${testPath.substring(0, testPath.length - '.dart'.length)}.vm.app.dill';
+    if (await File(dillTestpath).exists()) {
+      testPath = dillTestpath;
+    }
+    File? packageConfig =
+        File(p.join(precompiledPath, '.dart_tool/package_config.json'));
+    if (!(await packageConfig.exists())) {
+      packageConfig = File(p.join(precompiledPath, '.packages'));
+      if (!(await packageConfig.exists())) {
+        packageConfig = null;
+      }
+    }
+    return await Isolate.spawnUri(p.toUri(testPath), [], message,
+        packageConfig: packageConfig?.uri, checked: true);
+  }
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
@@ -192,7 +214,7 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
 Future<Isolate> _spawnPubServeIsolate(
     String testPath, SendPort message, Uri pubServeUrl) async {
   var url = pubServeUrl.resolveUri(
-      p.toUri(p.relative(testPath, from: 'test') + '.vm_test.dart'));
+      p.toUri('${p.relative(testPath, from: 'test')}.vm_test.dart'));
 
   try {
     return await Isolate.spawnUri(url, [], message, checked: true);
@@ -214,9 +236,20 @@ Future<Isolate> _spawnPubServeIsolate(
   }
 }
 
-String _wsUriFor(String observatoryUrl) =>
-    "ws:${observatoryUrl.split(':').sublist(1).join(':')}ws";
+Uri _wsUriFor(Uri observatoryUrl) =>
+    observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(String base, String isolateId, String id) =>
-    Uri.parse('$base#/inspect?isolateId=${Uri.encodeQueryComponent(isolateId)}&'
-        'objectId=${Uri.encodeQueryComponent(id)}');
+Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
+    fragment: Uri(
+        path: '/inspect',
+        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
+
+var _hasRegistered = false;
+void _setupPauseAfterTests() {
+  if (_hasRegistered) return;
+  _hasRegistered = true;
+  registerExtension('ext.test.pauseAfterTests', (_, __) async {
+    _shouldPauseAfterTests = true;
+    return ServiceExtensionResponse.result(jsonEncode({}));
+  });
+}

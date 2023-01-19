@@ -7,7 +7,6 @@ import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -16,13 +15,13 @@ import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: impl
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/iterable_set.dart'; // ignore: implementation_imports
 
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
 import 'live_suite_controller.dart';
 import 'load_suite.dart';
 import 'runner_suite.dart';
+import 'util/iterable_set.dart';
 
 /// An [Engine] manages a run that encompasses multiple test suites.
 ///
@@ -37,15 +36,10 @@ import 'runner_suite.dart';
 ///
 /// The engine has some special logic for [LoadSuite]s and the tests they
 /// contain, referred to as "load tests". Load tests exist to provide visibility
-/// into the process of loading test files, but as long as that process is
-/// proceeding normally users usually don't care about it, so the engine only
-/// surfaces running load tests (that is, includes them in [liveTests] and other
-/// collections) under specific circumstances.
-///
-/// If only load tests are running, exactly one load test will be in [active]
-/// and [liveTests]. If this test passes, it will be removed from both [active]
-/// and [liveTests] and *will not* be added to [passed]. If at any point a load
-/// test fails, it will be added to [failed] and [liveTests].
+/// into the process of loading test files. As long as that process is
+/// proceeding normally users usually don't care about it, so the engine does
+/// not include them in [liveTests] and other collections.
+/// If a load test fails, it will be added to [failed] and [liveTests].
 ///
 /// The test suite loaded by a load suite will be automatically be run by the
 /// engine; it doesn't need to be added to [suiteSink] manually.
@@ -68,6 +62,12 @@ class Engine {
 
   /// The coverage output directory.
   String? _coverage;
+
+  /// The seed used to generate randomness for test case shuffling.
+  ///
+  /// If null or zero no shuffling will occur.
+  /// The same seed will shuffle the tests in the same way every time.
+  int? testRandomizeOrderingSeed;
 
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
@@ -129,17 +129,6 @@ class Engine {
   Stream<RunnerSuite> get onSuiteAdded => _onSuiteAddedController.stream;
   final _onSuiteAddedController = StreamController<RunnerSuite>.broadcast();
 
-  /// All the currently-known suites that have run or are running.
-  ///
-  /// These are [LiveSuite]s, representing the in-progress state of each suite
-  /// as its component tests are being run.
-  ///
-  /// Note that unlike [addedSuites], for suites that are loaded using
-  /// [LoadSuite]s, both the [LoadSuite] and the suite it loads will eventually
-  /// be in this set.
-  Set<LiveSuite> get liveSuites => UnmodifiableSetView(_liveSuites);
-  final _liveSuites = <LiveSuite>{};
-
   /// A broadcast stream that emits each [LiveSuite] as it's loaded.
   ///
   /// Note that unlike [onSuiteAdded], for suites that are loaded using
@@ -180,21 +169,20 @@ class Engine {
   Set<LiveTest> get failed => _failedGroup.set;
   final _failedGroup = UnionSetController<LiveTest>(disjoint: true);
 
-  /// The tests that are still running, in the order they begain running.
+  /// The tests that are still running, in the order they began running.
   List<LiveTest> get active => UnmodifiableListView(_active);
   final _active = QueueList<LiveTest>();
+
+  /// The suites that are still loading, in the order they began.
+  List<LiveTest> get activeSuiteLoads =>
+      UnmodifiableListView(_activeSuiteLoads);
+  final _activeSuiteLoads = <LiveTest>{};
 
   /// The set of tests that have been marked for restarting.
   ///
   /// This is always a subset of [active]. Once a test in here has finished
   /// running, it's run again.
   final _restarted = <LiveTest>{};
-
-  /// The tests from [LoadSuite]s that are still running, in the order they
-  /// began running.
-  ///
-  /// This is separate from [active] because load tests aren't always surfaced.
-  final _activeLoadTests = <LiveTest>{};
 
   /// Whether this engine is idle—that is, not currently executing a test.
   bool get isIdle => _group.isIdle;
@@ -203,13 +191,18 @@ class Engine {
   /// `false` to `true`.
   Stream<void> get onIdle => _group.onIdle;
 
-  // TODO(nweiz): Use interface libraries to take a Configuration even when
-  // dart:io is unavailable.
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
   /// defaults to 1.
-  Engine({int? concurrency, String? coverage})
+  ///
+  /// [testRandomizeOrderingSeed] configures test case shuffling within each
+  /// test suite.
+  /// Any non-zero value will enable shuffling using this value as a seed.
+  /// Omitting this argument or passing `0` disables shuffling.
+  ///
+  /// [coverage] specifies a directory to output coverage information.
+  Engine({int? concurrency, String? coverage, this.testRandomizeOrderingSeed})
       : _runPool = Pool(concurrency ?? 1),
         _coverage = coverage {
     _group.future.then((_) {
@@ -251,39 +244,41 @@ class Engine {
     }
     _runCalled = true;
 
-    late StreamSubscription<RunnerSuite> subscription;
-    subscription = _suiteController.stream.listen((suite) {
-      _addedSuites.add(suite);
-      _onSuiteAddedController.add(suite);
+    var subscription = _suiteController.stream.listen(null);
+    subscription
+      ..onData((suite) {
+        _addedSuites.add(suite);
+        _onSuiteAddedController.add(suite);
 
-      _group.add(() async {
-        var resource = await _runPool.request();
-        LiveSuiteController? controller;
-        try {
-          if (suite is LoadSuite) {
-            await _onUnpaused;
-            controller = await _addLoadSuite(suite);
-            if (controller == null) return;
-          } else {
-            controller = LiveSuiteController(suite);
+        _group.add(() async {
+          var resource = await _runPool.request();
+          LiveSuiteController? controller;
+          try {
+            if (suite is LoadSuite) {
+              await _onUnpaused;
+              controller = await _addLoadSuite(suite);
+              if (controller == null) return;
+            } else {
+              controller = LiveSuiteController(suite);
+            }
+
+            _addLiveSuite(controller.liveSuite);
+
+            if (_closed) return;
+            await _runGroup(controller, controller.liveSuite.suite.group, []);
+            controller.noMoreLiveTests();
+            if (_coverage != null) await writeCoverage(_coverage!, controller);
+          } finally {
+            resource.allowRelease(() => controller?.close());
           }
-
-          _addLiveSuite(controller.liveSuite);
-
-          if (_closed) return;
-          await _runGroup(controller, controller.liveSuite.suite.group, []);
-          controller.noMoreLiveTests();
-          if (_coverage != null) await writeCoverage(_coverage!, controller);
-        } finally {
-          resource.allowRelease(() => controller?.close());
-        }
-      }());
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-      _onSuiteAddedController.close();
-      _group.close();
-      _runPool.close();
-    });
+        }());
+      })
+      ..onDone(() {
+        _subscriptions.remove(subscription);
+        _onSuiteAddedController.close();
+        _group.close();
+        _runPool.close();
+      });
     _subscriptions.add(subscription);
 
     return success;
@@ -312,9 +307,10 @@ class Engine {
       if (!_closed && setUpAllSucceeded) {
         // shuffle the group entries
         var entries = group.entries.toList();
-        if (suiteConfig.testRandomizeOrderingSeed != null &&
-            suiteConfig.testRandomizeOrderingSeed! > 0) {
-          entries.shuffle(Random(suiteConfig.testRandomizeOrderingSeed));
+        if (suiteConfig.allowTestRandomization &&
+            testRandomizeOrderingSeed != null &&
+            testRandomizeOrderingSeed! > 0) {
+          entries.shuffle(Random(testRandomizeOrderingSeed));
         }
 
         for (var entry in entries) {
@@ -354,23 +350,15 @@ class Engine {
     await _onUnpaused;
     _active.add(liveTest);
 
-    // If there were no active non-load tests, the current active test would
-    // have been a load test. In that case, remove it, since now we have a
-    // non-load test to add.
-    if (_active.first.suite is LoadSuite) _active.removeFirst();
-
-    late StreamSubscription<State> subscription;
-    subscription = liveTest.onStateChange.listen((state) {
-      if (state.status != Status.complete) return;
-      _active.remove(liveTest);
-
-      // If we're out of non-load tests, surface a load test.
-      if (_active.isEmpty && _activeLoadTests.isNotEmpty) {
-        _active.add(_activeLoadTests.first);
-      }
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-    });
+    var subscription = liveTest.onStateChange.listen(null);
+    subscription
+      ..onData((state) {
+        if (state.status != Status.complete) return;
+        _active.remove(liveTest);
+      })
+      ..onDone(() {
+        _subscriptions.remove(subscription);
+      });
     _subscriptions.add(subscription);
 
     suiteController.reportLiveTest(liveTest, countSuccess: countSuccess);
@@ -421,13 +409,13 @@ class Engine {
   ///
   /// Returns the same future as [LiveTest.close].
   Future<void> restartTest(LiveTest liveTest) async {
-    if (_activeLoadTests.contains(liveTest)) {
+    if (_activeSuiteLoads.contains(liveTest)) {
       throw ArgumentError("Can't restart a load test.");
     }
 
     if (!_active.contains(liveTest)) {
       throw StateError("Can't restart inactive test "
-          '\"${liveTest.test.name}\".');
+          '"${liveTest.test.name}".');
     }
 
     _restarted.add(liveTest);
@@ -443,26 +431,17 @@ class Engine {
     _addLiveSuite(controller.liveSuite);
 
     var liveTest = suite.test.load(suite);
-    _activeLoadTests.add(liveTest);
+    _activeSuiteLoads.add(liveTest);
 
-    // Only surface the load test if there are no other tests currently running.
-    if (_active.isEmpty) _active.add(liveTest);
-
-    late StreamSubscription<State> subscription;
-    subscription = liveTest.onStateChange.listen((state) {
-      if (state.status != Status.complete) return;
-      _activeLoadTests.remove(liveTest);
-
-      // Only one load test will be active at any given time, and it will always
-      // be the only active test. Remove it and, if possible, surface another
-      // load test.
-      if (_active.isNotEmpty && _active.first.suite == suite) {
-        _active.remove(liveTest);
-        if (_activeLoadTests.isNotEmpty) _active.add(_activeLoadTests.last);
-      }
-    }, onDone: () {
-      _subscriptions.remove(subscription);
-    });
+    var subscription = liveTest.onStateChange.listen(null);
+    subscription
+      ..onData((state) {
+        if (state.status != Status.complete) return;
+        _activeSuiteLoads.remove(liveTest);
+      })
+      ..onDone(() {
+        _subscriptions.remove(subscription);
+      });
     _subscriptions.add(subscription);
 
     controller.reportLiveTest(liveTest, countSuccess: false);
@@ -491,7 +470,6 @@ class Engine {
   /// Add [liveSuite] and the information it exposes to the engine's
   /// informational streams and collections.
   void _addLiveSuite(LiveSuite liveSuite) {
-    _liveSuites.add(liveSuite);
     _onSuiteStartedController.add(liveSuite);
 
     _onTestStartedGroup.add(liveSuite.onTestStarted);
@@ -542,7 +520,7 @@ class Engine {
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
-    var allLiveTests = liveTests.toSet()..addAll(_activeLoadTests);
+    var allLiveTests = liveTests.toSet()..addAll(_activeSuiteLoads);
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
     // Closing the run pool will close the test suites as soon as their tests

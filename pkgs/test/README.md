@@ -1,8 +1,12 @@
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dart-lang/test/badge)](https://api.securityscorecards.dev/projects/github.com/dart-lang/test)
+
 `test` provides a standard way of writing and running tests in Dart.
 
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
   * [Sharding Tests](#sharding-tests)
+  * [Shuffling Tests](#shuffling-tests)
+  * [Selecting a Test Reporter](#selecting-a-test-reporter)
   * [Collecting Code Coverage](#collecting-code-coverage)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
@@ -29,8 +33,9 @@
 Tests are specified using the top-level [`test()`] function, and test assertions
 are made using [`expect()`]:
 
-[`test()`]: https://pub.dev/documentation/test_core/latest/test_core/test.html
-[`expect()`]: https://pub.dev/documentation/test_api/latest/test_api/expect.html
+[`test()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/test.html
+
+[`expect()`]: https://pub.dev/documentation/test_api/latest/expect/expect.html
 
 ```dart
 import 'package:test/test.dart';
@@ -51,7 +56,7 @@ void main() {
 Tests can be grouped together using the [`group()`] function. Each group's
 description is added to the beginning of its test's descriptions.
 
-[`group()`]: https://pub.dev/documentation/test_api/latest/test_api/group.html
+[`group()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/group.html
 
 ```dart
 import 'package:test/test.dart';
@@ -101,7 +106,11 @@ void main() {
 ```
 
 You can also test exceptions with the [`throwsA()`] function or a matcher
-such as [`throwsException`]:
+such as [`throwsFormatException`]:
+
+[`throwsA()`]: https://pub.dev/documentation/test_api/latest/expect/throwsA.html
+
+[`throwsFormatException`]: https://pub.dev/documentation/test_api/latest/expect/throwsFormatException-constant.html
 
 ```dart
 import 'package:test/test.dart';
@@ -139,18 +148,20 @@ void main() {
 }
 ```
 
-[`setUp()`]: https://pub.dev/documentation/test_api/latest/test_api/setUp.html
-[`tearDown()`]: https://pub.dev/documentation/test_api/latest/test_api/tearDown.html
+[`setUp()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/setUp.html
+
+[`tearDown()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/tearDown.html
 
 ## Running Tests
 
-A single test file can be run just using `pub run test path/to/test.dart`.
+A single test file can be run just using `dart test path/to/test.dart` (as of
+Dart 2.10 - prior sdk versions must use `pub run test` instead of `dart test`).
 
-![Single file being run via "pub run"](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test1.gif)
+![Single file being run via "dart test"](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test1.gif)
 
-Many tests can be run at a time using `pub run test path/to/dir`.
+Many tests can be run at a time using `dart test path/to/dir`.
 
-![Directory being run via "pub run".](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test2.gif)
+![Directory being run via "dart test".](https://raw.githubusercontent.com/dart-lang/test/master/pkgs/test/image/test2.gif)
 
 It's also possible to run a test on the Dart VM only by invoking it using `dart
 path/to/test.dart`, but this doesn't load the full test runner and will be
@@ -160,44 +171,91 @@ The test runner considers any file that ends with `_test.dart` to be a test
 file. If you don't pass any paths, it will run all the test files in your
 `test/` directory, making it easy to test your entire application at once.
 
-You can select specific tests cases to run by name using `pub run test -n "test
+You can select specific tests cases to run by name using `dart test -n "test
 name"`. The string is interpreted as a regular expression, and only tests whose
 description (including any group descriptions) match that regular expression
 will be run. You can also use the `-N` flag to run tests whose names contain a
 plain-text string.
 
 By default, tests are run in the Dart VM, but you can run them in the browser as
-well by passing `pub run test -p chrome path/to/test.dart`. `test` will take
+well by passing `dart test -p chrome path/to/test.dart`. `test` will take
 care of starting the browser and loading the tests, and all the results will be
 reported on the command line just like for VM tests. In fact, you can even run
-tests on both platforms with a single command: `pub run test -p "chrome,vm"
+tests on both platforms with a single command: `dart test -p "chrome,vm"
 path/to/test.dart`.
 
+### Test Path Queries
+
+Some query parameters are supported on test paths, which allow you to filter the
+tests that will run within just those paths. These filters are merged with any
+global options that are passed, and all filters must match for a test to be ran.
+
+- **name**: Works the same as `--name` (simple contains check).
+  - This is the only option that supports more than one entry.
+- **full-name**: Requires an exact match for the name of the test.
+- **line**: Matches any test that originates from this line in the test suite.
+- **col**: Matches any test that originates from this column in the test suite.
+
+**Example Usage**: `dart test "path/to/test.dart?line=10&col=2"`
+
+#### Line/Col Matching Semantics
+
+The `line` and `col` filters match against the current stack trace taken from
+the invocation to the `test` function, and are considered a match if
+**any frame** in the trace meets **all** of the following criteria:
+
+* The URI of the frame matches the root test suite uri.
+  * This means it will not match lines from imported libraries.
+* If both `line` and `col` are passed, both must match **the same frame**.
+* The specific `line` and `col` to be matched are defined by the tools creating
+  the stack trace. This generally means they are 1 based and not 0 based, but
+  this package is not in control of the exact semantics and they may vary based
+  on platform implementations.
+
 ### Sharding Tests
+
 Tests can also be sharded with the `--total-shards` and `--shard-index` arguments,
 allowing you to split up your test suites and run them separately. For example,
 if you wanted to run 3 shards of your test suite, you could run them as follows:
 
 ```bash
-pub run test --total-shards 3 --shard-index 0 path/to/test.dart
-pub run test --total-shards 3 --shard-index 1 path/to/test.dart
-pub run test --total-shards 3 --shard-index 2 path/to/test.dart
+dart test --total-shards 3 --shard-index 0 path/to/test.dart
+dart test --total-shards 3 --shard-index 1 path/to/test.dart
+dart test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
 
 ### Shuffling Tests
+
 Test order can be shuffled with the `--test-randomize-ordering-seed` argument.
 This allows you to shuffle your tests with a specific seed (deterministic) or
 a random seed for each run. For example, consider the following test runs:
 
 ```bash
-pub run test --test-randomize-ordering-seed=12345
-pub run test --test-randomize-ordering-seed=random
+dart test --test-randomize-ordering-seed=12345
+dart test --test-randomize-ordering-seed=random
 ```
 
 Setting `--test-randomize-ordering-seed=0` will have the same effect as not
 specifying it at all, meaning the test order will remain as-is.
 
+### Selecting a Test Reporter
+
+You can adjust the output format of test results using the `--reporter=<option>`
+command line flag. The default format is the `compact` output format - a single
+line, continuously updated as tests are run. When running on the GitHub Actions CI
+however (detected via checking the `GITHUB_ACTIONS` environment variable for `true`),
+the default changes to the `github` output format - a reporter customized
+for that CI/CD system.
+
+The available options for the `--reporter` flag are:
+
+- `compact`: a single, continuously updated line
+- `expanded`: a separate line for each update
+- `github`: a custom reporter for GitHub Actions
+- `json`: a machine-readable format; see https://dart.dev/go/test-docs/json_reporter.md
+
 ### Collecting Code Coverage
+
 To collect code coverage, you can run tests with the `--coverage <directory>`
 argument. The directory specified can be an absolute or relative path.
 If a directory does not exist at the path specified, a directory will be
@@ -211,6 +269,31 @@ The files can then be formatted using the `package:coverage`
 
 Coverage gathering is currently only implemented for tests run on the Dart VM or
 Chrome.
+
+Here's an example of how to run tests and format the collected coverage to LCOV:
+
+```shell
+## Run Dart tests and output them at directory `./coverage`:
+dart run test --coverage=./coverage
+
+## Activate package `coverage` (if needed):
+dart pub global activate coverage
+
+## Format collected coverage to LCOV (only for directory "lib")
+dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
+
+## Generate LCOV report:
+genhtml -o ./coverage/report ./coverage/lcov.info
+
+## Open the HTML coverage report:
+open ./coverage/report/index.html
+```
+
+* *LCOV is a GNU tool which provides information about what parts of a program are
+  actually executed (i.e. "covered") while running a particular test case.*
+* The binary `genhtml` is one of the LCOV tools.
+* See the LCOV project for more: https://github.com/linux-test-project/lcov
+* See the Homebrew LCOV formula: https://formulae.brew.sh/formula/lcov
 
 ### Restricting Tests to Certain Platforms
 
@@ -233,7 +316,7 @@ void main() {
 }
 ```
 
-[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api/TestOn-class.html
+[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/TestOn-class.html
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
@@ -252,6 +335,7 @@ Platform selectors use the [boolean selector syntax] defined in the
 only supports boolean operations. The following identifiers are defined:
 
 [boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+
 [`boolean_selector`]: https://pub.dev/packages/boolean_selector
 
 * `vm`: Whether the test is running on the command-line Dart VM.
@@ -280,7 +364,7 @@ only supports boolean operations. The following identifiers are defined:
 * `windows`: Whether the test is running on Windows. This can only be `true` if
   either `vm` or `node` is true.
 
-* `mac-os`: Whether the test is running on Mac OS. This can only be `true` if
+* `mac-os`: Whether the test is running on MacOS. This can only be `true` if
   either `vm` or `node` is true.
 
 * `linux`: Whether the test is running on Linux. This can only be `true` if
@@ -309,6 +393,7 @@ using the [`js`] package. However, it may be useful when testing APIs that are
 meant to be used by JavaScript code.
 
 [Node.js]: https://nodejs.org/en/
+
 [`js`]: https://pub.dev/packages/js
 
 The test runner looks for an executable named `node` (on Mac OS or Linux) or
@@ -340,12 +425,28 @@ void main() {
 }
 ```
 
-There are also a number of useful functions and matchers for more advanced
+### Uncaught Async Errors
+
+Any uncaught asynchronous error throws within the zone that a test is running in
+will cause the test to be considered a failure. This can cause a test which was
+previously considered complete and passing to change into a failure if the
+uncaught async error is raised late. If all test cases within the suite have
+completed this may cause some errors to be missed, or to surface in only some
+runs.
+
+Avoid uncaught async errors by ensuring that all futures have an error handler
+[before they complete as an error][early-handler].
+
+[early-handler]:https://dart.dev/guides/libraries/futures-error-handling#potential-problem-failing-to-register-error-handlers-early
+
+### Future Matchers
+
+There are a number of useful functions and matchers for more advanced
 asynchrony. The [`completion()`] matcher can be used to test `Futures`; it
 ensures that the test doesn't finish until the `Future` completes, and runs a
 matcher against that `Future`'s value.
 
-[`completion()`]: https://pub.dev/documentation/test_api/latest/test_api/completion.html
+[`completion()`]: https://pub.dev/documentation/test_api/latest/expect/completion.html
 
 ```dart
 import 'dart:async';
@@ -359,11 +460,11 @@ void main() {
 }
 ```
 
-The [`throwsA()`] matcher and the various `throwsExceptionType` matchers work
+The [`throwsA()`] matcher and the various [`throwsExceptionType`] matchers work
 with both synchronous callbacks and asynchronous `Future`s. They ensure that a
 particular type of exception is thrown:
 
-[`throwsA()`]: https://pub.dev/documentation/test_api/latest/test_api/throwsA.html
+[`throwsExceptionType`]: https://pub.dev/documentation/test_api/latest/expect/throwsException-constant.html
 
 ```dart
 import 'dart:async';
@@ -451,6 +552,7 @@ queue alone so that it can still be used by the test, unlike a normal `Stream`
 which can only have one subscriber. For example:
 
 [`async`]: https://pub.dev/packages/async
+
 [`StreamQueue`]: https://pub.dev/documentation/async/latest/async/StreamQueue-class.html
 
 ```dart
@@ -500,16 +602,25 @@ The following built-in stream matchers are available:
 
 You can also define your own custom stream matchers with [`StreamMatcher()`].
 
-[`emits()`]: https://pub.dev/documentation/test_api/latest/test_api/emits.html
-[`emitsError()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsError.html
-[`emitsDone`]: https://pub.dev/documentation/test_api/latest/test_api/emitsDone.html
-[`mayEmit()`]: https://pub.dev/documentation/test_api/latest/test_api/mayEmit.html
-[`mayEmitMultiple()`]: https://pub.dev/documentation/test_api/latest/test_api/mayEmitMultiple.html
-[`emitsAnyOf()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsAnyOf.html
-[`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInOrder.html
-[`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/test_api/emitsInAnyOrder.html
-[`neverEmits()`]: https://pub.dev/documentation/test_api/latest/test_api/neverEmits.html
-[`StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/test_api/StreamMatcher-class.html
+[`emits()`]: https://pub.dev/documentation/test_api/latest/expect/emits.html
+
+[`emitsError()`]: https://pub.dev/documentation/test_api/latest/expect/emitsError.html
+
+[`emitsDone`]: https://pub.dev/documentation/test_api/latest/expect/emitsDone.html
+
+[`mayEmit()`]: https://pub.dev/documentation/test_api/latest/expect/mayEmit.html
+
+[`mayEmitMultiple()`]: https://pub.dev/documentation/test_api/latest/expect/mayEmitMultiple.html
+
+[`emitsAnyOf()`]: https://pub.dev/documentation/test_api/latest/expect/emitsAnyOf.html
+
+[`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/expect/emitsInOrder.html
+
+[`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/expect/emitsInAnyOrder.html
+
+[`neverEmits()`]: https://pub.dev/documentation/test_api/latest/expect/neverEmits.html
+
+[`StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/expect/StreamMatcher-class.html
 
 ## Running Tests With Custom HTML
 
@@ -518,7 +629,7 @@ tests. However, tests that need custom HTML can create their own files. These
 files have three requirements:
 
 * They must have the same name as the test, with `.dart` replaced by `.html`. You can also
-  provide a configuration path to an html file if you want it to be reused across all tests.
+  provide a configuration path to an HTML file if you want it to be reused across all tests.
   See [Providing a custom HTML template](#providing-a-custom-html-template) below.
 
 * They must contain a `link` tag with `rel="x-dart-test"` and an `href`
@@ -577,16 +688,15 @@ custom_html_template_path: html_template.html.tpl
 </html>
 ```
 
-
 ## Configuring Tests
 
 ### Skipping Tests
 
-If a test, group, or entire suite isn't working yet and you just want it to stop
+If a test, group, or entire suite isn't working yet, and you just want it to stop
 complaining, you can mark it as "skipped". The test or tests won't be run, and,
 if you supply a reason why, that reason will be printed. In general, skipping
 tests indicates that they should run but is temporarily not working. If they're
-is fundamentally incompatible with a platform, [`@TestOn`/`testOn`][TestOn]
+fundamentally incompatible with a platform, [`@TestOn`/`testOn`][TestOn]
 should be used instead.
 
 [TestOn]: #restricting-tests-to-certain-platforms
@@ -607,7 +717,8 @@ The string you pass should describe why the test is skipped. You don't have to
 include it, but it's a good idea to document why the test isn't running.
 
 Groups and individual tests can be skipped by passing the `skip` parameter. This
-can be either `true` or a String describing why the test is skipped. For example:
+can be either `true` or a String describing why the test is skipped. For
+example:
 
 ```dart
 import 'package:test/test.dart';
@@ -658,7 +769,7 @@ void main() {
 
     test('even slower test', () {
       // ...
-    }, timeout: Timeout.factor(2))
+    }, timeout: Timeout.factor(2));
   }, timeout: Timeout(Duration(minutes: 1)));
 }
 ```
@@ -693,7 +804,7 @@ void main() {
 ```
 
 Both the annotation and the parameter take a map. The map's keys are [platform
-selectors](#platform-selector-syntax) which describe the platforms for which the
+selectors](#platform-selectors) which describe the platforms for which the
 specialized configuration applies. Its values are instances of some of the same
 annotation classes that can be used for a suite: `Skip` and `Timeout`. A value
 can also be a list of these values.
@@ -775,6 +886,29 @@ A configuration file can do much more than just set global defaults. See
 
 [package config]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md
 
+### Compiler flags
+
+The test runner does not support general purpose flags to control compilation
+such as `-D` defines or flags like `--no-sound-null-safety`. In most cases it is
+preferable to avoid writing tests that depend on the fine-grained compiler
+configuration. For instance to choose between sound and unsound null safety,
+prefer to choose a language version for each test which has the desired behavior
+by default - choose a language version below `2.12` to disable sound null
+safety, and a language version above `2.12` to enable sound null safety. When
+fine-grained configuration is unavoidable, the approach varies by platform.
+
+Compilation for browser and node tests can be configured by passing arguments to
+`dart compile js` with `--dart2js-args` options.
+
+Fine-grained compilation configuration is not supported for the VM. Any
+configuration which impacts runtime behavior for the entire VM, such as `-D`
+defines (when used for non-const values) and runtime behavior experiments, will
+influence both the test runner and the isolates spawned to run test suites.
+Experiments which are breaking may cause incompatibilities with the test runner.
+These may be specified with a `DART_VM_OPTIONS` environment variable when
+running with `pub run test`, or by passing them to the `dart` command before the
+`test` subcommand when using `dart test`.
+
 ## Debugging
 
 Tests can be debugged interactively using platforms' built-in development tools.
@@ -816,9 +950,12 @@ The only difference is where the code from the isolate comes from:
 `spawnHybridUri()` takes a URL. They both return a [`StreamChannel`] that
 communicates with the hybrid isolate. For example:
 
-[`spawnHybridCode()`]: https://pub.dev/documentation/test_api/latest/test_api/spawnHybridCode.html
-[`spawnHybridUri()`]: https://pub.dev/documentation/test_api/latest/test_api/spawnHybridUri.html
+[`spawnHybridCode()`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/spawnHybridCode.html
+
+[`spawnHybridUri()`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/spawnHybridUri.html
+
 [dart:isolate]: https://api.dart.dev/stable/dart-isolate/dart-isolate-library.html
+
 [`StreamChannel`]: https://pub.dev/documentation/stream_channel/latest/stream_channel/StreamChannel-class.html
 
 ```dart

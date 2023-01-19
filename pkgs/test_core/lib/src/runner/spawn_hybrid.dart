@@ -10,13 +10,13 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart' show RemoteException;
+import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 
 import '../util/dart.dart' as dart;
 import '../util/package_config.dart';
 import 'package_version.dart';
-
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementation_imports
 
 /// Spawns a hybrid isolate from [url] with the given [message], and returns a
 /// [StreamChannel] that communicates with it.
@@ -31,10 +31,9 @@ import 'package:test_api/src/util/remote_exception.dart'; // ignore: implementat
 /// contains `pubspec.yaml`, *not* the `test/` directory). If it's a `package:`
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
-StreamChannel<Object?> spawnHybridUri(
-    String url, Object? message, Suite suite) {
-  url = _normalizeUrl(url, suite);
+StreamChannel<Object?> spawnHybridUri(String url, Object? message, Suite suite) {
   return StreamChannelCompleter.fromFuture(() async {
+    url = await _normalizeUrl(url, suite);
     var port = ReceivePort();
     var onExitPort = ReceivePort();
     try {
@@ -55,6 +54,7 @@ StreamChannel<Object?> spawnHybridUri(
       var disconnector = Disconnector();
       onExitPort.listen((_) {
         disconnector.disconnect();
+        port.close();
         onExitPort.close();
       });
 
@@ -63,6 +63,7 @@ StreamChannel<Object?> spawnHybridUri(
           .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
         // If the user closes the stream channel, kill the isolate.
         isolate.kill();
+        port.close();
         onExitPort.close();
         sink.close();
       }));
@@ -81,30 +82,40 @@ StreamChannel<Object?> spawnHybridUri(
   }());
 }
 
-/// Normalizes [url] to an absolute url, or returns it as is if it has a
-/// scheme.
+/// Normalizes [url] to an absolute url, resolving `package:` urls with the
+/// current package config.
+///
+/// If [url] has a scheme other than `package:`, then it is returned as is.
 ///
 /// Follows the rules for relative/absolute paths outlined in [spawnHybridUri].
-String _normalizeUrl(String url, Suite suite) {
+Future<String> _normalizeUrl(String url, Suite suite) async {
   final parsedUri = Uri.parse(url);
 
-  if (parsedUri.scheme.isEmpty) {
-    var isRootRelative = parsedUri.path.startsWith('/');
+  switch (parsedUri.scheme) {
+    case '':
+      var isRootRelative = parsedUri.path.startsWith('/');
 
-    if (isRootRelative) {
-      // We assume that the current path is the package root. `pub run`
-      // enforces this currently, but at some point it would probably be good
-      // to pass in an explicit root.
-      return p.url
-          .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
-    } else {
-      var suitePath = suite.path!;
-      return p.url.join(
-          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-          parsedUri.toString());
-    }
-  } else {
-    return url;
+      if (isRootRelative) {
+        // We assume that the current path is the package root. `pub run`
+        // enforces this currently, but at some point it would probably be good
+        // to pass in an explicit root.
+        return p.url
+            .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
+      } else {
+        var suitePath = suite.path!;
+        return p.url.join(
+            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+            parsedUri.toString());
+      }
+    case 'package':
+      final resolvedUri = await Isolate.resolvePackageUri(parsedUri);
+      if (resolvedUri == null) {
+        throw ArgumentError.value(
+            url, 'uri', 'Could not resolve the package URI');
+      }
+      return resolvedUri.toString();
+    default:
+      return url;
   }
 }
 

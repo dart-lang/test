@@ -15,12 +15,11 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/compiler_pool.dart'; // ignore: implementation_imports
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart'
+    show Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
@@ -71,10 +70,10 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// This is used to ensure that other users on the same system can't snoop
   /// on data being served through this server.
-  final _secret = Uri.encodeComponent(randomBase64(24));
+  final _secret = randomUrlSecret();
 
   /// The URL for this server.
-  Uri get url => _server.url.resolve(_secret + '/');
+  Uri get url => _server.url.resolve('$_secret/');
 
   /// A [OneOffHandler] for servicing WebSocket connections for
   /// [BrowserManager]s.
@@ -86,8 +85,8 @@ class BrowserPlatform extends PlatformPlugin
   /// A [PathHandler] used to serve compiled JS.
   final _jsHandler = PathHandler();
 
-  /// The [CompilerPool] managing active instances of `dart2js`.
-  final _compilers = CompilerPool();
+  /// The [Dart2JsCompilerPool] managing active instances of `dart2js`.
+  final _compilers = Dart2JsCompilerPool();
 
   /// The temporary directory in which compiled JS is emitted.
   final String? _compiledDir;
@@ -168,7 +167,7 @@ class BrowserPlatform extends PlatformPlugin
     var path = p.fromUri(request.url);
 
     if (path.endsWith('.html')) {
-      var test = p.withoutExtension(path) + '.dart';
+      var test = '${p.withoutExtension(path)}.dart';
       var scriptBase = htmlEscape.convert(p.basename(test));
       var link = '<link rel="x-dart-test" href="$scriptBase">';
       var testName = htmlEscape.convert(test);
@@ -208,7 +207,7 @@ class BrowserPlatform extends PlatformPlugin
   /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Object message) async {
+      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
@@ -216,7 +215,7 @@ class BrowserPlatform extends PlatformPlugin
       throw ArgumentError('$browser is not a browser.');
     }
 
-    var htmlPathFromTestPath = p.withoutExtension(path) + '.html';
+    var htmlPathFromTestPath = '${p.withoutExtension(path)}.html';
     if (File(htmlPathFromTestPath).existsSync()) {
       if (_config.customHtmlTemplatePath != null &&
           p.basename(htmlPathFromTestPath) ==
@@ -255,17 +254,15 @@ class BrowserPlatform extends PlatformPlugin
       await _pubServeSuite(path, dartUrl, browser, suiteConfig);
       suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
-      if (browser.isJS) {
-        if (suiteConfig.precompiledPath == null) {
-          await _compileSuite(path, suiteConfig);
-        } else {
-          await _addPrecompiledStackTraceMapper(path, suiteConfig);
-        }
+      if (suiteConfig.precompiledPath == null) {
+        await _compileSuite(path, suiteConfig);
+      } else {
+        await _addPrecompiledStackTraceMapper(path, suiteConfig);
       }
 
       if (_closed) return null;
       suiteUrl = url.resolveUri(
-          p.toUri(p.withoutExtension(p.relative(path, from: _root)) + '.html'));
+          p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'));
     }
 
     if (_closed) return null;
@@ -275,7 +272,7 @@ class BrowserPlatform extends PlatformPlugin
     if (_closed || browserManager == null) return null;
 
     var suite = await browserManager.load(path, suiteUrl, suiteConfig, message,
-        mapper: browser.isJS ? _mappers[path] : null);
+        mapper: _mappers[path]);
     if (_closed) return null;
     return suite;
   }
@@ -289,10 +286,6 @@ class BrowserPlatform extends PlatformPlugin
     }
   }
 
-  @override
-  StreamChannel<dynamic> loadChannel(String path, SuitePlatform platform) =>
-      throw UnimplementedError();
-
   /// Loads a test suite at [path] from the `pub serve` URL [dartUrl].
   ///
   /// This ensures that only one suite is loaded at a time, and that any errors
@@ -304,44 +297,32 @@ class BrowserPlatform extends PlatformPlugin
         print('"pub serve" is compiling $path...');
       });
 
-      // For browsers that run Dart compiled to JavaScript, get the source map
-      // instead of the Dart code for two reasons. We want to verify that the
-      // server's dart2js compiler is running on the Dart code, and also load
-      // the StackTraceMapper.
-      var getSourceMap = browser.isJS;
+      var sourceMapUrl = dartUrl.replace(path: '${dartUrl.path}.js.map');
 
-      var url = getSourceMap
-          ? dartUrl.replace(path: dartUrl.path + '.js.map')
-          : dartUrl;
-
-      HttpClientResponse response;
       try {
-        var request = await _http!.getUrl(url);
-        response = await request.close();
+        var request = await _http!.getUrl(sourceMapUrl);
+        var response = await request.close();
 
         if (response.statusCode != 200) {
-          // We don't care about the response body, but we have to drain it or
-          // else the process can't exit.
-          response.listen((_) {});
+          // Drain response to avoid VM hang.
+          response.drain();
 
           throw LoadException(
               path,
-              'Error getting $url: ${response.statusCode} '
+              'Error getting $sourceMapUrl: ${response.statusCode} '
               '${response.reasonPhrase}\n'
               'Make sure "pub serve" is serving the test/ directory.');
         }
 
-        if (getSourceMap && !suiteConfig.jsTrace) {
-          _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
-              mapUrl: url,
-              sdkRoot: p.toUri('packages/\$sdk'),
-              packageMap:
-                  (await currentPackageConfig).toPackagesDirPackageMap());
+        if (suiteConfig.jsTrace) {
+          // Drain response to avoid VM hang.
+          response.drain();
           return;
         }
-
-        // Drain the response stream.
-        response.listen((_) {});
+        _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
+            mapUrl: sourceMapUrl,
+            sdkRoot: p.toUri('packages/\$sdk'),
+            packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
       } on IOException catch (error) {
         var message = getErrorMessage(error);
         if (error is SocketException) {
@@ -351,7 +332,7 @@ class BrowserPlatform extends PlatformPlugin
 
         throw LoadException(
             path,
-            'Error getting $url: $message\n'
+            'Error getting $sourceMapUrl: $message\n'
             'Make sure "pub serve" is running.');
       } finally {
         timer.cancel();
@@ -366,7 +347,7 @@ class BrowserPlatform extends PlatformPlugin
   Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir!).createTempSync('test_').path;
-      var jsPath = p.join(dir, p.basename(dartPath) + '.browser_test.dart.js');
+      var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/browser.dart";
@@ -381,29 +362,29 @@ class BrowserPlatform extends PlatformPlugin
       await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
       if (_closed) return;
 
-      var bootstrapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+      var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart';
       _jsHandler.add(bootstrapUrl, (request) {
         return shelf.Response.ok(bootstrapContent,
             headers: {'Content-Type': 'application/dart'});
       });
 
-      var jsUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+      var jsUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart.js';
       _jsHandler.add(jsUrl, (request) {
         return shelf.Response.ok(File(jsPath).readAsStringSync(),
             headers: {'Content-Type': 'application/javascript'});
       });
 
-      var mapUrl = p.toUri(p.relative(dartPath, from: _root)).path +
+      var mapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart.js.map';
       _jsHandler.add(mapUrl, (request) {
-        return shelf.Response.ok(File(jsPath + '.map').readAsStringSync(),
+        return shelf.Response.ok(File('$jsPath.map').readAsStringSync(),
             headers: {'Content-Type': 'application/json'});
       });
 
       if (suiteConfig.jsTrace) return;
-      var mapPath = jsPath + '.map';
+      var mapPath = '$jsPath.map';
       _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
           mapUrl: p.toUri(mapPath),
           sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
@@ -415,7 +396,7 @@ class BrowserPlatform extends PlatformPlugin
       String dartPath, SuiteConfiguration suiteConfig) async {
     if (suiteConfig.jsTrace) return;
     var mapPath = p.join(
-        suiteConfig.precompiledPath!, dartPath + '.browser_test.dart.js.map');
+        suiteConfig.precompiledPath!, '$dartPath.browser_test.dart.js.map');
     var mapFile = File(mapPath);
     if (mapFile.existsSync()) {
       _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),

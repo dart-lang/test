@@ -3,16 +3,18 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-
+import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
+    show
+        Timeout;
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/frontend/timeout.dart'; // ignore: implementation_imports
 
 import '../util/io.dart';
 import 'configuration/args.dart' as args;
@@ -25,6 +27,8 @@ import 'configuration/values.dart';
 import 'runtime_selection.dart';
 import 'suite.dart';
 
+export 'suite.dart' show TestSelection;
+
 /// The key used to look up [Configuration.current] in a zone.
 final _currentKey = Object();
 
@@ -34,7 +38,7 @@ class Configuration {
   ///
   /// Using this is slightly more efficient than manually constructing a new
   /// configuration with no arguments.
-  static final empty = Configuration._();
+  static final empty = Configuration._unsafe();
 
   /// The usage string for the command-line arguments.
   static String get usage => args.usage;
@@ -66,10 +70,6 @@ class Configuration {
   /// This is *not* resolved automatically.
   String get configurationPath => _configurationPath ?? 'dart_test.yaml';
   final String? _configurationPath;
-
-  /// The path to dart2js.
-  String get dart2jsPath => _dart2jsPath ?? p.join(sdkDir, 'bin', 'dart2js');
-  final String? _dart2jsPath;
 
   /// The name of the reporter to use to display results.
   String get reporter => _reporter ?? defaultReporter;
@@ -126,12 +126,16 @@ class Configuration {
   Set<String> get foldTraceOnly => _foldTraceOnly ?? {};
   final Set<String>? _foldTraceOnly;
 
-  /// The paths from which to load tests.
-  List<String> get paths => _paths ?? ['test'];
-  final List<String>? _paths;
+  /// The paths from which to load tests, and the test cases to run.
+  Map<String, Set<TestSelection>> get testSelections =>
+      _testSelections ??
+      const {
+        'test': {TestSelection()}
+      };
+  final Map<String, Set<TestSelection>>? _testSelections;
 
   /// Whether the load paths were passed explicitly or the default was used.
-  bool get explicitPaths => _paths != null;
+  bool get explicitPaths => _testSelections != null;
 
   /// The glob matching the basename of tests to run.
   ///
@@ -149,9 +153,23 @@ class Configuration {
 
   /// The set of tags that have been declared in any way in this configuration.
   late final Set<String> knownTags = UnmodifiableSetView({
+    ...includeTags.variables,
+    ...excludeTags.variables,
     ...suiteDefaults.knownTags,
     for (var configuration in presets.values) ...configuration.knownTags
   });
+
+  /// Only run tests whose tags match this selector.
+  ///
+  /// When [merge]d, this is intersected with the other configuration's included
+  /// tags.
+  final BooleanSelector includeTags;
+
+  /// Do not run tests whose tags match this selector.
+  ///
+  /// When [merge]d, this is unioned with the other configuration's
+  /// excluded tags.
+  final BooleanSelector excludeTags;
 
   /// Configuration presets.
   ///
@@ -189,90 +207,104 @@ class Configuration {
   /// The default suite-level configuration.
   final SuiteConfiguration suiteDefaults;
 
+  /// The set of patterns to check test names against in all suites that run.
+  final Set<Pattern> globalPatterns;
+
+  /// The seed used to generate randomness for test case shuffling.
+  ///
+  /// If null or zero no shuffling will occur.
+  /// The same seed will shuffle the tests in the same way every time.
+  final int? testRandomizeOrderingSeed;
+
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
   /// The current configuration is set using [asCurrent].
   static Configuration get current =>
-      Zone.current[_currentKey] as Configuration? ?? Configuration();
+      Zone.current[_currentKey] as Configuration? ?? Configuration._unsafe();
 
   /// Parses the configuration from [args].
   ///
   /// Throws a [FormatException] if [args] are invalid.
   factory Configuration.parse(List<String> arguments) => args.parse(arguments);
 
-  /// Loads the configuration from [path].
+  /// Loads configuration from [path].
   ///
-  /// If [global] is `true`, this restricts the configuration file to only rules
-  /// that are supported globally.
+  /// If [global] is `true`, this restricts the configuration to rules that are
+  /// supported globally.
   ///
   /// Throws an [IOException] if [path] does not exist or cannot be read. Throws
-  /// a [FormatException] if its contents are invalid.
-  factory Configuration.load(String path, {bool global = false}) =>
-      load(path, global: global);
+  /// a [FormatException] if the file contents are invalid.
+  factory Configuration.load(String path, {bool global = false}) {
+    final content = File(path).readAsStringSync();
+    final sourceUrl = p.toUri(path);
+    return parse(content, global: global, sourceUrl: sourceUrl);
+  }
 
-  /// Loads the configuration from YAML formatted [source].
+  /// Parses configuration from YAML formatted [content].
   ///
-  /// If [global] is `true`, this restricts the configuration file to only rules
-  /// that are supported globally.
+  /// If [global] is `true`, this restricts the configuration to rules that are
+  /// supported globally.
   ///
-  /// If [sourceUrl] is provided then that will be set as the source url for
-  /// the yaml document.
+  /// If [sourceUrl] is provided it will be set as the source url for the yaml
+  /// document.
   ///
-  /// Throws a [FormatException] if its contents are invalid.
-  factory Configuration.loadFromString(String source,
+  /// Throws a [FormatException] if the content is invalid.
+  factory Configuration.loadFromString(String content,
           {bool global = false, Uri? sourceUrl}) =>
-      loadFromString(source, global: global, sourceUrl: sourceUrl);
+      parse(content, global: global, sourceUrl: sourceUrl);
 
   factory Configuration(
-      {bool? help,
-      String? customHtmlTemplatePath,
-      bool? version,
-      bool? pauseAfterLoad,
-      bool? debug,
-      bool? color,
-      String? configurationPath,
-      String? dart2jsPath,
-      String? reporter,
-      Map<String, String>? fileReporters,
-      String? coverage,
-      int? pubServePort,
-      int? concurrency,
-      int? shardIndex,
-      int? totalShards,
-      Iterable<String>? paths,
-      Iterable<String>? foldTraceExcept,
-      Iterable<String>? foldTraceOnly,
-      Glob? filename,
-      Iterable<String>? chosenPresets,
-      Map<String, Configuration>? presets,
-      Map<String, RuntimeSettings>? overrideRuntimes,
-      Map<String, CustomRuntime>? defineRuntimes,
-      bool? noRetry,
-      bool? useDataIsolateStrategy,
+      {required bool? help,
+      required String? customHtmlTemplatePath,
+      required bool? version,
+      required bool? pauseAfterLoad,
+      required bool? debug,
+      required bool? color,
+      required String? configurationPath,
+      required String? reporter,
+      required Map<String, String>? fileReporters,
+      required String? coverage,
+      required int? pubServePort,
+      required int? concurrency,
+      required int? shardIndex,
+      required int? totalShards,
+      required Map<String, Set<TestSelection>>? testSelections,
+      required Iterable<String>? foldTraceExcept,
+      required Iterable<String>? foldTraceOnly,
+      required Glob? filename,
+      required Iterable<String>? chosenPresets,
+      required Map<String, Configuration>? presets,
+      required Map<String, RuntimeSettings>? overrideRuntimes,
+      required Map<String, CustomRuntime>? defineRuntimes,
+      required bool? noRetry,
+      required bool? useDataIsolateStrategy,
+      required int? testRandomizeOrderingSeed,
 
       // Suite-level configuration
-      bool? jsTrace,
-      bool? runSkipped,
-      Iterable<String>? dart2jsArgs,
-      String? precompiledPath,
-      Iterable<Pattern>? patterns,
-      Iterable<RuntimeSelection>? runtimes,
-      BooleanSelector? includeTags,
-      BooleanSelector? excludeTags,
-      Map<BooleanSelector, SuiteConfiguration>? tags,
-      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
+      required bool? allowDuplicateTestNames,
+      required bool? allowTestRandomization,
+      required bool? jsTrace,
+      required bool? runSkipped,
+      required Iterable<String>? dart2jsArgs,
+      required String? precompiledPath,
+      required Iterable<Pattern>? globalPatterns,
+      required Iterable<RuntimeSelection>? runtimes,
+      required BooleanSelector? includeTags,
+      required BooleanSelector? excludeTags,
+      required Map<BooleanSelector, SuiteConfiguration>? tags,
+      required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+      required bool? ignoreTimeouts,
 
       // Test-level configuration
-      Timeout? timeout,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      bool? skip,
-      int? retry,
-      String? skipReason,
-      PlatformSelector? testOn,
-      Iterable<String>? addTags}) {
+      required Timeout? timeout,
+      required bool? verboseTrace,
+      required bool? chainStackTraces,
+      required bool? skip,
+      required int? retry,
+      required String? skipReason,
+      required PlatformSelector? testOn,
+      required Iterable<String>? addTags}) {
     var chosenPresetSet = chosenPresets?.toSet();
     var configuration = Configuration._(
         help: help,
@@ -282,7 +314,6 @@ class Configuration {
         debug: debug,
         color: color,
         configurationPath: configurationPath,
-        dart2jsPath: dart2jsPath,
         reporter: reporter,
         fileReporters: fileReporters,
         coverage: coverage,
@@ -290,7 +321,7 @@ class Configuration {
         concurrency: concurrency,
         shardIndex: shardIndex,
         totalShards: totalShards,
-        paths: paths,
+        testSelections: testSelections,
         foldTraceExcept: foldTraceExcept,
         foldTraceOnly: foldTraceOnly,
         filename: filename,
@@ -300,18 +331,21 @@ class Configuration {
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         useDataIsolateStrategy: useDataIsolateStrategy,
+        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
+        globalPatterns: globalPatterns,
         suiteDefaults: SuiteConfiguration(
+            allowDuplicateTestNames: allowDuplicateTestNames,
+            allowTestRandomization: allowTestRandomization,
             jsTrace: jsTrace,
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
             precompiledPath: precompiledPath,
-            patterns: patterns,
             runtimes: runtimes,
-            includeTags: includeTags,
-            excludeTags: excludeTags,
             tags: tags,
             onPlatform: onPlatform,
-            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+            ignoreTimeouts: ignoreTimeouts,
 
             // Test-level configuration
             timeout: timeout,
@@ -325,6 +359,372 @@ class Configuration {
     return configuration._resolvePresets();
   }
 
+  /// A constructor that doesn't require all of its options to be passed.
+  ///
+  /// This should only be used in situations where you really only want to
+  /// configure a specific restricted set of options.
+  factory Configuration._unsafe(
+          {bool? help,
+          String? customHtmlTemplatePath,
+          bool? version,
+          bool? pauseAfterLoad,
+          bool? debug,
+          bool? color,
+          String? configurationPath,
+          String? reporter,
+          Map<String, String>? fileReporters,
+          String? coverage,
+          int? pubServePort,
+          int? concurrency,
+          int? shardIndex,
+          int? totalShards,
+          Map<String, Set<TestSelection>>? testSelections,
+          Iterable<String>? foldTraceExcept,
+          Iterable<String>? foldTraceOnly,
+          Glob? filename,
+          Iterable<String>? chosenPresets,
+          Map<String, Configuration>? presets,
+          Map<String, RuntimeSettings>? overrideRuntimes,
+          Map<String, CustomRuntime>? defineRuntimes,
+          bool? noRetry,
+          bool? useDataIsolateStrategy,
+          int? testRandomizeOrderingSeed,
+
+          // Suite-level configuration
+          bool? allowDuplicateTestNames,
+          bool? allowTestRandomization,
+          bool? jsTrace,
+          bool? runSkipped,
+          Iterable<String>? dart2jsArgs,
+          String? precompiledPath,
+          Iterable<Pattern>? globalPatterns,
+          Iterable<RuntimeSelection>? runtimes,
+          BooleanSelector? includeTags,
+          BooleanSelector? excludeTags,
+          Map<BooleanSelector, SuiteConfiguration>? tags,
+          Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+          bool? ignoreTimeouts,
+
+          // Test-level configuration
+          Timeout? timeout,
+          bool? verboseTrace,
+          bool? chainStackTraces,
+          bool? skip,
+          int? retry,
+          String? skipReason,
+          PlatformSelector? testOn,
+          Iterable<String>? addTags}) =>
+      Configuration(
+          help: help,
+          customHtmlTemplatePath: customHtmlTemplatePath,
+          version: version,
+          pauseAfterLoad: pauseAfterLoad,
+          debug: debug,
+          color: color,
+          configurationPath: configurationPath,
+          reporter: reporter,
+          fileReporters: fileReporters,
+          coverage: coverage,
+          pubServePort: pubServePort,
+          concurrency: concurrency,
+          shardIndex: shardIndex,
+          totalShards: totalShards,
+          testSelections: testSelections,
+          foldTraceExcept: foldTraceExcept,
+          foldTraceOnly: foldTraceOnly,
+          filename: filename,
+          chosenPresets: chosenPresets,
+          presets: presets,
+          overrideRuntimes: overrideRuntimes,
+          defineRuntimes: defineRuntimes,
+          noRetry: noRetry,
+          useDataIsolateStrategy: useDataIsolateStrategy,
+          testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+          allowDuplicateTestNames: allowDuplicateTestNames,
+          allowTestRandomization: allowTestRandomization,
+          jsTrace: jsTrace,
+          runSkipped: runSkipped,
+          dart2jsArgs: dart2jsArgs,
+          precompiledPath: precompiledPath,
+          globalPatterns: globalPatterns,
+          runtimes: runtimes,
+          includeTags: includeTags,
+          excludeTags: excludeTags,
+          tags: tags,
+          onPlatform: onPlatform,
+          ignoreTimeouts: ignoreTimeouts,
+          timeout: timeout,
+          verboseTrace: verboseTrace,
+          chainStackTraces: chainStackTraces,
+          skip: skip,
+          retry: retry,
+          skipReason: skipReason,
+          testOn: testOn,
+          addTags: addTags);
+
+  /// Suite level configuration allowed in the global test config file.
+  ///
+  /// This is per-user configuration and should be limited as such, it should
+  /// not contain options that would change the pass/fail result of any given
+  /// test, or change which tests would run.
+  factory Configuration.globalTest({
+    required bool? verboseTrace,
+    required bool? jsTrace,
+    required Timeout? timeout,
+    required Map<String, Configuration>? presets,
+    required bool? chainStackTraces,
+    required Iterable<String>? foldTraceExcept,
+    required Iterable<String>? foldTraceOnly,
+  }) =>
+      Configuration(
+        foldTraceExcept: foldTraceExcept,
+        foldTraceOnly: foldTraceOnly,
+        jsTrace: jsTrace,
+        timeout: timeout,
+        verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
+        help: null,
+        customHtmlTemplatePath: null,
+        version: null,
+        pauseAfterLoad: null,
+        debug: null,
+        color: null,
+        configurationPath: null,
+        reporter: null,
+        fileReporters: null,
+        coverage: null,
+        pubServePort: null,
+        concurrency: null,
+        shardIndex: null,
+        totalShards: null,
+        testSelections: null,
+        filename: null,
+        chosenPresets: null,
+        presets: presets,
+        overrideRuntimes: null,
+        defineRuntimes: null,
+        noRetry: null,
+        useDataIsolateStrategy: null,
+        testRandomizeOrderingSeed: null,
+        ignoreTimeouts: null,
+        allowDuplicateTestNames: null,
+        allowTestRandomization: null,
+        runSkipped: null,
+        dart2jsArgs: null,
+        precompiledPath: null,
+        globalPatterns: null,
+        runtimes: null,
+        includeTags: null,
+        excludeTags: null,
+        tags: null,
+        onPlatform: null,
+        skip: null,
+        retry: null,
+        skipReason: null,
+        testOn: null,
+        addTags: null,
+      );
+
+  /// Suite level configuration that is not allowed in the global test
+  /// config file.
+  ///
+  /// This configuration may alter the pass/fail result of a test run, and thus
+  /// should only be configured per package and not at the global level (global
+  /// config is user specific).
+  factory Configuration.localTest({
+    required bool? skip,
+    required int? retry,
+    required String? skipReason,
+    required PlatformSelector? testOn,
+    required Iterable<String>? addTags,
+    required bool? allowDuplicateTestNames,
+    required bool? allowTestRandomization,
+  }) =>
+      Configuration(
+        allowDuplicateTestNames: allowDuplicateTestNames,
+        allowTestRandomization: allowTestRandomization,
+        skip: skip,
+        retry: retry,
+        skipReason: skipReason,
+        testOn: testOn,
+        addTags: addTags,
+        help: null,
+        customHtmlTemplatePath: null,
+        version: null,
+        pauseAfterLoad: null,
+        debug: null,
+        color: null,
+        configurationPath: null,
+        reporter: null,
+        fileReporters: null,
+        coverage: null,
+        pubServePort: null,
+        concurrency: null,
+        shardIndex: null,
+        totalShards: null,
+        testSelections: null,
+        foldTraceExcept: null,
+        foldTraceOnly: null,
+        filename: null,
+        chosenPresets: null,
+        presets: null,
+        overrideRuntimes: null,
+        defineRuntimes: null,
+        noRetry: null,
+        useDataIsolateStrategy: null,
+        testRandomizeOrderingSeed: null,
+        jsTrace: null,
+        runSkipped: null,
+        dart2jsArgs: null,
+        precompiledPath: null,
+        globalPatterns: null,
+        runtimes: null,
+        includeTags: null,
+        excludeTags: null,
+        tags: null,
+        onPlatform: null,
+        ignoreTimeouts: null,
+        timeout: null,
+        verboseTrace: null,
+        chainStackTraces: null,
+      );
+
+  /// Runner configuration that is allowed in the global test config file.
+  ///
+  /// This is per-user configuration and should be limited as such, it should
+  /// not contain options that would change the pass/fail result of any given
+  /// test, or change which tests would run.
+  ///
+  /// Note that [customHtmlTemplatePath] violates this rule, and really should
+  /// not be configurable globally.
+  factory Configuration.globalRunner(
+          {required bool? pauseAfterLoad,
+          required String? customHtmlTemplatePath,
+          required bool? runSkipped,
+          required String? reporter,
+          required Map<String, String>? fileReporters,
+          required int? concurrency,
+          required Iterable<RuntimeSelection>? runtimes,
+          required Iterable<String>? chosenPresets,
+          required Map<String, RuntimeSettings>? overrideRuntimes}) =>
+      Configuration(
+        customHtmlTemplatePath: customHtmlTemplatePath,
+        pauseAfterLoad: pauseAfterLoad,
+        runSkipped: runSkipped,
+        reporter: reporter,
+        fileReporters: fileReporters,
+        concurrency: concurrency,
+        runtimes: runtimes,
+        chosenPresets: chosenPresets,
+        overrideRuntimes: overrideRuntimes,
+        help: null,
+        version: null,
+        debug: null,
+        color: null,
+        configurationPath: null,
+        coverage: null,
+        pubServePort: null,
+        shardIndex: null,
+        totalShards: null,
+        testSelections: null,
+        foldTraceExcept: null,
+        foldTraceOnly: null,
+        filename: null,
+        presets: null,
+        defineRuntimes: null,
+        noRetry: null,
+        useDataIsolateStrategy: null,
+        testRandomizeOrderingSeed: null,
+        allowDuplicateTestNames: null,
+        allowTestRandomization: null,
+        jsTrace: null,
+        dart2jsArgs: null,
+        precompiledPath: null,
+        globalPatterns: null,
+        includeTags: null,
+        excludeTags: null,
+        tags: null,
+        onPlatform: null,
+        ignoreTimeouts: null,
+        timeout: null,
+        verboseTrace: null,
+        chainStackTraces: null,
+        skip: null,
+        retry: null,
+        skipReason: null,
+        testOn: null,
+        addTags: null,
+      );
+
+  /// Runner configuration that is not allowed in the global test config file.
+  ///
+  /// This configuration may alter the pass/fail result of a test run, and thus
+  /// should only be configured per package and not at the global level (global
+  /// config is user specific).
+  factory Configuration.localRunner(
+          {required int? pubServePort,
+          required Iterable<Pattern>? globalPatterns,
+          required Map<String, Set<TestSelection>>? testSelections,
+          required Glob? filename,
+          required BooleanSelector? includeTags,
+          required BooleanSelector? excludeTags,
+          required Map<String, CustomRuntime>? defineRuntimes}) =>
+      Configuration(
+          pubServePort: pubServePort,
+          globalPatterns: globalPatterns,
+          testSelections: testSelections,
+          filename: filename,
+          includeTags: includeTags,
+          excludeTags: excludeTags,
+          defineRuntimes: defineRuntimes,
+          help: null,
+          customHtmlTemplatePath: null,
+          version: null,
+          pauseAfterLoad: null,
+          debug: null,
+          color: null,
+          configurationPath: null,
+          reporter: null,
+          fileReporters: null,
+          coverage: null,
+          concurrency: null,
+          shardIndex: null,
+          totalShards: null,
+          foldTraceExcept: null,
+          foldTraceOnly: null,
+          chosenPresets: null,
+          presets: null,
+          overrideRuntimes: null,
+          noRetry: null,
+          useDataIsolateStrategy: null,
+          testRandomizeOrderingSeed: null,
+          allowDuplicateTestNames: null,
+          allowTestRandomization: null,
+          jsTrace: null,
+          runSkipped: null,
+          dart2jsArgs: null,
+          precompiledPath: null,
+          runtimes: null,
+          tags: null,
+          onPlatform: null,
+          ignoreTimeouts: null,
+          timeout: null,
+          verboseTrace: null,
+          chainStackTraces: null,
+          skip: null,
+          retry: null,
+          skipReason: null,
+          testOn: null,
+          addTags: null);
+
+  /// A specialized constructor for configuring only `onPlatform`.
+  factory Configuration.onPlatform(
+          Map<PlatformSelector, SuiteConfiguration> onPlatform) =>
+      Configuration._unsafe(onPlatform: onPlatform);
+
+  factory Configuration.tags(Map<BooleanSelector, SuiteConfiguration> tags) =>
+      Configuration._unsafe(tags: tags);
+
   static Map<String, Configuration>? _withChosenPresets(
       Map<String, Configuration>? map, Set<String>? chosenPresets) {
     if (map == null || chosenPresets == null) return map;
@@ -336,49 +736,52 @@ class Configuration {
 
   /// Creates new Configuration.
   ///
-  /// Unlike [new Configuration], this assumes [presets] is already resolved.
+  /// Unlike [Configuration.new], this assumes [presets] is already resolved.
   Configuration._(
-      {bool? help,
-      String? customHtmlTemplatePath,
-      bool? version,
-      bool? pauseAfterLoad,
-      bool? debug,
-      bool? color,
-      String? configurationPath,
-      String? dart2jsPath,
-      String? reporter,
-      Map<String, String>? fileReporters,
-      this.coverage,
-      int? pubServePort,
-      int? concurrency,
-      this.shardIndex,
-      this.totalShards,
-      Iterable<String>? paths,
-      Iterable<String>? foldTraceExcept,
-      Iterable<String>? foldTraceOnly,
-      Glob? filename,
-      Iterable<String>? chosenPresets,
-      Map<String, Configuration>? presets,
-      Map<String, RuntimeSettings>? overrideRuntimes,
-      Map<String, CustomRuntime>? defineRuntimes,
-      bool? noRetry,
-      bool? useDataIsolateStrategy,
-      SuiteConfiguration? suiteDefaults})
+      {required bool? help,
+      required this.customHtmlTemplatePath,
+      required bool? version,
+      required bool? pauseAfterLoad,
+      required bool? debug,
+      required bool? color,
+      required String? configurationPath,
+      required String? reporter,
+      required Map<String, String>? fileReporters,
+      required this.coverage,
+      required int? pubServePort,
+      required int? concurrency,
+      required this.shardIndex,
+      required this.totalShards,
+      required Map<String, Set<TestSelection>>? testSelections,
+      required Iterable<String>? foldTraceExcept,
+      required Iterable<String>? foldTraceOnly,
+      required Glob? filename,
+      required Iterable<String>? chosenPresets,
+      required Map<String, Configuration>? presets,
+      required Map<String, RuntimeSettings>? overrideRuntimes,
+      required Map<String, CustomRuntime>? defineRuntimes,
+      required bool? noRetry,
+      required bool? useDataIsolateStrategy,
+      required this.testRandomizeOrderingSeed,
+      required BooleanSelector? includeTags,
+      required BooleanSelector? excludeTags,
+      required Iterable<Pattern>? globalPatterns,
+      required SuiteConfiguration? suiteDefaults})
       : _help = help,
-        customHtmlTemplatePath = customHtmlTemplatePath,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
         _debug = debug,
         _color = color,
         _configurationPath = configurationPath,
-        _dart2jsPath = dart2jsPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
         pubServeUrl = pubServePort == null
             ? null
             : Uri.parse('http://localhost:$pubServePort'),
         _concurrency = concurrency,
-        _paths = _list(paths),
+        _testSelections = testSelections == null || testSelections.isEmpty
+            ? null
+            : Map.unmodifiable(testSelections),
         _foldTraceExcept = _set(foldTraceExcept),
         _foldTraceOnly = _set(foldTraceOnly),
         _filename = filename,
@@ -388,10 +791,18 @@ class Configuration {
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
         _useDataIsolateStrategy = useDataIsolateStrategy,
-        suiteDefaults = pauseAfterLoad == true
-            ? suiteDefaults?.change(timeout: Timeout.none) ??
-                SuiteConfiguration(timeout: Timeout.none)
-            : suiteDefaults ?? SuiteConfiguration.empty {
+        includeTags = includeTags ?? BooleanSelector.all,
+        excludeTags = excludeTags ?? BooleanSelector.none,
+        globalPatterns = globalPatterns == null
+            ? const {}
+            : UnmodifiableSetView(globalPatterns.toSet()),
+        suiteDefaults = (() {
+          var config = suiteDefaults ?? SuiteConfiguration.empty;
+          if (pauseAfterLoad == true) {
+            return config.change(ignoreTimeouts: true);
+          }
+          return config;
+        }()) {
     if (_filename != null && _filename!.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
@@ -411,17 +822,37 @@ class Configuration {
   /// [SuiteConfiguration].
   factory Configuration.fromSuiteConfiguration(
           SuiteConfiguration suiteConfig) =>
-      Configuration._(suiteDefaults: suiteConfig);
-
-  /// Returns an unmodifiable copy of [input].
-  ///
-  /// If [input] is `null` or empty, this returns `null`.
-  static List<T>? _list<T>(Iterable<T>? input) {
-    if (input == null) return null;
-    var list = List<T>.unmodifiable(input);
-    if (list.isEmpty) return null;
-    return list;
-  }
+      Configuration._(
+        suiteDefaults: suiteConfig,
+        globalPatterns: null,
+        help: null,
+        customHtmlTemplatePath: null,
+        version: null,
+        pauseAfterLoad: null,
+        debug: null,
+        color: null,
+        configurationPath: null,
+        reporter: null,
+        fileReporters: null,
+        coverage: null,
+        pubServePort: null,
+        concurrency: null,
+        shardIndex: null,
+        totalShards: null,
+        testSelections: null,
+        foldTraceExcept: null,
+        foldTraceOnly: null,
+        filename: null,
+        chosenPresets: null,
+        presets: null,
+        overrideRuntimes: null,
+        defineRuntimes: null,
+        noRetry: null,
+        useDataIsolateStrategy: null,
+        testRandomizeOrderingSeed: null,
+        includeTags: null,
+        excludeTags: null,
+      );
 
   /// Returns a set from [input].
   ///
@@ -497,9 +928,9 @@ class Configuration {
             other.customHtmlTemplatePath ?? customHtmlTemplatePath,
         version: other._version ?? _version,
         pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
+        debug: other._debug ?? _debug,
         color: other._color ?? _color,
         configurationPath: other._configurationPath ?? _configurationPath,
-        dart2jsPath: other._dart2jsPath ?? _dart2jsPath,
         reporter: other._reporter ?? _reporter,
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other.coverage ?? coverage,
@@ -507,7 +938,7 @@ class Configuration {
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
-        paths: other._paths ?? _paths,
+        testSelections: other._testSelections ?? _testSelections,
         foldTraceExcept: foldTraceExcept,
         foldTraceOnly: foldTraceOnly,
         filename: other._filename ?? _filename,
@@ -524,6 +955,11 @@ class Configuration {
         noRetry: other._noRetry ?? _noRetry,
         useDataIsolateStrategy:
             other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
+        testRandomizeOrderingSeed:
+            other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
+        includeTags: includeTags.intersection(other.includeTags),
+        excludeTags: excludeTags.union(other.excludeTags),
+        globalPatterns: globalPatterns.union(other.globalPatterns),
         suiteDefaults: suiteDefaults.merge(other.suiteDefaults));
     result = result._resolvePresets();
 
@@ -542,16 +978,17 @@ class Configuration {
       String? customHtmlTemplatePath,
       bool? version,
       bool? pauseAfterLoad,
+      bool? debug,
       bool? color,
       String? configurationPath,
-      String? dart2jsPath,
       String? reporter,
       Map<String, String>? fileReporters,
+      String? coverage,
       int? pubServePort,
       int? concurrency,
       int? shardIndex,
       int? totalShards,
-      Iterable<String>? paths,
+      Map<String, Set<TestSelection>>? testSelections,
       Iterable<String>? exceptPackages,
       Iterable<String>? onlyPackages,
       Glob? filename,
@@ -561,19 +998,20 @@ class Configuration {
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
       bool? useDataIsolateStrategy,
+      int? testRandomizeOrderingSeed,
+      bool? ignoreTimeouts,
 
       // Suite-level configuration
+      bool? allowDuplicateTestNames,
       bool? jsTrace,
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
       String? precompiledPath,
-      Iterable<Pattern>? patterns,
       Iterable<RuntimeSelection>? runtimes,
       BooleanSelector? includeTags,
       BooleanSelector? excludeTags,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      int? testRandomizeOrderingSeed,
 
       // Test-level configuration
       Timeout? timeout,
@@ -589,16 +1027,17 @@ class Configuration {
             customHtmlTemplatePath ?? this.customHtmlTemplatePath,
         version: version ?? _version,
         pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
+        debug: debug ?? _debug,
         color: color ?? _color,
         configurationPath: configurationPath ?? _configurationPath,
-        dart2jsPath: dart2jsPath ?? _dart2jsPath,
         reporter: reporter ?? _reporter,
         fileReporters: fileReporters ?? this.fileReporters,
+        coverage: coverage ?? this.coverage,
         pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,
-        paths: paths ?? _paths,
+        testSelections: testSelections ?? _testSelections,
         foldTraceExcept: exceptPackages ?? _foldTraceExcept,
         foldTraceOnly: onlyPackages ?? _foldTraceOnly,
         filename: filename ?? _filename,
@@ -609,25 +1048,29 @@ class Configuration {
         noRetry: noRetry ?? _noRetry,
         useDataIsolateStrategy:
             useDataIsolateStrategy ?? _useDataIsolateStrategy,
+        testRandomizeOrderingSeed:
+            testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
+        globalPatterns: globalPatterns,
         suiteDefaults: suiteDefaults.change(
-            jsTrace: jsTrace,
-            runSkipped: runSkipped,
-            dart2jsArgs: dart2jsArgs,
-            precompiledPath: precompiledPath,
-            patterns: patterns,
-            runtimes: runtimes,
-            includeTags: includeTags,
-            excludeTags: excludeTags,
-            tags: tags,
-            onPlatform: onPlatform,
-            testRandomizeOrderingSeed: testRandomizeOrderingSeed,
-            timeout: timeout,
-            verboseTrace: verboseTrace,
-            chainStackTraces: chainStackTraces,
-            skip: skip,
-            skipReason: skipReason,
-            testOn: testOn,
-            addTags: addTags));
+          allowDuplicateTestNames: allowDuplicateTestNames,
+          jsTrace: jsTrace,
+          runSkipped: runSkipped,
+          dart2jsArgs: dart2jsArgs,
+          precompiledPath: precompiledPath,
+          runtimes: runtimes,
+          tags: tags,
+          onPlatform: onPlatform,
+          timeout: timeout,
+          verboseTrace: verboseTrace,
+          chainStackTraces: chainStackTraces,
+          skip: skip,
+          skipReason: skipReason,
+          testOn: testOn,
+          addTags: addTags,
+          ignoreTimeouts: ignoreTimeouts,
+        ));
     return config._resolvePresets();
   }
 

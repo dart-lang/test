@@ -9,10 +9,9 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:package_config/package_config.dart';
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:test_core/src/util/io.dart';
 import 'package:test/test.dart';
+import 'package:test_core/src/util/io.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
@@ -20,6 +19,7 @@ void main() {
   late PackageConfig currentPackageConfig;
 
   setUpAll(() async {
+    await precompileTestExecutable();
     currentPackageConfig =
         await loadPackageConfigUri((await Isolate.packageConfig)!);
   });
@@ -45,7 +45,7 @@ void main() {
 
       var test = await runTest(['--platform', 'chrome', 'vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     }, tags: 'chrome');
 
     test('runs a test suite on a matching operating system', () async {
@@ -63,7 +63,7 @@ void main() {
 
       var test = await runTest(['os_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('only loads matching files when loading as a group', () async {
@@ -95,7 +95,7 @@ void main() {
 
       var test = await runTest(['browser_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('runs a browser group on a browser', () async {
@@ -111,7 +111,7 @@ void main() {
 
       var test = await runTest(['--platform', 'chrome', 'vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     }, tags: 'chrome');
   });
 
@@ -129,7 +129,7 @@ void main() {
 
       var test = await runTest(['browser_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test('runs a browser test on a browser', () async {
@@ -145,7 +145,7 @@ void main() {
 
       var test = await runTest(['--platform', 'chrome', 'vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     }, tags: 'chrome');
   });
 
@@ -165,7 +165,7 @@ void main() {
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test("doesn't runs the test if the group doesn't match", () async {
@@ -174,7 +174,7 @@ void main() {
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
 
     test("doesn't runs the test if the test doesn't match", () async {
@@ -183,7 +183,7 @@ void main() {
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(1);
+      await test.shouldExit(79);
     });
   });
 }
@@ -200,7 +200,7 @@ Future<void> _writeTestFile(String filename,
     bool loadable = true}) {
   var buffer = StringBuffer();
   if (suiteTestOn != null) buffer.writeln("@TestOn('$suiteTestOn')");
-  if (!loadable) buffer.writeln("import 'dart:html';");
+  if (!loadable) buffer.writeln("import 'dart:js_util';");
 
   buffer
     ..writeln("import 'package:test/test.dart';")

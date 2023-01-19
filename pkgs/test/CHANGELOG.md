@@ -1,4 +1,212 @@
-## 1.17.0-dev
+## 1.22.3-dev
+
+## 1.22.2
+
+* Don't run `tearDown` until the test body and outstanding work is complete,
+  even if the test has already failed.
+* Change URL secrets for browser tests to always be alphanumeric characters.
+
+## 1.22.1
+
+* Add documentation for the `--ignore-timeouts` argument.
+* Merge command lines args repeating the same test path to run the suite one
+  time with all the test cases across the different arguments.
+* Fix VM tests which run after some test has changed the working directory.
+  There are still issues with browser tests after changing directory.
+* Deprecate `throwsNullThrownError`, use `throwsA(isA<TypeError>())` instead. The
+  implementation has been changed to ease migrations.
+* Deprecate `throwsCyclicInitializationError` and replace the implementation
+  with `Throws(TypeMatcher<Error>())`. The specific exception no longer exists
+  and there is no guarantee about what type of error will be thrown.
+
+## 1.22.0
+
+* Fix an issue with the github reporter where tests that fail asynchronously
+  after they've completed would show up as succeeded tests.
+* Add the `experimental-chrome-wasm` platform. This is very unstable and will
+  eventually be deleted, to be replaced by a `--compiler` flag. See
+  https://github.com/dart-lang/test/issues/1776 for more information on future
+  plans.
+
+## 1.21.7
+
+* Support `package:matcher` version `0.12.13`.
+
+## 1.21.6
+
+* Require Dart >= 2.18.0
+* Fix the coverage usage example in the README.md
+* Support the latest `package:test_api` and `package:test_core`.
+
+## 1.21.5
+
+* Fix `printOnFailure` output to be associated with the correct test.
+* Migrate all dom interactions to static interop.
+
+## 1.21.4
+
+* Make the labels for test loading more readable in the compact and expanded
+  reporters, use gray instead of black.
+* Print a command to re-run the failed test after each failure in the compact
+  reporter.
+* Fix the package config path used when running pre-compiled vm tests.
+
+## 1.21.3
+
+* Support the latest `package:test_api` and `package:test_core`.
+
+## 1.21.2
+
+* Add `Target` to restrict `TestOn` annotation to library level.
+* Update the github reporter to output the platform in the test names when
+  multiple platforms are used.
+* Fix `spawnHybridUri` support for `package:` uris.
+
+## 1.21.1
+
+* Fix a bug loading JS sources with non-utf8 content while parsing coverage
+  information from chrome.
+
+## 1.21.0
+
+* Allow analyzer version `4.x`.
+* Add a `github` reporter option for use with GitHub Actions.
+* Make the `github` test reporter the default when we detect we're running on
+  GitHub Actions.
+
+## 1.20.2
+
+* Drop `dart2js-path` command line argument.
+* Allow loading tests under a path with the directory named `packages`.
+* Add retry for launching browsers. Reduce timeout back to 30 seconds.
+
+## 1.20.1
+
+* Allow the latest `vm_service` package.
+
+## 1.20.0
+
+* Update `analyzer` constraint to `>=2.0.0 <4.0.0`.
+* Add an `--ignore-timeouts` command line flag, which disables all timeouts
+  for all tests. This can be useful when debugging, so tests don't time out
+  during debug sessions.
+* Create a trusted types policy when available for assigning the script URL for
+  web tests.
+
+## 1.19.5
+
+* Try to get more logging from `chrome` on windows to diagnose intermittent
+  failures.
+
+## 1.19.4
+
+* Wait for paused VM platform isolates before shutdown.
+* `TestFailure` implements `Exception` for compatibility with
+  `only_throw_exceptions`.
+
+## 1.19.3
+
+* Remove duplicate logging of suggestion to enable the `chain-stack-traces`
+  flag, a single log will now appear at the end.
+
+## 1.19.2
+
+* Republish with missing JS file for browser tests.
+
+## 1.19.1
+
+* Fix parsing of file paths into a URI on windows.
+
+## 1.19.0
+
+* Support query parameters `name`, `full-name`, `line`, and `col` on test paths,
+  which will apply the filters to only those test suites.
+  * All specified filters must match for a test to run.
+  * Global filters (ie: `--name`) are also still respected and must match.
+  * The `line` and `col` will match if any frame from the test trace matches
+    (the test trace is the current stack trace where `test` is invoked).
+* Give a better exception when using `markTestSkipped` outside of a test.
+
+## 1.18.2
+
+* Publish with the `host.dart.js` file.
+
+## 1.18.1
+
+* Add defaulting for older test backends that don't pass a configuration for
+  the `allow_duplicate_test_names` parameter to the remote listener.
+
+## 1.18.0
+
+* Add configuration to disallow duplicate test and group names. See the
+  [docs][allow_duplicate_test_names] for more information.
+* Remove dependency on pedantic.
+
+[allow_duplicate_test_names]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#allow_duplicate_test_names
+
+## 1.17.12
+
+* Support the latest `test_core`.
+* Re-use the cached dill file from previous runs on subsequent runs.
+
+## 1.17.11
+
+* Use the latest `package:matcher`.
+  * Change many argument types from `dynamic` to `Object?`.
+  * Fix `stringContainsInOrder` to account for repetitions and empty strings.
+    * **Note**: This may break some existing tests, as the behavior does change.
+
+## 1.17.10
+
+* Report incomplete tests as errors in the JSON reporter when the run is
+  canceled early.
+* Update `analyzer` constraint to `>=1.0.0 <3.0.0`.
+
+## 1.17.9
+
+* Fix a bug where a tag level configuration would cause test suites with that
+  tag to ignore the `--test-randomize-ordering-seed` argument.
+
+## 1.17.8
+
+* Update json reporter docs with updated nullability annotations and
+  descriptions.
+* Add `time` field to the json reporters `allSuites` event type so that all
+  event types can be unified.
+
+## 1.17.7
+
+* Support the latest `test_core`.
+
+## 1.17.6
+
+* Give a better error when `printOnFailure` is called from outside a test
+  zone.
+
+## 1.17.5
+
+* Support the latest vm_service release (`7.0.0`).
+
+## 1.17.4
+
+* Fix race condition between compilation of vm tests and the running of
+  isolates.
+
+## 1.17.3
+
+* Forward experiment args from the runner executable to the compiler with the
+  new vm test loading strategy.
+
+## 1.17.2
+
+* Fix a windows issue with the new loading strategy.
+
+## 1.17.1
+
+* Fix an issue where you couldn't have tests compiled in both sound and
+  unsound null safety modes.
+
+## 1.17.0
 
 * Change the default way VM tests are launched and ran to greatly speed up
   loading performance.
@@ -7,10 +215,13 @@
 * Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.
 * Remove `phantomjs` support completely, it was previously broken.
+* Fix `expectAsync` function type checks.
+* Add libraries `scaffolding.dart`, and `expect.dart` to allow importing a
+  subset of the normal surface area.
 
 ## 1.16.8
 
-* Fix an issue where coverage collection could hang on Chrome. 
+* Fix an issue where coverage collection could hang on Chrome.
 * ~~Disable stack trace chaining by default. It can be re-enabled by explicitly
   passing the `--chain-stack-traces` flag.~~
 
@@ -335,7 +546,7 @@
 
 ## 1.6.3
 
-* Depend on latests `package:test_core`.
+* Depend on latest `package:test_core`.
   * This fixes an issue where non-completed tests were considered passing.
 
 ## 1.6.2
@@ -424,7 +635,7 @@
 ## 1.0.0
 
 * No change from `0.12.42`. We are simply signalling to users that this is a
-  well supported package and is the prefered way to write Dart tests.
+  well supported package and is the preferred way to write Dart tests.
 
 ## 0.12.42
 
