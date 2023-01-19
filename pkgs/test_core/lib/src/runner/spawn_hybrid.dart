@@ -31,7 +31,8 @@ import 'package_version.dart';
 /// contains `pubspec.yaml`, *not* the `test/` directory). If it's a `package:`
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
-StreamChannel<Object?> spawnHybridUri(String url, Object? message, Suite suite) {
+StreamChannel<Object?> spawnHybridUri(
+    String url, Object? message, Suite suite) {
   return StreamChannelCompleter.fromFuture(() async {
     url = await _normalizeUrl(url, suite);
     var port = ReceivePort();

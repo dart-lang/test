@@ -153,7 +153,8 @@ class RemoteListener {
   /// Sends a message over [channel] indicating that the tests failed to load.
   ///
   /// [message] should describe the failure.
-  static void _sendLoadException(StreamChannel<Object?> channel, String message) {
+  static void _sendLoadException(
+      StreamChannel<Object?> channel, String message) {
     channel.sink.add({'type': 'loadException', 'message': message});
   }
 
