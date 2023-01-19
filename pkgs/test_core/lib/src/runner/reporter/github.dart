@@ -154,15 +154,19 @@ class GithubReporter implements Reporter {
     if (_printPlatform) {
       name = '[${test.suite.platform.runtime.name}] $name';
     }
-    _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
-    for (var message in messages) {
-      _sink.writeln(message.text);
+    if (messages.isEmpty && errors.isEmpty) {
+      _sink.writeln('$prefix $name$statusSuffix');
+    } else {
+      _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
+      for (var message in messages) {
+        _sink.writeln(message.text);
+      }
+      for (var error in errors) {
+        _sink.writeln('${error.error}');
+        _sink.writeln(error.stackTrace.toString().trimRight());
+      }
+      _sink.writeln(_GithubMarkup.endGroup);
     }
-    for (var error in errors) {
-      _sink.writeln('${error.error}');
-      _sink.writeln(error.stackTrace.toString().trimRight());
-    }
-    _sink.writeln(_GithubMarkup.endGroup);
   }
 
   /// A callback called when [test] throws [error].
