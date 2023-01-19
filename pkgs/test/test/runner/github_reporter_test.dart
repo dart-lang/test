@@ -27,22 +27,17 @@ void main() {
         test('success 1', () {});
         test('success 2', () {});
         test('success 3', () {});''', '''
-        ::group::✅ success 1
-        ::endgroup::
-        ::group::✅ success 2
-        ::endgroup::
-        ::group::✅ success 3
-        ::endgroup::
+        ✅ success 1
+        ✅ success 2
+        ✅ success 3
         🎉 3 tests passed.''');
   });
 
   test('includes the platform name when multiple platforms are run', () {
     return _expectReportLines('''
         test('success 1', () {});''', [
-      '::group::✅ [VM] success 1',
-      '::endgroup::',
-      '::group::✅ [Chrome] success 1',
-      '::endgroup::',
+      '✅ [VM] success 1',
+      '✅ [Chrome] success 1',
       '🎉 2 tests passed.',
     ], args: [
       '-p',
@@ -97,14 +92,12 @@ void main() {
         oh no
         test.dart 6:33  main.<fn>
         ::endgroup::
-        ::group::✅ success 1
-        ::endgroup::
+        ✅ success 1
         ::group::❌ failure 2 (failed)
         oh no
         test.dart 8:33  main.<fn>
         ::endgroup::
-        ::group::✅ success 2
-        ::endgroup::
+        ✅ success 2
         ::error::2 tests passed, 2 failed.''');
   });
 
@@ -115,9 +108,7 @@ void main() {
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. A little more... okay, that should do it.',
            () {});''',
-      '''
-        ::group::✅ really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
-        ::endgroup::''',
+      '✅ really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.',
       useContains: true,
     );
   });
@@ -142,8 +133,7 @@ void main() {
         third error
         test.dart 12:34  main.<fn>.<fn>
         ::endgroup::
-        ::group::✅ wait
-        ::endgroup::
+        ✅ wait
         ::error::1 test passed, 1 failed.''');
   });
 
@@ -158,8 +148,7 @@ void main() {
 
       test('second test so that the first failure is reported', () {});''',
       '''
-        ::group::✅ fail after completion
-        ::endgroup::
+        ✅ fail after completion
         ::group::❌ fail after completion (failed after test completion)
         foo
         test.dart 8:62  main.<fn>.<fn>
@@ -169,8 +158,7 @@ void main() {
         or the [completes] matcher when testing async code.
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
-        ::group::✅ second test so that the first failure is reported
-        ::endgroup::
+        ✅ second test so that the first failure is reported
         ::error::1 test passed, 1 failed.''',
     );
   });
@@ -216,14 +204,12 @@ void main() {
           waitStarted.complete();
           return testDone.future;
         });''', '''
-        ::group::✅ test
-        ::endgroup::
+        ✅ test
         one
         two
         three
         four
-        ::group::✅ wait
-        ::endgroup::
+        ✅ wait
         🎉 2 tests passed.''');
     });
   });
@@ -234,12 +220,9 @@ void main() {
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);''', '''
-          ::group::❎ skip 1 (skipped)
-          ::endgroup::
-          ::group::❎ skip 2 (skipped)
-          ::endgroup::
-          ::group::❎ skip 3 (skipped)
-          ::endgroup::
+          ❎ skip 1 (skipped)
+          ❎ skip 2 (skipped)
+          ❎ skip 3 (skipped)
           🎉 0 tests passed, 3 skipped.''');
     });
 
@@ -250,12 +233,9 @@ void main() {
             test('test 2', () {});
             test('test 3', () {});
           }, skip: true);''', '''
-          ::group::❎ skip test 1 (skipped)
-          ::endgroup::
-          ::group::❎ skip test 2 (skipped)
-          ::endgroup::
-          ::group::❎ skip test 3 (skipped)
-          ::endgroup::
+          ❎ skip test 1 (skipped)
+          ❎ skip test 2 (skipped)
+          ❎ skip test 3 (skipped)
           🎉 0 tests passed, 3 skipped.''');
     });
 
@@ -265,14 +245,10 @@ void main() {
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''', '''
-          ::group::❎ skip 1 (skipped)
-          ::endgroup::
-          ::group::✅ success 1
-          ::endgroup::
-          ::group::❎ skip 2 (skipped)
-          ::endgroup::
-          ::group::✅ success 2
-          ::endgroup::
+          ❎ skip 1 (skipped)
+          ✅ success 1
+          ❎ skip 2 (skipped)
+          ✅ success 2
           🎉 2 tests passed, 2 skipped.''');
     });
 
@@ -288,18 +264,14 @@ void main() {
           oh no
           test.dart 6:35  main.<fn>
           ::endgroup::
-          ::group::❎ skip 1 (skipped)
-          ::endgroup::
-          ::group::✅ success 1
-          ::endgroup::
+          ❎ skip 1 (skipped)
+          ✅ success 1
           ::group::❌ failure 2 (failed)
           oh no
           test.dart 9:35  main.<fn>
           ::endgroup::
-          ::group::❎ skip 2 (skipped)
-          ::endgroup::
-          ::group::✅ success 2
-          ::endgroup::
+          ❎ skip 2 (skipped)
+          ✅ success 2
           ::error::2 tests passed, 2 failed, 2 skipped.''');
     });
 
@@ -324,8 +296,7 @@ void main() {
             tearDownAll(() {/* nothing to do here */});
             test('test 1', () {});
           });''', '''
-          ::group::✅ one test 1
-          ::endgroup::
+          ✅ one test 1
           🎉 1 test passed.''');
   });
 
@@ -339,8 +310,7 @@ void main() {
           ::group::✅ one (setUpAll)
           one
           ::endgroup::
-          ::group::✅ one test 1
-          ::endgroup::
+          ✅ one test 1
           ::group::✅ one (tearDownAll)
           two
           ::endgroup::
