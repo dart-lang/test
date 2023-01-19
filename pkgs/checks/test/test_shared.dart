@@ -5,33 +5,30 @@
 import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 
-extension TestIterableCheck on Check<Iterable<String>?> {
-  // TODO: remove this once we have a deepEquals or equivalent
-  void toStringEquals(List<String>? other) {
-    final otherToString = other.toString();
-    context.expect(
-      () => prefixFirst('toString equals ', literal(otherToString)),
-      (actual) {
-        final actualToString = actual.toString();
-        return actualToString == otherToString
-            ? null
-            : Rejection(
-                actual: literal(actualToString),
-                which: ['does not have a matching toString'],
-              );
-      },
-    );
+extension FailureCheck on Check<CheckFailure?> {
+  void isARejection({List<String>? which, List<String>? actual}) {
+    isNotNull()
+        .has((f) => f.rejection, 'rejection')
+        ._hasActualWhich(actual: actual, which: which);
   }
 }
 
-extension RejectionCheck on Check<CheckFailure?> {
+extension RejectionCheck on Check<Rejection?> {
   void isARejection({List<String>? which, List<String>? actual}) {
-    final rejection = this.isNotNull().has((f) => f.rejection, 'rejection');
+    isNotNull()._hasActualWhich(actual: actual, which: which);
+  }
+}
+
+extension _RejectionCheck on Check<Rejection> {
+  void _hasActualWhich({List<String>? which, List<String>? actual}) {
     if (actual != null) {
-      rejection
-          .has((p0) => p0.actual.toList(), 'actual')
-          .toStringEquals(actual);
+      has((r) => r.actual.toList(), 'actual').deepEquals(actual);
     }
-    rejection.has((p0) => p0.which?.toList(), 'which').toStringEquals(which);
+    final whichCheck = has((r) => r.which?.toList(), 'which');
+    if (which == null) {
+      whichCheck.isNull();
+    } else {
+      whichCheck.isNotNull().deepEquals(which);
+    }
   }
 }

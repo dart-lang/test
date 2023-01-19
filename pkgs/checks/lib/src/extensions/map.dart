@@ -4,6 +4,7 @@
 
 import 'package:checks/context.dart';
 
+import '../collection_equality.dart';
 import 'core.dart';
 
 extension MapChecks<K, V> on Check<Map<K, V>> {
@@ -98,4 +99,12 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
           actual: literal(actual), which: ['Contains no matching value']);
     });
   }
+
+  /// Expects that the map contains entries that are deeply equal to the entries
+  /// of [expected].
+  ///
+  /// {@macro deep_collection_equals}
+  void deepEquals(Map<Object?, Object?> expected) => context.expect(
+      () => prefixFirst('is deeply equal to ', literal(expected)),
+      (actual) => deepCollectionEquals(actual, expected));
 }

@@ -4,6 +4,7 @@
 
 import 'package:checks/context.dart';
 
+import '../collection_equality.dart';
 import 'core.dart';
 
 extension IterableChecks<T> on Check<Iterable<T>> {
@@ -91,6 +92,14 @@ extension IterableChecks<T> on Check<Iterable<T>> {
       return null;
     });
   }
+
+  /// Expects that the iterable contains elements that are deeply equal to the
+  /// elements of [expected].
+  ///
+  /// {@macro deep_collection_equals}
+  void deepEquals(Iterable<Object?> expected) => context.expect(
+      () => prefixFirst('is deeply equal to ', literal(expected)),
+      (actual) => deepCollectionEquals(actual, expected));
 
   /// Expects that the iterable contains elements that correspond by the
   /// [elementCondition] exactly to each element in [expected].
