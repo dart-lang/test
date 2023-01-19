@@ -1,5 +1,8 @@
 ## 1.22.3-dev
 
+* Avoid empty expandable groups for tests without extra output in Github
+  reporter.
+
 ## 1.22.2
 
 * Don't run `tearDown` until the test body and outstanding work is complete,
