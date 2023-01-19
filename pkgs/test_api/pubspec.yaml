@@ -1,5 +1,5 @@
 name: test_api
-version: 0.4.18
+version: 0.4.19-dev
 description: >-
   The user facing API for structuring Dart tests and checking expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
