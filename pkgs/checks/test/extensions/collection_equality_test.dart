@@ -134,5 +134,33 @@ void main() {
         "  starts with 'a'>",
       ]);
     });
+
+    test('reports recursive lists', () {
+      var l = [];
+      l.add(l);
+      checkThat(deepCollectionEquals(l, l))
+          .isARejection(which: ['exceeds the depth limit of 1000']);
+    });
+
+    test('reports recursive sets', () {
+      var s = <Object>{};
+      s.add(s);
+      checkThat(deepCollectionEquals(s, s))
+          .isARejection(which: ['exceeds the depth limit of 1000']);
+    });
+
+    test('reports maps with recursive keys', () {
+      var m = <Object, Object>{};
+      m[m] = 0;
+      checkThat(deepCollectionEquals(m, m))
+          .isARejection(which: ['exceeds the depth limit of 1000']);
+    });
+
+    test('reports maps with recursive values', () {
+      var m = <Object, Object>{};
+      m[0] = m;
+      checkThat(deepCollectionEquals(m, m))
+          .isARejection(which: ['exceeds the depth limit of 1000']);
+    });
   });
 }

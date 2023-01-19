@@ -17,29 +17,51 @@ import 'package:checks/context.dart';
 /// against actual values.
 /// All other value or key types use `operator ==`.
 ///
-/// Does not use [Set.contains] or [Map.containsKey]. Custom collection behavior
+/// Comparing sets or maps will have a runtime which is polynomial on the the
+/// size of those collections. Does not use [Set.contains] or [Map.containsKey],
+/// there will not be runtime benefits from hashing. Custom collection behavior
 /// is ignored. For example, it is not possible to distinguish between a `Set`
 /// and a `Set.identity`.
+///
+/// Collections may be nested to a maximum depth of 1000. Recursive collections
+/// are not allowed.
 /// {@endtemplate}
 Rejection? deepCollectionEquals(Object actual, Object expected) {
+  try {
+    return _deepCollectionEquals(actual, expected, 0);
+  } on _ExceededDepthError {
+    return Rejection(
+        actual: literal(actual),
+        which: ['exceeds the depth limit of $_maxDepth']);
+  }
+}
+
+const _maxDepth = 1000;
+
+class _ExceededDepthError extends Error {}
+
+Rejection? _deepCollectionEquals(Object actual, Object expected, int depth) {
   assert(actual is Iterable || actual is Map);
   assert(expected is Iterable || expected is Map);
 
-  final queue = Queue.of([_Search(_Path.root(), actual, expected)]);
+  final queue = Queue.of([_Search(_Path.root(), actual, expected, depth)]);
   while (queue.isNotEmpty) {
     final toCheck = queue.removeFirst();
-    final currentExpected = toCheck.expected;
     final currentActual = toCheck.actual;
+    final currentExpected = toCheck.expected;
     final path = toCheck.path;
+    final currentDepth = toCheck.depth;
     Iterable<String>? rejectionWhich;
     if (currentExpected is Set) {
-      rejectionWhich = _findSetDifference(currentActual, currentExpected, path);
+      rejectionWhich = _findSetDifference(
+          currentActual, currentExpected, path, currentDepth);
     } else if (currentExpected is Iterable) {
-      rejectionWhich =
-          _findIterableDifference(currentActual, currentExpected, path, queue);
+      rejectionWhich = _findIterableDifference(
+          currentActual, currentExpected, path, queue, currentDepth);
     } else {
       currentExpected as Map;
-      rejectionWhich = _findMapDifference(currentActual, currentExpected, path);
+      rejectionWhich = _findMapDifference(
+          currentActual, currentExpected, path, currentDepth);
     }
     if (rejectionWhich != null) {
       return Rejection(actual: literal(actual), which: rejectionWhich);
@@ -48,8 +70,8 @@ Rejection? deepCollectionEquals(Object actual, Object expected) {
   return null;
 }
 
-List<String>? _findIterableDifference(
-    Object? actual, Iterable expected, _Path path, Queue<_Search> queue) {
+List<String>? _findIterableDifference(Object? actual,
+    Iterable<Object?> expected, _Path path, Queue<_Search> queue, int depth) {
   if (actual is! Iterable) {
     return ['${path}is not an Iterable'];
   }
@@ -74,7 +96,9 @@ List<String>? _findIterableDifference(
     var actualValue = actualIterator.current;
     var expectedValue = expectedIterator.current;
     if (expectedValue is Iterable || expectedValue is Map) {
-      queue.addLast(_Search(path.append(index), actualValue, expectedValue));
+      if (depth + 1 > _maxDepth) throw _ExceededDepthError();
+      queue.addLast(
+          _Search(path.append(index), actualValue, expectedValue, depth + 1));
     } else if (expectedValue is Condition) {
       final failure = softCheck(actualValue, expectedValue);
       if (failure != null) {
@@ -100,10 +124,12 @@ List<String>? _findIterableDifference(
   return null;
 }
 
-bool _elementMatches(Object? actual, Object? expected) {
+bool _elementMatches(Object? actual, Object? expected, int depth) {
   if (expected == null) return actual == null;
   if (expected is Iterable || expected is Map) {
-    return actual != null && deepCollectionEquals(actual, expected) == null;
+    if (++depth > _maxDepth) throw _ExceededDepthError();
+    return actual != null &&
+        _deepCollectionEquals(actual, expected, depth) == null;
   }
   if (expected is Condition) {
     return softCheck(actual, expected) == null;
@@ -112,7 +138,7 @@ bool _elementMatches(Object? actual, Object? expected) {
 }
 
 Iterable<String>? _findSetDifference(
-    Object? actual, Set<Object?> expected, _Path path) {
+    Object? actual, Set<Object?> expected, _Path path, int depth) {
   if (actual is! Set) {
     return ['${path}is not a Set'];
   }
@@ -123,7 +149,7 @@ Iterable<String>? _findSetDifference(
   for (final expectedElement in indexedExpected) {
     final pairs = [
       for (var j = 0; j < indexedActual.length; j++)
-        if (_elementMatches(indexedActual[j], expectedElement)) j,
+        if (_elementMatches(indexedActual[j], expectedElement, depth)) j,
     ];
     if (pairs.isEmpty) {
       return prefixFirst(
@@ -144,7 +170,8 @@ Iterable<String>? _findSetDifference(
   return null;
 }
 
-Iterable<String>? _findMapDifference(Object? actual, Map expected, _Path path) {
+Iterable<String>? _findMapDifference(
+    Object? actual, Map<Object?, Object?> expected, _Path path, int depth) {
   if (actual is! Map) {
     return ['${path}is not a Map'];
   }
@@ -154,7 +181,7 @@ Iterable<String>? _findMapDifference(Object? actual, Map expected, _Path path) {
   for (final expectedEntry in expectedEntries) {
     final potentialPairs = [
       for (var i = 0; i < actualEntries.length; i++)
-        if (_elementMatches(actualEntries[i].key, expectedEntry.key)) i
+        if (_elementMatches(actualEntries[i].key, expectedEntry.key, depth)) i
     ];
     if (potentialPairs.isEmpty) {
       return prefixFirst(
@@ -162,7 +189,8 @@ Iterable<String>? _findMapDifference(Object? actual, Map expected, _Path path) {
     }
     final matchingPairs = [
       for (var i in potentialPairs)
-        if (_elementMatches(actualEntries[i].value, expectedEntry.value)) i
+        if (_elementMatches(actualEntries[i].value, expectedEntry.value, depth))
+          i
     ];
     if (matchingPairs.isEmpty) {
       return prefixFirst(
@@ -215,7 +243,8 @@ class _Search {
   final _Path path;
   final Object? actual;
   final Object? expected;
-  _Search(this.path, this.actual, this.expected);
+  final int depth;
+  _Search(this.path, this.actual, this.expected, this.depth);
 }
 
 /// Returns true if [adjacency] represents a bipartite graph that has a perfect
