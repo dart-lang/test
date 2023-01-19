@@ -53,7 +53,7 @@ class JSStackTraceMapper extends StackTraceMapper {
 
   /// Returns a [StackTraceMapper] contained in the provided serialized
   /// representation.
-  static StackTraceMapper? deserialize(Map<String, Object?>? serialized) {
+  static StackTraceMapper? deserialize(Map<Object?, Object?>? serialized) {
     if (serialized == null) return null;
     var deserialized = _deserializePackageConfigMap(
         (serialized['packageConfigMap'] as Map).cast<String, String>());
