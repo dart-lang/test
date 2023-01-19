@@ -390,15 +390,15 @@ void main() {
           .file(
               'dart_test.yaml',
               jsonEncode({
-                'paths': ['[invalid]']
+                'paths': [':invalid']
               }))
           .create();
 
       var test = await runTest(['test.dart']);
       expect(test.stderr,
-          containsInOrder(['Invalid path: Invalid character', '^^^^^^^^^']));
+          containsInOrder(['Invalid path: Invalid empty scheme', '^^^^^^^^']));
       await test.shouldExit(exit_codes.data);
-    }, skip: 'Broken by sdk#34988');
+    });
   });
 
   group('filename', () {
