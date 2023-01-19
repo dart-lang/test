@@ -55,8 +55,8 @@ void listen(Function Function() getMain, List<Object?> data) {
         return;
       } else if (main is! Function(StreamChannel<Object?>) &&
           main is! Function(StreamChannel<Object?>, Never)) {
-        if (main is Function(StreamChannel<Object?>) ||
-            main is Function(StreamChannel<Object?>, Never)) {
+        if (main is Function(StreamChannel<Never>) ||
+            main is Function(StreamChannel<Never>, Never)) {
           _sendError(
               channel,
               'The first parameter to the top-level hybridMain() must be a '
