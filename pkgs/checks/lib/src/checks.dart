@@ -74,7 +74,7 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
         ].join('\n'));
       },
       allowAsync: true,
-      allowLateFailure: true,
+      allowUnawaited: true,
     ));
 
 /// Checks whether [value] satisfies all expectations invoked in [condition].
@@ -92,7 +92,7 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
       failure = f;
     },
     allowAsync: false,
-    allowLateFailure: false,
+    allowUnawaited: false,
   ));
   condition.apply(check);
   return failure;
@@ -114,7 +114,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
       failure = f;
     },
     allowAsync: true,
-    allowLateFailure: false,
+    allowUnawaited: false,
   ));
   await condition.applyAsync(check);
   return failure;
@@ -135,7 +135,7 @@ Iterable<String> describe<T>(Condition<T> condition) {
       throw UnimplementedError();
     },
     allowAsync: false,
-    allowLateFailure: true,
+    allowUnawaited: true,
   );
   condition.apply(Check._(context));
   return context.detail(context).expected.skip(1);
@@ -323,19 +323,19 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   final void Function(CheckFailure) _fail;
 
   final bool _allowAsync;
-  final bool _allowLateFailure;
+  final bool _allowUnawaited;
 
   _TestContext._root({
     required _Optional<T> value,
     required void Function(CheckFailure) fail,
     required bool allowAsync,
-    required bool allowLateFailure,
+    required bool allowUnawaited,
     String? label,
   })  : _value = value,
         _label = label ?? '',
         _fail = fail,
         _allowAsync = allowAsync,
-        _allowLateFailure = allowLateFailure,
+        _allowUnawaited = allowUnawaited,
         _parent = null,
         _clauses = [],
         _aliases = [];
@@ -346,7 +346,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _aliases = original._aliases,
         _fail = original._fail,
         _allowAsync = original._allowAsync,
-        _allowLateFailure = original._allowLateFailure,
+        _allowUnawaited = original._allowUnawaited,
         // Never read from an aliased context because they are never present in
         // `_clauses`.
         _label = '';
@@ -355,7 +355,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       : _parent = parent,
         _fail = parent._fail,
         _allowAsync = parent._allowAsync,
-        _allowLateFailure = parent._allowLateFailure,
+        _allowUnawaited = parent._allowUnawaited,
         _clauses = [],
         _aliases = [];
 
@@ -387,7 +387,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   void expectUnawaited(Iterable<String> Function() clause,
       void Function(T actual, void Function(Rejection) reject) predicate) {
-    if (!_allowLateFailure) {
+    if (!_allowUnawaited) {
       throw StateError('Late expectations cannot be used for soft checks');
     }
     _clauses.add(_StringClause(clause));
