@@ -101,6 +101,66 @@ extension IterableChecks<T> on Check<Iterable<T>> {
       () => prefixFirst('is deeply equal to ', literal(expected)),
       (actual) => deepCollectionEquals(actual, expected));
 
+  /// Expects that the iterable contains elements which equal those of
+  /// [expected] in any order.
+  ///
+  /// Should not be used for very large collections, runtime is O(n^2.5) in the
+  /// worst case where the iterables contain many equal elements, and O(n^2) in
+  /// more typical cases.
+  void unorderedEquals(Iterable<T> expected) {
+    context.expect(() => prefixFirst('unordered equals ', literal(expected)),
+        (actual) {
+      final which = unorderedCompare(
+        actual,
+        expected,
+        (actual, expected) => expected == actual,
+        (expected, index, count) => [
+          ...prefixFirst(
+              'has no element equal to the expected element at index '
+              '$index: ',
+              literal(expected)),
+          if (count > 1) 'or ${count - 1} other elements',
+        ],
+        (actual, index, count) => [
+          ...prefixFirst(
+              'has an unexpected element at index $index: ', literal(actual)),
+          if (count > 1) 'and ${count - 1} other unexpected elements',
+        ],
+      );
+      if (which == null) return null;
+      return Rejection(actual: literal(actual), which: which);
+    });
+  }
+
+  /// Expects that the iterable contains elements which match all conditions of
+  /// [expected] in any order.
+  ///
+  /// Should not be used for very large collections, runtime is O(n^2.5) in the
+  /// worst case where conditions match many elements, and O(n^2) in more
+  /// typical cases.
+  void unorderedMatches(Iterable<Condition<T>> expected) {
+    context.expect(() => prefixFirst('unordered matches ', literal(expected)),
+        (actual) {
+      final which = unorderedCompare(
+        actual,
+        expected,
+        (actual, expected) => softCheck(actual, expected) == null,
+        (expected, index, count) => [
+          'has no element matching the condition at index $index:',
+          ...describe(expected),
+          if (count > 1) 'or ${count - 1} other conditions',
+        ],
+        (actual, index, count) => [
+          ...prefixFirst(
+              'has an unmatched element at index $index: ', literal(actual)),
+          if (count > 1) 'and ${count - 1} other unmatched elements',
+        ],
+      );
+      if (which == null) return null;
+      return Rejection(actual: literal(actual), which: which);
+    });
+  }
+
   /// Expects that the iterable contains elements that correspond by the
   /// [elementCondition] exactly to each element in [expected].
   ///
