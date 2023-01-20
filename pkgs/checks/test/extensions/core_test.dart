@@ -51,6 +51,18 @@ void main() {
         which: ['is a value that: ', '    is true'],
       );
     });
+
+    group('anyOf', () {
+      test('succeeds for happy case', () {
+        checkThat(-10).anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]);
+      });
+
+      test('rejects values that do not satisfy any condition', () {
+        checkThat(softCheck<int>(
+                0, it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)])))
+            .isARejection(which: ['did not match any condition']);
+      });
+    });
   });
 
   group('BoolChecks', () {
