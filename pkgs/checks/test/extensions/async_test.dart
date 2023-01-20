@@ -6,20 +6,21 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:checks/checks.dart';
-import 'package:checks/context.dart';
-import 'package:checks/src/checks.dart' show softCheckAsync;
 import 'package:test/scaffolding.dart';
 import 'package:test_api/hooks.dart';
+
+import '../test_shared.dart';
 
 void main() {
   group('FutureChecks', () {
     test('completes', () async {
       (await checkThat(_futureSuccess()).completes()).equals(42);
 
-      await _rejectionWhichCheck<Future>(
-        _futureFail(),
-        it()..completes(),
-        it()..single.equals('Threw <UnimplementedError>'),
+      await checkThat(_futureFail()).isRejectedByAsync(
+        it()..completes().that(it()..equals(1)),
+        hasActualThat: it()
+          ..deepEquals(['A future that completes as an error']),
+        hasWhichThat: it()..single.equals('Threw <UnimplementedError>'),
       );
     });
 
@@ -28,16 +29,17 @@ void main() {
           .has((p0) => p0.message, 'message')
           .isNull();
 
-      await _rejectionWhichCheck<Future>(
-        _futureSuccess(),
+      await checkThat(_futureSuccess()).isRejectedByAsync(
         it()..throws(),
-        it()..single.equals('Did not throw'),
+        hasActualThat: it()..deepEquals(['Completed to <42>']),
+        hasWhichThat: it()..single.equals('Did not throw'),
       );
 
-      await _rejectionWhichCheck<Future>(
-        _futureFail(),
+      await checkThat(_futureFail()).isRejectedByAsync(
         it()..throws<StateError>(),
-        it()..single.equals('Is not an StateError'),
+        hasActualThat: it()
+          ..deepEquals(['Completed to error <UnimplementedError>']),
+        hasWhichThat: it()..single.equals('Is not an StateError'),
       );
     });
 
@@ -92,32 +94,29 @@ fake trace''');
     test('emits', () async {
       (await checkThat(_countingStream(5)).emits()).equals(0);
 
-      await _rejectionWhichCheck<StreamQueue>(
-        _countingStream(0),
+      await checkThat(_countingStream(0)).isRejectedByAsync(
         it()..emits(),
-        it()..single.equals('did not emit any value'),
+        hasActualThat: it()..deepEquals(['an empty stream']),
+        hasWhichThat: it()..single.equals('did not emit any value'),
       );
 
-      await _rejectionWhichCheck<StreamQueue>(
-        _countingStream(0),
+      await checkThat(_countingStream(1, errorAt: 0)).isRejectedByAsync(
         it()..emits(),
-        it()..single.equals('did not emit any value'),
-      );
-
-      await _rejectionWhichCheck<StreamQueue>(
-        _countingStream(1, errorAt: 0),
-        it()..emits(),
-        it()..single.equals('emitted an error instead of a value'),
+        hasActualThat: it()
+          ..deepEquals(
+              ['A stream with error <UnimplementedError: Error at 1>']),
+        hasWhichThat: it()
+          ..single.equals('emitted an error instead of a value'),
       );
     });
 
     test('emitsThrough', () async {
       await checkThat(_countingStream(5)).emitsThrough(it()..equals(4));
 
-      await _rejectionWhichCheck<StreamQueue>(
-        _countingStream(4),
+      await checkThat(_countingStream(4)).isRejectedByAsync(
         it()..emitsThrough(it()..equals(5)),
-        it()
+        hasActualThat: it()..deepEquals(['a stream']),
+        hasWhichThat: it()
           ..single.equals('ended after emitting 4 elements with none matching'),
       );
     });
@@ -125,13 +124,11 @@ fake trace''');
     test('neverEmits', () async {
       await checkThat(_countingStream(5)).neverEmits(it()..equals(5));
 
-      await _rejectionWhichCheck<StreamQueue>(
-        _countingStream(6),
+      await checkThat(_countingStream(6)).isRejectedByAsync(
         it()..neverEmits(it()..equals(5)),
-        it()
-          ..length.equals(2)
-          ..first.equals('emitted <5>')
-          ..last.equals('following 5 other items'),
+        hasActualThat: it()..deepEquals(['a stream']),
+        hasWhichThat: it()
+          ..deepEquals(['emitted <5>', 'following 5 other items']),
       );
     });
   });
@@ -155,16 +152,3 @@ StreamQueue<int> _countingStream(int count, {int? errorAt}) => StreamQueue(
         }),
       ),
     );
-
-Future<void> _rejectionWhichCheck<T>(
-  T value,
-  Condition<T> condition,
-  Condition<Iterable<String>> whichCheck,
-) async {
-  final failure = await softCheckAsync(value, condition);
-  whichCheck.apply(checkThat(failure)
-      .isNotNull()
-      .has((f) => f.rejection, 'rejection')
-      .has((r) => r.which, 'which')
-      .isNotNull());
-}

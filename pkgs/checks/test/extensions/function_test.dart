@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/checks.dart';
-import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
@@ -15,21 +14,17 @@ void main() {
         checkThat(() => throw StateError('oops!')).throws<StateError>();
       });
       test('fails for functions that return normally', () {
-        checkThat(
-          softCheck<void Function()>(() {}, it()..throws<StateError>()),
-        ).isARejection(
-            actual: ['a function that returned <null>'],
-            which: ['did not throw']);
+        checkThat(() {}).isRejectedBy(it()..throws<StateError>(),
+            hasActualThat: it()
+              ..deepEquals(['a function that returned <null>']),
+            hasWhichThat: it()..deepEquals(['did not throw']));
       });
       test('fails for functions that throw the wrong type', () {
-        checkThat(
-          softCheck<void Function()>(
-            () => throw StateError('oops!'),
-            it()..throws<ArgumentError>(),
-          ),
-        ).isARejection(
-          actual: ['a function that threw error <Bad state: oops!>'],
-          which: ['did not throw an ArgumentError'],
+        checkThat(() => throw StateError('oops!')).isRejectedBy(
+          it()..throws<ArgumentError>(),
+          hasActualThat: it()
+            ..deepEquals(['a function that threw error <Bad state: oops!>']),
+          hasWhichThat: it()..deepEquals(['did not throw an ArgumentError']),
         );
       });
     });
@@ -39,13 +34,13 @@ void main() {
         checkThat(() => 1).returnsNormally().equals(1);
       });
       test('fails for functions that throw', () {
-        checkThat(softCheck<int Function()>(() {
+        checkThat(() {
           Error.throwWithStackTrace(
               StateError('oops!'), StackTrace.fromString('fake trace'));
-        }, it()..returnsNormally()))
-            .isARejection(
-                actual: ['a function that throws'],
-                which: ['threw <Bad state: oops!>', 'fake trace']);
+        }).isRejectedBy(it()..returnsNormally(),
+            hasActualThat: it()..deepEquals(['a function that throws']),
+            hasWhichThat: it()
+              ..deepEquals(['threw <Bad state: oops!>', 'fake trace']));
       });
     });
   });

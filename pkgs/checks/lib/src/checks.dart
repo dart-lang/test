@@ -128,6 +128,9 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
 /// Matches the "Expected: " lines in the output of a failure message if a value
 /// did not meet the last expectation in [condition], without the first labeled
 /// line.
+///
+/// Asynchronous expectations are not allowed in [condition], for async
+/// conditions use [describeAsync].
 Iterable<String> describe<T>(Condition<T> condition) {
   final context = _TestContext<T>._root(
     value: _Absent(),
@@ -138,6 +141,30 @@ Iterable<String> describe<T>(Condition<T> condition) {
     allowUnawaited: true,
   );
   condition.apply(Check._(context));
+  return context.detail(context).expected.skip(1);
+}
+
+/// Creates a description of the expectations checked by [condition].
+///
+/// The strings are individual lines of a description.
+/// The description of an expectation may be one or more adjacent lines.
+///
+/// Matches the "Expected: " lines in the output of a failure message if a value
+/// did not meet the last expectation in [condition], without the first labeled
+/// line.
+///
+/// In contrast to [describe], asynchronous expectations are allowed in
+/// [condition].
+Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
+  final context = _TestContext<T>._root(
+    value: _Absent(),
+    fail: (_) {
+      throw UnimplementedError();
+    },
+    allowAsync: true,
+    allowUnawaited: true,
+  );
+  await condition.applyAsync(Check._(context));
   return context.detail(context).expected.skip(1);
 }
 
