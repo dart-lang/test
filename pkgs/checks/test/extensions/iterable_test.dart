@@ -72,6 +72,61 @@ void main() {
     });
   });
 
+  group('unorderedEquals', () {
+    test('success for happy case', () {
+      checkThat(_testIterable).unorderedEquals(_testIterable.toList().reversed);
+    });
+
+    test('reports unmatched elements', () {
+      checkThat(softCheck<Iterable<int>>(_testIterable,
+              it()..unorderedEquals(_testIterable.followedBy([42, 100]))))
+          .isARejection(which: [
+        'has no element equal to the expected element at index 2: <42>',
+        'or 1 other elements'
+      ]);
+    });
+
+    test('reports unexpected elements', () {
+      checkThat(softCheck<Iterable<int>>(_testIterable.followedBy([42, 100]),
+              it()..unorderedEquals(_testIterable)))
+          .isARejection(which: [
+        'has an unexpected element at index 2: <42>',
+        'and 1 other unexpected elements'
+      ]);
+    });
+  });
+
+  group('unorderedMatches', () {
+    test('success for happy case', () {
+      checkThat(_testIterable).unorderedMatches(
+          _testIterable.toList().reversed.map((i) => it()..equals(i)));
+    });
+
+    test('reports unmatched elements', () {
+      checkThat(softCheck<Iterable<int>>(
+              _testIterable,
+              it()
+                ..unorderedMatches(_testIterable
+                    .followedBy([42, 100]).map((i) => it()..equals(i)))))
+          .isARejection(which: [
+        'has no element matching the condition at index 2:',
+        '  equals <42>',
+        'or 1 other conditions'
+      ]);
+    });
+
+    test('reports unexpected elements', () {
+      checkThat(softCheck<Iterable<int>>(
+              _testIterable.followedBy([42, 100]),
+              it()
+                ..unorderedMatches(_testIterable.map((i) => it()..equals(i)))))
+          .isARejection(which: [
+        'has an unmatched element at index 2: <42>',
+        'and 1 other unmatched elements'
+      ]);
+    });
+  });
+
   group('pairwiseComparesTo', () {
     test('succeeds for the happy path', () {
       checkThat(_testIterable).pairwiseComparesTo(

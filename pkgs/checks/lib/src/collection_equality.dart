@@ -142,32 +142,19 @@ Iterable<String>? _findSetDifference(
   if (actual is! Set) {
     return ['${path}is not a Set'];
   }
-  final indexedExpected = expected.toList();
-  final indexedActual = actual.toList();
-  final adjacency = <List<int>>[];
-
-  for (final expectedElement in indexedExpected) {
-    final pairs = [
-      for (var j = 0; j < indexedActual.length; j++)
-        if (_elementMatches(indexedActual[j], expectedElement, depth)) j,
-    ];
-    if (pairs.isEmpty) {
-      return prefixFirst(
-          '${path}has no element to match ', literal(expectedElement));
-    }
-    adjacency.add(pairs);
-  }
-  if (indexedActual.length != indexedExpected.length) {
-    return [
-      '${path}has ${indexedActual.length} element(s),',
-      'expected a set with ${indexedExpected.length} element(s)'
-    ];
-  }
-  if (!_hasPerfectMatching(adjacency)) {
-    return prefixFirst(
-        '${path}cannot be matched with the elements of ', literal(expected));
-  }
-  return null;
+  return unorderedCompare(
+    actual,
+    expected,
+    (actual, expected) => _elementMatches(actual, expected, depth),
+    (expected, _, count) => [
+      ...prefixFirst('${path}has no element to match ', literal(expected)),
+      if (count > 1) 'or ${count - 1} other elements',
+    ],
+    (actual, _, count) => [
+      ...prefixFirst('${path}has an unexpected element ', literal(actual)),
+      if (count > 1) 'and ${count - 1} other unexpected elements',
+    ],
+  );
 }
 
 Iterable<String>? _findMapDifference(
@@ -175,41 +162,33 @@ Iterable<String>? _findMapDifference(
   if (actual is! Map) {
     return ['${path}is not a Map'];
   }
-  final expectedEntries = expected.entries.toList();
-  final actualEntries = actual.entries.toList();
-  final adjacency = <List<int>>[];
-  for (final expectedEntry in expectedEntries) {
-    final potentialPairs = [
-      for (var i = 0; i < actualEntries.length; i++)
-        if (_elementMatches(actualEntries[i].key, expectedEntry.key, depth)) i
-    ];
-    if (potentialPairs.isEmpty) {
-      return prefixFirst(
-          '${path}has no key to match ', literal(expectedEntry.key));
-    }
-    final matchingPairs = [
-      for (var i in potentialPairs)
-        if (_elementMatches(actualEntries[i].value, expectedEntry.value, depth))
-          i
-    ];
-    if (matchingPairs.isEmpty) {
-      return prefixFirst(
-          '${path.append(expectedEntry.key)}has no value to match ',
-          literal(expectedEntry.value));
-    }
-    adjacency.add(matchingPairs);
-  }
-  if (expectedEntries.length != actualEntries.length) {
+  Iterable<String> describeEntry(MapEntry<Object?, Object?> entry) {
+    final key = literal(entry.key);
+    final value = literal(entry.value);
     return [
-      '${path}has ${actualEntries.length} entries,',
-      'expected a Map with ${expectedEntries.length} entries'
+      ...key.take(key.length - 1),
+      '${key.last}: ${value.first}',
+      ...value.skip(1)
     ];
   }
-  if (!_hasPerfectMatching(adjacency)) {
-    return prefixFirst(
-        '${path}cannot be matched with the entries of ', literal(expected));
-  }
-  return null;
+
+  return unorderedCompare(
+    actual.entries,
+    expected.entries,
+    (actual, expected) =>
+        _elementMatches(actual.key, expected.key, depth) &&
+        _elementMatches(actual.value, expected.value, depth),
+    (expectedEntry, _, count) => [
+      ...prefixFirst(
+          '${path}has no entry to match ', describeEntry(expectedEntry)),
+      if (count > 1) 'or ${count - 1} other entries',
+    ],
+    (actualEntry, _, count) => [
+      ...prefixFirst(
+          '${path}has unexpected entry ', describeEntry(actualEntry)),
+      if (count > 1) 'and ${count - 1} other unexpected entries',
+    ],
+  );
 }
 
 class _Path {
@@ -247,29 +226,86 @@ class _Search {
   _Search(this.path, this.actual, this.expected, this.depth);
 }
 
-/// Returns true if [adjacency] represents a bipartite graph that has a perfect
-/// pairing without unpaired elements in either set.
+/// Returns the `which` for a Rejection if there is no pairing between the
+/// elements of [actual] and [expected] using [elementsEqual].
 ///
-/// Vertices are represented as integers - a vertice in `u` is an index in
-/// [adjacency], and a vertice in `v` is a value in list at that index. An edge
-/// from `U[n]` to `V[m]` is represented by the value `m` being present in the
-/// list at index `n`.
-/// Assumes that there are an equal number of values in both sets, equal to the
-/// length of [adjacency].
+/// If there are unmatched expected elements - either actual was too short, or
+/// has mismatched elements - returns a rejection reason from calling
+/// [unmatchedExpected] with an expected value that could not be paired, it's
+/// index, and the count of unmatched elements.
+///
+/// Otherwise, if there are unmatched actual elements - actual was too long -
+/// returns a rejection reason from calling [unmatchedActual] with an actual
+/// value that could not be paired, it's index, and the count of unmatched
+/// elements.
+///
+/// Runtime is at least `O(|actual||expected|)`, and for collections with many
+/// elements which compare as equal the runtime can reach
+/// `O((|actual| + |expected|)^2.5)`.
+Iterable<String>? unorderedCompare<T, E>(
+    Iterable<T> actual,
+    Iterable<E> expected,
+    bool Function(T, E) elementsEqual,
+    Iterable<String> Function(E, int index, int count) unmatchedExpected,
+    Iterable<String> Function(T, int index, int count) unmatchedActual) {
+  final indexedExpected = expected.toList();
+  final indexedActual = actual.toList();
+  final adjacency = <List<int>>[];
+  for (int i = 0; i < indexedExpected.length; i++) {
+    final expectedElement = indexedExpected[i];
+    final pairs = [
+      for (var j = 0; j < indexedActual.length; j++)
+        if (elementsEqual(indexedActual[j], expectedElement)) j
+    ];
+    adjacency.add(pairs);
+  }
+  final unpaired = _findUnpaired(adjacency, indexedActual.length);
+  if (unpaired.first.isNotEmpty) {
+    final firstUnmatched = indexedExpected[unpaired.first.first];
+    return unmatchedExpected(
+        firstUnmatched, unpaired.first.first, unpaired.first.length);
+  }
+  if (unpaired.last.isNotEmpty) {
+    final firstUnmatched = indexedActual[unpaired.last.first];
+    return unmatchedActual(
+        firstUnmatched, unpaired.last.first, unpaired.last.length);
+  }
+  return null;
+}
+
+/// Returns the indices which are unmatched in an optimal pairing in the
+/// bipartite graph represented by [adjacency].
+///
+/// Vertices are represented as integers. The two sets of vertices (`U` and `V`)
+/// in the biparte graph are represented as:
+/// - `U` - the indices of [adjacency].
+/// - `V` - values smaller than [rightVertexCount].
+///
+/// An edge from `U[n]` to `V[m]` is represented by the value `m` being present
+/// in the list at index `n`.
+/// The largest value within any list in [adjacency] must be smaller than
+/// [rightVertexCount].
+///
+/// Returns a List with two values, the unpaired values of `U` and `V` in the
+/// maximum-caridnality matching betweeen them.
+///
+/// If there is a perfect pairing, the returned lists will both be empty.
 ///
 /// Uses the Hopcroft–Karp algorithm based on pseudocode from
 /// https://en.wikipedia.org/wiki/Hopcroft%E2%80%93Karp_algorithm
-bool _hasPerfectMatching(List<List<int>> adjacency) {
-  final length = adjacency.length;
-  // The index [length] represents a "dummy vertex"
-  final distances = List<num>.filled(length + 1, double.infinity);
-  // Initially, everything is paired with the "dummy vertex"
-  final leftPairs = List.filled(length, length);
-  final rightPairs = List.filled(length, length);
+List<List<int>> _findUnpaired(List<List<int>> adjacency, int rightVertexCount) {
+  final leftLength = adjacency.length;
+  final rightLength = rightVertexCount;
+  // The last index represents a "dummy vertex"
+  final distances = List<num>.filled(leftLength + 1, double.infinity);
+  // Initially everything is paired with the "dummy vertex" of the opposite set
+  final leftPairs = List.filled(leftLength, rightLength);
+  final rightPairs = List.filled(rightLength, leftLength);
+
   bool bfs() {
     final queue = Queue<int>();
-    for (int leftIndex = 0; leftIndex < length; leftIndex++) {
-      if (leftPairs[leftIndex] == length) {
+    for (int leftIndex = 0; leftIndex < leftLength; leftIndex++) {
+      if (leftPairs[leftIndex] == rightLength) {
         distances[leftIndex] = 0;
         queue.add(leftIndex);
       } else {
@@ -279,7 +315,7 @@ bool _hasPerfectMatching(List<List<int>> adjacency) {
     distances.last = double.infinity;
     while (queue.isNotEmpty) {
       final current = queue.removeFirst();
-      if (distances[current] < distances[length]) {
+      if (distances[current] < distances[leftLength]) {
         for (final rightIndex in adjacency[current]) {
           if (distances[rightPairs[rightIndex]].isInfinite) {
             distances[rightPairs[rightIndex]] = distances[current] + 1;
@@ -292,7 +328,7 @@ bool _hasPerfectMatching(List<List<int>> adjacency) {
   }
 
   bool dfs(int leftIndex) {
-    if (leftIndex == length) return true;
+    if (leftIndex == leftLength) return true;
     for (final rightIndex in adjacency[leftIndex]) {
       if (distances[rightPairs[rightIndex]] == distances[leftIndex] + 1) {
         if (dfs(rightPairs[rightIndex])) {
@@ -306,15 +342,21 @@ bool _hasPerfectMatching(List<List<int>> adjacency) {
     return false;
   }
 
-  var matching = 0;
   while (bfs()) {
-    for (int leftIndex = 0; leftIndex < length; leftIndex++) {
-      if (leftPairs[leftIndex] == length) {
-        if (dfs(leftIndex)) {
-          matching++;
-        }
+    for (int leftIndex = 0; leftIndex < leftLength; leftIndex++) {
+      if (leftPairs[leftIndex] == rightLength) {
+        dfs(leftIndex);
       }
     }
   }
-  return matching == length;
+  return [
+    [
+      for (int i = 0; i < leftLength; i++)
+        if (leftPairs[i] == rightLength) i
+    ],
+    [
+      for (int i = 0; i < rightLength; i++)
+        if (rightPairs[i] == leftLength) i
+    ]
+  ];
 }

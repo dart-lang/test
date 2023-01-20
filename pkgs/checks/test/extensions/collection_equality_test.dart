@@ -119,7 +119,7 @@ void main() {
       checkThat(deepCollectionEquals(
               {'a': 'b'}, {'a': it()..isA<String>().startsWith('a')}))
           .isARejection(which: [
-        "at ['a'] has no value to match <A value that:",
+        "has no entry to match 'a': <A value that:",
         '  is a String',
         "  starts with 'a'>",
       ]);
@@ -129,9 +129,9 @@ void main() {
       checkThat(deepCollectionEquals(
               {'b': 'a'}, {it()..isA<String>().startsWith('a'): 'a'}))
           .isARejection(which: [
-        'has no key to match <A value that:',
+        'has no entry to match <A value that:',
         '  is a String',
-        "  starts with 'a'>",
+        "  starts with 'a'>: 'a'",
       ]);
     });
 
