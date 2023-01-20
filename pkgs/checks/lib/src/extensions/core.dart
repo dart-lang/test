@@ -53,6 +53,22 @@ extension CoreChecks<T> on Check<T> {
     );
   }
 
+  /// Expects that the value satisfies the expectations invoked in at least one
+  /// condition from [conditions].
+  ///
+  /// Asynchronous expectations are not allowed in [conditions].
+  void anyOf(Iterable<Condition<T>> conditions) {
+    context.expect(
+        () => prefixFirst('matches any condition in ', literal(conditions)),
+        (actual) {
+      for (final condition in conditions) {
+        if (softCheck(actual, condition) == null) return null;
+      }
+      return Rejection(
+          actual: literal(actual), which: ['did not match any condition']);
+    });
+  }
+
   /// Expects that the value is assignable to type [T].
   ///
   /// If the value is a [T], returns a [Check<T>] for further expectations.
