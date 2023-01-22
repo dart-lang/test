@@ -15,7 +15,6 @@ extension CoreChecks<T> on Check<T> {
         return Extracted.value(extract(value));
       } catch (_) {
         return Extracted.rejection(
-            actual: literal(value),
             which: ['threw while trying to read property']);
       }
     });
@@ -46,7 +45,6 @@ extension CoreChecks<T> on Check<T> {
       (actual) {
         if (softCheck(actual, condition) != null) return null;
         return Rejection(
-          actual: literal(actual),
           which: ['is a value that: ', ...indent(describe(condition))],
         );
       },
@@ -64,8 +62,7 @@ extension CoreChecks<T> on Check<T> {
       for (final condition in conditions) {
         if (softCheck(actual, condition) == null) return null;
       }
-      return Rejection(
-          actual: literal(actual), which: ['did not match any condition']);
+      return Rejection(which: ['did not match any condition']);
     });
   }
 
@@ -75,8 +72,7 @@ extension CoreChecks<T> on Check<T> {
   Check<R> isA<R>() {
     return context.nest<R>('is a $R', (actual) {
       if (actual is! R) {
-        return Extracted.rejection(
-            actual: literal(actual), which: ['Is a ${actual.runtimeType}']);
+        return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
       }
       return Extracted.value(actual);
     }, atSameLevel: true);
@@ -86,7 +82,7 @@ extension CoreChecks<T> on Check<T> {
   void equals(T other) {
     context.expect(() => prefixFirst('equals ', literal(other)), (actual) {
       if (actual == other) return null;
-      return Rejection(actual: literal(actual), which: ['are not equal']);
+      return Rejection(which: ['are not equal']);
     });
   }
 
@@ -95,7 +91,7 @@ extension CoreChecks<T> on Check<T> {
     context.expect(() => prefixFirst('is identical to ', literal(other)),
         (actual) {
       if (identical(actual, other)) return null;
-      return Rejection(actual: literal(actual), which: ['is not identical']);
+      return Rejection(which: ['is not identical']);
     });
   }
 }
@@ -106,7 +102,7 @@ extension BoolChecks on Check<bool> {
       () => ['is true'],
       (actual) => actual
           ? null // force coverage
-          : Rejection(actual: literal(actual)),
+          : Rejection(),
     );
   }
 
@@ -115,7 +111,7 @@ extension BoolChecks on Check<bool> {
       () => ['is false'],
       (actual) => !actual
           ? null // force coverage
-          : Rejection(actual: literal(actual)),
+          : Rejection(),
     );
   }
 }
@@ -123,14 +119,14 @@ extension BoolChecks on Check<bool> {
 extension NullabilityChecks<T> on Check<T?> {
   Check<T> isNotNull() {
     return context.nest<T>('is not null', (actual) {
-      if (actual == null) return Extracted.rejection(actual: literal(actual));
+      if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
     }, atSameLevel: true);
   }
 
   void isNull() {
     context.expect(() => const ['is null'], (actual) {
-      if (actual != null) return Rejection(actual: literal(actual));
+      if (actual != null) return Rejection();
       return null;
     });
   }

@@ -16,14 +16,14 @@ extension IterableChecks<T> on Check<Iterable<T>> {
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
-      return Rejection(actual: literal(actual), which: ['is not empty']);
+      return Rejection(which: ['is not empty']);
     });
   }
 
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(actual: literal(actual), which: ['is not empty']);
+      return Rejection(which: ['is not empty']);
     });
   }
 
@@ -36,7 +36,6 @@ extension IterableChecks<T> on Check<Iterable<T>> {
       if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
       if (actual.contains(element)) return null;
       return Rejection(
-          actual: literal(actual),
           which: prefixFirst('does not contain ', literal(element)));
     });
   }
@@ -56,8 +55,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
       for (var e in actual) {
         if (softCheck(e, elementCondition) == null) return null;
       }
-      return Rejection(
-          actual: literal(actual), which: ['Contains no matching element']);
+      return Rejection(which: ['Contains no matching element']);
     });
   }
 
@@ -80,7 +78,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         final failure = softCheck(element, elementCondition);
         if (failure == null) continue;
         final which = failure.rejection.which;
-        return Rejection(actual: literal(actual), which: [
+        return Rejection(which: [
           'has an element at index $i that:',
           ...indent(failure.detail.actual.skip(1)),
           ...indent(prefixFirst('Actual: ', failure.rejection.actual),
@@ -128,7 +126,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         ],
       );
       if (which == null) return null;
-      return Rejection(actual: literal(actual), which: which);
+      return Rejection(which: which);
     });
   }
 
@@ -157,7 +155,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         ],
       );
       if (which == null) return null;
-      return Rejection(actual: literal(actual), which: which);
+      return Rejection(which: which);
     });
   }
 
@@ -182,7 +180,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
       for (var i = 0; i < expected.length; i++) {
         final expectedValue = expected[i];
         if (!iterator.moveNext()) {
-          return Rejection(actual: literal(actual), which: [
+          return Rejection(which: [
             'has too few elements, there is no element to match at index $i'
           ]);
         }
@@ -191,7 +189,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         if (failure == null) continue;
         final innerDescription = describe<T>(elementCondition(expectedValue));
         final which = failure.rejection.which;
-        return Rejection(actual: literal(actual), which: [
+        return Rejection(which: [
           'does not have an element at index $i that:',
           ...innerDescription,
           ...prefixFirst(
@@ -200,7 +198,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
         ]);
       }
       if (!iterator.moveNext()) return null;
-      return Rejection(actual: literal(actual), which: [
+      return Rejection(which: [
         'has too many elements, expected exactly ${expected.length}'
       ]);
     });

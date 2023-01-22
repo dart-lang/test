@@ -251,8 +251,14 @@ abstract class Context<T> {
 class Extracted<T> {
   final Rejection? rejection;
   final T? value;
+
+  /// Creates a rejected extraction to indicate a failure trying to read the
+  /// value.
+  ///
+  /// When a nesting is rejected with an omitted or empty [actual] argument, it
+  /// will be filled in with the [literal] representation of the value.
   Extracted.rejection(
-      {required Iterable<String> actual, Iterable<String>? which})
+      {Iterable<String> actual = const [], Iterable<String>? which})
       : this.rejection = Rejection(actual: actual, which: which),
         this.value = null;
   Extracted.value(T this.value) : this.rejection = null;
@@ -264,6 +270,11 @@ class Extracted<T> {
     if (rejection != null) return Extracted._(rejection);
     return Extracted.value(transform(value as T));
   }
+
+  Extracted<T> _fillActual(Object? actual) => rejection == null ||
+          rejection!.actual.isNotEmpty
+      ? this
+      : Extracted.rejection(actual: literal(actual), which: rejection!.which);
 }
 
 abstract class _Optional<T> {
@@ -363,7 +374,8 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
     _clauses.add(_StringClause(clause));
-    final rejection = _value.apply(predicate);
+    final rejection =
+        _value.apply((actual) => predicate(actual)?._fillActual(actual));
     if (rejection != null) {
       _fail(_failure(rejection));
     }
@@ -378,7 +390,8 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     _clauses.add(_StringClause(clause));
     final outstandingWork = TestHandle.current.markPending();
-    final rejection = await _value.apply(predicate);
+    final rejection = await _value.apply(
+        (actual) async => (await predicate(actual))?._fillActual(actual));
     outstandingWork.complete();
     if (rejection == null) return;
     _fail(_failure(rejection));
@@ -392,14 +405,14 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     _clauses.add(_StringClause(clause));
     _value.apply((actual) {
-      predicate(actual, (r) => _fail(_failure(r)));
+      predicate(actual, (r) => _fail(_failure(r._fillActual(actual))));
     });
   }
 
   @override
   Check<R> nest<R>(String label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false}) {
-    final result = _value.map(extract);
+    final result = _value.map((actual) => extract(actual)._fillActual(actual));
     final rejection = result.rejection;
     if (rejection != null) {
       _clauses.add(_StringClause(() => [label]));
@@ -426,7 +439,8 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
           'Async expectations cannot be used in a synchronous check');
     }
     final outstandingWork = TestHandle.current.markPending();
-    final result = await _value.mapAsync(extract);
+    final result = await _value.mapAsync(
+        (actual) async => (await extract(actual))._fillActual(actual));
     outstandingWork.complete();
     final rejection = result.rejection;
     if (rejection != null) {
@@ -617,6 +631,9 @@ class Rejection {
   /// expectation that a Future completes to a value may describe the actual as
   /// "A Future that completes to an error".
   ///
+  /// When a value is rejected with no [actual] argument, it will be filled in
+  /// with the [literal] representation of the value.
+  ///
   /// Lines should be split to separate elements, and individual strings should
   /// not contain newlines.
   ///
@@ -640,7 +657,11 @@ class Rejection {
   /// the output for the failure message.
   final Iterable<String>? which;
 
-  Rejection({required this.actual, this.which});
+  Rejection _fillActual(Object? value) => actual.isNotEmpty
+      ? this
+      : Rejection(actual: literal(value), which: which);
+
+  Rejection({this.actual = const [], this.which});
 }
 
 class ConditionCheck<T> implements Check<T>, Condition<T> {

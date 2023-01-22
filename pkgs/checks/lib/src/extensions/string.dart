@@ -14,7 +14,6 @@ extension StringChecks on Check<String> {
     context.expect(() => prefixFirst('contains ', literal(pattern)), (actual) {
       if (actual.contains(pattern)) return null;
       return Rejection(
-        actual: literal(actual),
         which: prefixFirst('Does not contain ', literal(pattern)),
       );
     });
@@ -25,14 +24,14 @@ extension StringChecks on Check<String> {
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
-      return Rejection(actual: literal(actual), which: ['is not empty']);
+      return Rejection(which: ['is not empty']);
     });
   }
 
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(actual: literal(actual), which: ['is empty']);
+      return Rejection(which: ['is empty']);
     });
   }
 
@@ -42,7 +41,6 @@ extension StringChecks on Check<String> {
       (actual) {
         if (actual.startsWith(other)) return null;
         return Rejection(
-          actual: literal(actual),
           which: prefixFirst('does not start with ', literal(other)),
         );
       },
@@ -55,7 +53,6 @@ extension StringChecks on Check<String> {
       (actual) {
         if (actual.endsWith(other)) return null;
         return Rejection(
-          actual: literal(actual),
           which: prefixFirst('does not end with ', literal(other)),
         );
       },
@@ -75,7 +72,7 @@ extension StringChecks on Check<String> {
       for (var s in expected) {
         var index = actual.indexOf(s, fromIndex);
         if (index < 0) {
-          return Rejection(actual: literal(actual), which: [
+          return Rejection(which: [
             ...prefixFirst(
                 'does not have a match for the substring ', literal(s)),
             if (fromIndex != 0)
@@ -149,10 +146,9 @@ Rejection? _findDifference(String actual, String expected,
   if (i == minLength) {
     if (escapedExpected.length < escapedActual.length) {
       if (expected.isEmpty) {
-        return Rejection(
-            actual: literal(actual), which: ['is not the empty string']);
+        return Rejection(which: ['is not the empty string']);
       }
-      return Rejection(actual: literal(actual), which: [
+      return Rejection(which: [
         'is too long with unexpected trailing characters:',
         _trailing(escapedActualDisplay, i)
       ]);
@@ -165,14 +161,14 @@ Rejection? _findDifference(String actual, String expected,
           _trailing(escapedExpectedDisplay, 0)
         ]);
       }
-      return Rejection(actual: literal(actual), which: [
+      return Rejection(which: [
         'is too short with missing trailing characters:',
         _trailing(escapedExpectedDisplay, i)
       ]);
     }
   } else {
     final indentation = ' ' * (i > 10 ? 14 : i);
-    return Rejection(actual: literal(actual), which: [
+    return Rejection(which: [
       'differs at offset $i:',
       '${_leading(escapedExpectedDisplay, i)}'
           '${_trailing(escapedExpectedDisplay, i)}',

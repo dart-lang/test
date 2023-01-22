@@ -18,7 +18,6 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
     return context.nest('contains a value for $keyString', (actual) {
       if (!actual.containsKey(key)) {
         return Extracted.rejection(
-            actual: literal(actual),
             which: ['does not contain the key $keyString']);
       }
       return Extracted.value(actual[key] as V);
@@ -28,14 +27,14 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
-      return Rejection(actual: literal(actual), which: ['is not empty']);
+      return Rejection(which: ['is not empty']);
     });
   }
 
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(actual: literal(actual), which: ['is not empty']);
+      return Rejection(which: ['is not empty']);
     });
   }
 
@@ -44,8 +43,7 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
     final keyString = literal(key).join(r'\n');
     context.expect(() => ['contains key $keyString'], (actual) {
       if (actual.containsKey(key)) return null;
-      return Rejection(
-          actual: literal(actual), which: ['does not contain key $keyString']);
+      return Rejection(which: ['does not contain key $keyString']);
     });
   }
 
@@ -64,8 +62,7 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
       for (var k in actual.keys) {
         if (softCheck(k, keyCondition) == null) return null;
       }
-      return Rejection(
-          actual: literal(actual), which: ['Contains no matching key']);
+      return Rejection(which: ['Contains no matching key']);
     });
   }
 
@@ -74,9 +71,7 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
     final valueString = literal(value).join(r'\n');
     context.expect(() => ['contains value $valueString'], (actual) {
       if (actual.containsValue(value)) return null;
-      return Rejection(
-          actual: literal(actual),
-          which: ['does not contain value $valueString']);
+      return Rejection(which: ['does not contain value $valueString']);
     });
   }
 
@@ -95,8 +90,7 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
       for (var v in actual.values) {
         if (softCheck(v, valueCondition) == null) return null;
       }
-      return Rejection(
-          actual: literal(actual), which: ['Contains no matching value']);
+      return Rejection(which: ['Contains no matching value']);
     });
   }
 
