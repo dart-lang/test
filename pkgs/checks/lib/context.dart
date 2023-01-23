@@ -13,6 +13,8 @@ export 'src/checks.dart'
         FailureDetail,
         Rejection,
         describe,
-        softCheck;
+        describeAsync,
+        softCheck,
+        softCheckAsync;
 export 'src/describe.dart'
     show escape, indent, literal, postfixLast, prefixFirst;

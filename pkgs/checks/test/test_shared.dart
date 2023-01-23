@@ -65,3 +65,13 @@ extension RejectionChecks<T> on Check<T> {
           : (it()..isNotNull().that(hasWhichThat)));
   }
 }
+
+extension ConditionChecks<T> on Check<Condition<T>> {
+  Check<Iterable<String>> get description =>
+      has((c) => describe<T>(c), 'has a description');
+  Future<Check<Iterable<String>>> get asyncDescription async =>
+      context.nestAsync(
+          'has a description',
+          (condition) async =>
+              Extracted.value(await describeAsync<T>(condition)));
+}
