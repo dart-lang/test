@@ -30,9 +30,7 @@ Rejection? deepCollectionEquals(Object actual, Object expected) {
   try {
     return _deepCollectionEquals(actual, expected, 0);
   } on _ExceededDepthError {
-    return Rejection(
-        actual: literal(actual),
-        which: ['exceeds the depth limit of $_maxDepth']);
+    return Rejection(which: ['exceeds the depth limit of $_maxDepth']);
   }
 }
 
@@ -64,7 +62,7 @@ Rejection? _deepCollectionEquals(Object actual, Object expected, int depth) {
           currentActual, currentExpected, path, currentDepth);
     }
     if (rejectionWhich != null) {
-      return Rejection(actual: literal(actual), which: rejectionWhich);
+      return Rejection(which: rejectionWhich);
     }
   }
   return null;
