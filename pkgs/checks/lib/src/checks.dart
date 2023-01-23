@@ -466,7 +466,6 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   @override
   FailureDetail detail(_TestContext failingContext) {
-    assert(_clauses.isNotEmpty);
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
     var foundDepth = thisContextFailed ? 0 : -1;
