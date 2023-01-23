@@ -685,66 +685,94 @@ class ConditionCheck<T> implements Check<T>, Condition<T> {
   }
 }
 
-class _ReplayContext<T> implements Context<T>, Condition<T> {
-  final _interactions = <FutureOr<void> Function(Context<T>)>[];
+class _Interaction<T> {
+  final StackTrace stackTrace;
+  FutureOr<void> Function(Context<T>) callback;
+  _Interaction(this.callback, this.stackTrace);
+}
 
+final _rewrittenStackTraces = Expando<bool>();
+
+class _ReplayContext<T> implements Context<T>, Condition<T> {
+  final _interactions = <_Interaction<T>>[];
   @override
   void apply(Check<T> check) {
+    final context = check.context;
+    if (context is _ReplayContext<T>) {
+      context._interactions.addAll(_interactions);
+      return;
+    }
     for (var interaction in _interactions) {
-      interaction(check.context);
+      try {
+        interaction.callback(context);
+      } catch (e) {
+        if (_rewrittenStackTraces[e] != null) rethrow;
+        _rewrittenStackTraces[e] = true;
+        Error.throwWithStackTrace(e, interaction.stackTrace);
+      }
     }
   }
 
   @override
   Future<void> applyAsync(Check<T> check) async {
+    final context = check.context;
+    if (context is _ReplayContext<T>) {
+      context._interactions.addAll(_interactions);
+      return;
+    }
     for (var interaction in _interactions) {
-      await interaction(check.context);
+      try {
+        await interaction.callback(context);
+      } catch (e) {
+        if (_rewrittenStackTraces[e] != null) rethrow;
+        _rewrittenStackTraces[e] = true;
+        Error.throwWithStackTrace(e, interaction.stackTrace);
+      }
     }
   }
 
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
-    _interactions.add((c) {
+    _interactions.add(_Interaction((c) {
       c.expect(clause, predicate);
-    });
+    }, StackTrace.current));
   }
 
   @override
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
-      FutureOr<Rejection?> Function(T) predicate) async {
-    _interactions.add((c) async {
+      FutureOr<Rejection?> Function(T) predicate) {
+    _interactions.add(_Interaction((c) async {
       await c.expectAsync(clause, predicate);
-    });
+    }, StackTrace.current));
+    return Future.value();
   }
 
   @override
   void expectUnawaited(Iterable<String> Function() clause,
       void Function(T, void Function(Rejection)) predicate) {
-    _interactions.add((c) {
+    _interactions.add(_Interaction((c) {
       c.expectUnawaited(clause, predicate);
-    });
+    }, StackTrace.current));
   }
 
   @override
   Check<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
       {bool atSameLevel = false}) {
     final nestedContext = _ReplayContext<R>();
-    _interactions.add((c) {
-      var result = c.nest(label, extract, atSameLevel: atSameLevel);
-      nestedContext.apply(result);
-    });
+    _interactions.add(_Interaction((c) {
+      nestedContext.apply(c.nest(label, extract, atSameLevel: atSameLevel));
+    }, StackTrace.current));
     return Check._(nestedContext);
   }
 
   @override
   Future<Check<R>> nestAsync<R>(
-      String label, FutureOr<Extracted<R>> Function(T) extract) async {
+      String label, FutureOr<Extracted<R>> Function(T) extract) {
     final nestedContext = _ReplayContext<R>();
-    _interactions.add((c) async {
-      var result = await c.nestAsync(label, extract);
-      await nestedContext.applyAsync(result);
-    });
-    return Check._(nestedContext);
+    _interactions.add(_Interaction((c) async {
+      await nestedContext.applyAsync(await c.nestAsync(label, extract));
+    }, StackTrace.current));
+    return Future.value(Check._(nestedContext));
   }
 }
