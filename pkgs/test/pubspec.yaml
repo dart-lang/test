@@ -41,9 +41,3 @@ dev_dependencies:
   lints: '>=1.0.0 <3.0.0'
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
-
-dependency_overrides:
-  test_core:
-    path: ../test_core
-  test_api:
-    path: ../test_api
