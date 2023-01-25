@@ -25,25 +25,25 @@ void main() {
 
   test('isEmpty', () {
     checkThat([]).isEmpty();
-    checkThat(_testIterable).isRejectedBy(it()..isEmpty(),
-        hasWhichThat: it()..deepEquals(['is not empty']));
+    checkThat(_testIterable)
+        .isRejectedBy(it()..isEmpty(), which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
     checkThat(_testIterable).isNotEmpty();
-    checkThat(Iterable<int>.empty()).isRejectedBy(it()..isNotEmpty(),
-        hasWhichThat: it()..deepEquals(['is not empty']));
+    checkThat(Iterable<int>.empty())
+        .isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
   });
 
   test('contains', () {
     checkThat(_testIterable).contains(0);
-    checkThat(_testIterable).isRejectedBy(it()..contains(2),
-        hasWhichThat: it()..deepEquals(['does not contain <2>']));
+    checkThat(_testIterable)
+        .isRejectedBy(it()..contains(2), which: ['does not contain <2>']);
   });
   test('contains', () {
     checkThat(_testIterable).any(it()..equals(1));
     checkThat(_testIterable).isRejectedBy(it()..any(it()..equals(2)),
-        hasWhichThat: it()..deepEquals(['Contains no matching element']));
+        which: ['Contains no matching element']);
   });
   group('every', () {
     test('succeeds for the happy path', () {
@@ -51,13 +51,12 @@ void main() {
     });
 
     test('includes details of first failing element', () async {
-      checkThat(_testIterable).isRejectedBy(it()..every(it()..isLessThan(0)),
-          hasWhichThat: it()
-            ..deepEquals([
-              'has an element at index 0 that:',
-              '  Actual: <0>',
-              '  Which: is not less than <0>',
-            ]));
+      checkThat(_testIterable)
+          .isRejectedBy(it()..every(it()..isLessThan(0)), which: [
+        'has an element at index 0 that:',
+        '  Actual: <0>',
+        '  Which: is not less than <0>',
+      ]);
     });
   });
 
@@ -69,21 +68,18 @@ void main() {
     test('reports unmatched elements', () {
       checkThat(_testIterable).isRejectedBy(
           it()..unorderedEquals(_testIterable.followedBy([42, 100])),
-          hasWhichThat: it()
-            ..deepEquals([
-              'has no element equal to the expected element at index 2: <42>',
-              'or 1 other elements'
-            ]));
+          which: [
+            'has no element equal to the expected element at index 2: <42>',
+            'or 1 other elements'
+          ]);
     });
 
     test('reports unexpected elements', () {
-      checkThat(_testIterable.followedBy([42, 100])).isRejectedBy(
-          it()..unorderedEquals(_testIterable),
-          hasWhichThat: it()
-            ..deepEquals([
-              'has an unexpected element at index 2: <42>',
-              'and 1 other unexpected elements'
-            ]));
+      checkThat(_testIterable.followedBy([42, 100]))
+          .isRejectedBy(it()..unorderedEquals(_testIterable), which: [
+        'has an unexpected element at index 2: <42>',
+        'and 1 other unexpected elements'
+      ]);
     });
   });
 
@@ -98,22 +94,20 @@ void main() {
           it()
             ..unorderedMatches(_testIterable
                 .followedBy([42, 100]).map((i) => it()..equals(i))),
-          hasWhichThat: it()
-            ..deepEquals([
-              'has no element matching the condition at index 2:',
-              '  equals <42>',
-              'or 1 other conditions'
-            ]));
+          which: [
+            'has no element matching the condition at index 2:',
+            '  equals <42>',
+            'or 1 other conditions'
+          ]);
     });
 
     test('reports unexpected elements', () {
       checkThat(_testIterable.followedBy([42, 100])).isRejectedBy(
           it()..unorderedMatches(_testIterable.map((i) => it()..equals(i))),
-          hasWhichThat: it()
-            ..deepEquals([
-              'has an unmatched element at index 2: <42>',
-              'and 1 other unmatched elements'
-            ]));
+          which: [
+            'has an unmatched element at index 2: <42>',
+            'and 1 other unmatched elements'
+          ]);
     });
   });
 
@@ -127,31 +121,28 @@ void main() {
           it()
             ..pairwiseComparesTo([1, 1],
                 (expected) => it()..isLessThan(expected), 'is less than'),
-          hasWhichThat: it()
-            ..deepEquals([
-              'does not have an element at index 1 that:',
-              '  is less than <1>',
-              'Actual element at index 1: <1>',
-              'Which: is not less than <1>'
-            ]));
+          which: [
+            'does not have an element at index 1 that:',
+            '  is less than <1>',
+            'Actual element at index 1: <1>',
+            'Which: is not less than <1>'
+          ]);
     });
     test('fails for too few elements', () {
       checkThat(_testIterable).isRejectedBy(
           it()
             ..pairwiseComparesTo([1, 2, 3],
                 (expected) => it()..isLessThan(expected), 'is less than'),
-          hasWhichThat: it()
-            ..deepEquals([
-              'has too few elements, there is no element to match at index 2'
-            ]));
+          which: [
+            'has too few elements, there is no element to match at index 2'
+          ]);
     });
     test('fails for too many elements', () {
       checkThat(_testIterable).isRejectedBy(
           it()
             ..pairwiseComparesTo(
                 [1], (expected) => it()..isLessThan(expected), 'is less than'),
-          hasWhichThat: it()
-            ..deepEquals(['has too many elements, expected exactly 1']));
+          which: ['has too many elements, expected exactly 1']);
     });
   });
 }

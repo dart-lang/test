@@ -7,12 +7,11 @@ import 'package:checks/context.dart';
 
 extension RejectionChecks<T> on Check<T> {
   void isRejectedBy(Condition<T> condition,
-      {Condition<Iterable<String>>? hasWhichThat,
-      Condition<Iterable<String>>? hasActualThat}) {
+      {Iterable<String>? actual, Iterable<String>? which}) {
     late T actualValue;
     var didRunCallback = false;
-    context.nest<Rejection>('does not meet a condition with a Rejection',
-        (value) {
+    final rejection = context
+        .nest<Rejection>('does not meet a condition with a Rejection', (value) {
       actualValue = value;
       didRunCallback = true;
       final failure = softCheck(value, condition);
@@ -23,26 +22,30 @@ extension RejectionChecks<T> on Check<T> {
         ]);
       }
       return Extracted.value(failure.rejection);
-    })
-      ..has((r) => r.actual, 'actual').that(hasActualThat ??
-          (didRunCallback
-              ? (it()..deepEquals(literal(actualValue)))
-              : (it()
-                ..context
-                    .expect(() => ['uses the default actual'], (_) => null))))
-      ..has((r) => r.which, 'which').that(hasWhichThat == null
-          ? (it()..isNull())
-          : (it()..isNotNull().that(hasWhichThat)));
+    });
+    if (didRunCallback) {
+      rejection
+          .has((r) => r.actual, 'actual')
+          .deepEquals(actual ?? literal(actualValue));
+    } else {
+      rejection
+          .has((r) => r.actual, 'actual')
+          .context
+          .expect(() => ['is left default'], (_) => null);
+    }
+    if (which == null) {
+      rejection.has((r) => r.which, 'which').isNull();
+    } else {
+      rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
+    }
   }
 
   Future<void> isRejectedByAsync(Condition<T> condition,
-      {Condition<Iterable<String>>? hasWhichThat,
-      Condition<Iterable<String>>? hasActualThat}) async {
+      {Iterable<String>? actual, Iterable<String>? which}) async {
     late T actualValue;
     var didRunCallback = false;
-    (await context.nestAsync<Rejection>(() {
-      return 'does not meet an async condition with a Rejection';
-    }(), (value) async {
+    final rejection = (await context.nestAsync<Rejection>(
+        'does not meet an async condition with a Rejection', (value) async {
       actualValue = value;
       didRunCallback = true;
       final failure = await softCheckAsync(value, condition);
@@ -52,16 +55,22 @@ extension RejectionChecks<T> on Check<T> {
           ...await describeAsync(condition)
         ]);
       return Extracted.value(failure.rejection);
-    }))
-      ..has((r) => r.actual, 'actual').that(hasActualThat ??
-          (didRunCallback
-              ? (it()..deepEquals(literal(actualValue)))
-              : (it()
-                ..context
-                    .expect(() => ['uses the default actual'], (_) => null))))
-      ..has((r) => r.which, 'which').that(hasWhichThat == null
-          ? (it()..isNull())
-          : (it()..isNotNull().that(hasWhichThat)));
+    }));
+    if (didRunCallback) {
+      rejection
+          .has((r) => r.actual, 'actual')
+          .deepEquals(actual ?? literal(actualValue));
+    } else {
+      rejection
+          .has((r) => r.actual, 'actual')
+          .context
+          .expect(() => ['is left default'], (_) => null);
+    }
+    if (which == null) {
+      rejection.has((r) => r.which, 'which').isNull();
+    } else {
+      rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
+    }
   }
 }
 

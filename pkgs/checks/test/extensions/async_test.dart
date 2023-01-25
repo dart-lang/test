@@ -21,9 +21,8 @@ void main() {
       test('rejects futures which complete as errors', () async {
         await checkThat(_futureFail()).isRejectedByAsync(
           it()..completes().that(it()..equals(1)),
-          hasActualThat: it()
-            ..deepEquals(['a future that completes as an error']),
-          hasWhichThat: it()..deepEquals(['threw <UnimplementedError>']),
+          actual: ['a future that completes as an error'],
+          which: ['threw <UnimplementedError>'],
         );
       });
       test('can be described', () async {
@@ -51,17 +50,16 @@ void main() {
       test('fails for futures that complete to a value', () async {
         await checkThat(_futureSuccess()).isRejectedByAsync(
           it()..throws(),
-          hasActualThat: it()..deepEquals(['completed to <42>']),
-          hasWhichThat: it()..deepEquals(['did not throw']),
+          actual: ['completed to <42>'],
+          which: ['did not throw'],
         );
       });
       test('failes for futures that complete to an error of the wrong type',
           () async {
         await checkThat(_futureFail()).isRejectedByAsync(
           it()..throws<StateError>(),
-          hasActualThat: it()
-            ..deepEquals(['completed to error <UnimplementedError>']),
-          hasWhichThat: it()..deepEquals(['is not an StateError']),
+          actual: ['completed to error <UnimplementedError>'],
+          which: ['is not an StateError'],
         );
       });
       test('can be described', () async {
@@ -135,19 +133,15 @@ fake trace''');
       test('fails for a stream that closes without emitting', () async {
         await checkThat(_countingStream(0)).isRejectedByAsync(
           it()..emits(),
-          hasActualThat: it()..deepEquals(['a stream']),
-          hasWhichThat: it()
-            ..deepEquals(['closed without emitting enough values']),
+          actual: ['a stream'],
+          which: ['closed without emitting enough values'],
         );
       });
       test('fails for a stream that emits an error', () async {
         await checkThat(_countingStream(1, errorAt: 0)).isRejectedByAsync(
           it()..emits(),
-          hasActualThat: it()
-            ..deepEquals(
-                ['a stream with error <UnimplementedError: Error at 1>']),
-          hasWhichThat: it()
-            ..deepEquals(['emitted an error instead of a value']),
+          actual: ['a stream with error <UnimplementedError: Error at 1>'],
+          which: ['emitted an error instead of a value'],
         );
       });
       test('can be described', () async {
@@ -178,28 +172,23 @@ fake trace''');
           () async {
         await checkThat(_countingStream(0)).isRejectedByAsync(
           it()..emitsError(),
-          hasActualThat: it()..deepEquals(['a stream']),
-          hasWhichThat: it()
-            ..deepEquals(['closed without emitting an expected error']),
+          actual: ['a stream'],
+          which: ['closed without emitting an expected error'],
         );
       });
       test('fails for a stream that emits value', () async {
         await checkThat(_countingStream(1)).isRejectedByAsync(
           it()..emitsError(),
-          hasActualThat: it()..deepEquals(['a stream emitting value <0>']),
-          hasWhichThat: it()..deepEquals(['closed without emitting an error']),
+          actual: ['a stream emitting value <0>'],
+          which: ['closed without emitting an error'],
         );
       });
       test('fails for a stream that emits an error of the incorrect type',
           () async {
         await checkThat(_countingStream(1, errorAt: 0)).isRejectedByAsync(
           it()..emitsError<StateError>(),
-          hasActualThat: it()
-            ..deepEquals(
-                ['a stream with error <UnimplementedError: Error at 1>']),
-          hasWhichThat: it()
-            ..deepEquals(
-                ['emitted an error with an incorrect type, is not StateError']),
+          actual: ['a stream with error <UnimplementedError: Error at 1>'],
+          which: ['emitted an error with an incorrect type, is not StateError'],
         );
       });
       test('can be described', () async {
@@ -236,10 +225,8 @@ fake trace''');
           () async {
         await checkThat(_countingStream(4)).isRejectedByAsync(
           it()..emitsThrough(it()..equals(5)),
-          hasActualThat: it()..deepEquals(['a stream']),
-          hasWhichThat: it()
-            ..single
-                .equals('ended after emitting 4 elements with none matching'),
+          actual: ['a stream'],
+          which: ['ended after emitting 4 elements with none matching'],
         );
       });
       test('can be described', () async {
@@ -275,13 +262,12 @@ fake trace''');
       test('reports which condition failed', () async {
         await checkThat(_countingStream(1)).isRejectedByAsync(
           it()..emitsInOrder([it()..emits(), it()..emits()]),
-          hasActualThat: it()..deepEquals(['a stream']),
-          hasWhichThat: it()
-            ..deepEquals([
-              'satisfied 1 conditions then',
-              'failed to satisfy the condition at index 1',
-              'because it closed without emitting enough values'
-            ]),
+          actual: ['a stream'],
+          which: [
+            'satisfied 1 conditions then',
+            'failed to satisfy the condition at index 1',
+            'because it closed without emitting enough values'
+          ],
         );
       });
       test('nestes the report for deep failures', () async {
@@ -289,16 +275,15 @@ fake trace''');
           it()
             ..emitsInOrder(
                 [it()..emits(), it()..emits().that(it()..equals(2))]),
-          hasActualThat: it()..deepEquals(['a stream']),
-          hasWhichThat: it()
-            ..deepEquals([
-              'satisfied 1 conditions then',
-              'failed to satisfy the condition at index 1',
-              'because it:',
-              '  emits a value that:',
-              '  Actual: <1>',
-              '  Which: are not equal',
-            ]),
+          actual: ['a stream'],
+          which: [
+            'satisfied 1 conditions then',
+            'failed to satisfy the condition at index 1',
+            'because it:',
+            '  emits a value that:',
+            '  Actual: <1>',
+            '  Which: are not equal',
+          ],
         );
       });
       test('gets described with the number of conditions', () async {
@@ -339,9 +324,8 @@ fake trace''');
       test('fails for a stream that emits a matching value', () async {
         await checkThat(_countingStream(6)).isRejectedByAsync(
           it()..neverEmits(it()..equals(5)),
-          hasActualThat: it()..deepEquals(['a stream']),
-          hasWhichThat: it()
-            ..deepEquals(['emitted <5>', 'following 5 other items']),
+          actual: ['a stream'],
+          which: ['emitted <5>', 'following 5 other items'],
         );
       });
       test('can be described', () async {
@@ -437,19 +421,15 @@ fake trace''');
       });
       test('fails for a stream that emits a value', () async {
         await checkThat(_countingStream(1)).isRejectedByAsync(it()..isDone(),
-            hasActualThat: it()..deepEquals(['a stream']),
-            hasWhichThat: it()
-              ..deepEquals(['emitted an unexpected value: <0>']));
+            actual: ['a stream'], which: ['emitted an unexpected value: <0>']);
       });
       test('fails for a stream that emits an error', () async {
         final controller = StreamController<void>();
         controller.addError('sad', StackTrace.fromString('fake trace'));
         await checkThat(StreamQueue(controller.stream)).isRejectedByAsync(
             it()..isDone(),
-            hasActualThat: it()..deepEquals(['a stream']),
-            hasWhichThat: it()
-              ..deepEquals(
-                  ['emitted an unexpected error: \'sad\'', 'fake trace']));
+            actual: ['a stream'],
+            which: ['emitted an unexpected error: \'sad\'', 'fake trace']);
       });
       test('uses a transaction', () async {
         final queue = _countingStream(1);
@@ -477,15 +457,16 @@ fake trace''');
                 it()..emits(),
                 it()..emitsThrough(it()..equals(1)),
               ]),
-            hasActualThat: it()..deepEquals(['a stream']),
-            hasWhichThat: it()
-              ..deepEquals([
-                'failed to satisfy any condition',
-                'failed the condition at index 0 because it closed without '
-                    'emitting enough values',
-                'failed the condition at index 1 because it ended after '
-                    'emitting 0 elements with none matching'
-              ]));
+            actual: [
+              'a stream'
+            ],
+            which: [
+              'failed to satisfy any condition',
+              'failed the condition at index 0 because it closed without '
+                  'emitting enough values',
+              'failed the condition at index 1 because it ended after '
+                  'emitting 0 elements with none matching'
+            ]);
       });
       test('includes nested details for nested failures', () async {
         await checkThat(_countingStream(1)).isRejectedByAsync(
@@ -494,17 +475,18 @@ fake trace''');
                 it()..emits().that(it()..equals(42)),
                 it()..emitsThrough(it()..equals(10)),
               ]),
-            hasActualThat: it()..deepEquals(['a stream']),
-            hasWhichThat: it()
-              ..deepEquals([
-                'failed to satisfy any condition',
-                'failed the condition at index 0 because it:',
-                '  emits a value that:',
-                '  Actual: <0>',
-                '  Which: are not equal',
-                'failed the condition at index 1 because it ended after '
-                    'emitting 1 elements with none matching'
-              ]));
+            actual: [
+              'a stream'
+            ],
+            which: [
+              'failed to satisfy any condition',
+              'failed the condition at index 0 because it:',
+              '  emits a value that:',
+              '  Actual: <0>',
+              '  Which: are not equal',
+              'failed the condition at index 1 because it ended after '
+                  'emitting 1 elements with none matching'
+            ]);
       });
       test('gets described with the number of conditions', () async {
         await checkThat(it<StreamQueue<int>>()

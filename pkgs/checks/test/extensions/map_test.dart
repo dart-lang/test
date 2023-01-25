@@ -32,46 +32,44 @@ void main() {
 
   test('operator []', () async {
     checkThat(_testMap)['a'].equals(1);
-    checkThat(_testMap).isRejectedBy(it()..['z'],
-        hasWhichThat: it()..deepEquals(['does not contain the key \'z\'']));
+    checkThat(_testMap)
+        .isRejectedBy(it()..['z'], which: ['does not contain the key \'z\'']);
   });
   test('isEmpty', () {
     checkThat(<String, int>{}).isEmpty();
-    checkThat(_testMap).isRejectedBy(it()..isEmpty(),
-        hasWhichThat: it()..deepEquals(['is not empty']));
+    checkThat(_testMap).isRejectedBy(it()..isEmpty(), which: ['is not empty']);
   });
   test('isNotEmpty', () {
     checkThat(_testMap).isNotEmpty();
-    checkThat({}).isRejectedBy(it()..isNotEmpty(),
-        hasWhichThat: it()..deepEquals(['is not empty']));
+    checkThat({}).isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
   });
   test('containsKey', () {
     checkThat(_testMap).containsKey('a');
 
     checkThat(_testMap).isRejectedBy(
       it()..containsKey('c'),
-      hasWhichThat: it()..deepEquals(["does not contain key 'c'"]),
+      which: ["does not contain key 'c'"],
     );
   });
   test('containsKeyThat', () {
     checkThat(_testMap).containsKeyThat(it()..equals('a'));
     checkThat(_testMap).isRejectedBy(
       it()..containsKeyThat(it()..equals('c')),
-      hasWhichThat: it()..deepEquals(['Contains no matching key']),
+      which: ['Contains no matching key'],
     );
   });
   test('containsValue', () {
     checkThat(_testMap).containsValue(1);
     checkThat(_testMap).isRejectedBy(
       it()..containsValue(3),
-      hasWhichThat: it()..deepEquals(['does not contain value <3>']),
+      which: ['does not contain value <3>'],
     );
   });
   test('containsValueThat', () {
     checkThat(_testMap).containsValueThat(it()..equals(1));
     checkThat(_testMap).isRejectedBy(
       it()..containsValueThat(it()..equals(3)),
-      hasWhichThat: it()..deepEquals(['Contains no matching value']),
+      which: ['Contains no matching value'],
     );
   });
 }

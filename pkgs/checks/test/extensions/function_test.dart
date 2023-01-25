@@ -15,16 +15,14 @@ void main() {
       });
       test('fails for functions that return normally', () {
         checkThat(() {}).isRejectedBy(it()..throws<StateError>(),
-            hasActualThat: it()
-              ..deepEquals(['a function that returned <null>']),
-            hasWhichThat: it()..deepEquals(['did not throw']));
+            actual: ['a function that returned <null>'],
+            which: ['did not throw']);
       });
       test('fails for functions that throw the wrong type', () {
         checkThat(() => throw StateError('oops!')).isRejectedBy(
           it()..throws<ArgumentError>(),
-          hasActualThat: it()
-            ..deepEquals(['a function that threw error <Bad state: oops!>']),
-          hasWhichThat: it()..deepEquals(['did not throw an ArgumentError']),
+          actual: ['a function that threw error <Bad state: oops!>'],
+          which: ['did not throw an ArgumentError'],
         );
       });
     });
@@ -38,9 +36,8 @@ void main() {
           Error.throwWithStackTrace(
               StateError('oops!'), StackTrace.fromString('fake trace'));
         }).isRejectedBy(it()..returnsNormally(),
-            hasActualThat: it()..deepEquals(['a function that throws']),
-            hasWhichThat: it()
-              ..deepEquals(['threw <Bad state: oops!>', 'fake trace']));
+            actual: ['a function that throws'],
+            which: ['threw <Bad state: oops!>', 'fake trace']);
       });
     });
   });
