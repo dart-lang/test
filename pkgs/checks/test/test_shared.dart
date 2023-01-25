@@ -70,7 +70,7 @@ extension ConditionChecks<T> on Check<Condition<T>> {
       has((c) => describe<T>(c), 'description');
   Future<Check<Iterable<String>>> get asyncDescription async =>
       context.nestAsync(
-          'description',
+          'has description',
           (condition) async =>
               Extracted.value(await describeAsync<T>(condition)));
 }
