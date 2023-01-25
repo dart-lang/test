@@ -18,9 +18,8 @@ void main() {
 
       await checkThat(_futureFail()).isRejectedByAsync(
         it()..completes().that(it()..equals(1)),
-        hasActualThat: it()
-          ..deepEquals(['A future that completes as an error']),
-        hasWhichThat: it()..single.equals('Threw <UnimplementedError>'),
+        actual: ['A future that completes as an error'],
+        which: ['Threw <UnimplementedError>'],
       );
     });
 
@@ -31,15 +30,14 @@ void main() {
 
       await checkThat(_futureSuccess()).isRejectedByAsync(
         it()..throws(),
-        hasActualThat: it()..deepEquals(['Completed to <42>']),
-        hasWhichThat: it()..single.equals('Did not throw'),
+        actual: ['Completed to <42>'],
+        which: ['Did not throw'],
       );
 
       await checkThat(_futureFail()).isRejectedByAsync(
         it()..throws<StateError>(),
-        hasActualThat: it()
-          ..deepEquals(['Completed to error <UnimplementedError>']),
-        hasWhichThat: it()..single.equals('Is not an StateError'),
+        actual: ['Completed to error <UnimplementedError>'],
+        which: ['Is not an StateError'],
       );
     });
 
@@ -96,17 +94,14 @@ fake trace''');
 
       await checkThat(_countingStream(0)).isRejectedByAsync(
         it()..emits(),
-        hasActualThat: it()..deepEquals(['an empty stream']),
-        hasWhichThat: it()..single.equals('did not emit any value'),
+        actual: ['an empty stream'],
+        which: ['did not emit any value'],
       );
 
       await checkThat(_countingStream(1, errorAt: 0)).isRejectedByAsync(
         it()..emits(),
-        hasActualThat: it()
-          ..deepEquals(
-              ['A stream with error <UnimplementedError: Error at 1>']),
-        hasWhichThat: it()
-          ..single.equals('emitted an error instead of a value'),
+        actual: ['A stream with error <UnimplementedError: Error at 1>'],
+        which: ['emitted an error instead of a value'],
       );
     });
 
@@ -115,9 +110,8 @@ fake trace''');
 
       await checkThat(_countingStream(4)).isRejectedByAsync(
         it()..emitsThrough(it()..equals(5)),
-        hasActualThat: it()..deepEquals(['a stream']),
-        hasWhichThat: it()
-          ..single.equals('ended after emitting 4 elements with none matching'),
+        actual: ['a stream'],
+        which: ['ended after emitting 4 elements with none matching'],
       );
     });
 
@@ -126,9 +120,8 @@ fake trace''');
 
       await checkThat(_countingStream(6)).isRejectedByAsync(
         it()..neverEmits(it()..equals(5)),
-        hasActualThat: it()..deepEquals(['a stream']),
-        hasWhichThat: it()
-          ..deepEquals(['emitted <5>', 'following 5 other items']),
+        actual: ['a stream'],
+        which: ['emitted <5>', 'following 5 other items'],
       );
     });
   });

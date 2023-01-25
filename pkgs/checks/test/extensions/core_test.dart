@@ -12,8 +12,7 @@ void main() {
     test('isA', () {
       checkThat(1).isA<int>();
 
-      checkThat(1).isRejectedBy(it()..isA<String>(),
-          hasWhichThat: it()..deepEquals(['Is a int']));
+      checkThat(1).isRejectedBy(it()..isA<String>(), which: ['Is a int']);
     });
   });
   group('HasField', () {
@@ -21,9 +20,8 @@ void main() {
       checkThat(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
       checkThat(2).isRejectedBy(
-        it()..has((v) => throw UnimplementedError(), 'isOdd'),
-        hasWhichThat: it()..deepEquals(['threw while trying to read property']),
-      );
+          it()..has((v) => throw UnimplementedError(), 'isOdd'),
+          which: ['threw while trying to read property']);
     });
 
     test('that', () {
@@ -33,10 +31,10 @@ void main() {
     test('not', () {
       checkThat(false).not(it()..isTrue());
 
-      checkThat(true).isRejectedBy(
-        it()..not(it()..isTrue()),
-        hasWhichThat: it()..deepEquals(['is a value that: ', '    is true']),
-      );
+      checkThat(true).isRejectedBy(it()..not(it()..isTrue()), which: [
+        'is a value that: ',
+        '    is true',
+      ]);
     });
 
     group('anyOf', () {
@@ -47,7 +45,7 @@ void main() {
       test('rejects values that do not satisfy any condition', () {
         checkThat(0).isRejectedBy(
             it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
-            hasWhichThat: it()..deepEquals(['did not match any condition']));
+            which: ['did not match any condition']);
       });
     });
   });
@@ -70,14 +68,13 @@ void main() {
     test('equals', () {
       checkThat(1).equals(1);
 
-      checkThat(1).isRejectedBy(it()..equals(2),
-          hasWhichThat: it()..deepEquals(['are not equal']));
+      checkThat(1).isRejectedBy(it()..equals(2), which: ['are not equal']);
     });
     test('identical', () {
       checkThat(1).identicalTo(1);
 
-      checkThat(1).isRejectedBy(it()..identicalTo(2),
-          hasWhichThat: it()..deepEquals(['is not identical']));
+      checkThat(1)
+          .isRejectedBy(it()..identicalTo(2), which: ['is not identical']);
     });
   });
   group('NullabilityChecks', () {
