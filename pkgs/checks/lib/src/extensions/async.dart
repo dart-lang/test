@@ -110,14 +110,10 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
               actual: ['a stream'],
               which: ['closed without emitting enough values']);
         }
-        final transaction = actual.startTransaction();
-        final copy = transaction.newQueue();
         try {
-          final value = await copy.next;
-          transaction.commit(copy);
-          return Extracted.value(value);
+          await actual.peek;
+          return Extracted.value(await actual.next);
         } catch (e) {
-          transaction.reject();
           return Extracted.rejection(
               actual: prefixFirst('a stream with error ', literal(e)),
               which: ['emitted an error instead of a value']);
@@ -143,19 +139,15 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
               actual: ['a stream'],
               which: ['closed without emitting an expected error']);
         }
-        final transaction = actual.startTransaction();
-        final copy = transaction.newQueue();
         try {
-          final value = await copy.next;
-          transaction.reject();
+          final value = await actual.peek;
           return Extracted.rejection(
               actual: prefixFirst('a stream emitting value ', literal(value)),
               which: ['closed without emitting an error']);
         } on E catch (e) {
-          transaction.commit(copy);
+          await actual.next.then<void>((_) {}, onError: (_) {});
           return Extracted.value(e);
         } catch (e) {
-          transaction.reject();
           return Extracted.rejection(
               actual: prefixFirst('a stream with error ', literal(e)),
               which: ['emitted an error with an incorrect type, is not $E']);
