@@ -131,6 +131,12 @@ fake trace''');
       await checkThat(_futureSuccess()).completes().that(it()..equals(42));
     });
   });
+
+  group('StreamQueueWrap', () {
+    test('can wrap streams in a queue', () async {
+      await checkThat(Stream.value(1)).withQueue.emits();
+    });
+  });
 }
 
 Future<int> _futureSuccess() => Future.microtask(() => 42);
