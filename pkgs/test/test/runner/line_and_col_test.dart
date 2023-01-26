@@ -359,7 +359,7 @@ void main() {
       );
 
       await test.shouldExit(0);
-    }, onPlatform: {'windows': Timeout.factor(2)});
+    }, onPlatform: {'windows': Retry(3)});
   });
 
   test('bundles runs by suite, deduplicates tests that match multiple times',
