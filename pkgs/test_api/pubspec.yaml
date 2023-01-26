@@ -31,9 +31,3 @@ dev_dependencies:
   lints: '>=1.0.0 <3.0.0'
   test: any
   test_core: any
-
-dependency_overrides:
-  test:
-    path: ../test
-  test_core:
-    path: ../test_core

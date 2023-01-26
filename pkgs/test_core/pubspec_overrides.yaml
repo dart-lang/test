@@ -1,0 +1,3 @@
+dependency_overrides:
+  test_api:
+    path: ../test_api
