@@ -500,18 +500,23 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     var foundDepth = thisContextFailed ? 0 : -1;
     var foundOverlap = thisContextFailed ? 0 : -1;
     var successfulOverlap = 0;
-    final expected = ['$_label that:'];
-    for (var clause in _clauses) {
-      final details = clause.detail(failingContext);
-      expected.addAll(indent(details.expected));
-      if (details.depth >= 0) {
-        assert(foundDepth == -1);
-        assert(foundOverlap == -1);
-        foundDepth = details.depth + 1;
-        foundOverlap = details._actualOverlap + successfulOverlap + 1;
-      } else {
-        if (foundDepth == -1) {
-          successfulOverlap += details.expected.length;
+    final expected = <String>[];
+    if (_clauses.isEmpty) {
+      expected.add(_label);
+    } else {
+      expected.add('$_label that:');
+      for (var clause in _clauses) {
+        final details = clause.detail(failingContext);
+        expected.addAll(indent(details.expected));
+        if (details.depth >= 0) {
+          assert(foundDepth == -1);
+          assert(foundOverlap == -1);
+          foundDepth = details.depth + 1;
+          foundOverlap = details._actualOverlap + successfulOverlap + 1;
+        } else {
+          if (foundDepth == -1) {
+            successfulOverlap += details.expected.length;
+          }
         }
       }
     }

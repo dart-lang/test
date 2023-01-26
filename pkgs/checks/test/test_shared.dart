@@ -4,7 +4,6 @@
 
 import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
-import 'package:checks/src/checks.dart' show softCheckAsync, describeAsync;
 
 extension RejectionChecks<T> on Check<T> {
   void isRejectedBy(Condition<T> condition,
@@ -73,4 +72,14 @@ extension RejectionChecks<T> on Check<T> {
       rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
     }
   }
+}
+
+extension ConditionChecks<T> on Check<Condition<T>> {
+  Check<Iterable<String>> get description =>
+      has((c) => describe<T>(c), 'description');
+  Future<Check<Iterable<String>>> get asyncDescription async =>
+      context.nestAsync(
+          'has description',
+          (condition) async =>
+              Extracted.value(await describeAsync<T>(condition)));
 }
