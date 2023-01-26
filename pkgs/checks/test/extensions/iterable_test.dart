@@ -40,10 +40,49 @@ void main() {
     checkThat(_testIterable)
         .isRejectedBy(it()..contains(2), which: ['does not contain <2>']);
   });
-  test('contains', () {
+  test('any', () {
     checkThat(_testIterable).any(it()..equals(1));
     checkThat(_testIterable).isRejectedBy(it()..any(it()..equals(2)),
         which: ['Contains no matching element']);
+  });
+
+  group('containsInOrder', () {
+    test('succeeds for happy case', () {
+      checkThat([0, 1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
+    });
+    test('can use Condition<dynamic>', () {
+      checkThat([0, 1]).containsInOrder([it()..isA<int>().isGreaterThan(0)]);
+    });
+    test('can use Condition<T>', () {
+      checkThat([0, 1]).containsInOrder([it<int>()..isGreaterThan(0)]);
+    });
+    test('fails for not found elements by equality', () async {
+      checkThat([0]).isRejectedBy(it()..containsInOrder([1]), which: [
+        'did not have an element matching the expectation at index 0 <1>'
+      ]);
+    });
+    test('fails for not found elements by condition', () async {
+      checkThat([0]).isRejectedBy(
+          it()..containsInOrder([it()..isA<int>().isGreaterThan(0)]),
+          which: [
+            'did not have an element matching the expectation at index 0 '
+                '<A value that:',
+            '  is a int',
+            '  is greater than <0>>'
+          ]);
+    });
+    test('can be described', () {
+      checkThat(it<Iterable>()..containsInOrder([1, 2, 3]))
+          .description
+          .deepEquals(['  contains, in order: [1, 2, 3]']);
+      checkThat(it<Iterable>()..containsInOrder([1, it()..equals(2)]))
+          .description
+          .deepEquals([
+        '  contains, in order: [1,',
+        '  A value that:',
+        '    equals <2>]'
+      ]);
+    });
   });
   group('every', () {
     test('succeeds for the happy path', () {

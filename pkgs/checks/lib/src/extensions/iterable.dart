@@ -40,6 +40,52 @@ extension IterableChecks<T> on Check<Iterable<T>> {
     });
   }
 
+  /// Expects that the iterable contains a value matching each expected value
+  /// from [elelements] in the given order, with any extra elements between
+  /// them.
+  ///
+  /// For example, the following will succeed:
+  ///
+  /// ```dart
+  /// checkThat([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
+  /// ```
+  ///
+  /// Values in [elements] may be a `T`, a `Condition<T>`, or a
+  /// `Condition<dynamic>`. If an expectation is a [Condition] it will be
+  /// checked against the actual values, and any other expectations, including
+  /// those that are not a `T` or a `Condition`, will be compared with the
+  /// equality operator.
+  ///
+  /// ```dart
+  /// checkThat([1, 0, 2, 0, 3])
+  ///   .containsInOrder([1, it<int>()..isGreaterThan(1), 3]);
+  /// ```
+  void containsInOrder(Iterable<Object?> elements) {
+    context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
+        (actual) {
+      final expected = elements.toList();
+      if (expected.isEmpty) {
+        throw ArgumentError('expected may not be empty');
+      }
+      var expectedIndex = 0;
+      for (final element in actual) {
+        final currentExpected = expected[expectedIndex];
+        final matches = currentExpected is Condition<T>
+            ? softCheck(element, currentExpected) == null
+            : currentExpected is Condition<dynamic>
+                ? softCheck(element, currentExpected) == null
+                : currentExpected == element;
+        if (matches && ++expectedIndex >= expected.length) return null;
+      }
+      return Rejection(which: [
+        ...prefixFirst(
+            'did not have an element matching the expectation at index '
+            '$expectedIndex ',
+            literal(expected[expectedIndex])),
+      ]);
+    });
+  }
+
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
   void any(Condition<T> elementCondition) {
