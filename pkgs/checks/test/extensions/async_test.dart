@@ -460,10 +460,10 @@ fake trace''');
             ],
             which: [
               'failed to satisfy any condition',
-              'failed the condition at index 0 because it closed without '
-                  'emitting enough values',
-              'failed the condition at index 1 because it ended after '
-                  'emitting 0 elements with none matching'
+              'failed the condition at index 0 because it:',
+              '  closed without emitting enough values',
+              'failed the condition at index 1 because it:',
+              '  ended after emitting 0 elements with none matching',
             ]);
       });
       test('includes nested details for nested failures', () async {
@@ -482,8 +482,8 @@ fake trace''');
               '  emits a value that:',
               '  Actual: <0>',
               '  Which: are not equal',
-              'failed the condition at index 1 because it ended after '
-                  'emitting 1 elements with none matching'
+              'failed the condition at index 1 because it:',
+              '  ended after emitting 1 elements with none matching',
             ]);
       });
       test('gets described with the number of conditions', () async {

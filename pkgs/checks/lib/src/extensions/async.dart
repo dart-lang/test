@@ -299,7 +299,12 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
           ];
         } else {
           return [
-            if (which != null) ...prefixFirst('$failed because it ', which),
+            if (which == null)
+              failed
+            else ...[
+              '$failed because it:',
+              ...indent(which),
+            ],
           ];
         }
       }
