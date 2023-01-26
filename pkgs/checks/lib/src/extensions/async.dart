@@ -26,7 +26,7 @@ extension FutureChecks<T> on Check<Future<T>> {
         }
       });
 
-  /// Expectst that the `Future` never completes as a value or an error.
+  /// Expects that the `Future` never completes as a value or an error.
   ///
   /// Immediately returns and does not cause the test to remain running if it
   /// ends.
@@ -372,7 +372,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
     });
   }
 
-  /// Optionally consumes events that matche [condition] from the stream.
+  /// Optionally consumes events that match [condition] from the stream.
   ///
   /// This expectation never fails.
   ///
