@@ -4,6 +4,7 @@
 
 import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
+import 'package:checks/src/checks.dart' show softCheckAsync, describeAsync;
 
 extension RejectionChecks<T> on Check<T> {
   void isRejectedBy(Condition<T> condition,

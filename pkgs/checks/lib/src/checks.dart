@@ -249,11 +249,13 @@ abstract class Context<T> {
   /// more spaces.
   ///
   /// If [atSameLevel] is true then [R] should be a subtype of [T], and a
-  /// returned [Extracted.value] should be the same instance as passed value.
-  /// This may be useful to refine the type for further checks. In this case the
-  /// label is used like a single line "clause" passed to [expect], and
-  /// expectations applied to the return [Check] will behave as if they were
-  /// applied to the Check for this context.
+  /// returned [Extracted.value] should be the same instance as the passed
+  /// value, or an object which is is equivalent but has a type which is more
+  /// convenient to test. In this case expectations applied to the return
+  /// [Check] will behave as if they were applied to the Check for this
+  /// context. The [label] will be used as if it were a single line "clause"
+  /// passed to [expect]. If the label is empty, the clause will be omitted. The
+  /// label should only be left empty if the value extraction cannot fail.
   Check<R> nest<R>(String label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false});
 
@@ -450,7 +452,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (atSameLevel) {
       context = _TestContext._alias(this, value);
       _aliases.add(context);
-      _clauses.add(_StringClause(() => [label]));
+      if (label.isNotEmpty) _clauses.add(_StringClause(() => [label]));
     } else {
       context = _TestContext._child(value, label, this);
       _clauses.add(context);

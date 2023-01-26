@@ -1,0 +1,5 @@
+dependency_overrides:
+  test_core:
+    path: ../test_core
+  test_api:
+    path: ../test_api

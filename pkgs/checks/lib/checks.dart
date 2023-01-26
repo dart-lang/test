@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 export 'src/checks.dart' show checkThat, Check, Skip, it;
-export 'src/extensions/async.dart' show ChainAsync, FutureChecks, StreamChecks;
+export 'src/extensions/async.dart'
+    show ChainAsync, FutureChecks, StreamChecks, StreamQueueWrap;
 export 'src/extensions/core.dart'
     show BoolChecks, CoreChecks, NullabilityChecks;
 export 'src/extensions/function.dart' show ThrowsCheck;

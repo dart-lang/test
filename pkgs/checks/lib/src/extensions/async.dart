@@ -440,3 +440,15 @@ extension ChainAsync<T> on Future<Check<T>> {
     await condition.applyAsync(await this);
   }
 }
+
+extension StreamQueueWrap<T> on Check<Stream<T>> {
+  /// Wrap the stream in a [StreamQueue] to allow using checks from
+  /// [StreamChecks].
+  ///
+  /// Stream expectations operate on a queue, instead of directly on the stream,
+  /// so that they can support conditional expectations and check multiple
+  /// possibilities from the same point in the stream.
+  Check<StreamQueue<T>> get withQueue =>
+      context.nest('', (actual) => Extracted.value(StreamQueue(actual)),
+          atSameLevel: true);
+}

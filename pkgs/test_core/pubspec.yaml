@@ -34,7 +34,3 @@ dependencies:
 
 dev_dependencies:
   lints: '>=1.0.0 <3.0.0'
-
-dependency_overrides:
-  test_api:
-    path: ../test_api
