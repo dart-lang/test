@@ -253,7 +253,7 @@ fake trace''');
 
     group('emitsInOrder', () {
       test('succeeds for happy case', () async {
-        await checkThat(_countingStream(2)).emitsInOrder([
+        await checkThat(_countingStream(2)).inOrder([
           it()..emits().that(it()..equals(0)),
           it()..emits().that((it()..equals(1))),
           it()..isDone(),
@@ -261,7 +261,7 @@ fake trace''');
       });
       test('reports which condition failed', () async {
         await checkThat(_countingStream(1)).isRejectedByAsync(
-          it()..emitsInOrder([it()..emits(), it()..emits()]),
+          it()..inOrder([it()..emits(), it()..emits()]),
           actual: ['a stream'],
           which: [
             'satisfied 1 conditions then',
@@ -272,9 +272,7 @@ fake trace''');
       });
       test('nestes the report for deep failures', () async {
         await checkThat(_countingStream(2)).isRejectedByAsync(
-          it()
-            ..emitsInOrder(
-                [it()..emits(), it()..emits().that(it()..equals(2))]),
+          it()..inOrder([it()..emits(), it()..emits().that(it()..equals(2))]),
           actual: ['a stream'],
           which: [
             'satisfied 1 conditions then',
@@ -287,7 +285,7 @@ fake trace''');
         );
       });
       test('gets described with the number of conditions', () async {
-        await checkThat(it<StreamQueue<int>>()..emitsInOrder([it(), it()]))
+        await checkThat(it<StreamQueue<int>>()..inOrder([it(), it()]))
             .asyncDescription
             .that(it()..deepEquals(['  satisfies 2 conditions in order']));
       });
@@ -296,12 +294,12 @@ fake trace''');
         await softCheckAsync<StreamQueue<int>>(
             queue,
             it()
-              ..emitsInOrder([
+              ..inOrder([
                 it()..emits().that(it()..equals(0)),
                 it()..emits().that(it()..equals(1)),
                 it()..emits().that(it()..equals(42)),
               ]));
-        await checkThat(queue).emitsInOrder([
+        await checkThat(queue).inOrder([
           it()..emits().that(it()..equals(0)),
           it()..emits().that(it()..equals(1)),
           it()..emits().that(it()..equals(2)),
@@ -310,7 +308,7 @@ fake trace''');
       });
       test('consumes events', () async {
         final queue = _countingStream(3);
-        await checkThat(queue).emitsInOrder([it()..emits(), it()..emits()]);
+        await checkThat(queue).inOrder([it()..emits(), it()..emits()]);
         await checkThat(queue).emits().that(it()..equals(2));
       });
     });
@@ -341,7 +339,7 @@ fake trace''');
         final queue = _countingStream(2);
         await softCheckAsync<StreamQueue<int>>(
             queue, it()..neverEmits(it()..equals(1)));
-        await checkThat(queue).emitsInOrder([
+        await checkThat(queue).inOrder([
           it()..emits().that(it()..equals(0)),
           it()..emits().that(it()..equals(1)),
           it()..isDone(),
@@ -445,7 +443,7 @@ fake trace''');
 
     group('emitsAnyOf', () {
       test('succeeds for a stream that matches one condition', () async {
-        await checkThat(_countingStream(1)).emitsAnyOf([
+        await checkThat(_countingStream(1)).anyOf([
           it()..emits().that(it()..equals(42)),
           it()..emits().that((it()..equals(0)))
         ]);
@@ -453,7 +451,7 @@ fake trace''');
       test('fails for a stream that matches no conditions', () async {
         await checkThat(_countingStream(0)).isRejectedByAsync(
             it()
-              ..emitsAnyOf([
+              ..anyOf([
                 it()..emits(),
                 it()..emitsThrough(it()..equals(1)),
               ]),
@@ -471,7 +469,7 @@ fake trace''');
       test('includes nested details for nested failures', () async {
         await checkThat(_countingStream(1)).isRejectedByAsync(
             it()
-              ..emitsAnyOf([
+              ..anyOf([
                 it()..emits().that(it()..equals(42)),
                 it()..emitsThrough(it()..equals(10)),
               ]),
@@ -489,8 +487,8 @@ fake trace''');
             ]);
       });
       test('gets described with the number of conditions', () async {
-        await checkThat(it<StreamQueue<int>>()
-              ..emitsAnyOf([it()..emits(), it()..emits()]))
+        await checkThat(
+                it<StreamQueue<int>>()..anyOf([it()..emits(), it()..emits()]))
             .asyncDescription
             .that(it()..deepEquals(['  satisfies any of 2 conditions']));
       });
@@ -499,7 +497,7 @@ fake trace''');
         await softCheckAsync<StreamQueue<int>>(
             queue,
             it()
-              ..emitsAnyOf([
+              ..anyOf([
                 it()..emits().that(it()..equals(10)),
                 it()..emitsThrough(it()..equals(42)),
               ]));
@@ -507,7 +505,7 @@ fake trace''');
       });
       test('consumes events', () async {
         final queue = _countingStream(3);
-        await checkThat(queue).emitsAnyOf([
+        await checkThat(queue).anyOf([
           it()..emits().that(it()..equals(1)),
           it()..emitsThrough(it()..equals(1))
         ]);

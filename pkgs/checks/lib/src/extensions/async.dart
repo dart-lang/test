@@ -203,8 +203,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes as many events from the source
   /// stream as are consumed by all the conditions.
-  Future<void> emitsInOrder(
-      Iterable<Condition<StreamQueue<T>>> conditions) async {
+  Future<void> inOrder(Iterable<Condition<StreamQueue<T>>> conditions) async {
     conditions = conditions.toList();
     final descriptions = <String>[];
     await _expectAsync(
@@ -250,8 +249,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   /// If this expectation succeeds, consumes the same events from the source
   /// queue as the satisfied condition. If multiple conditions are satisfied,
   /// chooses the condition which consumed the most events.
-  Future<void> emitsAnyOf(
-      Iterable<Condition<StreamQueue<T>>> conditions) async {
+  Future<void> anyOf(Iterable<Condition<StreamQueue<T>>> conditions) async {
     conditions = conditions.toList();
     if (conditions.isEmpty) {
       throw ArgumentError('conditions may not be empty');
