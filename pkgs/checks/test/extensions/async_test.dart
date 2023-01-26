@@ -515,7 +515,7 @@ fake trace''');
   });
 
   group('ChainAsync', () {
-    test('that', () async {
+    test('which', () async {
       await checkThat(_futureSuccess()).completes().which(it()..equals(42));
     });
   });
