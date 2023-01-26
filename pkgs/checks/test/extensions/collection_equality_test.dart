@@ -6,8 +6,6 @@ import 'package:checks/checks.dart';
 import 'package:checks/src/collection_equality.dart';
 import 'package:test/scaffolding.dart';
 
-import '../test_shared.dart';
-
 void main() {
   group('deepCollectionEquals', () {
     test('allows nested collections with equal elements', () {
@@ -84,18 +82,18 @@ void main() {
         ['a']
       ], [
         {'a'}
-      ])).isARejection(which: ['at [<0>] is not a Set']);
+      ])).isNotNull().deepEquals(['at [<0>] is not a Set']);
     });
 
     test('reports long iterables', () {
-      checkThat(deepCollectionEquals([0], [])).isARejection(which: [
+      checkThat(deepCollectionEquals([0], [])).isNotNull().deepEquals([
         'has more elements than expected',
         'expected an iterable with 0 element(s)'
       ]);
     });
 
     test('reports short iterables', () {
-      checkThat(deepCollectionEquals([], [0])).isARejection(which: [
+      checkThat(deepCollectionEquals([], [0])).isNotNull().deepEquals([
         'has too few elements',
         'expected an iterable with at least 1 element(s)'
       ]);
@@ -103,12 +101,14 @@ void main() {
 
     test('reports unequal elements in iterables', () {
       checkThat(deepCollectionEquals([0], [1]))
-          .isARejection(which: ['at [<0>] is <0>', 'which does not equal <1>']);
+          .isNotNull()
+          .deepEquals(['at [<0>] is <0>', 'which does not equal <1>']);
     });
 
     test('reports unmet conditions in iterables', () {
       checkThat(deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]))
-          .isARejection(which: [
+          .isNotNull()
+          .deepEquals([
         'has an element at [<0>] that:',
         '  Actual: <0>',
         '  which is not greater than <0>'
@@ -118,7 +118,8 @@ void main() {
     test('reports unmet conditions in map values', () {
       checkThat(deepCollectionEquals(
               {'a': 'b'}, {'a': it()..isA<String>().startsWith('a')}))
-          .isARejection(which: [
+          .isNotNull()
+          .deepEquals([
         "has no entry to match 'a': <A value that:",
         '  is a String',
         "  starts with 'a'>",
@@ -128,7 +129,8 @@ void main() {
     test('reports unmet conditions in map keys', () {
       checkThat(deepCollectionEquals(
               {'b': 'a'}, {it()..isA<String>().startsWith('a'): 'a'}))
-          .isARejection(which: [
+          .isNotNull()
+          .deepEquals([
         'has no entry to match <A value that:',
         '  is a String',
         "  starts with 'a'>: 'a'",
@@ -139,28 +141,32 @@ void main() {
       var l = [];
       l.add(l);
       checkThat(deepCollectionEquals(l, l))
-          .isARejection(which: ['exceeds the depth limit of 1000']);
+          .isNotNull()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
 
     test('reports recursive sets', () {
       var s = <Object>{};
       s.add(s);
       checkThat(deepCollectionEquals(s, s))
-          .isARejection(which: ['exceeds the depth limit of 1000']);
+          .isNotNull()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
 
     test('reports maps with recursive keys', () {
       var m = <Object, Object>{};
       m[m] = 0;
       checkThat(deepCollectionEquals(m, m))
-          .isARejection(which: ['exceeds the depth limit of 1000']);
+          .isNotNull()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
 
     test('reports maps with recursive values', () {
       var m = <Object, Object>{};
       m[0] = m;
       checkThat(deepCollectionEquals(m, m))
-          .isARejection(which: ['exceeds the depth limit of 1000']);
+          .isNotNull()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
   });
 }

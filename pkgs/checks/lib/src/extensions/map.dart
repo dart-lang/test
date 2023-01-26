@@ -98,7 +98,11 @@ extension MapChecks<K, V> on Check<Map<K, V>> {
   /// of [expected].
   ///
   /// {@macro deep_collection_equals}
-  void deepEquals(Map<Object?, Object?> expected) => context.expect(
-      () => prefixFirst('is deeply equal to ', literal(expected)),
-      (actual) => deepCollectionEquals(actual, expected));
+  void deepEquals(Map<Object?, Object?> expected) => context
+          .expect(() => prefixFirst('is deeply equal to ', literal(expected)),
+              (actual) {
+        final which = deepCollectionEquals(actual, expected);
+        if (which == null) return null;
+        return Rejection(which: which);
+      });
 }

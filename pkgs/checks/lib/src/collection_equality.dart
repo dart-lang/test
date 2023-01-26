@@ -6,8 +6,8 @@ import 'dart:collection';
 
 import 'package:checks/context.dart';
 
-/// Returns a rejection if the elements of [actual] are unequal to the elements
-/// of [expected].
+/// Returns a descriptive `which` for a rejection if the elements of [actual]
+/// are unequal to the elements of [expected].
 ///
 /// {@template deep_collection_equals}
 /// Elements, keys, or values, which are a collections are deeply compared for
@@ -26,11 +26,11 @@ import 'package:checks/context.dart';
 /// Collections may be nested to a maximum depth of 1000. Recursive collections
 /// are not allowed.
 /// {@endtemplate}
-Rejection? deepCollectionEquals(Object actual, Object expected) {
+Iterable<String>? deepCollectionEquals(Object actual, Object expected) {
   try {
     return _deepCollectionEquals(actual, expected, 0);
   } on _ExceededDepthError {
-    return Rejection(which: ['exceeds the depth limit of $_maxDepth']);
+    return ['exceeds the depth limit of $_maxDepth'];
   }
 }
 
@@ -38,7 +38,8 @@ const _maxDepth = 1000;
 
 class _ExceededDepthError extends Error {}
 
-Rejection? _deepCollectionEquals(Object actual, Object expected, int depth) {
+Iterable<String>? _deepCollectionEquals(
+    Object actual, Object expected, int depth) {
   assert(actual is Iterable || actual is Map);
   assert(expected is Iterable || expected is Map);
 
@@ -61,9 +62,7 @@ Rejection? _deepCollectionEquals(Object actual, Object expected, int depth) {
       rejectionWhich = _findMapDifference(
           currentActual, currentExpected, path, currentDepth);
     }
-    if (rejectionWhich != null) {
-      return Rejection(which: rejectionWhich);
-    }
+    if (rejectionWhich != null) return rejectionWhich;
   }
   return null;
 }

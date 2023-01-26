@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/checks.dart';
-import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
@@ -13,25 +12,16 @@ void main() {
     test('isA', () {
       checkThat(1).isA<int>();
 
-      checkThat(
-        softCheck(1, it()..isA<String>()),
-      ).isARejection(actual: ['<1>'], which: ['Is a int']);
+      checkThat(1).isRejectedBy(it()..isA<String>(), which: ['Is a int']);
     });
   });
-
   group('HasField', () {
     test('has', () {
       checkThat(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
-      checkThat(
-        softCheck<int>(
-          2,
+      checkThat(2).isRejectedBy(
           it()..has((v) => throw UnimplementedError(), 'isOdd'),
-        ),
-      ).isARejection(
-        actual: ['<2>'],
-        which: ['threw while trying to read property'],
-      );
+          which: ['threw while trying to read property']);
     });
 
     test('that', () {
@@ -41,15 +31,10 @@ void main() {
     test('not', () {
       checkThat(false).not(it()..isTrue());
 
-      checkThat(
-        softCheck<bool>(
-          true,
-          it()..not(it()..isTrue()),
-        ),
-      ).isARejection(
-        actual: ['<true>'],
-        which: ['is a value that: ', '    is true'],
-      );
+      checkThat(true).isRejectedBy(it()..not(it()..isTrue()), which: [
+        'is a value that: ',
+        '    is true',
+      ]);
     });
 
     group('anyOf', () {
@@ -58,9 +43,9 @@ void main() {
       });
 
       test('rejects values that do not satisfy any condition', () {
-        checkThat(softCheck<int>(
-                0, it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)])))
-            .isARejection(which: ['did not match any condition']);
+        checkThat(0).isRejectedBy(
+            it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
+            which: ['did not match any condition']);
       });
     });
   });
@@ -69,21 +54,13 @@ void main() {
     test('isTrue', () {
       checkThat(true).isTrue();
 
-      checkThat(
-        softCheck<bool>(
-          false,
-          it()..isTrue(),
-        ),
-      ).isARejection(actual: ['<false>']);
+      checkThat(false).isRejectedBy(it()..isTrue());
     });
 
     test('isFalse', () {
       checkThat(false).isFalse();
 
-      checkThat(softCheck<bool>(
-        true,
-        it()..isFalse(),
-      )).isARejection(actual: ['<true>']);
+      checkThat(true).isRejectedBy(it()..isFalse());
     });
   });
 
@@ -91,31 +68,25 @@ void main() {
     test('equals', () {
       checkThat(1).equals(1);
 
-      checkThat(
-        softCheck(1, it()..equals(2)),
-      ).isARejection(actual: ['<1>'], which: ['are not equal']);
+      checkThat(1).isRejectedBy(it()..equals(2), which: ['are not equal']);
     });
-
     test('identical', () {
       checkThat(1).identicalTo(1);
 
-      checkThat(softCheck(1, it()..identicalTo(2)))
-          .isARejection(actual: ['<1>'], which: ['is not identical']);
+      checkThat(1)
+          .isRejectedBy(it()..identicalTo(2), which: ['is not identical']);
     });
   });
-
   group('NullabilityChecks', () {
     test('isNotNull', () {
       checkThat(1).isNotNull();
 
-      checkThat(softCheck(null, it()..isNotNull()))
-          .isARejection(actual: ['<null>']);
+      checkThat(null).isRejectedBy(it()..isNotNull());
     });
-
     test('isNull', () {
       checkThat(null).isNull();
 
-      checkThat(softCheck(1, it()..isNull())).isARejection(actual: ['<1>']);
+      checkThat(1).isRejectedBy(it()..isNull());
     });
   });
 }

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/checks.dart';
-import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
@@ -12,53 +11,41 @@ void main() {
   group('StringChecks', () {
     test('contains', () {
       checkThat('bob').contains('bo');
-      checkThat(
-        softCheck<String>('bob', it()..contains('kayleb')),
-      ).isARejection(actual: ["'bob'"], which: ["Does not contain 'kayleb'"]);
+      checkThat('bob').isRejectedBy(it()..contains('kayleb'),
+          which: ["Does not contain 'kayleb'"]);
     });
     test('length', () {
       checkThat('bob').length.equals(3);
     });
     test('isEmpty', () {
       checkThat('').isEmpty();
-      checkThat(
-        softCheck<String>('bob', it()..isEmpty()),
-      ).isARejection(actual: ["'bob'"], which: ['is not empty']);
+      checkThat('bob').isRejectedBy(it()..isEmpty(), which: ['is not empty']);
     });
     test('isNotEmpty', () {
       checkThat('bob').isNotEmpty();
-      checkThat(
-        softCheck<String>('', it()..isNotEmpty()),
-      ).isARejection(actual: ["''"], which: ['is empty']);
+      checkThat('').isRejectedBy(it()..isNotEmpty(), which: ['is empty']);
     });
     test('startsWith', () {
       checkThat('bob').startsWith('bo');
-      checkThat(
-        softCheck<String>('bob', it()..startsWith('kayleb')),
-      ).isARejection(
-          actual: ["'bob'"], which: ["does not start with 'kayleb'"]);
+      checkThat('bob').isRejectedBy(it()..startsWith('kayleb'),
+          which: ["does not start with 'kayleb'"]);
     });
     test('endsWith', () {
       checkThat('bob').endsWith('ob');
-      checkThat(softCheck<String>('bob', it()..endsWith('kayleb')))
-          .isARejection(
-              actual: ["'bob'"], which: ["does not end with 'kayleb'"]);
+      checkThat('bob').isRejectedBy(it()..endsWith('kayleb'),
+          which: ["does not end with 'kayleb'"]);
     });
-
     group('containsInOrder', () {
       test('happy case', () {
         checkThat('foo bar baz').containsInOrder(['foo', 'baz']);
       });
       test('reports when first substring is missing', () {
-        checkThat(
-                softCheck<String>('baz', it()..containsInOrder(['foo', 'baz'])))
-            .isARejection(
-                which: ['does not have a match for the substring \'foo\'']);
+        checkThat('baz').isRejectedBy(it()..containsInOrder(['foo', 'baz']),
+            which: ['does not have a match for the substring \'foo\'']);
       });
       test('reports when substring is missing following a match', () {
-        checkThat(softCheck<String>(
-                'foo bar', it()..containsInOrder(['foo', 'baz'])))
-            .isARejection(which: [
+        checkThat('foo bar')
+            .isRejectedBy(it()..containsInOrder(['foo', 'baz']), which: [
           'does not have a match for the substring \'baz\'',
           'following the other matches up to character 3'
         ]);
@@ -73,51 +60,38 @@ void main() {
         checkThat('').equals('');
       });
       test('reports extra characters for long string', () {
-        checkThat(softCheck<String>('foobar', it()..equals('foo')))
-            .isARejection(which: [
-          'is too long with unexpected trailing characters:',
-          'bar'
-        ]);
+        checkThat('foobar').isRejectedBy(it()..equals('foo'),
+            which: ['is too long with unexpected trailing characters:', 'bar']);
       });
       test('reports extra characters for long string against empty', () {
-        checkThat(softCheck<String>('foo', it()..equals('')))
-            .isARejection(which: ['is not the empty string']);
+        checkThat('foo')
+            .isRejectedBy(it()..equals(''), which: ['is not the empty string']);
       });
       test('reports truncated extra characters for very long string', () {
-        checkThat(
-                softCheck<String>('foobar baz more stuff', it()..equals('foo')))
-            .isARejection(which: [
-          'is too long with unexpected trailing characters:',
-          'bar baz mo ...'
-        ]);
+        checkThat('foobar baz more stuff').isRejectedBy(it()..equals('foo'),
+            which: [
+              'is too long with unexpected trailing characters:',
+              'bar baz mo ...'
+            ]);
       });
       test('reports missing characters for short string', () {
-        checkThat(softCheck<String>('foo', it()..equals('foobar')))
-            .isARejection(which: [
-          'is too short with missing trailing characters:',
-          'bar'
-        ]);
+        checkThat('foo').isRejectedBy(it()..equals('foobar'),
+            which: ['is too short with missing trailing characters:', 'bar']);
       });
       test('reports missing characters for empty string', () {
-        checkThat(softCheck<String>('', it()..equals('foo bar baz')))
-            .isARejection(actual: [
-          'an empty string'
-        ], which: [
-          'is missing all expected characters:',
-          'foo bar ba ...'
-        ]);
+        checkThat('').isRejectedBy(it()..equals('foo bar baz'),
+            actual: ['an empty string'],
+            which: ['is missing all expected characters:', 'foo bar ba ...']);
       });
       test('reports truncated missing characters for very short string', () {
-        checkThat(
-                softCheck<String>('foo', it()..equals('foobar baz more stuff')))
-            .isARejection(which: [
-          'is too short with missing trailing characters:',
-          'bar baz mo ...'
-        ]);
+        checkThat('foo').isRejectedBy(it()..equals('foobar baz more stuff'),
+            which: [
+              'is too short with missing trailing characters:',
+              'bar baz mo ...'
+            ]);
       });
       test('reports index of different character', () {
-        checkThat(softCheck<String>('hit', it()..equals('hat')))
-            .isARejection(which: [
+        checkThat('hit').isRejectedBy(it()..equals('hat'), which: [
           'differs at offset 1:',
           'hat',
           'hit',
@@ -126,14 +100,14 @@ void main() {
       });
       test('reports truncated index of different character in large string',
           () {
-        checkThat(softCheck<String>('blah blah blah hit blah blah blah',
-                it()..equals('blah blah blah hat blah blah blah')))
-            .isARejection(which: [
-          'differs at offset 16:',
-          '... lah blah hat blah bl ...',
-          '... lah blah hit blah bl ...',
-          '              ^',
-        ]);
+        checkThat('blah blah blah hit blah blah blah').isRejectedBy(
+            it()..equals('blah blah blah hat blah blah blah'),
+            which: [
+              'differs at offset 16:',
+              '... lah blah hat blah bl ...',
+              '... lah blah hit blah bl ...',
+              '              ^',
+            ]);
       });
     });
 
@@ -143,22 +117,15 @@ void main() {
         checkThat('foo').equalsIgnoringCase('FOO');
       });
       test('reports original extra characters for long string', () {
-        checkThat(softCheck<String>('FOOBAR', it()..equalsIgnoringCase('foo')))
-            .isARejection(which: [
-          'is too long with unexpected trailing characters:',
-          'BAR'
-        ]);
+        checkThat('FOOBAR').isRejectedBy(it()..equalsIgnoringCase('foo'),
+            which: ['is too long with unexpected trailing characters:', 'BAR']);
       });
       test('reports original missing characters for short string', () {
-        checkThat(softCheck<String>('FOO', it()..equalsIgnoringCase('fooBAR')))
-            .isARejection(which: [
-          'is too short with missing trailing characters:',
-          'BAR'
-        ]);
+        checkThat('FOO').isRejectedBy(it()..equalsIgnoringCase('fooBAR'),
+            which: ['is too short with missing trailing characters:', 'BAR']);
       });
       test('reports index of different character with original characters', () {
-        checkThat(softCheck<String>('HiT', it()..equalsIgnoringCase('hAt')))
-            .isARejection(which: [
+        checkThat('HiT').isRejectedBy(it()..equalsIgnoringCase('hAt'), which: [
           'differs at offset 1:',
           'hAt',
           'HiT',
@@ -178,25 +145,20 @@ void main() {
         checkThat('foo').equalsIgnoringWhitespace(' foo ');
       });
       test('reports original extra characters for long string', () {
-        checkThat(softCheck<String>(
-                'foo \t bar \n baz', it()..equalsIgnoringWhitespace('foo bar')))
-            .isARejection(which: [
+        checkThat('foo \t bar \n baz')
+            .isRejectedBy(it()..equalsIgnoringWhitespace('foo bar'), which: [
           'is too long with unexpected trailing characters:',
           ' baz'
         ]);
       });
       test('reports original missing characters for short string', () {
-        checkThat(softCheck<String>(
-                'foo  bar', it()..equalsIgnoringWhitespace('foo bar baz')))
-            .isARejection(which: [
-          'is too short with missing trailing characters:',
-          ' baz'
-        ]);
+        checkThat('foo  bar').isRejectedBy(
+            it()..equalsIgnoringWhitespace('foo bar baz'),
+            which: ['is too short with missing trailing characters:', ' baz']);
       });
       test('reports index of different character with original characters', () {
-        checkThat(softCheck<String>(
-                'x  hit  x', it()..equalsIgnoringWhitespace('x hat x')))
-            .isARejection(which: [
+        checkThat('x  hit  x')
+            .isRejectedBy(it()..equalsIgnoringWhitespace('x hat x'), which: [
           'differs at offset 3:',
           'x hat x',
           'x hit x',
