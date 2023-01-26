@@ -429,14 +429,15 @@ extension ChainAsync<T> on Future<Check<T>> {
   /// `Future`.
   ///
   /// Extensions written on [Check] cannot be invoked on [Future<Check>]. This
-  /// method allows adding expectations for the value without awaiting it.
+  /// method allows adding expectations for the value without awaiting an
+  /// expression that would need parenthesis.
   ///
   /// ```dart
-  /// await checkThat(someFuture).completes().that((r) => r.equals('expected'));
+  /// await checkThat(someFuture).completes().which(it()..equals('expected'));
   /// // or, with the intermediate `await`:
   /// (await checkThat(someFuture).completes()).equals('expected');
   /// ```
-  Future<void> that(Condition<T> condition) async {
+  Future<void> which(Condition<T> condition) async {
     await condition.applyAsync(await this);
   }
 }

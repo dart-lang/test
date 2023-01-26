@@ -25,7 +25,7 @@ void main() {
     });
 
     test('that', () {
-      checkThat(true).that(it()..isTrue());
+      checkThat(true).which(it()..isTrue());
     });
 
     test('not', () {
