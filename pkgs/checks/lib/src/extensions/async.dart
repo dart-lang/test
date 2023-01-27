@@ -219,9 +219,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           return Rejection(actual: [
             'a stream'
           ], which: [
-            if (satisfiedCount > 0)
-              'satisfied ${satisfiedCount} conditions then',
-            'failed to satisfy the condition at index ${satisfiedCount}',
+            if (satisfiedCount > 0) 'satisfied $satisfiedCount conditions then',
+            'failed to satisfy the condition at index $satisfiedCount',
             if (failure.detail.depth > 0) ...[
               'because it:',
               ...indent(
@@ -284,7 +283,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         return null;
       }
       transaction.reject();
-      Iterable<String> _failureDetails(int index, CheckFailure? failure) {
+      Iterable<String> failureDetails(int index, CheckFailure? failure) {
         final actual = failure!.rejection.actual;
         final which = failure.rejection.which;
         final detail = failure.detail;
@@ -314,7 +313,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
       ], which: [
         'failed to satisfy any condition',
         for (var i = 0; i < failures.length; i++)
-          ..._failureDetails(i, failures[i]),
+          ...failureDetails(i, failures[i]),
       ]);
     });
   }
@@ -366,9 +365,10 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         if (softCheck(value, condition) == null) {
           await actual.next;
         }
-      } finally {
-        return null;
+      } catch (_) {
+        // Ignore an emitted error - it does not match he event.
       }
+      return null;
     });
   }
 
@@ -428,15 +428,16 @@ extension ChainAsync<T> on Future<Subject<T>> {
   /// Checks the expectations in [condition] against the result of this
   /// `Future`.
   ///
-  /// Extensions written on [Subject] cannot be invoked on [Future<Check>]. This
-  /// method allows adding expectations for the value without awaiting it.
+  /// Extensions written on [Subject] cannot be invoked on a `Future<Subject>`.
+  /// This method allows adding expectations for the value without awaiting an
+  /// expression that would need parenthesis.
   ///
   /// ```dart
-  /// await checkThat(someFuture).completes().that((r) => r.equals('expected'));
+  /// await checkThat(someFuture).completes().which(it()..equals('expected'));
   /// // or, with the intermediate `await`:
   /// (await checkThat(someFuture).completes()).equals('expected');
   /// ```
-  Future<void> that(Condition<T> condition) async {
+  Future<void> which(Condition<T> condition) async {
     await condition.applyAsync(await this);
   }
 }

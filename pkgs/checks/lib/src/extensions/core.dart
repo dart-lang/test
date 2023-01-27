@@ -29,11 +29,11 @@ extension CoreChecks<T> on Subject<T> {
   /// ```
   /// checkThat(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
-  ///   ..has((s) => s.bar, 'bar').that((b) => b
+  ///   ..has((s) => s.bar, 'bar').which(it()
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  void that(Condition<T> condition) => condition.apply(this);
+  void which(Condition<T> condition) => condition.apply(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.
