@@ -42,7 +42,7 @@ checkThat(someValue)
 Some expectations take arguments which are themselves expectations to apply to
 other values. These expectations take `Condition` arguments, which check
 expectations when they are applied to a `Subject`. The `ConditionSubject`
-utility acts as both a condition and a subject. Andy expectations checked on the
+utility acts as both a condition and a subject. Any expectations checked on the
 value as a subject will be recorded and replayed when it is applied as a
 condition. The `it()` utility returns a `ConditionSubject`.
 
@@ -74,10 +74,10 @@ library `package:checks/context.dart` gives access to a `context` getter on
 `Subject` which offers capabilities for defining expectations on the subject's
 value.
 
-The `Context` allows checking a expectation `expect`, `expectAsync` and
+The `Context` allows checking a expectation with `expect`, `expectAsync` and
 `expectUnawaited`, or extracting a derived value for performing other checks
-`nest` and `nestAsync`. Failures are reported by returning a `Rejection`, or an
-`Extracted.rejection`, extensions should avoid throwing exceptions.
+with `nest` and `nestAsync`. Failures are reported by returning a `Rejection`,
+or an `Extracted.rejection`, extensions should avoid throwing exceptions.
 
 Descriptions of the clause checked by an expectations are passed through a
 separate callback from the predicate which checks the value. Nesting calls are
