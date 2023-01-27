@@ -196,10 +196,12 @@ class _Path {
       : parent = null,
         index = '';
   _Path append(Object? index) => _Path._(this, index);
+
+  @override
   String toString() {
     if (parent == null && index == '') return '';
     final stack = Queue.of([this]);
-    var current = this.parent;
+    var current = parent;
     while (current?.parent != null) {
       stack.addLast(current!);
       current = current.parent;

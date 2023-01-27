@@ -49,11 +49,12 @@ extension RejectionChecks<T> on Check<T> {
       actualValue = value;
       didRunCallback = true;
       final failure = await softCheckAsync(value, condition);
-      if (failure == null)
+      if (failure == null) {
         return Extracted.rejection(which: [
           'was accepted by the condition checking:',
           ...await describeAsync(condition)
         ]);
+      }
       return Extracted.value(failure.rejection);
     }));
     if (didRunCallback) {

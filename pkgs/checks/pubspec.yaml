@@ -10,3 +10,4 @@ dependencies:
 
 dev_dependencies:
   test: ^1.21.3
+  lints: ^2.0.0
