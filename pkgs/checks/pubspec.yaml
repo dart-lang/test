@@ -3,6 +3,7 @@ version: 0.1.0
 description: >-
   A framework for checking values against expectations and building custom
   expectations.
+repository: https://github.com/dart-lang/test/tree/master/pkgs/checks
 
 environment:
   sdk: ">=2.18.0 <3.0.0"
