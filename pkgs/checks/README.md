@@ -1,4 +1,4 @@
-# Checking expectation with `checks`
+# Checking expectations with `checks`
 
 Expectations start with `checkThat`. This utility returns a `Subject`, and
 expectations can be checked against the subject. Expectations are defined as
