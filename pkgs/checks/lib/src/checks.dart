@@ -288,11 +288,11 @@ class Extracted<T> {
   /// will be filled in with the [literal] representation of the value.
   Extracted.rejection(
       {Iterable<String> actual = const [], Iterable<String>? which})
-      : this.rejection = Rejection(actual: actual, which: which),
-        this.value = null;
-  Extracted.value(T this.value) : this.rejection = null;
+      : rejection = Rejection(actual: actual, which: which),
+        value = null;
+  Extracted.value(T this.value) : rejection = null;
 
-  Extracted._(Rejection this.rejection) : this.value = null;
+  Extracted._(Rejection this.rejection) : value = null;
 
   Extracted<R> _map<R>(R Function(T) transform) {
     final rejection = this.rejection;
@@ -713,6 +713,7 @@ class ConditionCheck<T> implements Check<T>, Condition<T> {
   @override
   final _ReplayContext<T> _context = _ReplayContext();
 
+  @override
   String toString() {
     return ['A value that:', ...describe(_context)].join('\n');
   }
