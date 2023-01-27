@@ -110,6 +110,8 @@ extension CustomChecks on Subject<CustomType> {
 
 # Trying Checks as a Preview
 
+1.  Add a `dev_dependency` on `checks: ^0.1.0`.
+
 1.  Replace the existing `package:test/test.dart` import with
     `package:test/scaffolding.dart`.
 
