@@ -29,7 +29,8 @@
 
 Replace calls to `expect` with a call to `checkThat` passing the first argument.
 When a direct replacement is available, change the second argument from calling
-a function returning a Matcher, to calling the extension method on the `Check`.
+a function returning a Matcher, to calling the extension method on the
+`Subject`.
 
 When a non-matcher argument is used for the expected value, it would have been
 wrapped with `equals` automatically. See below, `.equals` may not always be the
@@ -44,6 +45,6 @@ checkThat(actual).deepEquals(expected);
 
 ## Differences in behavior from matcher
 
-- The `equals` Matcher performed a deep equality check on collections.
-  `.equals()` check will only correspond to [operator ==] so some tests may need
-  to replace `.equals()` with `.deepEquals()`. **TODO: implement `deepEquals`**
+-   The `equals` Matcher performed a deep equality check on collections.
+    `.equals()` expectation will only correspond to [operator ==] so some tests
+    may need to replace `.equals()` with `.deepEquals()`.

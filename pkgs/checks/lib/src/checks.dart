@@ -11,21 +11,21 @@ import 'describe.dart';
 
 /// A target for checking expectations against a value in a test.
 ///
-/// A Check my have a real value, in which case the expectations can be
+/// A subject my have a real value, in which case the expectations can be
 /// validated or rejected; or it may be a placeholder, in which case
 /// expectations describe what would be checked but cannot be rejected.
 ///
 /// Expectations are defined as extension methods specialized on the generic
 /// [T]. Expectations can use the [ContextExtension] to interact with the
-/// [Context] for this check.
-class Check<T> {
+/// [Context] for this subject.
+class Subject<T> {
   final Context<T> _context;
-  Check._(this._context);
+  Subject._(this._context);
 }
 
-extension Skip<T> on Check<T> {
-  /// Mark the currently running test as skipped and return a [Check] that will
-  /// ignore all expectations.
+extension Skip<T> on Subject<T> {
+  /// Mark the currently running test as skipped and return a [Subject] that
+  /// will ignore all expectations.
   ///
   /// Any expectations against the return value will not be checked and will not
   /// be included in the "Expected" or "Actual" string representations of a
@@ -40,13 +40,14 @@ extension Skip<T> on Check<T> {
   /// If `skip` is used in a callback passed to `softCheck` or `describe` it
   /// will still mark the test as skipped, even though failing the expectation
   /// would not have otherwise caused the test to fail.
-  Check<T> skip(String message) {
+  Subject<T> skip(String message) {
     TestHandle.current.markSkipped(message);
-    return Check._(_SkippedContext());
+    return Subject._(_SkippedContext());
   }
 }
 
-/// Creates a [Check] that can be used to validate expectations against [value].
+/// Creates a [Subject] that can be used to validate expectations against
+/// [value], with an exception upon a failed expectation.
 ///
 /// Expectations that are not satisfied throw a [TestFailure] to interrupt the
 /// currently running test and mark it as failed.
@@ -57,7 +58,8 @@ extension Skip<T> on Check<T> {
 /// ```dart
 /// checkThat(actual).equals(expected);
 /// ```
-Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
+Subject<T> checkThat<T>(T value, {String? because}) =>
+    Subject._(_TestContext._root(
       value: _Present(value),
       // TODO - switch between "a" and "an"
       label: 'a $T',
@@ -77,7 +79,8 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
       allowUnawaited: true,
     ));
 
-/// Checks whether [value] satisfies all expectations invoked in [condition].
+/// Checks whether [value] satisfies all expectations invoked in [condition],
+/// without throwing an exception.
 ///
 /// Returns `null` if all expectations are satisfied, otherwise returns the
 /// [CheckFailure] for the first expectation that fails.
@@ -86,7 +89,7 @@ Check<T> checkThat<T>(T value, {String? because}) => Check._(_TestContext._root(
 /// runtime error if they are used.
 CheckFailure? softCheck<T>(T value, Condition<T> condition) {
   CheckFailure? failure;
-  final check = Check<T>._(_TestContext._root(
+  final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
       failure = f;
@@ -94,11 +97,12 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
     allowAsync: false,
     allowUnawaited: false,
   ));
-  condition.apply(check);
+  condition.apply(subject);
   return failure;
 }
 
-/// Checks whether [value] satisfies all expectations invoked in [condition].
+/// Checks whether [value] satisfies all expectations invoked in [condition],
+/// without throwing an exception.
 ///
 /// The future will complete to `null` if all expectations are satisfied,
 /// otherwise it will complete to the [CheckFailure] for the first expectation
@@ -108,7 +112,7 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
 /// [condition].
 Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
   CheckFailure? failure;
-  final check = Check<T>._(_TestContext._root(
+  final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
       failure = f;
@@ -116,7 +120,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
     allowAsync: true,
     allowUnawaited: false,
   ));
-  await condition.applyAsync(check);
+  await condition.applyAsync(subject);
   return failure;
 }
 
@@ -140,7 +144,7 @@ Iterable<String> describe<T>(Condition<T> condition) {
     allowAsync: false,
     allowUnawaited: true,
   );
-  condition.apply(Check._(context));
+  condition.apply(Subject._(context));
   return context.detail(context).expected.skip(1);
 }
 
@@ -164,25 +168,25 @@ Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
     allowAsync: true,
     allowUnawaited: true,
   );
-  await condition.applyAsync(Check._(context));
+  await condition.applyAsync(Subject._(context));
   return context.detail(context).expected.skip(1);
 }
 
 /// A set of expectations that are checked against the value when applied to a
-/// [Check].
+/// [Subject].
 abstract class Condition<T> {
-  void apply(Check<T> check);
-  Future<void> applyAsync(Check<T> check);
+  void apply(Subject<T> subject);
+  Future<void> applyAsync(Subject<T> subject);
 }
 
-ConditionCheck<T> it<T>() => ConditionCheck._();
+ConditionSubject<T> it<T>() => ConditionSubject._();
 
-extension ContextExtension<T> on Check<T> {
-  /// The expectations and nesting context for this check.
+extension ContextExtension<T> on Subject<T> {
+  /// The expectations and nesting context for this subject.
   Context<T> get context => _context;
 }
 
-/// The expectation and nesting context already applied to a [Check].
+/// The expectation and nesting context already applied to a [Subject].
 ///
 /// This is the surface of interaction for expectation extension method
 /// implementations.
@@ -231,9 +235,9 @@ abstract class Context<T> {
   /// listening for the event, there is no way to complete a returned future and
   /// consider the check "complete".
   ///
-  /// May not be used from the context for a [Check] created by [softCheck] or
+  /// May not be used from the context for a [Subject] created by [softCheck] or
   /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
-  /// [TestFailure] when used with a [checkThat] check. Most conditions should
+  /// [TestFailure] when used with a [checkThat] subject. Most conditions should
   /// prefer to use [expect] or [expectAsync].
   void expectUnawaited(Iterable<String> Function() clause,
       void Function(T, void Function(Rejection)) predicate);
@@ -245,18 +249,18 @@ abstract class Context<T> {
   /// an [Extracted.value].
   ///
   /// The [label] will be used preceding "that:" in a description. Expectations
-  /// applied to the returned [Check] will follow the label, indented by two
+  /// applied to the returned [Subject] will follow the label, indented by two
   /// more spaces.
   ///
   /// If [atSameLevel] is true then [R] should be a subtype of [T], and a
   /// returned [Extracted.value] should be the same instance as the passed
   /// value, or an object which is is equivalent but has a type which is more
   /// convenient to test. In this case expectations applied to the return
-  /// [Check] will behave as if they were applied to the Check for this
+  /// [Subject] will behave as if they were applied to the subject for this
   /// context. The [label] will be used as if it were a single line "clause"
   /// passed to [expect]. If the label is empty, the clause will be omitted. The
   /// label should only be left empty if the value extraction cannot fail.
-  Check<R> nest<R>(String label, Extracted<R> Function(T) extract,
+  Subject<R> nest<R>(String label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false});
 
   /// Extract an asynchronous property from the value for further checking.
@@ -266,13 +270,13 @@ abstract class Context<T> {
   /// an [Extracted.value].
   ///
   /// The [label] will be used preceding "that:" in a description. Expectations
-  /// applied to the returned [Check] will follow the label, indented by two
+  /// applied to the returned [Subject] will follow the label, indented by two
   /// more spaces.
   ///
   /// Some context may disallow asynchronous expectations, for instance in
   /// [softCheck] which must synchronously check the value. In those contexts
   /// this method will throw.
-  Future<Check<R>> nestAsync<R>(
+  Future<Subject<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T) extract);
 }
 
@@ -415,7 +419,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       FutureOr<Rejection?> Function(T) predicate) async {
     if (!_allowAsync) {
       throw StateError(
-          'Async expectations cannot be used in a synchronous check');
+          'Async expectations cannot be used on a synchronous subject');
     }
     _clauses.add(_StringClause(clause));
     final outstandingWork = TestHandle.current.markPending();
@@ -439,7 +443,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   @override
-  Check<R> nest<R>(String label, Extracted<R> Function(T) extract,
+  Subject<R> nest<R>(String label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false}) {
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
     final rejection = result.rejection;
@@ -457,15 +461,15 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       context = _TestContext._child(value, label, this);
       _clauses.add(context);
     }
-    return Check._(context);
+    return Subject._(context);
   }
 
   @override
-  Future<Check<R>> nestAsync<R>(
+  Future<Subject<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T) extract) async {
     if (!_allowAsync) {
       throw StateError(
-          'Async expectations cannot be used in a synchronous check');
+          'Async expectations cannot be used on a synchronous subject');
     }
     final outstandingWork = TestHandle.current.markPending();
     final result = await _value.mapAsync(
@@ -479,7 +483,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final value = result.value ?? _Absent<R>();
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
-    return Check._(context);
+    return Subject._(context);
   }
 
   CheckFailure _failure(Rejection rejection) =>
@@ -545,15 +549,15 @@ class _SkippedContext<T> implements Context<T> {
   }
 
   @override
-  Check<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
+  Subject<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
       {bool atSameLevel = false}) {
-    return Check._(_SkippedContext());
+    return Subject._(_SkippedContext());
   }
 
   @override
-  Future<Check<R>> nestAsync<R>(
+  Future<Subject<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T p1) extract) async {
-    return Check._(_SkippedContext());
+    return Subject._(_SkippedContext());
   }
 }
 
@@ -569,17 +573,17 @@ class _StringClause implements _ClauseDescription {
       FailureDetail(_expected(), -1, -1);
 }
 
-/// The result of a Check which is rejected by some expectation.
+/// The result an expectation that failed for a subject..
 class CheckFailure {
-  /// The specific rejected value within the overall check that caused the
+  /// The specific rejected value within the overall subject that caused the
   /// failure.
   ///
   /// The [Rejection.actual] may be a property derived from the value at the
-  /// root of the check, for instance a field or an element in a collection.
+  /// root of the subject, for instance a field or an element in a collection.
   final Rejection rejection;
 
-  /// The context within the overall check where an expectation resulted in the
-  /// [rejection].
+  /// The context within the overall subject where an expectation resulted in
+  /// the [rejection].
   late final FailureDetail detail = _readDetail();
 
   final FailureDetail Function() _readDetail;
@@ -587,19 +591,18 @@ class CheckFailure {
   CheckFailure(this.rejection, this._readDetail);
 }
 
-/// The context of a Check that failed.
+/// The context for a failed expectation.
 ///
-/// A check may have some number of succeeding expectations, and the failure may
+/// A subject may have some number of succeeding expectations, and the failure may
 /// be for an expectation against a property derived from the value at the root
-/// of the check. For example, in `checkThat([]).length.equals(1)` the specific
-/// value that gets rejected is `0` from the length of the list, and the `Check`
-/// that sees the rejection is nested with the label "has length".
+/// of the subject. For example, in `checkThat([]).length.equals(1)` the
+/// specific value that gets rejected is `0` from the length of the list, and
+/// the subject that sees the rejection is nested with the label "has length".
 class FailureDetail {
-  /// A description of all the conditions the checked value was expected to
-  /// satisfy.
+  /// A description of all the conditions the subject was expected to satisfy.
   ///
-  /// Each Check has a label. At the root the label is typically "a <Type>" and
-  /// nested conditions get a label based on the condition which extracted a
+  /// Each subject has a label. At the root the label is typically "a <Type>"
+  /// and nested subjects get a label based on the condition which extracted a
   /// property for further checks. Each level of nesting is described as
   /// "<label> that:" followed by an indented list of the expectations for that
   /// property.
@@ -614,13 +617,13 @@ class FailureDetail {
   /// A description of the conditions the checked value satisfied.
   ///
   /// Matches the format of [expected], except it will be cut off after the
-  /// label for the check that had a failing expectation. For example, if the
+  /// label for the subject that had a failing expectation. For example, if the
   /// equality check for the length of a list fails:
   ///
   ///   a List that:
   ///     has length that:
   ///
-  /// If the check with a failing expectation is the root, returns an empty
+  /// If the subject with a failing expectation is the root, returns an empty
   /// list. Instead the "Actual: " value from the rejection can be used without
   /// indentation.
   Iterable<String> get actual =>
@@ -629,16 +632,17 @@ class FailureDetail {
   /// The number of lines from [expected] which describe conditions that were
   /// successful.
   ///
-  /// A check which fails due to a derived property may have some number of
-  /// expectations that were checked and satisfied. This field indicates how
-  /// many lines of expectations were successful.
+  /// A failed expectation on a derived property may have some number of
+  /// expectations that were checked and satisfied starting from the root
+  /// subject. This field indicates how many lines of expectations were
+  /// successful.
   final int _actualOverlap;
 
-  /// The number of times the failing check was nested from the root check.
+  /// The number of times the failing subject was nested from the root subject.
   ///
   /// Indicates how far the "Actual: " and "Which: " lines from the [Rejection]
   /// should be indented so that they are at the same level of indentation as
-  /// the label for the check where the expectation failed.
+  /// the label for the subject where the expectation failed.
   ///
   /// For example, if a `List` is expected to and have a certain length
   /// [expected] may be:
@@ -697,17 +701,17 @@ class Rejection {
   Rejection({this.actual = const [], this.which});
 }
 
-class ConditionCheck<T> implements Check<T>, Condition<T> {
-  ConditionCheck._();
+class ConditionSubject<T> implements Subject<T>, Condition<T> {
+  ConditionSubject._();
 
   @override
-  void apply(Check<T> check) {
-    _context.apply(check);
+  void apply(Subject<T> subject) {
+    _context.apply(subject);
   }
 
   @override
-  Future<void> applyAsync(Check<T> check) async {
-    await _context.applyAsync(check);
+  Future<void> applyAsync(Subject<T> subject) async {
+    await _context.applyAsync(subject);
   }
 
   @override
@@ -723,16 +727,16 @@ class _ReplayContext<T> implements Context<T>, Condition<T> {
   final _interactions = <FutureOr<void> Function(Context<T>)>[];
 
   @override
-  void apply(Check<T> check) {
+  void apply(Subject<T> subject) {
     for (var interaction in _interactions) {
-      interaction(check.context);
+      interaction(subject.context);
     }
   }
 
   @override
-  Future<void> applyAsync(Check<T> check) async {
+  Future<void> applyAsync(Subject<T> subject) async {
     for (var interaction in _interactions) {
-      await interaction(check.context);
+      await interaction(subject.context);
     }
   }
 
@@ -761,24 +765,24 @@ class _ReplayContext<T> implements Context<T>, Condition<T> {
   }
 
   @override
-  Check<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
+  Subject<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
       {bool atSameLevel = false}) {
     final nestedContext = _ReplayContext<R>();
     _interactions.add((c) {
       var result = c.nest(label, extract, atSameLevel: atSameLevel);
       nestedContext.apply(result);
     });
-    return Check._(nestedContext);
+    return Subject._(nestedContext);
   }
 
   @override
-  Future<Check<R>> nestAsync<R>(
+  Future<Subject<R>> nestAsync<R>(
       String label, FutureOr<Extracted<R>> Function(T) extract) async {
     final nestedContext = _ReplayContext<R>();
     _interactions.add((c) async {
       var result = await c.nestAsync(label, extract);
       await nestedContext.applyAsync(result);
     });
-    return Check._(nestedContext);
+    return Subject._(nestedContext);
   }
 }

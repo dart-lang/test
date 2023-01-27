@@ -7,11 +7,11 @@ import 'package:checks/context.dart';
 import '../collection_equality.dart';
 import 'core.dart';
 
-extension IterableChecks<T> on Check<Iterable<T>> {
-  Check<int> get length => has((l) => l.length, 'length');
-  Check<T> get first => has((l) => l.first, 'first element');
-  Check<T> get last => has((l) => l.last, 'last element');
-  Check<T> get single => has((l) => l.single, 'single element');
+extension IterableChecks<T> on Subject<Iterable<T>> {
+  Subject<int> get length => has((l) => l.length, 'length');
+  Subject<T> get first => has((l) => l.first, 'first element');
+  Subject<T> get last => has((l) => l.last, 'last element');
+  Subject<T> get single => has((l) => l.single, 'single element');
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
@@ -108,7 +108,7 @@ extension IterableChecks<T> on Check<Iterable<T>> {
   /// Expects there are no elements in the iterable which fail to satisfy
   /// [elementCondition].
   ///
-  /// Empty iterables will pass always pass this check.
+  /// Empty iterables will pass always pass this expectation.
   void every(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);

@@ -8,14 +8,14 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:checks/context.dart';
 
-extension FutureChecks<T> on Check<Future<T>> {
+extension FutureChecks<T> on Subject<Future<T>> {
   /// Expects that the `Future` completes to a value without throwing.
   ///
-  /// Returns a future that completes to a [Check<T>] on the result once the
+  /// Returns a future that completes to a [Subject] on the result once the
   /// future completes.
   ///
   /// Fails if the future completes as an error.
-  Future<Check<T>> completes() =>
+  Future<Subject<T>> completes() =>
       context.nestAsync<T>('completes to a value', (actual) async {
         try {
           return Extracted.value(await actual);
@@ -53,11 +53,11 @@ extension FutureChecks<T> on Check<Future<T>> {
 
   /// Expects that the `Future` completes as an error.
   ///
-  /// Returns a future that completes to a [Check<E>] on the error once the
+  /// Returns a future that completes to a [Subject] on the error once the
   /// future completes as an error.
   ///
   /// Fails if the future completes to a value.
-  Future<Check<E>> throws<E extends Object>() => context.nestAsync<E>(
+  Future<Subject<E>> throws<E extends Object>() => context.nestAsync<E>(
           'completes to an error${E == Object ? '' : ' of type $E'}',
           (actual) async {
         try {
@@ -78,7 +78,7 @@ extension FutureChecks<T> on Check<Future<T>> {
 ///
 /// Streams should be wrapped in user test code so that any reuse of the same
 /// Stream, and the full stream lifecycle, is explicit.
-extension StreamChecks<T> on Check<StreamQueue<T>> {
+extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// Calls [Context.expectAsync] and wraps [predicate] with a transaction.
   ///
   /// The transaction is committed if the check passes, or rejected if it fails.
@@ -98,12 +98,12 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
 
   /// Expect that the `Stream` emits a value without first emitting an error.
   ///
-  /// Returns a `Future` that completes to a [Check<T>] on the next event
-  /// emitted by the stream.
+  /// Returns a `Future` that completes to a [Subject] on the next event emitted
+  /// by the stream.
   ///
   /// Fails if the stream emits an error instead of a value, or closes without
   /// emitting a value.
-  Future<Check<T>> emits() =>
+  Future<Subject<T>> emits() =>
       context.nestAsync<T>('emits a value', (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
@@ -122,7 +122,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
 
   /// Expects that the stream emits an error of type [E].
   ///
-  /// Returns a [Check] on the error's value.
+  /// Returns a [Subject] on the error's value.
   ///
   /// Fails if the stream emits any value.
   /// Fails if the stream emits an error with an incorrect type.
@@ -131,7 +131,7 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   /// If this expectation fails, the source queue will be left in it's original
   /// state.
   /// If this expectation succeeds, consumes the error event.
-  Future<Check<E>> emitsError<E extends Object>() =>
+  Future<Subject<E>> emitsError<E extends Object>() =>
       context.nestAsync('emits an error${E == Object ? '' : ' of type $E'}',
           (actual) async {
         if (!await actual.hasNext) {
@@ -424,12 +424,12 @@ extension StreamChecks<T> on Check<StreamQueue<T>> {
   }
 }
 
-extension ChainAsync<T> on Future<Check<T>> {
+extension ChainAsync<T> on Future<Subject<T>> {
   /// Checks the expectations in [condition] against the result of this
   /// `Future`.
   ///
-  /// Extensions written on [Check] cannot be invoked on [Future<Check>]. This
-  /// method allows adding expectations for the value without awaiting an
+  /// Extensions written on [Subject] cannot be invoked on a `Future<Subject>`.
+  /// This method allows adding expectations for the value without awaiting an
   /// expression that would need parenthesis.
   ///
   /// ```dart
@@ -442,14 +442,14 @@ extension ChainAsync<T> on Future<Check<T>> {
   }
 }
 
-extension StreamQueueWrap<T> on Check<Stream<T>> {
+extension StreamQueueWrap<T> on Subject<Stream<T>> {
   /// Wrap the stream in a [StreamQueue] to allow using checks from
   /// [StreamChecks].
   ///
   /// Stream expectations operate on a queue, instead of directly on the stream,
   /// so that they can support conditional expectations and check multiple
   /// possibilities from the same point in the stream.
-  Check<StreamQueue<T>> get withQueue =>
+  Subject<StreamQueue<T>> get withQueue =>
       context.nest('', (actual) => Extracted.value(StreamQueue(actual)),
           atSameLevel: true);
 }

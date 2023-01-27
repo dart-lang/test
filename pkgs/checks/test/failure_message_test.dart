@@ -47,7 +47,7 @@ Actual: a List<dynamic> that:
   });
 }
 
-extension on Check<void Function()> {
-  Check<String> throwsFailure() =>
+extension on Subject<void Function()> {
+  Subject<String> throwsFailure() =>
       throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
 }

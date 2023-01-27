@@ -4,12 +4,12 @@
 
 import 'package:checks/context.dart';
 
-extension CoreChecks<T> on Check<T> {
+extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
-  /// expectations applied to the returned [Check].
-  Check<R> has<R>(R Function(T) extract, String name) {
+  /// expectations applied to the returned [Subject].
+  Subject<R> has<R>(R Function(T) extract, String name) {
     return context.nest('has $name', (T value) {
       try {
         return Extracted.value(extract(value));
@@ -20,11 +20,11 @@ extension CoreChecks<T> on Check<T> {
     });
   }
 
-  /// Checks the expectations invoked in [condition] against this value.
+  /// Applies the expectations invoked in [condition] to this subject.
   ///
   /// Use this method when it would otherwise not be possible to check multiple
-  /// properties of this value due to cascade notation already being used in a
-  /// way that would conflict.
+  /// expectations for this subject due to cascade notation already being used
+  /// in a way that would conflict.
   ///
   /// ```
   /// checkThat(something)
@@ -68,8 +68,8 @@ extension CoreChecks<T> on Check<T> {
 
   /// Expects that the value is assignable to type [T].
   ///
-  /// If the value is a [T], returns a [Check<T>] for further expectations.
-  Check<R> isA<R>() {
+  /// If the value is a [T], returns a [Subject] for further expectations.
+  Subject<R> isA<R>() {
     return context.nest<R>('is a $R', (actual) {
       if (actual is! R) {
         return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
@@ -96,7 +96,7 @@ extension CoreChecks<T> on Check<T> {
   }
 }
 
-extension BoolChecks on Check<bool> {
+extension BoolChecks on Subject<bool> {
   void isTrue() {
     context.expect(
       () => ['is true'],
@@ -116,8 +116,8 @@ extension BoolChecks on Check<bool> {
   }
 }
 
-extension NullabilityChecks<T> on Check<T?> {
-  Check<T> isNotNull() {
+extension NullabilityChecks<T> on Subject<T?> {
+  Subject<T> isNotNull() {
     return context.nest<T>('is not null', (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);

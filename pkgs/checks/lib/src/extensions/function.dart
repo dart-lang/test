@@ -4,11 +4,11 @@
 
 import 'package:checks/context.dart';
 
-extension ThrowsCheck<T> on Check<T Function()> {
+extension ThrowsCheck<T> on Subject<T Function()> {
   /// Expects that a function throws synchronously when it is called.
   ///
   /// If the function synchronously throws a value of type [E], return a
-  /// [Check<E>] to check further expectations on the error.
+  /// [Subject] to check further expectations on the error.
   ///
   /// If the function does not throw synchronously, or if it throws an error
   /// that is not of type [E], this expectation will fail.
@@ -16,7 +16,7 @@ extension ThrowsCheck<T> on Check<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Check<E> throws<E>() {
+  Subject<E> throws<E>() {
     return context.nest<E>('throws an error of type $E', (actual) {
       try {
         final result = actual();
@@ -35,11 +35,11 @@ extension ThrowsCheck<T> on Check<T Function()> {
 
   /// Expects that the function returns without throwing.
   ///
-  /// If the function runs without exception, return a [Check<T>] to check
+  /// If the function runs without exception, return a [Subject] to check
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Check<T> returnsNormally() {
+  Subject<T> returnsNormally() {
     return context.nest<T>('returns a value', (actual) {
       try {
         return Extracted.value(actual());
