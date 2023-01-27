@@ -24,8 +24,8 @@ void main() {
           which: ['threw while trying to read property']);
     });
 
-    test('that', () {
-      checkThat(true).that(it()..isTrue());
+    test('which', () {
+      checkThat(true).which(it()..isTrue());
     });
 
     test('not', () {

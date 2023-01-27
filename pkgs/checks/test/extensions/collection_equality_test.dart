@@ -52,7 +52,7 @@ void main() {
         'b'
       ], [
         it()
-          ..isA<String>().that(it()
+          ..isA<String>().which(it()
             ..startsWith('a')
             ..length.isLessThan(2)),
         it()..isA<String>().startsWith('b')
