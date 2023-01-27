@@ -59,6 +59,15 @@ extension StringChecks on Check<String> {
     );
   }
 
+  /// Expects that the string matches the regular expression [expected].
+  void matches(RegExp expected) {
+    context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
+      if (expected.hasMatch(actual)) return null;
+      return Rejection(
+          which: prefixFirst('does not match ', literal(expected)));
+    });
+  }
+
   /// Expects that the `String` contains each of the sub strings in expected
   /// in the given order, with any content between them.
   ///

@@ -35,6 +35,22 @@ void main() {
       checkThat('bob').isRejectedBy(it()..endsWith('kayleb'),
           which: ["does not end with 'kayleb'"]);
     });
+
+    group('matches', () {
+      test('succeeds for strings that match', () {
+        checkThat('123').matches(RegExp(r'\d\d\d'));
+      });
+      test('fails for non-matching strings', () {
+        checkThat('abc').isRejectedBy(it()..matches(RegExp(r'\d\d\d')),
+            which: [r'does not match <RegExp: pattern=\d\d\d flags=>']);
+      });
+      test('can be described', () {
+        checkThat(it<String>()..matches(RegExp(r'\d\d\d')))
+            .description
+            .deepEquals([r'  matches <RegExp: pattern=\d\d\d flags=>']);
+      });
+    });
+
     group('containsInOrder', () {
       test('happy case', () {
         checkThat('foo bar baz').containsInOrder(['foo', 'baz']);
