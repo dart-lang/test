@@ -4,7 +4,7 @@
 
 import 'package:checks/context.dart';
 
-extension NumChecks on Check<num> {
+extension NumChecks on Subject<num> {
   /// Expects that this number is greater than [other].
   void isGreaterThan(num other) {
     context.expect(() => ['is greater than <$other>'], (actual) {

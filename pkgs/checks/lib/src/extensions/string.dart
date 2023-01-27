@@ -8,7 +8,7 @@ import 'package:checks/context.dart';
 
 import 'core.dart';
 
-extension StringChecks on Check<String> {
+extension StringChecks on Subject<String> {
   /// Expects that the value contains [pattern] according to [String.contains];
   void contains(Pattern pattern) {
     context.expect(() => prefixFirst('contains ', literal(pattern)), (actual) {
@@ -19,7 +19,7 @@ extension StringChecks on Check<String> {
     });
   }
 
-  Check<int> get length => has((m) => m.length, 'length');
+  Subject<int> get length => has((m) => m.length, 'length');
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {

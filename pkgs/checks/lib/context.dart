@@ -4,7 +4,7 @@
 
 export 'src/checks.dart'
     show
-        Check,
+        Subject,
         CheckFailure,
         Condition,
         Context,

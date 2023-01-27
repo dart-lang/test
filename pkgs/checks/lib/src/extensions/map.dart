@@ -7,13 +7,13 @@ import 'package:checks/context.dart';
 import '../collection_equality.dart';
 import 'core.dart';
 
-extension MapChecks<K, V> on Check<Map<K, V>> {
-  Check<Iterable<MapEntry<K, V>>> get entries =>
+extension MapChecks<K, V> on Subject<Map<K, V>> {
+  Subject<Iterable<MapEntry<K, V>>> get entries =>
       has((m) => m.entries, 'entries');
-  Check<Iterable<K>> get keys => has((m) => m.keys, 'keys');
-  Check<Iterable<V>> get values => has((m) => m.values, 'values');
-  Check<int> get length => has((m) => m.length, 'length');
-  Check<V> operator [](K key) {
+  Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
+  Subject<Iterable<V>> get values => has((m) => m.values, 'values');
+  Subject<int> get length => has((m) => m.length, 'length');
+  Subject<V> operator [](K key) {
     final keyString = literal(key).join(r'\n');
     return context.nest('contains a value for $keyString', (actual) {
       if (!actual.containsKey(key)) {
