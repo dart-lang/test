@@ -29,7 +29,7 @@ void main() {
         await checkThat(it<Future<void>>()..completes())
             .asyncDescription
             .that(it()..deepEquals(['  completes to a value']));
-        await checkThat(it<Future<void>>()..completes().that(it()..equals(42)))
+        await checkThat(it<Future<int>>()..completes().that(it()..equals(42)))
             .asyncDescription
             .that(it()
               ..deepEquals([
