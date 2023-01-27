@@ -60,9 +60,17 @@ extension StringChecks on Check<String> {
   }
 
   /// Expects that the string matches the regular expression [expected].
-  void matches(RegExp expected) {
+  ///
+  /// [expected] must be a [String] or a [RegExp]. If it is a string it will be
+  /// used as the pattern for a [RegExp].
+  void matches(Pattern expected) {
+    final regex = expected is String
+        ? RegExp(expected)
+        : expected is RegExp
+            ? expected
+            : throw ArgumentError('expected must be a RegExp or a String');
     context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
-      if (expected.hasMatch(actual)) return null;
+      if (regex.hasMatch(actual)) return null;
       return Rejection(
           which: prefixFirst('does not match ', literal(expected)));
     });

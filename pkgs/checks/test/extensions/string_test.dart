@@ -39,15 +39,29 @@ void main() {
     group('matches', () {
       test('succeeds for strings that match', () {
         checkThat('123').matches(RegExp(r'\d\d\d'));
+        checkThat('123').matches(r'\d\d\d');
       });
       test('fails for non-matching strings', () {
         checkThat('abc').isRejectedBy(it()..matches(RegExp(r'\d\d\d')),
             which: [r'does not match <RegExp: pattern=\d\d\d flags=>']);
+        checkThat('abc').isRejectedBy(it()..matches(r'\d\d\d'),
+            which: [r"does not match '\\d\\d\\d'"]);
+      });
+      test('throws an ArgumentError if expected is not a String or RegExp', () {
+        checkThat(() {
+          it<String>()..matches(_BadPattern());
+        })
+            .throws<ArgumentError>()
+            .has((e) => e.message, 'message')
+            .equals('expected must be a RegExp or a String');
       });
       test('can be described', () {
         checkThat(it<String>()..matches(RegExp(r'\d\d\d')))
             .description
             .deepEquals([r'  matches <RegExp: pattern=\d\d\d flags=>']);
+        checkThat(it<String>()..matches(r'\d\d\d'))
+            .description
+            .deepEquals([r"  matches '\\d\\d\\d'"]);
       });
     });
 
@@ -183,4 +197,16 @@ void main() {
       });
     });
   });
+}
+
+class _BadPattern extends Pattern {
+  @override
+  Iterable<Match> allMatches(String string, [int start = 0]) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Match? matchAsPrefix(String string, [int start = 0]) {
+    throw UnimplementedError();
+  }
 }
