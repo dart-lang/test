@@ -47,7 +47,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// For example, the following will succeed:
   ///
   /// ```dart
-  /// checkThat([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
+  /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
   /// ```
   ///
   /// Values in [elements] may be a `T`, a `Condition<T>`, or a
@@ -57,7 +57,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// equality operator.
   ///
   /// ```dart
-  /// checkThat([1, 0, 2, 0, 3])
+  /// check([1, 0, 2, 0, 3])
   ///   .containsInOrder([1, it<int>()..isGreaterThan(1), 3]);
   /// ```
   void containsInOrder(Iterable<Object?> elements) {

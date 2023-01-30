@@ -73,7 +73,7 @@ extension StringChecks on Subject<String> {
   ///
   /// For example, the following will succeed:
   ///
-  ///     checkThat('abcdefg').containsInOrder(['a','e']);
+  ///     check('abcdefg').containsInOrder(['a','e']);
   void containsInOrder(Iterable<String> expected) {
     context.expect(() => prefixFirst('contains, in order: ', literal(expected)),
         (actual) {
@@ -118,12 +118,12 @@ extension StringChecks on Subject<String> {
   ///
   /// For example the following will succeed:
   ///
-  ///     checkThat(' hello   world ').equalsIgnoringWhitespace('hello world');
+  ///     check(' hello   world ').equalsIgnoringWhitespace('hello world');
   ///
   /// While the following will fail:
   ///
-  ///     checkThat('helloworld').equalsIgnoringWhitespace('hello world');
-  ///     checkThat('he llo world').equalsIgnoringWhitespace('hello world');
+  ///     check('helloworld').equalsIgnoringWhitespace('hello world');
+  ///     check('he llo world').equalsIgnoringWhitespace('hello world');
   void equalsIgnoringWhitespace(String expected) {
     context.expect(
         () => prefixFirst('equals ignoring whitespace ', literal(expected)),

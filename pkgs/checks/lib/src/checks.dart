@@ -32,7 +32,7 @@ extension Skip<T> on Subject<T> {
   /// failure.
   ///
   /// ```dart
-  /// checkThat(actual)
+  /// check(actual)
   ///     ..stillChecked()
   ///     ..skip('reason the expectation is temporarily not met').notChecked();
   /// ```
@@ -56,10 +56,9 @@ extension Skip<T> on Subject<T> {
 /// messages.
 ///
 /// ```dart
-/// checkThat(actual).equals(expected);
+/// check(actual).equals(expected);
 /// ```
-Subject<T> checkThat<T>(T value, {String? because}) =>
-    Subject._(_TestContext._root(
+Subject<T> check<T>(T value, {String? because}) => Subject._(_TestContext._root(
       value: _Present(value),
       // TODO - switch between "a" and "an"
       label: 'a $T',
@@ -237,7 +236,7 @@ abstract class Context<T> {
   ///
   /// May not be used from the context for a [Subject] created by [softCheck] or
   /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
-  /// [TestFailure] when used with a [checkThat] subject. Most conditions should
+  /// [TestFailure] when used with a [check] subject. Most conditions should
   /// prefer to use [expect] or [expectAsync].
   void expectUnawaited(Iterable<String> Function() clause,
       void Function(T, void Function(Rejection)) predicate);
@@ -595,7 +594,7 @@ class CheckFailure {
 ///
 /// A subject may have some number of succeeding expectations, and the failure may
 /// be for an expectation against a property derived from the value at the root
-/// of the subject. For example, in `checkThat([]).length.equals(1)` the
+/// of the subject. For example, in `check([]).length.equals(1)` the
 /// specific value that gets rejected is `0` from the length of the list, and
 /// the subject that sees the rejection is nested with the label "has length".
 class FailureDetail {
