@@ -27,7 +27,7 @@ extension CoreChecks<T> on Subject<T> {
   /// in a way that would conflict.
   ///
   /// ```
-  /// checkThat(something)
+  /// check(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
   ///   ..has((s) => s.bar, 'bar').which(it()
   ///     ..isLessThan(10)
