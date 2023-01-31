@@ -1,7 +1,9 @@
-## 1.22.3-dev
+## 1.23.0-dev
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
+* Add support for CHROME_EXECUTABLE environment variable. This overrides any
+  config file settings.
 
 ## 1.22.2
 

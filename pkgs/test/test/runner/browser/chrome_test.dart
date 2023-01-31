@@ -82,4 +82,21 @@ void main() {
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
+
+  test('can override chrome location with CHROME_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''').create();
+    var test = await runTest(['-p', 'chrome', 'test.dart'],
+        environment: {'CHROME_EXECUTABLE': '/some/bad/path'});
+    expect(
+        test.stdout,
+        emitsThrough(
+            contains('Failed to run Chrome: No such file or directory')));
+    await test.shouldExit(1);
+  });
 }

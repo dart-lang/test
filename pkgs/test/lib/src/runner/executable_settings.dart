@@ -36,6 +36,9 @@ class ExecutableSettings {
 
   /// The path to the executable for the current operating system.
   String get executable {
+    final envVariable = Platform.environment['CHROME_EXECUTABLE'];
+    if (envVariable != null) return envVariable;
+
     if (Platform.isMacOS) return _macOSExecutable!;
     if (!Platform.isWindows) return _linuxExecutable!;
     final windowsExecutable = _windowsExecutable!;
