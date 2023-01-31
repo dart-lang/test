@@ -64,7 +64,9 @@ extension ThrowsCheck<T> on Subject<T Function()> {
       var callCount = 0;
       theFunction = () {
         callCount++;
-        if (times < 0 || callCount == times) outstandingWork.complete();
+        if ((times < 0 && callCount == 1) || callCount == times) {
+          outstandingWork.complete();
+        }
         if (times >= 0 && callCount > times) {
           reject(Rejection(
               which: ['was called $callCount times (more than $times)']));
@@ -74,6 +76,19 @@ extension ThrowsCheck<T> on Subject<T Function()> {
     });
     // If theFunction is `null` it shouldn't be possible to call the callback
     // because it was used in `describe(it<void Function()>()..isCalled())`
+    return theFunction ?? _unusable;
+  }
+
+  T Function() neverCalled() {
+    T Function()? theFunction;
+    context.expectUnawaited(() => ['is never called'], (actual, reject) {
+      theFunction = () {
+        reject(Rejection(which: ['was called']));
+        return actual();
+      };
+    });
+    // If theFunction is `null` it shouldn't be possible to call the callback
+    // because it was used in `describe(it<void Function()>()..neverCalled())`
     return theFunction ?? _unusable;
   }
 
@@ -91,7 +106,9 @@ extension IsCalled1<R, A> on Subject<R Function(A)> {
       var callCount = 0;
       theFunction = (a) {
         callCount++;
-        if (times < 0 || callCount == times) outstandingWork.complete();
+        if ((times < 0 && callCount == 1) || callCount == times) {
+          outstandingWork.complete();
+        }
         if (times >= 0 && callCount > times) {
           reject(Rejection(
               which: ['was called $callCount times (more than $times)']));
@@ -101,6 +118,19 @@ extension IsCalled1<R, A> on Subject<R Function(A)> {
     });
     // If theFunction is `null` it shouldn't be possible to call the callback
     // because it was used in `describe(it<void Function()>()..isCalled())`
+    return theFunction ?? _unusable;
+  }
+
+  R Function(A) neverCalled() {
+    R Function(A)? theFunction;
+    context.expectUnawaited(() => ['is never called'], (actual, reject) {
+      theFunction = (a) {
+        reject(Rejection(which: ['was called']));
+        return actual(a);
+      };
+    });
+    // If theFunction is `null` it shouldn't be possible to call the callback
+    // because it was used in `describe(it<void Function()>()..neverCalled())`
     return theFunction ?? _unusable;
   }
 
