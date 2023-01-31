@@ -5,6 +5,7 @@
 // TODO Add doc about how failure strings work.
 import 'dart:async';
 
+import 'package:meta/meta.dart' as meta;
 import 'package:test_api/hooks.dart';
 
 import 'describe.dart';
@@ -58,6 +59,7 @@ extension Skip<T> on Subject<T> {
 /// ```dart
 /// checkThat(actual).equals(expected);
 /// ```
+@meta.useResult
 Subject<T> checkThat<T>(T value, {String? because}) =>
     Subject._(_TestContext._root(
       value: _Present(value),
