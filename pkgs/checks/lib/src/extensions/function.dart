@@ -81,8 +81,7 @@ extension ThrowsCheck<T> on Subject<T Function()> {
       throw StateError('This function should not be used');
 }
 
-extension IsCalled1<R,A> on Subject<R Function(A)> {
-
+extension IsCalled1<R, A> on Subject<R Function(A)> {
   R Function(A) isCalled({int times = -1}) {
     R Function(A)? theFunction;
     context.expectUnawaited(
