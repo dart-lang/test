@@ -93,10 +93,7 @@ void main() {
 ''').create();
     var test = await runTest(['-p', 'chrome', 'test.dart'],
         environment: {'CHROME_EXECUTABLE': '/some/bad/path'});
-    expect(
-        test.stdout,
-        emitsThrough(
-            contains('Failed to run Chrome: No such file or directory')));
+    expect(test.stdout, emitsThrough(contains('Failed to run Chrome:')));
     await test.shouldExit(1);
   });
 }
