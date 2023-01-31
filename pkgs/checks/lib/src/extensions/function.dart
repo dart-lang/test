@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/context.dart';
+import 'package:test_api/hooks.dart';
 
 extension ThrowsCheck<T> on Subject<T Function()> {
   /// Expects that a function throws synchronously when it is called.
@@ -53,4 +54,57 @@ extension ThrowsCheck<T> on Subject<T Function()> {
       }
     });
   }
+
+  T Function() isCalled({int times = -1}) {
+    T Function()? theFunction;
+    context.expectUnawaited(
+        () => ['is called${times >= 0 ? ' $times times' : ''}'],
+        (actual, reject) {
+      final outstandingWork = TestHandle.current.markPending();
+      var callCount = 0;
+      theFunction = () {
+        callCount++;
+        if (times < 0 || callCount == times) outstandingWork.complete();
+        if (times >= 0 && callCount > times) {
+          reject(Rejection(
+              which: ['was called $callCount times (more than $times)']));
+        }
+        return actual();
+      };
+    });
+    // If theFunction is `null` it shouldn't be possible to call the callback
+    // because it was used in `describe(it<void Function()>()..isCalled())`
+    return theFunction ?? _unusable;
+  }
+
+  static Never _unusable() =>
+      throw StateError('This function should not be used');
+}
+
+extension IsCalled1<R,A> on Subject<R Function(A)> {
+
+  R Function(A) isCalled({int times = -1}) {
+    R Function(A)? theFunction;
+    context.expectUnawaited(
+        () => ['is called${times >= 0 ? ' $times times' : ''}'],
+        (actual, reject) {
+      final outstandingWork = TestHandle.current.markPending();
+      var callCount = 0;
+      theFunction = (a) {
+        callCount++;
+        if (times < 0 || callCount == times) outstandingWork.complete();
+        if (times >= 0 && callCount > times) {
+          reject(Rejection(
+              which: ['was called $callCount times (more than $times)']));
+        }
+        return actual(a);
+      };
+    });
+    // If theFunction is `null` it shouldn't be possible to call the callback
+    // because it was used in `describe(it<void Function()>()..isCalled())`
+    return theFunction ?? _unusable;
+  }
+
+  static Never _unusable(_) =>
+      throw StateError('This function should not be used');
 }
