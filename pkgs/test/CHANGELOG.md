@@ -4,6 +4,7 @@
   reporter.
 * Add support for CHROME_EXECUTABLE environment variable. This overrides any
   config file settings.
+* Support running tests by absolute file uri.
 
 ## 1.22.2
 
