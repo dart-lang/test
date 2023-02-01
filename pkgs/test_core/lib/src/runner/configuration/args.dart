@@ -181,7 +181,15 @@ void _parseTestSelection(
   TestSelection selection;
   String path;
   if (firstQuestion == -1) {
-    path = Uri.parse(option).path;
+    if (option.contains('://')) {
+      path = Uri.parse(option).path;
+      // Strip out the leading slash before the drive letter.
+      if (Platform.isWindows && path.startsWith('/')) {
+        path = path.substring(1);
+      }
+    } else {
+      path = option;
+    }
     selection = TestSelection();
   } else if (option.substring(0, firstQuestion).contains('\\')) {
     throw FormatException(
