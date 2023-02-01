@@ -9,7 +9,7 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
-  Subject<R> has<R>(R Function(T) extract, String name) {
+  Subject<R> have<R>(R Function(T) extract, String name) {
     return context.nest('has $name', (T value) {
       try {
         return Extracted.value(extract(value));
@@ -69,7 +69,7 @@ extension CoreChecks<T> on Subject<T> {
   /// Expects that the value is assignable to type [T].
   ///
   /// If the value is a [T], returns a [Subject] for further expectations.
-  Subject<R> isA<R>() {
+  Subject<R> beA<R>() {
     return context.nest<R>('is a $R', (actual) {
       if (actual is! R) {
         return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
@@ -79,7 +79,7 @@ extension CoreChecks<T> on Subject<T> {
   }
 
   /// Expects that the value is equal to [other] according to [operator ==].
-  void equals(T other) {
+  void equal(T other) {
     context.expect(() => prefixFirst('equals ', literal(other)), (actual) {
       if (actual == other) return null;
       return Rejection(which: ['are not equal']);
@@ -87,7 +87,7 @@ extension CoreChecks<T> on Subject<T> {
   }
 
   /// Expects that the value is [identical] to [other].
-  void identicalTo(T other) {
+  void beIdenticalTo(T other) {
     context.expect(() => prefixFirst('is identical to ', literal(other)),
         (actual) {
       if (identical(actual, other)) return null;
@@ -97,7 +97,7 @@ extension CoreChecks<T> on Subject<T> {
 }
 
 extension BoolChecks on Subject<bool> {
-  void isTrue() {
+  void beTrue() {
     context.expect(
       () => ['is true'],
       (actual) => actual
@@ -106,7 +106,7 @@ extension BoolChecks on Subject<bool> {
     );
   }
 
-  void isFalse() {
+  void beFalse() {
     context.expect(
       () => ['is false'],
       (actual) => !actual
@@ -117,14 +117,14 @@ extension BoolChecks on Subject<bool> {
 }
 
 extension NullabilityChecks<T> on Subject<T?> {
-  Subject<T> isNotNull() {
+  Subject<T> beNonNull() {
     return context.nest<T>('is not null', (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
     }, atSameLevel: true);
   }
 
-  void isNull() {
+  void beNull() {
     context.expect(() => const ['is null'], (actual) {
       if (actual != null) return Rejection();
       return null;

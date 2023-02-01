@@ -10,28 +10,28 @@ import '../test_shared.dart';
 void main() {
   group('TypeChecks', () {
     test('isA', () {
-      checkThat(1).isA<int>();
+      1.must.beA<int>();
 
-      checkThat(1).isRejectedBy(it()..isA<String>(), which: ['Is a int']);
+      1.must.beRejectedBy(would()..beA<String>(), which: ['Is a int']);
     });
   });
   group('HasField', () {
     test('has', () {
-      checkThat(1).has((v) => v.isOdd, 'isOdd').isTrue();
+      1.must.have((v) => v.isOdd, 'isOdd').beTrue();
 
-      checkThat(2).isRejectedBy(
-          it()..has((v) => throw UnimplementedError(), 'isOdd'),
+      2.must.beRejectedBy(
+          would()..have((v) => throw UnimplementedError(), 'isOdd'),
           which: ['threw while trying to read property']);
     });
 
     test('which', () {
-      checkThat(true).which(it()..isTrue());
+      true.must.which(would()..beTrue());
     });
 
     test('not', () {
-      checkThat(false).not(it()..isTrue());
+      false.must.not(would()..beTrue());
 
-      checkThat(true).isRejectedBy(it()..not(it()..isTrue()), which: [
+      true.must.beRejectedBy(would()..not(would()..beTrue()), which: [
         'is a value that: ',
         '    is true',
       ]);
@@ -39,12 +39,13 @@ void main() {
 
     group('anyOf', () {
       test('succeeds for happy case', () {
-        checkThat(-10).anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]);
+        (-10).must.anyOf([would()..beGreaterThan(1), would()..beLessThat(-1)]);
       });
 
       test('rejects values that do not satisfy any condition', () {
-        checkThat(0).isRejectedBy(
-            it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
+        0.must.beRejectedBy(
+            would()
+              ..anyOf([would()..beGreaterThan(1), would()..beLessThat(-1)]),
             which: ['did not match any condition']);
       });
     });
@@ -52,41 +53,42 @@ void main() {
 
   group('BoolChecks', () {
     test('isTrue', () {
-      checkThat(true).isTrue();
+      true.must.beTrue();
 
-      checkThat(false).isRejectedBy(it()..isTrue());
+      false.must.beRejectedBy(would()..beTrue());
     });
 
     test('isFalse', () {
-      checkThat(false).isFalse();
+      false.must.beFalse();
 
-      checkThat(true).isRejectedBy(it()..isFalse());
+      true.must.beRejectedBy(would()..beFalse());
     });
   });
 
   group('EqualityChecks', () {
     test('equals', () {
-      checkThat(1).equals(1);
+      1.must.equal(1);
 
-      checkThat(1).isRejectedBy(it()..equals(2), which: ['are not equal']);
+      1.must.beRejectedBy(would()..equal(2), which: ['are not equal']);
     });
     test('identical', () {
-      checkThat(1).identicalTo(1);
+      1.must.beIdenticalTo(1);
 
-      checkThat(1)
-          .isRejectedBy(it()..identicalTo(2), which: ['is not identical']);
+      1
+          .must
+          .beRejectedBy(would()..beIdenticalTo(2), which: ['is not identical']);
     });
   });
   group('NullabilityChecks', () {
     test('isNotNull', () {
-      checkThat(1).isNotNull();
+      1.must.beNonNull();
 
-      checkThat(null).isRejectedBy(it()..isNotNull());
+      null.must.beRejectedBy(would()..beNonNull());
     });
     test('isNull', () {
-      checkThat(null).isNull();
+      null.must.beNull();
 
-      checkThat(1).isRejectedBy(it()..isNull());
+      1.must.beRejectedBy(would()..beNull());
     });
   });
 }

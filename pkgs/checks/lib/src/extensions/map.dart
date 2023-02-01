@@ -8,11 +8,11 @@ import '../collection_equality.dart';
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
-  Subject<Iterable<MapEntry<K, V>>> get entries =>
-      has((m) => m.entries, 'entries');
-  Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
-  Subject<Iterable<V>> get values => has((m) => m.values, 'values');
-  Subject<int> get length => has((m) => m.length, 'length');
+  Subject<Iterable<MapEntry<K, V>>> get haveEntries =>
+      have((m) => m.entries, 'entries');
+  Subject<Iterable<K>> get haveKeys => have((m) => m.keys, 'keys');
+  Subject<Iterable<V>> get haveValues => have((m) => m.values, 'values');
+  Subject<int> get haveLength => have((m) => m.length, 'length');
   Subject<V> operator [](K key) {
     final keyString = literal(key).join(r'\n');
     return context.nest('contains a value for $keyString', (actual) {
@@ -24,14 +24,14 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     });
   }
 
-  void isEmpty() {
+  void beEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
       return Rejection(which: ['is not empty']);
     });
   }
 
-  void isNotEmpty() {
+  void beNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
       return Rejection(which: ['is not empty']);
@@ -39,7 +39,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   }
 
   /// Expects that the map contains [key] according to [Map.containsKey].
-  void containsKey(K key) {
+  void containKey(K key) {
     final keyString = literal(key).join(r'\n');
     context.expect(() => ['contains key $keyString'], (actual) {
       if (actual.containsKey(key)) return null;
@@ -49,7 +49,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains some key such that [keyCondition] is
   /// satisfied.
-  void containsKeyThat(Condition<K> keyCondition) {
+  void containKeyWhich(Condition<K> keyCondition) {
     context.expect(() {
       final conditionDescription = describe(keyCondition);
       assert(conditionDescription.isNotEmpty);
@@ -67,7 +67,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   }
 
   /// Expects that the map contains [value] according to [Map.containsValue].
-  void containsValue(V value) {
+  void containValue(V value) {
     final valueString = literal(value).join(r'\n');
     context.expect(() => ['contains value $valueString'], (actual) {
       if (actual.containsValue(value)) return null;
@@ -77,7 +77,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains some value such that [valueCondition] is
   /// satisfied.
-  void containsValueThat(Condition<V> valueCondition) {
+  void containValueWhich(Condition<V> valueCondition) {
     context.expect(() {
       final conditionDescription = describe(valueCondition);
       assert(conditionDescription.isNotEmpty);
@@ -98,7 +98,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// of [expected].
   ///
   /// {@macro deep_collection_equals}
-  void deepEquals(Map<Object?, Object?> expected) => context
+  void deeplyEqual(Map<Object?, Object?> expected) => context
           .expect(() => prefixFirst('is deeply equal to ', literal(expected)),
               (actual) {
         final which = deepCollectionEquals(actual, expected);

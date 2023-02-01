@@ -6,7 +6,7 @@ import 'package:checks/context.dart';
 
 extension NumChecks on Subject<num> {
   /// Expects that this number is greater than [other].
-  void isGreaterThan(num other) {
+  void beGreaterThan(num other) {
     context.expect(() => ['is greater than <$other>'], (actual) {
       if (actual > other) return null;
       return Rejection(which: ['is not greater than <$other>']);
@@ -14,7 +14,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that this number is greater than or equal to [other].
-  void isGreaterOrEqual(num other) {
+  void beGreaterOrEqual(num other) {
     context.expect(() => ['is greater than or equal to <$other>'], (actual) {
       if (actual >= other) return null;
       return Rejection(which: ['is not greater than or equal to <$other>']);
@@ -22,7 +22,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that this number is less than [other].
-  void isLessThan(num other) {
+  void beLessThat(num other) {
     context.expect(() => ['is less than <$other>'], (actual) {
       if (actual < other) return null;
       return Rejection(which: ['is not less than <$other>']);
@@ -30,7 +30,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that this number is less than or equal to [other].
-  void isLessOrEqual(num other) {
+  void beLessOrEqual(num other) {
     context.expect(() => ['is less than or equal to <$other>'], (actual) {
       if (actual <= other) return null;
       return Rejection(which: ['is not less than or equal to <$other>']);
@@ -38,7 +38,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNaN] is true.
-  void isNaN() {
+  void beNaN() {
     context.expect(() => ['is not a number (NaN)'], (actual) {
       if (actual.isNaN) return null;
       return Rejection(which: ['is a number']);
@@ -46,7 +46,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNaN] is false.
-  void isNotNaN() {
+  void beANumber() {
     context.expect(() => ['is a number (not NaN)'], (actual) {
       if (!actual.isNaN) return null;
       return Rejection(which: ['is not a number (NaN)']);
@@ -54,7 +54,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNegative] is true.
-  void isNegative() {
+  void beNegative() {
     context.expect(() => ['is negative'], (actual) {
       if (actual.isNegative) return null;
       return Rejection(which: ['is not negative']);
@@ -62,7 +62,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNegative] is false.
-  void isNotNegative() {
+  void beNonNegative() {
     context.expect(() => ['is not negative'], (actual) {
       if (!actual.isNegative) return null;
       return Rejection(which: ['is negative']);
@@ -70,7 +70,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isFinite] is true.
-  void isFinite() {
+  void beFinite() {
     context.expect(() => ['is finite'], (actual) {
       if (actual.isFinite) return null;
       return Rejection(which: ['is not finite']);
@@ -81,7 +81,7 @@ extension NumChecks on Subject<num> {
   ///
   /// Satisfied by [double.nan], [double.infinity] and
   /// [double.negativeInfinity].
-  void isNotFinite() {
+  void notBeFinite() {
     context.expect(() => ['is not finite'], (actual) {
       if (!actual.isFinite) return null;
       return Rejection(which: ['is finite']);
@@ -91,7 +91,7 @@ extension NumChecks on Subject<num> {
   /// Expects that [num.isInfinite] is true.
   ///
   /// Satisfied by [double.infinity] and [double.negativeInfinity].
-  void isInfinite() {
+  void beInfinite() {
     context.expect(() => ['is infinite'], (actual) {
       if (actual.isInfinite) return null;
       return Rejection(which: ['is not infinite']);
@@ -101,7 +101,7 @@ extension NumChecks on Subject<num> {
   /// Expects that [num.isInfinite] is false.
   ///
   /// Satisfied by [double.nan] and finite numbers.
-  void isNotInfinite() {
+  void notBeInfinite() {
     context.expect(() => ['is not infinite'], (actual) {
       if (!actual.isInfinite) return null;
       return Rejection(which: ['is infinite']);
@@ -110,7 +110,7 @@ extension NumChecks on Subject<num> {
 
   /// Expects that the difference between this number and [other] is less than
   /// or equal to [delta].
-  void isCloseTo(num other, num delta) {
+  void beCloseTo(num other, num delta) {
     context.expect(() => ['is within <$delta> of <$other>'], (actual) {
       final difference = (other - actual).abs();
       if (difference <= delta) return null;

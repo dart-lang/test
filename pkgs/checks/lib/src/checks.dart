@@ -47,20 +47,22 @@ extension Skip<T> on Subject<T> {
   }
 }
 
-/// Creates a [Subject] that can be used to validate expectations against
-/// [value], with an exception upon a failed expectation.
-///
-/// Expectations that are not satisfied throw a [TestFailure] to interrupt the
-/// currently running test and mark it as failed.
-///
-/// If [because] is passed it will be included as a "Reason:" line in failure
-/// messages.
-///
-/// ```dart
-/// checkThat(actual).equals(expected);
-/// ```
-@meta.useResult
-Subject<T> checkThat<T>(T value, {String? because}) =>
+extension Check<T> on T {
+  /// Creates a [Subject] that can be used to validate expectations against
+  /// this value, with an exception upon a failed expectation.
+  ///
+  /// Expectations that are not satisfied throw a [TestFailure] to interrupt the
+  /// currently running test and mark it as failed.
+  ///
+  /// ```dart
+  /// actual.check.equals(expected);
+  /// ```
+  @meta.useResult
+  // TODO: Cannot support `because` with a getter
+  Subject<T> get must => _check(this);
+}
+
+Subject<T> _check<T>(T value, {String? because}) =>
     Subject._(_TestContext._root(
       value: _Present(value),
       // TODO - switch between "a" and "an"
@@ -181,7 +183,7 @@ abstract class Condition<T> {
   Future<void> applyAsync(Subject<T> subject);
 }
 
-ConditionSubject<T> it<T>() => ConditionSubject._();
+ConditionSubject<T> would<T>() => ConditionSubject._();
 
 extension ContextExtension<T> on Subject<T> {
   /// The expectations and nesting context for this subject.

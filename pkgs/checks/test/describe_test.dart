@@ -9,13 +9,13 @@ import 'package:test/scaffolding.dart';
 void main() {
   group('describe', () {
     test('succeeds for empty conditions', () {
-      checkThat(describe(it())).isEmpty();
+      (describe(would())).must.beEmpty();
     });
     test('includes condition clauses', () {
-      checkThat(describe(it()..equals(1))).deepEquals(['  equals <1>']);
+      (describe(would()..equal(1))).must.deeplyEqual(['  equals <1>']);
     });
     test('includes nested clauses', () {
-      checkThat(describe(it<String>()..length.equals(1))).deepEquals([
+      (describe(would<String>()..haveLength.equal(1))).must.deeplyEqual([
         '  has length that:',
         '    equals <1>',
       ]);

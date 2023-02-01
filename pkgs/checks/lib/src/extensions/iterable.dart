@@ -8,19 +8,19 @@ import '../collection_equality.dart';
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
-  Subject<int> get length => has((l) => l.length, 'length');
-  Subject<T> get first => has((l) => l.first, 'first element');
-  Subject<T> get last => has((l) => l.last, 'last element');
-  Subject<T> get single => has((l) => l.single, 'single element');
+  Subject<int> get haveLength => have((l) => l.length, 'length');
+  Subject<T> get haveFirst => have((l) => l.first, 'first element');
+  Subject<T> get haveLast => have((l) => l.last, 'last element');
+  Subject<T> get haveSingleElement => have((l) => l.single, 'single element');
 
-  void isEmpty() {
+  void beEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
       return Rejection(which: ['is not empty']);
     });
   }
 
-  void isNotEmpty() {
+  void beNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
       return Rejection(which: ['is not empty']);
@@ -29,7 +29,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
 
   /// Expects that the iterable contains [element] according to
   /// [Iterable.contains].
-  void contains(T element) {
+  void contain(T element) {
     context.expect(() {
       return prefixFirst('contains ', literal(element));
     }, (actual) {
@@ -60,7 +60,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// checkThat([1, 0, 2, 0, 3])
   ///   .containsInOrder([1, it<int>()..isGreaterThan(1), 3]);
   /// ```
-  void containsInOrder(Iterable<Object?> elements) {
+  void containInOrder(Iterable<Object?> elements) {
     context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
         (actual) {
       final expected = elements.toList();
@@ -88,7 +88,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
 
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
-  void any(Condition<T> elementCondition) {
+  void containElementWhich(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
@@ -109,7 +109,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [elementCondition].
   ///
   /// Empty iterables will pass always pass this expectation.
-  void every(Condition<T> elementCondition) {
+  void containOnlyElementsWhich(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
@@ -141,7 +141,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// elements of [expected].
   ///
   /// {@macro deep_collection_equals}
-  void deepEquals(Iterable<Object?> expected) => context
+  void deeplyEqual(Iterable<Object?> expected) => context
           .expect(() => prefixFirst('is deeply equal to ', literal(expected)),
               (actual) {
         final which = deepCollectionEquals(actual, expected);
@@ -155,7 +155,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// Should not be used for very large collections, runtime is O(n^2.5) in the
   /// worst case where the iterables contain many equal elements, and O(n^2) in
   /// more typical cases.
-  void unorderedEquals(Iterable<T> expected) {
+  void unorderedEqual(Iterable<T> expected) {
     context.expect(() => prefixFirst('unordered equals ', literal(expected)),
         (actual) {
       final which = unorderedCompare(
@@ -221,7 +221,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [description] is used in the Expected clause. It should be a predicate
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
-  void pairwiseComparesTo<S>(List<S> expected,
+  void pairwiseCompareTo<S>(List<S> expected,
       Condition<T> Function(S) elementCondition, String description) {
     context.expect(() {
       return prefixFirst('pairwise $description ', literal(expected));

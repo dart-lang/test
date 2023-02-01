@@ -11,16 +11,16 @@ void main() {
   group('ThrowsChecks', () {
     group('throws', () {
       test('succeeds for happy case', () {
-        checkThat(() => throw StateError('oops!')).throws<StateError>();
+        (() => throw StateError('oops!')).must.throwException<StateError>();
       });
       test('fails for functions that return normally', () {
-        checkThat(() {}).isRejectedBy(it()..throws<StateError>(),
+        (() {}).must.beRejectedBy(would()..throwException<StateError>(),
             actual: ['a function that returned <null>'],
             which: ['did not throw']);
       });
       test('fails for functions that throw the wrong type', () {
-        checkThat(() => throw StateError('oops!')).isRejectedBy(
-          it()..throws<ArgumentError>(),
+        (() => throw StateError('oops!')).must.beRejectedBy(
+          would()..throwException<ArgumentError>(),
           actual: ['a function that threw error <Bad state: oops!>'],
           which: ['did not throw an ArgumentError'],
         );
@@ -29,13 +29,13 @@ void main() {
 
     group('returnsNormally', () {
       test('succeeds for happy case', () {
-        checkThat(() => 1).returnsNormally().equals(1);
+        (() => 1).must.returnNormally().equal(1);
       });
       test('fails for functions that throw', () {
-        checkThat(() {
+        (() {
           Error.throwWithStackTrace(
               StateError('oops!'), StackTrace.fromString('fake trace'));
-        }).isRejectedBy(it()..returnsNormally(),
+        }).must.beRejectedBy(would()..returnNormally(),
             actual: ['a function that throws'],
             which: ['threw <Bad state: oops!>', 'fake trace']);
       });

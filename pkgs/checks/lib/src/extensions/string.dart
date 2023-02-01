@@ -10,7 +10,7 @@ import 'core.dart';
 
 extension StringChecks on Subject<String> {
   /// Expects that the value contains [pattern] according to [String.contains];
-  void contains(Pattern pattern) {
+  void contain(Pattern pattern) {
     context.expect(() => prefixFirst('contains ', literal(pattern)), (actual) {
       if (actual.contains(pattern)) return null;
       return Rejection(
@@ -19,23 +19,23 @@ extension StringChecks on Subject<String> {
     });
   }
 
-  Subject<int> get length => has((m) => m.length, 'length');
+  Subject<int> get haveLength => have((m) => m.length, 'length');
 
-  void isEmpty() {
+  void beEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
       return Rejection(which: ['is not empty']);
     });
   }
 
-  void isNotEmpty() {
+  void beNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
       return Rejection(which: ['is empty']);
     });
   }
 
-  void startsWith(Pattern other) {
+  void startWith(Pattern other) {
     context.expect(
       () => prefixFirst('starts with ', literal(other)),
       (actual) {
@@ -47,7 +47,7 @@ extension StringChecks on Subject<String> {
     );
   }
 
-  void endsWith(String other) {
+  void endWith(String other) {
     context.expect(
       () => prefixFirst('ends with ', literal(other)),
       (actual) {
@@ -60,7 +60,7 @@ extension StringChecks on Subject<String> {
   }
 
   /// Expects that the string matches the regular expression [expected].
-  void matches(RegExp expected) {
+  void matchRegex(RegExp expected) {
     context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
       if (expected.hasMatch(actual)) return null;
       return Rejection(
@@ -74,7 +74,7 @@ extension StringChecks on Subject<String> {
   /// For example, the following will succeed:
   ///
   ///     checkThat('abcdefg').containsInOrder(['a','e']);
-  void containsInOrder(Iterable<String> expected) {
+  void containInOrder(Iterable<String> expected) {
     context.expect(() => prefixFirst('contains, in order: ', literal(expected)),
         (actual) {
       var fromIndex = 0;
@@ -96,14 +96,14 @@ extension StringChecks on Subject<String> {
 
   /// Expects that the `String` contains exactly the same code units as
   /// [expected].
-  void equals(String expected) {
+  void equal(String expected) {
     context.expect(() => prefixFirst('equals ', literal(expected)),
         (actual) => _findDifference(actual, expected));
   }
 
   /// Expects that the `String` contains the same characters as [expected] if
   /// both were lower case.
-  void equalsIgnoringCase(String expected) {
+  void equalIgnoringCase(String expected) {
     context.expect(
         () => prefixFirst('equals ignoring case ', literal(expected)),
         (actual) => _findDifference(
@@ -124,7 +124,7 @@ extension StringChecks on Subject<String> {
   ///
   ///     checkThat('helloworld').equalsIgnoringWhitespace('hello world');
   ///     checkThat('he llo world').equalsIgnoringWhitespace('hello world');
-  void equalsIgnoringWhitespace(String expected) {
+  void equalIgnoringQhitespace(String expected) {
     context.expect(
         () => prefixFirst('equals ignoring whitespace ', literal(expected)),
         (actual) {

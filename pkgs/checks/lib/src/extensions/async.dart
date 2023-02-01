@@ -15,7 +15,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// future completes.
   ///
   /// Fails if the future completes as an error.
-  Future<Subject<T>> completes() =>
+  Future<Subject<T>> complete() =>
       context.nestAsync<T>('completes to a value', (actual) async {
         try {
           return Extracted.value(await actual);
@@ -24,7 +24,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
             'a future that completes as an error'
           ], which: [
             ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...(const LineSplitter()).convert(st.toString())
+            ...const LineSplitter().convert(st.toString())
           ]);
         }
       });
@@ -38,7 +38,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// Not compatible with [softCheck] or [softCheckAsync] since there is no
   /// concrete end point where this condition has definitely succeeded.
-  void doesNotComplete() {
+  void neverComplete() {
     context.expectUnawaited(() => ['does not complete'], (actual, reject) {
       unawaited(actual.then((r) {
         reject(Rejection(
@@ -48,7 +48,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
           'a future that completed as an error:'
         ], which: [
           ...prefixFirst('threw ', literal(e)),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]));
       }));
     });
@@ -60,7 +60,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// future completes as an error.
   ///
   /// Fails if the future completes to a value.
-  Future<Subject<E>> throws<E extends Object>() => context.nestAsync<E>(
+  Future<Subject<E>> throwException<E extends Object>() => context.nestAsync<E>(
           'completes to an error${E == Object ? '' : ' of type $E'}',
           (actual) async {
         try {
@@ -74,7 +74,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
               actual: prefixFirst('completed to error ', literal(e)),
               which: [
                 'threw an exception that is not a $E at:',
-                ...(const LineSplitter()).convert(st.toString())
+                ...const LineSplitter().convert(st.toString())
               ]);
         }
       });
@@ -109,7 +109,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// Fails if the stream emits an error instead of a value, or closes without
   /// emitting a value.
-  Future<Subject<T>> emits() =>
+  Future<Subject<T>> emit() =>
       context.nestAsync<T>('emits a value', (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
@@ -124,7 +124,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
               actual: prefixFirst('a stream with error ', literal(e)),
               which: [
                 'emitted an error instead of a value at:',
-                ...(const LineSplitter()).convert(st.toString())
+                ...const LineSplitter().convert(st.toString())
               ]);
         }
       });
@@ -140,7 +140,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation fails, the source queue will be left in it's original
   /// state.
   /// If this expectation succeeds, consumes the error event.
-  Future<Subject<E>> emitsError<E extends Object>() =>
+  Future<Subject<E>> emitError<E extends Object>() =>
       context.nestAsync('emits an error${E == Object ? '' : ' of type $E'}',
           (actual) async {
         if (!await actual.hasNext) {
@@ -161,7 +161,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
               actual: prefixFirst('a stream with error ', literal(e)),
               which: [
                 'emitted an error which is not $E at:',
-                ...(const LineSplitter()).convert(st.toString())
+                ...const LineSplitter().convert(st.toString())
               ]);
         }
       });
@@ -179,7 +179,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes the matching event and all prior
   /// events.
-  Future<void> emitsThrough(Condition<T> condition) async {
+  Future<void> emitThrough(Condition<T> condition) async {
     await _expectAsync(
         () => [
               'emits any values then emits a value that:',
@@ -341,7 +341,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes all the events that did not satisfy
   /// [condition] until the end of the stream.
-  Future<void> neverEmits(Condition<T> condition) async {
+  Future<void> neverEmit(Condition<T> condition) async {
     await _expectAsync(
         () => ['never emits a value that:', ...describe(condition)],
         (actual) async {
@@ -367,7 +367,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If a non-matching event is emitted, no events are consumed.
   /// If a matching event is emitted, that event is consumed.
-  Future<void> mayEmit(Condition<T> condition) async {
+  Future<void> maybeEmit(Condition<T> condition) async {
     await context
         .expectAsync(() => ['may emit a value that:', ...describe(condition)],
             (actual) async {
@@ -392,7 +392,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// - A non-matching event is emitted.
   /// - An error is emitted.
   /// - The stream closes.
-  Future<void> mayEmitMultiple(Condition<T> condition) async {
+  Future<void> maybeEmitMultiple(Condition<T> condition) async {
     await context
         .expectAsync(() => ['may emit a value that:', ...describe(condition)],
             (actual) async {
@@ -416,7 +416,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If this expectation fails, the source queue will be left in its original
   /// state, the event or error that caused it to fail will not be consumed.
-  Future<void> isDone() async {
+  Future<void> beDone() async {
     await _expectAsync(() => ['is done'], (actual) async {
       if (!await actual.hasNext) return null;
       try {
@@ -429,7 +429,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           'a stream'
         ], which: [
           ...prefixFirst('emitted an unexpected error: ', literal(e)),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]);
       }
     });
@@ -454,14 +454,12 @@ extension ChainAsync<T> on Future<Subject<T>> {
   }
 }
 
-extension StreamQueueWrap<T> on Subject<Stream<T>> {
+extension StreamQueueWrap<T> on Stream<T> {
   /// Wrap the stream in a [StreamQueue] to allow using checks from
   /// [StreamChecks].
   ///
   /// Stream expectations operate on a queue, instead of directly on the stream,
   /// so that they can support conditional expectations and check multiple
   /// possibilities from the same point in the stream.
-  Subject<StreamQueue<T>> get withQueue =>
-      context.nest('', (actual) => Extracted.value(StreamQueue(actual)),
-          atSameLevel: true);
+  StreamQueue<T> get withQueue => StreamQueue(this);
 }

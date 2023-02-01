@@ -14,61 +14,61 @@ const _testMap = {
 
 void main() {
   test('length', () {
-    checkThat(_testMap).length.equals(2);
+    _testMap.must.haveLength.equal(2);
   });
   test('entries', () {
-    checkThat(_testMap).entries.any(
-          it()
-            ..has((p0) => p0.key, 'key').equals('a')
-            ..has((p0) => p0.value, 'value').equals(1),
-        );
+    _testMap.must.haveEntries.containElementWhich(
+      would()
+        ..have((p0) => p0.key, 'key').equal('a')
+        ..have((p0) => p0.value, 'value').equal(1),
+    );
   });
   test('keys', () {
-    checkThat(_testMap).keys.contains('a');
+    _testMap.must.haveKeys.contain('a');
   });
   test('values', () {
-    checkThat(_testMap).values.contains(1);
+    _testMap.must.haveValues.contain(1);
   });
 
   test('operator []', () async {
-    checkThat(_testMap)['a'].equals(1);
-    checkThat(_testMap)
-        .isRejectedBy(it()..['z'], which: ['does not contain the key \'z\'']);
+    _testMap.must['a'].equal(1);
+    _testMap.must.beRejectedBy(would()..['z'],
+        which: ['does not contain the key \'z\'']);
   });
   test('isEmpty', () {
-    checkThat(<String, int>{}).isEmpty();
-    checkThat(_testMap).isRejectedBy(it()..isEmpty(), which: ['is not empty']);
+    (<String, int>{}).must.beEmpty();
+    _testMap.must.beRejectedBy(would()..beEmpty(), which: ['is not empty']);
   });
   test('isNotEmpty', () {
-    checkThat(_testMap).isNotEmpty();
-    checkThat({}).isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
+    _testMap.must.beNotEmpty();
+    ({}).must.beRejectedBy(would()..beNotEmpty(), which: ['is not empty']);
   });
   test('containsKey', () {
-    checkThat(_testMap).containsKey('a');
+    _testMap.must.containKey('a');
 
-    checkThat(_testMap).isRejectedBy(
-      it()..containsKey('c'),
+    _testMap.must.beRejectedBy(
+      would()..containKey('c'),
       which: ["does not contain key 'c'"],
     );
   });
   test('containsKeyThat', () {
-    checkThat(_testMap).containsKeyThat(it()..equals('a'));
-    checkThat(_testMap).isRejectedBy(
-      it()..containsKeyThat(it()..equals('c')),
+    _testMap.must.containKeyWhich(would()..equal('a'));
+    _testMap.must.beRejectedBy(
+      would()..containKeyWhich(would()..equal('c')),
       which: ['Contains no matching key'],
     );
   });
   test('containsValue', () {
-    checkThat(_testMap).containsValue(1);
-    checkThat(_testMap).isRejectedBy(
-      it()..containsValue(3),
+    _testMap.must.containValue(1);
+    _testMap.must.beRejectedBy(
+      would()..containValue(3),
       which: ['does not contain value <3>'],
     );
   });
   test('containsValueThat', () {
-    checkThat(_testMap).containsValueThat(it()..equals(1));
-    checkThat(_testMap).isRejectedBy(
-      it()..containsValueThat(it()..equals(3)),
+    _testMap.must.containValueWhich(would()..equal(1));
+    _testMap.must.beRejectedBy(
+      would()..containValueWhich(would()..equal(3)),
       which: ['Contains no matching value'],
     );
   });
