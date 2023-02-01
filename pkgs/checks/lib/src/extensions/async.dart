@@ -19,10 +19,13 @@ extension FutureChecks<T> on Subject<Future<T>> {
       context.nestAsync<T>('completes to a value', (actual) async {
         try {
           return Extracted.value(await actual);
-        } catch (e) {
-          return Extracted.rejection(
-              actual: ['a future that completes as an error'],
-              which: prefixFirst('threw ', literal(e)));
+        } catch (e, st) {
+          return Extracted.rejection(actual: [
+            'a future that completes as an error'
+          ], which: [
+            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+            ...(const LineSplitter()).convert(st.toString())
+          ]);
         }
       });
 
@@ -66,10 +69,13 @@ extension FutureChecks<T> on Subject<Future<T>> {
               which: ['did not throw']);
         } on E catch (e) {
           return Extracted.value(e);
-        } catch (e) {
+        } catch (e, st) {
           return Extracted.rejection(
               actual: prefixFirst('completed to error ', literal(e)),
-              which: ['is not an $E']);
+              which: [
+                'threw an exception that is not a $E at:',
+                ...(const LineSplitter()).convert(st.toString())
+              ]);
         }
       });
 }
@@ -113,10 +119,13 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         try {
           await actual.peek;
           return Extracted.value(await actual.next);
-        } catch (e) {
+        } catch (e, st) {
           return Extracted.rejection(
               actual: prefixFirst('a stream with error ', literal(e)),
-              which: ['emitted an error instead of a value']);
+              which: [
+                'emitted an error instead of a value at:',
+                ...(const LineSplitter()).convert(st.toString())
+              ]);
         }
       });
 
@@ -147,10 +156,13 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         } on E catch (e) {
           await actual.next.then<void>((_) {}, onError: (_) {});
           return Extracted.value(e);
-        } catch (e) {
+        } catch (e, st) {
           return Extracted.rejection(
               actual: prefixFirst('a stream with error ', literal(e)),
-              which: ['emitted an error with an incorrect type, is not $E']);
+              which: [
+                'emitted an error which is not $E at:',
+                ...(const LineSplitter()).convert(st.toString())
+              ]);
         }
       });
 
