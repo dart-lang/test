@@ -366,7 +366,7 @@ $_usage''');
 
     test('given a file: uri', () async {
       await d.file('test.dart', _success).create();
-      var fileUri = p.toUri(p.absolute('test.dart')).toString();
+      var fileUri = p.toUri(d.path('test.dart')).toString();
       expect(fileUri, startsWith('file:///'));
       var test = await runTest([fileUri]);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));

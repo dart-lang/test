@@ -181,7 +181,7 @@ void _parseTestSelection(
   TestSelection selection;
   String path;
   if (firstQuestion == -1) {
-    path = option;
+    path = Uri.parse(option).path;
     selection = TestSelection();
   } else if (option.substring(0, firstQuestion).contains('\\')) {
     throw FormatException(
