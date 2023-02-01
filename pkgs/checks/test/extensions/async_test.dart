@@ -22,7 +22,7 @@ void main() {
         await checkThat(_futureFail()).isRejectedByAsync(
           it()..completes().which(it()..equals(1)),
           actual: ['a future that completes as an error'],
-          which: ['threw <UnimplementedError>'],
+          which: ['threw <UnimplementedError> at:', 'fake trace'],
         );
       });
       test('can be described', () async {
@@ -59,7 +59,10 @@ void main() {
         await checkThat(_futureFail()).isRejectedByAsync(
           it()..throws<StateError>(),
           actual: ['completed to error <UnimplementedError>'],
-          which: ['is not an StateError'],
+          which: [
+            'threw an exception that is not a StateError at:',
+            'fake trace'
+          ],
         );
       });
       test('can be described', () async {
@@ -141,7 +144,7 @@ fake trace''');
         await checkThat(_countingStream(1, errorAt: 0)).isRejectedByAsync(
           it()..emits(),
           actual: ['a stream with error <UnimplementedError: Error at 1>'],
-          which: ['emitted an error instead of a value'],
+          which: ['emitted an error instead of a value at:', 'fake trace'],
         );
       });
       test('can be described', () async {
@@ -188,7 +191,7 @@ fake trace''');
         await checkThat(_countingStream(1, errorAt: 0)).isRejectedByAsync(
           it()..emitsError<StateError>(),
           actual: ['a stream with error <UnimplementedError: Error at 1>'],
-          which: ['emitted an error with an incorrect type, is not StateError'],
+          which: ['emitted an error which is not StateError at:', 'fake trace'],
         );
       });
       test('can be described', () async {
@@ -529,12 +532,16 @@ fake trace''');
 
 Future<int> _futureSuccess() => Future.microtask(() => 42);
 
-Future<int> _futureFail() => Future.error(UnimplementedError());
+Future<int> _futureFail() =>
+    Future.error(UnimplementedError(), StackTrace.fromString('fake trace'));
 
 StreamQueue<int> _countingStream(int count, {int? errorAt}) => StreamQueue(
       Stream.fromIterable(
         Iterable<int>.generate(count, (index) {
-          if (index == errorAt) throw UnimplementedError('Error at $count');
+          if (index == errorAt) {
+            Error.throwWithStackTrace(UnimplementedError('Error at $count'),
+                StackTrace.fromString('fake trace'));
+          }
           return index;
         }),
       ),
