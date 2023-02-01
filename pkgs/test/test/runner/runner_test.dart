@@ -364,9 +364,11 @@ $_usage''');
       await test.shouldExit(0);
     });
 
-    test('given a file: uri on windows', () async {
+    test('given a file: uri', () async {
       await d.file('test.dart', _success).create();
-      var test = await runTest([p.toUri(p.absolute('test.dart')).toString()]);
+      var fileUri = p.toUri(p.absolute('test.dart')).toString();
+      expect(fileUri, startsWith('file:///'));
+      var test = await runTest([fileUri]);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
