@@ -372,6 +372,13 @@ $_usage''');
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
+
+    test('with windows style (\\) relative paths', () async {
+      await d.file('foo/test.dart', _success).create();
+      var test = await runTest(['foo\\test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    }, testOn: 'windows');
   });
 
   group('runs successful tests with async setup', () {
