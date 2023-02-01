@@ -2,7 +2,7 @@
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
-* Always parse test paths as uris and grab the path from that.
+* Support running tests by absolute file uri.
 
 # 0.4.22
 
