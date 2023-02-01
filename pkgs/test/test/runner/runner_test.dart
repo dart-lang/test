@@ -374,7 +374,7 @@ $_usage''');
     });
 
     test('with windows style (\\) relative paths', () async {
-      await d.file('foo/test.dart', _success).create();
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
       var test = await runTest(['foo\\test.dart']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
