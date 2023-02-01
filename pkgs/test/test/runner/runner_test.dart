@@ -7,6 +7,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -362,6 +363,14 @@ $_usage''');
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
+
+    test('given a file: uri on windows', () async {
+      await d.file('test.dart', _success).create();
+      var path = p.absolute('test.dart');
+      var test = await runTest(['file://$path']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    }, testOn: 'windows');
   });
 
   group('runs successful tests with async setup', () {
