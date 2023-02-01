@@ -366,11 +366,10 @@ $_usage''');
 
     test('given a file: uri on windows', () async {
       await d.file('test.dart', _success).create();
-      var path = p.url.absolute('test.dart');
-      var test = await runTest(['file://$path']);
+      var test = await runTest([p.toUri(p.absolute('test.dart')).toString()]);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
-    }, testOn: 'windows');
+    });
   });
 
   group('runs successful tests with async setup', () {
