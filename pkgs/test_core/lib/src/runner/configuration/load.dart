@@ -19,6 +19,7 @@ import 'package:yaml/yaml.dart';
 import '../../util/errors.dart';
 import '../../util/io.dart';
 import '../../util/pretty_print.dart';
+import '../compiler_selection.dart';
 import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
@@ -272,6 +273,11 @@ class _ConfigurationLoader {
             _parseIdentifierLike(runtimeNode, 'Platform name'),
             runtimeNode.span));
 
+    var compilers = _getList(
+        'compilers',
+        (compiler) => CompilerSelection(
+            _parseIdentifierLike(compiler, 'Compiler name'), compiler.span));
+
     var chosenPresets = _getList('add_presets',
         (presetNode) => _parseIdentifierLike(presetNode, 'Preset name'));
 
@@ -286,6 +292,7 @@ class _ConfigurationLoader {
         reporter: reporter,
         fileReporters: fileReporters,
         concurrency: concurrency,
+        compilers: compilers,
         runtimes: runtimes,
         chosenPresets: chosenPresets,
         overrideRuntimes: overrideRuntimes);

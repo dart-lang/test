@@ -10,9 +10,11 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
     show
         Timeout;
+import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
 import '../../util/io.dart';
+import '../compiler_selection.dart';
 import '../configuration.dart';
 import '../runtime_selection.dart';
 import 'reporters.dart';
@@ -71,6 +73,10 @@ final ArgParser _parser = (() {
       help: 'The platform(s) on which to run the tests.\n'
           '[vm (default), '
           '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]');
+  parser.addMultiOption('compiler',
+      abbr: 'c',
+      help: 'The compiler(s) to use to run tests\n ['
+          '${Compiler.builtIn.map((c) => "${c.identifier}${c.isDefault ? '' : ' (default)'}").join(", ")}]');
   parser.addMultiOption('preset',
       abbr: 'P', help: 'The configuration preset(s) to use.');
   parser.addOption('concurrency',
@@ -280,8 +286,11 @@ class _Parser {
 
     var color = _ifParsed<bool>('color') ?? canUseSpecialChars;
 
-    var platform = _ifParsed<List<String>>('platform')
+    var runtimes = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
+        .toList();
+    var compilers = _ifParsed<List<String>>('compiler')
+        ?.map((compiler) => CompilerSelection(compiler))
         .toList();
 
     final paths = _options.rest.isEmpty ? null : _options.rest;
@@ -315,7 +324,8 @@ class _Parser {
         totalShards: totalShards,
         timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
         globalPatterns: patterns,
-        runtimes: platform,
+        compilers: compilers,
+        runtimes: runtimes,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
         testSelections: selections,

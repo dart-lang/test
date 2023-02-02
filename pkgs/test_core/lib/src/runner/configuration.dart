@@ -17,6 +17,7 @@ import 'package:test_api/src/backend/platform_selector.dart'; // ignore: impleme
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
 import '../util/io.dart';
+import 'compiler_selection.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/custom_runtime.dart';
 import 'configuration/load.dart';
@@ -289,6 +290,7 @@ class Configuration {
       required Iterable<String>? dart2jsArgs,
       required String? precompiledPath,
       required Iterable<Pattern>? globalPatterns,
+      required Iterable<CompilerSelection>? compilers,
       required Iterable<RuntimeSelection>? runtimes,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
@@ -342,6 +344,7 @@ class Configuration {
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
             precompiledPath: precompiledPath,
+            compilers: compilers,
             runtimes: runtimes,
             tags: tags,
             onPlatform: onPlatform,
@@ -398,6 +401,7 @@ class Configuration {
           Iterable<String>? dart2jsArgs,
           String? precompiledPath,
           Iterable<Pattern>? globalPatterns,
+          Iterable<CompilerSelection>? compilers,
           Iterable<RuntimeSelection>? runtimes,
           BooleanSelector? includeTags,
           BooleanSelector? excludeTags,
@@ -447,6 +451,7 @@ class Configuration {
           dart2jsArgs: dart2jsArgs,
           precompiledPath: precompiledPath,
           globalPatterns: globalPatterns,
+          compilers: compilers,
           runtimes: runtimes,
           includeTags: includeTags,
           excludeTags: excludeTags,
@@ -513,6 +518,7 @@ class Configuration {
         dart2jsArgs: null,
         precompiledPath: null,
         globalPatterns: null,
+        compilers: null,
         runtimes: null,
         includeTags: null,
         excludeTags: null,
@@ -578,6 +584,7 @@ class Configuration {
         dart2jsArgs: null,
         precompiledPath: null,
         globalPatterns: null,
+        compilers: null,
         runtimes: null,
         includeTags: null,
         excludeTags: null,
@@ -604,6 +611,7 @@ class Configuration {
           required String? reporter,
           required Map<String, String>? fileReporters,
           required int? concurrency,
+          required Iterable<CompilerSelection>? compilers,
           required Iterable<RuntimeSelection>? runtimes,
           required Iterable<String>? chosenPresets,
           required Map<String, RuntimeSettings>? overrideRuntimes}) =>
@@ -614,6 +622,7 @@ class Configuration {
         reporter: reporter,
         fileReporters: fileReporters,
         concurrency: concurrency,
+        compilers: compilers,
         runtimes: runtimes,
         chosenPresets: chosenPresets,
         overrideRuntimes: overrideRuntimes,
@@ -704,6 +713,7 @@ class Configuration {
           runSkipped: null,
           dart2jsArgs: null,
           precompiledPath: null,
+          compilers: null,
           runtimes: null,
           tags: null,
           onPlatform: null,

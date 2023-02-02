@@ -20,6 +20,7 @@ import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/application_exception.dart';
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/custom_runtime.dart';
 import 'package:test_core/src/runner/configuration/runtime_settings.dart';
@@ -221,6 +222,7 @@ SuiteConfiguration suiteConfiguration(
         bool? runSkipped,
         Iterable<String>? dart2jsArgs,
         String? precompiledPath,
+        Iterable<CompilerSelection>? compilers,
         Iterable<RuntimeSelection>? runtimes,
         Map<BooleanSelector, SuiteConfiguration>? tags,
         Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -242,6 +244,7 @@ SuiteConfiguration suiteConfiguration(
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
+        compilers: compilers,
         runtimes: runtimes,
         tags: tags,
         onPlatform: onPlatform,
@@ -290,6 +293,7 @@ Configuration configuration(
         Iterable<String>? dart2jsArgs,
         String? precompiledPath,
         Iterable<Pattern>? globalPatterns,
+        Iterable<CompilerSelection>? compilers,
         Iterable<RuntimeSelection>? runtimes,
         BooleanSelector? includeTags,
         BooleanSelector? excludeTags,
@@ -339,6 +343,7 @@ Configuration configuration(
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
         globalPatterns: globalPatterns,
+        compilers: compilers,
         runtimes: runtimes,
         includeTags: includeTags,
         excludeTags: excludeTags,
