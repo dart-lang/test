@@ -29,7 +29,7 @@ void main() {
 
     group('returnsNormally', () {
       test('succeeds for happy case', () {
-        checkThat(() => 1).returnsNormally().equals(1);
+        checkThat(() => 1).returnsNormally(it()..equals(1));
       });
       test('fails for functions that throw', () {
         checkThat(() {

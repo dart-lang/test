@@ -9,15 +9,15 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
-  Subject<R> has<R>(R Function(T) extract, String name) {
-    return context.nest('has $name', (T value) {
+  void has<R>(R Function(T) extract, String name, Condition<R> fieldCondition) {
+    context.nest<R>('has $name', (T value) {
       try {
         return Extracted.value(extract(value));
       } catch (_) {
         return Extracted.rejection(
             which: ['threw while trying to read property']);
       }
-    });
+    }, fieldCondition);
   }
 
   /// Applies the expectations invoked in [condition] to this subject.
@@ -69,13 +69,13 @@ extension CoreChecks<T> on Subject<T> {
   /// Expects that the value is assignable to type [T].
   ///
   /// If the value is a [T], returns a [Subject] for further expectations.
-  Subject<R> isA<R>() {
-    return context.nest<R>('is a $R', (actual) {
+  void isA<R>([Condition<R>? nestedCondition]) {
+    context.nest<R>('is a $R', (actual) {
       if (actual is! R) {
         return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
       }
       return Extracted.value(actual);
-    }, atSameLevel: true);
+    }, nestedCondition, atSameLevel: true);
   }
 
   /// Expects that the value is equal to [other] according to [operator ==].
@@ -117,11 +117,11 @@ extension BoolChecks on Subject<bool> {
 }
 
 extension NullabilityChecks<T> on Subject<T?> {
-  Subject<T> isNotNull() {
-    return context.nest<T>('is not null', (actual) {
+  void isNotNull([Condition<T>? nonNullCondition]) {
+    context.nest<T>('is not null', (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
-    }, atSameLevel: true);
+    }, nonNullCondition, atSameLevel: true);
   }
 
   void isNull() {

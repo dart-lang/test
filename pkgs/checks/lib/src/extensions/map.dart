@@ -8,21 +8,14 @@ import '../collection_equality.dart';
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
-  Subject<Iterable<MapEntry<K, V>>> get entries =>
-      has((m) => m.entries, 'entries');
-  Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
-  Subject<Iterable<V>> get values => has((m) => m.values, 'values');
-  Subject<int> get length => has((m) => m.length, 'length');
-  Subject<V> operator [](K key) {
-    final keyString = literal(key).join(r'\n');
-    return context.nest('contains a value for $keyString', (actual) {
-      if (!actual.containsKey(key)) {
-        return Extracted.rejection(
-            which: ['does not contain the key $keyString']);
-      }
-      return Extracted.value(actual[key] as V);
-    });
-  }
+  void hasEntriesWhich(Condition<Iterable<MapEntry<K, V>>> entriesCondition) =>
+      has((m) => m.entries, 'entries', entriesCondition);
+  void hasKeysWhich(Condition<Iterable<K>> keysCondition) =>
+      has((m) => m.keys, 'keys', keysCondition);
+  void hasValuesWhich(Condition<Iterable<V>> valuesCondition) =>
+      has((m) => m.values, 'values', valuesCondition);
+  void hasLengthWhich(Condition<int> lengthCondition) =>
+      has((m) => m.length, 'length', lengthCondition);
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
@@ -39,12 +32,14 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   }
 
   /// Expects that the map contains [key] according to [Map.containsKey].
-  void containsKey(K key) {
+  void containsKey(K key, [Condition<V>? valueCondition]) {
     final keyString = literal(key).join(r'\n');
-    context.expect(() => ['contains key $keyString'], (actual) {
-      if (actual.containsKey(key)) return null;
-      return Rejection(which: ['does not contain key $keyString']);
-    });
+    context.nest<V>(
+        'contains key $keyString${valueCondition != null ? ' which reads a value' : ''}',
+        (actual) {
+      if (actual.containsKey(key)) return Extracted.value(actual[key] as V);
+      return Extracted.rejection(which: ['does not contain key $keyString']);
+    }, valueCondition);
   }
 
   /// Expects that the map contains some key such that [keyCondition] is

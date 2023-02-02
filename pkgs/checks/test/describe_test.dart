@@ -15,7 +15,8 @@ void main() {
       checkThat(describe(it()..equals(1))).deepEquals(['  equals <1>']);
     });
     test('includes nested clauses', () {
-      checkThat(describe(it<String>()..length.equals(1))).deepEquals([
+      checkThat(describe(it<String>()..hasLengthWhich(it()..equals(1))))
+          .deepEquals([
         '  has length that:',
         '    equals <1>',
       ]);

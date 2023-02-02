@@ -17,10 +17,10 @@ void main() {
   });
   group('HasField', () {
     test('has', () {
-      checkThat(1).has((v) => v.isOdd, 'isOdd').isTrue();
+      checkThat(1).has((v) => v.isOdd, 'isOdd', it<bool>()..isTrue());
 
       checkThat(2).isRejectedBy(
-          it()..has((v) => throw UnimplementedError(), 'isOdd'),
+          it()..has((v) => throw UnimplementedError(), 'isOdd', it()),
           which: ['threw while trying to read property']);
     });
 

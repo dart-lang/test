@@ -14,27 +14,23 @@ const _testMap = {
 
 void main() {
   test('length', () {
-    checkThat(_testMap).length.equals(2);
+    checkThat(_testMap).hasLengthWhich(it()..equals(2));
   });
   test('entries', () {
-    checkThat(_testMap).entries.any(
-          it()
-            ..has((p0) => p0.key, 'key').equals('a')
-            ..has((p0) => p0.value, 'value').equals(1),
-        );
+    checkThat(_testMap).hasEntriesWhich(it()
+      ..any(
+        it()
+          ..has((p0) => p0.key, 'key', it()..equals('a'))
+          ..has((p0) => p0.value, 'value', it()..equals(1)),
+      ));
   });
   test('keys', () {
-    checkThat(_testMap).keys.contains('a');
+    checkThat(_testMap).hasKeysWhich(it()..contains('a'));
   });
   test('values', () {
-    checkThat(_testMap).values.contains(1);
+    checkThat(_testMap).hasValuesWhich(it()..contains(1));
   });
 
-  test('operator []', () async {
-    checkThat(_testMap)['a'].equals(1);
-    checkThat(_testMap)
-        .isRejectedBy(it()..['z'], which: ['does not contain the key \'z\'']);
-  });
   test('isEmpty', () {
     checkThat(<String, int>{}).isEmpty();
     checkThat(_testMap).isRejectedBy(it()..isEmpty(), which: ['is not empty']);
@@ -45,10 +41,16 @@ void main() {
   });
   test('containsKey', () {
     checkThat(_testMap).containsKey('a');
+    checkThat(_testMap).containsKey('a', it()..equals(1));
 
     checkThat(_testMap).isRejectedBy(
       it()..containsKey('c'),
       which: ["does not contain key 'c'"],
+    );
+    checkThat(_testMap).isRejectedBy(
+      it()..containsKey('a', it()..equals(2)),
+      actual: ['<1>'],
+      which: ['are not equal'],
     );
   });
   test('containsKeyThat', () {

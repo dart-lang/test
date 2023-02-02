@@ -15,7 +15,7 @@ void main() {
           which: ["Does not contain 'kayleb'"]);
     });
     test('length', () {
-      checkThat('bob').length.equals(3);
+      checkThat('bob').hasLengthWhich(it()..equals(3));
     });
     test('isEmpty', () {
       checkThat('').isEmpty();
@@ -45,9 +45,8 @@ void main() {
             which: [r'does not match <RegExp: pattern=\d\d\d flags=>']);
       });
       test('can be described', () {
-        checkThat(it<String>()..matches(RegExp(r'\d\d\d')))
-            .description
-            .deepEquals([r'  matches <RegExp: pattern=\d\d\d flags=>']);
+        checkThat(it<String>()..matches(RegExp(r'\d\d\d'))).hasDescriptionWhich(
+            it()..deepEquals([r'  matches <RegExp: pattern=\d\d\d flags=>']));
       });
     });
 

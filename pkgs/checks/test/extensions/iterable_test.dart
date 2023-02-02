@@ -11,16 +11,16 @@ Iterable<int> get _testIterable => Iterable.generate(2, (i) => i);
 
 void main() {
   test('length', () {
-    checkThat(_testIterable).length.equals(2);
+    checkThat(_testIterable).hasLengthWhich(it()..equals(2));
   });
   test('first', () {
-    checkThat(_testIterable).first.equals(0);
+    checkThat(_testIterable).hasFirstWhich(it()..equals(0));
   });
   test('last', () {
-    checkThat(_testIterable).last.equals(1);
+    checkThat(_testIterable).hasLastWhich(it()..equals(1));
   });
   test('single', () {
-    checkThat([42]).single.equals(42);
+    checkThat([42]).hasSingleWhich(it()..equals(42));
   });
 
   test('isEmpty', () {
@@ -51,7 +51,8 @@ void main() {
       checkThat([0, 1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
     });
     test('can use Condition<dynamic>', () {
-      checkThat([0, 1]).containsInOrder([it()..isA<int>().isGreaterThan(0)]);
+      checkThat([0, 1])
+          .containsInOrder([it()..isA<int>(it()..isGreaterThan(0))]);
     });
     test('can use Condition<T>', () {
       checkThat([0, 1]).containsInOrder([it<int>()..isGreaterThan(0)]);
@@ -63,7 +64,7 @@ void main() {
     });
     test('fails for not found elements by condition', () async {
       checkThat([0]).isRejectedBy(
-          it()..containsInOrder([it()..isA<int>().isGreaterThan(0)]),
+          it()..containsInOrder([it()..isA<int>(it()..isGreaterThan(0))]),
           which: [
             'did not have an element matching the expectation at index 0 '
                 '<A value that:',
@@ -72,16 +73,15 @@ void main() {
           ]);
     });
     test('can be described', () {
-      checkThat(it<Iterable>()..containsInOrder([1, 2, 3]))
-          .description
-          .deepEquals(['  contains, in order: [1, 2, 3]']);
+      checkThat(it<Iterable>()..containsInOrder([1, 2, 3])).hasDescriptionWhich(
+          it()..deepEquals(['  contains, in order: [1, 2, 3]']));
       checkThat(it<Iterable>()..containsInOrder([1, it()..equals(2)]))
-          .description
-          .deepEquals([
-        '  contains, in order: [1,',
-        '  A value that:',
-        '    equals <2>]'
-      ]);
+          .hasDescriptionWhich(it()
+            ..deepEquals([
+              '  contains, in order: [1,',
+              '  A value that:',
+              '    equals <2>]'
+            ]));
     });
   });
   group('every', () {

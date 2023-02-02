@@ -8,10 +8,14 @@ import '../collection_equality.dart';
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
-  Subject<int> get length => has((l) => l.length, 'length');
-  Subject<T> get first => has((l) => l.first, 'first element');
-  Subject<T> get last => has((l) => l.last, 'last element');
-  Subject<T> get single => has((l) => l.single, 'single element');
+  void hasLengthWhich(Condition<int> lengthCondition) =>
+      has((l) => l.length, 'length', lengthCondition);
+  void hasFirstWhich(Condition<T> elementCondition) =>
+      has((l) => l.first, 'first element', elementCondition);
+  void hasLastWhich(Condition<T> elementCondition) =>
+      has((l) => l.last, 'last element', elementCondition);
+  void hasSingleWhich(Condition<T> elementCondition) =>
+      has((l) => l.single, 'single element', elementCondition);
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {

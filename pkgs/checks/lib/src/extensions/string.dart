@@ -19,7 +19,8 @@ extension StringChecks on Subject<String> {
     });
   }
 
-  Subject<int> get length => has((m) => m.length, 'length');
+  void hasLengthWhich(Condition<int> lengthCondition) =>
+      has((m) => m.length, 'length', lengthCondition);
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {

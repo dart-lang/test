@@ -16,8 +16,8 @@ extension ThrowsCheck<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Subject<E> throws<E>() {
-    return context.nest<E>('throws an error of type $E', (actual) {
+  void throws<E>([Condition<E>? errorCondition]) {
+    context.nest<E>('throws an error of type $E', (actual) {
       try {
         final result = actual();
         return Extracted.rejection(
@@ -30,7 +30,7 @@ extension ThrowsCheck<T> on Subject<T Function()> {
             actual: prefixFirst('a function that threw error ', literal(e)),
             which: ['did not throw an $E']);
       }
-    });
+    }, errorCondition);
   }
 
   /// Expects that the function returns without throwing.
@@ -39,8 +39,8 @@ extension ThrowsCheck<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Subject<T> returnsNormally() {
-    return context.nest<T>('returns a value', (actual) {
+  void returnsNormally([Condition<T>? returnedCondition]) {
+    context.nest<T>('returns a value', (actual) {
       try {
         return Extracted.value(actual());
       } catch (e, st) {
@@ -51,6 +51,6 @@ extension ThrowsCheck<T> on Subject<T Function()> {
           ...st.toString().split('\n')
         ]);
       }
-    });
+    }, returnedCondition);
   }
 }
