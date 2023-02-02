@@ -1,3 +1,8 @@
+## 0.4.19-dev
+
+* Guarantee that `TestHandle.current` returns a consistent instance for a given
+  test.
+
 ## 0.4.18
 
 * Don't run `tearDown` until the test body and outstanding work is complete,

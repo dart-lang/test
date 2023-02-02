@@ -11,8 +11,12 @@ environment:
 dependencies:
   async: ^2.8.0
   meta: ^1.9.0
-  test_api: ^0.4.0
+  test_api: ^0.4.19
 
 dev_dependencies:
   test: ^1.21.3
   lints: ^2.0.0
+
+dependency_overrides:
+  test_api:
+    path: ../test_api

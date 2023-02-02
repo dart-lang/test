@@ -4,9 +4,13 @@
 
 // TODO Add doc about how failure strings work.
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:meta/meta.dart' as meta;
 import 'package:test_api/hooks.dart';
+// TODO - Could add `addTearDown` to `hooks.dart`?
+// ignore: deprecated_member_use
+import 'package:test_api/scaffolding.dart' show addTearDown;
 
 import 'describe.dart';
 
@@ -43,7 +47,7 @@ extension Skip<T> on Subject<T> {
   /// would not have otherwise caused the test to fail.
   Subject<T> skip(String message) {
     TestHandle.current.markSkipped(message);
-    return Subject._(_SkippedContext());
+    return Subject._(_TestContext._skipped());
   }
 }
 
@@ -81,6 +85,55 @@ Subject<T> checkThat<T>(T value, {String? because}) =>
       allowUnawaited: true,
     ));
 
+@meta.useResult
+Subject<T> assume<T>(String message, T value) => Subject._(_TestContext._root(
+      value: _Present(value),
+      label: '',
+      fail: (f) {
+        // TODO - It might be possible to not require a message argument,
+        // but it would be hard to shorten to 1 line, and multiline skip
+        // reasons are unlikely to be a good UX
+        // TODO - Marking the test as skipped doesn't cause later errors to get
+        // ignored. Should it? Without that, this API is pretty much useless.
+        TestHandle.current.markSkipped(message);
+      },
+      allowAsync: true,
+      allowUnawaited: true,
+    ));
+
+final _failedExpectations = Expando<List<List<String>>>();
+@meta.useResult
+Subject<T> expectThat<T>(T value, {String? because}) =>
+    Subject._(_TestContext._root(
+      value: _Present(value),
+      // TODO - switch between "a" and "an"
+      label: 'a $T',
+      fail: (f) {
+        final which = f.rejection.which;
+        final failures = _failedExpectations[TestHandle.current] ??= [];
+        if (failures.isEmpty) {
+          addTearDown(() {
+            throw TestFailure(failures.map((f) => f.join('\n')).join('\n\n'));
+          });
+        }
+        failures.add([
+          ...prefixFirst('Expected: ', f.detail.expected),
+          ...prefixFirst('Actual: ', f.detail.actual),
+          ...indent(
+              prefixFirst('Actual: ', f.rejection.actual), f.detail.depth),
+          if (which != null && which.isNotEmpty)
+            ...indent(prefixFirst('Which: ', which), f.detail.depth),
+          if (because != null) 'Reason: $because',
+          // TODO - can we hook into package:test stack trace folding?
+          ...(const LineSplitter()).convert(StackTrace.current.toString())
+        ]);
+      },
+      allowAsync: true,
+      // TODO - Could add a second Expando to remember that the tearDown has
+      // already run. If a failure comes in after teardown throw immediately.
+      allowUnawaited: false,
+    ));
+
 /// Checks whether [value] satisfies all expectations invoked in [condition],
 /// without throwing an exception.
 ///
@@ -114,6 +167,8 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
 /// [condition].
 Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
   CheckFailure? failure;
+  // TODO - is it possible to have an async interleaving where multiple
+  // conditions can fail on the same subject?
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
@@ -371,6 +426,8 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   final bool _allowAsync;
   final bool _allowUnawaited;
 
+  bool _isSkipped;
+
   _TestContext._root({
     required _Optional<T> value,
     required void Function(CheckFailure) fail,
@@ -383,6 +440,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _allowAsync = allowAsync,
         _allowUnawaited = allowUnawaited,
         _parent = null,
+        _isSkipped = false,
         _clauses = [],
         _aliases = [];
 
@@ -393,6 +451,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _fail = original._fail,
         _allowAsync = original._allowAsync,
         _allowUnawaited = original._allowUnawaited,
+        _isSkipped = false,
         // Never read from an aliased context because they are never present in
         // `_clauses`.
         _label = '';
@@ -400,14 +459,28 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   _TestContext._child(this._value, this._label, _TestContext<dynamic> parent)
       : _parent = parent,
         _fail = parent._fail,
+        _isSkipped = false,
         _allowAsync = parent._allowAsync,
         _allowUnawaited = parent._allowUnawaited,
         _clauses = [],
         _aliases = [];
 
+  /// Create a context which never runs expectations and can never fail.
+  _TestContext._skipped()
+      : _isSkipped = true,
+        _value = _Absent<T>(),
+        _label = '',
+        _fail = ((_) {}),
+        _allowAsync = true,
+        _allowUnawaited = true,
+        _parent = null,
+        _clauses = const [],
+        _aliases = const [];
+
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
+    if (_isSkipped) return;
     _clauses.add(_StringClause(clause));
     final rejection =
         _value.apply((actual) => predicate(actual)?._fillActual(actual));
@@ -438,6 +511,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (!_allowUnawaited) {
       throw StateError('Late expectations cannot be used for soft checks');
     }
+    if (_isSkipped) return;
     _clauses.add(_StringClause(clause));
     _value.apply((actual) {
       predicate(actual, (r) => _fail(_failure(r._fillActual(actual))));
@@ -447,6 +521,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   Subject<R> nest<R>(String label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false}) {
+    if (_isSkipped) return Subject._(_TestContext._skipped());
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
     final rejection = result.rejection;
     if (rejection != null) {
@@ -473,6 +548,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       throw StateError(
           'Async expectations cannot be used on a synchronous subject');
     }
+    if (_isSkipped) return Subject._(_TestContext._skipped());
     final outstandingWork = TestHandle.current.markPending();
     final result = await _value.mapAsync(
         (actual) async => (await extract(actual))._fillActual(actual));
@@ -488,8 +564,14 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     return Subject._(context);
   }
 
-  CheckFailure _failure(Rejection rejection) =>
-      CheckFailure(rejection, () => _root.detail(this));
+  CheckFailure _failure(Rejection rejection) {
+    _TestContext<dynamic>? current = this;
+    while (current != null) {
+      current._isSkipped = true;
+      current = current._parent;
+    }
+    return CheckFailure(rejection, () => _root.detail(this));
+  }
 
   _TestContext get _root {
     _TestContext<dynamic> current = this;
@@ -527,39 +609,6 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       }
     }
     return FailureDetail(expected, foundOverlap, foundDepth);
-  }
-}
-
-/// A context which never runs expectations and can never fail.
-class _SkippedContext<T> implements Context<T> {
-  @override
-  void expect(
-      Iterable<String> Function() clause, Rejection? Function(T) predicate) {
-    // no-op
-  }
-
-  @override
-  Future<void> expectAsync<R>(Iterable<String> Function() clause,
-      FutureOr<Rejection?> Function(T) predicate) async {
-    // no-op
-  }
-
-  @override
-  void expectUnawaited(Iterable<String> Function() clause,
-      void Function(T actual, void Function(Rejection) reject) predicate) {
-    // no-op
-  }
-
-  @override
-  Subject<R> nest<R>(String label, Extracted<R> Function(T p1) extract,
-      {bool atSameLevel = false}) {
-    return Subject._(_SkippedContext());
-  }
-
-  @override
-  Future<Subject<R>> nestAsync<R>(
-      String label, FutureOr<Extracted<R>> Function(T p1) extract) async {
-    return Subject._(_SkippedContext());
   }
 }
 

@@ -13,16 +13,20 @@ import 'src/backend/stack_trace_formatter.dart';
 export 'src/backend/test_failure.dart' show TestFailure;
 export 'src/scaffolding/utils.dart' show pumpEventQueue;
 
+final _handles = Expando<TestHandle>();
+
 class TestHandle {
-  /// Returns handle for the currently running test.
+  /// Returns a handle for the currently running test.
   ///
   /// This must be called from within the zone that the test is running in. If
   /// the current zone is not a test's zone throws [OutsideTestException].
+  ///
+  /// This handle will be consistent during the lifetime of a given test.
   static TestHandle get current {
     final invoker = Invoker.current;
     if (invoker == null) throw OutsideTestException();
-    return TestHandle._(
-        invoker, StackTraceFormatter.current ?? _defaultFormatter);
+    return _handles[invoker] ??=
+        TestHandle._(invoker, StackTraceFormatter.current ?? _defaultFormatter);
   }
 
   static final _defaultFormatter = StackTraceFormatter();
