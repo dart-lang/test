@@ -180,20 +180,13 @@ void _parseTestSelection(
   var firstQuestion = option.indexOf('?');
   TestSelection selection;
   String path;
-  if (firstQuestion == -1) {
-    if (option.contains('://')) {
-      path = Uri.parse(option).path;
-      // Strip out the leading slash before the drive letter.
-      if (Platform.isWindows && path.startsWith('/')) {
-        path = path.substring(1);
-      }
-    } else {
-      path = option;
-    }
+  if (firstQuestion == -1 && !option.contains('://')) {
+    path = option;
     selection = TestSelection();
-  } else if (option.substring(0, firstQuestion).contains('\\')) {
+  } else if (firstQuestion != -1 &&
+      option.substring(0, firstQuestion).contains('\\')) {
     throw FormatException(
-        'When passing test path queries, you must pass the path in URI '
+        'When passing test path uris, you must pass the path in URI '
         'format (use `/` for directory separators instead of `\\`).');
   } else {
     final uri = Uri.parse(option);
@@ -209,6 +202,10 @@ void _parseTestSelection(
       );
     }
     path = uri.path;
+    // Strip out the leading slash before the drive letter on windows.
+    if (Platform.isWindows && path.startsWith('/')) {
+      path = path.substring(1);
+    }
     selection = TestSelection(
       testPatterns: fullName != null
           ? {RegExp('^${RegExp.escape(fullName)}\$')}
