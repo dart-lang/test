@@ -64,7 +64,7 @@ checkThat(someString)
 
 await checkThat(someFuture)
     .completes()
-    .which(it()..equals(expectedCompletion));
+    .which(equals(expectedCompletion));
 ```
 
 # Writing custom expectations

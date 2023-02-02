@@ -41,8 +41,8 @@ void main() {
         .isRejectedBy(it()..contains(2), which: ['does not contain <2>']);
   });
   test('any', () {
-    checkThat(_testIterable).any(it()..equals(1));
-    checkThat(_testIterable).isRejectedBy(it()..any(it()..equals(2)),
+    checkThat(_testIterable).any(equals(1));
+    checkThat(_testIterable).isRejectedBy(it()..any(equals(2)),
         which: ['Contains no matching element']);
   });
 
@@ -75,7 +75,7 @@ void main() {
       checkThat(it<Iterable>()..containsInOrder([1, 2, 3]))
           .description
           .deepEquals(['  contains, in order: [1, 2, 3]']);
-      checkThat(it<Iterable>()..containsInOrder([1, it()..equals(2)]))
+      checkThat(it<Iterable>()..containsInOrder([1, equals(2)]))
           .description
           .deepEquals([
         '  contains, in order: [1,',
@@ -125,14 +125,14 @@ void main() {
   group('unorderedMatches', () {
     test('success for happy case', () {
       checkThat(_testIterable).unorderedMatches(
-          _testIterable.toList().reversed.map((i) => it()..equals(i)));
+          _testIterable.toList().reversed.map((i) => equals(i)));
     });
 
     test('reports unmatched elements', () {
       checkThat(_testIterable).isRejectedBy(
           it()
-            ..unorderedMatches(_testIterable
-                .followedBy([42, 100]).map((i) => it()..equals(i))),
+            ..unorderedMatches(
+                _testIterable.followedBy([42, 100]).map((i) => equals(i))),
           which: [
             'has no element matching the condition at index 2:',
             '  equals <42>',
@@ -142,7 +142,7 @@ void main() {
 
     test('reports unexpected elements', () {
       checkThat(_testIterable.followedBy([42, 100])).isRejectedBy(
-          it()..unorderedMatches(_testIterable.map((i) => it()..equals(i))),
+          it()..unorderedMatches(_testIterable.map((i) => equals(i))),
           which: [
             'has an unmatched element at index 2: <42>',
             'and 1 other unmatched elements'

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 
 extension CoreChecks<T> on Subject<T> {
@@ -95,6 +96,12 @@ extension CoreChecks<T> on Subject<T> {
     });
   }
 }
+
+/// Returns a [Condition] checking that the actual value is equal to [expected]
+/// by operator `==`.
+///
+/// This is a shortcut for `it<T>()..equals(expected)`.
+Condition<T> equals<T>(T expected) => it<T>()..equals(expected);
 
 extension BoolChecks on Subject<bool> {
   void isTrue() {

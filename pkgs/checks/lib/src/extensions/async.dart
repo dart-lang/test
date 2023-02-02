@@ -206,8 +206,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// ```dart
   /// await checkThat(StreamQueue(someStream)).inOrder([
-  ///   it()..emits().that(it()..equals(0)),
-  ///   it()..emits().that(it()..equals(1)),
+  ///   it()..emits().that(equals(0)),
+  ///   it()..emits().that(equals(1)),
   //  ]);
   /// ```
   ///
@@ -445,7 +445,7 @@ extension ChainAsync<T> on Future<Subject<T>> {
   /// expression that would need parenthesis.
   ///
   /// ```dart
-  /// await checkThat(someFuture).completes().which(it()..equals('expected'));
+  /// await checkThat(someFuture).completes().which(equals('expected'));
   /// // or, with the intermediate `await`:
   /// (await checkThat(someFuture).completes()).equals('expected');
   /// ```

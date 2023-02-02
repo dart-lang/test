@@ -76,38 +76,36 @@ void main() {
         checkThat('').equals('');
       });
       test('reports extra characters for long string', () {
-        checkThat('foobar').isRejectedBy(it()..equals('foo'),
+        checkThat('foobar').isRejectedBy(equals('foo'),
             which: ['is too long with unexpected trailing characters:', 'bar']);
       });
       test('reports extra characters for long string against empty', () {
         checkThat('foo')
-            .isRejectedBy(it()..equals(''), which: ['is not the empty string']);
+            .isRejectedBy(equals(''), which: ['is not the empty string']);
       });
       test('reports truncated extra characters for very long string', () {
-        checkThat('foobar baz more stuff').isRejectedBy(it()..equals('foo'),
-            which: [
-              'is too long with unexpected trailing characters:',
-              'bar baz mo ...'
-            ]);
+        checkThat('foobar baz more stuff').isRejectedBy(equals('foo'), which: [
+          'is too long with unexpected trailing characters:',
+          'bar baz mo ...'
+        ]);
       });
       test('reports missing characters for short string', () {
-        checkThat('foo').isRejectedBy(it()..equals('foobar'),
+        checkThat('foo').isRejectedBy(equals('foobar'),
             which: ['is too short with missing trailing characters:', 'bar']);
       });
       test('reports missing characters for empty string', () {
-        checkThat('').isRejectedBy(it()..equals('foo bar baz'),
+        checkThat('').isRejectedBy(equals('foo bar baz'),
             actual: ['an empty string'],
             which: ['is missing all expected characters:', 'foo bar ba ...']);
       });
       test('reports truncated missing characters for very short string', () {
-        checkThat('foo').isRejectedBy(it()..equals('foobar baz more stuff'),
-            which: [
-              'is too short with missing trailing characters:',
-              'bar baz mo ...'
-            ]);
+        checkThat('foo').isRejectedBy(equals('foobar baz more stuff'), which: [
+          'is too short with missing trailing characters:',
+          'bar baz mo ...'
+        ]);
       });
       test('reports index of different character', () {
-        checkThat('hit').isRejectedBy(it()..equals('hat'), which: [
+        checkThat('hit').isRejectedBy(equals('hat'), which: [
           'differs at offset 1:',
           'hat',
           'hit',
@@ -116,14 +114,13 @@ void main() {
       });
       test('reports truncated index of different character in large string',
           () {
-        checkThat('blah blah blah hit blah blah blah').isRejectedBy(
-            it()..equals('blah blah blah hat blah blah blah'),
-            which: [
-              'differs at offset 16:',
-              '... lah blah hat blah bl ...',
-              '... lah blah hit blah bl ...',
-              '              ^',
-            ]);
+        checkThat('blah blah blah hit blah blah blah')
+            .isRejectedBy(equals('blah blah blah hat blah blah blah'), which: [
+          'differs at offset 16:',
+          '... lah blah hat blah bl ...',
+          '... lah blah hit blah bl ...',
+          '              ^',
+        ]);
       });
     });
 

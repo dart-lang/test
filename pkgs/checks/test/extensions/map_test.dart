@@ -52,9 +52,9 @@ void main() {
     );
   });
   test('containsKeyThat', () {
-    checkThat(_testMap).containsKeyThat(it()..equals('a'));
+    checkThat(_testMap).containsKeyThat(equals('a'));
     checkThat(_testMap).isRejectedBy(
-      it()..containsKeyThat(it()..equals('c')),
+      it()..containsKeyThat(equals('c')),
       which: ['Contains no matching key'],
     );
   });
@@ -66,9 +66,9 @@ void main() {
     );
   });
   test('containsValueThat', () {
-    checkThat(_testMap).containsValueThat(it()..equals(1));
+    checkThat(_testMap).containsValueThat(equals(1));
     checkThat(_testMap).isRejectedBy(
-      it()..containsValueThat(it()..equals(3)),
+      it()..containsValueThat(equals(3)),
       which: ['Contains no matching value'],
     );
   });
