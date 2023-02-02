@@ -373,12 +373,20 @@ $_usage''');
       await test.shouldExit(0);
     });
 
-    test('with windows style (\\) relative paths', () async {
+    test('with platform specific relative paths', () async {
       await d.dir('foo', [d.file('test.dart', _success)]).create();
-      var test = await runTest(['foo\\test.dart']);
+      var test = await runTest([p.join('foo', 'test.dart')]);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
-    }, testOn: 'windows');
+    });
+
+    test('with platform specific relative paths containing query params',
+        () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest(['${p.join('foo', 'test.dart')}?line=6']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
   });
 
   group('runs successful tests with async setup', () {
