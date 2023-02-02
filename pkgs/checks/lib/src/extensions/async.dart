@@ -206,7 +206,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// conditions.
   ///
   /// ```dart
-  /// await checkThat(StreamQueue(someStream)).inOrder([
+  /// await check(StreamQueue(someStream)).inOrder([
   ///   it()..emits().that(it()..equals(0)),
   ///   it()..emits().that(it()..equals(1)),
   //  ]);
