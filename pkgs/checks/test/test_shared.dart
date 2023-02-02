@@ -12,38 +12,35 @@ extension RejectionChecks<T> on Subject<T> {
       {Iterable<String>? actual, Iterable<String>? which}) {
     late T actualValue;
     var didRunCallback = false;
-    context.nest<Rejection>(
-      'does not meet a condition with a Rejection',
-      (value) {
-        actualValue = value;
-        didRunCallback = true;
-        final failure = softCheck(value, condition);
-        if (failure == null) {
-          return Extracted.rejection(which: [
-            'was accepted by the condition checking:',
-            ...describe(condition)
-          ]);
-        }
-        return Extracted.value(failure.rejection);
-      }, LazyCondition((rejection) {
-    if (didRunCallback) {
-      rejection
-          .has((r) => r.actual, 'actual', it<Iterable<String>>()
-          ..deepEquals(actual ?? literal(actualValue)));
-    } else {
-      rejection
-          .has((r) => r.actual, 'actual', it()
-          ..context
-          .expect(() => ['is left default'], (_) => null));
-    }
-    if (which == null) {
-      rejection.has((r) => r.which, 'which', it()..isNull());
-    } else {
-      rejection.has((r) => r.which, 'which', it<Iterable<String>?>()..isNotNull(it()..deepEquals(which)));
-    }
-
-      })
-    );
+    context.nest<Rejection>('does not meet a condition with a Rejection',
+        (value) {
+      actualValue = value;
+      didRunCallback = true;
+      final failure = softCheck(value, condition);
+      if (failure == null) {
+        return Extracted.rejection(which: [
+          'was accepted by the condition checking:',
+          ...describe(condition)
+        ]);
+      }
+      return Extracted.value(failure.rejection);
+    }, LazyCondition((rejection) {
+      if (didRunCallback) {
+        rejection
+            .has((r) => r.actual, 'actual')
+            .which(it()..deepEquals(actual ?? literal(actualValue)));
+      } else {
+        rejection.has((r) => r.actual, 'actual').which(
+            it()..context.expect(() => ['is left default'], (_) => null));
+      }
+      if (which == null) {
+        rejection.has((r) => r.which, 'which').which(it()..isNull());
+      } else {
+        rejection
+            .has((r) => r.which, 'which')
+            .which(it()..isNotNull(it()..deepEquals(which)));
+      }
+    }));
   }
 
   Future<void> isRejectedByAsync(Condition<T> condition,
@@ -64,17 +61,19 @@ extension RejectionChecks<T> on Subject<T> {
       return Extracted.value(failure.rejection);
     }, LazyCondition((rejection) {
       if (didRunCallback) {
-        rejection.has((r) => r.actual, 'actual',
-            it<Iterable<String>>()..deepEquals(actual ?? literal(actualValue)));
+        rejection
+            .has((r) => r.actual, 'actual')
+            .which(it()..deepEquals(actual ?? literal(actualValue)));
       } else {
-        rejection.has((r) => r.actual, 'actual',
+        rejection.has((r) => r.actual, 'actual').which(
             it()..context.expect(() => ['is left default'], (_) => null));
       }
       if (which == null) {
-        rejection.has((r) => r.which, 'which', it()..isNull());
+        rejection.has((r) => r.which, 'which').which(it()..isNull());
       } else {
-        rejection.has((r) => r.which, 'which',
-            it<Iterable<String>?>()..isNotNull(it()..deepEquals(which)));
+        rejection
+            .has((r) => r.which, 'which')
+            .which(it()..isNotNull(it()..deepEquals(which)));
       }
     }));
   }
@@ -96,7 +95,7 @@ class LazyCondition<T> implements Condition<T> {
 
 extension ConditionChecks<T> on Subject<Condition<T>> {
   void hasDescriptionWhich(Condition<Iterable<String>> descriptionCondition) =>
-      has((c) => describe<T>(c), 'description', descriptionCondition);
+      has((c) => describe<T>(c), 'description').which(descriptionCondition);
   Future<void> asyncDescription(
           Condition<Iterable<String>> descriptionCondition) async =>
       context.nestAsync(

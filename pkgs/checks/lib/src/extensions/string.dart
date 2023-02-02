@@ -20,7 +20,7 @@ extension StringChecks on Subject<String> {
   }
 
   void hasLengthWhich(Condition<int> lengthCondition) =>
-      has((m) => m.length, 'length', lengthCondition);
+      has((m) => m.length, 'length').which(lengthCondition);
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {

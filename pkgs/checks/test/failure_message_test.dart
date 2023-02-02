@@ -51,6 +51,6 @@ Actual: a List<dynamic> that:
 extension on Subject<void Function()> {
   void throwsFailure(Condition<String> messageCondition) => throws<TestFailure>(
       it()
-        ..has((f) => f.message, 'message',
-            it<String?>()..isNotNull(messageCondition)));
+        ..has((f) => f.message, 'message')
+            .which(it()..isNotNull(messageCondition)));
 }

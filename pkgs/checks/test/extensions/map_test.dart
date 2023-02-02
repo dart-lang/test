@@ -20,8 +20,8 @@ void main() {
     checkThat(_testMap).hasEntriesWhich(it()
       ..any(
         it()
-          ..has((p0) => p0.key, 'key', it()..equals('a'))
-          ..has((p0) => p0.value, 'value', it()..equals(1)),
+          ..has((p0) => p0.key, 'key').which(it()..equals('a'))
+          ..has((p0) => p0.value, 'value').which(it()..equals(1)),
       ));
   });
   test('keys', () {

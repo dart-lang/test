@@ -42,7 +42,7 @@ void main() {
           'succeeds for a future that compeletes to an error of the expected type',
           () async {
         await checkThat(_futureFail()).throws<UnimplementedError>(
-            it()..has((p0) => p0.message, 'message', it()..isNull()));
+            it()..has((p0) => p0.message, 'message').which(it()..isNull()));
       });
       test('fails for futures that complete to a value', () async {
         await checkThat(_futureSuccess()).isRejectedByAsync(
@@ -86,8 +86,8 @@ void main() {
         });
         await pumpEventQueue();
         checkThat(testFailure).isA<TestFailure>(it()
-          ..has((f) => f.message, 'message',
-              it<String?>()..isNotNull(it()..equals('''
+          ..has((f) => f.message, 'message')
+              .which(it()..isNotNull(it()..equals('''
 Expected: a Future<String> that:
   does not complete
 Actual: a future that completed to 'value\''''))));
@@ -103,8 +103,8 @@ Actual: a future that completed to 'value\''''))));
         });
         await pumpEventQueue();
         checkThat(testFailure).isA<TestFailure>(it()
-          ..has((f) => f.message, 'message',
-              it<String?>()..isNotNull(it()..equals('''
+          ..has((f) => f.message, 'message')
+              .which(it()..isNotNull(it()..equals('''
 Expected: a Future<String> that:
   does not complete
 Actual: a future that completed as an error:
@@ -189,8 +189,8 @@ fake trace'''))));
             .asyncDescription(
                 it()..deepEquals(['  emits an error of type StateError']));
         await checkThat(it<StreamQueue<void>>()
-              ..emitsError<StateError>(
-                  it()..has((e) => e.message, 'message', it()..equals('foo'))))
+              ..emitsError<StateError>(it()
+                ..has((e) => e.message, 'message').which(it()..equals('foo'))))
             .asyncDescription(it()
               ..deepEquals([
                 '  emits an error of type StateError that:',
@@ -361,8 +361,8 @@ fake trace'''))));
         final queue = _countingStream(1, errorAt: 0);
         await softCheckAsync<StreamQueue<int>>(
             queue, it()..mayEmit(it()..equals(0)));
-        await checkThat(queue).emitsError<UnimplementedError>(
-            it()..has((e) => e.message, 'message', it()..equals('Error at 1')));
+        await checkThat(queue).emitsError<UnimplementedError>(it()
+          ..has((e) => e.message, 'message').which(it()..equals('Error at 1')));
       });
     });
 
@@ -393,8 +393,8 @@ fake trace'''))));
         final queue = _countingStream(1, errorAt: 0);
         await softCheckAsync<StreamQueue<int>>(
             queue, it()..mayEmitMultiple(it()..equals(0)));
-        await checkThat(queue).emitsError<UnimplementedError>(
-            it()..has((e) => e.message, 'message', it()..equals('Error at 1')));
+        await checkThat(queue).emitsError<UnimplementedError>(it()
+          ..has((e) => e.message, 'message').which(it()..equals('Error at 1')));
       });
     });
 

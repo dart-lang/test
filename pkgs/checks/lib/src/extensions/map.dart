@@ -9,13 +9,13 @@ import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
   void hasEntriesWhich(Condition<Iterable<MapEntry<K, V>>> entriesCondition) =>
-      has((m) => m.entries, 'entries', entriesCondition);
+      has((m) => m.entries, 'entries').which(entriesCondition);
   void hasKeysWhich(Condition<Iterable<K>> keysCondition) =>
-      has((m) => m.keys, 'keys', keysCondition);
+      has((m) => m.keys, 'keys').which(keysCondition);
   void hasValuesWhich(Condition<Iterable<V>> valuesCondition) =>
-      has((m) => m.values, 'values', valuesCondition);
+      has((m) => m.values, 'values').which(valuesCondition);
   void hasLengthWhich(Condition<int> lengthCondition) =>
-      has((m) => m.length, 'length', lengthCondition);
+      has((m) => m.length, 'length').which(lengthCondition);
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {

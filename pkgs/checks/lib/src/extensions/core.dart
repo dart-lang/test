@@ -3,22 +3,34 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/context.dart';
+import 'package:meta/meta.dart' as meta;
+
+class HasWhich<T, R> {
+  final R Function(T) _extract;
+  final String _name;
+  final Context<T> _context;
+  HasWhich._(this._context, this._extract, this._name);
+
+  void which(Condition<R> condition) {
+    _context.nest<R>('has $_name', (T value) {
+      try {
+        return Extracted.value(_extract(value));
+      } catch (_) {
+        return Extracted.rejection(
+            which: ['threw while trying to read property']);
+      }
+    }, condition);
+  }
+}
 
 extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
-  void has<R>(R Function(T) extract, String name, Condition<R> fieldCondition) {
-    context.nest<R>('has $name', (T value) {
-      try {
-        return Extracted.value(extract(value));
-      } catch (_) {
-        return Extracted.rejection(
-            which: ['threw while trying to read property']);
-      }
-    }, fieldCondition);
-  }
+  @meta.useResult
+  HasWhich<T, R> has<R>(R Function(T) extract, String name) =>
+      HasWhich._(context, extract, name);
 
   /// Applies the expectations invoked in [condition] to this subject.
   ///

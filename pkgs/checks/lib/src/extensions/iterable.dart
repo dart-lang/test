@@ -9,13 +9,13 @@ import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
   void hasLengthWhich(Condition<int> lengthCondition) =>
-      has((l) => l.length, 'length', lengthCondition);
+      has((l) => l.length, 'length').which(lengthCondition);
   void hasFirstWhich(Condition<T> elementCondition) =>
-      has((l) => l.first, 'first element', elementCondition);
+      has((l) => l.first, 'first element').which(elementCondition);
   void hasLastWhich(Condition<T> elementCondition) =>
-      has((l) => l.last, 'last element', elementCondition);
+      has((l) => l.last, 'last element').which(elementCondition);
   void hasSingleWhich(Condition<T> elementCondition) =>
-      has((l) => l.single, 'single element', elementCondition);
+      has((l) => l.single, 'single element').which(elementCondition);
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
