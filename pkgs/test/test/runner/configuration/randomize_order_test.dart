@@ -148,14 +148,14 @@ void main() {
         test.stdout,
         emitsInAnyOrder([
           containsInOrder([
-            '.${Platform.pathSeparator}1_test.dart: test 1.2',
-            '.${Platform.pathSeparator}1_test.dart: test 1.3',
-            '.${Platform.pathSeparator}1_test.dart: test 1.1'
+            './1_test.dart: test 1.2',
+            './1_test.dart: test 1.3',
+            './1_test.dart: test 1.1'
           ]),
           containsInOrder([
-            '.${Platform.pathSeparator}2_test.dart: test 2.2',
-            '.${Platform.pathSeparator}2_test.dart: test 2.3',
-            '.${Platform.pathSeparator}2_test.dart: test 2.1'
+            './2_test.dart: test 2.2',
+            './2_test.dart: test 2.3',
+            './2_test.dart: test 2.1'
           ]),
           contains('+6: All tests passed!')
         ]));
