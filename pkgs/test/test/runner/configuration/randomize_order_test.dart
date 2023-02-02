@@ -4,7 +4,6 @@
 
 @TestOn('vm')
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;

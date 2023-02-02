@@ -4,7 +4,6 @@
 
 @TestOn('vm')
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
