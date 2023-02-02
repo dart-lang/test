@@ -278,8 +278,10 @@ abstract class Context<T> {
   /// Some context may disallow asynchronous expectations, for instance in
   /// [softCheck] which must synchronously check the value. In those contexts
   /// this method will throw.
-  Future<Subject<R>> nestAsync<R>(
-      String label, FutureOr<Extracted<R>> Function(T) extract);
+  Future<void> nestAsync<R>(
+      String label,
+      FutureOr<Extracted<R>> Function(T) extract,
+      Condition<R>? nestedCondition);
 }
 
 /// A property extracted from a value being checked, or a rejection.
@@ -467,8 +469,10 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   @override
-  Future<Subject<R>> nestAsync<R>(
-      String label, FutureOr<Extracted<R>> Function(T) extract) async {
+  Future<void> nestAsync<R>(
+      String label,
+      FutureOr<Extracted<R>> Function(T) extract,
+      Condition<R>? nestedCondition) async {
     if (!_allowAsync) {
       throw StateError(
           'Async expectations cannot be used on a synchronous subject');
@@ -485,7 +489,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final value = result.value ?? _Absent<R>();
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
-    return Subject._(context);
+    await nestedCondition?.applyAsync(Subject<R>._(context));
   }
 
   CheckFailure _failure(Rejection rejection) =>
@@ -557,9 +561,11 @@ class _SkippedContext<T> implements Context<T> {
   }
 
   @override
-  Future<Subject<R>> nestAsync<R>(
-      String label, FutureOr<Extracted<R>> Function(T p1) extract) async {
-    return Subject._(_SkippedContext());
+  Future<void> nestAsync<R>(
+      String label,
+      FutureOr<Extracted<R>> Function(T p1) extract,
+      Condition<R>? nestedCondition) async {
+    // no-op
   }
 }
 
@@ -778,13 +784,12 @@ class _ReplayContext<T> implements Context<T>, Condition<T> {
   }
 
   @override
-  Future<Subject<R>> nestAsync<R>(
-      String label, FutureOr<Extracted<R>> Function(T) extract) async {
-    final nestedContext = _ReplayContext<R>();
+  Future<void> nestAsync<R>(
+      String label,
+      FutureOr<Extracted<R>> Function(T) extract,
+      Condition<R>? nestedCondition) async {
     _interactions.add((c) async {
-      var result = await c.nestAsync(label, extract);
-      await nestedContext.applyAsync(result);
+      await c.nestAsync(label, extract, nestedCondition);
     });
-    return Subject._(nestedContext);
   }
 }
