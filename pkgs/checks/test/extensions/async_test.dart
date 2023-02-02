@@ -27,9 +27,10 @@ void main() {
       });
       test('can be described', () async {
         await checkThat(it<Future<void>>()..completes())
-            .asyncDescription(it()..deepEquals(['  completes to a value']));
+            .hasAsyncDescriptionWhich(
+                it()..deepEquals(['  completes to a value']));
         await checkThat(it<Future<int>>()..completes(it()..equals(42)))
-            .asyncDescription(it()
+            .hasAsyncDescriptionWhich(it()
               ..deepEquals([
                 '  completes to a value that:',
                 '    equals <42>',
@@ -63,10 +64,10 @@ void main() {
         );
       });
       test('can be described', () async {
-        await checkThat(it<Future<void>>()..throws())
-            .asyncDescription(it()..deepEquals(['  completes to an error']));
+        await checkThat(it<Future<void>>()..throws()).hasAsyncDescriptionWhich(
+            it()..deepEquals(['  completes to an error']));
         await checkThat(it<Future<void>>()..throws<StateError>())
-            .asyncDescription(it()
+            .hasAsyncDescriptionWhich(it()
               ..deepEquals(['  completes to an error of type StateError']));
       });
     });
@@ -117,7 +118,8 @@ fake trace''');
       });
       test('can be described', () async {
         await checkThat(it<Future<void>>()..doesNotComplete())
-            .asyncDescription(it()..deepEquals(['  does not complete']));
+            .hasAsyncDescriptionWhich(
+                it()..deepEquals(['  does not complete']));
       });
     });
   });
@@ -143,9 +145,9 @@ fake trace''');
       });
       test('can be described', () async {
         await checkThat(it<StreamQueue<void>>()..emits())
-            .asyncDescription(it()..deepEquals(['  emits a value']));
+            .hasAsyncDescriptionWhich(it()..deepEquals(['  emits a value']));
         await checkThat(it<StreamQueue<int>>()..emits(it()..equals(42)))
-            .asyncDescription(it()
+            .hasAsyncDescriptionWhich(it()
               ..deepEquals([
                 '  emits a value that:',
                 '    equals <42>',
@@ -188,14 +190,14 @@ fake trace''');
       });
       test('can be described', () async {
         await checkThat(it<StreamQueue<void>>()..emitsError())
-            .asyncDescription(it()..deepEquals(['  emits an error']));
+            .hasAsyncDescriptionWhich(it()..deepEquals(['  emits an error']));
         await checkThat(it<StreamQueue<void>>()..emitsError<StateError>())
-            .asyncDescription(
+            .hasAsyncDescriptionWhich(
                 it()..deepEquals(['  emits an error of type StateError']));
         await checkThat(it<StreamQueue<void>>()
               ..emitsError<StateError>(
                   it()..has((e) => e.message, 'message').equals('foo')))
-            .asyncDescription(it()
+            .hasAsyncDescriptionWhich(it()
               ..deepEquals([
                 '  emits an error of type StateError that:',
                 '    has message that:',
@@ -224,7 +226,7 @@ fake trace''');
       });
       test('can be described', () async {
         await checkThat(it<StreamQueue<int>>()..emitsThrough(it()..equals(42)))
-            .asyncDescription(it()
+            .hasAsyncDescriptionWhich(it()
               ..deepEquals([
                 '  emits any values then emits a value that:',
                 '    equals <42>'
@@ -278,7 +280,7 @@ fake trace''');
       });
       test('gets described with the number of conditions', () async {
         await checkThat(it<StreamQueue<int>>()..inOrder([it(), it()]))
-            .asyncDescription(
+            .hasAsyncDescriptionWhich(
                 it()..deepEquals(['  satisfies 2 conditions in order']));
       });
       test('uses a transaction', () async {
@@ -320,7 +322,7 @@ fake trace''');
       });
       test('can be described', () async {
         await checkThat(it<StreamQueue<int>>()..neverEmits(it()..equals(42)))
-            .asyncDescription(it()
+            .hasAsyncDescriptionWhich(it()
               ..deepEquals([
                 '  never emits a value that:',
                 '    equals <42>',
@@ -425,7 +427,7 @@ fake trace''');
       });
       test('can be described', () async {
         await checkThat(it<StreamQueue<int>>()..isDone())
-            .asyncDescription(it()..deepEquals(['  is done']));
+            .hasAsyncDescriptionWhich(it()..deepEquals(['  is done']));
       });
     });
 
@@ -475,7 +477,7 @@ fake trace''');
       test('gets described with the number of conditions', () async {
         await checkThat(
                 it<StreamQueue<int>>()..anyOf([it()..emits(), it()..emits()]))
-            .asyncDescription(
+            .hasAsyncDescriptionWhich(
                 it()..deepEquals(['  satisfies any of 2 conditions']));
       });
       test('uses a transaction', () async {

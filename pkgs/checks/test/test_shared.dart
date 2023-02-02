@@ -81,7 +81,7 @@ extension RejectionChecks<T> on Subject<T> {
 extension ConditionChecks<T> on Subject<Condition<T>> {
   Subject<Iterable<String>> get description =>
       has((c) => describe<T>(c), 'description');
-  Future<void> asyncDescription(
+  Future<void> hasAsyncDescriptionWhich(
           Condition<Iterable<String>> descriptionCondition) =>
       context.nestAsync(
           'has description',
