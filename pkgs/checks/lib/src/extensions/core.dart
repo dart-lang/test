@@ -101,7 +101,10 @@ extension CoreChecks<T> on Subject<T> {
 /// by operator `==`.
 ///
 /// This is a shortcut for `it<T>()..equals(expected)`.
-Condition<T> equals<T>(T expected) => it<T>()..equals(expected);
+Condition<T> equals<T>(T expected) => T == String
+    // String specializes `equals` with a better failure
+    ? ((it<String>()..equals(expected as String)) as Condition<T>)
+    : (it<T>()..equals(expected));
 
 extension BoolChecks on Subject<bool> {
   void isTrue() {
