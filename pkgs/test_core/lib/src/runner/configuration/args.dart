@@ -177,46 +177,35 @@ Configuration parse(List<String> args) => _Parser(args).parse();
 
 void _parseTestSelection(
     String option, Map<String, Set<TestSelection>> selections) {
-  var firstQuestion = option.indexOf('?');
-  TestSelection selection;
-  String path;
-  if (firstQuestion == -1 && !option.contains('://')) {
-    path = option;
-    selection = TestSelection();
-  } else if (firstQuestion != -1 &&
-      option.substring(0, firstQuestion).contains('\\')) {
+  final uri = Uri.parse(option);
+  // Restore the path to how it was given (namely, we want to report paths
+  // with their original separators).
+  var path = Uri.decodeComponent(uri.path);
+  // Strip out the leading slash before the drive letter on windows.
+  if (Platform.isWindows && path.startsWith('/')) {
+    path = path.substring(1);
+  }
+
+  final names = uri.queryParametersAll['name'];
+  final fullName = uri.queryParameters['full-name'];
+  final line = uri.queryParameters['line'];
+  final col = uri.queryParameters['col'];
+
+  if (names != null && names.isNotEmpty && fullName != null) {
     throw FormatException(
-        'When passing test path uris, you must pass the path in URI '
-        'format (use `/` for directory separators instead of `\\`).');
-  } else {
-    final uri = Uri.parse(option);
-
-    final names = uri.queryParametersAll['name'];
-    final fullName = uri.queryParameters['full-name'];
-    final line = uri.queryParameters['line'];
-    final col = uri.queryParameters['col'];
-
-    if (names != null && names.isNotEmpty && fullName != null) {
-      throw FormatException(
-        'Cannot specify both "name=<...>" and "full-name=<...>".',
-      );
-    }
-    path = uri.path;
-    // Strip out the leading slash before the drive letter on windows.
-    if (Platform.isWindows && path.startsWith('/')) {
-      path = path.substring(1);
-    }
-    selection = TestSelection(
-      testPatterns: fullName != null
-          ? {RegExp('^${RegExp.escape(fullName)}\$')}
-          : {
-              if (names != null)
-                for (var name in names) RegExp(name)
-            },
-      line: line == null ? null : int.parse(line),
-      col: col == null ? null : int.parse(col),
+      'Cannot specify both "name=<...>" and "full-name=<...>".',
     );
   }
+  final selection = TestSelection(
+    testPatterns: fullName != null
+        ? {RegExp('^${RegExp.escape(fullName)}\$')}
+        : {
+            if (names != null)
+              for (var name in names) RegExp(name)
+          },
+    line: line == null ? null : int.parse(line),
+    col: col == null ? null : int.parse(col),
+  );
 
   selections.update(path, (selections) => selections..add(selection),
       ifAbsent: () => {selection});
