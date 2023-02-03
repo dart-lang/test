@@ -227,7 +227,9 @@ extension ContextExtension<T> on Subject<T> {
 ///       is equal to <1>
 ///
 /// When no further expectations were checked on the extracted subject, or the
-/// extraction is rejected, the "that:" is omitted.
+/// extraction is rejected, the "that:" is omitted. In these cases the label is
+/// used more like a "clause" from a call to [expect], [expectAsync], or
+/// [expectUnawaited].
 ///
 ///   Expected a Future<int> that:
 ///     completes to a value
