@@ -248,7 +248,9 @@ extension ContextExtension<T> on Subject<T> {
 /// different from the expectation. If the "actual" argument is omitted it will
 /// be filled with a formatted version of the object. If an expectation is
 /// written against a type without a useful `toString()`, the rejection can
-/// provide a string representation.
+/// provide a string representation. The "which" argument may be omitted if the
+/// reason is very obvious based on the clause and "actual" description, but
+/// most expectations should include a "which".
 ///
 /// When an expectation fails for a [check] subject, an exception is thrown to
 /// interrupt the test, so no further checks should happen. The failure message
@@ -260,7 +262,7 @@ extension ContextExtension<T> on Subject<T> {
 ///    [Rejection] if the failure was on the root subject, or maybe start with a
 ///    partial version of the "Expected" description up to the nesting subject
 ///    that failed, then the "actual" from the rejection
-/// -  A "Which" description from the rejection.
+/// -  A "Which" description from the rejection, if it was included.
 ///
 /// For example, if a failure happens on the root subject, the "actual" is taken
 /// directly from the rejection.
