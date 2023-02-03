@@ -167,6 +167,10 @@ class Runtime {
     if (parent != null) {
       return {
         'name': name,
+        'defaultCompiler': defaultCompiler.serialize(),
+        'supportedCompilers': [
+          for (var compiler in supportedCompilers) compiler.serialize(),
+        ],
         'identifier': identifier,
         'parent': parent!.serialize()
       };
@@ -174,6 +178,10 @@ class Runtime {
 
     return {
       'name': name,
+      'defaultCompiler': defaultCompiler.serialize(),
+      'supportedCompilers': [
+        for (var compiler in supportedCompilers) compiler.serialize(),
+      ],
       'identifier': identifier,
       'isDartVM': isDartVM,
       'isBrowser': isBrowser,
