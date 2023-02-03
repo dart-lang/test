@@ -317,7 +317,8 @@ class Runner {
                   'Cannot filter by line/column for this test suite, no suite'
                   'path available.');
             }
-            var absoluteSuitePath = p.absolute(path);
+            // The absolute path as it will appear in stack traces.
+            var absoluteSuitePath = File(path).absolute.uri.toFilePath();
 
             bool matchLineAndCol(Frame frame) {
               if (frame.uri.scheme != 'file' ||
