@@ -34,7 +34,8 @@ void main() {
       // We confirm it is enabled by checking the error output for an invalid
       // test, it looks a bit different.
       await d.file('test.dart', 'invalid Dart file').create();
-      var test = await runTest(['--use-data-isolate-strategy', 'test.dart']);
+      var test = await runTest(
+          ['--use-data-isolate-strategy', 'test.dart', '-c', 'none']);
 
       expect(
           test.stdout,
@@ -57,7 +58,8 @@ void main() {
   });
 }
       ''').create();
-      var test = await runTest(['--use-data-isolate-strategy', 'test.dart']);
+      var test = await runTest(
+          ['--use-data-isolate-strategy', 'test.dart', '-c', 'none']);
 
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
