@@ -26,9 +26,8 @@ void main() {
         );
       });
       test('can be described', () async {
-        await check(it<Future<void>>()..completes())
-            .hasAsyncDescriptionWhich(
-                it()..deepEquals(['  completes to a value']));
+        await check(it<Future<void>>()..completes()).hasAsyncDescriptionWhich(
+            it()..deepEquals(['  completes to a value']));
         await check(it<Future<int>>()..completes(it()..equals(42)))
             .hasAsyncDescriptionWhich(it()
               ..deepEquals([
@@ -345,8 +344,7 @@ fake trace''');
         await check(_countingStream(1)).mayEmit(it()..equals(0));
       });
       test('succeeds for a stream that emits an error', () async {
-        await check(_countingStream(1, errorAt: 0))
-            .mayEmit(it()..equals(0));
+        await check(_countingStream(1, errorAt: 0)).mayEmit(it()..equals(0));
       });
       test('succeeds for a stream that closes', () async {
         await check(_countingStream(0)).mayEmit(it()..equals(42));
