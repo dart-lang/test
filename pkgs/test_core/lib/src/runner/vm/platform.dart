@@ -158,7 +158,7 @@ class VMPlatform extends PlatformPlugin {
         case Compiler.kernel:
           return _spawnIsolateWithUri(
               await _compileToKernel(path, suiteMetadata), message);
-        case Compiler.none:
+        case Compiler.source:
           return _spawnIsolateWithUri(
               _bootstrapTestFile(
                   path,
@@ -194,7 +194,7 @@ class VMPlatform extends PlatformPlugin {
   /// Boots
   Future<Isolate> _spawnDataIsolate(String path, SendPort message,
       Metadata suiteMetadata, Compiler compiler) async {
-    if (compiler != Compiler.none) {
+    if (compiler != Compiler.source) {
       throw ArgumentError('The --use-data-isolate-strategy option requires the '
           '`--compiler none` option but the compiler was $compiler');
     }
@@ -224,7 +224,7 @@ class VMPlatform extends PlatformPlugin {
         // with kernel when we technically should be, based on the compiler
         // setting.
         break;
-      case Compiler.none:
+      case Compiler.source:
         // Just leave test path as is.
         break;
       default:
@@ -279,7 +279,7 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
 
 Future<Isolate> _spawnPubServeIsolate(String testPath, SendPort message,
     Uri pubServeUrl, Compiler compiler) async {
-  if (compiler != Compiler.none) {
+  if (compiler != Compiler.source) {
     throw ArgumentError(
         'The --pub-serve option requires the `--compiler none` option but the '
         'compiler was $compiler');

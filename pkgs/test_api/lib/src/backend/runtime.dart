@@ -11,7 +11,7 @@ class Runtime {
 
   /// The command-line Dart VM.
   static const Runtime vm = Runtime(
-      'VM', 'vm', Compiler.kernel, [Compiler.kernel, Compiler.none],
+      'VM', 'vm', Compiler.kernel, [Compiler.kernel, Compiler.source],
       isDartVM: true);
 
   /// Google Chrome.

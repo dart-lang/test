@@ -16,14 +16,14 @@ class Compiler {
   static const Compiler kernel = Compiler('Kernel', 'kernel', isDefault: true);
 
   /// Runs tests directly from source, with no precompilation.
-  static const Compiler none = Compiler('None', 'none');
+  static const Compiler source = Compiler('Source', 'source');
 
   /// The compilers that are supported by the test runner by default.
   static const List<Compiler> builtIn = [
     Compiler.dart2js,
     Compiler.dart2wasm,
     Compiler.kernel,
-    Compiler.none,
+    Compiler.source,
   ];
 
   /// The human-friendly name of the compiler.

@@ -5,6 +5,7 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:source_span/source_span.dart';
 
+import 'compiler.dart';
 import 'operating_system.dart';
 import 'runtime.dart';
 import 'suite_platform.dart';
@@ -19,6 +20,7 @@ final _universalValidVariables = {
   'google',
   'wasm',
   for (var runtime in Runtime.builtIn) runtime.identifier,
+  for (var compiler in Compiler.builtIn) compiler.identifier,
   for (var os in OperatingSystem.all) os.identifier,
 };
 
