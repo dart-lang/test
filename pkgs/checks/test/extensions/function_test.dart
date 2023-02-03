@@ -11,15 +11,15 @@ void main() {
   group('ThrowsChecks', () {
     group('throws', () {
       test('succeeds for happy case', () {
-        checkThat(() => throw StateError('oops!')).throws<StateError>();
+        check(() => throw StateError('oops!')).throws<StateError>();
       });
       test('fails for functions that return normally', () {
-        checkThat(() {}).isRejectedBy(it()..throws<StateError>(),
+        check(() {}).isRejectedBy(it()..throws<StateError>(),
             actual: ['a function that returned <null>'],
             which: ['did not throw']);
       });
       test('fails for functions that throw the wrong type', () {
-        checkThat(() => throw StateError('oops!')).isRejectedBy(
+        check(() => throw StateError('oops!')).isRejectedBy(
           it()..throws<ArgumentError>(),
           actual: ['a function that threw error <Bad state: oops!>'],
           which: ['did not throw an ArgumentError'],
@@ -29,10 +29,10 @@ void main() {
 
     group('returnsNormally', () {
       test('succeeds for happy case', () {
-        checkThat(() => 1).returnsNormally().equals(1);
+        check(() => 1).returnsNormally().equals(1);
       });
       test('fails for functions that throw', () {
-        checkThat(() {
+        check(() {
           Error.throwWithStackTrace(
               StateError('oops!'), StackTrace.fromString('fake trace'));
         }).isRejectedBy(it()..returnsNormally(),
