@@ -12,6 +12,7 @@ import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
         Timeout;
 import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/test_core.dart';
 
 import '../../util/io.dart';
 import '../compiler_selection.dart';
@@ -70,13 +71,31 @@ final ArgParser _parser = (() {
   // UI to avoid a painful migration.
   parser.addMultiOption('platform',
       abbr: 'p',
-      help: 'The platform(s) on which to run the tests.\n'
-          '[vm (default), '
-          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]');
+      help: 'The platform(s) on which to run the tests',
+      defaultsTo: [
+        'vm'
+      ],
+      allowed: [
+        'vm',
+        for (var runtime in allRuntimes) runtime.identifier
+      ],
+      allowedHelp: {
+        'vm': Runtime.vm.description,
+        for (var runtime in allRuntimes)
+          runtime.identifier: runtime.description,
+      });
   parser.addMultiOption('compiler',
       abbr: 'c',
-      help: 'The compiler(s) to use to run tests\n ['
-          '${Compiler.builtIn.map((c) => "${c.identifier}${c.isDefault ? '' : ' (default)'}").join(", ")}]');
+      help:
+          'The compiler(s) to use to run tests. Each platform chooses its default and supported compilers.',
+      defaultsTo: [],
+      allowed: [
+        for (var compiler in Compiler.builtIn) compiler.identifier,
+      ],
+      allowedHelp: {
+        for (var compiler in Compiler.builtIn)
+          compiler.identifier: compiler.description,
+      });
   parser.addMultiOption('preset',
       abbr: 'P', help: 'The configuration preset(s) to use.');
   parser.addOption('concurrency',
@@ -400,5 +419,26 @@ class _Parser {
           'Couldn\'t parse ${optionName == null ? '' : '--$optionName '}"$value": '
           '${error.message}');
     }
+  }
+}
+
+extension _RuntimeDescription on Runtime {
+  String get description {
+    var message = StringBuffer('Supported compilers: ');
+    message.write('${defaultCompiler.identifier} (default)');
+    for (var compiler in supportedCompilers) {
+      if (compiler == defaultCompiler) continue;
+      message.write(', ${compiler.identifier}');
+    }
+    return message.toString();
+  }
+}
+
+extension _CompilerDescription on Compiler {
+  String get description {
+    var runtimes =
+        Runtime.builtIn.where((r) => r.supportedCompilers.contains(this));
+    return 'Supported platforms: '
+        '${runtimes.map((r) => r.identifier).join(', ')}';
   }
 }
