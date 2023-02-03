@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO Add doc about how failure strings work.
 import 'dart:async';
 
 import 'package:meta/meta.dart' as meta;
@@ -187,14 +186,101 @@ extension ContextExtension<T> on Subject<T> {
   Context<T> get context => _context;
 }
 
-/// The expectation and nesting context already applied to a [Subject].
+/// The context for a [Subject] that allows asserting expectations and creating
+/// nested subjects.
 ///
-/// This is the surface of interaction for expectation extension method
-/// implementations.
+/// Expectation extension methods use [ContextExtension] to get access to the
+/// subject's [Context]. Expectations pass callbacks which describe what is
+/// checked, and perform the expectation, respectively.
 ///
-/// The `expect` and `expectAsync` can test the value and optionally reject it.
-/// The `nest` and `nestAsync` can test the value, and also extract some other
-/// property from it for further checking.
+/// When all expectations on a subject succeed, the descriptions will not be
+/// needed and the callbacks will not be called. Similarly, if an expectation
+/// fails in a [softCheck] or [softCheckAsync], the descriptions may not be
+/// used and the callbacks will not be called. Where possible, string formatting
+/// for the descriptions should be performed in the callback, not ahead of time.
+///
+/// When an expectation is used on a [ConditionSubject] and passed to
+/// [describe], there is no value to check an expectaion against, so only the
+/// description callbacks are used.
+///
+/// When both callbacks are used, the description callback will always be called
+/// strictly after the expectation callback is called.
+///
+/// Some expectations check something about the subject, and do not allow for
+/// further checking. These expectations use [expect], [expectAsync], or
+/// [expectUnwaited]. In these expectations the description callback returns a
+/// "clause". A clause is a description of what was checked, which stands on its
+/// own. For instance the "is equal to <1>" in:
+///
+///   Expected: a int that:
+///     is equal to <1>
+///
+/// Some expectations check something about the subject, and also extract a
+/// value for further checking, such as a field from the original subject. These
+/// expectations use [nest], or [nestAsync]. In these expectations the
+/// description callback returns a "label". A label is a description of the
+/// extracted value as it relates to the original subject. For instance the
+/// "completes to a value" in:
+///
+///   Expected a Future<int> that:
+///     completes to a value that:
+///       is equal to <1>
+///
+/// When no further expectations were checked on the extracted subject, or the
+/// extraction is rejected, the "that:" is omitted.
+///
+///   Expected a Future<int> that:
+///     completes to a value
+///
+/// Expectations which call [expectAsync] or [nestAsync] may not be used in the
+/// [Condition] passed to [softCheck] or [describe]. Use [softCheckAsync] or
+/// [describeAsync] instead.
+///
+/// Expectations which call [expectUnawaited] may not be used in the [Condition]
+/// passed to [softCheck] or [softCheckAsync].
+///
+/// Expectation failures are reported through a [Rejection] or an
+/// [Extracted.rejection] for "expect" and "nest" respectively. A rejection
+/// carries two descriptions, one description of the "actual" value that was
+/// tested, and an optional "which" with further details about how the result
+/// different from the expectation. If the "actual" argument is omitted it will
+/// be filled with a formatted version of the object. If an expectation is
+/// written against a type without a useful `toString()`, the rejection can
+/// provide a string representation.
+///
+/// When an expectation fails for a [check] subject, an exception is thrown to
+/// interrupt the test, so no further checks should happen. The failure message
+/// will include:
+/// -  An "Expected" description with descriptions of all the expectations that
+///    were checked, including the ones that passed, and the last one that
+///    failed.
+/// -  An "Actual" description, which may be the description directly from the
+///    [Rejection] if the failure was on the root subject, or maybe start with a
+///    partial version of the "Expected" description up to the nesting subject
+///    that failed, then the "actual" from the rejection
+/// -  A "Which" description from the rejection.
+///
+/// For example, if a failure happens on the root subject, the "actual" is taken
+/// directly from the rejection.
+///
+///   Expected: a Future<int> that:
+///     completes to a value
+///   Actual: a future that completes as an error
+///   Which: threw <UnimplementedError> at:
+///   <stack trace>
+///
+/// But if the failure happens on a nested subject, the actual starts with a
+/// description of the nesting or non-nesting expectations that succeeded, up
+/// to nesting point of the failure, then the "actual" and "which" from the
+/// rejection are indented to that level of nesting.
+///
+///   Expected: a Future<int> that:
+///     completes to a value that:
+///       equals <1>
+///   Actual: a Future<int> that:
+///     completes to a value that:
+///     Actual: <0>
+///     Which: are not equal
 abstract class Context<T> {
   /// Expect that [predicate] will not return a [Rejection] for the checked
   /// value.
