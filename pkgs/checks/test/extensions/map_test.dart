@@ -30,10 +30,31 @@ void main() {
     check(_testMap).values.contains(1);
   });
 
-  test('operator []', () async {
-    check(_testMap)['a'].equals(1);
-    check(_testMap)
-        .isRejectedBy(it()..['z'], which: ['does not contain the key \'z\'']);
+  group('operator []', () {
+    test('succeeds for a key that exists', () {
+      check(_testMap)['a'].equals(1);
+    });
+    test('fails for a missing key', () {
+      check(_testMap)
+          .isRejectedBy(it()..['z'], which: ['does not contain the key \'z\'']);
+    });
+    test('can be described', () {
+      check(it<Map<String, Object>>()..['some\nlong\nkey'])
+          .description
+          .deepEquals([
+        "  contains a value for 'some",
+        '  long',
+        "  key'",
+      ]);
+      check(it<Map<String, Object>>()..['some\nlong\nkey'].equals(1))
+          .description
+          .deepEquals([
+        "  contains a value for 'some",
+        '  long',
+        "  key' that:",
+        '    equals <1>',
+      ]);
+    });
   });
   test('isEmpty', () {
     check(<String, int>{}).isEmpty();
@@ -43,13 +64,25 @@ void main() {
     check(_testMap).isNotEmpty();
     check({}).isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
   });
-  test('containsKey', () {
-    check(_testMap).containsKey('a');
-
-    check(_testMap).isRejectedBy(
-      it()..containsKey('c'),
-      which: ["does not contain key 'c'"],
-    );
+  group('containsKey', () {
+    test('succeeds for a key that exists', () {
+      check(_testMap).containsKey('a');
+    });
+    test('fails for a missing key', () {
+      check(_testMap).isRejectedBy(
+        it()..containsKey('c'),
+        which: ["does not contain key 'c'"],
+      );
+    });
+    test('can be described', () {
+      check(it<Map<String, Object>>()..containsKey('some\nlong\nkey'))
+          .description
+          .deepEquals([
+        "  contains key 'some",
+        '  long',
+        "  key'",
+      ]);
+    });
   });
   test('containsKeyThat', () {
     check(_testMap).containsKeyThat(it()..equals('a'));
@@ -58,12 +91,25 @@ void main() {
       which: ['Contains no matching key'],
     );
   });
-  test('containsValue', () {
-    check(_testMap).containsValue(1);
-    check(_testMap).isRejectedBy(
-      it()..containsValue(3),
-      which: ['does not contain value <3>'],
-    );
+  group('containsValue', () {
+    test('succeeds for happy case', () {
+      check(_testMap).containsValue(1);
+    });
+    test('fails for missing value', () {
+      check(_testMap).isRejectedBy(
+        it()..containsValue(3),
+        which: ['does not contain value <3>'],
+      );
+    });
+    test('can be described', () {
+      check(it<Map<String, String>>()..containsValue('some\nlong\nkey'))
+          .description
+          .deepEquals([
+        "  contains value 'some",
+        '  long',
+        "  key'",
+      ]);
+    });
   });
   test('containsValueThat', () {
     check(_testMap).containsValueThat(it()..equals(1));
