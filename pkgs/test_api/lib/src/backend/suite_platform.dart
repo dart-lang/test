@@ -41,7 +41,7 @@ class SuitePlatform {
     }
     if (!runtime.supportedCompilers.contains(this.compiler)) {
       throw ArgumentError(
-          'The platform $runtime does not suppor the compiler $compiler');
+          'The platform $runtime does not support the compiler ${this.compiler}');
     }
   }
 

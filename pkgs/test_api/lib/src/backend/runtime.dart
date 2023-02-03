@@ -15,8 +15,8 @@ class Runtime {
       isDartVM: true);
 
   /// Google Chrome.
-  static const Runtime chrome = Runtime('Chrome', 'chrome', Compiler.kernel,
-      [Compiler.dart2js, Compiler.dart2wasm],
+  static const Runtime chrome = Runtime(
+      'Chrome', 'chrome', Compiler.dart2js, [Compiler.dart2js],
       isBrowser: true, isJS: true, isBlink: true);
 
   /// Mozilla Firefox.
