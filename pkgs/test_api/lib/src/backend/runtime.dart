@@ -97,7 +97,7 @@ class Runtime {
   /// That is, returns [parent] if it's non-`null` or [this] if it's `null`.
   Runtime get root => parent ?? this;
 
-  /// The default compiler to use with this platform.
+  /// The default compiler to use with this runtime.
   final Compiler defaultCompiler;
 
   /// All the supported compilers for this runtime.
